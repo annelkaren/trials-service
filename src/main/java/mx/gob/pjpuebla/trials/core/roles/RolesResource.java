@@ -1,0 +1,106 @@
+package mx.gob.pjpuebla.trials.core.roles;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.ws.rs.core.Response;
+import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/core/roles")
+@SecurityRequirement(name = "Keycloak")
+public class RolesResource {
+
+    private final KeycloakSecurityUtil keycloakSecurityUtil;
+    private static final Logger LOG = LoggerFactory.getLogger(RolesResource.class);
+
+    @Value("${keycloak.realm}")
+    private String realm;
+
+    @GetMapping
+    public List<Role> getAll() {
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        List<RoleRepresentation> roles = keycloak.realm(realm).roles().list();
+        return mapRoles(roles);
+    }
+
+    @GetMapping("/{name}")
+    public Response getByName(@PathVariable String name) {
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        try {
+            RoleRepresentation role = keycloak.realm(realm).roles().get(name).toRepresentation();
+            return Response.ok(mapRole(role)).build();
+        } catch (Exception ex) {
+            LOG.error("getByName", ex);
+            return Response.ok("El rol no existe").build();
+        }
+    }
+
+    @PostMapping
+    public Response create(@RequestBody Role role) {
+        RoleRepresentation roleRepresentation = mapRole(role);
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        try {
+            keycloak.realm(realm).roles().create(roleRepresentation);
+        } catch (Exception ex) {
+            LOG.error("create", ex);
+            if (ex.getMessage().contains("Conflict")) {//Nombre repetido
+                return Response.ok("El rol " + role.getName() + " ya se encuentra registrado. Intenta con otro.").build();
+            } else {
+                return Response.ok("Error al crear el role").build();
+            }
+        }
+        return Response.ok(role).build();
+    }
+
+    @DeleteMapping("/{name}")
+    public Response delete(@PathVariable String name) {
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        try {
+            keycloak.realm(realm).roles().get(name).toRepresentation();
+            keycloak.realm(realm).roles().deleteRole(name);
+            return Response.ok("Rol eliminado").build();
+        } catch (Exception ex) {
+            LOG.error("delete", ex);
+            return Response.ok("El rol no existe").build();
+        }
+    }
+
+    private List<Role> mapRoles(List<RoleRepresentation> roleRepresentations) {
+        List<Role> roles = new ArrayList<>();
+        roleRepresentations.forEach(roleRep -> {
+            roles.add(mapRole(roleRep));
+        });
+        return roles;
+    }
+
+    private Role mapRole(RoleRepresentation roleRepresentation) {
+        Role role = new Role();
+        role.setName(roleRepresentation.getName());
+        role.setDescription(roleRepresentation.getDescription());
+        return role;
+    }
+
+    private RoleRepresentation mapRole(Role role) {
+        RoleRepresentation roleRep = new RoleRepresentation();
+        roleRep.setName(role.getName());
+        roleRep.setComposite(Boolean.FALSE);
+        roleRep.setDescription(role.getDescription());
+        return roleRep;
+    }
+}

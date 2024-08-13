@@ -1,0 +1,19 @@
+{
+  "realm": "trials-realm",
+  "auth-server-url": "http://localhost:8080",
+  "resource": "trials-service",
+  "credentials": {
+    "secret": "2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj"
+  },
+  "http-method-as-scope": true,
+  "paths": [
+    {
+      "path": "/swagger-ui/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/v3/api-docs/*",
+      "enforcement-mode": "DISABLED"
+    }
+  ]
+}
