@@ -89,6 +89,10 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "FN_DOMICILIO")
     private Long domicilio;
 
+    @Pattern(regexp = "F|M")
+    @Column(name = "S_PERSONA_FISCAL")
+    private String personaFiscal;
+
     @Embedded
     private Audit audit;
 
