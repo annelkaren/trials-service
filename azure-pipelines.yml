@@ -4,6 +4,7 @@
 
 trigger:
 - main
+- develop
 
 resources:
 - repo: self
@@ -36,6 +37,8 @@ stages:
         testRunTitle: 'JUnitRun'
         codeCoverageToolOption: 'JaCoCo'
         javaHomeOption: 'JDKVersion'
+        jdkVersionOption: 1.17
+        jdkArchitectureOption: x64
         mavenVersionOption: 'Default'
         mavenAuthenticateFeed: false
         effectivePomSkip: false
