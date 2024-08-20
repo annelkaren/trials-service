@@ -14,7 +14,8 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--spring.flyway.enabled=true
 ```
 
 ### Nomenclatura de Bases de datos
-t = tabla -> tNOMBRE
+tbl = table -> TBL_NAME
+seq = sequence -> SEQ_NAME
 i = index -> iNOMBRE
 pk = primary key -> p|TIPO|NOMBRE -> psid
 fk = foreign key -> f|TIPO|NOMBRE -> fsdomicilio

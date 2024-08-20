@@ -33,7 +33,7 @@ stages:
       inputs:
         mavenPomFile: 'pom.xml'
         publishJUnitResults: true
-        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
         testRunTitle: 'JUnitRun'
         codeCoverageToolOption: 'JaCoCo'
         javaHomeOption: 'JDKVersion'
@@ -45,6 +45,9 @@ stages:
         sonarQubeRunAnalysis: true
         sqMavenPluginVersionChoice: 'pom'
         checkStyleRunAnalysis: true
+#    - task: PublishTestResults@2
+#      inputs:
+
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
