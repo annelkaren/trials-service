@@ -4,6 +4,7 @@
 
 trigger:
 - main
+- develop
 
 resources:
 - repo: self
@@ -14,7 +15,9 @@ variables:
   imageRepository: 'trialsservice'
   containerRegistry: 'pjpuebla.azurecr.io'
   dockerfilePath: '**/Dockerfile'
-  tag: '$(Build.BuildId)'
+  tag: '$(Build.BuildNumber)'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -28,20 +31,28 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: Cache@2
+      inputs:
+        key: 'maven | "$(Agent.OS)" | **/pom.xml'
+        restoreKeys: |
+          maven | "$(Agent.OS)"
+          maven
+        path: $(MAVEN_CACHE_FOLDER)
+      displayName: Cache Maven local repo
     - task: Maven@4
       inputs:
         mavenPomFile: 'pom.xml'
+        mavenOptions: '-Xmx3072m $(MAVEN_OPTS)'
         publishJUnitResults: true
-        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
         testRunTitle: 'JUnitRun'
-        codeCoverageToolOption: 'JaCoCo'
         javaHomeOption: 'JDKVersion'
-        mavenVersionOption: 'Default'
+        jdkVersionOption: '1.17'
+        jdkArchitectureOption: x64
+        mavenVersionOption: Default
         mavenAuthenticateFeed: false
         effectivePomSkip: false
-        sonarQubeRunAnalysis: true
         sqMavenPluginVersionChoice: 'pom'
-        checkStyleRunAnalysis: true
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
