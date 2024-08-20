@@ -15,7 +15,9 @@ variables:
   imageRepository: 'trialsservice'
   containerRegistry: 'pjpuebla.azurecr.io'
   dockerfilePath: '**/Dockerfile'
-  tag: '$(Build.BuildId)'
+  tag: '$(Build.BuildNumber)'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -29,9 +31,19 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: Cache@2
+      inputs:
+        key: 'maven | "$(Agent.OS)" | **/pom.xml'
+        restoreKeys: |
+          maven | "$(Agent.OS)"
+          maven
+        path: $(MAVEN_CACHE_FOLDER)
+      displayName: Cache Maven local repo
+    - script: mvn install -B -e
     - task: Maven@4
       inputs:
         mavenPomFile: 'pom.xml'
+        mavenOptions: '-Xmx3072m $(MAVEN_OPTS)'
         publishJUnitResults: true
         testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
         testRunTitle: 'JUnitRun'
