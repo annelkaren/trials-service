@@ -46,6 +46,7 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
         testRunTitle: 'JUnitRun'
+        codeCoverageToolOption: JaCoCo
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
         jdkArchitectureOption: x64
