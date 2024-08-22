@@ -1,25 +1,23 @@
-package mx.gob.pjpuebla.trials.core.tipoOficialias;
+package mx.gob.pjpuebla.trials.core.tipooficialias;
 
+import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
-import lombok.RequiredArgsConstructor;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.After;
 
 import java.util.Arrays;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@RequiredArgsConstructor
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class TipoOficialiasRepositoryTest extends AuditConfigTest {
 

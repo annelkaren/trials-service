@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class JuzgadoRepositoryTest extends AuditConfigTest {
+public class JuzgadoRepositoryTest extends AuditConfigTest {
 
     @Autowired
     JuzgadoRepository juzgadoRepository;
 
     @Test
-    void findAll() {
+    public void findAll() {
         List<Juzgado> all = juzgadoRepository.findAll();
         assertThat(all).isEmpty();
     }
