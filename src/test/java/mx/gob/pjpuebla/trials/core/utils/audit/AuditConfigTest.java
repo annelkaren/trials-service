@@ -2,21 +2,17 @@ package mx.gob.pjpuebla.trials.core.utils.audit;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 public class AuditConfigTest {
 

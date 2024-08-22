@@ -127,6 +127,40 @@
 							<goal>report</goal>
 						</goals>
 					</execution>
+					<execution>
+						<id>check</id>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>PACKAGE</element>
+									<excludes>
+										<exclude>*config</exclude>
+										<exclude>*util</exclude>
+										<exclude>*estados</exclude>
+										<exclude>*recursos</exclude>
+										<exclude>*recursos.menu</exclude>
+										<exclude>*usuarios</exclude>
+										<exclude>*domicilios</exclude>
+										<exclude>*personas</exclude>
+										<exclude>*tipopartes</exclude>
+										<exclude>*oficialias</exclude>
+										<exclude>*materias</exclude>
+									</excludes>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>20%</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
