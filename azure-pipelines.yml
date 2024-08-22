@@ -44,22 +44,20 @@ stages:
       inputs:
         mavenPomFile: 'pom.xml'
         mavenOptions: '-Xmx3072m $(MAVEN_OPTS)'
-#        publishJUnitResults: true
-#        testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
-#        testRunTitle: 'JUnitRun'
+        publishJUnitResults: true
+        testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
+        testRunTitle: 'JUnitRun'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
-
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: "JUnit"
-        testResultsFiles: '**/TEST-*.xml'
-        mergeTestResults: true
 
     - task: PublishCodeCoverageResults@2
       inputs:
         summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco/jacoco.xml
         pathToSources: $(System.DefaultWorkingDirectory)/src/main/java/
+
+    - task: SonarQubeAnalyze@6
+      inputs:
+        jdkVersion: 'JAVA_HOME_17_X64'
 
     - task: Docker@2
       displayName: Build and push an image to container registry
