@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-alpine
 EXPOSE 8888
 
 RUN apk update && \
-    apk add fontconfig \
+    apk --no-cache add fontconfig \
     ttf-dejavu \
     freetype \
     freetype-dev \

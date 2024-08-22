@@ -24,7 +24,7 @@ import static org.mockito.BDDMockito.anyInt;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-public class JuzgadoServiceTest {
+class JuzgadoServiceTest {
 
     @InjectMocks
     JuzgadoService juzgadoService;

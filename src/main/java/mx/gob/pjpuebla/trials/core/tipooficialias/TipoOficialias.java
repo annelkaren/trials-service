@@ -36,7 +36,7 @@ public class TipoOficialias implements Serializable, Auditable {
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
-    @Pattern(regexp = "A|I|D")
+    @Pattern(regexp = "[AID]")
     @Column(name = "S_ESTADO", nullable = false)
     private String estado;
 

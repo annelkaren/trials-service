@@ -28,7 +28,7 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "A|I|D")
+    @Pattern(regexp = "[AID]")
     @Column(name = "S_ESTADO", nullable = false)
     private String estado;
 

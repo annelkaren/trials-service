@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.domicilios;
 
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
