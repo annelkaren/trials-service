@@ -27,7 +27,7 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "A|I|D")
+    @Pattern(regexp = "[AID]")
     @Column(name = "S_ESTADO", nullable = false)
     private String estado;
 
@@ -50,7 +50,7 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_RFC")
     private String rfc;
 
-    @Pattern(regexp = "H|M|X")
+    @Pattern(regexp = "[HMX]")
     @Column(name = "S_SEXO")
     private String sexo;
 
@@ -89,7 +89,7 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "FN_DOMICILIO")
     private Long domicilio;
 
-    @Pattern(regexp = "F|M")
+    @Pattern(regexp = "[FM]")
     @Column(name = "S_PERSONA_FISCAL")
     private String personaFiscal;
 

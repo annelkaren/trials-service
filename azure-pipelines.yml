@@ -39,6 +39,7 @@ stages:
           maven
         path: $(MAVEN_CACHE_FOLDER)
       displayName: Cache Maven local repo
+
     - task: Maven@4
       inputs:
         mavenPomFile: 'pom.xml'
@@ -48,11 +49,12 @@ stages:
         testRunTitle: 'JUnitRun'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
-        jdkArchitectureOption: x64
-        mavenVersionOption: Default
-        mavenAuthenticateFeed: false
-        effectivePomSkip: false
-        sqMavenPluginVersionChoice: 'pom'
+
+    - task: PublishCodeCoverageResults@2
+      inputs:
+        summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco/jacoco.xml
+        pathToSources: $(System.DefaultWorkingDirectory)/src/main/java/
+
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:

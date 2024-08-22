@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.listavalor;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
@@ -37,8 +38,8 @@ public class ListaValorRepositoryTest extends AuditConfigTest {
 
         ListaValor entity = listaValorRepository.save(listaValor);
 
-        Assertions.assertThat(entity).isNotNull();
-        Assertions.assertThat(entity.getId()).isGreaterThan(0);
+        assertThat(entity).isNotNull();
+        assertThat(entity.getId()).isPositive();
     }
 
     @DisplayName("Should get a list with all the saved items of ListaValor")
@@ -53,8 +54,9 @@ public class ListaValorRepositoryTest extends AuditConfigTest {
         List<ListaValor> expectedList = Arrays.asList(entity2, entity2);
         List<ListaValor> list = listaValorRepository.findAll();
 
-        Assertions.assertThat(list).isNotNull();
-        Assertions.assertThat(list.size()).isEqualTo(expectedList.size());
+        assertThat(list)
+                .isNotNull()
+                .hasSameSizeAs(expectedList);
     }
 
     private ListaValor createListaValor() {
