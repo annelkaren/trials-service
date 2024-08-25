@@ -1,40 +1,38 @@
 package mx.gob.pjpuebla.trials.core.tiposistema;
 
-import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.After;
 
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-@RequiredArgsConstructor
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class TipoSistemaRepositoryTest extends AuditConfigTest {
+@DataJpaTest(properties = {
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+})
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+class TipoSistemaRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private TipoSistemaRepository tipoSistemaRepository;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void deleteAll() {
         tipoSistemaRepository.deleteAll();
     }
 
     @DisplayName("Should save a Tipo Sistema item with an id greater than 0")
     @Test
-    public void save() {
+    void save() {
         TipoSistema tipoSistema = createTipoSistema();
 
         TipoSistema entity = tipoSistemaRepository.save(tipoSistema);
@@ -45,7 +43,7 @@ public class TipoSistemaRepositoryTest extends AuditConfigTest {
 
     @DisplayName("Should get a list with all the saved items of Tipo Sistema")
     @Test
-    public void findAll() {
+    void findAll() {
         TipoSistema entity1 = createTipoSistema();
         tipoSistemaRepository.save(entity1);
 

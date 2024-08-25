@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.personas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -93,6 +94,7 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_PERSONA_FISCAL")
     private String personaFiscal;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 

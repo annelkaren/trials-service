@@ -1,14 +1,16 @@
-package mx.gob.pjpuebla.trials.core.juzgados;
+package mx.gob.pjpuebla.trials.core.materias;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.List;
+import java.util.Optional;
 
+import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -16,15 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class JuzgadoRepositoryTest extends AuditConfigTest {
+class MateriaRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private JuzgadoRepository juzgadoRepository;
+    private MateriaRepository materiaRepository;
 
     @Test
-    void findAll() {
-        List<Juzgado> all = juzgadoRepository.findAll();
-        assertThat(all).isEmpty();
+    void findByIdAndEstadoActive() {
+        materiaRepository.save(createMateria());
+        Optional<Materia> materia = materiaRepository.findByIdAndEstado(1, Estado.ACTIVE);
+        assertThat(materia.isPresent()).isTrue();
+        assertThat(materia.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }
-
 }

@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.core.utils.audit;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,7 +18,7 @@ public class AuditConfigTest {
     @MockBean
     AuditorAware<Jwt> auditorAware;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(auditorAware.getCurrentAuditor())
                 .thenReturn(Optional.of(createJwt()));
