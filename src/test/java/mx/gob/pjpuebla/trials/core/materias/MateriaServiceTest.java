@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.materias;
 
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -58,5 +60,21 @@ class MateriaServiceTest {
         assertThat(mr).isOfAnyClassIn(MateriaRecord.class)
                 .hasFieldOrPropertyWithValue("id", validMateria.getId())
                 .hasFieldOrPropertyWithValue("nombre", validMateria.getNombre());
+    }
+
+    @Test
+    void getById_return_not_found() {
+        given(mockMateriaRepository.findByIdAndEstado(validMateria.getId(), validMateria.getEstado()))
+                .willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    target.findById(validMateria.getId());
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Materia no encontrada");
+
     }
 }

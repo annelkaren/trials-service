@@ -10,6 +10,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -32,6 +33,9 @@ import java.io.IOException;
         scheme = "bearer",
         type = SecuritySchemeType.OPENIDCONNECT,
         in = SecuritySchemeIn.HEADER
+)
+@EnableSpringDataWebSupport(
+        pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO
 )
 public class SecurityConfig {
 

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -28,7 +27,7 @@ public class MateriaService {
         Page<Materia> page = materiaRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<MateriaRecord> list = page.getContent().stream()
                 .map(m -> new MateriaRecord(m.getId(), m.getNombre()))
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
