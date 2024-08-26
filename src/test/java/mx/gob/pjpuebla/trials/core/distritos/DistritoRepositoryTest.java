@@ -2,36 +2,36 @@ package mx.gob.pjpuebla.trials.core.distritos;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class DistritoRepositoryTest extends AuditConfigTest {
+@DataJpaTest(properties = {
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+})
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+class DistritoRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private DistritoRepository distritoRepository;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void deleteAll() {
         distritoRepository.deleteAll();
     }
 
     @Test
-    public void findAll() {
+    void findAll() {
         Distrito entity1 = createDistrito();
         distritoRepository.save(entity1);
 

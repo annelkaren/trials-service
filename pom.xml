@@ -69,11 +69,6 @@
 			<version>25.0.4</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>42.7.3</version>
@@ -99,6 +94,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -148,7 +148,6 @@
 										<exclude>*personas</exclude>
 										<exclude>*tipopartes</exclude>
 										<exclude>*oficialias</exclude>
-										<exclude>*materias</exclude>
 									</excludes>
 									<limits>
 										<limit>

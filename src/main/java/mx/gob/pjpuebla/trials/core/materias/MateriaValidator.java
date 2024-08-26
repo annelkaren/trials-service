@@ -8,9 +8,7 @@ public class MateriaValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-
         return Materia.class.equals(clazz);
-
     }
 
     @Override

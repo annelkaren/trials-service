@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -47,6 +48,7 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "S_RESPONSABLE", nullable = false)
     private String responsable;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 

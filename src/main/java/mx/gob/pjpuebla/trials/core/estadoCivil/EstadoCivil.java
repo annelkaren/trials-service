@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -40,6 +41,7 @@ public class EstadoCivil implements Serializable, Auditable {
     @Column(name = "S_ESTADO", nullable = false)
     private String estado;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 

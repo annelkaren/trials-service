@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -38,6 +39,7 @@ public class TipoPartes implements Serializable, Auditable {
     @Column(name = "FN_MATERIA")
     private Integer materia;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 }
