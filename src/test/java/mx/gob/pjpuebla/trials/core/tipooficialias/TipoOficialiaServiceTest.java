@@ -45,12 +45,12 @@ public class TipoOficialiaServiceTest {
         Page<TipoOficialias> tipoOficialiasPage = new PageImpl<>(list, paginator, list.size());
         given(tipoOficialiasRepository.findAll(Mockito.any(Pageable.class))).willReturn(tipoOficialiasPage);
 
-        PagedModel<TipoOficialias> expected = new PagedModel<>(tipoOficialiasPage);
-        Response response = tipoOficialiaService.getAll(pageableMock);
+        List<TipoOficialias> expected = tipoOficialiasPage.getContent();
+        List<TipoOficialias> result = tipoOficialiaService.getAll(pageableMock);
 
-        assertThat(response.getMessage()).isNotNull();
-        assertThat(response.getData()).isNotNull();
-        assertThat(expected).isEqualTo(response.getData());
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(expected.size());
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     private TipoOficialias createTipoOficialias(){

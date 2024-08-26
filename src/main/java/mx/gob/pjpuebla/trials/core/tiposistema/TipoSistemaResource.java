@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -19,7 +21,7 @@ public class TipoSistemaResource {
     private final TipoSistemaService tipoSistemaService;
 
     @GetMapping
-    public Response getAll(@PageableDefault( size = 20) Pageable pageable){
+    public List<TipoSistema> getAll(@PageableDefault Pageable pageable){
         return this.tipoSistemaService.getAll(pageable);
     }
 

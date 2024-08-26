@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,16 +39,15 @@ public class OrganismoResourceTest {
     @Test
     public void getAll() throws Exception {
         Organismo organismo = createOrganismo();
-        Page<Organismo> page = new PageImpl<>(Collections.singletonList(organismo));
-        Response response = new Response(page);
+        List<Organismo>  organismos = Collections.singletonList(organismo);
 
-        given(organismoService.getAll(any(Pageable.class))).willReturn(response);
+        given(organismoService.getAll(any(Pageable.class))).willReturn(organismos);
 
         mockMvc.perform(get("/api/core/organismos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content[0].id").value(organismo.getId()))
-                .andExpect(jsonPath("$.data.content[0].nombre").value(organismo.getNombre()))
-                .andExpect(jsonPath("$.data.content[0].estado").value(organismo.getEstado()));
+                .andExpect(jsonPath("$[0].id").value(organismo.getId()))
+                .andExpect(jsonPath("$[0].nombre").value(organismo.getNombre()))
+                .andExpect(jsonPath("$[0].estado").value(organismo.getEstado()));
     }
 
     private Organismo createOrganismo(){

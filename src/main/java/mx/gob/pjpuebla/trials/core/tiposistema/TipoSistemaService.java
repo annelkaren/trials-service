@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class TipoSistemaService {
@@ -15,17 +17,13 @@ public class TipoSistemaService {
     private final TipoSistemaRepository tipoSistemaRepository;
     private static final Logger LOG = LoggerFactory.getLogger(TipoSistemaService.class);
 
-    public Response getAll(Pageable pageable){
-        Response response = new Response();
+    public List<TipoSistema> getAll(Pageable pageable){
         try {
-            PagedModel<TipoSistema> paginator = new PagedModel<>(this.tipoSistemaRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
+            return this.tipoSistemaRepository.findAll(pageable).getContent();
         } catch (Exception ex) {
             LOG.error("getAll ", ex);
-            response.setMessage("Excepción. Error al obtener Tipo Sistema.");
+            throw new RuntimeException("Error al obtener Tipo Sistema", ex);
         }
 
-        return response;
     }
 }

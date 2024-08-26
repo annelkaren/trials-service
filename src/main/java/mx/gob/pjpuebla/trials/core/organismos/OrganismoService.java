@@ -10,22 +10,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class OrganismoService {
-
     private final OrganismoRepository organismoRepository;
     private static final Logger LOG = LoggerFactory.getLogger(OrganismoService.class);
-    public Response getAll(Pageable pageable){
-        Response response = new Response();
+
+    public List<Organismo> getAll(Pageable pageable){
         try {
-            PagedModel<Organismo> paginator = new PagedModel<>(this.organismoRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
+            return this.organismoRepository.findAll(pageable).getContent();
         }catch (Exception ex) {
             LOG.error("getAll ", ex);
-            response.setMessage("Excepción. Error al obtener Organismo.");
+            throw new RuntimeException("Error al obtener Organismos", ex);
         }
-        return response;
+
     }
 }

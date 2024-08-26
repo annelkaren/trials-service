@@ -34,7 +34,6 @@ public class EstadoCivilServiceTest {
     @Mock
     private Pageable pageableMock;
 
-    @DisplayName("Should return a response with a paginated list of EstadoCivil items")
     @Test
     void getAll() {
         PageRequest paginator = PageRequest.of(1, 10);
@@ -46,13 +45,12 @@ public class EstadoCivilServiceTest {
         Page<EstadoCivil> estadoCivilPage = new PageImpl<>(list, paginator, list.size());
         given(estadoCivilRepository.findAll(Mockito.any(Pageable.class))).willReturn(estadoCivilPage);
 
-        PagedModel<EstadoCivil> expected = new PagedModel<>(estadoCivilPage);
-        Response response = estadoCivilService.getAll(pageableMock);
+        List<EstadoCivil> expected = estadoCivilPage.getContent();
+        List<EstadoCivil> result = estadoCivilService.getAll(pageableMock);
 
-        assertThat(response.getMessage()).isNotNull();
-        assertThat(response.getData()).isNotNull();
-        assertThat(expected).isEqualTo(response.getData());
-
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(expected.size());
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     private EstadoCivil createEstadoCivil() {

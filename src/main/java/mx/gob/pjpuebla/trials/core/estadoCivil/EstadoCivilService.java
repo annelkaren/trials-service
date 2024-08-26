@@ -8,22 +8,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class EstadoCivilService {
     private final EstadoCivilRepository estadoCivilRepository;
     private static final Logger LOG = LoggerFactory.getLogger(EstadoCivilService.class);
 
-    public Response getAll(Pageable pageable){
-        Response response = new Response();
+    public List<EstadoCivil> getAll(Pageable pageable){
         try {
-            PagedModel<EstadoCivil> paginator = new PagedModel<>(this.estadoCivilRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
+            return this.estadoCivilRepository.findAll(pageable).getContent();
         } catch (Exception ex){
             LOG.error("getAll ", ex);
-            response.setMessage("Excepción. Error al obtener Tipo Sistema.");
+            throw new RuntimeException("Error al obtener Estado Civil", ex);
         }
-        return response;
     }
 }

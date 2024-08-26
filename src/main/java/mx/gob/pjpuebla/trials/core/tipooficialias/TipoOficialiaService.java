@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class TipoOficialiaService {
@@ -15,16 +17,12 @@ public class TipoOficialiaService {
     private final TipoOficialiasRepository tipoOficialiaRepository;
     private static final Logger LOG = LoggerFactory.getLogger(TipoOficialiaService.class);
 
-    public Response getAll(Pageable pageable){
-        Response response = new Response();
+    public List<TipoOficialias> getAll(Pageable pageable){
         try {
-            PagedModel<TipoOficialias> paginator = new PagedModel<>(this.tipoOficialiaRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
+            return this.tipoOficialiaRepository.findAll(pageable).getContent();
         } catch (Exception ex) {
             LOG.error("getAll ", ex);
-            response.setMessage("Excepción. Error al obtener Tipo Oficialia.");
+            throw new RuntimeException("Error al obtener Tipo Oficialias", ex);
         }
-        return response;
     }
 }

@@ -49,12 +49,12 @@ public class OrganismoServiceTest {
         Page<Organismo> organismoPage = new PageImpl<>(list, paginator, list.size());
         given(organismoRepository.findAll(Mockito.any(Pageable.class))).willReturn(organismoPage);
 
-        PagedModel<Organismo> expected = new PagedModel<>(organismoPage);
-        Response response = organismoService.getAll(pageableMock);
+        List<Organismo> expected = organismoPage.getContent();
+        List<Organismo> result = organismoService.getAll(pageableMock);
 
-        assertThat(response.getMessage()).isNotNull();
-        assertThat(response.getData()).isNotNull();
-        assertThat(expected).isEqualTo(response.getData());
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(expected.size());
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     private Organismo createOrganismo(){

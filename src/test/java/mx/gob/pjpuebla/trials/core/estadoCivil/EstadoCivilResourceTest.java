@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,16 +39,15 @@ public class EstadoCivilResourceTest {
     @Test
     public void getAll() throws Exception {
         EstadoCivil estadoCivil = createEstadoCivil();
-        Page<EstadoCivil> page = new PageImpl<>(Collections.singletonList(estadoCivil));
-        Response response = new Response(page);
+        List<EstadoCivil> estadoCiviles = Collections.singletonList(estadoCivil);
 
-        given(estadoCivilService.getAll(any(Pageable.class))).willReturn(response);
+        given(estadoCivilService.getAll(any(Pageable.class))).willReturn(estadoCiviles);
 
         mockMvc.perform(get("/api/core/estadocivil"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content[0].id").value(estadoCivil.getId()))
-                .andExpect(jsonPath("$.data.content[0].nombre").value(estadoCivil.getNombre()))
-                .andExpect(jsonPath("$.data.content[0].estado").value(estadoCivil.getEstado()));
+                .andExpect(jsonPath("$[0].id").value(estadoCivil.getId()))
+                .andExpect(jsonPath("$[0].nombre").value(estadoCivil.getNombre()))
+                .andExpect(jsonPath("$[0].estado").value(estadoCivil.getEstado()));
     }
 
     private EstadoCivil createEstadoCivil() {

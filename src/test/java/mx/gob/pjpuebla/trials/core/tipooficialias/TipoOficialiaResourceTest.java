@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,16 +40,15 @@ public class TipoOficialiaResourceTest {
     @Test
     public void getAll() throws Exception {
         TipoOficialias tipoOficialias = createTipoOficialias();
-        Page<TipoOficialias> page = new PageImpl<>(Collections.singletonList(tipoOficialias));
-        Response response = new Response(page);
+        List<TipoOficialias> tipoOficialia  = Collections.singletonList(tipoOficialias);
 
-        given(tipoOficialiaService.getAll(any(Pageable.class))).willReturn(response);
+        given(tipoOficialiaService.getAll(any(Pageable.class))).willReturn(tipoOficialia);
 
         mockMvc.perform(get("/api/core/tipooficialia"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content[0].id").value(tipoOficialias.getId()))
-                .andExpect(jsonPath("$.data.content[0].nombre").value(tipoOficialias.getNombre()))
-                .andExpect(jsonPath("$.data.content[0].estado").value(tipoOficialias.getEstado()));
+                .andExpect(jsonPath("$[0].id").value(tipoOficialias.getId()))
+                .andExpect(jsonPath("$[0].nombre").value(tipoOficialias.getNombre()))
+                .andExpect(jsonPath("$[0].estado").value(tipoOficialias.getEstado()));
 
     }
 

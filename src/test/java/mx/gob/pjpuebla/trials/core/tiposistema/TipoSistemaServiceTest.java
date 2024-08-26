@@ -47,13 +47,12 @@ public class TipoSistemaServiceTest {
         Page<TipoSistema> tipoSistemaPage = new PageImpl<>(list, paginator, list.size());
         given(tipoSistemaRepository.findAll(Mockito.any(Pageable.class))).willReturn(tipoSistemaPage);
 
-        PagedModel<TipoSistema> expected = new PagedModel<>(tipoSistemaPage);
-        Response response = tipoSistemaService.getAll(pageableMock);
+        List<TipoSistema> expected = tipoSistemaPage.getContent();
+        List<TipoSistema> result = tipoSistemaService.getAll(pageableMock);
 
-        assertThat(response.getMessage()).isNotNull();
-        assertThat(response.getData()).isNotNull();
-        assertThat(expected).isEqualTo(response.getData());
-
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isEqualTo(expected.size());
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
     }
 
 
