@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -29,6 +30,7 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 

@@ -1,8 +1,8 @@
-package mx.gob.pjpuebla.trials.core.organismos;
+package mx.gob.pjpuebla.trials.core.escolaridades;
+
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,28 +22,32 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @EntityListeners(AuditListener.class)
-@Table(name = "TBL_ORGANISMOS")
-public class Organismo implements Serializable, Auditable {
+@Table(name = "TBL_ESCOLARIDADES")
+public class Escolaridad implements Serializable, Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idOrganismo")
-    @SequenceGenerator(name = "idOrganismo", sequenceName = "SEQ_ORGANISMOS_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEscolaridad")
+    @SequenceGenerator(name = "idEscolaridad", sequenceName = "SEQ_ESCOLARIDADES_ID", allocationSize = 50)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @Max(Integer.MAX_VALUE)
     @Version
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @NotBlank
-    @Size(min = 3, max = 250)
+    @NotNull
+    @Size(min = 1, max = 50)
     @Column(name = "S_NOMBRE")
     private String nombre;
 
-    @Pattern(regexp = "A|I|D")
+    @Pattern(regexp = "[AID]")
     @Column(name = "S_ESTADO", nullable = false)
     private String estado;
+
+    @NotNull
+    @Size(min = 1, max = 50)
+    @Column(name = "S_NIVEL")
+    private String nivel;
 
     @Accessors(chain = false)
     @Embedded

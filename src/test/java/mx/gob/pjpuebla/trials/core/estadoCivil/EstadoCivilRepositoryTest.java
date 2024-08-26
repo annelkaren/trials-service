@@ -1,44 +1,40 @@
 package mx.gob.pjpuebla.trials.core.estadoCivil;
 
-import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-@RequiredArgsConstructor
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class EstadoCivilRepositoryTest extends AuditConfigTest {
+@DataJpaTest(properties = {
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+})
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+class EstadoCivilRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private EstadoCivilRepository estadoCivilRepository;
 
-    @Before
-
-    @After
+    @BeforeEach
+    @AfterEach
     public void deleteAll() {
         estadoCivilRepository.deleteAll();
     }
 
     @DisplayName("Should save a EstadoCivil item with an id greater than 0")
     @Test
-    public void save() {
+    void save() {
         EstadoCivil estadoCivil = createEstadoCivil();
 
         EstadoCivil entity = estadoCivilRepository.save(estadoCivil);
@@ -49,7 +45,7 @@ public class EstadoCivilRepositoryTest extends AuditConfigTest {
 
     @DisplayName("Should get a list with all the saved items of EstadoCivil")
     @Test
-    public void findAll() {
+    void findAll() {
         EstadoCivil entity1 = createEstadoCivil();
         estadoCivilRepository.save(entity1);
 

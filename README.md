@@ -6,7 +6,7 @@
 - PostgreSQL 16
 - Keycloak 25
 
-### Running as Developer using a dockerized PostgreSQL Database
+### Running as Developer using a dockerized PostgreSQL Database and Keycloak
 
 ```shell
 mvn clean package -Dmaven.test.skip
