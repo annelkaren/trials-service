@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Estado;
 import mx.gob.pjpuebla.trials.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +12,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -16,29 +21,11 @@ public class PersonaService {
     private final PersonaRepository personaRepository;
     private static final Logger LOG = LoggerFactory.getLogger(PersonaService.class);
 
-    public Response getAll(Pageable pageable) {
-        Response response = new Response();
-        try {
-            PagedModel<Persona> paginator = new PagedModel<>(this.personaRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-        } catch (Exception ex) {
-            LOG.error("getAll", ex);
-            response.setMessage("Error al realizar la petición.");
-        }
-        return response;
-    }
-
-    public Response findById(Long id) {
-        Response response = new Response();
-        try {
-            response.setData(this.personaRepository.findById(id).orElse(null));
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-        } catch (Exception ex) {
-            LOG.error("findById", ex);
-            response.setMessage("Error al obtener el registro con id " + id);
-        }
-        return response;
+    @Transactional(readOnly = true)
+    public PersonaRecord findById(Long id) {
+        Persona persona = personaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
+        return new PersonaRecord(persona.getId(), persona.getNombre());
     }
 
     public Response create(Persona persona) {
@@ -64,18 +51,6 @@ public class PersonaService {
         } catch (Exception ex) {
             LOG.error("update", ex);
             response.setMessage("Error al actualizar el registro.");
-        }
-        return response;
-    }
-
-    public Response delete(Long id) {
-        Response response = new Response();
-        try {
-            this.personaRepository.deleteById(id);
-            response.setMessage("Registro eliminado.");
-        } catch (Exception ex) {
-            LOG.error("delete", ex);
-            response.setMessage("Error al eliminar el registro.");
         }
         return response;
     }

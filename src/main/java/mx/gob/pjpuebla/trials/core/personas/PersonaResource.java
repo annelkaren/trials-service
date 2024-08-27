@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.Response;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +18,8 @@ public class PersonaResource {
 
     private final PersonaService personaService;
 
-    @GetMapping
-    public Response getAll(@PageableDefault(size = 20) Pageable pageable) {
-        return this.personaService.getAll(pageable);
-    }
-
-    @GetMapping("/{id}")
-    public Response getById(@PathVariable Long id) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PersonaRecord getById(@PathVariable Long id) {
         return this.personaService.findById(id);
     }
 
@@ -42,10 +38,5 @@ public class PersonaResource {
             return new Response(bindingResult.getFieldErrors());
         }
         return this.personaService.update(persona);
-    }
-
-    @DeleteMapping("/{id}")
-    public Response delete(@PathVariable Long id) {
-        return this.personaService.delete(id);
     }
 }
