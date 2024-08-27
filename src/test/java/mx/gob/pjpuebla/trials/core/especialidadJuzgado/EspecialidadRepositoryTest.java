@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.especialidadJuzgado.EspecialidadesSetUp.createEspecialidades;
+import static mx.gob.pjpuebla.trials.core.especialidadJuzgado.EspecialidadSetUp.createEspecialidad;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -22,29 +22,29 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class EspecialidadesRepositoryTest extends AuditConfigTest {
+class EspecialidadRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private EspecialidadesRepository especialidadesRepository;
+    private EspecialidadRepository especialidadRepository;
 
     @Test
     void findByAllAndEstadoActive() {
-        Especialidades validEspecialidades = createEspecialidades();
-        especialidadesRepository.save(validEspecialidades);
+        Especialidad validEspecialidad = createEspecialidad();
+        especialidadRepository.save(validEspecialidad);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<Especialidades> page = especialidadesRepository.findAll(Example.of(new Especialidades().setNombre("Juzgado Especializado en Juicios").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
+        Page<Especialidad> page = especialidadRepository.findAll(Example.of(new Especialidad().setNombre("Juzgado Especializado en Juicios").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
     }
 
     @Test
     void findByIdAndEstadoActive() {
-        especialidadesRepository.save(createEspecialidades());
-        Optional<Especialidades> especialidades = especialidadesRepository.findByIdAndEstado(1, Estado.ACTIVE);
-        assertThat(especialidades).isPresent();
-        assertThat(especialidades.get().getEstado()).isEqualTo(Estado.ACTIVE);
+        especialidadRepository.save(createEspecialidad());
+        Optional<Especialidad> especialidad = especialidadRepository.findByIdAndEstado(1, Estado.ACTIVE);
+        assertThat(especialidad).isPresent();
+        assertThat(especialidad.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }
 
 }

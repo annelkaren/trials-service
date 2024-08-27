@@ -22,44 +22,44 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest(EspecialidadesResource.class)
+@WebMvcTest(EspecialidadResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class EspecialidadesResourceTest {
+class EspecialidadResourceTest {
 
     @MockBean
-    private EspecialidadesService mockEspecialidadesService;
+    private EspecialidadService mockEspecialidadService;
 
     @Autowired
     private MockMvc mockMvc;
 
-    private EspecialidadesRecord validEspecialidadesRecord;
+    private EspecialidadRecord validEspecialidadRecord;
 
     @BeforeEach
     void setUp() {
-        validEspecialidadesRecord = EspecialidadesSetUp.createEspecialidadesRecord();
+        validEspecialidadRecord = EspecialidadSetUp.createEspecialidadRecord();
     }
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockEspecialidadesService.getAllActive(any(Pageable.class), any(Especialidades.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(validEspecialidadesRecord)));
+        given(mockEspecialidadService.getAllActive(any(Pageable.class), any(Especialidad.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(validEspecialidadRecord)));
 
         mockMvc.perform(
                 get("/api/core/especialidades")
-                        .param("especialidadesName", "PE")
+                        .param("especialidadName", "PE")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
 
     @Test
     void getById_success() throws Exception {
-        given(mockEspecialidadesService.findById(anyInt()))
-                .willReturn(validEspecialidadesRecord);
+        given(mockEspecialidadService.findById(anyInt()))
+                .willReturn(validEspecialidadRecord);
 
         mockMvc.perform(
                 get("/api/core/especialidades/1")
-                        .param("especialidadesName", "PE")
+                        .param("especialidadName", "PE")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

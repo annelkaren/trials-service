@@ -13,27 +13,27 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EspecialidadesService {
-    private final EspecialidadesRepository especialidadesRepository;
+public class EspecialidadService {
+    private final EspecialidadRepository especialidadRepository;
 
     @Transactional(readOnly = true)
-    public Page<EspecialidadesRecord> getAllActive(Pageable pageable, Especialidades example) {
+    public Page<EspecialidadRecord> getAllActive(Pageable pageable, Especialidad example) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<Especialidades> page = especialidadesRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
-        List<EspecialidadesRecord> list = page.getContent().stream()
-                .map(m -> new EspecialidadesRecord(m.getId(), m.getNombre()))
+        Page<Especialidad> page = especialidadRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
+        List<EspecialidadRecord> list = page.getContent().stream()
+                .map(m -> new EspecialidadRecord(m.getId(), m.getNombre()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
-    public EspecialidadesRecord findById(Integer id) {
-        Especialidades especialidades = especialidadesRepository.findByIdAndEstado(id, Estado.ACTIVE)
+    public EspecialidadRecord findById(Integer id) {
+        Especialidad especialidad = especialidadRepository.findByIdAndEstado(id, Estado.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Especialidad de Juzgado no encontrada", "especialidadId"));
-        return new EspecialidadesRecord(especialidades.getId(), especialidades.getNombre());
+        return new EspecialidadRecord(especialidad.getId(), especialidad.getNombre());
     }
 
 }

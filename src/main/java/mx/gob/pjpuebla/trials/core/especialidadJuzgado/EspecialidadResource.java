@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/core/especialidades")
 @SecurityRequirement(name = "Keycloak")
-public class EspecialidadesResource {
-    private final EspecialidadesService especialidadesService;
+public class EspecialidadResource {
+    private final EspecialidadService especialidadService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<EspecialidadesRecord> getAll(@PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "especialidadesNombre", required = false) String especialidadesNombre) {
-        return especialidadesService.getAllActive(pageable, new Especialidades().setNombre(especialidadesNombre));
+    public Page<EspecialidadRecord> getAll(@PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "especialidadNombre", required = false) String especialidadNombre) {
+        return especialidadService.getAllActive(pageable, new Especialidad().setNombre(especialidadNombre));
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public EspecialidadesRecord getById(@PathVariable Integer id) {
-        return especialidadesService.findById(id);
+    public EspecialidadRecord getById(@PathVariable Integer id) {
+        return especialidadService.findById(id);
     }
 
 

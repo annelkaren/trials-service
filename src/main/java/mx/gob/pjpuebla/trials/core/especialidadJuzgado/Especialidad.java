@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_ESPECIALIDADES")
-public class Especialidades implements Serializable, Auditable {
+public class Especialidad implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEspecialidades")

@@ -5,26 +5,26 @@ import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.time.LocalDateTime;
 
-public class EspecialidadesSetUp {
+public class EspecialidadSetUp {
 
-    private EspecialidadesSetUp() {
+    private EspecialidadSetUp() {
     }
 
-    public static Especialidades createEspecialidades() {
-        Especialidades especialidades = new Especialidades()
+    public static Especialidad createEspecialidad() {
+        Especialidad especialidad = new Especialidad()
                 .setId(1)
                 .setNombre("Juzgado Especializado en Juicios")
                 .setEstado(Estado.ACTIVE)
                 .setVersion(0);
-        especialidades.setAudit(new Audit(LocalDateTime.now(),
+        especialidad.setAudit(new Audit(LocalDateTime.now(),
                                             LocalDateTime.now(),
                                             "6b13785f-d213-4585-a76b-437ffe57c9c7",
                                             "6b13785f-d213-4585-a76b-437ffe57c9c7"));
-        return especialidades;
+        return especialidad;
     }
 
-    public static EspecialidadesRecord createEspecialidadesRecord(){
-        return new EspecialidadesRecord(1, "Juzgado Especializado en Juicios");
+    public static EspecialidadRecord createEspecialidadRecord(){
+        return new EspecialidadRecord(1, "Juzgado Especializado en Juicios");
     }
 
 }

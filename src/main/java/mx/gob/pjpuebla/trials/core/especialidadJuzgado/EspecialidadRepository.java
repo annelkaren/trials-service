@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EspecialidadesRepository extends JpaRepository<Especialidades, Integer> {
+public interface EspecialidadRepository extends JpaRepository<Especialidad, Integer> {
 
-    Optional<Especialidades> findByIdAndEstado(Integer integer, Estado estado);
+    Optional<Especialidad> findByIdAndEstado(Integer integer, Estado estado);
 
 }

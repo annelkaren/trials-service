@@ -16,63 +16,63 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.especialidadJuzgado.EspecialidadesSetUp.createEspecialidades;
+import static mx.gob.pjpuebla.trials.core.especialidadJuzgado.EspecialidadSetUp.createEspecialidad;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class EspecialidadesServiceTest {
+class EspecialidadServiceTest {
 
     @Mock
-    EspecialidadesRepository mockEspecialidadesRepository;
+    EspecialidadRepository mockEspecialidadRepository;
 
     @InjectMocks
-    EspecialidadesService target;
+    EspecialidadService target;
 
-    private Especialidades validEspecialidades;
+    private Especialidad validEspecialidad;
 
     @BeforeEach
     public void setUp() {
-        validEspecialidades = createEspecialidades();
+        validEspecialidad = createEspecialidad();
     }
 
     @Test
     void getAll_return_page() {
-        List<Especialidades> listPage = Collections.singletonList(validEspecialidades);
-        given(mockEspecialidadesRepository.findAll(any(Example.class), any(PageRequest.class)))
+        List<Especialidad> listPage = Collections.singletonList(validEspecialidad);
+        given(mockEspecialidadRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
-        Page<EspecialidadesRecord> page = target.getAllActive(PageRequest.of(1, listPage.size()), validEspecialidades);
+        Page<EspecialidadRecord> page = target.getAllActive(PageRequest.of(1, listPage.size()), validEspecialidad);
 
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("id", validEspecialidades.getId())
-                .hasFieldOrPropertyWithValue("nombre", validEspecialidades.getNombre());
+                .hasFieldOrPropertyWithValue("id", validEspecialidad.getId())
+                .hasFieldOrPropertyWithValue("nombre", validEspecialidad.getNombre());
     }
 
     @Test
     void getById_return_especialidad() {
-        given(mockEspecialidadesRepository.findByIdAndEstado(validEspecialidades.getId(), validEspecialidades.getEstado()))
-                .willReturn(Optional.ofNullable(validEspecialidades));
+        given(mockEspecialidadRepository.findByIdAndEstado(validEspecialidad.getId(), validEspecialidad.getEstado()))
+                .willReturn(Optional.ofNullable(validEspecialidad));
 
-        EspecialidadesRecord er = target.findById(validEspecialidades.getId());
-        assertThat(er).isOfAnyClassIn(EspecialidadesRecord.class)
-                .hasFieldOrPropertyWithValue("id", validEspecialidades.getId())
-                .hasFieldOrPropertyWithValue("nombre", validEspecialidades.getNombre());
+        EspecialidadRecord er = target.findById(validEspecialidad.getId());
+        assertThat(er).isOfAnyClassIn(EspecialidadRecord.class)
+                .hasFieldOrPropertyWithValue("id", validEspecialidad.getId())
+                .hasFieldOrPropertyWithValue("nombre", validEspecialidad.getNombre());
     }
 
     @Test
     void getById_return_not_found() {
-        given(mockEspecialidadesRepository.findByIdAndEstado(validEspecialidades.getId(), validEspecialidades.getEstado()))
+        given(mockEspecialidadRepository.findByIdAndEstado(validEspecialidad.getId(), validEspecialidad.getEstado()))
                 .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
           NotFoundException.class,
                 () -> {
-                    target.findById(validEspecialidades.getId());
+                    target.findById(validEspecialidad.getId());
                 }
         );
 
