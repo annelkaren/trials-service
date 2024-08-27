@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
+package mx.gob.pjpuebla.trials.core.especialidades;
 
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.Estado;

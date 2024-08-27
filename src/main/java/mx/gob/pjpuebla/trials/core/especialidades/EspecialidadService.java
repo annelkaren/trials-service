@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
+package mx.gob.pjpuebla.trials.core.especialidades;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

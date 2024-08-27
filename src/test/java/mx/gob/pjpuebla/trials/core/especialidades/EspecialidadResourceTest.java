@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
+package mx.gob.pjpuebla.trials.core.especialidades;
 
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.BeforeEach;

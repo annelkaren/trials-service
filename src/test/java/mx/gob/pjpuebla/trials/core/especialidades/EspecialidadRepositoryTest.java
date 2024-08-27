@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
+package mx.gob.pjpuebla.trials.core.especialidades;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.especialidadJuzgado.EspecialidadSetUp.createEspecialidad;
+import static mx.gob.pjpuebla.trials.core.especialidades.EspecialidadSetUp.createEspecialidad;
 import static org.assertj.core.api.Assertions.assertThat;
 
 

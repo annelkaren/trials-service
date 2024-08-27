@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
+package mx.gob.pjpuebla.trials.core.especialidades;
 
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
