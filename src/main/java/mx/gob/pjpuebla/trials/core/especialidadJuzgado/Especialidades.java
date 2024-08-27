@@ -2,16 +2,17 @@ package mx.gob.pjpuebla.trials.core.especialidadJuzgado;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 
@@ -35,15 +36,16 @@ public class Especialidades implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @NotNull
-    @Size(min = 5, max = 250)
+    @NotBlank
+    @Size(min = 3, max = 250)
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
-    @Pattern(regexp = "A|I|D")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 
