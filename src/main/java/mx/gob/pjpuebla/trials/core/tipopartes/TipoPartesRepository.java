@@ -9,8 +9,6 @@ import java.util.Optional;
 @Repository
 public interface TipoPartesRepository extends JpaRepository<TipoPartes, Integer> {
 
-    Optional<TipoPartes> findByIdAndEstado(Integer integer, Estado estado);
-
     Optional<TipoPartes> findByMateriaId(Integer integer);
 
 }
