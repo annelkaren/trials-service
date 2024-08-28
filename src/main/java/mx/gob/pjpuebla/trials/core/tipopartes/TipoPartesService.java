@@ -2,13 +2,9 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
-import mx.gob.pjpuebla.trials.util.Estado;
-import mx.gob.pjpuebla.trials.util.Response;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
 
 import java.util.List;
 
@@ -31,27 +27,15 @@ public class TipoPartesService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    public Response findById(Integer id) {
-        Response response = new Response();
-        try {
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-            response.setData(tipoPartesRepository.findById(id).orElse(null));
-        } catch (Exception ex) {
-            log.error("findById ", ex);
-            response.setMessage("Excepción. Error al obtener tipo partes id");
-        }
-        return response;
+    public TipoPartesRecord findById(Integer id) {
+        TipoPartes tipoPartes = tipoPartesRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrada", "materiaId"));
+        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre());
     }
 
-    public Response findByMateriaId(Integer materiaId) {
-        Response response = new Response();
-        try {
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-            response.setData(tipoPartesRepository.findByMateriaId(materiaId));
-        } catch (Exception ex) {
-            log.error("findByMateriaId ", ex);
-            response.setMessage("Excepción. Error al obtener tipo partes por materia id");
-        }
-        return response;
+    public TipoPartesRecord findByMateriaId(Integer materiaId) {
+        TipoPartes tipoPartes = tipoPartesRepository.findByMateriaId(materiaId)
+                .orElseThrow(() -> new NotFoundException("Tipo Partes no encontrada", "materiaId"));
+        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre());
     }
 }

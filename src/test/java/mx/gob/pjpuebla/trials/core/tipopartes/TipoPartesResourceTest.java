@@ -1,50 +1,91 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
-import mx.gob.pjpuebla.trials.core.listavalor.ListaValorResource;
-import mx.gob.pjpuebla.trials.util.Response;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaResource;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 
+import java.util.Collections;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(ListaValorResource.class)
-@MockBean(SecurityFilterChain.class)
-public class TipoPartesResourceTest {
-
-    @Autowired
-    public MockMvc mockMvc;
+@WebMvcTest(MateriaResource.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
+class TipoPartesResourceTest {
 
     @MockBean
-    TipoPartesService tipopartesService;
+    private TipoPartesService mockTipoPartesServices;
 
-    @Test
-    public void getById() throws Exception {
-        Response response = new Response((TipoPartes) createTipoPartes());
-        given(tipopartesService.findById(anyInt())).willReturn(response);
+    @Autowired
+    private MockMvc mockMvc;
 
-        TipoPartes entity = (TipoPartes) response.getData();
-        mockMvc.perform(get("/api/core/tipopartes/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(entity.getId()))
-                .andExpect(jsonPath("$.data.nombre").value(entity.getNombre()));
+    private TipoPartesRecord validTipoPartesRecord;
+
+    @BeforeEach
+    void setUp() {
+        validTipoPartesRecord = TipoPartesSetUp.createTipoPartesRecord();
     }
 
-    private TipoPartes createTipoPartes() {
-        return new TipoPartes()
-                .setEstado(                     "A")
-                .setNombre(RandomStringUtils.random(5, true, true));
+    @org.junit.jupiter.api.Test
+    void getAllByNameAndActive_success() throws Exception {
+        given(mockTipoPartesServices.getAll(any(Pageable.class), any(TipoPartes.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(validTipoPartesRecord)));
+
+        mockMvc.perform(
+                get("/api/core/tipopartes")
+                        .param("tipoPartesName", "PE")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @org.junit.jupiter.api.Test
+    void getById_success() throws Exception {
+        given(mockTipoPartesServices.findById(anyInt()))
+                .willReturn(validTipoPartesRecord);
+
+        mockMvc.perform(
+                get("/api/core/tipopartes/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @org.junit.jupiter.api.Test
+    void getById_not_found() throws Exception {
+        given(mockTipoPartesServices.findById(anyInt()))
+                .willThrow(NotFoundException.class);
+
+        mockMvc.perform(
+                get("/api/core/tipopartes/0")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getById_invalid() throws Exception {
+        given(mockTipoPartesServices.findById(anyInt()))
+                .willThrow(MethodArgumentTypeMismatchException.class);
+
+        mockMvc.perform(
+                get("/api/core/tipopartes/A")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 }

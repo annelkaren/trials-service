@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.materias.Materia;

@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,17 +17,16 @@ public class TipoPartesResource {
     @GetMapping
     public Page<TipoPartesRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
                                          @RequestParam(value = "tipoPartesNombre", required = false) String tipoPartesNombre) {
-
         return tipoPartesService.getAll(pageable,  new TipoPartes().setNombre(tipoPartesNombre));
     }
 
     @GetMapping("/{id}")
-    public Response getById(@PathVariable Integer id) {
+    public TipoPartesRecord getById(@PathVariable Integer id) {
         return this.tipoPartesService.findById(id);
     }
 
-    @GetMapping("materias/{materiaId}")
-    public Response getByMateriaId(@PathVariable Integer materiaId) {
+    @GetMapping("/materias/{materiaId}")
+    public TipoPartesRecord getByMateriaId(@PathVariable Integer materiaId) {
         return this.tipoPartesService.findByMateriaId(materiaId);
     }
 }

@@ -19,16 +19,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.validateMockitoUsage;
 
 @ExtendWith(MockitoExtension.class)
 class TipoPartesServiceTest {
 
     @Mock
-    public TipoPartesRepository mockTipoPartesRepository;
+    TipoPartesRepository mockTipoPartesRepository;
 
     @InjectMocks
-    public TipoPartesService target;
+    TipoPartesService target;
 
     private TipoPartes validTipoPartes;
 
