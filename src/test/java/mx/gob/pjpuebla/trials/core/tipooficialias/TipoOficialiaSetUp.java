@@ -10,7 +10,7 @@ public class TipoOficialiaSetUp {
 
     }
 
-    public static TipoOficialias CreatetipoOficialia(){
+    public static TipoOficialias createtipoOficialia(){
         TipoOficialias tipoOficialias = new TipoOficialias()
                 .setId(1)
                 .setNombre("Común")

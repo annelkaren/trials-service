@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.CreateTipoSistema;
+import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +31,7 @@ class TipoSistemaServiceTest {
 
     @BeforeEach
     public void setUp() {
-        validTipoSistema = CreateTipoSistema();
+        validTipoSistema = createTipoSistema();
     }
 
     @Test

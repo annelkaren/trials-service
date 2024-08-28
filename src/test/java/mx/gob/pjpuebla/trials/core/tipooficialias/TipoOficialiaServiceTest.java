@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-import static mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp.CreatetipoOficialia;
+import static mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp.createtipoOficialia;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -30,7 +30,7 @@ class TipoOficialiaServiceTest {
 
     @BeforeEach
     public void setUp() {
-        validTipoOficialias = CreatetipoOficialia();
+        validTipoOficialias = createtipoOficialia();
     }
 
     @Test

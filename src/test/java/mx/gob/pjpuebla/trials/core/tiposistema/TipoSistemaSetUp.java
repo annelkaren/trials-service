@@ -9,7 +9,7 @@ public class TipoSistemaSetUp {
     private TipoSistemaSetUp(){
 
     }
-    public static TipoSistema CreateTipoSistema(){
+    public static TipoSistema createTipoSistema(){
         TipoSistema tipoSistema = new TipoSistema()
                 .setId(1)
                 .setNombre("Tradicional")
