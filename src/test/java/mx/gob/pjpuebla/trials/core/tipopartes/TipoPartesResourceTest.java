@@ -26,13 +26,13 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(MateriaResource.class)
+@WebMvcTest(TipoPartesResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 class TipoPartesResourceTest {
 
     @MockBean
-    private TipoPartesService mockTipoPartesServices;
+    private TipoPartesService mockTipoPartesService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,9 +44,9 @@ class TipoPartesResourceTest {
         validTipoPartesRecord = TipoPartesSetUp.createTipoPartesRecord();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockTipoPartesServices.getAll(any(Pageable.class), any(TipoPartes.class)))
+        given(mockTipoPartesService.getAll(any(Pageable.class), any(TipoPartes.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(validTipoPartesRecord)));
 
         mockMvc.perform(
@@ -58,7 +58,7 @@ class TipoPartesResourceTest {
 
     @org.junit.jupiter.api.Test
     void getById_success() throws Exception {
-        given(mockTipoPartesServices.findById(anyInt()))
+        given(mockTipoPartesService.findById(anyInt()))
                 .willReturn(validTipoPartesRecord);
 
         mockMvc.perform(
@@ -69,7 +69,7 @@ class TipoPartesResourceTest {
 
     @org.junit.jupiter.api.Test
     void getById_not_found() throws Exception {
-        given(mockTipoPartesServices.findById(anyInt()))
+        given(mockTipoPartesService.findById(anyInt()))
                 .willThrow(NotFoundException.class);
 
         mockMvc.perform(
@@ -80,7 +80,7 @@ class TipoPartesResourceTest {
 
     @Test
     void getById_invalid() throws Exception {
-        given(mockTipoPartesServices.findById(anyInt()))
+        given(mockTipoPartesService.findById(anyInt()))
                 .willThrow(MethodArgumentTypeMismatchException.class);
 
         mockMvc.perform(
