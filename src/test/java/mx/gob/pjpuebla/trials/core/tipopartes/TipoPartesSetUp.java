@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.Estado;
 
@@ -14,7 +16,7 @@ public class TipoPartesSetUp {
         TipoPartes tipoPartes = new TipoPartes()
                 .setId(1)
                 .setNombre("Actor")
-                .setEstado("A")
+                .setEstado(Estado.ACTIVE)
                 .setVersion(0);
         tipoPartes.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return tipoPartes;

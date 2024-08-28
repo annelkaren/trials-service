@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Estado;
 import mx.gob.pjpuebla.trials.util.Response;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,18 +51,18 @@ class TipoPartesServiceTest {
 
     @Test
     void getById_return_tipoPartes() {
-        given(mockTipoPartesRepository.findByTipoPartesId(validTipoPartes.getId()))
+        given(mockTipoPartesRepository.findById(validTipoPartes.getId()))
                 .willReturn(Optional.ofNullable(validTipoPartes));
 
-        TipoPartesRecord tpr = target.findById(validTipoPartes.getId());
-        assertThat(tpr).isOfAnyClassIn(MateriaRecord.class)
+        TipoPartesRecord mr = target.findById(validTipoPartes.getId());
+        assertThat(mr).isOfAnyClassIn(TipoPartesRecord.class)
                 .hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
                 .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre());
     }
 
     @Test
     void findByIdError() {
-        given(mockTipoPartesRepository.findByTipoPartesId(validTipoPartes.getId()))
+        given(mockTipoPartesRepository.findById(validTipoPartes.getId()))
                 .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
@@ -77,7 +78,7 @@ class TipoPartesServiceTest {
     private TipoPartes createTipoPartes() {
         return new TipoPartes()
                 .setId(new Random().nextInt())
-                .setEstado("A")
+                .setEstado(Estado.ACTIVE)
                 .setNombre(RandomStringUtils.random(5, true, true));
     }
 }
