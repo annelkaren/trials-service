@@ -2,28 +2,27 @@ package mx.gob.pjpuebla.trials.core.organismos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.estadoCivil.EstadoCivil;
-import mx.gob.pjpuebla.trials.util.Response;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/core/organismos")
 @SecurityRequirement(name = "Keycloak")
 public class OrganismoResource {
     private final OrganismoService organismoService;
 
-    @GetMapping
-    public List<Organismo> getAll(@PageableDefault Pageable pageable){
-        return this.organismoService.getAll(pageable);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OrganismoRecord> getAll(
+            @PageableDefault Pageable pageable,
+            @RequestParam(value = "organismoNombre", required = false) String EstadoOrganismos
+    ){
+        Organismo example = new Organismo().setNombre(EstadoOrganismos);
+        return organismoService.getAll(pageable, example);
     }
 
 }

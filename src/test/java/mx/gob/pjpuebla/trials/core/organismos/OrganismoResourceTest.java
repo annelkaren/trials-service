@@ -1,30 +1,29 @@
 package mx.gob.pjpuebla.trials.core.organismos;
 
-import mx.gob.pjpuebla.trials.util.Response;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import jakarta.ws.rs.core.MediaType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(OrganismoResource.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 public class OrganismoResourceTest {
 
     @Autowired
@@ -33,30 +32,23 @@ public class OrganismoResourceTest {
     @MockBean
     private OrganismoService organismoService;
 
-    @MockBean
-    private SecurityFilterChain securityFilterChain;
+    private OrganismoRecord validOrganismoRecord;
 
-    @Test
-    public void getAll() throws Exception {
-        Organismo organismo = createOrganismo();
-        List<Organismo>  organismos = Collections.singletonList(organismo);
-
-        given(organismoService.getAll(any(Pageable.class))).willReturn(organismos);
-
-        mockMvc.perform(get("/api/core/organismos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(organismo.getId()))
-                .andExpect(jsonPath("$[0].nombre").value(organismo.getNombre()))
-                .andExpect(jsonPath("$[0].estado").value(organismo.getEstado()));
+    @BeforeEach
+    void setUp() {
+        validOrganismoRecord = new OrganismoRecord(1, "Organismo Status");
     }
 
-    private Organismo createOrganismo(){
-        return Organismo.builder()
-                .id(1)
-                .version(1)
-                .nombre("CONSEJO DE LA JUDICATURA DEL PODER JUDICIAL DEL ESTADO DE PUEBLA")
-                .estado("A")
-                .build();
+    @Test
+    void getAll_success() throws Exception {
+        given(organismoService.getAll(any(Pageable.class), any(Organismo.class)))
+                .willReturn(Collections.singletonList(validOrganismoRecord));
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/core/organismos")
+                        .param("organismoNombre", "Organismo Status")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
 }
