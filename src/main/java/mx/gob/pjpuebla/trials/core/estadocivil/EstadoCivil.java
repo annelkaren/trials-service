@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;

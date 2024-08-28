@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.tipooficialias;
 
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,13 +14,11 @@ import java.util.List;
 
 import static mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp.CreatetipoOficialia;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class TipoOficialiaServiceTest {
+class TipoOficialiaServiceTest {
 
     @Mock
     public TipoOficialiasRepository mockTipoOficialiasRepository;
@@ -53,17 +50,4 @@ public class TipoOficialiaServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", validTipoOficialias.getNombre());
     }
 
-    @Test
-    void getAll_return_not_found() {
-        when(mockTipoOficialiasRepository.findAll(any(Example.class), any(Pageable.class)))
-                .thenReturn(Page.empty());
-
-        NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> target.getAll(PageRequest.of(0, 1), new TipoOficialias())
-        );
-
-        assertThat(exception.getMessage()).contains("Tipo Oficialias no encontrados");
-
-    }
 }

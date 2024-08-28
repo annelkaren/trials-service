@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.assertj.core.api.Assertions;

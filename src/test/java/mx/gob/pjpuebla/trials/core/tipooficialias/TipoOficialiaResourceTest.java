@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TipoOficialiaResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-public class TipoOficialiaResourceTest {
+class TipoOficialiaResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,7 +39,7 @@ public class TipoOficialiaResourceTest {
 
     @BeforeEach
     void setUp() {
-        validTipoOficialiaRecord = new TipoOficialiaRecord(1, "TipoOficialia Status");
+        validTipoOficialiaRecord = TipoOficialiaSetUp.createTipoOficialiaRecord();
     }
 
     @Test

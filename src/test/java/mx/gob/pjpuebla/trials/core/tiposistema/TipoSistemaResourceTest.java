@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TipoSistemaResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-public class TipoSistemaResourceTest {
+class TipoSistemaResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,7 +37,7 @@ public class TipoSistemaResourceTest {
 
     @BeforeEach
     void setUp() {
-        validTipoSistemaRecord = new TipoSistemaRecord(1, "TipoSistema Status");
+        validTipoSistemaRecord = TipoSistemaSetUp.createTipoSistemaRecord();
     }
 
     @Test

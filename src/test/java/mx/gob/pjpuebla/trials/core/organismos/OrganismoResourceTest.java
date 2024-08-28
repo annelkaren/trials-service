@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(OrganismoResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-public class OrganismoResourceTest {
+class OrganismoResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,7 +36,7 @@ public class OrganismoResourceTest {
 
     @BeforeEach
     void setUp() {
-        validOrganismoRecord = new OrganismoRecord(1, "Organismo Status");
+        validOrganismoRecord = OrganismoSetup.createEstadoCivilRecord();
     }
 
     @Test

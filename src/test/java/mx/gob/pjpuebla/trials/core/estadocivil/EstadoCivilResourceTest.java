@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 
 import jakarta.ws.rs.core.MediaType;
@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Collections;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(EstadoCivilResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-public class EstadoCivilResourceTest {
+class EstadoCivilResourceTest {
 
     @MockBean
     private EstadoCivilService mockEstadoCivilService;
@@ -36,7 +35,7 @@ public class EstadoCivilResourceTest {
 
     @BeforeEach
     void setUp() {
-        validEstadoCivilRecord = new EstadoCivilRecord(1, "Civil Status");
+        validEstadoCivilRecord = EstadoCivilSetUp.createEstadoCivilRecord();
     }
 
     @Test

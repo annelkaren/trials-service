@@ -1,16 +1,17 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class EstadoCivilService {
 
     private final EstadoCivilRepository estadoCivilRepository;
@@ -23,10 +24,6 @@ public class EstadoCivilService {
 
         Example<EstadoCivil> exampleQuery = Example.of(example.setEstado("A"), exampleMatcher);
         Page<EstadoCivil> page = estadoCivilRepository.findAll(exampleQuery, pageable);
-
-        if (page.isEmpty()) {
-            throw new NotFoundException("Estados Civiles no encontrados", "");
-        }
 
         return page.getContent().stream()
                 .map(m -> new EstadoCivilRecord(m.getId(), m.getNombre()))

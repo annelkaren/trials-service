@@ -1,6 +1,5 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,15 +11,13 @@ import org.springframework.data.domain.*;
 import java.util.Collections;
 import java.util.List;
 
-import static mx.gob.pjpuebla.trials.core.estadoCivil.EstadoCivilSetUp.createEstadoCivil;
+import static mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp.createEstadoCivil;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class EstadoCivilServiceTest {
+class EstadoCivilServiceTest {
 
     @Mock
     private EstadoCivilRepository mockEstadoCivilRepository;
@@ -50,19 +47,6 @@ public class EstadoCivilServiceTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", validEstadoCivil.getId())
                 .hasFieldOrPropertyWithValue("nombre", validEstadoCivil.getNombre());
-    }
-
-    @Test
-    void getAll_return_not_found() {
-        when(mockEstadoCivilRepository.findAll(any(Example.class), any(Pageable.class)))
-                .thenReturn(Page.empty());
-
-        NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> target.getAll(PageRequest.of(0, 1), new EstadoCivil())
-        );
-
-        assertThat(exception.getMessage()).contains("Estados Civiles no encontrados");
     }
 
 }

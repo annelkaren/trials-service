@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.organismos;
 
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,15 +11,13 @@ import org.springframework.data.domain.*;
 
 import java.util.*;
 
-import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetup.CreateOrganismo;
+import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetup.createOrganismo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class OrganismoServiceTest {
+class OrganismoServiceTest {
 
 
     @Mock
@@ -33,7 +30,7 @@ public class OrganismoServiceTest {
 
     @BeforeEach
     public void setUp() {
-        validOrganismo = CreateOrganismo();
+        validOrganismo = createOrganismo();
     }
 
     @Test
@@ -50,18 +47,6 @@ public class OrganismoServiceTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", validOrganismo.getId())
                 .hasFieldOrPropertyWithValue("nombre", validOrganismo.getNombre());
-    }
-
-    @Test
-    void getAll_return_not_found() {
-        when(organismoRepository.findAll(any(Example.class), any(Pageable.class)))
-                .thenReturn(Page.empty());
-
-        NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> target.getAll(PageRequest.of(0, 1), new Organismo())
-        );
-        assertThat(exception.getMessage()).contains("Organismos no encontrados");
     }
 
 }
