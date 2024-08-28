@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.Estado;
 

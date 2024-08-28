@@ -28,10 +28,15 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private TipoPartesRepository tipoPartesRepository;
+    @Autowired
+    private MateriaRepository materiaRepository;
 
     @Test
     void findByAllAndEstadoActive() {
         TipoPartes validTipoPartes = createTipoPartes();
+        Materia validMateria = createMateria();
+
+        validTipoPartes.setMateria(materiaRepository.save(validMateria));
         tipoPartesRepository.save(validTipoPartes);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
@@ -43,7 +48,11 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoActive() {
-        tipoPartesRepository.save(createTipoPartes());
+        TipoPartes validTipoPartes = createTipoPartes();
+        Materia validMateria = createMateria();
+
+        validTipoPartes.setMateria(materiaRepository.save(validMateria));
+        tipoPartesRepository.save(validTipoPartes);
         Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByIdAndEstado(1,Estado.ACTIVE);
         assertThat(tipoPartes).isPresent();
         assertThat(tipoPartes.get().getEstado()).isEqualTo(Estado.ACTIVE);
