@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.materias.*;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(MateriaResource.class)
+@WebMvcTest(PersonaResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 class PersonaResourceTest {
@@ -29,6 +28,8 @@ class PersonaResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    private Persona validPersona;
 
     private PersonaRecord validPersonaRecord;
 
@@ -69,4 +70,5 @@ class PersonaResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
+
 }

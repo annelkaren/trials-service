@@ -28,30 +28,19 @@ public class PersonaService {
         return new PersonaRecord(persona.getId(), persona.getNombre());
     }
 
-    public Response create(Persona persona) {
-        Response response = new Response();
-        try {
-            persona = this.personaRepository.save(persona);
-            response.setMessage("El registro fue guardado con el UUID: " + persona.getId());
-        } catch (Exception ex) {
-            LOG.error("create", ex);
-            response.setMessage("Error al guardar el registro.");
-        }
-        return response;
+    public Persona create(Persona persona) {
+        persona = this.personaRepository.save(persona);
+        return persona;
     }
 
-    public Response update(Persona persona) {
-        Response response = new Response();
+    public Persona update(Persona persona) {
         try {
             this.personaRepository.save(persona);
-            response.setMessage("Registro actualizado.");
         } catch (OptimisticLockingFailureException ex) {
-            LOG.error("update", ex);
-            response.setMessage("El registro fue actualizado o eliminado por otra transaccion");
+            LOG.error("update OptimisticLockingFailureException ", ex);
         } catch (Exception ex) {
             LOG.error("update", ex);
-            response.setMessage("Error al actualizar el registro.");
         }
-        return response;
+        return persona;
     }
 }

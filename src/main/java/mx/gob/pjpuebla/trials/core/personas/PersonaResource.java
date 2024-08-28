@@ -25,18 +25,12 @@ public class PersonaResource {
 
     @PostMapping
     @ResponseBody
-    public Response create(@RequestBody @Valid Persona persona, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new Response(bindingResult.getFieldErrors());
-        }
+    public Persona create(@RequestBody @Valid Persona persona) {
         return this.personaService.create(persona);
     }
 
     @PutMapping
-    public Response update(@RequestBody @Valid Persona persona, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new Response(bindingResult.getFieldErrors());
-        }
+    public Persona update(@RequestBody @Valid Persona persona) {
         return this.personaService.update(persona);
     }
 }

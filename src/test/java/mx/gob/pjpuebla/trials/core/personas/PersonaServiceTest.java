@@ -1,61 +1,52 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
-import mx.gob.pjpuebla.trials.core.materias.MateriaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.dao.OptimisticLockingFailureException;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
+import static mx.gob.pjpuebla.trials.core.personas.PersonaSetUp.createPersona;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class PersonaServiceTest {
 
     @Mock
-    MateriaRepository mockPersonaRepository;
+    PersonaRepository mockPersonaRepository;
 
     @InjectMocks
-    MateriaService target;
+    PersonaService target;
 
-    private Materia validPersona;
+    private Persona validPersona;
 
     @BeforeEach
     public void setUp() {
-        validPersona = createMateria();
+        validPersona = createPersona();
     }
 
     @Test
-    void getById_return_materia() {
-        given(mockPersonaRepository.findByIdAndEstado(validPersona.getId(), validPersona.getEstado()))
+    void getById_return_persona() {
+        given(mockPersonaRepository.findById(validPersona.getId()))
                 .willReturn(Optional.ofNullable(validPersona));
 
-        MateriaRecord mr = target.findById(validPersona.getId());
-        assertThat(mr).isOfAnyClassIn(MateriaRecord.class)
+        PersonaRecord mr = target.findById(validPersona.getId());
+        assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
     }
 
     @Test
     void getById_return_not_found() {
-        given(mockPersonaRepository.findByIdAndEstado(validPersona.getId(), validPersona.getEstado()))
+        given(mockPersonaRepository.findById(validPersona.getId()))
                 .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
@@ -67,5 +58,24 @@ class PersonaServiceTest {
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
 
+    }
+
+    @Test
+    void create() {
+        given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
+
+        Persona mr = target.create(validPersona);
+
+        assertThat(mr).isOfAnyClassIn(Persona.class).isNotNull();
+    }
+
+    @DisplayName("Should return a message when the repository throws an OptimisticLocking exception")
+    @Test
+    void update() {
+        given(mockPersonaRepository.save(validPersona)).willThrow(OptimisticLockingFailureException.class);
+
+        Persona mr = target.update(validPersona);
+
+        assertThat(mr).isOfAnyClassIn(Persona.class).isNotNull();
     }
 }

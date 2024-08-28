@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 
 import java.time.LocalDateTime;
