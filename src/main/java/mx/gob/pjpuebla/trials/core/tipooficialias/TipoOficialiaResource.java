@@ -23,7 +23,7 @@ public class TipoOficialiaResource {
             @PageableDefault Pageable pageable,
             @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaNombre
     ){
-        TipoOficialias example = new TipoOficialias().setNombre(tipoOficialiaNombre);
+        TipoOficialia example = new TipoOficialia().setNombre(tipoOficialiaNombre);
         return tipoOficialiaService.getAll(pageable, example);
     }
 

@@ -1,7 +1,7 @@
-package mx.gob.pjpuebla.trials.core.organismos;
-
+package mx.gob.pjpuebla.trials.core.tipooficialias;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.Estado;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -20,45 +20,46 @@ import java.util.List;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class OrganismosRepositoryTest extends AuditConfigTest {
+class TipoOficialiaRepositoryTest extends AuditConfigTest {
+
     @Autowired
-    private OrganismoRepository organismosRepository;
+    private TipoOficialiaRepository tipoOficialiaRepository;
 
     @BeforeEach
     @AfterEach
     public void deleteAll() {
-        organismosRepository.deleteAll();
+        tipoOficialiaRepository.deleteAll();
     }
 
-    @DisplayName("Should save a Organismo item with an id greater than 0")
+    @DisplayName("Should save a TipoOficialias item with an id greater than 0")
     @Test
     void save() {
-        Organismo organismo = createOrganismo();
+        TipoOficialia tipoOficialia = createTipoOficialias();
 
-        Organismo entity = organismosRepository.save(organismo);
+        TipoOficialia entity = tipoOficialiaRepository.save(tipoOficialia);
 
         Assertions.assertThat(entity).isNotNull();
         Assertions.assertThat(entity.getId()).isGreaterThan(0);
     }
 
-    @DisplayName("Should get a list with all the saved items of Organismos")
+    @DisplayName("Should get a list with all the saved items of TipoOficialias")
     @Test
     void findAll() {
-        Organismo entity1 = createOrganismo();
-        organismosRepository.save(entity1);
+        TipoOficialia entity1 = createTipoOficialias();
+        tipoOficialiaRepository.save(entity1);
 
-        Organismo entity2 = createOrganismo();
-        organismosRepository.save(entity2);
+        TipoOficialia entity2 = createTipoOficialias();
+        tipoOficialiaRepository.save(entity2);
 
-        List<Organismo> expectedList = Arrays.asList(entity2, entity2);
-        List<Organismo> list = organismosRepository.findAll();
+        List<TipoOficialia> expectedList = Arrays.asList(entity2, entity2);
+        List<TipoOficialia> list = tipoOficialiaRepository.findAll();
 
         Assertions.assertThat(list).isNotNull();
         Assertions.assertThat(list.size()).isEqualTo(expectedList.size());
     }
 
-    private Organismo createOrganismo() {
-        return Organismo.builder().estado("A").nombre(RandomStringUtils.random(8, true, false)).build();
+    private TipoOficialia createTipoOficialias() {
+        return TipoOficialia.builder().estado(Estado.ACTIVE).nombre(RandomStringUtils.random(8, true, false)).build();
     }
 
 }

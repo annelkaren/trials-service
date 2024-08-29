@@ -19,9 +19,9 @@ public class OrganismoResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrganismoRecord> getAll(
             @PageableDefault Pageable pageable,
-            @RequestParam(value = "organismoNombre", required = false) String EstadoOrganismos
+            @RequestParam(value = "organismoNombre", required = false) String estadoOrganismos
     ){
-        Organismo example = new Organismo().setNombre(EstadoOrganismos);
+        Organismo example = new Organismo().setNombre(estadoOrganismos);
         return organismoService.getAll(pageable, example);
     }
 

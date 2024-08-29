@@ -20,9 +20,9 @@ public class EstadoCivilResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EstadoCivilRecord> getAll(
             @PageableDefault Pageable pageable,
-            @RequestParam(value = "materiaNombre", required = false) String EstadoCivilNombre)
+            @RequestParam(value = "materiaNombre", required = false) String estadoCivilNombre)
     {
-        EstadoCivil example = new EstadoCivil().setNombre(EstadoCivilNombre);
+        EstadoCivil example = new EstadoCivil().setNombre(estadoCivilNombre);
         return estadoCivilService.getAll(pageable, example);
     }
 }

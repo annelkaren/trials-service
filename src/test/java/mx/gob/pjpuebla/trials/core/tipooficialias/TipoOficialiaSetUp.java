@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.tipooficialias;
 
 
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.Estado;
+
 import java.time.LocalDateTime;
 
 public class TipoOficialiaSetUp {
@@ -10,14 +12,14 @@ public class TipoOficialiaSetUp {
 
     }
 
-    public static TipoOficialias createtipoOficialia(){
-        TipoOficialias tipoOficialias = new TipoOficialias()
+    public static TipoOficialia createtipoOficialia(){
+        TipoOficialia tipoOficialia = new TipoOficialia()
                 .setId(1)
                 .setNombre("Común")
-                .setEstado("A")
+                .setEstado(Estado.ACTIVE) // setEstado("A")
                 .setVersion(1);
-        tipoOficialias.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
-        return tipoOficialias;
+        tipoOficialia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return tipoOficialia;
     }
 
     public static TipoOficialiaRecord createTipoOficialiaRecord(){

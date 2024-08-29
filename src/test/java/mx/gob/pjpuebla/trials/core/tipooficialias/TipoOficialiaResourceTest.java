@@ -44,7 +44,7 @@ class TipoOficialiaResourceTest {
 
     @Test
     void getAll_success() throws Exception {
-        given(tipoOficialiaService.getAll(any(Pageable.class), any(TipoOficialias.class)))
+        given(tipoOficialiaService.getAll(any(Pageable.class), any(TipoOficialia.class)))
                 .willReturn(Collections.singletonList(validTipoOficialiaRecord));
 
         mockMvc.perform(

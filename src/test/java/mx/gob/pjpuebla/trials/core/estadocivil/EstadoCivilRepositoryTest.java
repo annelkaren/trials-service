@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.Estado;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,7 @@ class EstadoCivilRepositoryTest extends AuditConfigTest {
 
         return EstadoCivil
                 .builder()
-                .estado("A")
+                .estado(Estado.ACTIVE) // estado("A")
                 .nombre(lista.get(0))
                 .build();
     }

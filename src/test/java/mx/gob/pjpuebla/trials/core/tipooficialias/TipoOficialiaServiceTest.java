@@ -21,33 +21,33 @@ import static org.mockito.BDDMockito.given;
 class TipoOficialiaServiceTest {
 
     @Mock
-    public TipoOficialiasRepository mockTipoOficialiasRepository;
+    public TipoOficialiaRepository mockTipoOficialiaRepository;
 
     @InjectMocks
     public TipoOficialiaService target;
 
-    private TipoOficialias validTipoOficialias;
+    private TipoOficialia validTipoOficialia;
 
     @BeforeEach
     public void setUp() {
-        validTipoOficialias = createtipoOficialia();
+        validTipoOficialia = createtipoOficialia();
     }
 
     @Test
     void getAll_return_list() {
-        List<TipoOficialias> listPage = Collections.singletonList(validTipoOficialias);
-        Page<TipoOficialias> page = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
+        List<TipoOficialia> listPage = Collections.singletonList(validTipoOficialia);
+        Page<TipoOficialia> page = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
 
-        given(mockTipoOficialiasRepository.findAll(any(Example.class), any(PageRequest.class)))
+        given(mockTipoOficialiaRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(page);
 
-        List<TipoOficialiaRecord> resultList = target.getAll(PageRequest.of(0, 1), validTipoOficialias);
+        List<TipoOficialiaRecord> resultList = target.getAll(PageRequest.of(0, 1), validTipoOficialia);
 
         assertThat(resultList)
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("id", validTipoOficialias.getId())
-                .hasFieldOrPropertyWithValue("nombre", validTipoOficialias.getNombre());
+                .hasFieldOrPropertyWithValue("id", validTipoOficialia.getId())
+                .hasFieldOrPropertyWithValue("nombre", validTipoOficialia.getNombre());
     }
 
 }

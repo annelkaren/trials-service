@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.tiposistema;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.Estado;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -58,7 +59,7 @@ class TipoSistemaRepositoryTest extends AuditConfigTest {
     }
 
     private TipoSistema createTipoSistema() {
-        return TipoSistema.builder().estado("A").nombre(RandomStringUtils.random(8, true, false)).build();
+        return TipoSistema.builder().estado(Estado.ACTIVE).nombre(RandomStringUtils.random(8, true, false)).build();
     }
 
 
