@@ -81,4 +81,15 @@ class TipoPartesServiceTest {
                 .setEstado(Estado.ACTIVE)
                 .setNombre(RandomStringUtils.random(5, true, true));
     }
+
+    /*@Test
+    void getByMateriaId_return_tipoPartes() {
+        given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
+                .willReturn(Optional.ofNullable(validTipoPartes));
+
+        TipoPartesRecord mr = target.findByMateriaId(validTipoPartes.getMateria().getId());
+        assertThat(mr).isOfAnyClassIn(TipoPartesRecord.class)
+                .hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
+                .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre());
+    }*/
 }

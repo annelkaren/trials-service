@@ -27,22 +27,16 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private TipoPartesRepository tipoPartesRepository;
-    //@Autowired
-    //private MateriaRepository materiaRepository;
+    @Autowired
+    private MateriaRepository materiaRepository;
 
     @Test
-    void findById(){
-        tipoPartesRepository.save(createTipoPartes());
-        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findById(1);
-        assertThat(tipoPartes).isPresent();
-    }
-
-    /*@Test
     void findByAllAndEstadoActive() {
         TipoPartes validTipoPartes = createTipoPartes();
         Materia validMateria = createMateria();
 
         validTipoPartes.setMateria(materiaRepository.save(validMateria));
+
         tipoPartesRepository.save(validTipoPartes);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
@@ -50,21 +44,20 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
 
         Page<TipoPartes> page = tipoPartesRepository.findAll(PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
+
     }
-    */
 
-
-    /*
     @Test
     void findByIdAndEstadoActive() {
-        TipoPartes validTipoPartes = createTipoPartes();
-        Materia validMateria = createMateria();
-        validTipoPartes.setMateria(materiaRepository.save(validMateria));
+        Materia materiaSave = materiaRepository.save(createMateria());
+        TipoPartes tipoPartesTemp = createTipoPartes();
 
-        tipoPartesRepository.save(validTipoPartes);
-        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findById(1);
+        tipoPartesTemp.setMateria(materiaSave);
+        TipoPartes save = tipoPartesRepository.save(tipoPartesTemp);
+
+        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByIdAndEstado(save.getId(), Estado.ACTIVE);
         assertThat(tipoPartes).isPresent();
         assertThat(tipoPartes.get().getEstado()).isEqualTo(Estado.ACTIVE);
-    }*/
+    }
 
 }
