@@ -5,12 +5,16 @@ import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.time.LocalDateTime;
 
+import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
+import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
+
+
 public class TipoJuicioSetUp {
 
     private TipoJuicioSetUp() {
     }
 
-    public static TipoJuicio createMateria() {
+    public static TipoJuicio createTipoJuicio() {
         TipoJuicio tipoJuicio = new TipoJuicio()
                 .setId(1)
                 .setNombre("Laboral")
@@ -27,7 +31,7 @@ public class TipoJuicioSetUp {
     }
 
     public static TipoJuicioRecord createTipoJuicioRecord() {
-        return new TipoJuicioRecord(1, "Laboral");
+        return new TipoJuicioRecord(1, "Laboral", createTipoSistema(), createMateria() );
     }
 
 }

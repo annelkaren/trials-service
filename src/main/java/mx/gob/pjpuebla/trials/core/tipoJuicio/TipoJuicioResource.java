@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core/tipo-juicio")
+@RequestMapping("/api/core/tipojuicio")
 @SecurityRequirement(name = "Keycloak")
 public class TipoJuicioResource {
 

@@ -25,7 +25,7 @@ public class TipoJuicioService {
 
         Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
-                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre()))
+                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), m.getTipoSistema(), m.getMateria()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -34,7 +34,7 @@ public class TipoJuicioService {
     public TipoJuicioRecord findById(Integer id) {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findByIdAndEstado(id, Estado.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Tipo de Juicio no encontrado", "tipoJuicioId"));
-        return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre());
+        return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(), tipoJuicio.getTipoSistema(), tipoJuicio.getMateria());
     }
 
 }
