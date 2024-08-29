@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class PersonaService {
 
     private final PersonaRepository personaRepository;
@@ -25,7 +26,7 @@ public class PersonaService {
     public PersonaRecord findById(Long id) {
         Persona persona = personaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
-        return new PersonaRecord(persona.getId(), persona.getNombre());
+        return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
     }
 
     public Persona create(Persona persona) {

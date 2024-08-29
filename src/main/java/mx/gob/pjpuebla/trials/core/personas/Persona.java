@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -28,9 +29,9 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @NotNull
     @Size(min = 3, max = 50)
@@ -44,6 +45,12 @@ public class Persona implements Serializable, Auditable {
 
     @Column(name = "S_APELLIDO_MATERNO")
     private String apellidoMaterno;
+
+    @Column(name = "S_PSEUDONIMO")
+    private String pseudonimo;
+
+    @Column(name = "B_PERSONAL_JUZGADO")
+    private Boolean personalJuzgado;
 
     @Column(name = "S_CURP")
     private String curp;

@@ -69,7 +69,6 @@ class PersonaServiceTest {
         assertThat(mr).isOfAnyClassIn(Persona.class).isNotNull();
     }
 
-    @DisplayName("Should return a message when the repository throws an OptimisticLocking exception")
     @Test
     void update() {
         given(mockPersonaRepository.save(validPersona)).willThrow(OptimisticLockingFailureException.class);

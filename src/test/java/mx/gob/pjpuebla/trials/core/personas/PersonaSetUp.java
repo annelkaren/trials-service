@@ -19,6 +19,6 @@ public class PersonaSetUp {
     }
 
     public static PersonaRecord createPersonaRecord() {
-        return new PersonaRecord(1L, "Alejandro");
+        return new PersonaRecord(1L, "Alejandro", "Diaz", "Torres", "Pseudonimo");
     }
 }
