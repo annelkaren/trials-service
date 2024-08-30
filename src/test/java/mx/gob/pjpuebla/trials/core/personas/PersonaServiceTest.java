@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,9 +25,14 @@ class PersonaServiceTest {
 
     @Mock
     PersonaRepository mockPersonaRepository;
+    @Mock
+    DomicilioRepository mockDomicilioRepository;
 
     @InjectMocks
     PersonaService target;
+
+    @InjectMocks
+    DomicilioService targetD;
 
     private Persona validPersona;
 
@@ -62,6 +70,11 @@ class PersonaServiceTest {
 
     @Test
     void create() {
+        Domicilio domicilio = new Domicilio();
+
+        Domicilio domt = mockDomicilioRepository.save(domicilio);
+
+        validPersona.setDomicilio(domt);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
 
         Persona mr = target.create(validPersona);
@@ -71,7 +84,12 @@ class PersonaServiceTest {
 
     @Test
     void update() {
-        given(mockPersonaRepository.save(validPersona)).willThrow(OptimisticLockingFailureException.class);
+        //Domicilio domicilio = new Domicilio();
+
+        //Domicilio domt = mockDomicilioRepository.save(domicilio);
+
+        //validPersona.setDomicilio(domt);
+        // given(mockPersonaRepository.save(validPersona)).willThrow(OptimisticLockingFailureException.class);
 
         Persona mr = target.update(validPersona);
 

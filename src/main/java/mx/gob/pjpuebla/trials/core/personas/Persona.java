@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -94,8 +95,9 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_ESTADO_NACIMIENTO")
     private String estadoNacimiento;
 
-    @Column(name = "FN_DOMICILIO")
-    private Long domicilio;
+    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private Domicilio domicilio;
 
     @Pattern(regexp = "[FM]")
     @Column(name = "S_PERSONA_FISCAL")
