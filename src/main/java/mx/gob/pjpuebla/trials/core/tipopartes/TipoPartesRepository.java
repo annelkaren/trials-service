@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,5 +13,4 @@ public interface TipoPartesRepository extends JpaRepository<TipoPartes, Integer>
     Optional<TipoPartes> findByIdAndEstado(Integer integer, Estado estado);
 
     Optional<TipoPartes> findByMateriaId(Integer integer);
-
 }

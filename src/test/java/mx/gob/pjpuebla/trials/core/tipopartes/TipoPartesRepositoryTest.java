@@ -9,15 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp.createTipoPartes;
+import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
@@ -37,6 +36,7 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
         Materia validMateria = createMateria();
 
         validTipoPartes.setMateria(materiaRepository.save(validMateria));
+
         tipoPartesRepository.save(validTipoPartes);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
@@ -44,16 +44,18 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
 
         Page<TipoPartes> page = tipoPartesRepository.findAll(PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
+
     }
 
     @Test
     void findByIdAndEstadoActive() {
-        TipoPartes validTipoPartes = createTipoPartes();
-        Materia validMateria = createMateria();
+        Materia materiaSave = materiaRepository.save(createMateria());
+        TipoPartes tipoPartesTemp = createTipoPartes();
 
-        validTipoPartes.setMateria(materiaRepository.save(validMateria));
-        tipoPartesRepository.save(validTipoPartes);
-        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByIdAndEstado(1,Estado.ACTIVE);
+        tipoPartesTemp.setMateria(materiaSave);
+        TipoPartes save = tipoPartesRepository.save(tipoPartesTemp);
+
+        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByIdAndEstado(save.getId(), Estado.ACTIVE);
         assertThat(tipoPartes).isPresent();
         assertThat(tipoPartes.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }

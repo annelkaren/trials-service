@@ -88,4 +88,15 @@ class TipoPartesResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
+
+    @Test
+    void getByMateriaId_success() throws Exception {
+        given(mockTipoPartesService.findByMateriaId(anyInt()))
+                .willReturn(validTipoPartesRecord);
+
+        mockMvc.perform(
+                get("/api/core/tipopartes/materias/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 }

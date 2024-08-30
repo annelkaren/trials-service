@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -79,6 +80,33 @@ class TipoPartesServiceTest {
         return new TipoPartes()
                 .setId(new Random().nextInt())
                 .setEstado(Estado.ACTIVE)
+                .setMateria(new Materia())
                 .setNombre(RandomStringUtils.random(5, true, true));
+    }
+
+    @Test
+    void getByMateriaId_return_tipoPartes() {
+        given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
+                .willReturn(Optional.ofNullable(validTipoPartes));
+
+        TipoPartesRecord mr = target.findByMateriaId(validTipoPartes.getMateria().getId());
+        assertThat(mr).isOfAnyClassIn(TipoPartesRecord.class)
+                .hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
+                .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre());
+    }
+
+    @Test
+    void findByMateriaIdError() {
+        given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
+                .willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    target.findByMateriaId(validTipoPartes.getMateria().getId());
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("TipoPartes no encontrada");
     }
 }
