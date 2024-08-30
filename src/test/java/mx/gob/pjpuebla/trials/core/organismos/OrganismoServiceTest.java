@@ -11,7 +11,7 @@ import org.springframework.data.domain.*;
 
 import java.util.*;
 
-import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetup.createOrganismo;
+import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetUp.createOrganismo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;

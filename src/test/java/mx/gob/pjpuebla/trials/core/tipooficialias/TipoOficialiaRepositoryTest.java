@@ -32,7 +32,7 @@ class TipoOficialiaRepositoryTest extends AuditConfigTest {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<TipoOficialia> page = tipoOficialiaRepository.findAll(Example.of(new TipoOficialia().setNombre("").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
+        Page<TipoOficialia> page = tipoOficialiaRepository.findAll(Example.of(new TipoOficialia().setNombre("").setEstado(Estado.ACTIVE),exampleMatcher),PageRequest.of(0, 20) );
         assertThat(page.get()).hasSize(1);
     }
 

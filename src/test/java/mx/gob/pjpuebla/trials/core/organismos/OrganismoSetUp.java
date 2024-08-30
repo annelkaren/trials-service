@@ -5,9 +5,9 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.time.LocalDateTime;
-public class OrganismoSetup {
+public class OrganismoSetUp {
 
-    private OrganismoSetup(){
+    private OrganismoSetUp(){
 
     }
 

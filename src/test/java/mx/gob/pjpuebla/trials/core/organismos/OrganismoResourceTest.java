@@ -36,7 +36,7 @@ class OrganismoResourceTest {
 
     @BeforeEach
     void setUp() {
-        validOrganismoRecord = OrganismoSetup.createEstadoCivilRecord();
+        validOrganismoRecord = OrganismoSetUp.createEstadoCivilRecord();
     }
 
     @Test

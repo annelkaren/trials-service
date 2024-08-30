@@ -12,7 +12,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetup.createOrganismo;
+import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetUp.createOrganismo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {

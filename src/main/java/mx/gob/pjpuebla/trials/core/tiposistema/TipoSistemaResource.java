@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 public class TipoSistemaResource {
     private final TipoSistemaService tipoSistemaService;
 
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TipoSistemaRecord> getAll(
             @PageableDefault Pageable pageable,
             @RequestParam(value = "tipoSistemaNombre", required = false) String tipoSistemaNombre
