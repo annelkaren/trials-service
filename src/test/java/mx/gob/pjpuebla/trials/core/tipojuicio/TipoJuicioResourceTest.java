@@ -1,10 +1,12 @@
-package mx.gob.pjpuebla.trials.core.tipoJuicio;
+package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -42,13 +44,53 @@ class TipoJuicioResourceTest {
     }
 
     @Test
-    void getAllByNameAndActive_success() throws Exception {
+    void getAllByNameAndActiveAndTipoSistemaNameAndMateriaName_success() throws Exception {
         given(mockTipoJuicioService.getAllActive(any(Pageable.class), any(TipoJuicio.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(validTipoJuicioRecord)));
 
         mockMvc.perform(
                 get("/api/core/tipojuicio")
                         .param("tipoJuicioName", "PE")
+                        .param("tipoSistemaNombre", "PE")
+                        .param("materiaNombre", "PE")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {"tipoJuicioName", "materiaNombre", "tipoSistemaNombre"})
+    void getAllByFieldAndActive_success(String field) throws Exception {
+        given(mockTipoJuicioService.getAllActive(any(Pageable.class), any(TipoJuicio.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(validTipoJuicioRecord)));
+
+        mockMvc.perform(
+                get("/api/core/tipojuicio")
+                        .param(field, "PE")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllByMateriaAndActive_success() throws Exception {
+        given(mockTipoJuicioService.getAllActive(any(Pageable.class), any(TipoJuicio.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(validTipoJuicioRecord)));
+
+        mockMvc.perform(
+                get("/api/core/tipojuicio")
+                        .param("materiaNombre", "PE")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllByTipoSistemaAndActive_success() throws Exception {
+        given(mockTipoJuicioService.getAllActive(any(Pageable.class), any(TipoJuicio.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(validTipoJuicioRecord)));
+
+        mockMvc.perform(
+                get("/api/core/tipojuicio")
+                        .param("tipoSistemaNombre", "PE")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

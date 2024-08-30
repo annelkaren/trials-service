@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.tipoJuicio;
+package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +16,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.tipoJuicio.TipoJuicioSetUp.createTipoJuicio;
+import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
+import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
+import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +37,7 @@ class TipoJuicioServiceTest {
 
     @BeforeEach
     public void setUp() {
-        validTipoJuicio = createTipoJuicio();
+        validTipoJuicio = createTipoJuicio(createTipoSistema(), createMateria());
     }
 
 
@@ -66,11 +68,11 @@ class TipoJuicioServiceTest {
     void getById_return_not_found() {
         given(mockTipoJuicioRepository.findByIdAndEstado(validTipoJuicio.getId(), validTipoJuicio.getEstado()))
                 .willReturn(Optional.empty());
-
+        Integer id = validTipoJuicio.getId();
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> {
-                    target.findById(validTipoJuicio.getId());
+                    target.findById(id);
                 }
         );
 

@@ -1,6 +1,5 @@
-package mx.gob.pjpuebla.trials.core.tipoJuicio;
+package mx.gob.pjpuebla.trials.core.tipojuicio;
 
-import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 

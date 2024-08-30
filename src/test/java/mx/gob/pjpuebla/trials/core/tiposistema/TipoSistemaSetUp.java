@@ -1,11 +1,8 @@
 package mx.gob.pjpuebla.trials.core.tiposistema;
 
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.time.LocalDateTime;
-
-import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 
 public class TipoSistemaSetUp {
 

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.tipoJuicio;
+package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.tipoJuicio.TipoJuicioSetUp.createTipoJuicio;
+import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -26,9 +26,11 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByAllAndEstadoActive() {
-        TipoJuicio validTipoJuicio = createTipoJuicio();
+        TipoJuicio validTipoJuicio = createTipoJuicio(null, null);
         tipoJuicioRepository.save(validTipoJuicio);
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching().withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase()).withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
         Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(new TipoJuicio().setNombre("Laboral").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
@@ -36,7 +38,7 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoActive() {
-        tipoJuicioRepository.save(createTipoJuicio());
+        tipoJuicioRepository.save(createTipoJuicio(null, null));
         Optional<TipoJuicio> tipoJuicio = tipoJuicioRepository.findByIdAndEstado(1, Estado.ACTIVE);
         assertThat(tipoJuicio).isPresent();
         assertThat(tipoJuicio.get().getEstado()).isEqualTo(Estado.ACTIVE);
