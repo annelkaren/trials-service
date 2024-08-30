@@ -145,7 +145,6 @@
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
 										<exclude>*domicilios</exclude>
-										<exclude>*personas</exclude>
 										<exclude>*tipopartes</exclude>
 										<exclude>*oficialias</exclude>
 									</excludes>

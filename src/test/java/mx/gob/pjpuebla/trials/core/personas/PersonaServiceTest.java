@@ -5,13 +5,11 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.util.Optional;
 
@@ -29,16 +27,18 @@ class PersonaServiceTest {
     DomicilioRepository mockDomicilioRepository;
 
     @InjectMocks
-    PersonaService target;
+    PersonaService personaService;
 
-    @InjectMocks
-    DomicilioService targetD;
+    @Mock
+    DomicilioService domicilioService;
 
     private Persona validPersona;
+    private Domicilio validDomicilio;
 
     @BeforeEach
     public void setUp() {
         validPersona = createPersona();
+        validDomicilio = new Domicilio();
     }
 
     @Test
@@ -46,7 +46,7 @@ class PersonaServiceTest {
         given(mockPersonaRepository.findById(validPersona.getId()))
                 .willReturn(Optional.ofNullable(validPersona));
 
-        PersonaRecord mr = target.findById(validPersona.getId());
+        PersonaRecord mr = personaService.findById(validPersona.getId());
         assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
@@ -60,7 +60,7 @@ class PersonaServiceTest {
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> {
-                    target.findById(validPersona.getId());
+                    personaService.findById(validPersona.getId());
                 }
         );
 
@@ -70,29 +70,31 @@ class PersonaServiceTest {
 
     @Test
     void create() {
-        Domicilio domicilio = new Domicilio();
+        validPersona.setDomicilio(validDomicilio);
+        given(domicilioService.save(validDomicilio))
+                .willReturn(validDomicilio);
+        given(mockPersonaRepository.save(validPersona))
+                .willReturn(validPersona);
 
-        Domicilio domt = mockDomicilioRepository.save(domicilio);
+        PersonaRecord response = personaService.create(validPersona);
 
-        validPersona.setDomicilio(domt);
-        given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
-
-        Persona mr = target.create(validPersona);
-
-        assertThat(mr).isOfAnyClassIn(Persona.class).isNotNull();
+        assertThat(response).isOfAnyClassIn(PersonaRecord.class)
+                .hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
     }
 
     @Test
     void update() {
-        //Domicilio domicilio = new Domicilio();
+        validPersona.setDomicilio(validDomicilio);
+        given(domicilioService.save(validDomicilio))
+                .willReturn(validDomicilio);
+        given(mockPersonaRepository.save(validPersona))
+                .willReturn(validPersona);
 
-        //Domicilio domt = mockDomicilioRepository.save(domicilio);
+        PersonaRecord response = personaService.update(validPersona);
 
-        //validPersona.setDomicilio(domt);
-        // given(mockPersonaRepository.save(validPersona)).willThrow(OptimisticLockingFailureException.class);
-
-        Persona mr = target.update(validPersona);
-
-        assertThat(mr).isOfAnyClassIn(Persona.class).isNotNull();
+        assertThat(response).isOfAnyClassIn(PersonaRecord.class)
+                .hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
     }
 }

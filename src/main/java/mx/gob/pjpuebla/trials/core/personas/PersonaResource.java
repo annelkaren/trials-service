@@ -25,12 +25,12 @@ public class PersonaResource {
 
     @PostMapping
     @ResponseBody
-    public Persona create(@RequestBody @Valid Persona persona) {
+    public PersonaRecord create(@RequestBody @Valid Persona persona) {
         return this.personaService.create(persona);
     }
 
     @PutMapping
-    public Persona update(@RequestBody @Valid Persona persona) {
+    public PersonaRecord update(@RequestBody @Valid Persona persona) {
         return this.personaService.update(persona);
     }
 }

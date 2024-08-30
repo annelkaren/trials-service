@@ -1,8 +1,6 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
-import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.slf4j.Logger;
@@ -17,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PersonaService {
 
     private final PersonaRepository personaRepository;
-    private final DomicilioRepository domicilioRepository;
     private static final Logger LOG = LoggerFactory.getLogger(PersonaService.class);
     private final DomicilioService domicilioService;
 
@@ -28,26 +25,20 @@ public class PersonaService {
         return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
     }
 
-    public Persona create(Persona persona) {
-
-        personaRepository.save(persona);
-        return persona;
+    public PersonaRecord create(Persona persona) {
+        persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+        persona = personaRepository.save(persona);
+        return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
     }
 
-    public Persona update(Persona persona) {
+    public PersonaRecord update(Persona persona) {
         try {
-            Domicilio domicilio = new Domicilio();
-
-
-            Domicilio domt = domicilioRepository.save(domicilio);
-
-            persona.setDomicilio(domt);
+            persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
             personaRepository.save(persona);
+            return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
         } catch (OptimisticLockingFailureException ex) {
             LOG.error("update OptimisticLockingFailureException ", ex);
-        } catch (Exception ex) {
-            LOG.error("update", ex);
+            throw new OptimisticLockingFailureException(ex.getMessage());
         }
-        return persona;
     }
 }
