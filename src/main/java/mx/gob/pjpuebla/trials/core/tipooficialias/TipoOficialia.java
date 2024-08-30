@@ -17,9 +17,6 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_TIPO_OFICIALIAS")
 public class TipoOficialia implements Serializable, Auditable {

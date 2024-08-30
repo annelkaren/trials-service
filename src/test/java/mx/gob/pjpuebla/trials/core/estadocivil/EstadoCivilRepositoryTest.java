@@ -2,20 +2,18 @@ package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import static mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp.createEstadoCivil;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest(properties = {
@@ -27,54 +25,14 @@ class EstadoCivilRepositoryTest extends AuditConfigTest {
     @Autowired
     private EstadoCivilRepository estadoCivilRepository;
 
-    @BeforeEach
-    @AfterEach
-    public void deleteAll() {
-        estadoCivilRepository.deleteAll();
-    }
-
-    @DisplayName("Should save a EstadoCivil item with an id greater than 0")
     @Test
-    void save() {
+    void getAllEstadoActive() {
         EstadoCivil estadoCivil = createEstadoCivil();
-
-        EstadoCivil entity = estadoCivilRepository.save(estadoCivil);
-
-        Assertions.assertThat(entity).isNotNull();
-        Assertions.assertThat(entity.getId()).isGreaterThan(0);
+        estadoCivilRepository.save(estadoCivil);
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
+        Page<EstadoCivil> page = estadoCivilRepository.findAll(Example.of(new EstadoCivil().setNombre("Soltero/a").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
+        assertThat(page.get()).hasSize(1);
     }
-
-    @DisplayName("Should get a list with all the saved items of EstadoCivil")
-    @Test
-    void findAll() {
-        EstadoCivil entity1 = createEstadoCivil();
-        estadoCivilRepository.save(entity1);
-
-        EstadoCivil entity2 = createEstadoCivil();
-        estadoCivilRepository.save(entity2);
-
-        List<EstadoCivil> expectedList = Arrays.asList(entity1, entity2);
-        List<EstadoCivil> list = estadoCivilRepository.findAll();
-
-        Assertions.assertThat(list).isNotNull();
-        Assertions.assertThat(list.size()).isEqualTo(expectedList.size());
-    }
-
-    private EstadoCivil createEstadoCivil() {
-        List<String> lista = new ArrayList<>();
-        lista.add("Casado/a");
-        lista.add("Soltero/a");
-        lista.add("Divorciado/a");
-        lista.add("Viudo/a");
-        lista.add("Separado/a en Proceso Judicial");
-        lista.add("Concubinato");
-        Collections.shuffle(lista);
-
-        return EstadoCivil
-                .builder()
-                .estado(Estado.ACTIVE) // estado("A")
-                .nombre(lista.get(0))
-                .build();
-    }
-
 }

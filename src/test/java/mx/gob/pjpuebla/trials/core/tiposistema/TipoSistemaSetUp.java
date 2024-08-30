@@ -15,7 +15,7 @@ public class TipoSistemaSetUp {
         TipoSistema tipoSistema = new TipoSistema()
                 .setId(1)
                 .setNombre("Tradicional")
-                .setEstado(Estado.ACTIVE) // setEstado("A")
+                .setEstado(Estado.ACTIVE)
                 .setVersion(1);
         tipoSistema.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return tipoSistema;

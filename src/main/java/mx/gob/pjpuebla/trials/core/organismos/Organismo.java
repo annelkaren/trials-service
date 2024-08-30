@@ -19,9 +19,6 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_ORGANISMOS")
 public class Organismo implements Serializable, Auditable {

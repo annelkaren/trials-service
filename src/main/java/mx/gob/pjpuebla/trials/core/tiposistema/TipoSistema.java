@@ -19,15 +19,12 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_TIPO_SISTEMA")
 public class TipoSistema implements Serializable, Auditable {
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoSistema")
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoSistema")
     @SequenceGenerator(name = "idTipoSistema", sequenceName = "SEQ_TIPO_SISTEMA_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

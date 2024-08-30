@@ -16,7 +16,7 @@ public class TipoOficialiaSetUp {
         TipoOficialia tipoOficialia = new TipoOficialia()
                 .setId(1)
                 .setNombre("Común")
-                .setEstado(Estado.ACTIVE) // setEstado("A")
+                .setEstado(Estado.ACTIVE)
                 .setVersion(1);
         tipoOficialia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return tipoOficialia;
