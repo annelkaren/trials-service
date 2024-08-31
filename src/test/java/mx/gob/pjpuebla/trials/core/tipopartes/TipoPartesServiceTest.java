@@ -1,17 +1,13 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.Estado;
-import mx.gob.pjpuebla.trials.util.Response;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
@@ -27,6 +23,8 @@ class TipoPartesServiceTest {
 
     @Mock
     TipoPartesRepository mockTipoPartesRepository;
+    @Mock
+    MateriaRepository materiaRepository;
 
     @InjectMocks
     TipoPartesService target;
@@ -35,11 +33,12 @@ class TipoPartesServiceTest {
 
     @BeforeEach
     public void setUp() {
-        validTipoPartes = createTipoPartes();
+        validTipoPartes = TipoPartesSetUp.createTipoPartes();
     }
 
    @Test
     void getAll_return_page() {
+        validTipoPartes.setMateria(MateriaSetUp.createMateria());
         List<TipoPartes> listPage = Collections.singletonList(validTipoPartes);
         given(mockTipoPartesRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
@@ -52,6 +51,7 @@ class TipoPartesServiceTest {
 
     @Test
     void getById_return_tipoPartes() {
+        validTipoPartes.setMateria(MateriaSetUp.createMateria());
         given(mockTipoPartesRepository.findById(validTipoPartes.getId()))
                 .willReturn(Optional.ofNullable(validTipoPartes));
 
@@ -63,50 +63,32 @@ class TipoPartesServiceTest {
 
     @Test
     void findByIdError() {
+        int id = validTipoPartes.getId();
         given(mockTipoPartesRepository.findById(validTipoPartes.getId()))
                 .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> {
-                    target.findById(validTipoPartes.getId());
+                    target.findById(id);
                 }
         );
 
         assertThat(assertThrows.getMessage()).contains("TipoPartes no encontrada");
-    }
-
-    private TipoPartes createTipoPartes() {
-        return new TipoPartes()
-                .setId(new Random().nextInt())
-                .setEstado(Estado.ACTIVE)
-                .setMateria(new Materia())
-                .setNombre(RandomStringUtils.random(5, true, true));
     }
 
     @Test
     void getByMateriaId_return_tipoPartes() {
+        validTipoPartes.setMateria(MateriaSetUp.createMateria());
         given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
-                .willReturn(Optional.ofNullable(validTipoPartes));
+                .willReturn(Arrays.asList(validTipoPartes));
 
-        TipoPartesRecord mr = target.findByMateriaId(validTipoPartes.getMateria().getId());
-        assertThat(mr).isOfAnyClassIn(TipoPartesRecord.class)
+        List<TipoPartesRecord> list = target.findByMateriaId(validTipoPartes.getMateria().getId());
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0))
                 .hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
-                .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre());
+                .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre())
+                .hasFieldOrPropertyWithValue("materia", validTipoPartes.getMateria().getId());
     }
 
-    @Test
-    void findByMateriaIdError() {
-        given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
-                .willReturn(Optional.empty());
-
-        NotFoundException assertThrows = assertThrows(
-                NotFoundException.class,
-                () -> {
-                    target.findByMateriaId(validTipoPartes.getMateria().getId());
-                }
-        );
-
-        assertThat(assertThrows.getMessage()).contains("TipoPartes no encontrada");
-    }
 }

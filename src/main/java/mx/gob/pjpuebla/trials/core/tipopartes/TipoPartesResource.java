@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/tipopartes")
@@ -27,7 +29,7 @@ public class TipoPartesResource {
     }
 
     @GetMapping("/materias/{materiaId}")
-    public TipoPartesRecord getByMateriaId(@PathVariable Integer materiaId) {
+    public List<TipoPartesRecord> getByMateriaId(@PathVariable Integer materiaId) {
         return this.tipoPartesService.findByMateriaId(materiaId);
     }
 

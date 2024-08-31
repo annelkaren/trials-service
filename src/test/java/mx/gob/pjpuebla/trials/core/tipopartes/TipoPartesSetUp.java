@@ -22,7 +22,7 @@ public class TipoPartesSetUp {
     }
 
     public static TipoPartesRecord createTipoPartesRecord() {
-        return new TipoPartesRecord(1, "Actor");
+        return new TipoPartesRecord(1, "Actor", 1);
     }
 
 }

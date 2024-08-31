@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class TipoPartesRepositoryTest extends AuditConfigTest {
+class TipoPartesRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private TipoPartesRepository tipoPartesRepository;
@@ -42,7 +43,7 @@ public class TipoPartesRepositoryTest extends AuditConfigTest {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<TipoPartes> page = tipoPartesRepository.findAll(PageRequest.of(0, 20));
+        Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(new TipoPartes().setNombre("A").setEstado(Estado.ACTIVE), exampleMatcher),PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
 
     }

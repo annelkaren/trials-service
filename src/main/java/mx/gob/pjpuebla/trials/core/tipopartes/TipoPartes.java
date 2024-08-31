@@ -38,7 +38,7 @@ public class TipoPartes implements Serializable, Auditable {
     private Estado estado;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FN_MATERIA")
     private Materia materia;
 

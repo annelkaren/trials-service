@@ -22,9 +22,9 @@ public class TipoPartesService {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher),pageable);
+        Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<TipoPartesRecord> list = page.getContent().stream()
-                .map(m -> new TipoPartesRecord(m.getId(), m.getNombre()))
+                .map(m -> new TipoPartesRecord(m.getId(), m.getNombre(), m.getMateria().getId()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -33,12 +33,11 @@ public class TipoPartesService {
     public TipoPartesRecord findById(Integer id) {
         TipoPartes tipoPartes = tipoPartesRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("TipoPartes no encontrada", "id"));
-        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre());
+        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre(), tipoPartes.getMateria().getId());
     }
 
-    public TipoPartesRecord findByMateriaId(Integer materiaId) {
-        TipoPartes tipoPartes = tipoPartesRepository.findByMateriaId(materiaId)
-                .orElseThrow(() -> new NotFoundException("TipoPartes no encontrada", "materiaId"));
-        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre());
+    public List<TipoPartesRecord> findByMateriaId(Integer materiaId) {
+        List<TipoPartes> tipoPartes = tipoPartesRepository.findByMateriaId(materiaId);
+        return tipoPartes.stream().map(entity -> new TipoPartesRecord(entity.getId(), entity.getNombre(), entity.getMateria().getId())).toList();
     }
 }

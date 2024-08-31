@@ -1,8 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaResource;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +16,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -91,8 +91,9 @@ class TipoPartesResourceTest {
 
     @Test
     void getByMateriaId_success() throws Exception {
+        List<TipoPartesRecord> list = Arrays.asList(validTipoPartesRecord);
         given(mockTipoPartesService.findByMateriaId(anyInt()))
-                .willReturn(validTipoPartesRecord);
+                .willReturn(list);
 
         mockMvc.perform(
                 get("/api/core/tipopartes/materias/1")
