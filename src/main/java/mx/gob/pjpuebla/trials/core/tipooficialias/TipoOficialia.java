@@ -1,10 +1,8 @@
-package mx.gob.pjpuebla.trials.core.organismos;
+package mx.gob.pjpuebla.trials.core.tipooficialias;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,12 +18,12 @@ import java.io.Serializable;
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
-@Table(name = "TBL_ORGANISMOS")
-public class Organismo implements Serializable, Auditable {
+@Table(name = "TBL_TIPO_OFICIALIAS")
+public class TipoOficialia implements Serializable, Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idOrganismo")
-    @SequenceGenerator(name = "idOrganismo", sequenceName = "SEQ_ORGANISMOS_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoOficialias")
+    @SequenceGenerator(name = "idTipoOficialias", sequenceName = "SEQ_TIPO_OFICIALIAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
@@ -34,9 +32,7 @@ public class Organismo implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @NotBlank
-    @Size(min = 3, max = 250)
-    @Column(name = "S_NOMBRE")
+    @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
     @Enumerated
@@ -46,4 +42,5 @@ public class Organismo implements Serializable, Auditable {
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
+
 }
