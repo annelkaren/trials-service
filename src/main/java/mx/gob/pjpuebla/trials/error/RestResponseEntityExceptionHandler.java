@@ -49,6 +49,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         );
     }
 
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    protected ResponseEntity<Object> handleNotFoundException(OptimisticLockingFailureException ex, WebRequest request) {
+        return handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getField(), ex.getReason())
+                ),
+                new HttpHeaders(),
+                HttpStatus.BAD_REQUEST,
+                request
+        );
+    }
+
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         if (ex.getCause() instanceof InvalidFormatException) {
             InvalidFormatException cause = (InvalidFormatException) ex.getCause();

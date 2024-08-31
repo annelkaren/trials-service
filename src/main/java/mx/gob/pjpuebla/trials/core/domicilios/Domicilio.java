@@ -1,10 +1,7 @@
 package mx.gob.pjpuebla.trials.core.domicilios;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -26,33 +23,29 @@ public class Domicilio implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Long id;
 
-    @Min(1)
-    @Max(Integer.MAX_VALUE)
-    @Version
-    @Column(name = "N_VERSION")
-    private Integer version;
-
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
-
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_CALLE", nullable = false)
     private String calle;
 
+    @Size(max = 20)
     @Column(name = "S_INTERIOR")
     private String interior;
 
-    @Column(name = "S_EXTERIOR")
+    @Size(min = 1, max = 20)
+    @Column(name = "S_EXTERIOR", nullable = false)
     private String exterior;
 
-    @Size(min = 3, max = 250)
+    @Size(max = 250)
     @Column(name = "S_COLONIA")
     private String colonia;
 
-    @Size(min = 5, max = 5)
-    @Column(name = "S_CODIGO_POSTAL", nullable = false)
+    @Size(max = 250)
+    @Column(name = "S_LOCALIDAD")
+    private String localidad;
+
+    @Size(max = 5)
+    @Column(name = "S_CODIGO_POSTAL")
     private String codigoPostal;
 
     @NotBlank
@@ -64,6 +57,10 @@ public class Domicilio implements Serializable, Auditable {
     @Size(min = 3, max = 250)
     @Column(name = "S_ESTADO_REPUBLICA", nullable = false)
     private String estadoRepublica;
+
+    @Size(max = 250)
+    @Column(name = "S_REFERENCIA")
+    private String referencia;
 
     @Accessors(chain = false)
     @Embedded
