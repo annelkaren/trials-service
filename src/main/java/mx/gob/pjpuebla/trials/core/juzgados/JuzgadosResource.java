@@ -3,7 +3,9 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.util.Response;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.BindingResult;
@@ -18,12 +20,14 @@ public class JuzgadosResource {
     private final JuzgadoService juzgadoService;
 
     @GetMapping
-    public Response getAll(@PageableDefault(size = 20) Pageable pageable) {
-        return this.juzgadoService.getAll(pageable);
+    public Page<JuzgadoRecordResponse> getAll(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre) {
+        return this.juzgadoService.getAll(new Juzgado().setNombre(nombre), pageable);
     }
 
     @GetMapping("/{id}")
-    public Response getById(@PathVariable Integer id) {
+    public JuzgadoRecord getById(@PathVariable Integer id) {
         return this.juzgadoService.findById(id);
     }
 

@@ -1,44 +1,46 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Estado;
 import mx.gob.pjpuebla.trials.util.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
+
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class JuzgadoService {
 
     private final JuzgadoRepository juzgadoRepository;
-    private static final Logger LOG = LoggerFactory.getLogger(JuzgadoService.class);
+    private final SedeRepository sedeRepository;
 
-    public Response getAll(Pageable pageable) {
-        Response response = new Response();
-        try {
-            PagedModel<Juzgado> paginator = new PagedModel<>(this.juzgadoRepository.findAll(pageable));
-            response.setData(paginator);
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-        } catch (Exception ex) {
-            LOG.error("getAll ", ex);
-            response.setMessage("Excepción. Error al obtener juzgados.");
-        }
-        return response;
+    @Transactional(readOnly = true)
+    public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        Page<Juzgado> page = juzgadoRepository.findAll(Example.of(example, exampleMatcher), pageable);
+
+        List<JuzgadoRecordResponse> list = page.getContent().stream()
+                .map(juzgado -> new JuzgadoRecordResponse(
+                        juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(),
+                        juzgado.getMateria().getNombre()))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    public Response findById(Integer id) {
-        Response response = new Response();
-        try {
-            response.setData(juzgadoRepository.findById(id).orElse(null));
-            response.setMessage("La solicitud se ha completado satisfactoriamente.");
-        } catch (Exception ex) {
-            LOG.error("findById ", ex);
-            response.setMessage("Excepción. Error al obtener el juzgado con uuid: " + id);
-        }
-        return response;
+    @Transactional(readOnly = true)
+    public JuzgadoRecord findById(Integer id) {
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        return juzgadoRepository.findByIdAndEstadoIn(id, estados)
+                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
     public Response create(Juzgado juzgado) {
@@ -47,7 +49,6 @@ public class JuzgadoService {
             juzgado = this.juzgadoRepository.save(juzgado);
             response.setMessage("El juzgado fue guardado con el id: " + juzgado.getId());
         } catch (Exception ex) {
-            LOG.error("create ", ex);
             response.setMessage("Excepción. Error al guardar el registro.");
         }
         return response;
@@ -59,10 +60,8 @@ public class JuzgadoService {
             this.juzgadoRepository.save(juzgado);
             response.setMessage("Juzgado actualizado con id: " + juzgado.getId());
         } catch (OptimisticLockingFailureException ex) {
-            LOG.error("update", ex);
             response.setMessage("El registro fue actualizado o eliminado por otra transaccion");
         } catch (Exception ex) {
-            LOG.error("update", ex);
             response.setMessage("Error al actualizar el registro.");
         }
         return response;
@@ -74,7 +73,6 @@ public class JuzgadoService {
             this.juzgadoRepository.deleteById(id);
             response.setMessage("Juzgado eliminado con id: " + id);
         } catch (Exception ex) {
-            LOG.error("delete ", ex);
             response.setMessage("Excepción. Error al eliminar el juzgado.");
         }
         return response;
