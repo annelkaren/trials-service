@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.tiposistema;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -12,26 +12,27 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
+import static mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp.createEstadoCivil;
 import static org.assertj.core.api.Assertions.assertThat;
+
 
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class TipoSistemaRepositoryTest extends AuditConfigTest {
+class EstadoCivilRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private TipoSistemaRepository tipoSistemaRepository;
+    private EstadoCivilRepository estadoCivilRepository;
 
     @Test
     void getAllEstadoActive() {
-        TipoSistema tipoSistema = createTipoSistema();
-        tipoSistemaRepository.save(tipoSistema);
+        EstadoCivil estadoCivil = createEstadoCivil();
+        estadoCivilRepository.save(estadoCivil);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
-        Page<TipoSistema> page = tipoSistemaRepository.findAll(Example.of(new TipoSistema().setNombre("").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
+        Page<EstadoCivil> page = estadoCivilRepository.findAll(Example.of(new EstadoCivil().setNombre("Soltero/a").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
     }
 }

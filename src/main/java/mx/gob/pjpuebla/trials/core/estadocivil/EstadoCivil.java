@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.estadoCivil;
+package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -11,14 +11,12 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_ESTADO_CIVIL")
 public class EstadoCivil implements Serializable, Auditable {
@@ -37,9 +35,9 @@ public class EstadoCivil implements Serializable, Auditable {
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
-    @Pattern(regexp = "A|I|D")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded
