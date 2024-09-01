@@ -52,7 +52,7 @@ class TipoJuicioResourceTest {
                 get("/api/core/tipojuicio")
                         .param("tipoJuicioName", "PE")
                         .param("tipoSistemaNombre", "PE")
-                        .param("materiaNombre", "PE")
+                        .param("tipoJuicioNombre", "PE")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
