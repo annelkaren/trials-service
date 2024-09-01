@@ -1,7 +1,11 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
-import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +27,6 @@ class TipoPartesServiceTest {
 
     @Mock
     TipoPartesRepository mockTipoPartesRepository;
-    @Mock
-    MateriaRepository materiaRepository;
 
     @InjectMocks
     TipoPartesService target;
@@ -34,11 +36,15 @@ class TipoPartesServiceTest {
     @BeforeEach
     public void setUp() {
         validTipoPartes = TipoPartesSetUp.createTipoPartes();
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        Materia materia = MateriaSetUp.createMateria();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+        validTipoPartes.setTipoJuicio(tipoJuicio);
     }
 
    @Test
     void getAll_return_page() {
-        validTipoPartes.setMateria(MateriaSetUp.createMateria());
+
         List<TipoPartes> listPage = Collections.singletonList(validTipoPartes);
         given(mockTipoPartesRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
@@ -51,7 +57,6 @@ class TipoPartesServiceTest {
 
     @Test
     void getById_return_tipoPartes() {
-        validTipoPartes.setMateria(MateriaSetUp.createMateria());
         given(mockTipoPartesRepository.findById(validTipoPartes.getId()))
                 .willReturn(Optional.ofNullable(validTipoPartes));
 
@@ -78,17 +83,16 @@ class TipoPartesServiceTest {
     }
 
     @Test
-    void getByMateriaId_return_tipoPartes() {
-        validTipoPartes.setMateria(MateriaSetUp.createMateria());
-        given(mockTipoPartesRepository.findByMateriaId(validTipoPartes.getMateria().getId()))
+    void getByTipoJuicioId_return_tipoPartes() {
+        given(mockTipoPartesRepository.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId()))
                 .willReturn(Arrays.asList(validTipoPartes));
 
-        List<TipoPartesRecord> list = target.findByMateriaId(validTipoPartes.getMateria().getId());
+        List<TipoPartesRecord> list = target.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId());
         assertThat(list).hasSize(1);
         assertThat(list.get(0))
                 .hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
                 .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre())
-                .hasFieldOrPropertyWithValue("materia", validTipoPartes.getMateria().getId());
+                .hasFieldOrPropertyWithValue("tipoJuicio", validTipoPartes.getTipoJuicio().getNombre());
     }
 
 }

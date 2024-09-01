@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
-import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.Estado;
 
@@ -22,7 +21,7 @@ public class TipoPartesSetUp {
     }
 
     public static TipoPartesRecord createTipoPartesRecord() {
-        return new TipoPartesRecord(1, "Actor", 1);
+        return new TipoPartesRecord(1, "Actor", "Laboral (Tradicional)");
     }
 
 }

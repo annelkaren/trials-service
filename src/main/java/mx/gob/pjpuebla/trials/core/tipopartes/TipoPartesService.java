@@ -24,7 +24,7 @@ public class TipoPartesService {
 
         Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<TipoPartesRecord> list = page.getContent().stream()
-                .map(m -> new TipoPartesRecord(m.getId(), m.getNombre(), m.getMateria().getId()))
+                .map(m -> new TipoPartesRecord(m.getId(), m.getNombre(), m.getTipoJuicio().getNombre()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -33,11 +33,11 @@ public class TipoPartesService {
     public TipoPartesRecord findById(Integer id) {
         TipoPartes tipoPartes = tipoPartesRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("TipoPartes no encontrada", "id"));
-        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre(), tipoPartes.getMateria().getId());
+        return new TipoPartesRecord(tipoPartes.getId(), tipoPartes.getNombre(), tipoPartes.getTipoJuicio().getNombre());
     }
 
-    public List<TipoPartesRecord> findByMateriaId(Integer materiaId) {
-        List<TipoPartes> tipoPartes = tipoPartesRepository.findByMateriaId(materiaId);
-        return tipoPartes.stream().map(entity -> new TipoPartesRecord(entity.getId(), entity.getNombre(), entity.getMateria().getId())).toList();
+    public List<TipoPartesRecord> findByTipoJuicioId(Integer materiaId) {
+        List<TipoPartes> tipoPartes = tipoPartesRepository.findByTipoJuicioId(materiaId);
+        return tipoPartes.stream().map(entity -> new TipoPartesRecord(entity.getId(), entity.getNombre(), entity.getTipoJuicio().getNombre())).toList();
     }
 }

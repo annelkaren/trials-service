@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -39,8 +40,8 @@ public class TipoPartes implements Serializable, Auditable {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_MATERIA")
-    private Materia materia;
+    @JoinColumn(name = "FN_TIPO_JUICIO")
+    private TipoJuicio tipoJuicio;
 
     @Accessors(chain = false)
     @Embedded

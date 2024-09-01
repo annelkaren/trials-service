@@ -90,13 +90,13 @@ class TipoPartesResourceTest {
     }
 
     @Test
-    void getByMateriaId_success() throws Exception {
+    void getByTipoJuicioId_success() throws Exception {
         List<TipoPartesRecord> list = Arrays.asList(validTipoPartesRecord);
-        given(mockTipoPartesService.findByMateriaId(anyInt()))
+        given(mockTipoPartesService.findByTipoJuicioId(anyInt()))
                 .willReturn(list);
 
         mockMvc.perform(
-                get("/api/core/tipopartes/materias/1")
+                get("/api/core/tipopartes/tipojuicio/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

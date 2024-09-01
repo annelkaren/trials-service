@@ -12,5 +12,5 @@ public interface TipoPartesRepository extends JpaRepository<TipoPartes, Integer>
 
     Optional<TipoPartes> findByIdAndEstado(Integer integer, Estado estado);
 
-    List<TipoPartes> findByMateriaId(Integer integer);
+    List<TipoPartes> findByTipoJuicioId(Integer integer);
 }

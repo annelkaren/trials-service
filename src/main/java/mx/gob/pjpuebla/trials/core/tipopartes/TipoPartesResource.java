@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -28,9 +27,9 @@ public class TipoPartesResource {
         return this.tipoPartesService.findById(id);
     }
 
-    @GetMapping("/materias/{materiaId}")
-    public List<TipoPartesRecord> getByMateriaId(@PathVariable Integer materiaId) {
-        return this.tipoPartesService.findByMateriaId(materiaId);
+    @GetMapping("/tipojuicio/{tipojuicioId}")
+    public List<TipoPartesRecord> findByTipoJuicioId(@PathVariable Integer tipojuicioId) {
+        return this.tipoPartesService.findByTipoJuicioId(tipojuicioId);
     }
 
 }
