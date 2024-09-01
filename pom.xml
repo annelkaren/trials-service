@@ -101,8 +101,7 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -145,7 +144,6 @@
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
 										<exclude>*personas</exclude>
-										<exclude>*tipopartes</exclude>
 										<exclude>*oficialias</exclude>
 									</excludes>
 									<limits>

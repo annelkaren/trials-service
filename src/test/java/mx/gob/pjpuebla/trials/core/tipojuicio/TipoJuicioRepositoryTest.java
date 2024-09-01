@@ -38,8 +38,8 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoActive() {
-        tipoJuicioRepository.save(createTipoJuicio(null, null));
-        Optional<TipoJuicio> tipoJuicio = tipoJuicioRepository.findByIdAndEstado(1, Estado.ACTIVE);
+        TipoJuicio validTipoJuicio = tipoJuicioRepository.save(createTipoJuicio(null, null));
+        Optional<TipoJuicio> tipoJuicio = tipoJuicioRepository.findByIdAndEstado(validTipoJuicio.getId(), Estado.ACTIVE);
         assertThat(tipoJuicio).isPresent();
         assertThat(tipoJuicio.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }

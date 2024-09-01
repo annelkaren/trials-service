@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.materias;
 
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Slf4j
 class MateriaRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -41,8 +43,9 @@ class MateriaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoActive() {
-        materiaRepository.save(createMateria());
-        Optional<Materia> materia = materiaRepository.findByIdAndEstado(1, Estado.ACTIVE);
+        Materia save = materiaRepository.save(createMateria());
+
+        Optional<Materia> materia = materiaRepository.findByIdAndEstado(save.getId(), Estado.ACTIVE);
         assertThat(materia).isPresent();
         assertThat(materia.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }
