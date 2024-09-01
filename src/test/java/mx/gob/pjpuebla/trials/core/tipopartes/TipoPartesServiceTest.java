@@ -44,7 +44,6 @@ class TipoPartesServiceTest {
 
    @Test
     void getAll_return_page() {
-
         List<TipoPartes> listPage = Collections.singletonList(validTipoPartes);
         given(mockTipoPartesRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));

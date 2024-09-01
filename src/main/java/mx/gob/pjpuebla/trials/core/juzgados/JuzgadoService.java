@@ -1,11 +1,11 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Estado;
-import mx.gob.pjpuebla.trials.util.Response;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 @Service
@@ -20,6 +21,7 @@ public class JuzgadoService {
 
     private final JuzgadoRepository juzgadoRepository;
     private final SedeRepository sedeRepository;
+    private final MateriaRepository materiaRepository;
 
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
@@ -43,38 +45,26 @@ public class JuzgadoService {
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
-    public Response create(Juzgado juzgado) {
-        Response response = new Response();
-        try {
-            juzgado = this.juzgadoRepository.save(juzgado);
-            response.setMessage("El juzgado fue guardado con el id: " + juzgado.getId());
-        } catch (Exception ex) {
-            response.setMessage("Excepción. Error al guardar el registro.");
-        }
-        return response;
+    public JuzgadoRecordResponse create(Juzgado juzgado) {
+        juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
+        juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
+        juzgado = juzgadoRepository.save(juzgado);
+        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
     }
 
-    public Response update(Juzgado juzgado) {
-        Response response = new Response();
+    public JuzgadoRecordResponse update(Juzgado juzgado) {
         try {
-            this.juzgadoRepository.save(juzgado);
-            response.setMessage("Juzgado actualizado con id: " + juzgado.getId());
-        } catch (OptimisticLockingFailureException ex) {
-            response.setMessage("El registro fue actualizado o eliminado por otra transaccion");
-        } catch (Exception ex) {
-            response.setMessage("Error al actualizar el registro.");
+            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
+            juzgado.setSede(sedeRepository.findById(juzgado.getId()).orElse(null));
+            juzgado = juzgadoRepository.save(juzgado);
+            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
+        } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
+            log.error("update -> {}", ex);
+            throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Juzgado modificado por otro usuario", "juzgadoId");
         }
-        return response;
     }
 
-    public Response delete(Integer id) {
-        Response response = new Response();
-        try {
-            this.juzgadoRepository.deleteById(id);
-            response.setMessage("Juzgado eliminado con id: " + id);
-        } catch (Exception ex) {
-            response.setMessage("Excepción. Error al eliminar el juzgado.");
-        }
-        return response;
+    public void delete(Integer id) {
+        juzgadoRepository.deleteById(id);
     }
 }
