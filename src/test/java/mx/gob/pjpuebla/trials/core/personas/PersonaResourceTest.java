@@ -1,0 +1,123 @@
+package mx.gob.pjpuebla.trials.core.personas;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(PersonaResource.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
+class PersonaResourceTest {
+
+    @MockBean
+    private PersonaService mockPersonaService;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    private PersonaRecord validPersonaRecord;
+
+    @BeforeEach
+    void setUp() {
+        validPersonaRecord = PersonaSetUp.createPersonaRecord();
+    }
+
+    @Test
+    void getById_success() throws Exception {
+        given(mockPersonaService.findById(anyLong()))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                get("/api/core/personas/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getById_not_found() throws Exception {
+        given(mockPersonaService.findById(anyLong()))
+                .willThrow(NotFoundException.class);
+
+        mockMvc.perform(
+                get("/api/core/personas/0")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getById_invalid() throws Exception {
+        given(mockPersonaService.findById(anyLong()))
+                .willThrow(MethodArgumentTypeMismatchException.class);
+
+        mockMvc.perform(
+                get("/api/core/personas/A")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_success() throws Exception {
+        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                post("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void update_success() throws Exception {
+        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void update_error() throws Exception {
+        given(mockPersonaService.update(PersonaSetUp.createPersona()))
+                .willThrow(OptimisticLockingFailureException.class);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    private static String asJsonString(final Object obj) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            return mapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}

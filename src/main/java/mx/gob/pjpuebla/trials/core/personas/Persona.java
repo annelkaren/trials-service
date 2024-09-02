@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -28,10 +30,6 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
-
     @NotNull
     @Size(min = 3, max = 50)
     @Column(name = "S_NOMBRES")
@@ -44,6 +42,9 @@ public class Persona implements Serializable, Auditable {
 
     @Column(name = "S_APELLIDO_MATERNO")
     private String apellidoMaterno;
+
+    @Column(name = "S_PSEUDONIMO")
+    private String pseudonimo;
 
     @Column(name = "S_CURP")
     private String curp;
@@ -87,12 +88,17 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_ESTADO_NACIMIENTO")
     private String estadoNacimiento;
 
-    @Column(name = "FN_DOMICILIO")
-    private Long domicilio;
+    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private Domicilio domicilio;
 
     @Pattern(regexp = "[FM]")
     @Column(name = "S_PERSONA_FISCAL")
     private String personaFiscal;
+
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded
