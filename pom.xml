@@ -143,7 +143,6 @@
 										<exclude>*recursos</exclude>
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
-										<exclude>*personas</exclude>
 										<exclude>*oficialias</exclude>
 									</excludes>
 									<limits>
