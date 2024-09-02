@@ -3,11 +3,7 @@ package mx.gob.pjpuebla.trials.core.personas;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.Response;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -24,7 +20,6 @@ public class PersonaResource {
     }
 
     @PostMapping
-    @ResponseBody
     public PersonaRecord create(@RequestBody @Valid Persona persona) {
         return this.personaService.create(persona);
     }

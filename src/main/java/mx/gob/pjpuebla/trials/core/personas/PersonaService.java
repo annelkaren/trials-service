@@ -1,26 +1,28 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Transactional
 public class PersonaService {
 
     private final PersonaRepository personaRepository;
-    private static final Logger LOG = LoggerFactory.getLogger(PersonaService.class);
     private final DomicilioService domicilioService;
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
-        Persona persona = personaRepository.findById(id)
+        Persona persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
         return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
     }
@@ -37,8 +39,8 @@ public class PersonaService {
             personaRepository.save(persona);
             return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
         } catch (OptimisticLockingFailureException ex) {
-            LOG.error("update OptimisticLockingFailureException ", ex);
-            throw new OptimisticLockingFailureException(ex.getMessage());
+            log.error("update -> {}", ex);
+            throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Persona modificada por otro usuario", "personaId");
         }
     }
 }

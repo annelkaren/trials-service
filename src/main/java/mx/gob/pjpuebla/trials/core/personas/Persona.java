@@ -30,10 +30,6 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Enumerated
-    @Column(name = "N_ESTADO", nullable = false)
-    private Estado estado;
-
     @NotNull
     @Size(min = 3, max = 50)
     @Column(name = "S_NOMBRES")
@@ -49,9 +45,6 @@ public class Persona implements Serializable, Auditable {
 
     @Column(name = "S_PSEUDONIMO")
     private String pseudonimo;
-
-    @Column(name = "B_PERSONAL_JUZGADO")
-    private Boolean personalJuzgado;
 
     @Column(name = "S_CURP")
     private String curp;
@@ -102,6 +95,10 @@ public class Persona implements Serializable, Auditable {
     @Pattern(regexp = "[FM]")
     @Column(name = "S_PERSONA_FISCAL")
     private String personaFiscal;
+
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded

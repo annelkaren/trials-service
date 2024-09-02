@@ -1,7 +1,10 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +31,6 @@ class PersonaResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private Persona validPersona;
 
     private PersonaRecord validPersonaRecord;
 
@@ -71,4 +72,52 @@ class PersonaResourceTest {
         ).andExpect(status().isBadRequest());
     }
 
+    @Test
+    void create_success() throws Exception {
+        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                post("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void update_success() throws Exception {
+        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void update_error() throws Exception {
+        given(mockPersonaService.update(PersonaSetUp.createPersona()))
+                .willThrow(OptimisticLockingFailureException.class);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    private static String asJsonString(final Object obj) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            return mapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
