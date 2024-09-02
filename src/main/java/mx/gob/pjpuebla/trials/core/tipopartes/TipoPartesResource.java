@@ -2,42 +2,34 @@ package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.Response;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/core/tipopartes")
 @SecurityRequirement(name = "Keycloak")
 public class TipoPartesResource {
     private final TipoPartesService tipoPartesService;
 
     @GetMapping
-    public Response getAll(@PageableDefault(size = 20) Pageable pageable) {
-        return this.tipoPartesService.getAll(pageable);
+    public Page<TipoPartesRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
+                                         @RequestParam(value = "tipoPartesNombre", required = false) String tipoPartesNombre) {
+        return tipoPartesService.getAll(pageable,  new TipoPartes().setNombre(tipoPartesNombre));
     }
 
     @GetMapping("/{id}")
-    public Response getById(@PathVariable Integer id) {
+    public TipoPartesRecord getById(@PathVariable Integer id) {
         return this.tipoPartesService.findById(id);
     }
 
-    @PostMapping
-    public Response create(@RequestBody TipoPartes tipoPartes, BindingResult bindingResult) {
-        return this.tipoPartesService.create(tipoPartes, bindingResult);
+    @GetMapping("/tipojuicio/{tipojuicioId}")
+    public List<TipoPartesRecord> findByTipoJuicioId(@PathVariable Integer tipojuicioId) {
+        return this.tipoPartesService.findByTipoJuicioId(tipojuicioId);
     }
 
-    @PutMapping
-    public Response update(@RequestBody TipoPartes tipoPartes) {
-        return this.tipoPartesService.update(tipoPartes);
-    }
-
-    @DeleteMapping("/{id}")
-    public Response delete(@PathVariable Integer id) {
-        return this.tipoPartesService.delete(id);
-    }
 }

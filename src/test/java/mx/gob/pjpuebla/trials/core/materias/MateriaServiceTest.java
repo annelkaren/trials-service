@@ -38,7 +38,6 @@ class MateriaServiceTest {
         validMateria = createMateria();
     }
 
-
     @Test
     void getAll_return_page() {
         List<Materia> listPage = Collections.singletonList(validMateria);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -101,8 +101,7 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -144,8 +143,6 @@
 										<exclude>*recursos</exclude>
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
-										<exclude>*domicilios</exclude>
-										<exclude>*tipopartes</exclude>
 										<exclude>*oficialias</exclude>
 									</excludes>
 									<limits>
@@ -170,17 +167,17 @@
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
 				<version>9.2.0</version>
-<!--				<configuration>-->
-<!--					<failBuildOnCVSS>8</failBuildOnCVSS>-->
-<!--					<failOnError>true</failOnError>-->
-<!--				</configuration>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<goals>-->
-<!--							<goal>check</goal>-->
-<!--						</goals>-->
-<!--					</execution>-->
-<!--				</executions>-->
+				<!--				<configuration>-->
+				<!--					<failBuildOnCVSS>8</failBuildOnCVSS>-->
+				<!--					<failOnError>true</failOnError>-->
+				<!--				</configuration>-->
+				<!--				<executions>-->
+				<!--					<execution>-->
+				<!--						<goals>-->
+				<!--							<goal>check</goal>-->
+				<!--						</goals>-->
+				<!--					</execution>-->
+				<!--				</executions>-->
 			</plugin>
 		</plugins>
 	</build>

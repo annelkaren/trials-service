@@ -13,14 +13,12 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_ORGANISMOS")
 public class Organismo implements Serializable, Auditable {
@@ -41,9 +39,9 @@ public class Organismo implements Serializable, Auditable {
     @Column(name = "S_NOMBRE")
     private String nombre;
 
-    @Pattern(regexp = "A|I|D")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded
