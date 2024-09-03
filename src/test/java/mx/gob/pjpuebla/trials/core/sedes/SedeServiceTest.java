@@ -92,8 +92,6 @@ class SedeServiceTest {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockSedeRepository.findByIdAndEstadoIn(sede.getId(), estados))
                 .willReturn(Optional.empty());
-        given(mockSedeRepository.findByIdAndEstadoIn(sede.getId(), estados))
-                .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,

@@ -1,5 +1,11 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
+import mx.gob.pjpuebla.trials.core.distritos.Distrito;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
+import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.junit.jupiter.api.Test;
@@ -22,22 +28,36 @@ class SedeRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private SedeRepository sedeRepository;
+    @Autowired
+    private DomicilioRepository domicilioRepository;
+    @Autowired
+    private DistritoRepository distritoRepository;
 
     @Test
     void findByIdAndEstadoActive() {
-        Sede entity = sedeRepository.save(SedeSetUp.createSede(Estado.ACTIVE));
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<SedeRecord> sede = sedeRepository.findByIdAndEstadoIn(entity.getId(), estados);
-        assertThat(sede).isPresent();
-        assertThat(sede.get().estado()).isEqualTo(Estado.ACTIVE);
+        Optional<SedeRecord> entity = sedeRepository.findByIdAndEstadoIn(sede.getId(), estados);
+        assertThat(entity).isPresent();
+        assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
     }
 
     @Test
     void findByIdAndEstadoInactive() {
-        Sede entity = sedeRepository.save(SedeSetUp.createSede(Estado.INACTIVE));
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.INACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<SedeRecord> sede = sedeRepository.findByIdAndEstadoIn(entity.getId(), estados);
-        assertThat(sede).isPresent();
-        assertThat(sede.get().estado()).isEqualTo(Estado.INACTIVE);
+        Optional<SedeRecord> entity = sedeRepository.findByIdAndEstadoIn(sede.getId(), estados);
+        assertThat(entity).isPresent();
+        assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
     }
 }

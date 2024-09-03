@@ -3,13 +3,15 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 
@@ -30,27 +32,25 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Accessors(chain = false)
-    @Embedded
-    private Audit audit;
-
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_NOMBRE")
     private String nombre;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
-    @Column(name = "FN_MATERIA")
-    private Integer materia;
+    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Materia materia;
 
-    @Column(name = "FN_DOMICILIO")
-    private Long domicilio;
+    @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    private Sede sede;
 
-    @Column(name = "FN_DISTRITO")
-    private Integer distrito;
-
+    @Accessors(chain = false)
+    @Embedded
+    private Audit audit;
 }
 

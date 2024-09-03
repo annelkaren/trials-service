@@ -13,6 +13,17 @@ public class SedeSetUp {
     private SedeSetUp() {
     }
 
+    public static Sede createSede() {
+        Sede sede = new Sede()
+                .setId(1)
+                .setVersion(0)
+                .setNombre("Sede")
+                .setTipo(Tipo.EXTERNO)
+                .setEstado(Estado.ACTIVE);
+        sede.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return sede;
+    }
+
     public static Sede createSede(Estado estado) {
         Sede sede = new Sede()
                 .setId(1)

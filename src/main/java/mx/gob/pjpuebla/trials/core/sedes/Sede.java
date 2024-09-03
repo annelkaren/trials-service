@@ -17,9 +17,6 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_SEDES")
 public class Sede implements Serializable, Auditable {
@@ -56,11 +53,11 @@ public class Sede implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID", nullable = false)
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Domicilio domicilio;
 
-    @JoinColumn(name = "FN_DISTRITO", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_DISTRITO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Distrito distrito;
 
