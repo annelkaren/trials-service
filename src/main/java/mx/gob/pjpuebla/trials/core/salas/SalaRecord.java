@@ -1,5 +1,5 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
-public class salaRecordResponse {
+public class SalaRecord {
     
 }
