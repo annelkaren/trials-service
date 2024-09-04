@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -11,14 +13,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.core.personas.PersonaSetUp.createPersona;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +48,19 @@ class PersonaServiceTest {
     public void setUp() {
         validPersona = createPersona();
         validDomicilio = new Domicilio();
+    }
+
+    @Test
+    void getAll_return_page() {
+        List<Persona> listPage = Collections.singletonList(validPersona);
+        given(mockPersonaRepository.findAll(any(Example.class), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        Page<PersonaRecordResponse> page = personaService.getAll(validPersona, PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre() + " "
+                        + validPersona.getApellidoPaterno() + " " + validPersona.getApellidoMaterno());
     }
 
     @Test

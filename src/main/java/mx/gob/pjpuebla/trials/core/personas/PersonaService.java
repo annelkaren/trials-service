@@ -6,10 +6,12 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +21,23 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final DomicilioService domicilioService;
+
+    @Transactional(readOnly = true)
+    public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        Page<Persona> page = personaRepository.findAll(Example.of(example, exampleMatcher), pageable);
+
+        List<PersonaRecordResponse> list = page.getContent().stream()
+                .map(persona ->
+                        new PersonaRecordResponse(persona.getId(),
+                                persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno(),
+                                persona.getCorreoElectronico(),
+                                persona.getCelular()))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
