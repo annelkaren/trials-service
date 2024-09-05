@@ -11,5 +11,5 @@ import mx.gob.pjpuebla.trials.util.Estado;
 @Repository
 public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
     
-    Optional<Bloque> findByIdAndEstadoIn(Integer id, List <Estado> estados); 
+
 }

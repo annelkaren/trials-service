@@ -10,6 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -32,6 +33,7 @@ import mx.gob.pjpuebla.trials.util.Estado;
 @Table(name = "TBL_SALA")
 public class Sala implements Serializable, Auditable {
     
+    @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idSala")
     @SequenceGenerator(name = "idSala", sequenceName = "SEQ_SALA_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
@@ -57,7 +59,7 @@ public class Sala implements Serializable, Auditable {
     private Bloque bloque;
     
     @JoinColumn(name = "FN_JUZGADO_ID", referencedColumnName = "PN_ID")
-    @OneToMany()
+    @OneToOne()
     private Juzgado juzgado;
 
     @Accessors(chain = false)

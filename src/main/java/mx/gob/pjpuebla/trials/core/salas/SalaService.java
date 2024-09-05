@@ -24,32 +24,4 @@ public class SalaService {
     private final BloqueRepository BloqueRepository;
 
 
-    public Page<>
-
-
-    public SalaRecord findById(Integer id) {
-        Sala sala = salaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
-                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId"));
-        return new SalaRecord(sala.getId(), sala.getNombre(), sala.getJuez(), sala.getJuzgado(), sala.getBloque());
-    }
-
-    public SalaRecord create(Sala sala) {
-
-        salaRepository.save(sala);
-
-        return new SalaRecord(sala.getId(), sala.getNombre(), sala.getJuez(), sala.getJuzgado(), sala.getBloque());
-    }
-
-    public SalaRecord update(Sala sala) {
-        try {
-            salaRepository.save(sala);
-            return new SalaRecord(sala.getId(), sala.getNombre(), sala.getJuez(), sala.getJuzgado(), sala.getBloque());
-        } catch (OptimisticLockingFailureException ex) {
-            log.error("update -> {}", ex);
-            throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException(
-                    "Sala modificada por otro usuario", "salaId");
-        }
-
-    }
-
 }

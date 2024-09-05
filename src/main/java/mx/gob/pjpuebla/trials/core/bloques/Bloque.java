@@ -29,15 +29,11 @@ import mx.gob.pjpuebla.trials.util.Estado;
 @Table(name = "TBL_BLOQUE")
 public class Bloque implements Serializable, Auditable{
     
+    @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idBloque")
     @SequenceGenerator(name = "idBloque", sequenceName = "SEQ_BLOQUE_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
-
-    @Max(Integer.MAX_VALUE)
-    @Version
-    @Column(name = "N_VERSION")
-    private Integer version;
 
     @NotNull
     @Column(name = "T_HORA_INICIAL")
