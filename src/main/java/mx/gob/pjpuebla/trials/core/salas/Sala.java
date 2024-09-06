@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.salas;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -22,6 +24,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -51,8 +55,9 @@ public class Sala implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @Column(name = "FN_JUEZ_ID")
-    private Integer juez; // esto debe de ser una llave foranea pero como no se tiene aun hacia que se referenciara se coloca momentaneamente como integer.
+    @JoinColumn(name = "FN_JUEZ_ID", referencedColumnName = "PN_ID")
+    @OneToOne()
+    private Persona juez; // esto debe de ser una llave foranea pero como no se tiene aun hacia que se referenciara se coloca momentaneamente como integer.
 
     @JoinColumn(name= "FN_BLOQUE_ID", referencedColumnName = "PN_ID")
     @OneToOne()
@@ -62,6 +67,7 @@ public class Sala implements Serializable, Auditable {
     @OneToOne()
     private Juzgado juzgado;
 
+    @JsonIgnore
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

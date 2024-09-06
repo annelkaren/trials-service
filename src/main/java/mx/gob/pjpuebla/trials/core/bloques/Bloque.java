@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.core.bloques;
 import java.io.Serializable;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -47,6 +49,7 @@ public class Bloque implements Serializable, Auditable{
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @JsonIgnore
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

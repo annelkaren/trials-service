@@ -34,7 +34,7 @@ public class SalaResource {
             @RequestParam(value = "nombre",
             required = false) String nombre) {
                     
-            return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
+            return this.salaService.getAll(pageable);
     }
 
     @GetMapping("/{id}")
