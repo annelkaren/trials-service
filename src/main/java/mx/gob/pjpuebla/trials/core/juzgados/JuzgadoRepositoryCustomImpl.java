@@ -15,8 +15,8 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     private String PREFIX_SEQ = "TRIALS.SEQ_JUZGADO_EXPEDIENTE_";
 
     @Override
-    public String generarSecuenciaExpediente(Integer pn_id){
-        String nombreSecuencia = PREFIX_SEQ + pn_id;
+    public String generarSecuenciaExpediente(Integer juzgadoId){
+        String nombreSecuencia = PREFIX_SEQ + juzgadoId;
         String sqlSeq = String.format("CREATE SEQUENCE IF NOT EXISTS %s", nombreSecuencia);
 
         try{
@@ -32,8 +32,8 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     }
 
     @Override
-    public Boolean eliminarSecuenciaExpediente(Integer pn_id){
-        String nombreSecuencia = PREFIX_SEQ + pn_id;
+    public Boolean eliminarSecuenciaExpediente(Integer juzgadoId){
+        String nombreSecuencia = PREFIX_SEQ + juzgadoId;
         String sqlSeq = String.format("DROP SEQUENCE IF EXISTS %s", nombreSecuencia);
 
         
@@ -49,11 +49,11 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     }
 
     @Override
-    public String getNumeroExpediente(Integer pn_id) {
+    public String getNumeroExpediente(Integer juzgadoId) {
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         String numExpediente = "";
-        String nombreSecuencia = PREFIX_SEQ + pn_id;
+        String nombreSecuencia = PREFIX_SEQ + juzgadoId;
 
         String sqlNumExp = String.format("SELECT LPAD(NEXTVAL('%s')::text,6,'0')", nombreSecuencia);
         System.out.println(sqlNumExp);
@@ -75,8 +75,8 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     }
 
     
-    public Boolean reiniciarSecuenciaExpediente(Integer pn_id) {
-        String nombreSecuencia = PREFIX_SEQ + pn_id;
+    public Boolean reiniciarSecuenciaExpediente(Integer juzgadoId) {
+        String nombreSecuencia = PREFIX_SEQ + juzgadoId;
         String sqlSeq = String.format("ALTER SEQUENCE IF EXISTS %s RESTART WITH 1", nombreSecuencia);
 
         try{
