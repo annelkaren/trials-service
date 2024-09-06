@@ -2,11 +2,9 @@ package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,7 +88,6 @@ class PersonaServiceTest {
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
-
     }
 
     @Test
@@ -139,5 +136,33 @@ class PersonaServiceTest {
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona modificada por otro usuario");
+    }
+
+    @Test
+    void getByCurp_return_persona() {
+        validPersona.setCurp("XXXX111111XXXXXX11");
+        given(mockPersonaRepository.findByCurp(validPersona.getCurp()))
+                .willReturn(Optional.ofNullable(validPersona));
+
+        PersonaRecord mr = personaService.findByCurp(validPersona.getCurp());
+        assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
+                .hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
+    }
+
+    @Test
+    void getByCurp_return_not_found() {
+        String curp = validPersona.getCurp();
+        given(mockPersonaRepository.findByCurp(curp))
+                .willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    personaService.findByCurp(curp);
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
 }

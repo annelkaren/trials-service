@@ -3,8 +3,11 @@ package mx.gob.pjpuebla.trials.core.personas;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
+import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,9 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final DomicilioService domicilioService;
+    private final EscolaridadRepository escolaridadRepository;
+    private final EstadoCivilRepository estadoCivilRepository;
+    private final JuzgadoRepository juzgadoRepository;
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -41,25 +47,36 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
-        Persona persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
+        return personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
-        return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
     }
 
-    public PersonaRecord create(Persona persona) {
+    public PersonaRecordResponse create(Persona persona) {
+        persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
+        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
         persona = personaRepository.save(persona);
-        return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
 
-    public PersonaRecord update(Persona persona) {
+    public PersonaRecordResponse update(Persona persona) {
         try {
+            persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
+            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
+            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId()).orElse(null));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
             personaRepository.save(persona);
-            return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
+            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
         } catch (OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Persona modificada por otro usuario", "personaId");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Persona findByCurp(String curp) {
+        return personaRepository.findByCurp(curp)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaCurp"));
+        //return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno());
     }
 }

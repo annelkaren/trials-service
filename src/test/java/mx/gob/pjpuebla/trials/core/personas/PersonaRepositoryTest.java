@@ -4,7 +4,7 @@ import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +54,13 @@ class PersonaRepositoryTest extends AuditConfigTest {
         Optional<Persona> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
         assertThat(entity).isPresent();
         assertThat(entity.get().getEstado()).isEqualTo(Estado.INACTIVE);
+    }
+
+    @Test
+    void findByCurp() {
+        persona.setCurp("XXXX111111XXXXXX11");
+        persona = personaRepository.save(persona);
+        Optional<Persona> entity = personaRepository.findByCurp(persona.getCurp());
+        assertThat(entity).isPresent();
     }
 }

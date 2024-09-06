@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 public record JuzgadoRecord(
         Integer id,

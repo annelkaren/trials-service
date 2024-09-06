@@ -1,5 +1,4 @@
-package mx.gob.pjpuebla.trials.core.estadocivil;
-
+package mx.gob.pjpuebla.trials.core.escolaridades;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,21 +12,20 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EstadoCivilService {
+public class EscolaridadService {
 
-    private final EstadoCivilRepository estadoCivilRepository;
+    private final EscolaridadRepository escolaridadRepository;
 
     @Transactional(readOnly = true)
-    public List<EstadoCivilRecord> getAll(Pageable pageable, EstadoCivil example){
+    public Page<EscolaridadRecord> getAllActive(Pageable pageable, Escolaridad example) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Example<EstadoCivil> exampleQuery = Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher);
-        Page<EstadoCivil> page = estadoCivilRepository.findAll(exampleQuery, pageable);
-
-        return page.getContent().stream()
-                .map(m -> new EstadoCivilRecord(m.getId(), m.getNombre()))
+        Page<Escolaridad> page = escolaridadRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
+        List<EscolaridadRecord> list = page.getContent().stream()
+                .map(m -> new EscolaridadRecord(m.getId(), m.getNombre()))
                 .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 }

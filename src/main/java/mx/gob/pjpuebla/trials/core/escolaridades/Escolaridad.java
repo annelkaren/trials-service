@@ -1,9 +1,7 @@
 package mx.gob.pjpuebla.trials.core.escolaridades;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +11,7 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
@@ -40,9 +39,9 @@ public class Escolaridad implements Serializable, Auditable {
     @Column(name = "S_NOMBRE")
     private String nombre;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @NotNull
     @Size(min = 1, max = 50)

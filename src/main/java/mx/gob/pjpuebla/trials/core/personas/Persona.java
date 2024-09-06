@@ -5,10 +5,14 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.escolaridades.Escolaridad;
+import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivil;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Sexo;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -43,25 +47,30 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_APELLIDO_MATERNO")
     private String apellidoMaterno;
 
-    @Column(name = "S_PSEUDONIMO")
-    private String pseudonimo;
-
+    @NotNull
     @Column(name = "S_CURP")
     private String curp;
 
     @Column(name = "S_RFC")
     private String rfc;
 
-    @Pattern(regexp = "[HMX]")
-    @Column(name = "S_SEXO")
-    private String sexo;
+    @Past
+    @Column(name = "T_FECHA_NACIMIENTO")
+    private LocalDate fechaNacimiento;
+
+    @Enumerated
+    @Column(name = "N_SEXO", nullable = false)
+    private Sexo sexo;
+
+    @NotNull
+    @Column(name = "S_OCUPACION")
+    private String ocupacion;
 
     @NotNull
     @Email
     @Column(name = "S_CORREO_ELECTRONICO")
     private String correoElectronico;
 
-    @Pattern(regexp = "^\\d{10}$")
     @Column(name = "S_TELEFONO")
     private String telefono;
 
@@ -69,36 +78,25 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_CELULAR")
     private String celular;
 
-    @Past
-    @Column(name = "T_FECHA_NACIMIENTO")
-    private LocalDate fechaNacimiento;
-
-    @Column(name = "FS_ESTADO_CIVIL")
-    private String estadoCivil;
-
-    @Column(name = "S_OCUPACION")
-    private String ocupacion;
-
-    @Column(name = "FS_ESCOLARIDAD")
-    private String escolaridad;
-
-    @Column(name = "S_MUNICIPIO_NACIMIENTO")
-    private String municipioNacimiento;
-
-    @Column(name = "S_ESTADO_NACIMIENTO")
-    private String estadoNacimiento;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
     @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Domicilio domicilio;
 
-    @Pattern(regexp = "[FM]")
-    @Column(name = "S_PERSONA_FISCAL")
-    private String personaFiscal;
+    @JoinColumn(name = "FN_ESCOLARIDAD", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY)
+    private Escolaridad escolaridad;
 
-    @Enumerated
-    @Column(name = "N_ESTADO", nullable = false)
-    private Estado estado;
+    @JoinColumn(name = "FN_ESTADO_CIVIL", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY)
+    private EstadoCivil estadoCivil;
+
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY)
+    private Juzgado juzgado;
 
     @Accessors(chain = false)
     @Embedded

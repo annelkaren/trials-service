@@ -14,15 +14,14 @@ import java.util.List;
 @RequestMapping("/api/core/estadocivil")
 @SecurityRequirement(name = "Keycloak")
 public class EstadoCivilResource {
-    private final EstadoCivilService estadoCivilService;
 
+    private final EstadoCivilService estadoCivilService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EstadoCivilRecord> getAll(
             @PageableDefault Pageable pageable,
-            @RequestParam(value = "materiaNombre", required = false) String estadoCivilNombre)
-    {
-        EstadoCivil example = new EstadoCivil().setNombre(estadoCivilNombre);
+            @RequestParam(value = "nombre", required = false) String nombre) {
+        EstadoCivil example = new EstadoCivil().setNombre(nombre);
         return estadoCivilService.getAll(pageable, example);
     }
 }

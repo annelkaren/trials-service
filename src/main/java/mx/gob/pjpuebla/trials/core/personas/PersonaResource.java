@@ -30,12 +30,18 @@ public class PersonaResource {
     }
 
     @PostMapping
-    public PersonaRecord create(@RequestBody @Valid Persona persona) {
+    public PersonaRecordResponse create(@RequestBody @Valid Persona persona) {
         return this.personaService.create(persona);
     }
 
     @PutMapping
-    public PersonaRecord update(@RequestBody @Valid Persona persona) {
+    public PersonaRecordResponse update(@RequestBody @Valid Persona persona) {
         return this.personaService.update(persona);
     }
+
+    @GetMapping(value = "/curp/{curp}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Persona getById(@PathVariable String curp) {
+        return this.personaService.findByCurp(curp);
+    }
+
 }
