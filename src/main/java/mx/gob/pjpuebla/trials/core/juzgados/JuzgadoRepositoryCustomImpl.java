@@ -6,8 +6,9 @@ import java.util.Date;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
@@ -51,9 +52,11 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         String numExpediente = "";
+        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
 
-        String sqlNumExp = "SELECT nextval('trials.seq_secuencia_juzgado_"+pn_id+"')";
-
+        String sqlNumExp = String.format("SELECT LPAD(nextval('%s')::text,6,'0')", nombreSecuencia);
+        System.out.println(sqlNumExp);
+        log.info(sqlNumExp);
         try{
             Query query = entityManager.createNativeQuery(sqlNumExp);
 
@@ -61,18 +64,19 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
 
             numExpediente = query.getSingleResult().toString();
 
-            numExpediente = String.format("%04s/%s", numExpediente, calendar.get(Calendar.YEAR));
+            numExpediente = String.format("%s/%d", numExpediente, calendar.get(Calendar.YEAR));
 
             return numExpediente;
         }catch(Exception e){
-            e.printStackTrace();
+            log.error("Error: ", e);
             return null;
         }        
     }
 
     
     public Boolean reiniciarSecuenciaExpediente(Integer pn_id) {
-        String sqlSeq = "ALTER SEQUENCE IF EXISTS trials.seq_juzgado_expediente_" + pn_id+" RESTART WITH 1";
+        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
+        String sqlSeq = String.format("ALTER SEQUENCE IF EXISTS %s RESTART WITH 1", nombreSecuencia);
 
         try{
             Query query = entityManager.createNativeQuery(sqlSeq);
