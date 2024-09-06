@@ -25,7 +25,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
-        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop",
+        "spring.jpa.properties.hibernate.connection.url: jdbc:h2:mem:trialsdb;INIT=CREATE SCHEMA IF NOT EXISTS TRIALS"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class JuzgadoRepositoryCustomTest extends AuditConfigTest {
@@ -62,11 +63,6 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         String numExpediente = juzgadoRepository.getNumeroExpediente(juzgado.getId());
 
         assertThat(numExpediente).isNotBlank();
-
-        juzgadoRepository.delete(juzgado);
-        juzgadoRepository.eliminarSecuenciaExpediente(juzgado.getId());
-
-        assertThat(numExpediente).isEmpty();
     }
 
     @Test

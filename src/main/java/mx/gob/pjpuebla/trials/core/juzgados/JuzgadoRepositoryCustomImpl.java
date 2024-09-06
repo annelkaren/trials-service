@@ -12,10 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
+    private String PREFIX_SEQ = "TRIALS.SEQ_JUZGADO_EXPEDIENTE_";
 
     @Override
     public String generarSecuenciaExpediente(Integer pn_id){
-        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
+        String nombreSecuencia = PREFIX_SEQ + pn_id;
         String sqlSeq = String.format("CREATE SEQUENCE IF NOT EXISTS %s", nombreSecuencia);
 
         try{
@@ -32,7 +33,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
 
     @Override
     public Boolean eliminarSecuenciaExpediente(Integer pn_id){
-        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
+        String nombreSecuencia = PREFIX_SEQ + pn_id;
         String sqlSeq = String.format("DROP SEQUENCE IF EXISTS %s", nombreSecuencia);
 
         
@@ -52,9 +53,9 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         String numExpediente = "";
-        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
+        String nombreSecuencia = PREFIX_SEQ + pn_id;
 
-        String sqlNumExp = String.format("SELECT LPAD(nextval('%s')::text,6,'0')", nombreSecuencia);
+        String sqlNumExp = String.format("SELECT LPAD(NEXTVAL('%s')::text,6,'0')", nombreSecuencia);
         System.out.println(sqlNumExp);
         log.info(sqlNumExp);
         try{
@@ -75,7 +76,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
 
     
     public Boolean reiniciarSecuenciaExpediente(Integer pn_id) {
-        String nombreSecuencia = "trials.seq_juzgado_expediente_" + pn_id;
+        String nombreSecuencia = PREFIX_SEQ + pn_id;
         String sqlSeq = String.format("ALTER SEQUENCE IF EXISTS %s RESTART WITH 1", nombreSecuencia);
 
         try{
@@ -87,8 +88,6 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
         }catch(Exception e){
             return Boolean.FALSE;
         }
-
-        
     }
 
 }
