@@ -22,15 +22,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping
+@RequestMapping("/api/core/salas")
 @SecurityRequirement(name = "keycloak")
 public class SalaResource {
     
     private final SalaService salaService;
 
     @GetMapping
-    public Page<SalaRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre) {
+    public Page<SalaRecord> getAll(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "nombre",
+            required = false) String nombre) {
                     
             return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
     }
