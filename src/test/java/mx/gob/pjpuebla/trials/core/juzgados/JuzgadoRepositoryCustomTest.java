@@ -21,17 +21,14 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class JuzgadoRepositoryTest extends AuditConfigTest {
+class JuzgadoRepositoryCustomTest extends AuditConfigTest {
 
     @Autowired
     private JuzgadoRepository juzgadoRepository;
@@ -60,13 +57,14 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     @Test
     void getNumeroExpediente() {
         juzgado = juzgadoRepository.save(juzgado);
-        
+        juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
+
         String numExpediente = juzgadoRepository.getNumeroExpediente(juzgado.getId());
 
         assertThat(numExpediente).isNotBlank();
-        // assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
 
         juzgadoRepository.delete(juzgado);
+        juzgadoRepository.eliminarSecuenciaExpediente(juzgado.getId());
 
         assertThat(numExpediente).isEmpty();
     }
