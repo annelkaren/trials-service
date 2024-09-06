@@ -98,6 +98,9 @@ public class Persona implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
+    @Column(name = "S_USUARIO")
+    private String usuario;
+
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

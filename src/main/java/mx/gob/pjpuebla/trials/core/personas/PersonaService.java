@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -27,6 +28,7 @@ public class PersonaService {
     private final EscolaridadRepository escolaridadRepository;
     private final EstadoCivilRepository estadoCivilRepository;
     private final JuzgadoRepository juzgadoRepository;
+    private final UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -52,9 +54,11 @@ public class PersonaService {
     }
 
     public PersonaRecordResponse create(Persona persona) {
+        usuarioService.create(persona);
         persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
         persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+        persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId()).orElse(null));
         persona = personaRepository.save(persona);
         return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
