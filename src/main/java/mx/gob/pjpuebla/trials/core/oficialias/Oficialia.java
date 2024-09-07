@@ -6,9 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.Estado;
 
 import java.io.Serializable;
 
@@ -29,12 +32,13 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
-    @Column(name = "S_TIPO", nullable = false)
-    private String tipo;
+    @OneToOne
+    @JoinColumn(name = "PN_ID", nullable = false)
+    private TipoOficialia tipo;
 
     @NotNull
     @Column(name = "S_NOMBRE", nullable = false)
@@ -47,6 +51,10 @@ public class Oficialia implements Serializable, Auditable {
     @NotNull
     @Column(name = "S_RESPONSABLE", nullable = false)
     private String responsable;
+
+    @OneToOne
+    @JoinColumn(name = "PN_ID", nullable = false)
+    private Sede sede;
 
     @Accessors(chain = false)
     @Embedded
