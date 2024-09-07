@@ -21,7 +21,9 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.Calendar;
 import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
@@ -57,12 +59,15 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getNumeroExpediente() {
+        String anioActual = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+        String numExpediente;
+
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
-        String numExpediente = juzgadoRepository.getNumeroExpediente(juzgado.getId());
+        numExpediente = juzgadoRepository.getNumeroExpediente(juzgado.getId());
 
-        assertThat(numExpediente).isNotBlank();
+        assertThat(numExpediente).matches("\\d{6}[\\/]\\d{4}").endsWith(anioActual);
     }
 
     @Test
