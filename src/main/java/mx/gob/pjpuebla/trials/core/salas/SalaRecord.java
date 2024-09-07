@@ -15,6 +15,9 @@ public record SalaRecord(
     Long juez_id,
     String juzgado,
     Integer juzgado_id,
-    Bloque bloque) {
+    Bloque bloque,
+    Integer version,
+    Integer juez_version,
+    Integer juzgado_version) {
     
 }

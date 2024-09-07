@@ -43,7 +43,10 @@ public class SalaService {
                                         sala.getJuez().getId(),
                                         sala.getJuzgado().getNombre(),
                                         sala.getJuzgado().getId(),
-                                        sala.getBloque()))
+                                        sala.getBloque(),
+                                        sala.getVersion(),
+                                        sala.getJuez().getVersion(),
+                                        sala.getJuzgado().getVersion()))
 
             .toList();
         
@@ -67,7 +70,10 @@ public class SalaService {
             sala.getJuez().getId(),
             sala.getJuzgado().getNombre(),
             sala.getJuzgado().getId(),
-            sala.getBloque());
+            sala.getBloque(),
+            sala.getVersion(),
+            sala.getJuez().getVersion(),
+            sala.getJuzgado().getVersion());
     }
 
     public SalaRecord update(Sala sala) {
@@ -80,7 +86,10 @@ public class SalaService {
                 sala.getJuez().getId(),
                 sala.getJuzgado().getNombre(),
                 sala.getJuzgado().getId(),
-                sala.getBloque());
+                sala.getBloque(),
+                sala.getVersion(),
+                sala.getJuez().getVersion(),
+                sala.getJuzgado().getVersion());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             throw new OptimisticLockingFailureException("Sala modificada por otro usuario", "salaId");
         }

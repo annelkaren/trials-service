@@ -22,7 +22,10 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 juez.id,
                 j.nombre,
                 j.id,
-                b
+                b,
+                s.version,
+                juez.version,
+                j.version
             )
             FROM Sala s
             LEFT JOIN s.juez juez
@@ -42,7 +45,10 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 juez.id,
                 j.nombre,
                 j.id, 
-                b
+                b,
+                s.version,
+                juez.version,
+                j.version
             )
             FROM Sala s
             LEFT JOIN s.juez juez

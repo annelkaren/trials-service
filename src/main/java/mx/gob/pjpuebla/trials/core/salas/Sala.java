@@ -67,7 +67,6 @@ public class Sala implements Serializable, Auditable {
     @OneToOne()
     private Juzgado juzgado;
 
-    @JsonIgnore
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
