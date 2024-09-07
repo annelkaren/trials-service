@@ -60,10 +60,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http.csrf(AbstractHttpConfigurer::disable)
-//                .oauth2ResourceServer(t -> t.jwt(Customizer.withDefaults()))
-//                .addFilterAfter(createPolicyEnforcerFilter(), BearerTokenAuthenticationFilter.class)
-//                .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.csrf(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(t -> t.jwt(Customizer.withDefaults()))
+                .addFilterAfter(createPolicyEnforcerFilter(), BearerTokenAuthenticationFilter.class)
+                .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
