@@ -3,8 +3,14 @@ package mx.gob.pjpuebla.trials.core.personas;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -18,6 +24,12 @@ public class PersonaResource {
     public PersonaRecord getById(@PathVariable Long id) {
         return this.personaService.findById(id);
     }
+
+    @GetMapping("/jueces")
+    public List<PersonaRecord> getJueces() {
+        return this.personaService.findAllJueces();
+    }
+    
 
     @PostMapping
     public PersonaRecord create(@RequestBody @Valid Persona persona) {

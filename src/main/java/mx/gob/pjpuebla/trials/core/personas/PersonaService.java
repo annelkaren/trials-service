@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +26,11 @@ public class PersonaService {
         Persona persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
         return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), persona.getPseudonimo());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PersonaRecord> findAllJueces(){
+        return personaRepository.findAllJueces();
     }
 
     public PersonaRecord create(Persona persona) {
