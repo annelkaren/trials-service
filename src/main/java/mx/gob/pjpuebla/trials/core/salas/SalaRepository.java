@@ -19,7 +19,9 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 s.id,
                 s.nombre,
                 juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
-                j.nombre, 
+                juez.id,
+                j.nombre,
+                j.id,
                 b
             )
             FROM Sala s
@@ -37,12 +39,14 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 s.id,
                 s.nombre,
                 juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
-                juzgado.nombre, 
+                juez.id,
+                j.nombre,
+                j.id, 
                 b
             )
             FROM Sala s
             LEFT JOIN s.juez juez
-            LEFT JOIN s.juzgado juzgado
+            LEFT JOIN s.juzgado j
             LEFT JOIN s.bloque b
             WHERE s.estado IN :estados
             """)
