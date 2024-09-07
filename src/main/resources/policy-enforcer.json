@@ -1,6 +1,5 @@
 {
   "realm": "trials-realm",
-  "auth-server-url": "http://localhost:8080",
   "resource": "trials-service",
   "credentials": {
     "secret": "2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj"
@@ -13,6 +12,10 @@
     },
     {
       "path": "/v3/api-docs/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/actuator/*",
       "enforcement-mode": "DISABLED"
     }
   ]
