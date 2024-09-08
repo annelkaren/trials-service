@@ -144,6 +144,11 @@
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
 										<exclude>*oficialias</exclude>
+										<exclude>*roles</exclude>
+										<exclude>*distritos</exclude>
+										<exclude>*escolaridades</exclude>
+										<exclude>*especialidades</exclude>
+										<exclude>*estadocivil</exclude>
 									</excludes>
 									<limits>
 										<limit>

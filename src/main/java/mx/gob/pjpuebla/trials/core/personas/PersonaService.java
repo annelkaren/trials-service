@@ -93,8 +93,10 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findByCurp(String curp) {
-        return personaRepository.findByCurp(curp)
-                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaCurp"));
+        PersonaRecord persona = personaRepository.findByCurp(curp)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "curp"));
+        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
+        return persona.withRoles(roles);
     }
 
     private List<String> getNames(List<RoleRecord> list) {

@@ -1,9 +1,20 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
+import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+import mx.gob.pjpuebla.trials.core.escolaridades.Escolaridad;
+import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
+import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadSetUp;
+import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivil;
+import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -18,10 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static mx.gob.pjpuebla.trials.core.personas.PersonaSetUp.createPersona;
 import static mx.gob.pjpuebla.trials.core.personas.PersonaSetUp.createPersonaRecord;
@@ -35,25 +43,40 @@ class PersonaServiceTest {
 
     @Mock
     PersonaRepository mockPersonaRepository;
-
+    @Mock
+    JuzgadoRepository juzgadoRepository;
+    @Mock
+    EscolaridadRepository escolaridadRepository;
+    @Mock
+    EstadoCivilRepository estadoCivilRepository;
     @InjectMocks
     PersonaService personaService;
-
     @Mock
     DomicilioService domicilioService;
-
+    @Mock
+    UsuarioService usuarioService;
     @Mock
     RoleService roleService;
 
     private Persona validPersona;
     private PersonaRecord validPersonaRecord;
     private Domicilio validDomicilio;
+    private Escolaridad escolaridad;
+    private EstadoCivil estadoCivil;
+    private Juzgado juzgado;
 
     @BeforeEach
     public void setUp() {
         validPersonaRecord = createPersonaRecord();
         validPersona = createPersona();
-        validDomicilio = new Domicilio();
+        validDomicilio = DomicilioSetUp.createDomicilio();
+        escolaridad = EscolaridadSetUp.createEscolaridad();
+        estadoCivil = EstadoCivilSetUp.createEstadoCivil();
+        juzgado = JuzgadoSetUp.createJuzgado(Estado.ACTIVE);
+        validPersona.setEscolaridad(escolaridad);
+        validPersona.setEstadoCivil(estadoCivil);
+        validPersona.setJuzgado(juzgado);
+        validPersona.setDomicilio(validDomicilio);
     }
 
     @Test
@@ -101,65 +124,19 @@ class PersonaServiceTest {
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
 
-//    @Test
-//    void create() {
-//        validPersona.setDomicilio(validDomicilio);
-//        given(domicilioService.save(validDomicilio))
-//                .willReturn(validDomicilio);
-//        given(mockPersonaRepository.save(validPersona))
-//                .willReturn(validPersona);
-//
-//        PersonaRecord response = personaService.create(validPersona);
-//
-//        assertThat(response).isOfAnyClassIn(PersonaRecord.class)
-//                .hasFieldOrPropertyWithValue("id", validPersona.getId())
-//                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
-//    }
+    @Test
+    void getByCurp_return_persona() {
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaRepository.findByCurp(validPersona.getCurp()))
+                .willReturn(Optional.ofNullable(validPersonaRecord));
+        given(roleService.getRolesByUserId(validPersonaRecord.usuario())).willReturn(Arrays.asList(roleRecord));
 
-//    @Test
-//    void update() {
-//        validPersona.setDomicilio(validDomicilio);
-//        given(domicilioService.save(validDomicilio))
-//                .willReturn(validDomicilio);
-//        given(mockPersonaRepository.save(validPersona))
-//                .willReturn(validPersona);
-//
-//        PersonaRecord response = personaService.update(validPersona);
-//
-//        assertThat(response).isOfAnyClassIn(PersonaRecord.class)
-//                .hasFieldOrPropertyWithValue("id", validPersona.getId())
-//                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
-//    }
-
-//    @Test
-//    void update_return_optimistic_exception() {
-//        validPersona.setDomicilio(validDomicilio);
-//        given(domicilioService.save(validDomicilio))
-//                .willReturn(validDomicilio);
-//        given(mockPersonaRepository.save(validPersona))
-//                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
-//
-//        OptimisticLockingFailureException assertThrows = assertThrows(
-//                OptimisticLockingFailureException.class,
-//                () -> {
-//                    personaService.update(validPersona);
-//                }
-//        );
-//
-//        assertThat(assertThrows.getMessage()).contains("Persona modificada por otro usuario");
-//    }
-
-//    @Test
-//    void getByCurp_return_persona() {
-//        validPersona.setCurp("XXXX111111XXXXXX11");
-//        given(mockPersonaRepository.findByCurp(validPersona.getCurp()))
-//                .willReturn(Optional.ofNullable(validPersona));
-//
-//        PersonaRecord mr = personaService.findByCurp(validPersona.getCurp());
-//        assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
-//                .hasFieldOrPropertyWithValue("id", validPersona.getId())
-//                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre());
-//    }
+        PersonaRecord mr = personaService.findByCurp(validPersona.getCurp());
+        assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
+                .hasFieldOrPropertyWithValue("id", validPersonaRecord.id())
+                .hasFieldOrPropertyWithValue("nombre", validPersonaRecord.nombre())
+                .hasFieldOrProperty("permisos").isNotNull();
+    }
 
     @Test
     void getByCurp_return_not_found() {
@@ -175,5 +152,66 @@ class PersonaServiceTest {
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
+    }
+
+    @Test
+    void create() {
+        List<String> roles = Arrays.asList("JUEZ");
+        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        given(usuarioService.create(validPersona)).willReturn("usuario-valido");
+        roleService.addRoles(validPersona.getUsuario(), roles);
+        given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
+        given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
+        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
+        given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
+        given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
+
+        PersonaRecordResponse response = personaService.create(validPersona, rolesRecord);
+
+        assertThat(response).isOfAnyClassIn(PersonaRecordResponse.class)
+                .hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
+                .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+    }
+
+    @Test
+    void update() {
+        List<String> roles = Arrays.asList("JUEZ");
+        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        roleService.updateRoles(validPersona.getUsuario(), roles);
+        given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
+        given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
+        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
+        given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
+        given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
+
+        PersonaRecordResponse response = personaService.create(validPersona, rolesRecord);
+
+        assertThat(response).isOfAnyClassIn(PersonaRecordResponse.class)
+                .hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
+                .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+    }
+
+    @Test
+    void update_return_optimistic_exception() {
+        List<String> roles = Arrays.asList("JUEZ");
+        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        roleService.updateRoles(validPersona.getUsuario(), roles);
+        given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
+        given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
+        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
+        given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
+        given(mockPersonaRepository.save(validPersona))
+                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
+
+        OptimisticLockingFailureException assertThrows = assertThrows(
+                OptimisticLockingFailureException.class,
+                () -> {
+                    personaService.update(validPersona, rolesRecord);
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Persona modificada por otro usuario");
     }
 }
