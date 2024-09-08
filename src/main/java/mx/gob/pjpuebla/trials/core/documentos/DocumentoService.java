@@ -38,17 +38,8 @@ public class DocumentoService {
                 .orElseThrow(() -> new NoSuchElementException("Tipo Juicio no encontrado")));
         documento = documentoRepository.save(documento);
 
-        for (PersonaDocumentoDTO persona : documentoDTO.getPersonaDocumento()) {
-            PersonaDocumento entity = new PersonaDocumento();
-            entity.setNombre(persona.getNombre());
-            entity.setApellidoPaterno(persona.getApelidoPaterno());
-            entity.setApellidoMaterno(persona.getApellidoMaterno());
-            entity.setPseudonimo(persona.getPseudonimo());
-            entity.setTipoPersona(persona.getTipoPersona());
-            entity.setTipoPartes(tipoPartesRepository.findById(persona.getTipoparte()).orElseThrow(() -> new NoSuchElementException("Tipo parte del demandado no encontrada")));
-            entity.setDocumento(documento);
-            personaDocumentoRepository.save(entity);
-        }
+        createPersonaDocumento(documentoDTO.getActor(), documento);
+        createPersonaDocumento(documentoDTO.getDemandado(), documento);
 
         for (String anexo : documentoDTO.getAnexos()) {
             Anexo entity = new Anexo();
@@ -57,6 +48,18 @@ public class DocumentoService {
             anexoRepository.save(entity);
         }
         return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+    }
+
+    private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento){
+        PersonaDocumento entity = new PersonaDocumento();
+        entity.setNombre(persona.getNombre());
+        entity.setApellidoPaterno(persona.getApelidoPaterno());
+        entity.setApellidoMaterno(persona.getApellidoMaterno());
+        entity.setPseudonimo(persona.getPseudonimo());
+        entity.setTipoPersona(persona.getTipoPersona());
+        entity.setTipoPartes(tipoPartesRepository.findById(persona.getTipoparte()).orElseThrow(() -> new NoSuchElementException("Tipo parte del demandado no encontrada")));
+        entity.setDocumento(documento);
+        personaDocumentoRepository.save(entity);
     }
 }
 

@@ -8,7 +8,8 @@ import java.util.List;
 @Data
 public class DocumentoDTO {
 
-    List<PersonaDocumentoDTO> personaDocumento;
+    PersonaDocumentoDTO actor;
+    PersonaDocumentoDTO demandado;
     List<String> anexos;
     Integer tipoJuicioId;
 }
