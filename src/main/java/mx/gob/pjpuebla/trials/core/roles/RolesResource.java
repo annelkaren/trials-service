@@ -26,7 +26,7 @@ public class RolesResource {
     private String realm;
 
     @GetMapping
-    public List<Role> getAll() {
+    public List<RoleRecord> getAll() {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
         return mapRoles(roles);
@@ -74,8 +74,8 @@ public class RolesResource {
         }
     }
 
-    private List<Role> mapRoles(List<RoleRepresentation> roleRepresentations) {
-        List<Role> roles = new ArrayList<>();
+    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations) {
+        List<RoleRecord> roles = new ArrayList<>();
         roleRepresentations.stream()
                 .filter(r -> r.getAttributes() != null)
                 .filter(r -> r.getAttributes().containsKey("client-role"))
@@ -84,11 +84,8 @@ public class RolesResource {
         return roles;
     }
 
-    private Role mapRole(RoleRepresentation roleRepresentation) {
-        Role role = new Role();
-        role.setName(roleRepresentation.getName());
-        role.setDescription(roleRepresentation.getDescription());
-        return role;
+    private RoleRecord mapRole(RoleRepresentation roleRepresentation) {
+        return new RoleRecord(roleRepresentation.getId(), roleRepresentation.getName());
     }
 
     private RoleRepresentation mapRole(Role role) {

@@ -54,7 +54,9 @@ public class PersonaService {
     }
 
     public PersonaRecordResponse create(Persona persona) {
-        usuarioService.create(persona);
+        List<String> list = Arrays.asList("SECRETARIO", "IMPLEMENTADOR");
+        persona.setUsuario(usuarioService.create(persona));
+        usuarioService.addRoles(persona.getUsuario(), list);
         persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
         persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));

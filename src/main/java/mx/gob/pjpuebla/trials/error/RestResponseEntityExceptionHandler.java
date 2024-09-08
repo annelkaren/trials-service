@@ -61,6 +61,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         );
     }
 
+    @ExceptionHandler(UserAlreadyExistException.class)
+    protected ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistException ex, WebRequest request) {
+        return handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getField(), ex.getReason())
+                ),
+                new HttpHeaders(),
+                HttpStatus.CONFLICT,
+                request
+        );
+    }
+
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         if (ex.getCause() instanceof InvalidFormatException) {
             InvalidFormatException cause = (InvalidFormatException) ex.getCause();
