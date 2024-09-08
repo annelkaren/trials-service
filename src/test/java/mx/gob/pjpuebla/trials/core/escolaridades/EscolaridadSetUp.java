@@ -20,4 +20,8 @@ public class EscolaridadSetUp {
         return escolaridad;
     }
 
+    public static EscolaridadRecord createEscolaridadRecord(){
+        return new EscolaridadRecord(1, "Primaria");
+    }
+
 }

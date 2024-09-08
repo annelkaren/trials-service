@@ -3,8 +3,7 @@ package mx.gob.pjpuebla.trials.core.personas;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -93,44 +93,47 @@ class PersonaResourceTest {
         ).andExpect(status().isBadRequest());
     }
 
-//    @Test
-//    void create_success() throws Exception {
-//        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-//                .willReturn(validPersonaRecord);
-//
-//        mockMvc.perform(
-//                post("/api/core/personas")
-//                        .content(asJsonString(PersonaSetUp.createPersona()))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON)
-//        ).andExpect(status().isOk());
-//    }
+    @Test
+    void create_success() throws Exception {
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.create(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+                .willReturn(personaRecordResponse);
 
-//    @Test
-//    void update_success() throws Exception {
-//        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-//                .willReturn(validPersonaRecord);
-//
-//        mockMvc.perform(
-//                put("/api/core/personas")
-//                        .content(asJsonString(PersonaSetUp.createPersona()))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON)
-//        ).andExpect(status().isOk());
-//    }
+        mockMvc.perform(
+                post("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 
-//    @Test
-//    void update_error() throws Exception {
-//        given(mockPersonaService.update(PersonaSetUp.createPersona()))
-//                .willThrow(OptimisticLockingFailureException.class);
-//
-//        mockMvc.perform(
-//                put("/api/core/personas")
-//                        .content(asJsonString(PersonaSetUp.createPersona()))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON)
-//        ).andExpect(status().isOk());
-//    }
+    @Test
+    void update_success() throws Exception {
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+                .willReturn(personaRecordResponse);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void update_error() throws Exception {
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+                .willThrow(OptimisticLockingFailureException.class);
+
+        mockMvc.perform(
+                put("/api/core/personas")
+                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 
     private static String asJsonString(final Object obj) {
         try {

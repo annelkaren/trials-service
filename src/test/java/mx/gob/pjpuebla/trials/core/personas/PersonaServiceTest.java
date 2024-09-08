@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -178,6 +179,7 @@ class PersonaServiceTest {
     void update() {
         List<String> roles = Arrays.asList("JUEZ");
         List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        Mockito.doNothing().when(roleService).updateRoles(validPersona.getUsuario(), roles);
         roleService.updateRoles(validPersona.getUsuario(), roles);
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
@@ -185,7 +187,7 @@ class PersonaServiceTest {
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
 
-        PersonaRecordResponse response = personaService.create(validPersona, rolesRecord);
+        PersonaRecordResponse response = personaService.update(validPersona, rolesRecord);
 
         assertThat(response).isOfAnyClassIn(PersonaRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())

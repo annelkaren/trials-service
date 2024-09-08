@@ -82,7 +82,7 @@ public class PersonaService {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
                     .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
-            personaRepository.save(persona);
+            persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), getNames(roles));
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
         } catch (OptimisticLockingFailureException ex) {
