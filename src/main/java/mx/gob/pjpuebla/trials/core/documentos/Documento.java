@@ -30,7 +30,7 @@ public class Documento implements Serializable, Auditable {
     private String folio;
 
     @Size(max = 50)
-    @Column(name = "S_RUTA", nullable = false)
+    @Column(name = "S_RUTA")
     private String ruta;
 
 //  LABORAL = primera face procesal

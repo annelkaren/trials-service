@@ -30,9 +30,8 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "S_NOMBRES", nullable = false)
     private String nombre;
 
-    @NotBlank
-    @Size(min = 3, max = 40)
-    @Column(name = "S_APELLIDO_PATERNO", nullable = false)
+
+    @Column(name = "S_APELLIDO_PATERNO")
     private String apellidoPaterno;
 
     @Column(name = "S_APELLIDO_MATERNO")
