@@ -40,33 +40,6 @@ public class UsuarioService {
         }
     }
 
-    public void addRoles(String userId, List<String> newRoles) {
-        List<RoleRepresentation> selectedRoles = new ArrayList<>();
-        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
-        UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
-        for (String newRole : newRoles) {
-            RoleRepresentation role = keycloak.realm(realm).roles().get(newRole).toRepresentation();
-            selectedRoles.add(role);
-        }
-        userRepresentation.roles().realmLevel().add(selectedRoles);
-    }
-
-    public void updateRoles(String userId, List<String> newRoles) {
-        List<RoleRepresentation> rolesToRemove = new ArrayList<>();
-        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
-        UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
-        List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
-
-        for (RoleRepresentation current : currentRoles) {
-            boolean isAnExistingRole = newRoles.stream().filter(role -> role.equalsIgnoreCase(current.getName())).findFirst().isPresent();
-            if (!isAnExistingRole && !current.getName().toLowerCase().contains("default")) {
-                rolesToRemove.add(current);
-            }
-        }
-        userRepresentation.roles().realmLevel().remove(rolesToRemove);
-        addRoles(userId, newRoles);
-    }
-
     private UserRepresentation mapUser(Persona persona) {
         UserRepresentation userRep = new UserRepresentation();
         userRep.setUsername(persona.getCorreoElectronico());

@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
-                p.usuario
+                p.usuario, null
             )
             FROM Persona p 
             LEFT JOIN p.escolaridad e
@@ -36,7 +35,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
-                p.usuario
+                p.usuario, null
             )
             FROM Persona p 
             LEFT JOIN p.escolaridad e

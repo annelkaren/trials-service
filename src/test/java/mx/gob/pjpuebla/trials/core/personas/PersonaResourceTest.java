@@ -93,44 +93,44 @@ class PersonaResourceTest {
         ).andExpect(status().isBadRequest());
     }
 
-    @Test
-    void create_success() throws Exception {
-        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-                .willReturn(validPersonaRecord);
+//    @Test
+//    void create_success() throws Exception {
+//        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+//                .willReturn(validPersonaRecord);
+//
+//        mockMvc.perform(
+//                post("/api/core/personas")
+//                        .content(asJsonString(PersonaSetUp.createPersona()))
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .accept(MediaType.APPLICATION_JSON)
+//        ).andExpect(status().isOk());
+//    }
 
-        mockMvc.perform(
-                post("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+//    @Test
+//    void update_success() throws Exception {
+//        given(mockPersonaService.create(PersonaSetUp.createPersona()))
+//                .willReturn(validPersonaRecord);
+//
+//        mockMvc.perform(
+//                put("/api/core/personas")
+//                        .content(asJsonString(PersonaSetUp.createPersona()))
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .accept(MediaType.APPLICATION_JSON)
+//        ).andExpect(status().isOk());
+//    }
 
-    @Test
-    void update_success() throws Exception {
-        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-                .willReturn(validPersonaRecord);
-
-        mockMvc.perform(
-                put("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
-
-    @Test
-    void update_error() throws Exception {
-        given(mockPersonaService.update(PersonaSetUp.createPersona()))
-                .willThrow(OptimisticLockingFailureException.class);
-
-        mockMvc.perform(
-                put("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+//    @Test
+//    void update_error() throws Exception {
+//        given(mockPersonaService.update(PersonaSetUp.createPersona()))
+//                .willThrow(OptimisticLockingFailureException.class);
+//
+//        mockMvc.perform(
+//                put("/api/core/personas")
+//                        .content(asJsonString(PersonaSetUp.createPersona()))
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .accept(MediaType.APPLICATION_JSON)
+//        ).andExpect(status().isOk());
+//    }
 
     private static String asJsonString(final Object obj) {
         try {

@@ -20,7 +20,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(RolesResource.class)
+@WebMvcTest(RoleResource.class)
 @MockBean(SecurityFilterChain.class)
 class RolesResourceTest {
 

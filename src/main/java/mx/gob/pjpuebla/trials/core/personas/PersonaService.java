@@ -6,6 +6,8 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,6 +32,7 @@ public class PersonaService {
     private final EstadoCivilRepository estadoCivilRepository;
     private final JuzgadoRepository juzgadoRepository;
     private final UsuarioService usuarioService;
+    private final RoleService roleService;
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -49,13 +53,15 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
-        return personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
+        PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
+        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
+        return persona.withRoles(roles);
     }
 
-    public PersonaRecordResponse create(Persona persona, List<String> roles) {
+    public PersonaRecordResponse create(Persona persona, List<RoleRecord> roles) {
         persona.setUsuario(usuarioService.create(persona));
-        usuarioService.addRoles(persona.getUsuario(), roles);
+        roleService.addRoles(persona.getUsuario(), getNames(roles));
         persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
                 .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
         persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
@@ -67,7 +73,7 @@ public class PersonaService {
         return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
 
-    public PersonaRecordResponse update(Persona persona, List<String> roles) {
+    public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
         try {
             persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
                     .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
@@ -77,7 +83,7 @@ public class PersonaService {
                     .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
             personaRepository.save(persona);
-            usuarioService.updateRoles(persona.getUsuario(), roles);
+            roleService.updateRoles(persona.getUsuario(), getNames(roles));
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
         } catch (OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
@@ -89,5 +95,11 @@ public class PersonaService {
     public PersonaRecord findByCurp(String curp) {
         return personaRepository.findByCurp(curp)
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaCurp"));
+    }
+
+    private List<String> getNames(List<RoleRecord> list) {
+        List<String> roles = new ArrayList<>();
+        list.stream().forEach(roleRecord -> roles.add(roleRecord.name()));
+        return roles;
     }
 }

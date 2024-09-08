@@ -18,7 +18,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
@@ -41,9 +40,9 @@ class PersonaRepositoryTest extends AuditConfigTest {
     void findByIdAndEstadoActive() {
         persona = personaRepository.save(persona);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<Persona> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
+        Optional<PersonaRecord> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
         assertThat(entity).isPresent();
-        assertThat(entity.get().getEstado()).isEqualTo(Estado.ACTIVE);
+        assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
     }
 
     @Test
@@ -51,16 +50,15 @@ class PersonaRepositoryTest extends AuditConfigTest {
         persona.setEstado(Estado.INACTIVE);
         persona = personaRepository.save(persona);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<Persona> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
+        Optional<PersonaRecord> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
         assertThat(entity).isPresent();
-        assertThat(entity.get().getEstado()).isEqualTo(Estado.INACTIVE);
+        assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
     }
 
     @Test
     void findByCurp() {
-        persona.setCurp("XXXX111111XXXXXX11");
         persona = personaRepository.save(persona);
-        Optional<Persona> entity = personaRepository.findByCurp(persona.getCurp());
+        Optional<PersonaRecord> entity = personaRepository.findByCurp(persona.getCurp());
         assertThat(entity).isPresent();
     }
 }

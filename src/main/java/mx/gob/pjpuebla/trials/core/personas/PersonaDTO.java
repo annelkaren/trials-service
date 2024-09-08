@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import lombok.Data;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 
 import java.util.List;
 
@@ -8,5 +9,5 @@ import java.util.List;
 public class PersonaDTO {
 
     private Persona persona;
-    private List<String> roles;
+    private List<RoleRecord> roles;
 }
