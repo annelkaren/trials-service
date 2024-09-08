@@ -24,6 +24,7 @@ public record PersonaRecord
          Integer estadoCivilId,
          Integer escolaridadId,
          Integer juzgadoId,
-         DomicilioRecord domicilio
+         DomicilioRecord domicilio,
+         String usuario
         ) {
 }

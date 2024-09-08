@@ -53,25 +53,31 @@ public class PersonaService {
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
     }
 
-    public PersonaRecordResponse create(Persona persona) {
-        List<String> list = Arrays.asList("SECRETARIO", "IMPLEMENTADOR");
+    public PersonaRecordResponse create(Persona persona, List<String> roles) {
         persona.setUsuario(usuarioService.create(persona));
-        usuarioService.addRoles(persona.getUsuario(), list);
-        persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
-        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
+        usuarioService.addRoles(persona.getUsuario(), roles);
+        persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
+                .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
+        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
+                .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
+        persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
+                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
-        persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId()).orElse(null));
         persona = personaRepository.save(persona);
         return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
 
-    public PersonaRecordResponse update(Persona persona) {
+    public PersonaRecordResponse update(Persona persona, List<String> roles) {
         try {
-            persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId()).orElse(null));
-            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId()).orElse(null));
-            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId()).orElse(null));
+            persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
+                    .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
+            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
+                    .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
+            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
+                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
             personaRepository.save(persona);
+            usuarioService.updateRoles(persona.getUsuario(), roles);
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
         } catch (OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
@@ -80,9 +86,8 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public Persona findByCurp(String curp) {
+    public PersonaRecord findByCurp(String curp) {
         return personaRepository.findByCurp(curp)
                 .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaCurp"));
-        //return new PersonaRecord(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno());
     }
 }

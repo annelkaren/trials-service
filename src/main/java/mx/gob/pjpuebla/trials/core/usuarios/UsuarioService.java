@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.UserAlreadyExistException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
@@ -17,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Array;
 import java.util.*;
 
 @Slf4j
@@ -46,13 +44,27 @@ public class UsuarioService {
         List<RoleRepresentation> selectedRoles = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
-        List<RoleRepresentation> roles = userRepresentation.roles().realmLevel().listAll();
-        userRepresentation.roles().realmLevel().remove(roles);
-        for (String newrole : newRoles) {
-            RoleRepresentation role = keycloak.realm(realm).roles().get(newrole).toRepresentation();
+        for (String newRole : newRoles) {
+            RoleRepresentation role = keycloak.realm(realm).roles().get(newRole).toRepresentation();
             selectedRoles.add(role);
         }
         userRepresentation.roles().realmLevel().add(selectedRoles);
+    }
+
+    public void updateRoles(String userId, List<String> newRoles) {
+        List<RoleRepresentation> rolesToRemove = new ArrayList<>();
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
+        List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
+
+        for (RoleRepresentation current : currentRoles) {
+            boolean isAnExistingRole = newRoles.stream().filter(role -> role.equalsIgnoreCase(current.getName())).findFirst().isPresent();
+            if (!isAnExistingRole && !current.getName().toLowerCase().contains("default")) {
+                rolesToRemove.add(current);
+            }
+        }
+        userRepresentation.roles().realmLevel().remove(rolesToRemove);
+        addRoles(userId, newRoles);
     }
 
     private UserRepresentation mapUser(Persona persona) {

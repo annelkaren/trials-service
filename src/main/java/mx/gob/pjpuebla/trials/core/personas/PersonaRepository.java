@@ -18,7 +18,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
-                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia)
+                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
+                p.usuario
             )
             FROM Persona p 
             LEFT JOIN p.escolaridad e
@@ -28,6 +29,20 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             WHERE p.id =:id AND p.estado IN :estados""")
     Optional<PersonaRecord> findByIdAndEstadoIn(Long id, List<Estado> estados);
 
-    @EntityGraph(attributePaths = {"domicilio"})
-    Optional<Persona> findByCurp(String curp);
+    @Query("""
+            SELECT 
+            new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(p.id, p.version, p.nombre, p.apellidoPaterno, 
+                p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
+                p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
+                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
+                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
+                p.usuario
+            )
+            FROM Persona p 
+            LEFT JOIN p.escolaridad e
+            LEFT JOIN p.estadoCivil ec
+            LEFT JOIN p.domicilio dom
+            LEFT JOIN p.juzgado j
+            WHERE p.curp =:curp""")
+    Optional<PersonaRecord> findByCurp(String curp);
 }
