@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.documentos;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -13,7 +12,6 @@ import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
 
 import java.io.Serializable;
-
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -40,18 +38,17 @@ public class Documento implements Serializable, Auditable {
 //  Recepción documentos = Juicios orales
     @Size(max = 30)
     @Column(name = "S_ESTATUS_PROCESAL", nullable = false)
-    private String procesal;
+    private String status;
 
     @Enumerated
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
     private TipoDocumento tipoDocumento;
 
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-//  null ?
     private Juzgado juzgado;
 
-    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
 //    tipo del juicio el que listo de mis materias
     private TipoJuicio tipoJuicio;
