@@ -29,8 +29,9 @@ public class DocumentoService {
         Documento documento = new Documento();
 
         //TODO generacion de folio
-        documento.setFolio("000001");
+        documento.setFolio("1");
         //TODO. Asignación de juzgado
+        documento.setExpediente("000001/2024");
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setStatus("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
