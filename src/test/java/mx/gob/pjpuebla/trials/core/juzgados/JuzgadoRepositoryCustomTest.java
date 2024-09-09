@@ -21,8 +21,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.Calendar;
-import java.util.List;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,7 +58,7 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getNumeroExpediente() {
-        String anioActual = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+        String anioActual = Integer.toString(LocalDate.now().getYear());
         String numExpediente;
 
         juzgado = juzgadoRepository.save(juzgado);
@@ -74,11 +73,20 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
     void reiniciarSecuenciaExpediente() {
         juzgado.setEstado(Estado.ACTIVE);
         juzgado = juzgadoRepository.save(juzgado);
+        juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
-        List<Juzgado> juzgados = juzgadoRepository.findAll();
-
-        for(Juzgado tmp : juzgados){
-            assertThat(juzgadoRepository.reiniciarSecuenciaExpediente(tmp.getId())).isTrue();
+        for (Juzgado tmp:juzgadoRepository.findAll()){
+            for (int i=0; i<5; i++){
+                juzgadoRepository.getNumeroExpediente(tmp.getId());
+            }
         }
+
+        assertThat(juzgadoRepository.reiniciarSecuenciasExpedientes()).isTrue();
+
+        for (Juzgado tmp:juzgadoRepository.findAll()){
+            String numExpediente = juzgadoRepository.getNumeroExpediente(tmp.getId());
+            assertThat(numExpediente).startsWith("000001");
+        }
+        
     }
 }

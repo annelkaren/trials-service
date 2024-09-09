@@ -70,7 +70,11 @@ public class JuzgadoService {
         juzgadoRepository.eliminarSecuenciaExpediente(id);
     }
 
-    public String getNumeroExpediente(Integer id){
-        return juzgadoRepository.getNumeroExpediente(id);
+    public NumeroExpedienteResponse getNumeroExpediente(Integer id){
+        return new NumeroExpedienteResponse(juzgadoRepository.getNumeroExpediente(id));
+    }
+
+    public Boolean reiniciarSecuenciasExpedientes(){
+        return juzgadoRepository.reiniciarSecuenciasExpedientes();
     }
 }
