@@ -18,30 +18,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/core/roles")
 @SecurityRequirement(name = "Keycloak")
-public class RolesResource {
+public class RoleResource {
 
     private final KeycloakSecurityUtil keycloakSecurityUtil;
+    private final RoleService roleService;
 
     @Value("${keycloak.realm}")
     private String realm;
 
     @GetMapping
-    public List<Role> getAll() {
+    public List<RoleRecord> getAll() {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
         return mapRoles(roles);
     }
 
-    @GetMapping("/{name}")
-    public Response getByName(@PathVariable String name) {
-        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
-        try {
-            RoleRepresentation role = keycloak.realm(realm).roles().get(name).toRepresentation();
-            return Response.ok(mapRole(role)).build();
-        } catch (Exception ex) {
-            log.error("getByName", ex);
-            return Response.ok("El rol no existe").build();
-        }
+    @GetMapping("/{userId}")
+    public List<RoleRecord> getAllAvailablesByUserId(@PathVariable String userId) {
+        return roleService.getAllAvailablesByUserId(userId);
     }
 
     @PostMapping
@@ -74,8 +68,8 @@ public class RolesResource {
         }
     }
 
-    private List<Role> mapRoles(List<RoleRepresentation> roleRepresentations) {
-        List<Role> roles = new ArrayList<>();
+    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations) {
+        List<RoleRecord> roles = new ArrayList<>();
         roleRepresentations.stream()
                 .filter(r -> r.getAttributes() != null)
                 .filter(r -> r.getAttributes().containsKey("client-role"))
@@ -84,11 +78,8 @@ public class RolesResource {
         return roles;
     }
 
-    private Role mapRole(RoleRepresentation roleRepresentation) {
-        Role role = new Role();
-        role.setName(roleRepresentation.getName());
-        role.setDescription(roleRepresentation.getDescription());
-        return role;
+    private RoleRecord mapRole(RoleRepresentation roleRepresentation) {
+        return new RoleRecord(roleRepresentation.getName(), roleRepresentation.getName());
     }
 
     private RoleRepresentation mapRole(Role role) {

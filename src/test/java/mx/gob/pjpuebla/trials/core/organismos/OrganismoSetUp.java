@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.core.organismos;
 
 
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.time.LocalDateTime;
 public class OrganismoSetUp {
