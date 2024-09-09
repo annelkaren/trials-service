@@ -7,13 +7,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Slf4j
 public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
-    private String PREFIX_SEQ = "TRIALS.SEQ_JUZGADO_EXPEDIENTE_";
+    private String PREFIX_SEQ = "SEQ_JUZGADO_EXPEDIENTE_";
 
     @Override
     public String generarSecuenciaExpediente(Integer juzgadoId){

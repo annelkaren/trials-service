@@ -13,7 +13,7 @@ import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
-        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop",
-        "spring.jpa.properties.hibernate.connection.url: jdbc:h2:mem:trialsdb;INIT=CREATE SCHEMA IF NOT EXISTS TRIALS"
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 class JuzgadoRepositoryCustomTest extends AuditConfigTest {
