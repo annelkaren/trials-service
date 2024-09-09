@@ -3,8 +3,8 @@ package mx.gob.pjpuebla.trials.core.sedes;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Estado;
-import mx.gob.pjpuebla.trials.util.Tipo;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Tipo;
 
 import java.time.LocalDateTime;
 

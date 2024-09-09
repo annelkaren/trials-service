@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipojuicio;
 
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
