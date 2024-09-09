@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.util;
+package mx.gob.pjpuebla.trials.util.enums;
 
 import lombok.Getter;
 

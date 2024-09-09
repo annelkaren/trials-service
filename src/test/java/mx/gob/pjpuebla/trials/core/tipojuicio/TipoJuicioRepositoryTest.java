@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
