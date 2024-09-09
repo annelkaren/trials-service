@@ -33,9 +33,6 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "S_RUTA")
     private String ruta;
 
-//  LABORAL = primera face procesal
-//  Recepción demanda = tradicional, civil, mercantil
-//  Recepción documentos = Juicios orales
     @Size(max = 30)
     @Column(name = "S_ESTATUS_PROCESAL", nullable = false)
     private String status;
@@ -44,13 +41,12 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
     private TipoDocumento tipoDocumento;
 
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", updatable = false)
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
-    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID", updatable = false)
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-//    tipo del juicio el que listo de mis materias
     private TipoJuicio tipoJuicio;
 
     @Accessors(chain = false)

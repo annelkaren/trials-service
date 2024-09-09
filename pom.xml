@@ -145,6 +145,9 @@
 										<exclude>*usuarios</exclude>
 										<exclude>*oficialias</exclude>
 										<exclude>*roles</exclude>
+										<exclude>*documentos</exclude>
+										<exclude>*anexos</exclude>
+										<exclude>*personasdocumentos</exclude>
 									</excludes>
 									<limits>
 										<limit>

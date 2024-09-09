@@ -30,9 +30,7 @@ public class DocumentoService {
 
         //TODO generacion de folio
         documento.setFolio("000001");
-//        documento.setRuta("documento.pdf");
         //TODO. Asignación de juzgado
-        documento.setJuzgado(juzgadoRepository.findById(100).orElseThrow(() -> new NoSuchElementException("Juzgado no encontrado")));
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setStatus("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
