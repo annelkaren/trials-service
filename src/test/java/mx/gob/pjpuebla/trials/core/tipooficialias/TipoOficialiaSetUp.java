@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.core.tipooficialias;
 
 
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.time.LocalDateTime;
 

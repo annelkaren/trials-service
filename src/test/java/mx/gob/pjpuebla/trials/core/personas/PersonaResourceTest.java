@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.personas;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,10 +40,24 @@ class PersonaResourceTest {
     private MockMvc mockMvc;
 
     private PersonaRecord validPersonaRecord;
+    private PersonaRecordResponse personaRecordResponse;
 
     @BeforeEach
     void setUp() {
+        personaRecordResponse = PersonaSetUp.createPersonaRecordResponse();
         validPersonaRecord = PersonaSetUp.createPersonaRecord();
+    }
+
+    @Test
+    void getAll_success() throws Exception {
+        given(mockPersonaService.getAll(any(Persona.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
+
+        mockMvc.perform(
+                get("/api/core/personas")
+                        .param("nombre", "J")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
     @Test
@@ -74,8 +95,9 @@ class PersonaResourceTest {
 
     @Test
     void create_success() throws Exception {
-        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-                .willReturn(validPersonaRecord);
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.create(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+                .willReturn(personaRecordResponse);
 
         mockMvc.perform(
                 post("/api/core/personas")
@@ -87,8 +109,9 @@ class PersonaResourceTest {
 
     @Test
     void update_success() throws Exception {
-        given(mockPersonaService.create(PersonaSetUp.createPersona()))
-                .willReturn(validPersonaRecord);
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+                .willReturn(personaRecordResponse);
 
         mockMvc.perform(
                 put("/api/core/personas")
@@ -100,7 +123,8 @@ class PersonaResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockPersonaService.update(PersonaSetUp.createPersona()))
+        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
                 .willThrow(OptimisticLockingFailureException.class);
 
         mockMvc.perform(
@@ -119,5 +143,17 @@ class PersonaResourceTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void getByCurp_success() throws Exception {
+        String curp = "XXXX111111XXXXXX11";
+        given(mockPersonaService.findByCurp(curp))
+                .willReturn(validPersonaRecord);
+
+        mockMvc.perform(
+                get("/api/core/personas/curp/"+curp)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 }
