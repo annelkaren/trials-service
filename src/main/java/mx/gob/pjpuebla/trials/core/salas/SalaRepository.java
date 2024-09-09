@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,43 +11,29 @@ import mx.gob.pjpuebla.trials.util.Estado;
 
 @Repository
 public interface SalaRepository extends JpaRepository<Sala, Integer> {
-    // se omite relación con jeuz porque no la hay pero debe de acompletarse.
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
-                s.id,
-                s.nombre,
-                juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
-                juez.id,
-                j.nombre,
-                j.id,
-                b,
-                s.version,
-                juez.version,
-                j.version
-            )
+            SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
+                new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(juez.id, juez.nombre, juez.apellidoPaterno, juez.apellidoMaterno, juez.pseudonimo),
+                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(juzgado.id, juzgado.nombre, juzgado.estado, ""),
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.HoraInicial, bloque.HoraFinal))
             FROM Sala s
             LEFT JOIN s.juez juez
-            LEFT JOIN s.juzgado j
-            LEFT JOIN s.bloque b
+            LEFT JOIN s.juzgado juzgado
+            LEFT JOIN s.bloque bloque
             WHERE s.id = :id AND s.estado IN :estados
             """)
-    Optional<SalaRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
-
-
+    Optional<SalaRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
     @Query("""
-             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
+             SELECT 
+                new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
                 s.id,
                 s.nombre,
                 juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
-                juez.id,
                 j.nombre,
-                j.id, 
-                b,
-                s.version,
-                juez.version,
-                j.version
+                b.HoraInicial || " - " ||  b.HoraFinal,
+                s.estado
             )
             FROM Sala s
             LEFT JOIN s.juez juez
@@ -58,6 +43,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
             """)
     List<SalaRecord> findByAllEstado(List<Estado> estados);
 
+    long countByJuzgadoId(int juzgadoId);
 
 
 }

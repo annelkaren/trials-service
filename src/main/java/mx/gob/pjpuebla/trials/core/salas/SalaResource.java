@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
-
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/salas")
@@ -38,24 +35,19 @@ public class SalaResource {
     }
 
     @GetMapping("/{id}")
-    public SalaRecord  getById(@PathVariable Integer id) {
+    public SalaRecordResponse  getById(@PathVariable Integer id) {
         return this.salaService.findById(id);
     }
-
+ 
     @PostMapping
-    public SalaRecord create(@RequestBody @Valid Sala sala) {
+    public Integer create(@RequestBody @Valid Sala sala) {
         return this.salaService.create(sala);
     }
 
     @PutMapping
-    public SalaRecord update(@RequestBody @Valid Sala sala) {
+    public Integer update(@RequestBody  Sala sala) {
+        System.out.println(sala);
         return this.salaService.update(sala);
     }
-
-    //metodo delete pendiente
-    
-    
-    
-
 
 }
