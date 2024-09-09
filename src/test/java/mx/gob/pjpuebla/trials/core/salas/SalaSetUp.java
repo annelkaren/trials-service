@@ -10,7 +10,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 public class SalaSetUp {
 

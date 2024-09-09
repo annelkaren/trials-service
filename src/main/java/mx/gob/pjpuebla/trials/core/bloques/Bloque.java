@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -15,20 +14,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
-@Table(name = "TBL_BLOQUE")
+@Table(name = "TBL_BLOQUES")
 public class Bloque implements Serializable, Auditable{
     
     @Id
@@ -39,11 +36,11 @@ public class Bloque implements Serializable, Auditable{
 
     @NotNull
     @Column(name = "T_HORA_INICIAL")
-    private LocalTime HoraInicial;
+    private LocalTime horaInicial;
 
     @NotNull
     @Column(name = "T_HORA_FINAL")
-    private LocalTime HoraFinal;
+    private LocalTime horaFinal;
     
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)

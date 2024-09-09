@@ -34,7 +34,7 @@ import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @DataJpaTest(properties = {
     "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"

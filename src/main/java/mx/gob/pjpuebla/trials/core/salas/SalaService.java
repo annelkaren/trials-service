@@ -2,21 +2,15 @@ package mx.gob.pjpuebla.trials.core.salas;
 
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.util.Estado;
-
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class SalaService {
-    private static final Logger logger = LoggerFactory.getLogger(SalaService.class);
+
     private final SalaRepository salaRepository;
     private final JuzgadoRepository JuzgadoRepository;
     private final BloqueRepository BloqueRepository;

@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
