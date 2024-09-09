@@ -11,6 +11,7 @@
 ```shell
 mvn clean package -Dmaven.test.skip
 mvn spring-boot:run -Dspring-boot.run.arguments=--spring.flyway.enabled=true
+
 ```
 
 ### Nomenclatura de Bases de datos
