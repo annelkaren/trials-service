@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
@@ -56,15 +57,15 @@ public class Sala implements Serializable, Auditable {
     private Estado estado;
 
     @JoinColumn(name = "FN_JUEZ_ID", referencedColumnName = "PN_ID")
-    @OneToOne()
+    @ManyToOne()
     private Persona juez; // esto debe de ser una llave foranea pero como no se tiene aun hacia que se referenciara se coloca momentaneamente como integer.
 
     @JoinColumn(name= "FN_BLOQUE_ID", referencedColumnName = "PN_ID")
-    @OneToOne()
+    @ManyToOne()
     private Bloque bloque;
     
     @JoinColumn(name = "FN_JUZGADO_ID", referencedColumnName = "PN_ID")
-    @OneToOne()
+    @ManyToOne()
     private Juzgado juzgado;
 
     @Accessors(chain = false)

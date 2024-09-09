@@ -15,15 +15,23 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
+import mx.gob.pjpuebla.trials.core.distritos.Distrito;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
+import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Estado;
@@ -46,11 +54,31 @@ public class SalaRepositoryTest extends AuditConfigTest {
     @Autowired
     private SalaRepository salaRepository;
 
+    @Autowired
+    private MateriaRepository materiaRepository;
+
+    @Autowired
+    private DistritoRepository distritoRepository;
+
+    @Autowired
+    private DomicilioRepository domicilioRepository;
+
+    @Autowired
+    private SedeRepository sedeRepository;
+
     @Test
     void findByIdAndEstadoActive(){
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(Estado.ACTIVE));
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+
         
         Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
         sala.setBloque(bloque);
@@ -67,9 +95,17 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoInactive(){
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(Estado.ACTIVE));
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+
         
         Sala sala = SalaSetUp.createSala(Estado.INACTIVE);
         sala.setBloque(bloque);
@@ -86,9 +122,18 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
     @Test
     void testCountByJuzgadoId() {
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(Estado.ACTIVE));
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        Juzgado juzgado2 = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
 
         Sala sala1 = SalaSetUp.createSala(Estado.ACTIVE);
         sala1.setJuzgado(juzgado);
@@ -97,7 +142,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
         salaRepository.save(sala1);
 
         Sala sala2 = SalaSetUp.createSala(Estado.ACTIVE);
-        sala2.setJuzgado(juzgado);
+        sala2.setJuzgado(juzgado2);
         sala2.setJuez(juez);
         sala2.setBloque(bloque);
         salaRepository.save(sala2);
