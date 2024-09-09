@@ -40,6 +40,10 @@ import java.io.IOException;
 )
 public class SecurityConfig {
 
+    @Value("${keycloak.server-url}")
+    private String keycloakServerUrl;
+
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -47,6 +51,7 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/core/**")
                         .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins("https://latest.pjptrials.link")
                         .allowedMethods("GET", "POST", "PUT", "DELETE");
             }
         };
@@ -67,8 +72,9 @@ public class SecurityConfig {
 
         try {
             config = JsonSerialization.readValue(getClass().getResourceAsStream("/policy-enforcer.json"), PolicyEnforcerConfig.class);
+            config.setAuthServerUrl(keycloakServerUrl);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
         return new ServletPolicyEnforcerFilter(request -> config);
     }
