@@ -31,10 +31,10 @@ public class SalaSetUp {
 
     public static Sala createSala(Estado estado) {
         Sala sala = new Sala()
-                .setId(2)
+                .setId(1)
                 .setVersion(0)
                 .setEstado(estado)
-                .setNombre("2");
+                .setNombre("1");
         sala.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7",
                 "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return sala;

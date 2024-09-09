@@ -33,36 +33,37 @@ public class SalaService {
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
-        
+
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Sala> page = salaRepository.findAll(Example.of(example, exampleMatcher), pageable);
 
         List<SalaRecord> list = page.getContent().stream()
-            .map(sala -> new SalaRecord(    
-                                        sala.getId(),
-                                        sala.getNombre(), 
-                                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + sala.getJuez().getApellidoMaterno(),
-                                        sala.getJuzgado().getNombre(),
-                                        sala.getBloque().getHoraFinal() + " " + sala.getBloque().getHoraFinal(),
-                                        sala.getEstado()))
+                .map(sala -> new SalaRecord(
+                        sala.getId(),
+                        sala.getNombre(),
+                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
+                                + sala.getJuez().getApellidoMaterno(),
+                        sala.getJuzgado().getNombre(),
+                        sala.getBloque().getHoraFinal() + " " + sala.getBloque().getHoraFinal(),
+                        sala.getEstado()))
 
-            .toList();
-        
-        return  new PageImpl<>(list, pageable, page.getTotalElements());
-       
+                .toList();
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+
     }
 
     @Transactional(readOnly = true)
     public SalaRecordResponse findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         return salaRepository.findByIdAndEstadoIn(id, estados)
-            .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId"));
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId"));
     }
 
     public Integer create(Sala sala) {
-        
+
         sala.setJuez(JuezRepository.findById(sala.getJuez().getId()).orElse(null));
         sala.setBloque(BloqueRepository.findById(sala.getBloque().getId()).orElse(null));
         sala.setJuzgado(JuzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
@@ -74,35 +75,31 @@ public class SalaService {
 
     public Integer update(Sala sala) {
         try {
-            
+
             sala.setJuez(JuezRepository.findById(sala.getJuez().getId()).orElse(null));
             sala.setBloque(BloqueRepository.findById(sala.getBloque().getId()).orElse(null));
             sala.setJuzgado(JuzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
-            
+
             sala = salaRepository.save(sala);
             return sala.getId();
 
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             throw new OptimisticLockingFailureException("Sala modificada por otro usuario", "salaId");
-        }  
+        }
     }
 
 
-    //Obtiene el consecutivo segun el juzgado.
-    public String getNameOfSala(Sala sala){
-        // Obtener el ID del juzgado
-        int juzgadoId = sala.getJuzgado().getId();
+    public String getNameOfSala(Sala sala) {
+        if (sala.getJuzgado() != null && sala.getJuzgado().getId() != null) {
+            int juzgadoId = sala.getJuzgado().getId();
 
-        // Contar las salas asociadas al juzgado
-        long count = salaRepository.countByJuzgadoId(juzgadoId);
+            long count = salaRepository.countByJuzgadoId(juzgadoId);
 
-        // Sumar 1 al conteo y convertirlo a String
-        String nombre = String.valueOf(count + 1);
-        return nombre;
+            return String.valueOf(count + 1);
+        } else {
+    
+            return "1";
+        }
     }
-
-
-
-
 
 }
