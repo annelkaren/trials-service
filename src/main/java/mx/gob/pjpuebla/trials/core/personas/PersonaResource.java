@@ -40,7 +40,7 @@ public class PersonaResource {
     }
 
     @GetMapping(value = "/curp/{curp}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PersonaRecord getById(@PathVariable String curp) {
+    public PersonaRecord findByCurp(@PathVariable String curp) {
         return this.personaService.findByCurp(curp);
     }
 
