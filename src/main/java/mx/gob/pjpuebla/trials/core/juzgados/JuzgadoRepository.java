@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
+public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
 
         @Query("""
                         SELECT
@@ -27,4 +27,5 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         LEFT JOIN f.materia m
                         WHERE f.estado IN :estados""")
         List<JuzgadoRecordResponse> findAllByEstadoIn(List<Estado> estados);
+
 }
