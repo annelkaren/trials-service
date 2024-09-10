@@ -12,14 +12,25 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepository;
+import mx.gob.pjpuebla.trials.core.documentos.Documento;
+import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.yaml.snakeyaml.events.DocumentEndEvent;
 
 import java.time.LocalDate;
 
@@ -41,6 +52,14 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
     private DistritoRepository distritoRepository;
     @Autowired
     private DomicilioRepository domicilioRepository;
+    @Autowired
+    private TipoJuicioRepository tipoJuicioRepository;
+    @Autowired
+    private DocumentoRepository documentoRepository;
+    @Autowired
+    private TipoSistemaRepository tipoSistemaRepository;
+    
+    private Documento documento;
     private Juzgado juzgado;
 
     @BeforeEach
@@ -49,10 +68,16 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         Sede sede = SedeSetUp.createSede();
+
+        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
+        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
+
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
+
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
     }
 
     @Test
@@ -74,13 +99,20 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
-        for (Juzgado tmp:juzgadoRepository.findAll()){
-            for (int i=0; i<5; i++){
-                juzgadoRepository.getNumeroExpediente(tmp.getId());
-            }
-        }
+        LocalDate dateTest = LocalDate.of(2025,01,01);
 
-        assertThat(juzgadoRepository.reiniciarSecuenciasExpedientes()).isTrue();
+        for (Juzgado tmpJuzgado:juzgadoRepository.findAll()){
+            for (int i=1; i<5; i++){
+                String tmpExpediente = juzgadoRepository.getNumeroExpediente(tmpJuzgado.getId());
+
+                documento.setFolio(Integer.valueOf(i).toString());
+                documento.setExpediente(tmpExpediente);
+                documento.setJuzgado(tmpJuzgado);
+                documentoRepository.save(documento);
+            }
+
+            juzgadoRepository.revisarSecuencia(tmpJuzgado.getId(), dateTest);
+        }
 
         for (Juzgado tmp:juzgadoRepository.findAll()){
             String numExpediente = juzgadoRepository.getNumeroExpediente(tmp.getId());
