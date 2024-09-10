@@ -115,7 +115,7 @@
             <textField>
                 <reportElement x="102" y="260" width="100" height="30" uuid="1d3c0112-47d0-4372-820f-29da6989f162"/>
                 <textElement textAlignment="Center">
-                    <font isBold="true" />
+                    <font isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
             </textField>
@@ -135,14 +135,15 @@
                 <textFieldExpression><![CDATA[$P{nombreJuzgado}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="70" y="10" width="460" height="40" uuid="3f6a9504-135a-43d5-a428-2e258edc9f26"/>
+                <reportElement x="70" y="30" width="460" height="40" uuid="3f6a9504-135a-43d5-a428-2e258edc9f26"/>
                 <textElement textAlignment="Center">
                     <font size="16" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$P{nombreEntidad}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="250" y="70" width="160" height="20" uuid="8e1e6a02-5d0d-44b2-9e64-ec4f5703a25b"/>
+                <reportElement x="202" y="80" width="160" height="20" uuid="8e1e6a02-5d0d-44b2-9e64-ec4f5703a25b"/>
+                <textElement textAlignment="Center" verticalAlignment="Justified"/>
                 <textFieldExpression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></textFieldExpression>
             </textField>
         </band>
