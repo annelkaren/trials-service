@@ -2,9 +2,13 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Response;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +20,19 @@ public class OficialiaResource {
 
     private final OficialiaService oficialiaService;
 
-    @GetMapping
-    public Response getAll(@PageableDefault(size = 20) Pageable pageable) {
-        return this.oficialiaService.getAll(pageable);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<OficialiaRecord> getAll(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId,
+            @RequestParam(value = "sedeNombre", required = false) String sedeNombre
+    ) {
+        return oficialiaService.getAllActive(pageable, new Oficialia()
+                .setNombre(nombre)
+                .setTipo(new TipoOficialia().setNombre(tipoOficialiaId))
+                .setSede(new Sede().setNombre(sedeNombre))
+        );
+
     }
 
     @GetMapping("/{id}")

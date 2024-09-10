@@ -11,7 +11,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
@@ -36,8 +36,8 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @OneToOne
-    @JoinColumn(name = "PN_ID", nullable = false)
+    @JoinColumn(name = "FN_TIPO", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
     private TipoOficialia tipo;
 
     @NotNull
@@ -52,8 +52,8 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "S_RESPONSABLE", nullable = false)
     private String responsable;
 
-    @OneToOne
-    @JoinColumn(name = "PN_ID", nullable = false)
+    @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
     private Sede sede;
 
     @Accessors(chain = false)
