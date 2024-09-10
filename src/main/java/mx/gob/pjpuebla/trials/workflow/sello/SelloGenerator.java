@@ -58,7 +58,7 @@ public class SelloGenerator {
         parameters.put("cadenaVerificacion", verificationCode);
         parameters.put("nombreEntidad", "PENDIENTE");
         parameters.put("nombreJuzgado", documento.getJuzgado().getNombre());
-        parameters.put("capturista ", getCapturista());
+        parameters.put("capturista", getCapturista());
         parameters.put("reimpresion ", isReimpresion(documento.getAudit().getUsuarioAlta(), documento.getAudit().getFechaAlta()));
         parameters.put("marcaAgua", "src/main/resources/jasper/escudo.png");
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");

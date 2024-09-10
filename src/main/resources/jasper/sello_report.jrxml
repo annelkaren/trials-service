@@ -9,7 +9,7 @@
     <parameter name="fechaHoraRecepcion" class="java.lang.String"/>
     <parameter name="folio" class="java.lang.String"/>
     <parameter name="anexos" class="java.lang.String" nestedType="java.lang.String"/>
-    <parameter name="capturista " class="java.lang.String"/>
+    <parameter name="capturista" class="java.lang.String"/>
     <parameter name="cadenaVerificacion" class="java.lang.String"/>
     <parameter name="logotipoHeder" class="java.lang.String"/>
     <parameter name="marcaAgua" class="java.lang.String"/>
@@ -115,9 +115,9 @@
             <textField>
                 <reportElement x="102" y="260" width="100" height="30" uuid="1d3c0112-47d0-4372-820f-29da6989f162"/>
                 <textElement textAlignment="Center">
-                    <font isBold="true"/>
+                    <font isBold="true" />
                 </textElement>
-                <textFieldExpression><![CDATA[$P{capturista }]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
             </textField>
             <componentElement>
                 <reportElement x="74" y="110" width="168" height="138" uuid="84bf5437-b068-4221-b018-7e8955089def">
