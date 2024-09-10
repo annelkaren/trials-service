@@ -46,13 +46,15 @@ public class SelloGenerator {
 
         List<String> listAnexoStrings = anexos.stream()
                 .map(Anexo::getNombre)
+                .map(nombre -> "- " + nombre + " <br/>")
                 .toList();
+        String concatenatedAnexos = String.join("", listAnexoStrings);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getExpediente());
         parameters.put("fechaHoraRecepcion", date);
         parameters.put("folio", documento.getFolio());
-        parameters.put("anexos", listAnexoStrings);
+        parameters.put("anexos", concatenatedAnexos);
         parameters.put("cadenaVerificacion", verificationCode);
         parameters.put("nombreEntidad", "PENDIENTE");
         parameters.put("nombreJuzgado", documento.getJuzgado().getNombre());
