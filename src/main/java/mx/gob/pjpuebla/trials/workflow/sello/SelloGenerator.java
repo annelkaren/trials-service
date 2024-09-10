@@ -41,20 +41,14 @@ public class SelloGenerator {
     }
 
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws FileNotFoundException, JRException {
-        String date = getDate();
+        String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
-
-        List<String> listAnexoStrings = anexos.stream()
-                .map(Anexo::getNombre)
-                .map(nombre -> "- " + nombre + " <br/>")
-                .toList();
-        String concatenatedAnexos = String.join("", listAnexoStrings);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getExpediente());
         parameters.put("fechaHoraRecepcion", date);
         parameters.put("folio", documento.getFolio());
-        parameters.put("anexos", concatenatedAnexos);
+        parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
         parameters.put("nombreEntidad", "PENDIENTE");
         parameters.put("nombreJuzgado", documento.getJuzgado().getNombre());
@@ -77,14 +71,14 @@ public class SelloGenerator {
         return persona.getNombre().charAt(0) + "" + persona.getApellidoPaterno().charAt(0) + apellidoMaterno;
     }
 
-    private String getDate() {
-        LocalDateTime today = LocalDateTime.now();
+    private String getDate(LocalDateTime date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return today.format(formatter);
+        return date.format(formatter);
     }
 
     private boolean isReimpresion(String auditor, LocalDateTime date) {
-        boolean isSameAuditor, isSameDate = false;
+        boolean isSameAuditor;
+        boolean isSameDate;
         LocalDate today = LocalDate.now();
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         String currentUser = jwt.getSubject();
@@ -108,6 +102,14 @@ public class SelloGenerator {
         return anexos.stream()
                 .map(Anexo::getNombre)
                 .collect(Collectors.joining(","));
+    }
+
+    private String getStringAnexos(List<Anexo> anexos) {
+        List<String> list = anexos.stream()
+                .map(Anexo::getNombre)
+                .map(nombre -> "- " + nombre + " <br/>")
+                .toList();
+        return String.join("", list);
     }
 
 }
