@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -65,13 +63,6 @@ public class SalaRepositoryTest extends AuditConfigTest {
     @Autowired
     private SedeRepository sedeRepository;
 
-    @BeforeEach
-    void cleanUp() {
-        salaRepository.deleteAll();
-        juzgadoRepository.deleteAll();
-        sedeRepository.deleteAll();
-    }
-
     @Test
     void findByIdAndEstadoActive() {
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
@@ -129,6 +120,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
 
+        /* creación sede 1 */
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
@@ -136,8 +128,19 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede.setDomicilio(domicilio);
         sede.setDistrito(distrito);
         sede = sedeRepository.save(sede);
+
+        /* CREACION SEDE 2 */
+        Materia materia2 = materiaRepository.save(MateriaSetUp.createMateria().setId(2));
+        Distrito distrito2 = distritoRepository.save(DistritoSetUp.createDistrito().setId(2));
+        Long idDomicilio = (long) 2;
+        Domicilio domicilio2 = domicilioRepository.save(DomicilioSetUp.createDomicilio().setId(idDomicilio));
+        Sede sede2 = SedeSetUp.createSede(Estado.ACTIVE).setId(2);
+        sede2.setDomicilio(domicilio2);
+        sede2.setDistrito(distrito2);
+        sede2 = sedeRepository.save(sede2);
+
         Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
-        Juzgado juzgado2 = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        Juzgado juzgado2 = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia2, sede2));
 
         Sala sala1 = SalaSetUp.createSala(Estado.ACTIVE);
         sala1.setJuzgado(juzgado);
@@ -158,14 +161,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
     @Test
     void testCountByJuzgadoId_noSalas() {
-        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
-        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
-        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
-        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
-        sede.setDomicilio(domicilio);
-        sede.setDistrito(distrito);
-        sede = sedeRepository.save(sede);
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(Estado.ACTIVE));
 
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
