@@ -47,13 +47,10 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
      @Query("""
                 SELECT
-                    new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(
+                    new mx.gob.pjpuebla.trials.core.personas.PersonaRecordSala(
                         p.id,
-                        p.nombre || " " || p.apellidoPaterno || " " ||  p.apellidoMaterno,
-                        "",
-                        "",
-                        p.pseudonimo)
+                        p.nombre || " " || p.apellidoPaterno || " " ||  p.apellidoMaterno)
                 FROM Persona p
             """)
-        List<PersonaRecord> findAllJueces();
+        List<PersonaRecordSala> findAllJueces();
 }

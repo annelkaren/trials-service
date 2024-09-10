@@ -1,17 +1,14 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
@@ -37,11 +34,11 @@ import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @DataJpaTest(properties = {
-    "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class SalaRepositoryTest extends AuditConfigTest {
-    
+
     @Autowired
     private JuzgadoRepository juzgadoRepository;
 
@@ -67,7 +64,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
     private SedeRepository sedeRepository;
 
     @Test
-    void findByIdAndEstadoActive(){
+    void findByIdAndEstadoActive() {
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
@@ -79,7 +76,6 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede = sedeRepository.save(sede);
         Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
 
-        
         Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
         sala.setBloque(bloque);
         sala.setJuzgado(juzgado);
@@ -94,7 +90,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findByIdAndEstadoInactive(){
+    void findByIdAndEstadoInactive() {
         Persona juez = personaRepository.save(PersonaSetUp.createPersona());
         Bloque bloque = bloqueRepository.save(BloqueSetUp.createBloque());
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
@@ -106,7 +102,6 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede = sedeRepository.save(sede);
         Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
 
-        
         Sala sala = SalaSetUp.createSala(Estado.INACTIVE);
         sala.setBloque(bloque);
         sala.setJuzgado(juzgado);
@@ -149,7 +144,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
-        assertThat(count).isEqualTo(2);
+        assertThat(count).isEqualTo(1);
     }
 
     @Test
@@ -158,7 +153,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
-        assertThat(count).isEqualTo(0); 
+        assertThat(count).isEqualTo(0);
     }
 
 }

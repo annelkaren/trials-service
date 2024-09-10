@@ -26,8 +26,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_BLOQUES")
-public class Bloque implements Serializable, Auditable{
-    
+public class Bloque implements Serializable, Auditable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idBloque")
     @SequenceGenerator(name = "idBloque", sequenceName = "SEQ_BLOQUE_ID", allocationSize = 1)
@@ -41,7 +41,7 @@ public class Bloque implements Serializable, Auditable{
     @NotNull
     @Column(name = "T_HORA_FINAL")
     private LocalTime horaFinal;
-    
+
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;

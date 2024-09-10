@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
-    
-Page<Bloque> findByHoraInicial(LocalTime horaInicial, Pageable pageable);
+
+    Page<Bloque> findByHoraInicial(LocalTime horaInicial, Pageable pageable);
 
 }

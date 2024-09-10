@@ -4,11 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,11 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
-
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
@@ -72,7 +68,7 @@ public class SalaServiceTest {
 
     private Sala sala;
     private SalaRecord salaRecord;
-    private  SalaRecordResponse salaRecordResponse;
+    private SalaRecordResponse salaRecordResponse;
     private Persona juez;
     private Bloque bloque;
     private Materia materia;
@@ -99,10 +95,10 @@ public class SalaServiceTest {
         salaLocal.setJuzgado(juzgado);
         salaLocal.setJuez(juez);
 
-        sala = salaLocal; 
+        sala = salaLocal;
         salaRecord = SalaSetUp.salaRecord();
         salaRecordResponse = SalaSetUp.salaRecordResponse();
-        
+
     }
 
     @Test
@@ -118,17 +114,16 @@ public class SalaServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
     }
 
-
     @Test
     void getById_return_salaRecord() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
-            .willReturn(Optional.of(salaRecordResponse));
+                .willReturn(Optional.of(salaRecordResponse));
 
         SalaRecordResponse result = salaService.findById(sala.getId());
         assertThat(result).isOfAnyClassIn(SalaRecordResponse.class)
-            .hasFieldOrPropertyWithValue("id", sala.getId())
-            .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
+                .hasFieldOrPropertyWithValue("id", sala.getId())
+                .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
     }
 
     @Test
@@ -136,7 +131,7 @@ public class SalaServiceTest {
         Integer id = sala.getId();
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
@@ -150,9 +145,9 @@ public class SalaServiceTest {
     @Test
     void create() {
         given(mockSalaRepository.save(sala))
-            .willReturn(sala);
-        
-        Integer response =  salaService.create(sala);
+                .willReturn(sala);
+
+        Integer response = salaService.create(sala);
 
         assertThat(response).isEqualTo(sala.getId());
     }
@@ -160,7 +155,7 @@ public class SalaServiceTest {
     @Test
     void update() {
         given(mockSalaRepository.save(sala))
-            .willReturn(sala);
+                .willReturn(sala);
 
         Integer response = salaService.update(sala);
 
@@ -175,12 +170,9 @@ public class SalaServiceTest {
                 OptimisticLockingFailureException.class,
                 () -> {
                     salaService.update(sala);
-                }
-        );
+                });
 
         assertThat(assertThrows.getMessage()).contains("Sala modificada por otro usuario");
     }
-
-
 
 }

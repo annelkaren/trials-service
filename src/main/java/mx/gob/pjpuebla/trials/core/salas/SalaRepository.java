@@ -12,7 +12,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
-                new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(juez.id, juez.nombre, juez.apellidoPaterno, juez.apellidoMaterno, juez.pseudonimo),
+                new mx.gob.pjpuebla.trials.core.personas.PersonaRecordSala(juez.id, juez.nombre ||  juez.apellidoPaterno || juez.apellidoMaterno),
                 new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(juzgado.id, juzgado.nombre, juzgado.estado, ""),
                 new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal))
             FROM Sala s
@@ -24,13 +24,13 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
     Optional<SalaRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
     @Query("""
-             SELECT 
+             SELECT
                 new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
                 s.id,
                 s.nombre,
                 juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
                 j.nombre,
-                b.horaInicial || " - " ||  b.horaFinal,
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal),
                 s.estado
             )
             FROM Sala s
@@ -42,6 +42,5 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
     List<SalaRecord> findByAllEstado(List<Estado> estados);
 
     long countByJuzgadoId(int juzgadoId);
-
 
 }

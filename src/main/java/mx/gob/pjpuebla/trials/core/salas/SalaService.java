@@ -40,7 +40,8 @@ public class SalaService {
                         sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
                                 + sala.getJuez().getApellidoMaterno(),
                         sala.getJuzgado().getNombre(),
-                        sala.getBloque().getHoraFinal() + " " + sala.getBloque().getHoraFinal(),
+                        new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
+                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
                         sala.getEstado()))
 
                 .toList();
@@ -82,7 +83,6 @@ public class SalaService {
         }
     }
 
-
     public String getNameOfSala(Sala sala) {
         if (sala.getJuzgado() != null && sala.getJuzgado().getId() != null) {
             int juzgadoId = sala.getJuzgado().getId();
@@ -91,7 +91,7 @@ public class SalaService {
 
             return String.valueOf(count + 1);
         } else {
-    
+
             return "1";
         }
     }

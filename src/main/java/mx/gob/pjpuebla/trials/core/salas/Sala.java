@@ -30,12 +30,12 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_SALAS")
 public class Sala implements Serializable, Auditable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idSala")
     @SequenceGenerator(name = "idSala", sequenceName = "SEQ_SALA_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
-    private Integer id; 
+    private Integer id;
 
     @Max(Integer.MAX_VALUE)
     @Version
@@ -51,12 +51,12 @@ public class Sala implements Serializable, Auditable {
 
     @JoinColumn(name = "FN_JUEZ_ID", referencedColumnName = "PN_ID")
     @ManyToOne()
-    private Persona juez; 
+    private Persona juez;
 
-    @JoinColumn(name= "FN_BLOQUE_ID", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_BLOQUE_ID", referencedColumnName = "PN_ID")
     @ManyToOne()
     private Bloque bloque;
-    
+
     @JoinColumn(name = "FN_JUZGADO_ID", referencedColumnName = "PN_ID")
     @ManyToOne()
     private Juzgado juzgado;

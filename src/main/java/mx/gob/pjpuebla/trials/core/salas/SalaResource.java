@@ -20,31 +20,29 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequestMapping("/api/core/salas")
 @SecurityRequirement(name = "keycloak")
 public class SalaResource {
-    
+
     private final SalaService salaService;
 
     @GetMapping
     public Page<SalaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre",
-            required = false) String nombre) {
-                    
-            return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
+            @RequestParam(value = "nombre", required = false) String nombre) {
+
+        return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
     }
 
     @GetMapping("/{id}")
-    public SalaRecordResponse  getById(@PathVariable Integer id) {
+    public SalaRecordResponse getById(@PathVariable Integer id) {
         return this.salaService.findById(id);
     }
- 
+
     @PostMapping
     public Integer create(@RequestBody @Valid Sala sala) {
         return this.salaService.create(sala);
     }
 
     @PutMapping
-    public Integer update(@RequestBody  Sala sala) {
-        System.out.println(sala);
+    public Integer update(@RequestBody Sala sala) {
         return this.salaService.update(sala);
     }
 
