@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.core.anexos.AnexoRepository;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.stereotype.Service;
 import java.io.FileNotFoundException;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -31,6 +32,7 @@ public class SelloService {
 
     public byte[] exportPdf(Integer id) throws JRException, FileNotFoundException {
         Documento documento = findDocById(id);
-        return selloGenerator.exportToPdf(documento);
+        List<Anexo>  listAnexo = anexoRepository.findAllByDocumentoId(documento.getId());
+        return selloGenerator.exportToPdf(documento, listAnexo);
     }
 }
