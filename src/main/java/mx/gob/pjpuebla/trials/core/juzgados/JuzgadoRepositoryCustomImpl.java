@@ -58,6 +58,9 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
         String sqlNumExp = String.format("SELECT LPAD(NEXTVAL('%s')::text,6,'0')", nombreSecuencia);
 
         log.info(sqlNumExp);
+
+        revisarSecuencia(juzgadoId, date);
+
         try{
             Query query = entityManager.createNativeQuery(sqlNumExp);
 
@@ -115,4 +118,40 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
             return Boolean.FALSE;
         }
     }
+
+    private String getUltimoExpediente(Integer juzgadoId){
+        String ultimoExpediente=null;
+        String sql = String.format("SELECT S_EXPEDIENTE FROM TBL_DOCUMENTOS WHERE FN_JUZGADO = %d ORDER BY T_FECHA_ALTA DESC LIMIT 1 ", juzgadoId);
+
+        try{
+            Query query = entityManager.createNativeQuery(sql);
+
+            ultimoExpediente = query.getSingleResult().toString();
+        }catch(Exception e){
+            log.error("error ->", e.getMessage());
+        }
+
+        return ultimoExpediente;
+    }
+
+    public Boolean revisarSecuencia(Integer juzgadoId, LocalDate dateReview){
+        //LocalDate date = LocalDate.now();
+
+        if (dateReview.getMonthValue()>1 && dateReview.getDayOfMonth()>=15){
+            return Boolean.FALSE;
+        }
+
+        String tmp = getUltimoExpediente(juzgadoId);
+
+        if (tmp != null && !tmp.endsWith(Integer.toString(dateReview.getYear()))){
+            reiniciarSecuenciaExpediente(juzgadoId);
+
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+        
+    }
+
+
 }
