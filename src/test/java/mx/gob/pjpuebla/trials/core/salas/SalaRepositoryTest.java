@@ -149,7 +149,14 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
     @Test
     void testCountByJuzgadoId_noSalas() {
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(Estado.ACTIVE));
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
 
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
