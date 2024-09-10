@@ -70,8 +70,8 @@ public class JuzgadoService {
         juzgadoRepository.eliminarSecuenciaExpediente(id);
     }
 
-    public NumeroExpedienteResponse getNumeroExpediente(Integer id){
-        return new NumeroExpedienteResponse(juzgadoRepository.getNumeroExpediente(id));
+    public NumeroExpedienteRecord getNumeroExpediente(Integer id){
+        return new NumeroExpedienteRecord(juzgadoRepository.getNumeroExpediente(id));
     }
 
     public Boolean reiniciarSecuenciasExpedientes(){
