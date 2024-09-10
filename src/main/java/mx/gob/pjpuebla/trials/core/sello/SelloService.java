@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.sello;
 import mx.gob.pjpuebla.trials.core.anexos.Anexo;
 import mx.gob.pjpuebla.trials.core.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.documentos.DocumentoRecord;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

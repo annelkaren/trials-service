@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 
 
 @RestController
-@RequestMapping("/api/workflow/documento")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "Keycloak")
 public class SelloResource {
 
@@ -22,7 +22,7 @@ public class SelloResource {
         this.selloService = selloService;
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}/documento", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, FileNotFoundException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

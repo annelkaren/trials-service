@@ -44,4 +44,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             LEFT JOIN p.juzgado j
             WHERE p.curp =:curp""")
     Optional<PersonaRecord> findByCurp(String curp);
+
+    Persona findByUsuario(String usuario);
 }
