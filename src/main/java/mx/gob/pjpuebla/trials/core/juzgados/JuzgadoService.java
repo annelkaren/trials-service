@@ -45,6 +45,10 @@ public class JuzgadoService {
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
+    public List<JuzgadoRecordResponse> getAllWithoutPagination(){
+        return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
+    }
+
     public JuzgadoRecordResponse create(Juzgado juzgado) {
         juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
         juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
