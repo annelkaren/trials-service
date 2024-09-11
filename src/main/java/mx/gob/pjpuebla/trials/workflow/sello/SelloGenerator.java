@@ -95,7 +95,7 @@ public class SelloGenerator {
 
     public String generateVerificationCode(Documento documento, List<Anexo> anexos, String date) {
         String verificationStringCode = String.join("|",
-                //documento.getJuzgado().getNombre(),
+                documento.getJuzgado().getNombre(),
                 documento.getExpediente(),
                 documento.getFolio(),
                 date,
