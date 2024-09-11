@@ -21,7 +21,7 @@ public class DocumentoTestSetUp {
 
     public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio, Juzgado juzgado){
         Documento documento = new Documento()
-        .setExpediente("000001")
+        .setExpediente("000001/2024")
         .setFolio(null)
         .setJuzgado(juzgado)
         .setTipoDocumento(tipoDocumento)
