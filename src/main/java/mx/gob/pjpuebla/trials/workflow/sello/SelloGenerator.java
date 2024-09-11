@@ -45,7 +45,7 @@ public class SelloGenerator {
         String verificationCode = generateVerificationCode(documento, anexos, date);
 
         // Cargar reporte Jasper
-        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/sello_Report.jasper")));
+        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/selloReport.jasper")));
 
 
         Map<String, Object> parameters = new HashMap<>();
