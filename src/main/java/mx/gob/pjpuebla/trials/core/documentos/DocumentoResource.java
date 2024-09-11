@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.core.documentos;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
-import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

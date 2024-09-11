@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.util.*;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -15,13 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Base64;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +43,10 @@ public class SelloGenerator {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
 
+        // Cargar el reporte Jasper
+        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/sello_report.jasper")));
+
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getExpediente());
         parameters.put("fechaHoraRecepcion", date);
@@ -57,9 +60,11 @@ public class SelloGenerator {
         parameters.put("marcaAgua", "src/main/resources/jasper/escudo.png");
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
 
-        return JasperFillManager.fillReport(JasperCompileManager.compileReport(
-                ResourceUtils.getFile("classpath:jasper/sello_report.jrxml")
-                        .getAbsolutePath()), parameters, new JREmptyDataSource());
+        // Rellenar el reporte
+        return JasperFillManager.fillReport(
+                reportStream,
+                parameters,
+                new JREmptyDataSource());
     }
 
     private String getCapturista() {
@@ -89,7 +94,7 @@ public class SelloGenerator {
 
     public String generateVerificationCode(Documento documento, List<Anexo> anexos, String date) {
         String verificationStringCode = String.join("|",
-                documento.getJuzgado().getNombre(),
+                //documento.getJuzgado().getNombre(),
                 documento.getExpediente(),
                 documento.getFolio(),
                 date,
