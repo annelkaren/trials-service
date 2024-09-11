@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +32,9 @@ public class DigitalizacionFolderService {
         String expediente = expedienteArray[0].trim();
         String year = expedienteArray[1].trim();
         String juzgado = doc.getJuzgado().getNombre().trim();
-        System.out.println(expediente);
 
         Path rootPath = Paths.get(ROOT_FOLDER, year, juzgado, expediente);
-        System.out.println("la ruta es : " + rootPath.toString());
+        
         
         try {
             // Crear las carpetas si no existen
