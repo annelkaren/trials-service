@@ -2,11 +2,7 @@ package mx.gob.pjpuebla.trials.core.recursos.menu;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 
 public class Menu {
@@ -72,14 +68,16 @@ public class Menu {
     }
 
     private static Node createNode(Queue<String> tokens, Node rootNode, String current, String uri) {
+        String parent = null;
         String displayName = null;
         if (current.contains("--")) {
             String[] names = current.split("--");
             current = names[0];
             displayName = names[1];
+            parent = names[2];
             uri = uri + "--";
         }
-        return addNewNode(tokens, rootNode, current, displayName, uri);
+        return addNewNode(tokens, rootNode, current, displayName, uri, parent);
     }
 
     private static String getPath(String uri) {
@@ -92,8 +90,8 @@ public class Menu {
         return null;
     }
 
-    private static Node addNewNode(Queue<String> tokens, Node rootNode, String current, String displayName, String uri) {
-        Node newNode = new Node(current, displayName, getPath(uri));
+    private static Node addNewNode(Queue<String> tokens, Node rootNode, String current, String displayName, String uri, String parent) {
+        Node newNode = new Node(current, displayName, getPath(uri), parent);
         rootNode.getItems().add(newNode);
         return AddNode(tokens, newNode, uri);
     }

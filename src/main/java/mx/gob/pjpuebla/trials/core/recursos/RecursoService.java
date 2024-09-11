@@ -16,10 +16,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -55,6 +52,7 @@ public class RecursoService {
         Set<String> uris = resources.stream()
                 .filter(r -> r.getAttributes().containsKey("menu"))
                 .filter(r -> r.getAttributes().get(("menu")).contains("true"))
+                .filter(r -> r.getAttributes().containsKey("parent"))
                 .filter(r -> {
                     for (PolicyEvaluationResponse.EvaluationResultRepresentation result : Collections.unmodifiableList(results)) {
                         if (result.getResource().getId().equalsIgnoreCase(r.getId())) {
@@ -62,17 +60,18 @@ public class RecursoService {
                         }
                     }
                     return false;
-                }).flatMap(r -> modifyUrl(r.getDisplayName(), r.getUris()).stream())
+                }).flatMap(r -> modifyUrl(r.getDisplayName(),  r.getAttributes() ,r.getUris()).stream())
                 .collect(Collectors.toSet());
 
         return Menu.parseToMenu(uris);
 
     }
 
-    private Set<String> modifyUrl(String displayName, Set<String> uris) {
+    private Set<String> modifyUrl(String displayName, Map<String, List<String>> attributes, Set<String> uris) {
         Set<String> newHashSet = new HashSet<>();
+        String parent = attributes.getOrDefault("parent", Collections.singletonList("")).get(0);
         for (String uri : uris) {
-            newHashSet.add(uri + "--" + displayName);
+            newHashSet.add(uri + "--" + displayName + "--" + parent);
         }
         return newHashSet;
     }

@@ -11,6 +11,7 @@ public class Node {
     private String name;
     private String displayName;
     private String path;
+    private String parent;
     private List<Node> items;
 
     public Node() {
@@ -22,11 +23,12 @@ public class Node {
         this.name = fileName;
     }
 
-    public Node(String fileName, String displayName, String uri) {
+    public Node(String fileName, String displayName, String uri, String parent) {
         this.items = new ArrayList<>();
         this.name = fileName;
         this.path = uri;
         this.displayName = displayName;
+        this.parent = parent;
     }
 
     public Node findNode(String data) {
