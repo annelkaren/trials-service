@@ -12,15 +12,15 @@ import java.util.Optional;
 public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
     @Query("""
-            SELECT 
-            new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(p.id, p.version, p.nombre, p.apellidoPaterno, 
+            SELECT
+            new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(p.id, p.version, p.nombre, p.apellidoPaterno,
                 p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
-                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
+                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
                 p.usuario, null
             )
-            FROM Persona p 
+            FROM Persona p
             LEFT JOIN p.escolaridad e
             LEFT JOIN p.estadoCivil ec
             LEFT JOIN p.domicilio dom
@@ -29,15 +29,15 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<PersonaRecord> findByIdAndEstadoIn(Long id, List<Estado> estados);
 
     @Query("""
-            SELECT 
-            new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(p.id, p.version, p.nombre, p.apellidoPaterno, 
+            SELECT
+            new mx.gob.pjpuebla.trials.core.personas.PersonaRecord(p.id, p.version, p.nombre, p.apellidoPaterno,
                 p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id,
-                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
+                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
                 p.usuario, null
             )
-            FROM Persona p 
+            FROM Persona p
             LEFT JOIN p.escolaridad e
             LEFT JOIN p.estadoCivil ec
             LEFT JOIN p.domicilio dom
@@ -46,4 +46,13 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<PersonaRecord> findByCurp(String curp);
 
     Optional<Persona> findByUsuario(String usuario);
+
+    @Query("""
+                SELECT
+                    new mx.gob.pjpuebla.trials.core.personas.PersonaSalaRecord(
+                        p.id,
+                        p.nombre || " " || p.apellidoPaterno || " " ||  p.apellidoMaterno)
+                FROM Persona p
+            """)
+    List<PersonaSalaRecord> findAllJueces();
 }
