@@ -1,15 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.files;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.Date;
 
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.documentos.Documento;
@@ -18,35 +14,38 @@ import mx.gob.pjpuebla.trials.core.documentos.Documento;
 @Service
 @RequiredArgsConstructor
 public class DigitalizacionFolderService {
+
     private static final String ROOT_FOLDER = "digitalizacion";
 
-    public Integer createFolderDigitalizacion(Documento doc) {
-        /*
-        String[] folderStruct = doc.getExpediente().split("/");
+    public String createFolderDigitalizacion(Documento doc) {
 
-        if (folderStruct.length < 3) {
-            log.error("Estructura del expediente incorrecta: {}", doc.getExpediente());
-            return 0; // estructura incorrecta
+        if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
+            throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
         }
+
+        String expedienteArray[] = doc.getExpediente().split("/");
+       
         
-        String year = folderStruct[0];
-        String juzgado = folderStruct[1];
-        String expediente = folderStruct[2];        
-        */
-        String year = Integer.toString(LocalDate.now().getYear());
-        String juzgado = doc.getJuzgado().getNombre();
-        String expediente = doc.getExpediente();   
+        if (expedienteArray.length < 2) {
+            throw new IllegalArgumentException("El expediente no tiene el formato esperado");
+        }
 
-        Path rootPath = Paths.get(System.getProperty("user.dir"), ROOT_FOLDER, year, juzgado, expediente);
+        String expediente = expedienteArray[0].trim();
+        String year = expedienteArray[1].trim();
+        String juzgado = doc.getJuzgado().getNombre().trim();
+        System.out.println(expediente);
 
+        Path rootPath = Paths.get(ROOT_FOLDER, year, juzgado, expediente);
+        System.out.println("la ruta es : " + rootPath.toString());
+        
         try {
             // Crear las carpetas si no existen
             Files.createDirectories(rootPath);
             log.info("Carpeta creada exitosamente en: {}", rootPath.toString());
-            return 1; // éxito
+            return rootPath.toString();
         } catch (IOException e) {
-            log.error("Error al crear las carpetas de digitalización: {}", e.getMessage());
-            return -1; // error al crear la carpeta
+            log.error("Error al crear las carpetas de digitalización: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al crear las carpetas de digitalización", e);
         }
     }
 }
