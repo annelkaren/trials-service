@@ -16,7 +16,17 @@ public class DocumentoTestSetUp {
         .setTipoDocumento(tipoDocumento)
         .setTipoJuicio(tipoJuicio)
         .setStatus("Recepcion");
+        return documento;
+    }
 
+    public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio, Juzgado juzgado){
+        Documento documento = new Documento()
+        .setExpediente("000001")
+        .setFolio(null)
+        .setJuzgado(juzgado)
+        .setTipoDocumento(tipoDocumento)
+        .setTipoJuicio(tipoJuicio)
+        .setStatus("Recepcion");
         return documento;
     }
 }
