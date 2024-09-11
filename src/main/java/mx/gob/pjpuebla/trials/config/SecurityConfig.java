@@ -50,10 +50,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "https://latest.pjptrials.link"
+                "https://*.pjptrials.link"
         ));
         configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));
         configuration.setAllowedMethods(List.of(CorsConfiguration.ALL));
