@@ -31,6 +31,5 @@ public class DocumentoResource {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", id + "_sello.pdf");
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
-
     }
 }
