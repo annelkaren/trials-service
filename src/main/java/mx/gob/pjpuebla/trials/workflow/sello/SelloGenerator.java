@@ -44,8 +44,8 @@ public class SelloGenerator {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
 
-        // Cargar el reporte Jasper
-        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/sello_report.jasper")));
+        // Cargar reporte Jasper
+        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/sello_Report.jasper")));
 
 
         Map<String, Object> parameters = new HashMap<>();
@@ -61,7 +61,7 @@ public class SelloGenerator {
         parameters.put("marcaAgua", "src/main/resources/jasper/escudo.png");
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
 
-        // Rellenar el reporte
+        // Rellenar el reportes
         return JasperFillManager.fillReport(
                 reportStream,
                 parameters,
