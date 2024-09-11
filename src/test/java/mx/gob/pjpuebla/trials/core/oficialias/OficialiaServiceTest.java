@@ -72,6 +72,18 @@ class OficialiaServiceTest {
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", oficialia.getId())
+                .hasFieldOrPropertyWithValue("version", oficialia.getVersion())
+                .hasFieldOrPropertyWithValue("estado", oficialia.getEstado())
+                .hasFieldOrPropertyWithValue("responsable", oficialia.getResponsable())
                 .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre());
+
+        assertThat(oficialia.getTipo())
+                .hasFieldOrPropertyWithValue("id", oficialia.getTipo().getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getTipo().getNombre());
+
+        assertThat(oficialia.getSede())
+                .hasFieldOrPropertyWithValue("id", oficialia.getSede().getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getSede().getNombre())
+                .hasFieldOrPropertyWithValue("estado", oficialia.getSede().getEstado());
     }
 }
