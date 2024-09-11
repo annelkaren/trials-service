@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
@@ -43,10 +42,6 @@ public class Oficialia implements Serializable, Auditable {
     @NotNull
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
-
-    @NotNull
-    @Column(name = "FN_DOMICILIO", nullable = false)
-    private Integer domicilio;
 
     @NotNull
     @Column(name = "S_RESPONSABLE", nullable = false)

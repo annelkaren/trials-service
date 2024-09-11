@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Response;
 import org.springframework.data.domain.Page;
@@ -24,13 +23,11 @@ public class OficialiaResource {
     public Page<OficialiaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId,
-            @RequestParam(value = "sedeNombre", required = false) String sedeNombre
+            @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId
     ) {
         return oficialiaService.getAllActive(pageable, new Oficialia()
                 .setNombre(nombre)
                 .setTipo(new TipoOficialia().setNombre(tipoOficialiaId))
-                .setSede(new Sede().setNombre(sedeNombre))
         );
 
     }

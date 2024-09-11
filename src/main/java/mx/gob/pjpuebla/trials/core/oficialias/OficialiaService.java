@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.Response;
@@ -28,9 +29,12 @@ public class OficialiaService {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<Oficialia> page = oficialiaRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE)), pageable);
+        Page<Oficialia> page = oficialiaRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<OficialiaRecord> list = page.getContent().stream()
-                .map(m -> new OficialiaRecord(m.getId(), m.getVersion(), m.getEstado(),new TipoOficialiaRecord(m.getTipo().getId(), m.getTipo().getNombre()),m.getNombre(), m.getDomicilio(), m.getResponsable(), new SedeRecord(m.getSede().getId(), m.getSede().getVersion(), m.getSede().getNombre(), m.getSede().getEstado(), m.getSede().getTipo(), m.getSede().getTelefono(), m.getSede().getExtension(), new DistritoRecord(m.getSede().getId(), m.getSede().getNombre()), new DomicilioRecord(m.getDomicilio().longValue(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString(), m.getDomicilio().toString()))))
+                .map(m -> new OficialiaRecord(m.getId(), m.getVersion(), m.getEstado(),
+                        new TipoOficialiaRecord(m.getTipo().getId(), m.getTipo().getNombre()),
+                        m.getNombre(), m.getResponsable(),
+                        new SedeRecordResponse(m.getSede().getId(), m.getSede().getNombre(), m.getSede().getEstado())))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
