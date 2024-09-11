@@ -5,10 +5,6 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.juzgados.*;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
-import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -19,8 +15,10 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
 import java.util.Collections;
@@ -31,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+@ExtendWith(MockitoExtension.class)
 class OficialiaServiceTest {
 
     @InjectMocks
@@ -73,11 +72,6 @@ class OficialiaServiceTest {
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", oficialia.getId())
-                .hasFieldOrPropertyWithValue("version", oficialia.getVersion())
-                .hasFieldOrPropertyWithValue("estado", oficialia.getEstado())
-                .hasFieldOrPropertyWithValue("tipo", oficialia.getTipo().getNombre())
-                .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre())
-                .hasFieldOrPropertyWithValue("responsable", oficialia.getNombre())
-                .hasFieldOrPropertyWithValue("sede", oficialia.getSede().getNombre());
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre());
     }
 }

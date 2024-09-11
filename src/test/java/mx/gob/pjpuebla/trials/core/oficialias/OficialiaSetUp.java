@@ -23,7 +23,7 @@ public class OficialiaSetUp {
                 .setVersion(0)
                 .setEstado(Estado.ACTIVE)
                 .setTipo(tipoOficialia)
-                .setNombre("Comun")
+                .setNombre("Común")
                 .setResponsable("Responsable")
                 .setSede(sede);
         oficialia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
