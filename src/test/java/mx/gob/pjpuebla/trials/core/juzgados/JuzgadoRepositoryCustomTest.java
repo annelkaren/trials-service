@@ -21,7 +21,6 @@ import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepository;
 import mx.gob.pjpuebla.trials.core.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.yaml.snakeyaml.events.DocumentEndEvent;
 
 import java.time.LocalDate;
 
