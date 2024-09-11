@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,7 +26,7 @@ public class DocumentoResource {
     }
 
     @GetMapping(value = "/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, FileNotFoundException {
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", id + "_sello.pdf");

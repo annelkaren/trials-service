@@ -9,15 +9,13 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,18 +31,18 @@ public class SelloGenerator {
     private final AuditorAware<Jwt> auditorAware;
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
+    @Value("classpath:jasper/selloReport.jasper")
+    private Resource sello;
 
-    public byte[] exportToPdf(Integer id) throws JRException, FileNotFoundException {
+    public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
         List<Anexo> anexos = anexoRepository.findAllByDocumentoId(documento.getId());
         return JasperExportManager.exportReportToPdf(getReport(documento, anexos));
     }
 
-    private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws FileNotFoundException, JRException {
+    private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
-
-        JasperReport reportStream = (JasperReport) JRLoader.loadObject(Objects.requireNonNull(getClass().getResource("/jasper/selloReport.jasper")));
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getExpediente());
@@ -60,7 +58,7 @@ public class SelloGenerator {
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
 
         return JasperFillManager.fillReport(
-                reportStream,
+                sello.getInputStream(),
                 parameters,
                 new JREmptyDataSource());
     }
