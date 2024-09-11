@@ -59,8 +59,8 @@ public class JuzgadoService {
 
     public JuzgadoRecordResponse update(Juzgado juzgado) {
         try {
-            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
-            juzgado.setSede(sedeRepository.findById(juzgado.getId()).orElse(null));
+            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+            juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
