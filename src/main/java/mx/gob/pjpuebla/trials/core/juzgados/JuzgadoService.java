@@ -45,10 +45,15 @@ public class JuzgadoService {
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
+    public List<JuzgadoRecordResponse> getAllWithoutPagination(){
+        return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
+    }
+
     public JuzgadoRecordResponse create(Juzgado juzgado) {
         juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
         juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
         juzgado = juzgadoRepository.save(juzgado);
+        juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
         return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
     }
 
@@ -66,5 +71,14 @@ public class JuzgadoService {
 
     public void delete(Integer id) {
         juzgadoRepository.deleteById(id);
+        juzgadoRepository.eliminarSecuenciaExpediente(id);
+    }
+
+    public NumeroExpedienteRecord getNumeroExpediente(Integer id){
+        return new NumeroExpedienteRecord(juzgadoRepository.getNumeroExpediente(id));
+    }
+
+    public Boolean reiniciarSecuenciasExpedientes(){
+        return juzgadoRepository.reiniciarSecuenciasExpedientes();
     }
 }

@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.core.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.util.*;
 import org.springframework.data.domain.AuditorAware;
@@ -70,7 +71,7 @@ public class SelloGenerator {
     private String getCapturista() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         String user = jwt.getSubject();
-        Persona persona = personaRepository.findByUsuario(user);
+        Persona persona = personaRepository.findByUsuario(user).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario"));
         String apellidoMaterno = persona.getApellidoMaterno();
         apellidoMaterno = (apellidoMaterno != null && !apellidoMaterno.isEmpty()) ? String.valueOf(apellidoMaterno.charAt(0)) : "";
         return persona.getNombre().charAt(0) + "" + persona.getApellidoPaterno().charAt(0) + apellidoMaterno;

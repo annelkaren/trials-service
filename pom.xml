@@ -178,6 +178,7 @@
 										<exclude>*documentos</exclude>
 										<exclude>*anexos</exclude>
 										<exclude>*personasdocumentos</exclude>
+										<exclude>*sello</exclude>
 									</excludes>
 									<limits>
 										<limit>

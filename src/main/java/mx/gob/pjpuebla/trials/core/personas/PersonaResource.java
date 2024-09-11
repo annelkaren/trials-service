@@ -6,8 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -28,6 +34,12 @@ public class PersonaResource {
     public PersonaRecord getById(@PathVariable Long id) {
         return this.personaService.findById(id);
     }
+
+    @GetMapping("/jueces")
+    public List<PersonaSalaRecord> getJueces() {
+        return this.personaService.findAllJueces();
+    }
+    
 
     @PostMapping
     public PersonaRecordResponse create(@RequestBody @Valid PersonaDTO persona) {
