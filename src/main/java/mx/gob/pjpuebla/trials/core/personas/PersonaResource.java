@@ -36,7 +36,7 @@ public class PersonaResource {
     }
 
     @GetMapping("/jueces")
-    public List<PersonaRecordSala> getJueces() {
+    public List<PersonaSalaRecord> getJueces() {
         return this.personaService.findAllJueces();
     }
     

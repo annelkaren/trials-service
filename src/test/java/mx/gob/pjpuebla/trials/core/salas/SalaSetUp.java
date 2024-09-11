@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecordSala;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSalaRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
@@ -45,7 +45,7 @@ public class SalaSetUp {
                                 "1",
                                 Estado.ACTIVE,
                                 0,
-                                new PersonaRecordSala(idPersona, "Angel Lopez Perez"),
+                                new PersonaSalaRecord(idPersona, "Angel Lopez Perez"),
                                 new JuzgadoRecordResponse(1, "juzgado 1", Estado.ACTIVE, "Civil"),
                                 new BloqueRecord(1, LocalTime.now(), LocalTime.now()));
         }

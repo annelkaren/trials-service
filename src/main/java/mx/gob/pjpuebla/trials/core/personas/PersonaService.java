@@ -106,7 +106,7 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true) 
-    List<PersonaRecordSala> findAllJueces(){
+    List<PersonaSalaRecord> findAllJueces(){
         return personaRepository.findAllJueces();
     }
 }
