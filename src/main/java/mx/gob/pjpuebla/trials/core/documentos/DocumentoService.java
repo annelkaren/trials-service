@@ -16,8 +16,10 @@ import mx.gob.pjpuebla.trials.util.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.ArrayList;
 
-import java.util.*;
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -57,7 +59,7 @@ public class DocumentoService {
         return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
-    private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento){
+    private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento) {
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.getNombre());
         entity.setApellidoPaterno(persona.getApelidoPaterno());
@@ -105,5 +107,24 @@ public class DocumentoService {
     private Juzgado getJuzgado(){
         return null;
     }
+    // tipo: tiene que ser E-exhorto, D-demanda, P-promocion.
+    private Long obtenerFolio(String tipo) {
+        Long valNum;
+        switch (tipo) {
+            case "E":           // Case para exhorto
+                valNum = documentoRepository.getNextValExhorto();
+                break;
+            case "D":           // Case para demanda
+                valNum = documentoRepository.getNextValDemanda();
+                break;
+            case "P":           // Case para promocion
+                valNum = documentoRepository.getNextValPromocion();
+                break;
+            default:
+                throw new IllegalArgumentException("Tipo de folio no válido: " + tipo);
+        }
+        return valNum;
+    }
+
 }
 

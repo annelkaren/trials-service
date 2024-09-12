@@ -61,4 +61,13 @@ class PersonaRepositoryTest extends AuditConfigTest {
         Optional<PersonaRecord> entity = personaRepository.findByCurp(persona.getCurp());
         assertThat(entity).isPresent();
     }
+
+    @Test
+    void findByUsuario() {
+        persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
+        persona = personaRepository.save(persona);
+        Optional<Persona> entity = personaRepository.findByUsuario(persona.getUsuario());
+        assertThat(entity).isPresent();
+        assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
+    }
 }

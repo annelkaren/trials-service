@@ -104,4 +104,9 @@ public class PersonaService {
         list.stream().forEach(roleRecord -> roles.add(roleRecord.name()));
         return roles;
     }
+
+    @Transactional(readOnly = true) 
+    List<PersonaSalaRecord> findAllJueces(){
+        return personaRepository.findAllJueces();
+    }
 }
