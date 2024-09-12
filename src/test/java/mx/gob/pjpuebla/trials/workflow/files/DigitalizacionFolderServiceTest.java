@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
@@ -42,6 +45,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
 
 @Slf4j
+@SpringBootTest
 public class DigitalizacionFolderServiceTest {
 
     @Mock
@@ -60,6 +64,9 @@ public class DigitalizacionFolderServiceTest {
     private Documento documento;
     private Juzgado juzgado;
     private Path testFolderPath;
+ 
+    @Value("${root-folder}")
+    private String ROOT_FOLDER;
 
     @InjectMocks
     private DigitalizacionFolderService digitalizacionFolderService;
@@ -88,15 +95,15 @@ public class DigitalizacionFolderServiceTest {
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
         documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, tipoJuicio, juzgado);
-
-        testFolderPath = Paths.get("digitalizacion", "2024", "Juzgado", "000001");
+        System.out.println("EL VALOR INICIAL DE LA PRUEBA UNINTARIA ES: " + ROOT_FOLDER);
+        testFolderPath = Paths.get(ROOT_FOLDER, "digitalizacion", "2024", "Juzgado", "000001");
     }
 
     @Test
     void createFolder() throws IOException {
 
         String rutaCarpeta = digitalizacionFolderService.createFolderDigitalizacion(documento);
-
+        System.out.println("comprobare que se creo la carpeta: "+testFolderPath);
         assertThat(Files.exists(testFolderPath)).isTrue();
         assertThat(rutaCarpeta).isEqualTo(testFolderPath.toString());
     }
@@ -104,7 +111,7 @@ public class DigitalizacionFolderServiceTest {
     @AfterEach
     public void tearDown() throws IOException {
         try {
-            Path rootFolder = Paths.get("digitalizacion");
+            Path rootFolder = Paths.get(ROOT_FOLDER, "digitalizacion");
     
             if (Files.exists(rootFolder)) {
                

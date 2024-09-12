@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +15,18 @@ import mx.gob.pjpuebla.trials.core.documentos.Documento;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@PropertySource("classpath:application.yaml")
 public class DigitalizacionFolderService {
-
-    private static final String ROOT_FOLDER = "digitalizacion";
+    
+    @Value("${root-folder}")
+    private String ROOT_FOLDER;
+    
 
     public String createFolderDigitalizacion(Documento doc) {
+        
+        if(ROOT_FOLDER == null){
+            ROOT_FOLDER = "/opt/pjp";
+        }
 
         if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
             throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
@@ -33,11 +43,12 @@ public class DigitalizacionFolderService {
         String year = expedienteArray[1].trim();
         String juzgado = doc.getJuzgado().getNombre().trim();
 
-        Path rootPath = Paths.get(ROOT_FOLDER, year, juzgado, expediente);
+        Path rootPath = Paths.get(ROOT_FOLDER, "digitalizacion", year, juzgado, expediente);
         
         
         try {
             // Crear las carpetas si no existen
+            System.out.println("ENTRE A CREAR CARPETA : " + rootPath.toString());
             Files.createDirectories(rootPath);
             log.info("Carpeta creada exitosamente en: {}", rootPath.toString());
             return rootPath.toString();
