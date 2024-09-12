@@ -12,7 +12,9 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class DocumentoService {
@@ -29,6 +31,7 @@ public class DocumentoService {
 
         documento.setFolio(getFolio("D"));
         //TODO. Asignación de juzgado
+        documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
         //TODO. Asignar número de expediente
         documento.setExpediente("000001/2024");
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
@@ -51,10 +54,10 @@ public class DocumentoService {
     }
 
     private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento) {
-        String tipoParte = (persona.getTipoparte().equals(1)) ? "Actor" : "Demandado";
+        String tipoParte = (persona.getTipoParte().equals(1)) ? "Actor" : "Demandado";
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.getNombre());
-        entity.setApellidoPaterno(persona.getApelidoPaterno());
+        entity.setApellidoPaterno(persona.getApellidoPaterno());
         entity.setApellidoMaterno(persona.getApellidoMaterno());
         entity.setPseudonimo(persona.getPseudonimo());
         entity.setTipoPersona(persona.getTipoPersona());
@@ -83,7 +86,7 @@ public class DocumentoService {
                 valNum = documentoRepository.getNextValPromocion();
                 break;
             default:
-                throw new IllegalArgumentException("Tipo de folio no válido: " + tipo);
+                throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         }
         return valNum.toString();
     }

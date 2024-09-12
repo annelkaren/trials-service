@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core/documentos")
+@RequestMapping("/api/workflow/documentos")
 @SecurityRequirement(name = "Keycloak")
 public class DocumentoResource {
 

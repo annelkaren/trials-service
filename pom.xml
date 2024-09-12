@@ -175,7 +175,6 @@
 										<exclude>*usuarios</exclude>
 										<exclude>*oficialias</exclude>
 										<exclude>*roles</exclude>
-										<exclude>*documentos</exclude>
 										<exclude>*sello</exclude>
 									</excludes>
 									<limits>
