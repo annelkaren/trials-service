@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+
 
 @Repository
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
@@ -19,5 +21,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
             LEFT JOIN f.sede s
             WHERE f.id =:id AND f.estado IN :estados""")
     Optional<JuzgadoRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+
+    List<Juzgado> findByMateriaAndEstado(Materia materia, Estado estado);
 
 }
