@@ -66,7 +66,7 @@ public class DigitalizacionFolderServiceTest {
     private Path testFolderPath;
  
     @Value("${root-folder}")
-    private String ROOT_FOLDER;
+    private String rootFolder;
 
     @InjectMocks
     private DigitalizacionFolderService digitalizacionFolderService;
@@ -95,8 +95,8 @@ public class DigitalizacionFolderServiceTest {
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
         documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, tipoJuicio, juzgado);
-        System.out.println("EL VALOR INICIAL DE LA PRUEBA UNINTARIA ES: " + ROOT_FOLDER);
-        testFolderPath = Paths.get(ROOT_FOLDER, "digitalizacion", "2024", "Juzgado", "000001");
+        System.out.println("EL VALOR INICIAL DE LA PRUEBA UNINTARIA ES: " + rootFolder);
+        testFolderPath = Paths.get(rootFolder, "digitalizacion", "2024", "Juzgado", "000001");
     }
 
     @Test
@@ -111,11 +111,11 @@ public class DigitalizacionFolderServiceTest {
     @AfterEach
     public void tearDown() throws IOException {
         try {
-            Path rootFolder = Paths.get(ROOT_FOLDER, "digitalizacion");
+            Path rootFolderPath = Paths.get(rootFolder, "digitalizacion");
     
-            if (Files.exists(rootFolder)) {
+            if (Files.exists(rootFolderPath)) {
                
-                Files.walkFileTree(rootFolder, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(rootFolderPath, new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         Files.delete(file);  

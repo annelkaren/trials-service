@@ -12,21 +12,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.documentos.Documento;
 
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@PropertySource("classpath:application.yaml")
+ //@PropertySource("classpath:application.yaml")
+
 public class DigitalizacionFolderService {
     
     @Value("${root-folder}")
-    private String ROOT_FOLDER;
+    private String rootFolder;
     
-
+    
     public String createFolderDigitalizacion(Documento doc) {
-        
-        if(ROOT_FOLDER == null){
-            ROOT_FOLDER = "/opt/pjp/files";
-        }
+        System.out.println("valor de INICIALLLL" + rootFolder);    
+        //if(rootFolder == null){
+        //    rootFolder = "/opt/pjp/files";
+        //}
 
         if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
             throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
@@ -43,7 +46,7 @@ public class DigitalizacionFolderService {
         String year = expedienteArray[1].trim();
         String juzgado = doc.getJuzgado().getNombre().trim();
 
-        Path rootPath = Paths.get(ROOT_FOLDER, "digitalizacion", year, juzgado, expediente);
+        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
         
         
         try {
