@@ -2,8 +2,15 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
@@ -11,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +30,8 @@ public class JuzgadoService {
     private final JuzgadoRepository juzgadoRepository;
     private final SedeRepository sedeRepository;
     private final MateriaRepository materiaRepository;
+    private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final TipoPartesRepository tipoPartesRepository;
 
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
@@ -80,5 +90,39 @@ public class JuzgadoService {
 
     public Boolean reiniciarSecuenciasExpedientes(){
         return juzgadoRepository.reiniciarSecuenciasExpedientes();
+    }
+
+    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio){
+        List<Documento> documentos = new ArrayList<>();
+        TipoPartes actorParte = tipoPartesRepository.findById(actor.getTipoparte()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoparte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findById(demandado.getTipoparte()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoparte().toString()));
+
+        List<PersonaDocumento> registrosActor = personaDocumentoRepository
+        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartes(actor.getNombre(), actor.getApelidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte);
+
+        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
+        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartes(demandado.getNombre(), demandado.getApelidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte);
+
+        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()){
+            return null;
+        }
+
+        for(PersonaDocumento tmp:registrosActor){
+            documentos.add(tmp.getDocumento());
+        }
+        
+        for(PersonaDocumento tmp:registrosDemandado){
+            Documento documento;
+
+            if (!documentos.contains(tmp.getDocumento()))
+                continue;
+
+            documento = tmp.getDocumento();
+
+            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
+                return documento.getJuzgado();
+        }
+
+        return null;
     }
 }

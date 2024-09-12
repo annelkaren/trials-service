@@ -3,13 +3,18 @@ package mx.gob.pjpuebla.trials.core.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.anexos.Anexo;
 import mx.gob.pjpuebla.trials.core.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -36,6 +41,8 @@ public class DocumentoService {
         documento.setStatus("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
                 .orElseThrow(() -> new NoSuchElementException("Tipo Juicio no encontrado")));
+        
+        
         documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoDTO.getActor(), documento);
