@@ -45,6 +45,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             WHERE p.curp =:curp""")
     Optional<PersonaRecord> findByCurp(String curp);
 
+    Optional<Persona> findByUsuario(String usuario);
+
     @Query("""
                 SELECT
                     new mx.gob.pjpuebla.trials.core.personas.PersonaSalaRecord(

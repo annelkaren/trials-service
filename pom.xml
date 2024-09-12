@@ -101,6 +101,36 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.20.6</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>6.20.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.barcode4j</groupId>
+			<artifactId>barcode4j</artifactId>
+			<version>2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-all</artifactId>
+			<version>1.16</version>
+		</dependency>
     </dependencies>
 
 	<build>
@@ -143,11 +173,11 @@
 										<exclude>*recursos</exclude>
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
-										<exclude>*oficialias</exclude>
 										<exclude>*roles</exclude>
 										<exclude>*documentos</exclude>
 										<exclude>*anexos</exclude>
 										<exclude>*personasdocumentos</exclude>
+										<exclude>*sello</exclude>
 									</excludes>
 									<limits>
 										<limit>
