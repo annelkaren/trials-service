@@ -25,7 +25,7 @@ public class DigitalizacionFolderService {
     public String createFolderDigitalizacion(Documento doc) {
         
         if(ROOT_FOLDER == null){
-            ROOT_FOLDER = "/opt/pjp";
+            ROOT_FOLDER = "/opt/pjp/files";
         }
 
         if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
