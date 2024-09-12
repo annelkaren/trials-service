@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.personasdocumentos;
+package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

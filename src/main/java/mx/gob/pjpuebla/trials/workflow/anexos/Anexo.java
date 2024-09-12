@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.anexos;
+package mx.gob.pjpuebla.trials.workflow.anexos;
 
 
 import jakarta.persistence.*;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;

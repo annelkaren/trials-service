@@ -176,8 +176,6 @@
 										<exclude>*oficialias</exclude>
 										<exclude>*roles</exclude>
 										<exclude>*documentos</exclude>
-										<exclude>*anexos</exclude>
-										<exclude>*personasdocumentos</exclude>
 										<exclude>*sello</exclude>
 									</excludes>
 									<limits>

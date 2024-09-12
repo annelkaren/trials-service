@@ -1,10 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.anexos.Anexo;
-import mx.gob.pjpuebla.trials.core.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
-import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;

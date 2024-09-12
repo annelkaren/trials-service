@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.documentos;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ public class DocumentoResource {
     private final DocumentoService documentoService;
 
     @PostMapping
-    public DocumentoRecord create(@RequestBody DocumentoDTO documentoDTO) {
-        return this.documentoService.create(documentoDTO);
+    public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
+        return this.documentoService.createDemanda(documentoDTO);
     }
 
     @GetMapping(value = "/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)

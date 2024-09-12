@@ -1,11 +1,11 @@
-package mx.gob.pjpuebla.trials.core.personasdocumentos;
+package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;

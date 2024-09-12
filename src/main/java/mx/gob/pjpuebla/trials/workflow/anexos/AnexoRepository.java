@@ -1,5 +1,4 @@
-package mx.gob.pjpuebla.trials.core.anexos;
-
+package mx.gob.pjpuebla.trials.workflow.anexos;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

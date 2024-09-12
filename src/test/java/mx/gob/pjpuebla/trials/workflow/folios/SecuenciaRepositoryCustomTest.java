@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.folios;
 
 import jakarta.persistence.EntityManager;
-import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

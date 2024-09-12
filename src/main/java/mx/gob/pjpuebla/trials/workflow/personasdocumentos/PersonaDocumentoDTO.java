@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.personasdocumentos;
+package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import lombok.Data;
 
