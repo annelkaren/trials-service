@@ -173,7 +173,6 @@
 										<exclude>*recursos</exclude>
 										<exclude>*recursos.menu</exclude>
 										<exclude>*usuarios</exclude>
-										<exclude>*oficialias</exclude>
 										<exclude>*roles</exclude>
 										<exclude>*sello</exclude>
 									</excludes>
