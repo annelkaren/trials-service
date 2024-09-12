@@ -16,8 +16,6 @@ import mx.gob.pjpuebla.trials.util.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.ArrayList;
 
 import java.util.NoSuchElementException;
 
@@ -71,42 +69,6 @@ public class DocumentoService {
         personaDocumentoRepository.save(entity);
     }
 
-
-    private Integer getConexidadJuzgado(PersonaDocumento actor, PersonaDocumento demandado, TipoJuicio tipoJuicio){
-        List<Documento> documentos = new ArrayList<>();
-
-        List<PersonaDocumento> registrosActor = personaDocumentoRepository
-        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoParte(actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actor.getTipoPartes().getId());
-
-        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
-        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoParte(demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandado.getTipoPartes().getId());
-
-        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()){
-            return null;
-        }
-
-        for(PersonaDocumento tmp:registrosActor){
-            documentos.add(tmp.getDocumento());
-        }
-        
-        for(PersonaDocumento tmp:registrosDemandado){
-            Documento documento;
-
-            if (!documentos.contains(tmp.getDocumento()))
-                continue;
-
-            documento = tmp.getDocumento();
-
-            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
-                return documento.getJuzgado().getId();
-        }
-
-        return null;
-    }
-
-    private Juzgado getJuzgado(){
-        return null;
-    }
     // tipo: tiene que ser E-exhorto, D-demanda, P-promocion.
     private Long obtenerFolio(String tipo) {
         Long valNum;
