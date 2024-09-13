@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.documentos;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -20,7 +20,7 @@ import java.io.Serializable;
 public class Documento implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idDocumento", sequenceName = "SEQ_DOCUMENTOS_ID", allocationSize =  50)
+    @SequenceGenerator(name = "idDocumento", sequenceName = "SEQ_DOCUMENTOS_ID", allocationSize = 50)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocumento")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
@@ -39,7 +39,7 @@ public class Documento implements Serializable, Auditable {
 
     @Size(max = 30)
     @Column(name = "S_ESTATUS_PROCESAL", nullable = false)
-    private String status;
+    private String estatusProcesal;
 
     @Enumerated
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)

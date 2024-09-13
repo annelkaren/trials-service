@@ -9,8 +9,6 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.time.LocalDateTime;
 
-
-
 public class TipoJuicioSetUp {
 
     private TipoJuicioSetUp() {
@@ -36,7 +34,7 @@ public class TipoJuicioSetUp {
 
 
     public static TipoJuicioRecord createTipoJuicioRecord() {
-        return new TipoJuicioRecord(1, "Laboral", createTipoSistemaRecord(), createMateriaRecord() );
+        return new TipoJuicioRecord(1, "Laboral", createTipoSistemaRecord(), createMateriaRecord());
     }
 
     public static TipoSistemaRecord createTipoSistemaRecord() {
@@ -46,7 +44,6 @@ public class TipoJuicioSetUp {
     public static MateriaRecord createMateriaRecord() {
         return new MateriaRecord(1, "PENAL");
     }
-
 
 
 }

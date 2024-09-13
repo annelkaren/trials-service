@@ -1,48 +1,50 @@
-package mx.gob.pjpuebla.trials.core.documentos;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.anexos.Anexo;
-import mx.gob.pjpuebla.trials.core.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumento;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoDTO;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
-
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class DocumentoService {
 
     private final DocumentoRepository documentoRepository;
+    private final JuzgadoService juzgadoService;
     private final JuzgadoRepository juzgadoRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
 
-    public DocumentoRecord create(DocumentoDTO documentoDTO) {
+    public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
 
-        //TODO generacion de folio
-        documento.setFolio("1");
-        //TODO. Asignación de juzgado
-        documento.setExpediente("000001/2024");
-        documento.setTipoDocumento(TipoDocumento.DEMANDA);
-        documento.setStatus("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
-                .orElseThrow(() -> new NoSuchElementException("Tipo Juicio no encontrado")));
-        
-        
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
+        documento.setFolio(getFolio("D"));
+        //TODO. Asignación de juzgado correctamente
+        documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
+        if (documento.getJuzgado() == null) {
+            documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+        }
+        documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
+        documento.setTipoDocumento(TipoDocumento.DEMANDA);
+        //TODO. Falta definir reglas de este estatus
+        documento.setEstatusProcesal("Recepción documentos");
+        documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoDTO.getActor(), documento);
@@ -58,19 +60,26 @@ public class DocumentoService {
     }
 
     private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento) {
+        String tipoParte = (persona.getTipoParte().equals(1)) ? "Actor" : "Demandado";
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.getNombre());
-        entity.setApellidoPaterno(persona.getApelidoPaterno());
+        entity.setApellidoPaterno(persona.getApellidoPaterno());
         entity.setApellidoMaterno(persona.getApellidoMaterno());
         entity.setPseudonimo(persona.getPseudonimo());
         entity.setTipoPersona(persona.getTipoPersona());
-        entity.setTipoPartes(tipoPartesRepository.findById(persona.getTipoparte()).orElseThrow(() -> new NoSuchElementException("Tipo parte del demandado no encontrada")));
+        entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, documento.getTipoJuicio().getId())
+                .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
         entity.setDocumento(documento);
         personaDocumentoRepository.save(entity);
     }
 
-    // tipo: tiene que ser E-exhorto, D-demanda, P-promocion.
-    private Long obtenerFolio(String tipo) {
+    /**
+     * Devuelve un numero de folio
+     *
+     * @param tipo E-exhorto, D-demanda, P-promocion.
+     * @return
+     */
+    private String getFolio(String tipo) {
         Long valNum;
         switch (tipo) {
             case "E":           // Case para exhorto
@@ -83,9 +92,9 @@ public class DocumentoService {
                 valNum = documentoRepository.getNextValPromocion();
                 break;
             default:
-                throw new IllegalArgumentException("Tipo de folio no válido: " + tipo);
+                throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         }
-        return valNum;
+        return valNum.toString();
     }
 
 }
