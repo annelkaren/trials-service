@@ -9,15 +9,10 @@ public class Menu {
 
     public static Node parseToMenu(Set<String> uris) {
         String parent = Arrays.stream(uris.stream().findFirst().get().split("/")).filter(x -> !x.equals("")).findFirst().get();
+        Node root = new Node("root");
         for (String uri : uris) {
-            if (!uri.startsWith(parent) && !uri.startsWith("/" + parent)) {
-                parent = "/";
-                break;
-            }
-        }
-        Node root = new Node(parent);
-        for (String uri : uris) {
-            AddNode(formatUri(uri, parent), root, uri);
+            String formattedUri = formatUri(uri,parent);
+            AddNode(formattedUri, root, uri);
         }
         return root;
     }
@@ -32,20 +27,13 @@ public class Menu {
 
     public static Node AddNode(String filePath, Node rootNode, String uri) {
         // convenience method. this creates the queue that we need for recursion from
-        // the filepath for you
         if (filePath.startsWith("/")) {
-            filePath = filePath.split("/", 2)[1];
+            filePath = filePath.substring(1);
         }
         List<String> tokenList = Arrays.asList(filePath.split("/"));
-        tokenList.remove(" ");
-        // if you split a folder ending with / it leaves an empty string at the end and
-        // we want to remove that
-        if (StringUtils.isBlank(tokenList.get(tokenList.size() - 1))) {
-            tokenList.remove(tokenList.size() - 1);
-        }
+        tokenList.removeIf(StringUtils::isBlank);
 
-        PriorityQueue<String> queue = new PriorityQueue<>();
-        queue.addAll(tokenList);
+        Queue<String> queue = new LinkedList<>(tokenList);
         return AddNode(queue, rootNode, uri);
     }
 
