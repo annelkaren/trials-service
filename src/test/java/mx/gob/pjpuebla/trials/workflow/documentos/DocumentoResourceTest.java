@@ -45,7 +45,7 @@ class DocumentoResourceTest {
                 .willReturn(documentoRecord);
 
         mockMvc.perform(
-                post("/api/workflow/documentos/demanda")
+                post("/api/workflow/demanda")
                         .content(asJsonString(documentoRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
