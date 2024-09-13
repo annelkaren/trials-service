@@ -6,9 +6,7 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.juzgados.*;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
@@ -69,6 +67,8 @@ class DocumentoServiceTest {
     private DomicilioRepository domicilioRepository;
     @Mock
     private TipoSistemaRepository tipoSistemaRepository;
+    @Mock
+    private JuzgadoService juzgadoService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -95,7 +95,7 @@ class DocumentoServiceTest {
         sede = sedeRepository.save(sede);
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
-        juzgado = juzgadoRepository.save(juzgado);
+        juzgadoRepository.save(juzgado);
         dto.setTipoJuicioId(tipoJuicio.getId());
     }
 
@@ -108,6 +108,8 @@ class DocumentoServiceTest {
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Demandado"), any())).willReturn(Optional.of(demandado));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
+        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
+        given(juzgadoService.getNumeroExpediente(any())).willReturn(new NumeroExpedienteRecord("1"));
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getFolio(), TipoDocumento.DEMANDA);
 

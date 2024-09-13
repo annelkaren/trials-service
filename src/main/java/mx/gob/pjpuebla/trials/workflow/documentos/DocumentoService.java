@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DocumentoService {
 
     private final DocumentoRepository documentoRepository;
+    private final JuzgadoService juzgadoService;
     private final JuzgadoRepository juzgadoRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final AnexoRepository anexoRepository;
@@ -29,11 +31,15 @@ public class DocumentoService {
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
 
+        documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento.setFolio(getFolio("D"));
-        //TODO. Asignación de juzgado
-        documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
-        //TODO. Asignar número de expediente
-        documento.setExpediente("000001/2024");
+        //TODO. Asignación de juzgado correctamente
+        documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
+        if (documento.getJuzgado() == null) {
+            documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+        }
+        documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         //TODO. Falta definir reglas de este estatus
         documento.setEstatusProcesal("Recepción documentos");

@@ -2,17 +2,17 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumento;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoDTO;
-import mx.gob.pjpuebla.trials.core.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +55,7 @@ public class JuzgadoService {
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
-    public List<JuzgadoRecordResponse> getAllWithoutPagination(){
+    public List<JuzgadoRecordResponse> getAllWithoutPagination() {
         return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
     }
 
@@ -84,34 +84,34 @@ public class JuzgadoService {
         juzgadoRepository.eliminarSecuenciaExpediente(id);
     }
 
-    public NumeroExpedienteRecord getNumeroExpediente(Integer id){
+    public NumeroExpedienteRecord getNumeroExpediente(Integer id) {
         return new NumeroExpedienteRecord(juzgadoRepository.getNumeroExpediente(id));
     }
 
-    public Boolean reiniciarSecuenciasExpedientes(){
+    public Boolean reiniciarSecuenciasExpedientes() {
         return juzgadoRepository.reiniciarSecuenciasExpedientes();
     }
 
-    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio){
+    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio) {
         List<Documento> documentos = new ArrayList<>();
-        TipoPartes actorParte = tipoPartesRepository.findById(actor.getTipoparte()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoparte().toString()));
-        TipoPartes demandadoParte = tipoPartesRepository.findById(demandado.getTipoparte()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoparte().toString()));
-
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoParte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
+        //TODO. Descartar mayusculas minusculas
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
-        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartes(actor.getNombre(), actor.getApelidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte);
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
 
         List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
-        .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartes(demandado.getNombre(), demandado.getApelidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte);
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
 
-        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()){
+        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
         }
 
-        for(PersonaDocumento tmp:registrosActor){
+        for (PersonaDocumento tmp : registrosActor) {
             documentos.add(tmp.getDocumento());
         }
-        
-        for(PersonaDocumento tmp:registrosDemandado){
+
+        for (PersonaDocumento tmp : registrosDemandado) {
             Documento documento;
 
             if (!documentos.contains(tmp.getDocumento()))
@@ -122,7 +122,6 @@ public class JuzgadoService {
             if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
                 return documento.getJuzgado();
         }
-
         return null;
     }
 }

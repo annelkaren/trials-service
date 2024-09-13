@@ -9,5 +9,5 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
-    public List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartes(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, TipoPartes tipoParte);
+    public List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
 }

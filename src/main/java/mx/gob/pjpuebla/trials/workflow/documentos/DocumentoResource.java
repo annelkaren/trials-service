@@ -13,19 +13,19 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/workflow/documentos")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "Keycloak")
 public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
     private final DocumentoService documentoService;
 
-    @PostMapping
+    @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
         return this.documentoService.createDemanda(documentoDTO);
     }
 
-    @GetMapping(value = "/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
