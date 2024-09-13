@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
@@ -22,6 +23,8 @@ public class JuzgadoService {
     private final JuzgadoRepository juzgadoRepository;
     private final SedeRepository sedeRepository;
     private final MateriaRepository materiaRepository;
+    private final TipoJuicioRepository tipoJuicioRepository;
+    private final RelJuzgadoTipoJuicioRepository relJuzgadoTipoJuicioRepository;
 
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
@@ -55,6 +58,13 @@ public class JuzgadoService {
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
         return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
+    }
+
+    public RelJuzgadoTipoJuicio createRelacion(RelJuzgadoTipoJuicio relJuzgadoTipoJuicio){
+        relJuzgadoTipoJuicio.setJuzgado(juzgadoRepository.findById(relJuzgadoTipoJuicio.getJuzgado().getId()).orElse(null));
+        relJuzgadoTipoJuicio.setTipoJuicio(tipoJuicioRepository.findById(relJuzgadoTipoJuicio.getTipoJuicio().getId()).orElse(null));
+        relJuzgadoTipoJuicio = relJuzgadoTipoJuicioRepository.save(relJuzgadoTipoJuicio);
+        return relJuzgadoTipoJuicio;
     }
 
     public JuzgadoRecordResponse update(Juzgado juzgado) {
