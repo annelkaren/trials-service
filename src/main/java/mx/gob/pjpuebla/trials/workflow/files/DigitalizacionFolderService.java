@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.files;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
