@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
