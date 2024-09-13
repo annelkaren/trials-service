@@ -43,6 +43,11 @@ public class JuzgadoResource {
        return this.juzgadoService.create(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
     }
 
+    @PostMapping("/relacionjuicio")
+    public RelJuzgadoTipoJuicio createTipoJuicio(@RequestBody @Valid RelJuzgadoTipoJuicio relJuzgadoTipoJuicio) {
+        return this.juzgadoService.createRelacion(relJuzgadoTipoJuicio);
+    }
+
     @PutMapping
     public JuzgadoRecordResponse update(@RequestBody @Valid JuzgadoDTO juzgadoDTO) {
         return this.juzgadoService.update(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
