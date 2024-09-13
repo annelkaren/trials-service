@@ -13,9 +13,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,7 +47,7 @@ class TipoPartesServiceTest {
         validTipoPartes.setTipoJuicio(tipoJuicio);
     }
 
-   @Test
+    @Test
     void getAll_return_page() {
         List<TipoPartes> listPage = Collections.singletonList(validTipoPartes);
         given(mockTipoPartesRepository.findAll(any(Example.class), any(PageRequest.class)))
@@ -73,9 +78,7 @@ class TipoPartesServiceTest {
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    target.findById(id);
-                }
+                () -> target.findById(id)
         );
 
         assertThat(assertThrows.getMessage()).contains("TipoPartes no encontrada");
@@ -84,7 +87,7 @@ class TipoPartesServiceTest {
     @Test
     void getByTipoJuicioId_return_tipoPartes() {
         given(mockTipoPartesRepository.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId()))
-                .willReturn(Arrays.asList(validTipoPartes));
+                .willReturn(Collections.singletonList(validTipoPartes));
 
         List<TipoPartesRecord> list = target.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId());
         assertThat(list).hasSize(1);
