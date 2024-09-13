@@ -43,4 +43,5 @@ keycloak:
   client-secret: 2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj
   client-server-id: 8c9e121a-53b2-45bf-89e0-8d1d03a1dd50
 
-root-folder: /opt/pjp/files
+app:
+  root-folder: /opt/pjp/files
