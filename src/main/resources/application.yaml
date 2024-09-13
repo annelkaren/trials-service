@@ -36,6 +36,14 @@ server:
   servlet:
     context-path: /rest
 
+management:
+  endpoints:
+    web:
+      expose: "*"
+  endpoint:
+    health:
+      show-details: always
+
 keycloak:
   realm: trials-realm
   server-url: http://localhost:8080
