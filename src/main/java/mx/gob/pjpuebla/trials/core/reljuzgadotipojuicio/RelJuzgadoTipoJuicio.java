@@ -1,7 +1,8 @@
-package mx.gob.pjpuebla.trials.core.juzgados;
+package mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 
 import java.io.Serializable;
@@ -16,12 +17,12 @@ public class RelJuzgadoTipoJuicio implements Serializable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_TIPOJUICIO", referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FN_TIPOJUICIO")//, referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
     private TipoJuicio tipoJuicio;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FN_JUZGADO")//, referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
     private Juzgado juzgado;
 
 }
