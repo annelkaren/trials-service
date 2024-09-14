@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicio;
+import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
