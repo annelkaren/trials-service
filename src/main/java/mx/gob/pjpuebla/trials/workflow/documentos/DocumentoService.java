@@ -37,7 +37,8 @@ public class DocumentoService {
         //TODO. Asignación de juzgado correctamente
         documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
         if (documento.getJuzgado() == null) {
-            documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+            //documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
         }
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
@@ -46,6 +47,9 @@ public class DocumentoService {
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento = documentoRepository.save(documento);
+
+        juzgadoRepository.actualizarContadorAsignaciones(documento.getJuzgado().getId());
+
 
         createPersonaDocumento(documentoDTO.getActor(), documento);
         createPersonaDocumento(documentoDTO.getDemandado(), documento);
