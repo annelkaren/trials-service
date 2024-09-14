@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Response;
 import org.springframework.data.domain.Page;
@@ -27,28 +28,28 @@ public class OficialiaResource {
     ) {
         return oficialiaService.getAllActive(pageable, new Oficialia()
                 .setNombre(nombre)
-                .setTipo(new TipoOficialia().setNombre(tipoOficialiaId))
+                .setTipoOficialia(new TipoOficialia().setNombre(tipoOficialiaId))
         );
 
     }
 
     @GetMapping("/{id}")
-    public Response getById(@PathVariable Integer id) {
+    public OficialiaRecord getById(@PathVariable Integer id) {
         return this.oficialiaService.findById(id);
     }
 
     @PostMapping
-    public Response create(@RequestBody Oficialia oficialia, BindingResult bindingResult) {
-        return this.oficialiaService.create(oficialia, bindingResult);
+    public OficialiaRecordResponse create(@RequestBody Oficialia oficialia) {
+        return this.oficialiaService.create(oficialia);
     }
 
     @PutMapping
-    public Response update(@RequestBody Oficialia oficialia) {
+    public OficialiaRecordResponse update(@RequestBody Oficialia oficialia) {
         return this.oficialiaService.update(oficialia);
     }
 
     @DeleteMapping("/{id}")
-    public Response delete(@PathVariable Integer id) {
-        return this.oficialiaService.delete(id);
+    public void delete(@PathVariable Integer id) {
+        this.oficialiaService.delete(id);
     }
 }

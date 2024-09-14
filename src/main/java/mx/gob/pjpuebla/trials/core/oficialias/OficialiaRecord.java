@@ -7,10 +7,10 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 public record OficialiaRecord(
         Integer id,
         Integer version,
-        Estado estado,
-        TipoOficialiaRecord tipo,
         String nombre,
         String responsable,
+        Estado estado,
+        TipoOficialiaRecord tipo,
         SedeRecordResponse sede
 ) {
 }
