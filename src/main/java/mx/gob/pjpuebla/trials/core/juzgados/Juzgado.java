@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -14,6 +15,9 @@ import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Entity
@@ -41,6 +45,14 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @NotNull
+    @Column(name = "N_MAX_ASIGNACIONES")
+    private Integer maxAsignacionesRonda;
+
+    @JsonIgnore
+    @Column(name = "N_CONTADOR_ASIGNACIONes")
+    private Integer contadorAsignaciones;
+
     @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Materia materia;
@@ -52,5 +64,10 @@ public class Juzgado implements Serializable, Auditable {
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
+
+    @JsonProperty
+    public Integer getContadorAsignaciones(){
+        return this.contadorAsignaciones;
+    }
 }
 

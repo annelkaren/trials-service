@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Transactional
@@ -33,6 +35,8 @@ public class JuzgadoService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
 
+    private static final Random RANDOM = new Random();
+
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
@@ -43,7 +47,7 @@ public class JuzgadoService {
         List<JuzgadoRecordResponse> list = page.getContent().stream()
                 .map(juzgado -> new JuzgadoRecordResponse(
                         juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(),
-                        juzgado.getMateria().getNombre()))
+                        juzgado.getMateria().getNombre(), juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -62,9 +66,11 @@ public class JuzgadoService {
     public JuzgadoRecordResponse create(Juzgado juzgado) {
         juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
         juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
+        juzgado.setContadorAsignaciones(0);
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
-        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
+        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(), 
+                    juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
     }
 
     public JuzgadoRecordResponse update(Juzgado juzgado) {
@@ -72,7 +78,8 @@ public class JuzgadoService {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
             juzgado = juzgadoRepository.save(juzgado);
-            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
+            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(), 
+                        juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Juzgado modificado por otro usuario", "juzgadoId");
@@ -123,5 +130,40 @@ public class JuzgadoService {
                 return documento.getJuzgado();
         }
         return null;
+    }
+
+    public Juzgado getJuzgado(TipoJuicio tipoJuicio){
+        int rand = 0;
+        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
+
+        if (juzgados.isEmpty()){
+            revisarCargaJuzgados(tipoJuicio.getMateria());
+            
+            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
+
+            if (juzgados.isEmpty()) 
+                throw(new NotFoundException("No se puede asignar un Juzgado", tipoJuicio.getNombre()));
+        }
+
+        rand = RANDOM.nextInt(juzgados.size());
+
+        return juzgados.get(rand); 
+        
+    }
+
+    public void actualizarCarga(Juzgado juzgado){
+        juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
+
+        revisarCargaJuzgados(juzgado.getMateria());
+    }
+
+    public void revisarCargaJuzgados(Materia materia){
+        int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia);
+        int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia);
+        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia).size();
+
+        if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0){
+            juzgadoRepository.reiniciarContadorAsignaciones(materia);
+        }
     }
 }

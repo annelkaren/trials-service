@@ -6,5 +6,7 @@ public record JuzgadoRecordResponse(
         Integer id,
         String nombre,
         Estado estado,
-        String materia) {
+        String materia, 
+        Integer maxAsignacionesRonda,
+        Integer contadorAsignaciones) {
 }

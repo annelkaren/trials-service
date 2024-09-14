@@ -8,5 +8,7 @@ public record JuzgadoRecord(
         String nombre,
         Estado estado,
         Integer materiaId,
-        Integer sedeId) {
+        Integer sedeId,
+        Integer maxAsignacionesRonda,
+        Integer contadorAsignaciones) {
 }
