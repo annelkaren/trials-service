@@ -37,7 +37,7 @@ public class Oficialia implements Serializable, Auditable {
 
     @JoinColumn(name = "FN_TIPO", referencedColumnName = "PN_ID", nullable = false)
     @OneToOne(fetch = FetchType.LAZY)
-    private TipoOficialia tipo;
+    private TipoOficialia tipoOficialia;
 
     @NotNull
     @Column(name = "S_NOMBRE", nullable = false)

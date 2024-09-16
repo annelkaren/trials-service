@@ -10,6 +10,8 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 
 import java.io.Serializable;
 
@@ -44,6 +46,10 @@ public class Documento implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
     private TipoDocumento tipoDocumento;
+
+    @Enumerated
+    @Column(name = "N_ESTADO_DOCUMENTO", nullable = false)
+    private EstadoDocumento estatus;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.Audit;
@@ -30,7 +31,6 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "S_NOMBRES", nullable = false)
     private String nombre;
 
-
     @Column(name = "S_APELLIDO_PATERNO")
     private String apellidoPaterno;
 
@@ -42,6 +42,10 @@ public class PersonaDocumento implements Serializable, Auditable {
 
     @Column(name = "S_TIPO_PERSONA")
     private String tipoPersona;
+
+    @Enumerated
+    @Column(name = "N_ROL")
+    private Rol rol;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)

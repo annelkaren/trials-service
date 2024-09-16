@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
@@ -44,6 +46,7 @@ public class DocumentoService {
         }
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
+        documento.setEstatus(EstadoDocumento.CAPTURA);
         //TODO. Falta definir reglas de este estatus
         documento.setEstatusProcesal("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
@@ -70,6 +73,7 @@ public class DocumentoService {
         entity.setApellidoMaterno(persona.getApellidoMaterno());
         entity.setPseudonimo(persona.getPseudonimo());
         entity.setTipoPersona(persona.getTipoPersona());
+        entity.setRol(Rol.PRINCIPAL);
         entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, documento.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
         entity.setDocumento(documento);
