@@ -35,24 +35,31 @@ public class DigitalizacionService {
      * Procesa y almacena un archivo PDF en el servidor, asociado a un documento
      * existente.
      * Valida que el archivo y el documento cumplan con los requisitos, crea una
-     * ruta de almacenamiento,
-     * y actualiza la entidad del documento con la ruta del archivo.
+     * ruta de almacenamiento, y actualiza la entidad del documento con la ruta
+     * del archivo. Devuelve un record con los detalles del archivo procesado.
      * 
      * @param file        El archivo PDF a procesar.
      * @param documentoId El ID del documento asociado al archivo.
+     * @return Un record que contiene el ID del documento, la ruta del archivo
+     *         almacenado y el nombre único del archivo.
      * @throws IOException Si ocurre un error al guardar el archivo en el sistema de
      *                     archivos.
      */
-    public DigitalizacionRecord procesarArchivo(MultipartFile file, Integer documentoId) throws IOException {
+    public DigitalizacionRecord procesarArchivo(MultipartFile file, Integer documentoId)  {
         Documento doc = validarDocumento(file, documentoId);
 
-        // Crea la ruta para el archivo
+        // Crea la ruta donde se almacenará el archivo
         String rutaFile = digitalizacionFolderService.createFolderDigitalizacion(doc);
         String uniqueFileName = generarNombreArchivo(doc.getTipoDocumento());
         Path path = Paths.get(rootFolder, rutaFile);
 
         // Crear directorios si no existen y guardar el archivo
-        Files.createDirectories(path);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -66,6 +73,7 @@ public class DigitalizacionService {
         doc.setRuta(path.resolve(uniqueFileName).toString());
         documentoRepository.save(doc);
 
+        // Devuelve los detalles del documento en un record
         return new DigitalizacionRecord(doc.getId(), doc.getRuta(), uniqueFileName);
     }
 
@@ -87,7 +95,7 @@ public class DigitalizacionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El registro del documento no existe"));
 
-        // Valida el archivo PDF
+        // Valida las propiedades del archivo
         validarArchivo(file);
 
         // Verifica que el tipo de documento no sea nulo
@@ -114,7 +122,6 @@ public class DigitalizacionService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo debe ser un PDF.");
         }
         
-
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede superar los 50 MB.");
         }
