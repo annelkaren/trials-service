@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 
 import java.util.Arrays;
@@ -18,6 +19,7 @@ public class DocumentoSetUp {
                 .setJuzgado(null)
                 .setTipoDocumento(tipoDocumento)
                 .setTipoJuicio(tipoJuicio)
+                .setEstatus(EstadoDocumento.CAPTURA)
                 .setEstatusProcesal("Recepcion");
     }
 
