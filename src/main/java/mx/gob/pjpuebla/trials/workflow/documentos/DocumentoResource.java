@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -19,6 +20,7 @@ public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
     private final DocumentoService documentoService;
+    private final DigitalizacionService digitalizacionService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
@@ -31,5 +33,13 @@ public class DocumentoResource {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", id + "_sello.pdf");
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
+    }
+
+    @PostMapping("/documentos/digitalizacion")
+    public DigitalizacionRecord digitizationDocument(
+            @RequestParam("file") MultipartFile file, 
+            @RequestBody Integer documentoId) throws IOException {
+
+        return digitalizacionService.procesarArchivo(file, documentoId);
     }
 }
