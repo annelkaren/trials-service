@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -35,8 +34,8 @@ public class CaratulaGenerator {
 
     private JasperPrint getReport(Documento documento) throws IOException, JRException  {
         String[] expendienteYear = getNoExpendienteYear(documento.getExpediente());
-        String actor = getNombreActor(documento.getId(), "Actor");
-        String demandado = getNombreActor(documento.getId(), "Demandado");
+        String actor = getNombrePersoaByIdAndParte(documento.getId(), "Actor");
+        String demandado = getNombrePersoaByIdAndParte(documento.getId(), "Demandado");
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getJuzgado().getNombre());
@@ -58,10 +57,9 @@ public class CaratulaGenerator {
         return expediente.split("/");
     }
 
-    private String getNombreActor(Integer id,String parte){
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+    private String getNombrePersoaByIdAndParte(Integer id,String parte){
         List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id,parte, estados, rol);
+        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id,parte, rol);
         return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno());
     }
 }

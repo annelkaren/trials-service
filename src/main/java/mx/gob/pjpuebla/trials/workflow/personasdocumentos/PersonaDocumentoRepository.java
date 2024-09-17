@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
@@ -25,13 +24,11 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             JOIN pd.documento d
             JOIN pd.tipoPartes tp
             WHERE d.id = :documentoId
-            AND d.estatus  IN :estado
             AND pd.rol IN :rol
             AND tp.nombre = :parte
             """)
     PersonaDocumentoRecord findDocumentoPersonaTipoParteByDocumentoId(
             @Param("documentoId") Integer documentoId,
             @Param("parte") String parte,
-            @Param("estado") List<Estado> estados,
             @Param("rol") List<Rol> rol);
 }
