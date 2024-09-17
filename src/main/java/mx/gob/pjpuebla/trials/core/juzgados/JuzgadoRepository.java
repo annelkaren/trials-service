@@ -7,17 +7,29 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+
 
 @Repository
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
 
-    @Query("""
-            SELECT 
-            new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecord(f.id, f.version, f.nombre, f.estado, m.id, s.id)
-            FROM Juzgado f 
-            LEFT JOIN f.materia m
-            LEFT JOIN f.sede s
-            WHERE f.id =:id AND f.estado IN :estados""")
-    Optional<JuzgadoRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecord(f.id, f.version, f.nombre, f.estado, m.id, s.id)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        LEFT JOIN f.sede s
+                        WHERE f.id =:id AND f.estado IN :estados""")
+        Optional<JuzgadoRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(f.id,  f.nombre, f.estado, m.nombre)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        WHERE f.estado IN :estados""")
+        List<JuzgadoRecordResponse> findAllByEstadoIn(List<Estado> estados);
+
+    List<Juzgado> findByMateriaAndEstado(Materia materia, Estado estado);
 
 }

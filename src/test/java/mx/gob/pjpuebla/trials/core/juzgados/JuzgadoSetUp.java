@@ -1,7 +1,9 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
@@ -18,6 +20,18 @@ public class JuzgadoSetUp {
                 .setVersion(0)
                 .setNombre("Juzgado")
                 .setEstado(estado);
+        juzgado.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return juzgado;
+    }
+
+    public static Juzgado createJuzgado() {
+        Juzgado juzgado = new Juzgado()
+                .setId(1)
+                .setVersion(0)
+                .setNombre("Juzgado")
+                .setEstado(Estado.ACTIVE)
+                .setMateria(MateriaSetUp.createMateria())
+                .setSede(SedeSetUp.createSede());
         juzgado.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return juzgado;
     }

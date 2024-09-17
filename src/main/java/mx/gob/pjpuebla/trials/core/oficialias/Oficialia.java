@@ -3,12 +3,14 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
@@ -29,24 +31,25 @@ public class Oficialia implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Pattern(regexp = "[AID]")
-    @Column(name = "S_ESTADO", nullable = false)
-    private String estado;
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
 
-    @Column(name = "S_TIPO", nullable = false)
-    private String tipo;
+    @JoinColumn(name = "FN_TIPO", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    private TipoOficialia tipoOficialia;
 
     @NotNull
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
     @NotNull
-    @Column(name = "FN_DOMICILIO", nullable = false)
-    private Integer domicilio;
-
-    @NotNull
     @Column(name = "S_RESPONSABLE", nullable = false)
     private String responsable;
+
+    @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    private Sede sede;
 
     @Accessors(chain = false)
     @Embedded

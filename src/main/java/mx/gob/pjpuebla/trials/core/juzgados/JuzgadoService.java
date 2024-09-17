@@ -4,13 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +30,8 @@ public class JuzgadoService {
     private final JuzgadoRepository juzgadoRepository;
     private final SedeRepository sedeRepository;
     private final MateriaRepository materiaRepository;
+    private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final TipoPartesRepository tipoPartesRepository;
 
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordResponse> getAll(Juzgado example, Pageable pageable) {
@@ -45,6 +55,10 @@ public class JuzgadoService {
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
     }
 
+    public List<JuzgadoRecordResponse> getAllWithoutPagination() {
+        return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
+    }
+
     public JuzgadoRecordResponse create(Juzgado juzgado) {
         juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
         juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
@@ -55,8 +69,8 @@ public class JuzgadoService {
 
     public JuzgadoRecordResponse update(Juzgado juzgado) {
         try {
-            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
-            juzgado.setSede(sedeRepository.findById(juzgado.getId()).orElse(null));
+            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+            juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
@@ -70,11 +84,44 @@ public class JuzgadoService {
         juzgadoRepository.eliminarSecuenciaExpediente(id);
     }
 
-    public NumeroExpedienteRecord getNumeroExpediente(Integer id){
+    public NumeroExpedienteRecord getNumeroExpediente(Integer id) {
         return new NumeroExpedienteRecord(juzgadoRepository.getNumeroExpediente(id));
     }
 
-    public Boolean reiniciarSecuenciasExpedientes(){
+    public Boolean reiniciarSecuenciasExpedientes() {
         return juzgadoRepository.reiniciarSecuenciasExpedientes();
+    }
+
+    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio) {
+        List<Documento> documentos = new ArrayList<>();
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoParte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
+        //TODO. Descartar mayusculas minusculas
+        List<PersonaDocumento> registrosActor = personaDocumentoRepository
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
+
+        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
+
+        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
+            return null;
+        }
+
+        for (PersonaDocumento tmp : registrosActor) {
+            documentos.add(tmp.getDocumento());
+        }
+
+        for (PersonaDocumento tmp : registrosDemandado) {
+            Documento documento;
+
+            if (!documentos.contains(tmp.getDocumento()))
+                continue;
+
+            documento = tmp.getDocumento();
+
+            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
+                return documento.getJuzgado();
+        }
+        return null;
     }
 }
