@@ -7,11 +7,14 @@ import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicio;
 import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.springframework.dao.OptimisticLockingFailureException;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
@@ -64,21 +67,44 @@ public class JuzgadoService {
         return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
     }
 
-    public JuzgadoRecordResponse create(Juzgado juzgado) {
-        juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElse(null));
-        juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElse(null));
+    public JuzgadoRecordResponse create(Juzgado juzgado, List<TipoJuicioRecord> tipoJuicioRecord) {
+        //Llena y guarda juzgado
+        juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+        juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
+
+        //llena y guarda la tabla de relación: RelJuzgadoTipoJuicio
+        List<Integer> idsTipoJuicio = getIdTipoJuicioList(tipoJuicioRecord);
+        for (Integer idTipoJuicio : idsTipoJuicio) {
+            RelJuzgadoTipoJuicio relJuzgadoTipoJuicio = new RelJuzgadoTipoJuicio();
+            relJuzgadoTipoJuicio.setJuzgado(juzgado);
+            relJuzgadoTipoJuicio.setTipoJuicio(tipoJuicioRepository.findById(idTipoJuicio).orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
+            relJuzgadoTipoJuicioRepository.save(relJuzgadoTipoJuicio);
+        }
         return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
     }
 
-    public JuzgadoRecordResponse update(Juzgado juzgado) {
+
+    public JuzgadoRecordResponse update(Juzgado juzgado, List<TipoJuicioRecord> tipoJuicioRecord) {
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            juzgado = juzgadoRepository.save(juzgado);
+            juzgadoRepository.save(juzgado);
+            juzgado = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+
+            //Borra las relaciones de Juzgado vs TipoJuicio para insertar relaciones nuevas
+            deleteRelJuzgadoTipoJuicioByJuzgado(juzgado);
+            List<Integer> idsTipoJuicio = getIdTipoJuicioList(tipoJuicioRecord);
+            for (Integer idTipoJuicio : idsTipoJuicio) {
+                RelJuzgadoTipoJuicio relJuzgadoTipoJuicio = new RelJuzgadoTipoJuicio();
+                relJuzgadoTipoJuicio.setJuzgado(juzgado);
+                relJuzgadoTipoJuicio.setTipoJuicio(tipoJuicioRepository.findById(idTipoJuicio).orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
+                relJuzgadoTipoJuicioRepository.save(relJuzgadoTipoJuicio);
+            }
+
             return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
-        } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
+        } catch (OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Juzgado modificado por otro usuario", "juzgadoId");
         }
