@@ -79,12 +79,14 @@ public class JuzgadoService {
 
     public JuzgadoRecordResponse update(Juzgado juzgado, List<TipoJuicioRecord> tipoJuicioRecord) {
         try {
-            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
-            juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            juzgadoRepository.save(juzgado);
-            juzgado = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+            Juzgado juzgadoUpdate = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+            juzgadoUpdate.setNombre(juzgado.getNombre());
+            juzgadoUpdate.setEstado(juzgado.getEstado());
+            juzgadoUpdate.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+            juzgadoUpdate.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
+            juzgadoUpdate = juzgadoRepository.save(juzgadoUpdate);
 
-            //Borra las relaciones de Juzgado vs TipoJuicio para insertar relaciones nuevas
+            //Borra las relaciones de Juzgado-TipoJuicio para insertar relaciones nuevas
             deleteRelJuzgadoTipoJuicioByJuzgado(juzgado);
             List<Integer> idsTipoJuicio = getIdTipoJuicioList(tipoJuicioRecord);
             for (Integer idTipoJuicio : idsTipoJuicio) {
@@ -94,7 +96,7 @@ public class JuzgadoService {
                 relJuzgadoTipoJuicioRepository.save(relJuzgadoTipoJuicio);
             }
 
-            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre());
+            return new JuzgadoRecordResponse(juzgadoUpdate.getId(), juzgadoUpdate.getNombre(), juzgadoUpdate.getEstado(), juzgadoUpdate.getMateria().getNombre());
         } catch (OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Juzgado modificado por otro usuario", "juzgadoId");
