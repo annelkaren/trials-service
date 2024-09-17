@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.personasdocumentos;
+package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import lombok.Data;
 
@@ -6,9 +6,9 @@ import lombok.Data;
 public class PersonaDocumentoDTO {
 
     private String nombre;
-    private String apelidoPaterno;
+    private String apellidoPaterno;
     private String apellidoMaterno;
     private String pseudonimo;
     private String tipoPersona; //fisica o moral
-    private Integer tipoparte; //actor o demandado
+    private Integer tipoParte; //actor o demandado
 }

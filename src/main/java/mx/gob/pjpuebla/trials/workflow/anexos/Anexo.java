@@ -1,18 +1,18 @@
-package mx.gob.pjpuebla.trials.core.anexos;
-
+package mx.gob.pjpuebla.trials.workflow.anexos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 
 import java.io.Serializable;
-
 
 @Data
 @Entity
@@ -30,7 +30,6 @@ public class Anexo implements Serializable, Auditable {
     @Size(min = 3, max = 250)
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
-
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)

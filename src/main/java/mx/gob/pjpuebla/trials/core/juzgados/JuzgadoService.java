@@ -9,8 +9,15 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -29,6 +36,8 @@ public class JuzgadoService {
     private final JuzgadoRepository juzgadoRepository;
     private final SedeRepository sedeRepository;
     private final MateriaRepository materiaRepository;
+    private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final TipoPartesRepository tipoPartesRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final RelJuzgadoTipoJuicioRepository relJuzgadoTipoJuicioRepository;
 
@@ -114,6 +123,39 @@ public class JuzgadoService {
 
     public Boolean reiniciarSecuenciasExpedientes() {
         return juzgadoRepository.reiniciarSecuenciasExpedientes();
+    }
+
+    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio) {
+        List<Documento> documentos = new ArrayList<>();
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoParte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
+        //TODO. Descartar mayusculas minusculas
+        List<PersonaDocumento> registrosActor = personaDocumentoRepository
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
+
+        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
+                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
+
+        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
+            return null;
+        }
+
+        for (PersonaDocumento tmp : registrosActor) {
+            documentos.add(tmp.getDocumento());
+        }
+
+        for (PersonaDocumento tmp : registrosDemandado) {
+            Documento documento;
+
+            if (!documentos.contains(tmp.getDocumento()))
+                continue;
+
+            documento = tmp.getDocumento();
+
+            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
+                return documento.getJuzgado();
+        }
+        return null;
     }
 
     private List<Integer> getIdTipoJuicioList(List<TipoJuicioRecord> list) {

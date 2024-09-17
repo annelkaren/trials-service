@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.documentos;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -13,19 +13,19 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core/documentos")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "Keycloak")
 public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
     private final DocumentoService documentoService;
 
-    @PostMapping
-    public DocumentoRecord create(@RequestBody DocumentoDTO documentoDTO) {
-        return this.documentoService.create(documentoDTO);
+    @PostMapping("/demanda")
+    public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
+        return this.documentoService.createDemanda(documentoDTO);
     }
 
-    @GetMapping(value = "/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

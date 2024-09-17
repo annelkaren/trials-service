@@ -36,9 +36,20 @@ server:
   servlet:
     context-path: /rest
 
+management:
+  endpoints:
+    web:
+      expose: "*"
+  endpoint:
+    health:
+      show-details: always
+
 keycloak:
   realm: trials-realm
   server-url: http://localhost:8080
   client-id: trials-service
   client-secret: 2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj
   client-server-id: 8c9e121a-53b2-45bf-89e0-8d1d03a1dd50
+
+app:
+  root-folder: /opt/pjp/files

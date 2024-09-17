@@ -21,8 +21,9 @@ import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
-import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
     private DocumentoRepository documentoRepository;
     @Autowired
     private TipoSistemaRepository tipoSistemaRepository;
-    
+
     private Documento documento;
     private Juzgado juzgado;
 
@@ -75,7 +76,7 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         sede = sedeRepository.save(sede);
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
-        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
     }
 
     @Test
@@ -97,10 +98,10 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
-        LocalDate dateTest = LocalDate.of(2025,01,01);
+        LocalDate dateTest = LocalDate.of(2025, 01, 01);
 
-        for (Juzgado tmpJuzgado:juzgadoRepository.findAll()){
-            for (int i=1; i<5; i++){
+        for (Juzgado tmpJuzgado : juzgadoRepository.findAll()) {
+            for (int i = 1; i < 5; i++) {
                 String tmpExpediente = juzgadoRepository.getNumeroExpediente(tmpJuzgado.getId());
 
                 documento.setFolio(Integer.valueOf(i).toString());
@@ -112,10 +113,10 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
             juzgadoRepository.revisarSecuencia(tmpJuzgado.getId(), dateTest);
         }
 
-        for (Juzgado tmp:juzgadoRepository.findAll()){
+        for (Juzgado tmp : juzgadoRepository.findAll()) {
             String numExpediente = juzgadoRepository.getNumeroExpediente(tmp.getId());
             assertThat(numExpediente).startsWith("000001");
         }
-        
+
     }
 }

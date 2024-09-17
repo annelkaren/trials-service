@@ -1,14 +1,14 @@
-package mx.gob.pjpuebla.trials.core.anexos;
+package mx.gob.pjpuebla.trials.workflow.anexos;
 
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
-import mx.gob.pjpuebla.trials.core.documentos.Documento;
-import mx.gob.pjpuebla.trials.core.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.DocumentoTestSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class AnexoRepositoryTest extends AuditConfigTest {
+class AnexoRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private AnexoRepository anexoRepository;
@@ -81,7 +81,7 @@ public class AnexoRepositoryTest extends AuditConfigTest {
 
         Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
         juzgado = juzgadoRepository.save(juzgado);
-        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
         documento.setJuzgado(juzgado);
         documento.setExpediente("000001/2024");
         documento.setFolio("1");

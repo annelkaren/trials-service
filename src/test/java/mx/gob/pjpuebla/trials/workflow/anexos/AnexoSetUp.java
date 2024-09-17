@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.anexos;
+package mx.gob.pjpuebla.trials.workflow.anexos;
 
 import mx.gob.pjpuebla.trials.util.Audit;
 
