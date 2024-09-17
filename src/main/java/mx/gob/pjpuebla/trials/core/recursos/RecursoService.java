@@ -52,7 +52,6 @@ public class RecursoService {
         Set<String> uris = resources.stream()
                 .filter(r -> r.getAttributes().containsKey("menu"))
                 .filter(r -> r.getAttributes().get(("menu")).contains("true"))
-                .filter(r -> r.getAttributes().containsKey("parent"))
                 .filter(r -> {
                     for (PolicyEvaluationResponse.EvaluationResultRepresentation result : Collections.unmodifiableList(results)) {
                         if (result.getResource().getId().equalsIgnoreCase(r.getId())) {
@@ -69,9 +68,8 @@ public class RecursoService {
 
     private Set<String> modifyUrl(String displayName, Map<String, List<String>> attributes, Set<String> uris) {
         Set<String> newHashSet = new HashSet<>();
-        String parent = attributes.getOrDefault("parent", Collections.singletonList("")).get(0);
         for (String uri : uris) {
-            newHashSet.add(uri + "--" + displayName + "--" + parent);
+            newHashSet.add(uri + "--" + displayName );
         }
         return newHashSet;
     }
