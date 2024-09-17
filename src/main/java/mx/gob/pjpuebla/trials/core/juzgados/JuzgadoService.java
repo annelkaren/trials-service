@@ -103,12 +103,14 @@ public class JuzgadoService {
         List<Documento> documentos = new ArrayList<>();
         TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoParte().toString()));
         TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
-        //TODO. Descartar mayusculas minusculas
+
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
-                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
+            .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
 
         List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
-                .findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
+            .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
