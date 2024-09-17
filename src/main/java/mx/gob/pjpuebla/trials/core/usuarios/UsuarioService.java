@@ -7,8 +7,6 @@ import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.error.UserAlreadyExistException;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -47,7 +45,7 @@ public class UsuarioService {
         List<UserRepresentation> users = keycloak.realm(realm).users().list();
         for (UserRepresentation user : users) {
             List<RoleRepresentation> roles = keycloak.realm(realm).users().get(user.getId()).roles().realmLevel().listAll();
-            if (roles.stream().anyMatch(role -> role.getName().toUpperCase().equals("JUEZ") || role.getName().toUpperCase().equals("SECRETARIO")))
+            if (roles.stream().anyMatch(role -> role.getName().equalsIgnoreCase("JUEZ") || role.getName().equalsIgnoreCase("SECRETARIO")))
                 jueces.add(user.getId());
         }
         return jueces;

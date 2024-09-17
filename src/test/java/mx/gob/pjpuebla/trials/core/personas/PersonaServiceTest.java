@@ -230,8 +230,7 @@ class PersonaServiceTest {
         given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(Arrays.asList(sala));
 
         List<JuezRecord> jueces = personaService.findAllJueces(juzgado.getId());
-        assertThat(jueces)
-                .hasSize(0);
+        assertThat(jueces).isEmpty();
     }
 
     @Test
