@@ -106,7 +106,8 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true) 
-    List<PersonaSalaRecord> findAllJueces(){
+    List<JuezRecord> findAllJueces(){
+        List<String> ids = usuarioService.findAllByRol("JUEZ");
         return personaRepository.findAllJueces();
     }
 }

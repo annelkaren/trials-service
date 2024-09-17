@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.error.UserAlreadyExistException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -38,6 +39,18 @@ public class UsuarioService {
         } else {
             throw new UserAlreadyExistException("Usuario existente", persona.getCorreoElectronico());
         }
+    }
+
+    public List<String> findAllByRol(String rol) {
+        List<String> jueces = new ArrayList<>();
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        List<UserRepresentation> users = keycloak.realm(realm).users().list();
+        for (UserRepresentation user : users) {
+            List<RoleRepresentation> roles = keycloak.realm(realm).users().get(user.getId()).roles().realmLevel().listAll();
+            if (roles.stream().anyMatch(role -> role.getName().equals(rol)))
+                jueces.add(user.getId());
+        }
+        return jueces;
     }
 
     private UserRepresentation mapUser(Persona persona) {

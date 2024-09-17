@@ -54,5 +54,5 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                         p.nombre || " " || p.apellidoPaterno || " " ||  p.apellidoMaterno)
                 FROM Persona p
             """)
-    List<PersonaSalaRecord> findAllJueces();
+    List<JuezRecord> findAllJueces();
 }

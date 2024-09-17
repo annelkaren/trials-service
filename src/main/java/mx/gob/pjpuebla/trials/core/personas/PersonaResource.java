@@ -36,10 +36,10 @@ public class PersonaResource {
     }
 
     @GetMapping("/jueces")
-    public List<PersonaSalaRecord> getJueces() {
+    public List<JuezRecord> getJueces() {
         return this.personaService.findAllJueces();
     }
-    
+
 
     @PostMapping
     public PersonaRecordResponse create(@RequestBody @Valid PersonaDTO persona) {
