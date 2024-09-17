@@ -16,7 +16,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
 
         @Query("""
                         SELECT
-                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecord(f.id, f.version, f.nombre, f.estado, m.id, s.id)
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecord(f.id, f.version, f.nombre, f.estado, m.id, s.id, f.maxAsignacionesRonda, f.contadorAsignaciones)
                         FROM Juzgado f
                         LEFT JOIN f.materia m
                         LEFT JOIN f.sede s
@@ -25,14 +25,13 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
 
         @Query("""
                         SELECT
-                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(f.id,  f.nombre, f.estado, m.nombre)
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(f.id,  f.nombre, f.estado, m.nombre, f.maxAsignacionesRonda, f.contadorAsignaciones)
                         FROM Juzgado f
                         LEFT JOIN f.materia m
                         WHERE f.estado IN :estados""")
         List<JuzgadoRecordResponse> findAllByEstadoIn(List<Estado> estados);
 
     List<Juzgado> findByMateriaAndEstado(Materia materia, Estado estado);
-
 
     @Query("""
             SELECT j FROM Juzgado j 

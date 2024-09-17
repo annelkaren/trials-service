@@ -46,7 +46,7 @@ public class SalaSetUp {
                                 Estado.ACTIVE,
                                 0,
                                 new PersonaSalaRecord(idPersona, "Angel Lopez Perez"),
-                                new JuzgadoRecordResponse(1, "juzgado 1", Estado.ACTIVE, "Civil"),
+                                new JuzgadoRecordResponse(1, "juzgado 1", Estado.ACTIVE, "Civil", 0, 0),
                                 new BloqueRecord(1, LocalTime.now(), LocalTime.now()));
         }
 

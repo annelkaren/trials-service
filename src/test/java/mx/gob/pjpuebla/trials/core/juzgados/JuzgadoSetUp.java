@@ -49,12 +49,12 @@ public class JuzgadoSetUp {
     }
 
     public static JuzgadoRecord createJuzgadoRecord(Juzgado juzgado, Integer materiaId, Integer sedeId) {
-        return new JuzgadoRecord(juzgado.getId(), juzgado.getVersion(), juzgado.getNombre(), Estado.ACTIVE, materiaId, sedeId);
+        return new JuzgadoRecord(juzgado.getId(), juzgado.getVersion(), juzgado.getNombre(), Estado.ACTIVE, materiaId, sedeId, 0, 0);
     }
 
 
     public static JuzgadoRecordResponse createJuzgadoRecordResponse(Juzgado juzgado, String materia) {
-        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), Estado.ACTIVE, materia);
+        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), Estado.ACTIVE, materia, 0, 0);
     }
 
 }
