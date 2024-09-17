@@ -18,10 +18,10 @@ public class RelJuzgadoTipoJuicio implements Serializable {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_JUZGADO")//, referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "FN_JUZGADO", nullable = false)
     private Juzgado juzgado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_TIPOJUICIO")//, referencedColumnName = "PN_ID", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "FN_TIPOJUICIO", nullable = false)
     private TipoJuicio tipoJuicio;
 }

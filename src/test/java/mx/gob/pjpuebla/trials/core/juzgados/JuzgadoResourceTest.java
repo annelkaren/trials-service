@@ -10,6 +10,8 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.*;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -26,7 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -48,6 +52,7 @@ class JuzgadoResourceTest {
     private Juzgado juzgado;
     private JuzgadoRecord juzgadoRecord;
     private JuzgadoRecordResponse juzgadoRecordResponse;
+    private List<TipoJuicioRecord> tipoJuicioRecords = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -109,7 +114,8 @@ class JuzgadoResourceTest {
 
     @Test
     void create_success() throws Exception {
-        given(mockJuzgadoService.create(juzgado))
+        tipoJuicioRecords.add(TipoJuicioSetUp.createTipoJuicioRecord());
+        given(mockJuzgadoService.create(juzgado, tipoJuicioRecords))
                 .willReturn(juzgadoRecordResponse);
 
         mockMvc.perform(
@@ -122,7 +128,8 @@ class JuzgadoResourceTest {
 
     @Test
     void update_success() throws Exception {
-        given(mockJuzgadoService.create(juzgado))
+        tipoJuicioRecords.add(TipoJuicioSetUp.createTipoJuicioRecord());
+        given(mockJuzgadoService.create(juzgado, tipoJuicioRecords))
                 .willReturn(juzgadoRecordResponse);
 
         mockMvc.perform(
@@ -135,7 +142,8 @@ class JuzgadoResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockJuzgadoService.update(juzgado))
+        tipoJuicioRecords.add(TipoJuicioSetUp.createTipoJuicioRecord());
+        given(mockJuzgadoService.update(juzgado, tipoJuicioRecords))
                 .willThrow(OptimisticLockingFailureException.class);
 
         mockMvc.perform(
