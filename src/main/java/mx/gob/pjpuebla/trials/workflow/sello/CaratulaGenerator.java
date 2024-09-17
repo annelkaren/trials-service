@@ -1,11 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import net.sf.jasperreports.engine.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,12 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Component
@@ -34,20 +30,21 @@ public class CaratulaGenerator {
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
           Documento documento = documentoRepository.findById(id).orElseThrow();
-          //List<PersonaDocumento> personaDocumento = personaDocumentoRepository.findByDocumentoId(documento.getId());
           return JasperExportManager.exportReportToPdf(getReport(documento));
     }
 
     private JasperPrint getReport(Documento documento) throws IOException, JRException  {
-        String[] resultado = getNoExpendienteYear(documento.getExpediente());
+        String[] expendienteYear = getNoExpendienteYear(documento.getExpediente());
+        String actor = getNombreActor(documento.getId(), "Actor");
+        String demandado = getNombreActor(documento.getId(), "Demandado");
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getJuzgado().getNombre());
-        parameters.put("expediente", resultado[0]);
-        parameters.put("year", resultado[1]);
-        parameters.put("actor", "Nombre del actor");
-        parameters.put("demandado", "Nombre del demandado");
-        parameters.put("codigoQR", "");
+        parameters.put("expediente", expendienteYear[0]);
+        parameters.put("year", expendienteYear[1]);
+        parameters.put("actor", actor);
+        parameters.put("demandado", demandado);
+        parameters.put("codigoQR", expendienteYear[0]);
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getExpediente());
 
@@ -58,8 +55,13 @@ public class CaratulaGenerator {
     }
 
     private String[] getNoExpendienteYear(String expediente){
-        String[] parts = expediente.split("/");
-        return  parts;
+        return expediente.split("/");
+    }
 
+    private String getNombreActor(Integer id,String parte){
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
+        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id,parte, estados, rol);
+        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno());
     }
 }
