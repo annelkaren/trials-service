@@ -37,8 +37,8 @@ public class DocumentoResource {
 
     @PostMapping("/documentos/digitalizacion")
     public DigitalizacionRecord digitizationDocument(
-            @RequestParam("file") MultipartFile file, 
-            @RequestBody Integer documentoId) throws IOException {
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("documentoId") Integer documentoId) throws IOException {
 
         return digitalizacionService.procesarArchivo(file, documentoId);
     }

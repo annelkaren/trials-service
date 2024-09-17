@@ -35,7 +35,7 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "S_EXPEDIENTE", nullable = false)
     private String expediente;
 
-    @Size(max = 50)
+    @Size(max = 150)
     @Column(name = "S_RUTA")
     private String ruta;
 
