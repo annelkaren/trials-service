@@ -72,7 +72,7 @@ public class DigitalizacionService {
 
 
         // Actualiza el documento con la ruta del archivo y guarda en la base de datos
-        doc.setRuta(path.resolve(uniqueFileName).toString());
+        doc.setRuta(uniqueFileName);
         documentoRepository.save(doc);
 
         // Devuelve los detalles del documento en un record
