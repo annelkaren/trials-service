@@ -39,18 +39,13 @@ public class JuzgadoResource {
     }
 
     @PostMapping
-    public JuzgadoRecordResponse create(@RequestBody @Valid Juzgado juzgado) {
-        return this.juzgadoService.create(juzgado);
-    }
-
-    @PostMapping("/relacionjuicio")
-    public RelJuzgadoTipoJuicio createTipoJuicio(@RequestBody @Valid RelJuzgadoTipoJuicio relJuzgadoTipoJuicio) {
-        return this.juzgadoService.createRelacion(relJuzgadoTipoJuicio);
+    public JuzgadoRecordResponse create(@RequestBody @Valid JuzgadoDTO juzgadoDTO) {
+       return this.juzgadoService.create(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
     }
 
     @PutMapping
-    public JuzgadoRecordResponse update(@RequestBody @Valid Juzgado juzgado) {
-        return this.juzgadoService.update(juzgado);
+    public JuzgadoRecordResponse update(@RequestBody @Valid JuzgadoDTO juzgadoDTO) {
+        return this.juzgadoService.update(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
     }
 
     @DeleteMapping("/{id}")
