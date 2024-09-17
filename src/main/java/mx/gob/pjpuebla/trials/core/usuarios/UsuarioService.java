@@ -41,13 +41,13 @@ public class UsuarioService {
         }
     }
 
-    public List<String> findAllByRol(String rol) {
+    public List<String> findAllByRolJuezAndSecretario() {
         List<String> jueces = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<UserRepresentation> users = keycloak.realm(realm).users().list();
         for (UserRepresentation user : users) {
             List<RoleRepresentation> roles = keycloak.realm(realm).users().get(user.getId()).roles().realmLevel().listAll();
-            if (roles.stream().anyMatch(role -> role.getName().equals(rol)))
+            if (roles.stream().anyMatch(role -> role.getName().toUpperCase().equals("JUEZ") || role.getName().toUpperCase().equals("SECRETARIO")))
                 jueces.add(user.getId());
         }
         return jueces;

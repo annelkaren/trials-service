@@ -14,6 +14,9 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
+import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
+import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
@@ -58,6 +61,8 @@ class PersonaServiceTest {
     UsuarioService usuarioService;
     @Mock
     RoleService roleService;
+    @Mock
+    SalaRepository salaRepository;
 
     private Persona validPersona;
     private PersonaRecord validPersonaRecord;
@@ -215,5 +220,32 @@ class PersonaServiceTest {
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona modificada por otro usuario");
+    }
+
+    @Test
+    void getAll_jueces_return_empty_list() {
+        Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
+        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(Arrays.asList("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
+        given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(Arrays.asList(sala));
+
+        List<JuezRecord> jueces = personaService.findAllJueces(juzgado.getId());
+        assertThat(jueces)
+                .hasSize(0);
+    }
+
+    @Test
+    void getAll_jueces_return_list() {
+        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(Arrays.asList("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
+        given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(new ArrayList<>());
+
+        List<JuezRecord> jueces = personaService.findAllJueces(juzgado.getId());
+        String name = validPersona.getNombre() + " " + validPersona.getApellidoPaterno();
+        name += ((validPersona.getApellidoMaterno() != null) ? " " + validPersona.getApellidoMaterno() : "");
+        assertThat(jueces)
+                .hasSize(1)
+                .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombreCompleto", name);
     }
 }

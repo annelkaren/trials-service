@@ -47,12 +47,5 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
     Optional<Persona> findByUsuario(String usuario);
 
-    @Query("""
-                SELECT
-                    new mx.gob.pjpuebla.trials.core.personas.PersonaSalaRecord(
-                        p.id,
-                        p.nombre || " " || p.apellidoPaterno || " " ||  p.apellidoMaterno)
-                FROM Persona p
-            """)
-    List<JuezRecord> findAllJueces();
+    Optional<Persona> findByUsuarioAndJuzgadoIdAndEstadoIn(String usuario, Integer juzgadoId, List<Estado> estados);
 }
