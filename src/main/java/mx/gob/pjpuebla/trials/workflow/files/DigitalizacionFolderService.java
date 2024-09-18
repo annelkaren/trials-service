@@ -22,6 +22,7 @@ public class DigitalizacionFolderService {
 
 
     public String createFolderDigitalizacion(Documento doc) {
+
         if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
             throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
         }
@@ -37,8 +38,8 @@ public class DigitalizacionFolderService {
         String year = expedienteArray[1].trim();
         String juzgado = doc.getJuzgado().getNombre().trim();
 
-        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
 
+        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
 
         try {
             // Crear las carpetas si no existen
