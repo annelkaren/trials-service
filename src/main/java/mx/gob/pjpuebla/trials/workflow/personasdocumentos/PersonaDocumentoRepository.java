@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
     public List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
                 pd.nombre,
