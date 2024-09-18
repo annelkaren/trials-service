@@ -116,7 +116,7 @@ class DigitalizacionServiceTest {
         // Verificar las interacciones con los mocks
         verify(documentoRepository).findById(documento.getId());
         verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionFolderService, times(2)).createFolderDigitalizacion(any(Documento.class));
+        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
 
         // Validar que el archivo fue creado correctamente en la ruta especificada
         String rutaArchivo = result.pathFile();
