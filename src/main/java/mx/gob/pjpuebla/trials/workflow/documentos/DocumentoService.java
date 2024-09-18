@@ -56,7 +56,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento = documentoRepository.save(documento);
 
-        juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
+        juzgadoService.actualizarCarga(juzgado);
 
         createPersonaDocumento(documentoDTO.getActor(), documento);
         createPersonaDocumento(documentoDTO.getDemandado(), documento);
