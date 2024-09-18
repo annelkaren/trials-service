@@ -103,17 +103,16 @@ class JuzgadoServiceTest {
     }
 
     @Test
-    void getById_return_juzgadoRecord() {
+    void getById_return_juzgadoDTO() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(juzgadoRepository.findByIdAndEstadoIn(juzgado.getId(), estados))
                 .willReturn(Optional.ofNullable(juzgadoRecord));
 
-        JuzgadoRecord result = juzgadoService.findById(juzgado.getId());
-        assertThat(result).isOfAnyClassIn(JuzgadoRecord.class)
+        JuzgadoDTO result = juzgadoService.findById(juzgado.getId());
+        assertThat(result).isOfAnyClassIn(JuzgadoDTO.class);
+        assertThat(result.getJuzgado()).isOfAnyClassIn(Juzgado.class)
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
-                .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
-                .hasFieldOrPropertyWithValue("materiaId", juzgado.getMateria().getId())
-                .hasFieldOrPropertyWithValue("sedeId", juzgado.getSede().getId());
+                .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre());
     }
 
     @Test

@@ -82,7 +82,7 @@ class JuzgadoResourceTest {
     @Test
     void getById_success() throws Exception {
         given(mockJuzgadoService.findById(anyInt()))
-                .willReturn(juzgadoRecord);
+                .willReturn(new JuzgadoDTO().setJuzgado(juzgado));
 
         mockMvc.perform(
                 get("/api/core/juzgados/1")
