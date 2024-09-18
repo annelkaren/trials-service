@@ -1,8 +1,20 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
+import mx.gob.pjpuebla.trials.core.distritos.Distrito;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +40,14 @@ class PersonaRepositoryTest extends AuditConfigTest {
     private PersonaRepository personaRepository;
     @Autowired
     private DomicilioRepository domicilioRepository;
+    @Autowired
+    private SedeRepository sedeRepository;
+    @Autowired
+    private MateriaRepository materiaRepository;
+    @Autowired
+    private DistritoRepository distritoRepository;
+    @Autowired
+    private JuzgadoRepository juzgadoRepository;
     private Persona persona = PersonaSetUp.createPersona();
 
     @BeforeEach
@@ -69,5 +89,25 @@ class PersonaRepositoryTest extends AuditConfigTest {
         Optional<Persona> entity = personaRepository.findByUsuario(persona.getUsuario());
         assertThat(entity).isPresent();
         assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
+    }
+
+    @Test
+    void findByUsuarioAndJuzgadoIdAndEstadoIn() {
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede();
+        sede.setDistrito(distrito);
+        sede.setDomicilio(domicilio);
+        sede = sedeRepository.save(sede);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
+        persona.setJuzgado(juzgado);
+        persona = personaRepository.save(persona);
+        Optional<Persona> entity = personaRepository
+                .findByUsuarioAndJuzgadoIdAndEstadoIn(persona.getUsuario(), persona.getJuzgado().getId(), Arrays.asList(Estado.ACTIVE));
+        assertThat(entity).isPresent();
+        assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
+        assertThat(entity.get().getUsuario()).isEqualTo(persona.getUsuario());
     }
 }
