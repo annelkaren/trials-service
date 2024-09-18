@@ -156,4 +156,16 @@ class PersonaResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void getAll_jueces() throws Exception {
+        JuezRecord juezRecord = new JuezRecord(1L, "Juan Perez");
+        given(mockPersonaService.findAllJueces(any(Integer.class)))
+                .willReturn(Arrays.asList(juezRecord));
+
+        mockMvc.perform(
+                get("/api/core/personas/jueces/" + anyInt())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 }
