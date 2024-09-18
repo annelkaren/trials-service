@@ -2,15 +2,19 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicio;
 import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -25,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional
@@ -53,9 +58,38 @@ public class JuzgadoService {
     }
 
     @Transactional(readOnly = true)
-    public JuzgadoRecord findById(Integer id) {
+    public JuzgadoDTO findById(Integer id) {
+        JuzgadoDTO juzgadoDTO = new JuzgadoDTO();
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        return juzgadoRepository.findByIdAndEstadoIn(id, estados).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", JUZGADO_ID));
+        JuzgadoRecord juzgadoRecord = juzgadoRepository.findByIdAndEstadoIn(id, estados).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", JUZGADO_ID));
+        juzgadoDTO.setJuzgado(
+                new Juzgado()
+                        .setId(juzgadoRecord.id())
+                        .setNombre(juzgadoRecord.nombre())
+                        .setVersion(juzgadoRecord.version())
+                        .setEstado(juzgadoRecord.estado())
+                        .setMateria(new Materia().setId(juzgadoRecord.materiaId()))
+                        .setSede(new Sede().setId(juzgadoRecord.sedeId()))
+        );
+
+        List<RelJuzgadoTipoJuicio> relJuzgadoTipoJuicioList = relJuzgadoTipoJuicioRepository.findAllByjuzgado(juzgadoDTO.getJuzgado());
+
+        List<TipoJuicioRecord> tipoJuicioRecords = relJuzgadoTipoJuicioList.stream()
+                .map(rel -> new TipoJuicioRecord(
+                        rel.getTipoJuicio().getId(),
+                        rel.getTipoJuicio().getNombre(),
+                        new TipoSistemaRecord(
+                                rel.getTipoJuicio().getTipoSistema().getId(),
+                                rel.getTipoJuicio().getTipoSistema().getNombre()
+                        ),
+                        new MateriaRecord(
+                                rel.getTipoJuicio().getMateria().getId(),
+                                rel.getTipoJuicio().getMateria().getNombre()
+                        )
+                ))
+                .collect(Collectors.toList());
+        juzgadoDTO.setTipoJuicio(tipoJuicioRecords);
+        return juzgadoDTO;
     }
 
     public List<JuzgadoRecordResponse> getAllWithoutPagination() {

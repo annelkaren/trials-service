@@ -34,7 +34,7 @@ public class JuzgadoResource {
     }
 
     @GetMapping("/{id}")
-    public JuzgadoRecord getById(@PathVariable Integer id) {
+    public JuzgadoDTO getById(@PathVariable Integer id) {
         return this.juzgadoService.findById(id);
     }
 
