@@ -7,15 +7,19 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 @RequiredArgsConstructor
@@ -29,6 +33,30 @@ public class DocumentoService {
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
+
+    @Transactional(readOnly = true)
+    public Page<DocumentoGridRecord> getAll(Documento example, Pageable pageable) {
+        example.setEstatus(EstadoDocumento.CAPTURA);
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("juzgado.materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.exact());
+
+        Page<Documento> page = documentoRepository.findAll(Example.of(example, exampleMatcher), pageable);
+
+        List<DocumentoGridRecord> list = page.getContent().stream()
+                .map(documento ->
+                        new DocumentoGridRecord(documento.getId(),
+                                documento.getFolio(),
+                                documento.getExpediente(),
+                                documento.getJuzgado().getMateria().getNombre(),
+                                documento.getTipoDocumento().name(),
+                                documento.getAudit().getFechaAlta(),
+                                documento.getSelloEstatus()))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
