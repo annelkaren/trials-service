@@ -2,13 +2,13 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -20,7 +20,7 @@ public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
     private final DocumentoService documentoService;
-    private final CaratulaGenerator caratulaGenerator;
+    private final DigitalizacionService digitalizacionService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
@@ -35,11 +35,11 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
     }
 
-    @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
-    public  ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException{
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("caratula", id + "_caratula.pdf");
-        return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
+    @PostMapping("/documentos/digitalizacion/{documentoId}")
+    public DigitalizacionRecord digitizationDocument(
+        @RequestParam("file") MultipartFile file,
+        @PathVariable("documentoId") Integer documentoId) throws IOException {
+
+        return digitalizacionService.procesarArchivo(file, documentoId);
     }
 }
