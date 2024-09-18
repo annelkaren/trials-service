@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.digitalizacion.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.*;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -19,6 +23,7 @@ public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
     private final DocumentoService documentoService;
+    private final DigitalizacionService digitalizacionService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
@@ -32,4 +37,13 @@ public class DocumentoResource {
         headers.setContentDispositionFormData("sello", id + "_sello.pdf");
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
     }
+
+    @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFile(@PathVariable Integer documentoId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocument(documentoId));
+    }
+    
 }
