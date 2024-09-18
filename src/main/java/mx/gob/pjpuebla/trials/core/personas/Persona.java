@@ -48,6 +48,7 @@ public class Persona implements Serializable, Auditable {
     private String apellidoMaterno;
 
     @NotNull
+    @Pattern(regexp = "^[A-Z][AEIOU][A-Z][A-Z]\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z0-9]{2}$")
     @Column(name = "S_CURP")
     private String curp;
 

@@ -22,7 +22,7 @@ public class OficialiaSetUp {
                 .setId(1)
                 .setVersion(0)
                 .setEstado(Estado.ACTIVE)
-                .setTipo(tipoOficialia)
+                .setTipoOficialia(tipoOficialia)
                 .setNombre("Común")
                 .setResponsable("Responsable")
                 .setSede(sede);
@@ -31,7 +31,11 @@ public class OficialiaSetUp {
     }
 
     public static OficialiaRecord createOficialiaRecord(Oficialia oficialia, TipoOficialiaRecord tipo, SedeRecordResponse sede) {
-        return new OficialiaRecord(oficialia.getId(), oficialia.getVersion(), Estado.ACTIVE, tipo, oficialia.getNombre(), oficialia.getResponsable(), sede);
+        return new OficialiaRecord(oficialia.getId(), oficialia.getVersion(), oficialia.getNombre(), oficialia.getResponsable(), Estado.ACTIVE, tipo, sede);
+    }
+
+    public static OficialiaRecordResponse createOficialiaRecordResponse(Oficialia oficialia) {
+        return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
     }
 
 }

@@ -8,6 +8,8 @@ import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
+import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class PersonaService {
     private final JuzgadoRepository juzgadoRepository;
     private final UsuarioService usuarioService;
     private final RoleService roleService;
+    private final SalaRepository salaRepository;
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -105,8 +109,23 @@ public class PersonaService {
         return roles;
     }
 
-    @Transactional(readOnly = true) 
-    List<PersonaSalaRecord> findAllJueces(){
-        return personaRepository.findAllJueces();
+    @Transactional(readOnly = true)
+    public List<JuezRecord> findAllJueces(Integer juzgadoId) {
+        List<Sala> salas;
+        List<JuezRecord> jueces = new ArrayList<>();
+        List<String> ids = usuarioService.findAllByRolJuezAndSecretario();
+        for (String id : ids) {
+            Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, Arrays.asList(Estado.ACTIVE));
+            if (juez.isPresent()) {
+                salas = salaRepository.findAllByJuezId(juez.get().getId());
+                if (salas.isEmpty()) {
+                    String name = juez.get().getNombre() + " " + juez.get().getApellidoPaterno();
+                    name += ((juez.get().getApellidoMaterno() != null) ? " " + juez.get().getApellidoMaterno() : "");
+                    JuezRecord juezRecord = new JuezRecord(juez.get().getId(), name);
+                    jueces.add(juezRecord);
+                }
+            }
+        }
+        return jueces;
     }
 }
