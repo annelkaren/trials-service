@@ -50,10 +50,12 @@ public class DigitalizacionService {
 
         // Crea la ruta donde se almacenará el archivo
         String rutaFile = digitalizacionFolderService.createFolderDigitalizacion(doc);
+
         String uniqueFileName = generarNombreArchivo(doc.getTipoDocumento());
         Path path = Paths.get(rutaFile);
 
         // Crear directorios si no existen y guardar el archivo
+
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
@@ -76,7 +78,7 @@ public class DigitalizacionService {
         documentoRepository.save(doc);
 
         // Devuelve los detalles del documento en un record
-        return new DigitalizacionRecord(doc.getId(), doc.getRuta(), uniqueFileName);
+        return new DigitalizacionRecord(doc.getId(), path.resolve(uniqueFileName).toString(), uniqueFileName);
     }
 
     /**

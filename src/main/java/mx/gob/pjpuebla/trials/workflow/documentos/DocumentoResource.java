@@ -35,11 +35,11 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
     }
 
-    @PostMapping("/documentos/digitalizacion")
+    @PostMapping("/documentos/digitalizacion/{documentoId}")
     public DigitalizacionRecord digitizationDocument(
         @RequestParam("file") MultipartFile file,
-        @RequestParam("documentoId") Integer documentoId) throws IOException {
-
+        @PathVariable("documentoId") Integer documentoId) throws IOException {
+    
         return digitalizacionService.procesarArchivo(file, documentoId);
     }
 }

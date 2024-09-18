@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
@@ -95,7 +96,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
-                .willReturn("digitalizacion/2024/");
+                .willReturn(rootFolder + "/digitalizacion/000001/2024");
     }
 
     @Test
@@ -107,20 +108,21 @@ class DigitalizacionServiceTest {
 
         // Definir una ruta temporal para el test
         ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
-
+        ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
+        
         // Llamar al método a probar
         DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
 
         // Verificar las interacciones con los mocks
         verify(documentoRepository).findById(documento.getId());
         verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
+        verify(digitalizacionFolderService, times(2)).createFolderDigitalizacion(any(Documento.class));
 
         // Validar que el archivo fue creado correctamente en la ruta especificada
         String rutaArchivo = result.pathFile();
-        log.info("Ruta donde se guarda el archivo: " + rutaArchivo);
-
+        
         Path pathArchivo = Paths.get(rutaArchivo);
+
         assert Files.exists(pathArchivo) : "El archivo no fue creado correctamente";
 
         // Validar el tamaño del archivo
@@ -150,7 +152,7 @@ class DigitalizacionServiceTest {
         // Verificar las interacciones con los mocks
         verify(documentoRepository).findById(documento.getId());
         verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
+        verify(digitalizacionFolderService, times(2)).createFolderDigitalizacion(any(Documento.class));
 
         // Validar que el archivo fue creado correctamente en la ruta especificada
         String rutaArchivo = result.pathFile();
