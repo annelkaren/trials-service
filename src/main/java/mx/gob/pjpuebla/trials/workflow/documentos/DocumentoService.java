@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
@@ -18,8 +19,11 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 @Transactional
 @RequiredArgsConstructor
@@ -36,14 +40,8 @@ public class DocumentoService {
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(Documento example, Pageable pageable) {
-        example.setEstatus(EstadoDocumento.CAPTURA);
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("juzgado.materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.exact());
-
-        Page<Documento> page = documentoRepository.findAll(Example.of(example, exampleMatcher), pageable);
+        String key = (example.getFolio() != null) ? example.getFolio() : "";
+        Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
 
         List<DocumentoGridRecord> list = page.getContent().stream()
                 .map(documento ->
@@ -56,6 +54,21 @@ public class DocumentoService {
                                 documento.getSelloEstatus()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public DocumentoRecord updateStatus(Integer id, Map<String, Object> fields) {
+        Documento doc = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+
+        fields.forEach((key, value)->{
+            Field field = ReflectionUtils.findField(Documento.class, key);
+            field.setAccessible(true);
+            ReflectionUtils.setField(field, doc, value);
+        });
+
+        //EstadoDocumento value = EstadoDocumento.values()[status];
+        //doc.setEstatus(value);
+        documentoRepository.save(doc);
+        return new DocumentoRecord(doc.getId(), doc.getFolio(), doc.getTipoDocumento());
     }
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
@@ -72,6 +85,7 @@ public class DocumentoService {
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setEstatus(EstadoDocumento.CAPTURA);
+        documento.setSelloEstatus(SelloEstatus.VALIDO);
         //TODO. Falta definir reglas de este estatus
         documento.setEstatusProcesal("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())

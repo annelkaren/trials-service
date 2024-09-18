@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.ws.rs.PATCH;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,6 +40,11 @@ public class DocumentoResource {
         documento.setJuzgado(new Juzgado().setMateria(new Materia().setNombre(materia)));
         documento.setFolio(folio).setExpediente(expediente);
         return this.documentoService.getAll(documento, pageable);
+    }
+
+    @PatchMapping("/bandeja/estatus/{id}")
+    public DocumentoRecord updateStatus(@PathVariable Integer id, Map<String, Object> fields) {
+        return this.documentoService.updateStatus(id, fields);
     }
 
     @PostMapping("/demanda")
