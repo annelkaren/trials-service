@@ -4,14 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
@@ -100,10 +96,10 @@ class DigitalizacionServiceTest {
     }
 
     @Test
-    void uploadFileCorrectly() throws IOException {
+    void cargarArchivoPdf() throws IOException {
 
         // Crear el archivo simulado
-        MultipartFile fileMock = DigitalizacionSetUp.generarArchivoPDF();
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
         long expectedFileSize = fileMock.getSize(); // Tamaño maximo esperado del archivo 50 MB
 
         // Definir una ruta temporal para el test
@@ -119,9 +115,8 @@ class DigitalizacionServiceTest {
         verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
 
         // Validar que el archivo fue creado correctamente en la ruta especificada
-        String rutaArchivo = result.pathFile();
-        
-        Path pathArchivo = Paths.get(rutaArchivo);
+
+        Path pathArchivo = Paths.get(result.rutaArchivo());
 
         assert Files.exists(pathArchivo) : "El archivo no fue creado correctamente";
 
@@ -130,53 +125,16 @@ class DigitalizacionServiceTest {
         assert actualFileSize == expectedFileSize : "El tamaño del archivo no coincide";
 
         // Validar que el archivo es un PDF (si aplicable)
-        assert rutaArchivo.endsWith(".pdf") : "El archivo creado no es un PDF";
+        assert result.rutaArchivo().endsWith(".pdf") : "El archivo creado no es un PDF";
 
         // Limpiar: borrar el archivo después de la prueba (opcional)
         Files.deleteIfExists(pathArchivo);
     }
 
     @Test
-    void uploadFileCorrectlySmallFile() throws IOException {
-
-        // Crear el archivo simulado
-        MultipartFile fileMock = DigitalizacionSetUp.generarArchivoPDFMenorMaximo();
-        long expectedFileSize = fileMock.getSize(); // Tamaño maximo esperado del archivo 50 MB
-
-        // Definir una ruta temporal para el test
-        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
-
-        // Llamar al método a probar
-        DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
-
-        // Verificar las interacciones con los mocks
-        verify(documentoRepository).findById(documento.getId());
-        verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
-
-        // Validar que el archivo fue creado correctamente en la ruta especificada
-        String rutaArchivo = result.pathFile();
-        log.info("Ruta donde se guarda el archivo: " + rutaArchivo);
-
-        Path pathArchivo = Paths.get(rutaArchivo);
-        assert Files.exists(pathArchivo) : "El archivo no fue creado correctamente";
-
-        // Validar el tamaño del archivo
-        long actualFileSize = Files.size(pathArchivo);
-        assert actualFileSize == expectedFileSize : "El tamaño del archivo no coincide";
-
-        // Validar que el archivo es un PDF (si aplicable)
-        assert rutaArchivo.endsWith(".pdf") : "El archivo creado no es un PDF";
-
-        // Limpiar: borrar el archivo después de la prueba (opcional)
-        Files.deleteIfExists(pathArchivo);
-    }
-
-
-    @Test
-    void uploadFileRejectsNonPDFFile() {
+    void cargarArchivoDiferenteAPdf() {
       
-        MultipartFile archivoNoPDF = DigitalizacionSetUp.generarArchivoNoPDF();
+        MultipartFile archivoNoPDF = DigitalizacionSetUp.generarArchivo(50, "archivoTexto", "text/plain");
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             digitalizacionService.procesarArchivo(archivoNoPDF, documento.getId()); // Reemplaza con el documentoId
@@ -188,9 +146,9 @@ class DigitalizacionServiceTest {
     }
 
     @Test
-    void uploadFileRejectsLargeFile() {
+    void cargarArchivoConTamanioMayor() {
        
-        MultipartFile archivoGrande = DigitalizacionSetUp.generarArchivoGrande();
+        MultipartFile archivoGrande = DigitalizacionSetUp.generarArchivo(51, "archivoGrande", "application/pdf");
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             digitalizacionService.procesarArchivo(archivoGrande, documento.getId());
