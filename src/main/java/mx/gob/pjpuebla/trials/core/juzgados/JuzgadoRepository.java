@@ -41,11 +41,11 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
             """)
     public List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones + 1 WHERE j.id = :juzgadoId")
     public int actualizarContadorAsignaciones(Integer juzgadoId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda 
         WHERE j.materia = :materia
@@ -53,9 +53,9 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
     public int reiniciarContadorAsignaciones(Materia materia);
 
     @Query("SELECT SUM(j.contadorAsignaciones) FROM Juzgado j where j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE ")
-    public Integer sumMaxAsignacionesRondaByMateria(Materia materia);
+    public Integer sumContadorAsignacionesByMateria(Materia materia);
 
     @Query("SELECT SUM(j.maxAsignacionesRonda) FROM Juzgado j where j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE")
-    public Integer sumContadorAsignacionesByMateria(Materia materia);
+    public Integer sumMaxAsignacionesRondaByMateria(Materia materia);
 
 }

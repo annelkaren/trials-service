@@ -45,7 +45,6 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @NotNull
     @Column(name = "N_MAX_ASIGNACIONES")
     private Integer maxAsignacionesRonda;
 

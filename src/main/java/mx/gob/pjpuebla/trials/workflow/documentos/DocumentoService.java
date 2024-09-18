@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
@@ -30,15 +31,19 @@ public class DocumentoService {
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
+        Juzgado juzgado;
 
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento.setFolio(getFolio("D"));
 
-        documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
-        if (documento.getJuzgado() == null) {
-            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
+        juzgado = juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio());
+
+        if (juzgado == null) {
+            juzgado = juzgadoService.getJuzgado(documento.getTipoJuicio());
         }
+
+        documento.setJuzgado(juzgado);
 
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
@@ -48,7 +53,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento = documentoRepository.save(documento);
 
-        juzgadoRepository.actualizarContadorAsignaciones(documento.getJuzgado().getId());
+        juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
 
         createPersonaDocumento(documentoDTO.getActor(), documento);
         createPersonaDocumento(documentoDTO.getDemandado(), documento);
