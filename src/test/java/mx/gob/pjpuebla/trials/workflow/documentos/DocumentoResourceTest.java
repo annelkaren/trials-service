@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +33,9 @@ class DocumentoResourceTest {
 
     @MockBean
     private SelloGenerator selloGenerator;
+
+    @MockBean
+    private CaratulaGenerator caratulaGenerator;
 
     @MockBean
     private DigitalizacionService digitalizacionService;
