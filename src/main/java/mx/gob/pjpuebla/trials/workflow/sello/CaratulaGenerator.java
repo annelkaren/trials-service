@@ -57,9 +57,10 @@ public class CaratulaGenerator {
         return expediente.split("/");
     }
 
-    private String getNombrePersoaByIdAndParte(Integer id,String parte){
+    private String getNombrePersoaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id,parte, rol);
-        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno());
+        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
+        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
+        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
     }
 }
