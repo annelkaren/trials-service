@@ -20,7 +20,7 @@ public class PersonaSetUp {
                 .setApellidoPaterno("Perez")
                 .setEstado(Estado.ACTIVE)
                 .setOcupacion("Maestro")
-                .setCurp("XXXX111111XXXXXX11")
+                .setCurp("JEBR102105MPUEELO9")
                 .setSexo(Sexo.FEMENINO)
                 .setCorreoElectronico("random@random.com");
         persona.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
