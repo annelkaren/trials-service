@@ -65,3 +65,36 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+- stage: Deploy
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  jobs:
+    - deployment: Deploy_Alpha
+      pool:
+        vmImage: $(vmImageName)
+      environment: alpha-latest
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - script: |
+                  echo $(Build.SourcesDirectory)
+                  ls -al $(Build.SourcesDirectory)
+                displayName: 'List directory contents'
+              - task: KubernetesManifest@1
+                name: bake
+                displayName: Kustomize
+                inputs:
+                  action: bake
+                  renderType: kustomize
+                  containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+                  kustomizationPath: '$(Build.SourcesDirectory)/kustomize/base'
+                  namespace: 'trials'
+              - task: KubernetesManifest@1
+                displayName: Deploy
+                inputs:
+                  action: deploy
+                  kubernetesServiceConnection: 'digitaloceancnx'
+                  namespace: 'trials'
+                  manifests: $(bake.manifestsBundle)
