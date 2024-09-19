@@ -39,8 +39,8 @@ public class DocumentoService {
     private final TipoPartesRepository tipoPartesRepository;
 
     @Transactional(readOnly = true)
-    public Page<DocumentoGridRecord> getAll(Documento example, Pageable pageable) {
-        String key = (example.getFolio() != null) ? example.getFolio() : "";
+    public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
+        key = (key != null) ? key : "";
         Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
 
         List<DocumentoGridRecord> list = page.getContent().stream()
@@ -56,17 +56,10 @@ public class DocumentoService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    public DocumentoRecord updateStatus(Integer id, Map<String, Object> fields) {
+    public DocumentoRecord updateStatus(Integer id, Integer status) {
         Documento doc = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
-
-        fields.forEach((key, value)->{
-            Field field = ReflectionUtils.findField(Documento.class, key);
-            field.setAccessible(true);
-            ReflectionUtils.setField(field, doc, value);
-        });
-
-        //EstadoDocumento value = EstadoDocumento.values()[status];
-        //doc.setEstatus(value);
+        EstadoDocumento value = EstadoDocumento.values()[status];
+        doc.setEstatus(value);
         documentoRepository.save(doc);
         return new DocumentoRecord(doc.getId(), doc.getFolio(), doc.getTipoDocumento());
     }
@@ -142,7 +135,6 @@ public class DocumentoService {
         }
         return valNum.toString();
     }
-
 
 
 }

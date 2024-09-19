@@ -1,12 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.ws.rs.PATCH;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.*;
@@ -20,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -35,18 +29,13 @@ public class DocumentoResource {
     @GetMapping("/bandeja/entrada")
     public Page<DocumentoGridRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "folio", required = false) String folio,
-            @RequestParam(value = "expediente", required = false) String expediente,
-            @RequestParam(value = "materia", required = false) String materia) {
-        Documento documento = new Documento();
-        documento.setJuzgado(new Juzgado().setMateria(new Materia().setNombre(materia)));
-        documento.setFolio(folio).setExpediente(expediente);
-        return this.documentoService.getAll(documento, pageable);
+            @RequestParam(value = "key", required = false) String key) {
+        return this.documentoService.getAll(key, pageable);
     }
 
-    @PatchMapping("/bandeja/estatus/{id}")
-    public DocumentoRecord updateStatus(@PathVariable Integer id, Map<String, Object> fields) {
-        return this.documentoService.updateStatus(id, fields);
+    @PatchMapping("/bandeja/entrada/{id}/status/{status}")
+    public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
+        return this.documentoService.updateStatus(id, status);
     }
 
     @PostMapping("/demanda")

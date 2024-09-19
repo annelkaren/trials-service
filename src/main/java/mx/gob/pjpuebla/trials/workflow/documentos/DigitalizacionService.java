@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
+
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
-import mx.gob.pjpuebla.trials.util.TipoDocumento;
 
 /**
  * Servicio para la gestión de documentos, incluyendo la validación y el
