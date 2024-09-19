@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.digitalizacion;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;

@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.digitalizacion.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.*;
 import org.springframework.http.HttpHeaders;
@@ -52,7 +51,7 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocument(documentoId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
     }
     
 }
