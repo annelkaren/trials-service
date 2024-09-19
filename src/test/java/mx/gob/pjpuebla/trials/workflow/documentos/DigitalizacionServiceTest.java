@@ -1,14 +1,20 @@
-package mx.gob.pjpuebla.trials.core.digitalizacion;
+package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import org.mockito.MockedStatic;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -92,7 +98,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
-                .willReturn(rootFolder + "/digitalizacion/000001/2024");
+                .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
     }
 
     @Test
@@ -105,7 +111,7 @@ class DigitalizacionServiceTest {
         // Definir una ruta temporal para el test
         ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
         ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
-        
+
         // Llamar al método a probar
         DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
 
@@ -133,7 +139,7 @@ class DigitalizacionServiceTest {
 
     @Test
     void cargarArchivoDiferenteAPdf() {
-      
+
         MultipartFile archivoNoPDF = DigitalizacionSetUp.generarArchivo(50, "archivoTexto", "text/plain");
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
@@ -147,7 +153,7 @@ class DigitalizacionServiceTest {
 
     @Test
     void cargarArchivoConTamanioMayor() {
-       
+
         MultipartFile archivoGrande = DigitalizacionSetUp.generarArchivo(51, "archivoGrande", "application/pdf");
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
@@ -156,6 +162,48 @@ class DigitalizacionServiceTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertEquals("El archivo no puede superar los 50 MB.", exception.getReason());
+    }
+
+    @Test
+    void descargarArchivoDocumento() throws IOException {
+
+        // Crear el archivo simulado como MultipartFile
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+
+        // Convertir el archivo a un arreglo de bytes para la simulación de lectura
+        byte[] fileContent = fileMock.getBytes();
+
+        // Definir la ruta temporal para el test usando ReflectionTestUtils para simular
+        // las rutas en el servicio
+        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
+        ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
+
+        // Procesar el archivo para obtener el DigitalizacionRecord
+        DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
+
+        // Definir la ruta completa del archivo
+        Path pathArchivo = Paths.get(result.rutaArchivo());
+
+        // Simular la búsqueda del documento en la base de datos
+        given(documentoRepository.findById(1)).willReturn(Optional.of(documento));
+
+        // Simular métodos estáticos usando `mockStatic`
+        try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+            // Simular que el archivo existe
+            mockedFiles.when(() -> Files.exists(pathArchivo)).thenReturn(true);
+
+            // Simular la lectura del archivo como un arreglo de bytes
+            mockedFiles.when(() -> Files.readAllBytes(pathArchivo)).thenReturn(fileContent);
+
+            // Llamar al método que descarga el archivo
+            byte[] fileBytes = digitalizacionService.getDocumento(1);
+
+            // Verificar que el contenido del archivo descargado es correcto
+            assertArrayEquals(fileContent, fileBytes);
+        }
+
+        // Limpiar el archivo después de la prueba para evitar residuos (opcional)
+        Files.deleteIfExists(pathArchivo);
     }
 
 }
