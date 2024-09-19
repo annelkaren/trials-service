@@ -33,6 +33,9 @@ class DocumentoResourceTest {
     @MockBean
     private SelloGenerator selloGenerator;
 
+    @MockBean
+    private DigitalizacionService digitalizacionService;
+
     @Autowired
     private MockMvc mockMvc;
 
