@@ -7,7 +7,6 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -25,7 +24,6 @@ public class DocumentoService {
 
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
-    private final JuzgadoRepository juzgadoRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
