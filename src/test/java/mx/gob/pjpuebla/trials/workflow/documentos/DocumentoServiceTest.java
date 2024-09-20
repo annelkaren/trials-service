@@ -22,9 +22,12 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,10 +35,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -118,5 +127,53 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
                 .hasFieldOrPropertyWithValue("tipoDocumento", documentoRecord.tipoDocumento());
+    }
+
+    @Test
+    void update_status_success() {
+        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio).setFolio("1");
+        given(documentoRepository.findById(any())).willReturn(Optional.of(demanda));
+        given(documentoRepository.save(any())).willReturn(demanda.setEstatus(EstadoDocumento.SALIDA));
+
+        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getFolio(), demanda.getTipoDocumento());
+
+        DocumentoRecord response = documentoService.updateStatus(demanda.getId(), 1);
+        assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
+                .hasFieldOrPropertyWithValue("id", documentoRecord.id())
+                .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
+                .hasFieldOrPropertyWithValue("tipoDocumento", documentoRecord.tipoDocumento());
+
+    }
+
+    @Test
+    void update_status_not_found() {
+        given(documentoRepository.findById(any())).willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    documentoService.updateStatus(1, 1);
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Documento no encontrado");
+    }
+
+    @Test
+    void getAll_return_page() {
+        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio).setFolio("1");
+        demanda.setJuzgado(juzgado);
+        demanda.getJuzgado().setMateria(MateriaSetUp.createMateria());
+
+        List<Documento> listPage = Collections.singletonList(demanda);
+        given(documentoRepository.findByEstatusCaptura(any(String.class), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        Page<DocumentoGridRecord> page = documentoService.getAll(demanda.getFolio(), PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                .hasFieldOrPropertyWithValue("tipoEntrada", demanda.getTipoDocumento().toString())
+                .hasFieldOrPropertyWithValue("expediente", demanda.getExpediente());
     }
 }
