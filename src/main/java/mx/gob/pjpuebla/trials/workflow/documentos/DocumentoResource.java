@@ -24,7 +24,10 @@ public class DocumentoResource {
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
-        return this.documentoService.createDemanda(documentoDTO);
+        DocumentoRecord documento = this.documentoService.createDemanda(documentoDTO);
+
+        //this.documentoService.actualizarCargaJuzgado(documento);
+        return documento;
     }
 
     @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)

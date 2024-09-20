@@ -31,19 +31,16 @@ public class DocumentoService {
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
-        Juzgado juzgado;
 
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento.setFolio(getFolio("D"));
 
-        juzgado = juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio());
+        documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
 
-        if (juzgado == null) {
-            juzgado = juzgadoService.getJuzgado(documento.getTipoJuicio());
+        if (documento.getJuzgado() == null) {
+            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
         }
-
-        documento.setJuzgado(juzgado);
 
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
@@ -54,8 +51,6 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
         documento = documentoRepository.save(documento);
 
-        juzgadoService.actualizarCarga(juzgado);
-
         createPersonaDocumento(documentoDTO.getActor(), documento);
         createPersonaDocumento(documentoDTO.getDemandado(), documento);
 
@@ -65,6 +60,9 @@ public class DocumentoService {
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
+
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+
         return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
@@ -108,6 +106,10 @@ public class DocumentoService {
     }
 
 
+    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord){
+        Documento documento = documentoRepository.findById(documentoRecord.id()).orElseThrow();
 
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+    }
 }
 
