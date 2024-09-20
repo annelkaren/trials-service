@@ -51,7 +51,8 @@ public class DocumentoService {
                                 documento.getJuzgado().getMateria().getNombre(),
                                 documento.getTipoDocumento().name(),
                                 documento.getAudit().getFechaAlta(),
-                                documento.getSelloEstatus()))
+                                documento.getSelloEstatus(),
+                                (documento.getRuta() != null) ? true : false))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }

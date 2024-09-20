@@ -77,7 +77,7 @@ public class DocumentoResource {
         return this.documentoService.getAll(key, pageable);
     }
 
-    @PatchMapping("/bandeja/entrada/{id}/status/{status}")
+    @PatchMapping("/bandeja/{id}/status/{status}")
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);
     }

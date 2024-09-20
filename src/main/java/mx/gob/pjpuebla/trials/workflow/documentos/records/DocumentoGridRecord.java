@@ -11,5 +11,6 @@ public record DocumentoGridRecord(
         String materia,
         String tipoEntrada,
         LocalDateTime fechaRegistro,
-        SelloEstatus selloEstatus) {
+        SelloEstatus selloEstatus,
+        boolean hasFile) {
 }
