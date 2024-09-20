@@ -4,18 +4,26 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 
 @Transactional
 @RequiredArgsConstructor
@@ -29,6 +37,33 @@ public class DocumentoService {
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
+
+    @Transactional(readOnly = true)
+    public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
+        key = (key != null) ? key : "";
+        Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
+
+        List<DocumentoGridRecord> list = page.getContent().stream()
+                .map(documento ->
+                        new DocumentoGridRecord(documento.getId(),
+                                documento.getFolio(),
+                                documento.getExpediente(),
+                                documento.getJuzgado().getMateria().getNombre(),
+                                documento.getTipoDocumento().name(),
+                                documento.getAudit().getFechaAlta(),
+                                documento.getSelloEstatus(),
+                                (documento.getRuta() != null) ? true : false))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public DocumentoRecord updateStatus(Integer id, Integer status) {
+        Documento doc = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+        EstadoDocumento value = EstadoDocumento.values()[status];
+        doc.setEstatus(value);
+        documentoRepository.save(doc);
+        return new DocumentoRecord(doc.getId(), doc.getFolio(), doc.getTipoDocumento());
+    }
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
@@ -44,6 +79,7 @@ public class DocumentoService {
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setEstatus(EstadoDocumento.CAPTURA);
+        documento.setSelloEstatus(SelloEstatus.VALIDO);
         //TODO. Falta definir reglas de este estatus
         documento.setEstatusProcesal("Recepción documentos");
         documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
@@ -100,7 +136,6 @@ public class DocumentoService {
         }
         return valNum.toString();
     }
-
 
 
 }

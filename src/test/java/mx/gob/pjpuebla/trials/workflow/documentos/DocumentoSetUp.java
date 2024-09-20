@@ -1,10 +1,13 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
-import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,14 +16,17 @@ public class DocumentoSetUp {
     }
 
     public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio) {
-        return new Documento()
+        Documento documento = new Documento()
                 .setExpediente(null)
                 .setFolio(null)
                 .setJuzgado(null)
                 .setTipoDocumento(tipoDocumento)
                 .setTipoJuicio(tipoJuicio)
                 .setEstatus(EstadoDocumento.CAPTURA)
+                .setSelloEstatus(SelloEstatus.VALIDO)
                 .setEstatusProcesal("Recepcion");
+        documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return documento;
     }
 
     public static DocumentoDTO createDTO() {

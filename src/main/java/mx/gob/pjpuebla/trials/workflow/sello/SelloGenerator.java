@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +38,10 @@ public class SelloGenerator {
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
+        if (documento.getSelloEstatus() == SelloEstatus.NO_VALIDO) {
+            documento.setSelloEstatus(SelloEstatus.VALIDO);
+            documentoRepository.save(documento);
+        }
         List<Anexo> anexos = anexoRepository.findAllByDocumentoId(documento.getId());
         return JasperExportManager.exportReportToPdf(getReport(documento, anexos));
     }
