@@ -7,7 +7,6 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
@@ -19,11 +18,8 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 
 @Transactional
 @RequiredArgsConstructor
@@ -32,7 +28,6 @@ public class DocumentoService {
 
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
-    private final JuzgadoRepository juzgadoRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
@@ -40,7 +35,7 @@ public class DocumentoService {
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
-        key = (key != null) ? key : "";
+        key = (key != null) ? key.toLowerCase() : "";
         Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
 
         List<DocumentoGridRecord> list = page.getContent().stream()
@@ -52,7 +47,7 @@ public class DocumentoService {
                                 documento.getTipoDocumento().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getSelloEstatus(),
-                                (documento.getRuta() != null) ? true : false))
+                                (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -73,9 +68,11 @@ public class DocumentoService {
         documento.setFolio(getFolio("D"));
         //TODO. Asignación de juzgado correctamente
         documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
+
         if (documento.getJuzgado() == null) {
-            documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
         }
+
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setEstatus(EstadoDocumento.CAPTURA);
@@ -95,6 +92,9 @@ public class DocumentoService {
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
+
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+
         return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
@@ -138,5 +138,10 @@ public class DocumentoService {
     }
 
 
+    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord) {
+        Documento documento = documentoRepository.findById(documentoRecord.id()).orElseThrow();
+
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+    }
 }
 
