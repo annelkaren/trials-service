@@ -13,7 +13,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import java.util.Arrays;
 import java.util.List;
-
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
