@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -65,7 +64,7 @@ public class Juzgado implements Serializable, Auditable {
     private Audit audit;
 
     @JsonProperty
-    public Integer getContadorAsignaciones(){
+    public Integer getContadorAsignaciones() {
         return this.contadorAsignaciones;
     }
 }

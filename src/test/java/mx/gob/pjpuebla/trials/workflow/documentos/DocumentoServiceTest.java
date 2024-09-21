@@ -182,7 +182,7 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void asignaJuzgado(){
+    void asignaJuzgado() {
         int invocaciones = 2;
         Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio).setFolio("1");
 
@@ -191,7 +191,7 @@ class DocumentoServiceTest {
         juzgado = juzgadoService.getJuzgado(demanda.getTipoJuicio());
         assertThat(juzgado).isNotNull();
 
-        for(int i=0; i<invocaciones; i++){
+        for (int i = 0; i < invocaciones; i++) {
             juzgadoService.actualizarCarga(juzgado);
         }
 

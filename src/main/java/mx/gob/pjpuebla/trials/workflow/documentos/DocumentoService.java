@@ -49,7 +49,7 @@ public class DocumentoService {
                                 documento.getTipoDocumento().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getSelloEstatus(),
-                                (documento.getRuta() != null) ? true : false))
+                                (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -140,7 +140,7 @@ public class DocumentoService {
     }
 
 
-    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord){
+    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord) {
         Documento documento = documentoRepository.findById(documentoRecord.id()).orElseThrow();
 
         juzgadoService.actualizarCarga(documento.getJuzgado());

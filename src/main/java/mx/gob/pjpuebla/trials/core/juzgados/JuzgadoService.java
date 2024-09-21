@@ -69,8 +69,8 @@ public class JuzgadoService {
         juzgado.setContadorAsignaciones(0);
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
-        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(), 
-                    juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
+        return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(),
+                juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
     }
 
     public JuzgadoRecordResponse update(Juzgado juzgado) {
@@ -78,8 +78,8 @@ public class JuzgadoService {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
             juzgado = juzgadoRepository.save(juzgado);
-            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(), 
-                        juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
+            return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(),
+                    juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Juzgado modificado por otro usuario", "juzgadoId");
@@ -105,12 +105,12 @@ public class JuzgadoService {
         TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
 
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
-            .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
 
         List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
-            .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
@@ -134,37 +134,37 @@ public class JuzgadoService {
         return null;
     }
 
-    public Juzgado getJuzgado(TipoJuicio tipoJuicio){
+    public Juzgado getJuzgado(TipoJuicio tipoJuicio) {
         int rand = 0;
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
 
-        if (juzgados.isEmpty()){
+        if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria());
-            
+
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
 
-            if (juzgados.isEmpty()) 
-                throw(new NotFoundException("No se puede asignar un Juzgado", tipoJuicio.getNombre()));
+            if (juzgados.isEmpty())
+                throw (new NotFoundException("No se puede asignar un Juzgado", tipoJuicio.getNombre()));
         }
 
         rand = RANDOM.nextInt(juzgados.size());
 
-        return juzgados.get(rand); 
-        
+        return juzgados.get(rand);
+
     }
 
-    public void actualizarCarga(Juzgado juzgado){
+    public void actualizarCarga(Juzgado juzgado) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
 
         revisarCargaJuzgados(juzgado.getMateria());
     }
 
-    public void revisarCargaJuzgados(Materia materia){
+    public void revisarCargaJuzgados(Materia materia) {
         int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia);
         int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia);
         int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia).size();
 
-        if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0){
+        if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
             juzgadoRepository.reiniciarContadorAsignaciones(materia);
         }
     }

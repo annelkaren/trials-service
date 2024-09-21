@@ -34,10 +34,7 @@ public class DocumentoResource {
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
-        DocumentoRecord documento = this.documentoService.createDemanda(documentoDTO);
-
-        //this.documentoService.actualizarCargaJuzgado(documento);
-        return documento;
+        return this.documentoService.createDemanda(documentoDTO);
     }
 
     @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,8 +48,7 @@ public class DocumentoResource {
     @PostMapping("/documentos/digitalizacion/{documentoId}")
     public DigitalizacionRecord digitizationDocument(
             @RequestParam("file") MultipartFile file,
-            @PathVariable("documentoId") Integer documentoId) throws IOException {
-
+            @PathVariable("documentoId") Integer documentoId) {
         return digitalizacionService.procesarArchivo(file, documentoId);
     }
 
