@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.salas;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
                 new mx.gob.pjpuebla.trials.core.personas.JuezRecord(juez.id, juez.nombre ||  juez.apellidoPaterno || juez.apellidoMaterno),
-                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(juzgado.id, juzgado.nombre, juzgado.estado, ""),
+                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(juzgado.id, juzgado.nombre, juzgado.estado, "",juzgado.maxAsignacionesRonda, juzgado.contadorAsignaciones),
                 new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal))
             FROM Sala s
             LEFT JOIN s.juez juez

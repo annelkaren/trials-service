@@ -48,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentoServiceTest {
@@ -104,6 +106,8 @@ class DocumentoServiceTest {
         sede = sedeRepository.save(sede);
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+        juzgado.setContadorAsignaciones(0);
+        juzgado.setMaxAsignacionesRonda(0);
         juzgadoRepository.save(juzgado);
         dto.setTipoJuicioId(tipoJuicio.getId());
     }
@@ -175,5 +179,25 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("id", demanda.getId())
                 .hasFieldOrPropertyWithValue("tipoEntrada", demanda.getTipoDocumento().toString())
                 .hasFieldOrPropertyWithValue("expediente", demanda.getExpediente());
+    }
+
+    @Test
+    void asignaJuzgado() {
+        int invocaciones = 2;
+        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio).setFolio("1");
+
+        given(juzgadoService.getJuzgado(any())).willReturn(juzgado);
+
+        juzgado = juzgadoService.getJuzgado(demanda.getTipoJuicio());
+        assertThat(juzgado).isNotNull();
+
+        for (int i = 0; i < invocaciones; i++) {
+            juzgadoService.actualizarCarga(juzgado);
+        }
+
+        juzgadoService.revisarCargaJuzgados(tipoJuicio.getMateria());
+
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado);
+        verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getTipoJuicio().getMateria());
     }
 }

@@ -19,11 +19,8 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 
 @Transactional
 @RequiredArgsConstructor
@@ -52,7 +49,7 @@ public class DocumentoService {
                                 documento.getTipoDocumento().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getSelloEstatus(),
-                                (documento.getRuta() != null) ? true : false))
+                                (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -73,9 +70,11 @@ public class DocumentoService {
         documento.setFolio(getFolio("D"));
         //TODO. Asignación de juzgado correctamente
         documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
+
         if (documento.getJuzgado() == null) {
-            documento.setJuzgado(juzgadoRepository.findAll().stream().findFirst().orElse(null));
+            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
         }
+
         documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         documento.setEstatus(EstadoDocumento.CAPTURA);
@@ -95,6 +94,9 @@ public class DocumentoService {
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
+
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+
         return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
@@ -138,5 +140,10 @@ public class DocumentoService {
     }
 
 
+    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord) {
+        Documento documento = documentoRepository.findById(documentoRecord.id()).orElseThrow();
+
+        juzgadoService.actualizarCarga(documento.getJuzgado());
+    }
 }
 

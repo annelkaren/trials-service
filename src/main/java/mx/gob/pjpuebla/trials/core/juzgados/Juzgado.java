@@ -15,6 +15,9 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
@@ -41,6 +44,13 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @Column(name = "N_MAX_ASIGNACIONES")
+    private Integer maxAsignacionesRonda;
+
+    @JsonIgnore
+    @Column(name = "N_CONTADOR_ASIGNACIONes")
+    private Integer contadorAsignaciones;
+
     @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Materia materia;
@@ -52,5 +62,10 @@ public class Juzgado implements Serializable, Auditable {
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
+
+    @JsonProperty
+    public Integer getContadorAsignaciones() {
+        return this.contadorAsignaciones;
+    }
 }
 
