@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
@@ -41,16 +42,16 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
             """)
     public List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(flushAutomatically = true)
     @Query("UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones + 1 WHERE j.id = :juzgadoId")
-    public int actualizarContadorAsignaciones(Integer juzgadoId);
+    public void actualizarContadorAsignaciones(Integer juzgadoId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(flushAutomatically = true)
     @Query("""
             UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda 
             WHERE j.materia = :materia
                         """)
-    public int reiniciarContadorAsignaciones(Materia materia);
+    public void reiniciarContadorAsignaciones(Materia materia);
 
     @Query("SELECT SUM(j.contadorAsignaciones) FROM Juzgado j where j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE ")
     public Integer sumContadorAsignacionesByMateria(Materia materia);

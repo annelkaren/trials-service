@@ -14,6 +14,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             + "JOIN FETCH doc.juzgado j "
             + "JOIN FETCH j.materia m "
             + "WHERE doc.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoDocumento.CAPTURA "
-            + "AND (lower(m.nombre) LIKE %:key% OR lower(doc.folio) LIKE %:key% OR lower(doc.expediente) LIKE %:key%)")
+            + "AND (lower(m.nombre) LIKE %:key% OR lower(doc.folio) LIKE %:key% OR lower(doc.expediente) LIKE %:key%) "
+            + "ORDER BY doc.audit.fechaAlta ASC")
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
 }
