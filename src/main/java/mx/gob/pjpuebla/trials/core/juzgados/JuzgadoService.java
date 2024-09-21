@@ -155,7 +155,6 @@ public class JuzgadoService {
 
     public void actualizarCarga(Juzgado juzgado) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
-
         revisarCargaJuzgados(juzgado.getMateria());
     }
 
