@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: trials
+  name: trials-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      serviceAccountName: build-robot
+      containers:
+        - name: trials-api
+          image: pjpuebla.azurecr.io/trialsservice:20240918.7
+          env:
+            - name: SPRING_FLYWAY_ENABLED
+              value: "true"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI
+              value: "https://latest.pjptrials.link/kc/realms/trials-realm"
+            - name: KEYCLOAK_SERVERURL
+              value: "https://latest.pjptrials.link/kc"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trials-secret
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: trials-secret
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trials-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+          ports:
+            - name: http
+              containerPort: 8888
+          readinessProbe:
+            httpGet:
+              path: /rest/actuator/health
+              port: 8888
