@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.*;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +37,19 @@ public class DocumentoResource {
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
         return this.documentoService.createDemanda(documentoDTO);
+    }
+
+    @PatchMapping("/demanda/{id}/anexos")
+    public ResponseEntity<AnexoRecord> editarAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord ){
+        AnexoRecord updatedAnexos = documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
+        return ResponseEntity.ok(updatedAnexos);
+    }
+
+
+    @GetMapping("/demanda/{documentoId}")
+    public ResponseEntity<Map<String, Object>> getEditDocumento(@PathVariable Integer documentoId) {
+        Map<String, Object>  editDocumento  = documentoService.getEditDocumentoAnexo(documentoId);
+        return  ResponseEntity.ok(editDocumento);
     }
 
     @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)

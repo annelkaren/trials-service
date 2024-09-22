@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -19,7 +20,9 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Transactional
 @RequiredArgsConstructor
@@ -113,6 +116,67 @@ public class DocumentoService {
         personaDocumentoRepository.save(entity);
     }
 
+    @Transactional
+    public AnexoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
+
+        Documento documento = documentoRepository.findById(documentoId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+        documento.setMotivoEdita(motivoEdita);
+        documento.setSelloEstatus(SelloEstatus.NO_VALIDO);
+
+        List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
+        anexosActuales.stream()
+                .filter(anexo -> !nuevosAnexos.contains(anexo.getNombre()))
+                .forEach(anexo -> anexoRepository.delete(anexo));
+
+        for (String anexo : nuevosAnexos) {
+            if (anexosActuales.stream().noneMatch(existingAnexo -> existingAnexo.getNombre().equals(anexo))) {
+                Anexo nuevoAnexo = new Anexo();
+                nuevoAnexo.setNombre(anexo);
+                nuevoAnexo.setDocumento(documento);
+                anexoRepository.save(nuevoAnexo);
+            }
+        }
+        documentoRepository.save(documento);
+
+        return new AnexoRecord(nuevosAnexos, motivoEdita);
+    }
+
+    public Map<String, Object> getEditDocumentoAnexo(Integer documentoId) {
+
+        List<DocumentoAnexoRecord> documentoAnexos = personaDocumentoRepository.findDocumentoAnexoByDocumentoId(documentoId);
+        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(documentoId);
+
+        Map<String, Object> actor  = new HashMap<>();
+        Map<String, Object> demandado  = new HashMap<>();
+
+        documentoAnexos.forEach(anexo -> {
+
+            if ("Actor".equals(anexo.getTipoParteNombre())) {
+                actor.put("nombre", anexo.getNombre());
+                actor.put("apellidoPaterno", anexo.getApellidoPaterno());
+                actor.put("apellidoMaterno", anexo.getApellidoMaterno());
+                actor.put("pseudonimo", anexo.getPseudonimo());
+                actor.put("tipoPersona", anexo.getTipoPersona());
+                actor.put("tipoParte", anexo.getTipoParteId());
+            } else if ("Demandado".equals(anexo.getTipoParteNombre())) {
+
+                demandado.put("nombre", anexo.getNombre());
+                demandado.put("apellidoPaterno", anexo.getApellidoPaterno());
+                demandado.put("apellidoMaterno", anexo.getApellidoMaterno());
+                demandado.put("pseudonimo", anexo.getPseudonimo());
+                demandado.put("tipoPersona", anexo.getTipoPersona());
+                demandado.put("tipoParte", anexo.getTipoParteId());
+            }
+        });
+
+        Map<String, Object> editDocumento = new HashMap<>();
+        editDocumento.put("actor", actor);
+        editDocumento.put("demandado", demandado);
+        editDocumento.put("anexos", anexos);
+
+        return  editDocumento;
+    }
     /**
      * Devuelve un numero de folio
      *
