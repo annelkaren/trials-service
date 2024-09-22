@@ -77,9 +77,6 @@ public class JuzgadoService {
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            if (juzgado.getContadorAsignaciones() == null) {//TODO eliminar fix para demo
-                juzgado.setContadorAsignaciones(0);
-            }
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordResponse(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getMateria().getNombre(),
                     juzgado.getMaxAsignacionesRonda(), juzgado.getContadorAsignaciones());
