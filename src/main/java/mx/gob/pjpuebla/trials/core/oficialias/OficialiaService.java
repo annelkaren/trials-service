@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -65,8 +66,7 @@ public class OficialiaService {
             oficialia = oficialiaRepository.save(oficialia);
             return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
         } catch (OptimisticLockingFailureException ex) {
-            log.error("update -> {}", ex);
-            throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Oficialia modificada por otro usuario", "oficialiaId: " + oficialia.getId());
+            throw new InvalidVersionException(Oficialia.class.getSimpleName());
         }
     }
 

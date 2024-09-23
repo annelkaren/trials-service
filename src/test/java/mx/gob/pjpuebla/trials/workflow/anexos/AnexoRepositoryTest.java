@@ -33,6 +33,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,7 +80,8 @@ class AnexoRepositoryTest extends AuditConfigTest {
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
 
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio));
         juzgado = juzgadoRepository.save(juzgado);
         documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
         documento.setJuzgado(juzgado);
