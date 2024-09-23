@@ -28,6 +28,7 @@ public class InstitucionResorce {
     public Page<InstitucionRecord> getAll(
         @PageableDefault(size = 20) Pageable pageable,
         @RequestParam(value = "nombre", required = false) String nombre) {
+            System.out.println("criterio de busqueda: " + nombre);
         return this.institucionService.getAll(new Institucion().setNombre(nombre), pageable);
     }
 

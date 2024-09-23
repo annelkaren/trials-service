@@ -14,51 +14,59 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Repository
 public interface InstitucionRepository extends JpaRepository<Institucion, Integer> {
-    
+
     @Query("""
-            SELECT 
-                i.id,
-                i.nombre,
-                i.telefono,
-                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
-                    d.id,
-                    d.calle,
-                    d.exterior,
-                    d.interior,
-                    d.estadoRepublica,
-                    d.municipio,
-                    d.localidad,
-                    d.colonia,
-                    d.codigoPostal,
-                    d.referencia)
-            FROM Institucion i
-            JOIN i.domicilio d
-            WHERE i.id = :id AND i.estado IN :estados
+                SELECT new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecordResponse(
+                    i.id,
+                    i.version,
+                    i.nombre,
+                    i.estado,
+                    i.telefono,
+                    i.extension,
+                    new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
+                    new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
+                        d.id,
+                        d.calle,
+                        d.exterior,
+                        d.interior,
+                        d.estadoRepublica,
+                        d.municipio,
+                        d.localidad,
+                        d.colonia,
+                        d.codigoPostal,
+                        d.referencia
+                    )
+                )
+                FROM Institucion i
+                JOIN i.domicilio d
+                JOIN i.distrito dis
+                WHERE i.id = :id AND i.estado IN :estados
             """)
     Optional<InstitucionRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
-
-@Query("""
-        SELECT 
-            i.id, 
-            i.nombre,
-            CONCAT(
-                d.calle, ' ',
-                d.colonia, ' ',
-                d.exterior,
-                CASE WHEN d.interior IS NOT NULL THEN CONCAT(' Int. ', d.interior) ELSE '' END,
-                ' ', 
-                d.estadoRepublica, ' ',
-                d.municipio, ' ',
-                d.localidad, ' ',
-                d.codigoPostal,
-                CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
-            ) AS domicilio,
-            i.telefono
-        FROM Institucion i
-        JOIN i.domicilio d
-        WHERE i.estado IN :estados
-        """)
-Page<InstitucionRecord> findAllEstadoIn(@Param("estados") List<Estado> estados, Pageable pageable);
+    @Query("""
+            SELECT
+                new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecord(
+                    i.id,
+                    i.nombre,
+                    CONCAT(
+                        d.calle, ' ',
+                        d.colonia, ' ',
+                        d.exterior,
+                        CASE WHEN d.interior IS NOT NULL THEN CONCAT(' Int. ', d.interior) ELSE '' END,
+                        ' ',
+                        d.estadoRepublica, ' ',
+                        d.municipio, ' ',
+                        d.localidad, ' ',
+                        d.codigoPostal,
+                        CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
+                    ),
+                    i.telefono
+                )
+            FROM Institucion i
+            JOIN i.domicilio d
+            WHERE i.estado IN :estados
+            """)
+    Page<InstitucionRecord> findAllEstadoIn(@Param("estados") List<Estado> estados, Pageable pageable);
 
 }

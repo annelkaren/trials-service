@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
@@ -27,6 +28,7 @@ public class InstitucionService {
     
     private final InstitucionRepository institucionRepository;
     private final DomicilioRepository domicilioRepository;
+    private final DistritoRepository distritoRepository;
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
@@ -39,15 +41,27 @@ public class InstitucionService {
         
 
         // Obtén la página de Institucion con la dirección completa
-        Page<InstitucionRecord> page = institucionRepository.findAllEstadoIn(estados, pageable);
+        Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
     
         // Mapea la lista de Institucion a InstitucionRecord
         List<InstitucionRecord> list = page.getContent().stream()
                 .map(institucion -> new InstitucionRecord(
-                        institucion.id(),
-                        institucion.nombre(),
-                        institucion.domicilio(), 
-                        institucion.telefono()))
+                        institucion.getId(),
+                        institucion.getNombre(),
+                        String.join(" ",
+                        institucion.getDomicilio().getCalle(),
+                        institucion.getDomicilio().getColonia(),
+                        institucion.getDomicilio().getExterior(),
+                        (institucion.getDomicilio().getInterior() != null && !institucion.getDomicilio().getInterior().isEmpty())
+                            ? "Int. " + institucion.getDomicilio().getInterior() : "",
+                        institucion.getDomicilio().getEstadoRepublica(),
+                        institucion.getDomicilio().getMunicipio(),
+                        institucion.getDomicilio().getLocalidad(),
+                        institucion.getDomicilio().getCodigoPostal(),
+                        (institucion.getDomicilio().getReferencia() != null && !institucion.getDomicilio().getReferencia().isEmpty())
+                            ? "Ref: " + institucion.getDomicilio().getReferencia() : ""
+                    ).trim(),
+                        institucion.getTelefono() ))
                 .toList();
     
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -63,15 +77,15 @@ public class InstitucionService {
     }
 
     public Integer create(Institucion institucion){
+        institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
         institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
         institucion = institucionRepository.save(institucion);
-
         return institucion.getId();
     }
 
     public Integer update(Institucion institucion) {
         try {
-            
+            institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
             institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
             institucion = institucionRepository.save(institucion);
 
