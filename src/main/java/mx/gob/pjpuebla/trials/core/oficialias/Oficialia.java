@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialiamateria.OficialiaMateria;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.util.Audit;
@@ -50,6 +52,10 @@ public class Oficialia implements Serializable, Auditable {
     @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
     @OneToOne(fetch = FetchType.LAZY)
     private Sede sede;
+
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    private Juzgado juzgado;
 
     @Accessors(chain = false)
     @Embedded

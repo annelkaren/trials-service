@@ -2,10 +2,12 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.oficialiamateria.OficialiaMateria;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
+import mx.gob.pjpuebla.trials.core.oficialiamateria.OficialiaMateriaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -25,6 +27,7 @@ public class OficialiaService {
     private final OficialiaRepository oficialiaRepository;
     private final SedeRepository sedeRepository;
     private final TipoOficialiaRepository tipoOficialiaRepository;
+    private final OficialiaMateriaRepository oficialiaMateriaRepository;
 
     @Transactional(readOnly = true)
     public Page<OficialiaRecord> getAllActive(Pageable pageable, Oficialia example) {
@@ -68,6 +71,32 @@ public class OficialiaService {
             log.error("update -> {}", ex);
             throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Oficialia modificada por otro usuario", "oficialiaId: " + oficialia.getId());
         }
+    }
+/*
+    @Transactional(readOnly = true)
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable, Oficialia example) {
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
+
+        Example<OficialiaMateriaRecord> exampleQuerya = Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher);
+        Example<OficialiaMateriaRecord> exampleQuery = Example.of(new OficialiaMateriaRecord(example.setEstado(Estado.ACTIVE)), exampleMatcher);
+
+        Page<OficialiaMateriaRecord> page = oficialiaMateriaRepository.findOficialiaDetails(exampleQuery, pageable);
+
+        return page.getContent().stream()
+                .map(m -> new OficialiaMateriaRecord(m.id(),
+                        m.oficialiaNombre(),
+                        m.materiaNombres(),
+                        m.materiaNombres() ,
+                        m.tipoOficialiaNombre()))
+                .toList();
+    }
+*/
+    @Transactional(readOnly = true)
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
+        List<Estado> estados = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+        return oficialiaMateriaRepository.findOficialiaDetails(estados, pageable);
     }
 
     public void delete(Integer id) {

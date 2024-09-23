@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/oficialias")
@@ -52,4 +54,10 @@ public class OficialiaResource {
     public void delete(@PathVariable Integer id) {
         this.oficialiaService.delete(id);
     }
+
+    @GetMapping("/oficialiaMateria")
+    public Page<OficialiaMateriaRecord> getOficialiaMateria(@PageableDefault(size = 20) Pageable pageable) {
+        return this.oficialiaService.getAllByOficialiaMateria(pageable);
+    }
+
 }
