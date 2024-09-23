@@ -32,6 +32,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,7 +77,8 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
 
-        juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+        juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio));
         documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
     }
 
@@ -98,7 +101,7 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
-        LocalDate dateTest = LocalDate.of(2025, 01, 01);
+        LocalDate dateTest = LocalDate.of(2025, 1, 1);
 
         for (Juzgado tmpJuzgado : juzgadoRepository.findAll()) {
             for (int i = 1; i < 5; i++) {

@@ -9,10 +9,10 @@ import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.sedes.*;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ class JuzgadoResourceTest {
 
     private Juzgado juzgado;
     private JuzgadoRecord juzgadoRecord;
-    private JuzgadoRecordResponse juzgadoRecordResponse;
+    private JuzgadoRecordItem juzgadoRecordItem;
 
     @BeforeEach
     void setUp() {
@@ -59,13 +59,13 @@ class JuzgadoResourceTest {
         sede.setDomicilio(domicilio);
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
         juzgadoRecord = JuzgadoSetUp.createJuzgadoRecord(juzgado, materia.getId(), sede.getId());
-        juzgadoRecordResponse = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
+        juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
     }
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
         given(mockJuzgadoService.getAll(any(Juzgado.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordResponse)));
+                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
 
         mockMvc.perform(
                 get("/api/core/juzgados")
@@ -110,11 +110,11 @@ class JuzgadoResourceTest {
     @Test
     void create_success() throws Exception {
         given(mockJuzgadoService.create(juzgado))
-                .willReturn(juzgadoRecordResponse);
+                .willReturn(juzgadoRecordItem);
 
         mockMvc.perform(
                 post("/api/core/juzgados")
-                        .content(asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
+                        .content(asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -123,11 +123,11 @@ class JuzgadoResourceTest {
     @Test
     void update_success() throws Exception {
         given(mockJuzgadoService.create(juzgado))
-                .willReturn(juzgadoRecordResponse);
+                .willReturn(juzgadoRecordItem);
 
         mockMvc.perform(
                 put("/api/core/juzgados")
-                        .content(asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
+                        .content(asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -135,15 +135,15 @@ class JuzgadoResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockJuzgadoService.update(juzgado))
-                .willThrow(OptimisticLockingFailureException.class);
+        given(mockJuzgadoService.update(any(Juzgado.class)))
+                .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
                 put("/api/core/juzgados")
-                        .content(asJsonString(JuzgadoSetUp.createJuzgado(new Materia(), new Sede())))
+                        .content(asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isBadRequest());
     }
 
     @Test
