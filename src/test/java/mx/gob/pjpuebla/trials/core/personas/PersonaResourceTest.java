@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,11 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -96,7 +95,7 @@ class PersonaResourceTest {
     @Test
     void create_success() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.create(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+        given(mockPersonaService.create(PersonaSetUp.createPersona(), List.of(roleRecord)))
                 .willReturn(personaRecordResponse);
 
         mockMvc.perform(
@@ -110,7 +109,7 @@ class PersonaResourceTest {
     @Test
     void update_success() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), List.of(roleRecord)))
                 .willReturn(personaRecordResponse);
 
         mockMvc.perform(
@@ -124,8 +123,8 @@ class PersonaResourceTest {
     @Test
     void update_error() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(PersonaSetUp.createPersona(), Arrays.asList(roleRecord)))
-                .willThrow(OptimisticLockingFailureException.class);
+        given(mockPersonaService.update(PersonaSetUp.createPersona(), List.of(roleRecord)))
+                .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
                 put("/api/core/personas")
@@ -152,7 +151,7 @@ class PersonaResourceTest {
                 .willReturn(validPersonaRecord);
 
         mockMvc.perform(
-                get("/api/core/personas/curp/"+curp)
+                get("/api/core/personas/curp/" + curp)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
@@ -161,7 +160,7 @@ class PersonaResourceTest {
     void getAll_jueces() throws Exception {
         JuezRecord juezRecord = new JuezRecord(1L, "Juan Perez");
         given(mockPersonaService.findAllJueces(any(Integer.class)))
-                .willReturn(Arrays.asList(juezRecord));
+                .willReturn(List.of(juezRecord));
 
         mockMvc.perform(
                 get("/api/core/personas/jueces/" + anyInt())

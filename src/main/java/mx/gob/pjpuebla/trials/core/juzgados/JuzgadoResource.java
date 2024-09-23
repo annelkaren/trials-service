@@ -3,14 +3,12 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-
-import mx.gob.pjpuebla.trials.core.reljuzgadotipojuicio.RelJuzgadoTipoJuicio;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -22,35 +20,30 @@ public class JuzgadoResource {
     private final JuzgadoService juzgadoService;
 
     @GetMapping
-    public Page<JuzgadoRecordResponse> getAll(
+    public Page<JuzgadoRecordItem> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.juzgadoService.getAll(new Juzgado().setNombre(nombre), pageable);
     }
 
     @GetMapping("all")
-    public List<JuzgadoRecordResponse> getAllWithoutPagination() {
+    public List<JuzgadoRecordItem> getAllWithoutPagination() {
         return this.juzgadoService.getAllWithoutPagination();
     }
 
     @GetMapping("/{id}")
-    public JuzgadoDTO getById(@PathVariable Integer id) {
+    public JuzgadoRecord getById(@PathVariable Integer id) {
         return this.juzgadoService.findById(id);
     }
 
     @PostMapping
-    public JuzgadoRecordResponse create(@RequestBody @Valid JuzgadoDTO juzgadoDTO) {
-       return this.juzgadoService.create(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
-    }
-
-    @PostMapping("/relacionjuicio")
-    public RelJuzgadoTipoJuicio createTipoJuicio(@RequestBody @Valid RelJuzgadoTipoJuicio relJuzgadoTipoJuicio) {
-        return this.juzgadoService.createRelacion(relJuzgadoTipoJuicio);
+    public JuzgadoRecordItem create(@RequestBody @Valid Juzgado juzgado) {
+        return this.juzgadoService.create(juzgado);
     }
 
     @PutMapping
-    public JuzgadoRecordResponse update(@RequestBody @Valid JuzgadoDTO juzgadoDTO) {
-        return this.juzgadoService.update(juzgadoDTO.getJuzgado(), juzgadoDTO.getTipoJuicio());
+    public JuzgadoRecordItem update(@RequestBody @Valid Juzgado juzgado) {
+        return this.juzgadoService.update(juzgado);
     }
 
     @DeleteMapping("/{id}")

@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -90,8 +91,7 @@ public class PersonaService {
             roleService.updateRoles(persona.getUsuario(), getNames(roles));
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
         } catch (OptimisticLockingFailureException ex) {
-            log.error("update -> {}", ex);
-            throw new mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException("Persona modificada por otro usuario", "personaId");
+            throw new InvalidVersionException(Persona.class.getSimpleName());
         }
     }
 
@@ -105,7 +105,7 @@ public class PersonaService {
 
     private List<String> getNames(List<RoleRecord> list) {
         List<String> roles = new ArrayList<>();
-        list.stream().forEach(roleRecord -> roles.add(roleRecord.name()));
+        list.forEach(roleRecord -> roles.add(roleRecord.name()));
         return roles;
     }
 
@@ -115,7 +115,7 @@ public class PersonaService {
         List<JuezRecord> jueces = new ArrayList<>();
         List<String> ids = usuarioService.findAllByRolJuezAndSecretario();
         for (String id : ids) {
-            Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, Arrays.asList(Estado.ACTIVE));
+            Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, List.of(Estado.ACTIVE));
             if (juez.isPresent()) {
                 salas = salaRepository.findAllByJuezId(juez.get().getId());
                 if (salas.isEmpty()) {
