@@ -24,4 +24,11 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             WHERE o.id =:id AND o.estado IN :estados""")
     Optional<OficialiaRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
+    @Query("""
+            SELECT o FROM Oficialia o
+            WHERE UPPER(o.tipoOficialia.nombre) = "COMÚN"
+            AND o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+    List<Oficialia> findOficialiaComun();
+
 }

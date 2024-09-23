@@ -26,15 +26,17 @@ public record PersonaRecord
          Integer estadoCivilId,
          Integer escolaridadId,
          Integer juzgadoId,
+         Integer oficialiaId,
          DomicilioRecord domicilio,
          String usuario,
          List<RoleRecord> permisos
         ) {
 
         public PersonaRecord withRoles(List<RoleRecord> permisos) {
+
                 return new PersonaRecord(id(), version(), nombre(), apellidoPaterno(),
                         apellidoMaterno(), curp(), rfc(), fechaNacimiento(), correoElectronico(),
                         telefono(), celular(), sexo(), ocupacion(), estado(), estadoCivilId(),
-                        escolaridadId(), juzgadoId(), domicilio(), usuario(), permisos);
+                        escolaridadId(), juzgadoId(), oficialiaId(), domicilio(), usuario(), permisos);
         }
 }

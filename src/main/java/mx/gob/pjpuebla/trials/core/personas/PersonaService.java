@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
@@ -13,6 +16,8 @@ import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -34,6 +39,7 @@ public class PersonaService {
     private final EscolaridadRepository escolaridadRepository;
     private final EstadoCivilRepository estadoCivilRepository;
     private final JuzgadoRepository juzgadoRepository;
+    private final OficialiaRepository oficialiaRepository;
     private final UsuarioService usuarioService;
     private final RoleService roleService;
     private final SalaRepository salaRepository;
@@ -70,9 +76,18 @@ public class PersonaService {
                 .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
         persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
                 .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
-        persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
-                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+
+        if (persona.getJuzgado()!=null){
+            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
+            .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+        }
+
+        if (persona.getOficialia()!=null){
+            persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
+            .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
+        }
+        
         persona = personaRepository.save(persona);
         return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
@@ -83,9 +98,22 @@ public class PersonaService {
                     .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
             persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
                     .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
-            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
-                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+
+            if (persona.getJuzgado().getId()!=null){
+                persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
+                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+            }else{
+                persona.setJuzgado(null);
+            }
+    
+            if (persona.getOficialia().getId()!=null){
+                persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
+                .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
+            }else{
+                persona.setOficialia(null);
+            }
+            
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), getNames(roles));
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
@@ -127,5 +155,22 @@ public class PersonaService {
             }
         }
         return jueces;
+    }
+
+    public List<CentroTrabajoRecord> findAllCentroTrabajo(){
+        List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
+
+        List<JuzgadoRecordResponse> juzgados = juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE));
+        List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
+
+        for (JuzgadoRecordResponse juzgado: juzgados){
+            centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
+        }
+
+        for(Oficialia oficialia: oficialias){
+            centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
+        }
+
+        return centrosTrabajo;
     }
 }
