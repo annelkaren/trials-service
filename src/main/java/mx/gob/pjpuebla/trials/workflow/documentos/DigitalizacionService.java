@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 /**
  * Servicio para la gestión de documentos, incluyendo la validación y el

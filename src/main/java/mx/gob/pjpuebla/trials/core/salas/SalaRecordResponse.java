@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
@@ -11,7 +11,7 @@ public record SalaRecordResponse(
         Estado estado,
         Integer version,
         JuezRecord juez,
-        JuzgadoRecordResponse juzgado,
+        JuzgadoRecordItem juzgado,
         BloqueRecord bloque) {
 
 }

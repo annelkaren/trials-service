@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

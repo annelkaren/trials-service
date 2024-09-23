@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -121,7 +121,7 @@ class SedeResourceTest {
     @Test
     void update_error() throws Exception {
         given(mockSedeService.update(SedeSetUp.createSede(Estado.ACTIVE)))
-                .willThrow(OptimisticLockingFailureException.class);
+                .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
                 put("/api/core/sedes")

@@ -15,6 +15,10 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,12 +104,15 @@ class PersonaRepositoryTest extends AuditConfigTest {
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
         persona.setJuzgado(juzgado);
         persona = personaRepository.save(persona);
         Optional<Persona> entity = personaRepository
-                .findByUsuarioAndJuzgadoIdAndEstadoIn(persona.getUsuario(), persona.getJuzgado().getId(), Arrays.asList(Estado.ACTIVE));
+                .findByUsuarioAndJuzgadoIdAndEstadoIn(persona.getUsuario(), persona.getJuzgado().getId(), List.of(Estado.ACTIVE));
         assertThat(entity).isPresent();
         assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
         assertThat(entity.get().getUsuario()).isEqualTo(persona.getUsuario());

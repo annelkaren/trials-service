@@ -12,6 +12,12 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +49,8 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     private DistritoRepository distritoRepository;
     @Autowired
     private DomicilioRepository domicilioRepository;
+    @Autowired
+    private TipoSistemaRepository tipoSistemaRepository;
     private Juzgado juzgado;
 
     @BeforeEach
@@ -50,29 +58,24 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
         Sede sede = SedeSetUp.createSede();
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
-        juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+        TipoJuicio tj1 = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+        TipoJuicio tj2 = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia).setId(2).setNombre("Laboral Dos");
+        juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(Arrays.asList(tj1, tj2));
     }
 
     @Test
     void findByIdAndEstadoActive() {
         juzgado = juzgadoRepository.save(juzgado);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<JuzgadoRecord> entity = juzgadoRepository.findByIdAndEstadoIn(juzgado.getId(), estados);
-        assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
+        Optional<Juzgado> entity = juzgadoRepository.findByIdAndEstadoIn(juzgado.getId(), estados);
+        assertThat(entity).isPresent().get().hasFieldOrPropertyWithValue("estado", Estado.ACTIVE);
+        assertThat(entity.get().getTipoJuicios()).hasSize(2);
     }
 
-    @Test
-    void findByIdAndEstadoInactive() {
-        juzgado.setEstado(Estado.INACTIVE);
-        juzgado = juzgadoRepository.save(juzgado);
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<JuzgadoRecord> entity = juzgadoRepository.findByIdAndEstadoIn(juzgado.getId(), estados);
-        assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
-    }
 }

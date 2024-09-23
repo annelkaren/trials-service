@@ -3,14 +3,12 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -22,17 +20,16 @@ public class JuzgadoResource {
     private final JuzgadoService juzgadoService;
 
     @GetMapping
-    public Page<JuzgadoRecordResponse> getAll(
+    public Page<JuzgadoRecordItem> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.juzgadoService.getAll(new Juzgado().setNombre(nombre), pageable);
     }
 
     @GetMapping("all")
-    public List<JuzgadoRecordResponse> getAllWithoutPagination() {
+    public List<JuzgadoRecordItem> getAllWithoutPagination() {
         return this.juzgadoService.getAllWithoutPagination();
     }
-    
 
     @GetMapping("/{id}")
     public JuzgadoRecord getById(@PathVariable Integer id) {
@@ -40,12 +37,12 @@ public class JuzgadoResource {
     }
 
     @PostMapping
-    public JuzgadoRecordResponse create(@RequestBody @Valid Juzgado juzgado) {
+    public JuzgadoRecordItem create(@RequestBody @Valid Juzgado juzgado) {
         return this.juzgadoService.create(juzgado);
     }
 
     @PutMapping
-    public JuzgadoRecordResponse update(@RequestBody @Valid Juzgado juzgado) {
+    public JuzgadoRecordItem update(@RequestBody @Valid Juzgado juzgado) {
         return this.juzgadoService.update(juzgado);
     }
 

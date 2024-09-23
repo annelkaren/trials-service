@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -58,8 +58,7 @@ public class SedeService {
             sedeRepository.save(sede);
             return new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
-            log.error("update -> {}", ex);
-            throw new OptimisticLockingFailureException("Sede modificada por otro usuario", "sedeId");
+            throw new InvalidVersionException(Sede.class.getSimpleName());
         }
     }
 

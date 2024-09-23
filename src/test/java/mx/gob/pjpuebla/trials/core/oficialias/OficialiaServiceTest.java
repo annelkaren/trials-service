@@ -13,7 +13,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,9 +113,7 @@ class OficialiaServiceTest {
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    oficialiaService.findById(personaId);
-                }
+                () -> oficialiaService.findById(personaId)
         );
 
         assertThat(assertThrows.getMessage()).contains("Oficialia no encontrada");
@@ -162,13 +160,11 @@ class OficialiaServiceTest {
         given(oficialiaRepository.save(oficialia))
                 .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-        OptimisticLockingFailureException assertThrows = assertThrows(
-                OptimisticLockingFailureException.class,
-                () -> {
-                    oficialiaService.update(oficialia);
-                }
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
+                () -> oficialiaService.update(oficialia)
         );
 
-        assertThat(assertThrows.getMessage()).contains("Oficialia modificada por otro usuario");
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 }

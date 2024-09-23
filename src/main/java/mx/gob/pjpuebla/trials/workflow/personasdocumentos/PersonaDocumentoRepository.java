@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import org.springframework.data.jpa.repository.Query;
 
 @Repository
@@ -32,4 +33,5 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             @Param("documentoId") Integer documentoId,
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);
+    public List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
 }
