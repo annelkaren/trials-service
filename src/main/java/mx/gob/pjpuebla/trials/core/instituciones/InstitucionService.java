@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
 
@@ -92,7 +94,7 @@ public class InstitucionService {
             return institucion.getId();
 
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
-           throw new OptimisticLockingFailureException("Institución modificada por otro usuario", "institucionId");
+          throw new InvalidVersionException(Sede.class.getSimpleName());
         }
     }
 
