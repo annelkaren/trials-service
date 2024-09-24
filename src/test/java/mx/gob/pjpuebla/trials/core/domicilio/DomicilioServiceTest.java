@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-public class DomicilioServiceTest {
+class DomicilioServiceTest {
 
     @Mock
     DomicilioRepository mockDomicilioRepository;
@@ -48,11 +48,11 @@ public class DomicilioServiceTest {
     void getById_return_not_found() {
         given(mockDomicilioRepository.findById(domicilio.getId()))
                 .willReturn(Optional.empty());
-
+        long domicilioId = domicilio.getId();
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> {
-                    domicilioService.findById(domicilio.getId());
+                    domicilioService.findById(domicilioId);
                 }
         );
 
