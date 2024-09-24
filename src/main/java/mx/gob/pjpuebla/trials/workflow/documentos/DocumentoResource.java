@@ -39,14 +39,14 @@ public class DocumentoResource {
         return this.documentoService.createDemanda(documentoDTO);
     }
 
-    @PatchMapping("/demanda/{id}/anexos")
+    @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnexoRecord> editarAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord ){
         AnexoRecord updatedAnexos = documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
         return ResponseEntity.ok(updatedAnexos);
     }
 
 
-    @GetMapping("/demanda/{documentoId}")
+    @GetMapping(value = "/demanda/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getEditDocumento(@PathVariable Integer documentoId) {
         Map<String, Object>  editDocumento  = documentoService.getEditDocumentoAnexo(documentoId);
         return  ResponseEntity.ok(editDocumento);
