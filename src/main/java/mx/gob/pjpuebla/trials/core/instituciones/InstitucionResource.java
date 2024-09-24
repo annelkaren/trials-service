@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/api/core/instituciones")
 @SecurityRequirement(name = "keycloak")
-public class InstitucionResorce {
+public class InstitucionResource {
 
     private final InstitucionService institucionService;
 
@@ -28,7 +28,7 @@ public class InstitucionResorce {
     public Page<InstitucionRecord> getAll(
         @PageableDefault(size = 20) Pageable pageable,
         @RequestParam(value = "nombre", required = false) String nombre) {
-            System.out.println("criterio de busqueda: " + nombre);
+          
         return this.institucionService.getAll(new Institucion().setNombre(nombre), pageable);
     }
 
