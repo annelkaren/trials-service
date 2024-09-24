@@ -97,4 +97,8 @@ public class InstitucionService {
         }
     }
 
+    public void delete(Integer id){
+        institucionRepository.deleteById(id);
+    }
+
 }

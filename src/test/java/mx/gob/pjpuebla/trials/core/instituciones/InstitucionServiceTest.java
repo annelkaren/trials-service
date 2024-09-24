@@ -3,7 +3,12 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +39,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class InstitucionServiceTest {
@@ -169,6 +175,27 @@ class InstitucionServiceTest {
 
                 assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
 
+        }
+
+        @Test
+        void delete_success() {
+
+                doNothing().when(mockInstitucionRepository).deleteById(anyInt());
+
+                mockInstitucionService.delete(1);
+
+                verify(mockInstitucionRepository, times(1)).deleteById(1);
+        }
+
+        @Test
+        void delete_nonExistentId_throwsException() {
+                
+                doThrow(new IllegalArgumentException("Invalid ID")).when(mockInstitucionRepository).deleteById(anyInt());
+
+                
+                assertThatThrownBy(() -> mockInstitucionService.delete(999))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("Invalid ID");
         }
 
 }
