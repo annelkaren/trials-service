@@ -6,10 +6,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +34,12 @@ class BloqueServiceTest {
     private BloqueService bloqueService;
 
     private Bloque bloque;
+    private BloqueRecord bloqueRecord;
 
     @BeforeEach
     public void setUp() {
         bloque = BloqueSetUp.createBloque();
+        bloqueRecord = BloqueSetUp.createBloqueRecord();
         bloque.setHoraInicial(LocalTime.of(8, 30));
         bloque.setHoraFinal(LocalTime.of(9, 30));
     }
@@ -70,6 +76,35 @@ class BloqueServiceTest {
             .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
             .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
             .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
+    }
+
+    @Test
+    void getById_return_bloqueRecord() {
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        given(mockBloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados))
+                .willReturn(Optional.ofNullable(bloqueRecord));
+
+        BloqueRecord result = bloqueService.findById(bloque.getId());
+        assertThat(result).isOfAnyClassIn(BloqueRecord.class)
+                .hasFieldOrPropertyWithValue("id", bloque.getId())
+                .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
+                .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
+                .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
+    }
+
+    @Test
+    void getById_return_not_found() {
+        Integer id = bloque.getId();
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        given(mockBloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados))
+                .willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> bloqueService.findById(id)
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Bloque no encontrado");
     }
 
     @Test

@@ -28,6 +28,11 @@ public class BloqueResource {
         return this.bloqueService.getAll(new Bloque().setHoraInicial(horaInicial), pageable);
     }
 
+    @GetMapping("/{id}")
+    public BloqueRecord getById(@PathVariable Integer id) {
+        return this.bloqueService.findById(id);
+    }
+
     @PostMapping
     public BloqueRecordResponse create(@RequestBody @Valid Bloque bloque) {
         return this.bloqueService.create(bloque);

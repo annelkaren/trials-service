@@ -1,10 +1,10 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
+import java.util.Arrays;
 import java.util.List;
-
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,6 +36,13 @@ public class BloqueService {
 
             return new PageImpl<>(list, pageable, page.getTotalElements());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public BloqueRecord findById(Integer id) {
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        return bloqueRepository.findByIdAndEstadoIn(id, estados)
+                .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "bloqueId"));
     }
 
     public BloqueRecordResponse create(Bloque bloque) {
