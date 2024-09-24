@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -13,6 +11,7 @@ import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -114,7 +113,7 @@ class JuzgadoResourceTest {
 
         mockMvc.perform(
                 post("/api/core/juzgados")
-                        .content(asJsonString(juzgado))
+                        .content(ResourceUtilTest.asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -127,7 +126,7 @@ class JuzgadoResourceTest {
 
         mockMvc.perform(
                 put("/api/core/juzgados")
-                        .content(asJsonString(juzgado))
+                        .content(ResourceUtilTest.asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -140,7 +139,7 @@ class JuzgadoResourceTest {
 
         mockMvc.perform(
                 put("/api/core/juzgados")
-                        .content(asJsonString(juzgado))
+                        .content(ResourceUtilTest.asJsonString(juzgado))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
@@ -152,15 +151,5 @@ class JuzgadoResourceTest {
                 delete("/api/core/juzgados/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }
