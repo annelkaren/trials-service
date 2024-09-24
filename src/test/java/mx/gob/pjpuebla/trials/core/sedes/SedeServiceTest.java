@@ -124,6 +124,7 @@ class SedeServiceTest {
     void update() {
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
+        
         given(mockDistritoRepository.findById(distrito.getId()))
                 .willReturn(Optional.ofNullable(distrito));
         given(domicilioService.save(domicilio))
