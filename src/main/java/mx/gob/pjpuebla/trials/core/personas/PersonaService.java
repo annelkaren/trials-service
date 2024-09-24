@@ -78,12 +78,12 @@ public class PersonaService {
                 .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
 
-        if (persona.getJuzgado()!=null){
+        if (persona.getJuzgado()!=null && persona.getJuzgado().getId()!=null){
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
             .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
         }
 
-        if (persona.getOficialia()!=null){
+        if (persona.getOficialia()!=null && persona.getOficialia().getId()!=null){
             persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
             .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
         }
@@ -100,14 +100,14 @@ public class PersonaService {
                     .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
 
-            if (persona.getJuzgado().getId()!=null){
+            if (persona.getJuzgado()!=null && persona.getJuzgado().getId()!=null){
                 persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             }else{
                 persona.setJuzgado(null);
             }
     
-            if (persona.getOficialia().getId()!=null){
+            if (persona.getOficialia()!=null &&persona.getOficialia().getId()!=null){
                 persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
                 .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
             }else{
@@ -157,6 +157,7 @@ public class PersonaService {
         return jueces;
     }
 
+    @Transactional(readOnly = true)
     public List<CentroTrabajoRecord> findAllCentroTrabajo(){
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
