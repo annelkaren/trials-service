@@ -36,15 +36,9 @@ public class InstitucionService {
         
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-        
-        // define estados
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        
 
-        // Obtén la página de Institucion con la dirección completa
         Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
     
-        // Mapea la lista de Institucion a InstitucionRecord
         List<InstitucionRecord> list = page.getContent().stream()
                 .map(institucion -> new InstitucionRecord(
                         institucion.getId(),
