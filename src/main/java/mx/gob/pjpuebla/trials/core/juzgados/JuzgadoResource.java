@@ -29,7 +29,7 @@ public class JuzgadoResource {
     }
 
     @PostMapping
-    public JuzgadoRecordItem create(@RequestBody Juzgado juzgado) {
+    public JuzgadoRecordItem create(@RequestBody @Valid Juzgado juzgado) {
         return this.juzgadoService.create(juzgado);
     }
 
