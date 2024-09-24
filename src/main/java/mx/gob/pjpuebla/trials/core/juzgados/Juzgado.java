@@ -57,7 +57,7 @@ public class Juzgado implements Serializable, Auditable {
     private Materia materia;
 
     @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Sede sede;
 
     @Accessors(chain = false)

@@ -1,9 +1,8 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,7 +86,7 @@ class SalaResourceTest {
 
         mockMvc.perform(
                         post("/api/core/salas")
-                                .content(asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -101,7 +100,7 @@ class SalaResourceTest {
 
         mockMvc.perform(
                         put("/api/core/salas")
-                                .content(asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -114,21 +113,10 @@ class SalaResourceTest {
 
         mockMvc.perform(
                         put("/api/core/salas")
-                                .content(asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
     }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

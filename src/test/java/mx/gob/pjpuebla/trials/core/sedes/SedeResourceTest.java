@@ -1,10 +1,9 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,7 +98,7 @@ class SedeResourceTest {
 
         mockMvc.perform(
                 post("/api/core/sedes")
-                        .content(asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -112,7 +111,7 @@ class SedeResourceTest {
 
         mockMvc.perform(
                 put("/api/core/sedes")
-                        .content(asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -125,7 +124,7 @@ class SedeResourceTest {
 
         mockMvc.perform(
                 put("/api/core/sedes")
-                        .content(asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -137,15 +136,5 @@ class SedeResourceTest {
                 delete("/api/core/sedes/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

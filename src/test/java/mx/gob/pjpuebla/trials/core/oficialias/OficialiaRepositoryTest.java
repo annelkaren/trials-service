@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class OficialiaRepositoryTest extends AuditConfigTest {
+class OficialiaRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private OficialiaRepository oficialiaRepository;

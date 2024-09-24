@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ListaValorResource.class)
 @MockBean(SecurityFilterChain.class)
-public class ListaValorResourceTest {
+class ListaValorResourceTest {
 
     @Autowired
     public MockMvc mockMvc;
