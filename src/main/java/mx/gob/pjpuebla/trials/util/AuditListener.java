@@ -30,7 +30,7 @@ public class AuditListener {
     @PreUpdate
     public void setUpdatedOn(Auditable auditable) {
         Audit audit = auditable.getAudit();
-        if (audit == null) {
+        if(audit == null) {
             audit = new Audit();
             auditable.setAudit(audit);
         }

@@ -26,7 +26,7 @@ class ListaValorResourceTest {
     ListaValorService listaValorService;
 
     @Test
-    public void getById() throws Exception {
+    void getById() throws Exception {
         Response response = new Response((ListaValor) createListaValor());
         given(listaValorService.findById(anyInt())).willReturn(response);
 

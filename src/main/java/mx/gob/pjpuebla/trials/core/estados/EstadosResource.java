@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,7 +24,6 @@ public class EstadosResource {
     private static final String MUN_PATH = "/mgem/";
 
     @GetMapping
-    @ResponseBody
     @Cacheable("estados")
     public Response getStates() {
         RestTemplate restTemplate = new RestTemplate();
@@ -35,7 +33,6 @@ public class EstadosResource {
     }
 
     @GetMapping(value = "/{id}/municipios")
-    @ResponseBody
     @Cacheable(value = "municipios", key = "#id")
     public Response getMunByState(@PathVariable String id) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
