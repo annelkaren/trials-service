@@ -1,14 +1,5 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
@@ -30,14 +21,29 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class SalaRepositoryTest extends AuditConfigTest {
+class SalaRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private JuzgadoRepository juzgadoRepository;
@@ -74,7 +80,11 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede.setDomicilio(domicilio);
         sede.setDistrito(distrito);
         sede = sedeRepository.save(sede);
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
 
         Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
         sala.setBloque(bloque);
@@ -100,7 +110,11 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede.setDomicilio(domicilio);
         sede.setDistrito(distrito);
         sede = sedeRepository.save(sede);
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
 
         Sala sala = SalaSetUp.createSala(Estado.INACTIVE);
         sala.setBloque(bloque);
@@ -139,8 +153,15 @@ public class SalaRepositoryTest extends AuditConfigTest {
         sede2.setDistrito(distrito2);
         sede2 = sedeRepository.save(sede2);
 
-        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede));
-        Juzgado juzgado2 = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia2, sede2));
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+        TipoJuicio tipoJuicio2 = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia2)
+                .setId(2).setNombre("Laboral Dos");
+
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
+        Juzgado juzgado2 = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia2, sede2)
+                .setTipoJuicios(List.of(tipoJuicio2)));
 
         Sala sala1 = SalaSetUp.createSala(Estado.ACTIVE);
         sala1.setJuzgado(juzgado);
@@ -165,7 +186,7 @@ public class SalaRepositoryTest extends AuditConfigTest {
 
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
-        assertThat(count).isEqualTo(0);
+        assertThat(count).isZero();
     }
 
 }

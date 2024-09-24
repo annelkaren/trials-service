@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum TipoDocumento {
     PROMOCION,
-    EXHORTO,
-    DEMANDA
+    EXHORTO_ENTRADA,
+    DEMANDA,
+
 }

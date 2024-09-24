@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
-public class BloqueServiceTest {
+class BloqueServiceTest {
 
     @Mock
     private BloqueRepository mockBloqueRepository;

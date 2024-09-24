@@ -14,8 +14,9 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
                 new mx.gob.pjpuebla.trials.core.personas.JuezRecord(juez.id, juez.nombre ||  juez.apellidoPaterno || juez.apellidoMaterno),
-                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse(juzgado.id, juzgado.nombre, juzgado.estado, "",juzgado.maxAsignacionesRonda, juzgado.contadorAsignaciones),
-                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal))
+                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(juzgado.id, juzgado.nombre, juzgado.estado, ""),
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal)
+            )
             FROM Sala s
             LEFT JOIN s.juez juez
             LEFT JOIN s.juzgado juzgado
