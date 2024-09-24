@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -8,6 +9,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +51,8 @@ class BloqueServiceTest {
             .hasSize(1)
             .first().hasFieldOrPropertyWithValue("id", bloque.getId())
             .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
-            .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal());
+            .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
+            .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
     }
 
     @Test
@@ -65,6 +68,45 @@ class BloqueServiceTest {
             .hasSize(1)
             .first().hasFieldOrPropertyWithValue("id", bloque.getId())
             .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
-            .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal());
+            .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
+            .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
+    }
+
+    @Test
+    void create() {
+        given(mockBloqueRepository.save(bloque))
+            .willReturn(bloque);
+        BloqueRecordResponse response = bloqueService.create(bloque);
+
+        assertThat(response).isOfAnyClassIn(BloqueRecordResponse.class)
+            .hasFieldOrPropertyWithValue("id", bloque.getId())
+            .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
+            .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
+            .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
+    }
+
+    @Test
+    void update() {
+        given(mockBloqueRepository.save(bloque))
+                .willReturn(bloque);
+        BloqueRecordResponse response = bloqueService.create(bloque);
+
+        assertThat(response).isOfAnyClassIn(BloqueRecordResponse.class)
+                .hasFieldOrPropertyWithValue("id", bloque.getId())
+                .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
+                .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
+                .hasFieldOrPropertyWithValue("estado", bloque.getEstado());
+    }
+
+    @Test
+    void update_return_optimistic_exception() {
+        given(mockBloqueRepository.save(bloque)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
+
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
+                () -> bloqueService.update(bloque)
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 }

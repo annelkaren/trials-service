@@ -36,7 +36,7 @@ public class BloqueSetUp {
     }
 
     public static BloqueRecord createBloqueRecord(){
-        return new BloqueRecord(1, LocalTime.of(8, 30), LocalTime.of(9, 30));
+        return new BloqueRecord(1, LocalTime.of(8, 30), LocalTime.of(9, 30), Estado.ACTIVE);
                                       
     }
 

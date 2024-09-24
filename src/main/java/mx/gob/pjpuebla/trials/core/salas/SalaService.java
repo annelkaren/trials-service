@@ -41,7 +41,7 @@ public class SalaService {
                                 + sala.getJuez().getApellidoMaterno(),
                         sala.getJuzgado().getNombre(),
                         new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
-                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
+                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal(), sala.getBloque().getEstado()),
                         sala.getEstado()))
 
                 .toList();
