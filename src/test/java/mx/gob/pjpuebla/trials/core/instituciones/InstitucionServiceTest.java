@@ -1,6 +1,4 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
-
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -75,9 +73,12 @@ class InstitucionServiceTest {
                 domicilio = DomicilioSetUp.createDomicilio();
         }
 
-        @SuppressWarnings("unchecked")
+
         @Test
         void getAll_return_page() {
+                institucion.setDistrito(distrito);
+                institucion.setDomicilio(domicilio);
+                
                 List<Institucion> listPage = Collections.singletonList(institucion);
                 given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
