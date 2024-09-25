@@ -135,6 +135,11 @@
 			<artifactId>batik-all</artifactId>
 			<version>1.16</version>
 		</dependency>
+		<dependency>
+			<groupId>io.hypersistence</groupId>
+			<artifactId>hypersistence-utils-hibernate-55</artifactId>
+			<version>3.8.2</version>
+		</dependency>
     </dependencies>
 
 	<build>
