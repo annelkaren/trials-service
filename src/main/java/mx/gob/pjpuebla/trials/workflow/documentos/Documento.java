@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -10,17 +11,15 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-
-import java.io.Serializable;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.hibernate.annotations.Type;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import java.io.Serializable;
 
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
 @Table(name = "TBL_DOCUMENTOS")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Documento implements Serializable, Auditable {
 
     @Id
@@ -39,13 +38,13 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
     private TipoDocumento tipoDocumento;
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(name = "J_DATA", columnDefinition = "jsonb")
-    private String data; //TODO. crear objeto para representar json
+    private DocumentoData data;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-    private Documento documento;
+    private Documento documentoParent;
 
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -77,8 +77,9 @@ public class DocumentoService {
         documento.setTipoDocumento(TipoDocumento.DEMANDA);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
-        documento = documentoRepository.save(documento);
         carpeta = carpetaRepository.save(carpeta);
+        documento.setCarpeta(carpeta);
+        documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoDTO.getActor(), carpeta);
         createPersonaDocumento(documentoDTO.getDemandado(), carpeta);
