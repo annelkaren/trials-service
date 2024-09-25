@@ -52,13 +52,13 @@ public class DocumentoService {
 //        return new PageImpl<>(list, pageable, page.getTotalElements());
 //    }
 
-//    public DocumentoRecord updateStatus(Integer id, Integer status) {
-//        Documento doc = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
-//        EstadoDocumento value = EstadoDocumento.values()[status];
-//        doc.setEstatus(value);
-//        documentoRepository.save(doc);
-//        return new DocumentoRecord(doc.getId(), doc.getFolio(), doc.getTipoDocumento());
-//    }
+    public DocumentoRecord updateStatus(Integer id, Integer status) {
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+        EstadoCarpeta value = EstadoCarpeta.values()[status];
+        documento.getCarpeta().setEstatus(value);
+        carpetaRepository.save(documento.getCarpeta());
+        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getTipoDocumento());
+    }
 
     public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
         Documento documento = new Documento();
