@@ -82,11 +82,15 @@ public class PersonaService {
         if (persona.getJuzgado()!=null && persona.getJuzgado().getId()!=null){
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
             .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+        }else{
+            persona.setJuzgado(null);
         }
 
         if (persona.getOficialia()!=null && persona.getOficialia().getId()!=null){
             persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
             .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
+        }else{
+            persona.setOficialia(null);
         }
         
         persona = personaRepository.save(persona);
