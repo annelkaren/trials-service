@@ -23,28 +23,27 @@ public class CaratulaGenerator {
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DocumentoRepository documentoRepository;
-    private final JuzgadoRepository  juzgadoRepository;
+    private final JuzgadoRepository juzgadoRepository;
     @Value("classpath:jasper/CaratulaReport.jasper")
     private Resource caratula;
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
-          Documento documento = documentoRepository.findById(id).orElseThrow();
-          return JasperExportManager.exportReportToPdf(getReport(documento));
+        Documento documento = documentoRepository.findById(id).orElseThrow();
+        return JasperExportManager.exportReportToPdf(getReport(documento));
     }
 
-    private JasperPrint getReport(Documento documento) throws IOException, JRException  {
+    private JasperPrint getReport(Documento documento) throws IOException, JRException {
         String[] expendienteYear = getNoExpendienteYear(documento.getCarpeta().getExpediente());
-        //String actor = getNombrePersoaByIdAndParte(documento.getId(), "Actor");
-        //String demandado = getNombrePersoaByIdAndParte(documento.getId(), "Demandado");
-        String actor = "";
-        String demandado = "";
+        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
         parameters.put("year", expendienteYear[1]);
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
-        parameters.put("codigoQR", expendienteYear[0]);
+        parameters.put("codigoQR", expendienteYear[0]);//Generar correctamente el QR
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
 
@@ -54,14 +53,14 @@ public class CaratulaGenerator {
                 new JREmptyDataSource());
     }
 
-    private String[] getNoExpendienteYear(String expediente){
+    private String[] getNoExpendienteYear(String expediente) {
         return expediente.split("/");
     }
 
-//    private String getNombrePersoaByIdAndParte(Integer id, String parte) {
-//        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-//        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
-//        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
-//        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
-//    }
+    private String getNombrePersonaByIdAndParte(Integer id, String parte) {
+        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
+        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByCarpetaId(id, parte, rol);
+        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
+        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
+    }
 }
