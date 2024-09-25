@@ -1,21 +1,18 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.io.Serializable;
 
+public record DocumentoAnexoRecord (
 
-@Data
-@AllArgsConstructor
-public class DocumentoAnexoRecord {
+        Integer documentoId,
+        String nombre,
+        String apellidoPaterno,
+        String apellidoMaterno,
+        String pseudonimo,
+        String tipoPersona,
+        String tipoParteNombre,
+        Integer tipoParteId
 
-    private Integer documentoId;
-    private String nombre;
-    private String apellidoPaterno;
-    private String apellidoMaterno;
-    private String pseudonimo;
-    private String tipoPersona;
-    private String tipoParteNombre;
-    private Integer tipoParteId;
-
+) implements Serializable {
 }

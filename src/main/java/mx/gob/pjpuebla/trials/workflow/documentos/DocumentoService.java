@@ -116,7 +116,6 @@ public class DocumentoService {
         personaDocumentoRepository.save(entity);
     }
 
-    @Transactional
     public AnexoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
 
         Documento documento = documentoRepository.findById(documentoId)
@@ -142,40 +141,34 @@ public class DocumentoService {
         return new AnexoRecord(nuevosAnexos, motivoEdita);
     }
 
-    public Map<String, Object> getEditDocumentoAnexo(Integer documentoId) {
+    public  DocumentoResponseRecord getEditDocumentoAnexo(Integer id) {
 
-        List<DocumentoAnexoRecord> documentoAnexos = personaDocumentoRepository.findDocumentoAnexoByDocumentoId(documentoId);
-        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(documentoId);
+        List<DocumentoAnexoRecord> documentoAnexos = personaDocumentoRepository.findDocumentoAnexoByDocumentoId(id);
+        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(id);
 
-        Map<String, Object> actor  = new HashMap<>();
-        Map<String, Object> demandado  = new HashMap<>();
+        PersonaDocumentoDTO actorDTO = new PersonaDocumentoDTO();
+        PersonaDocumentoDTO demandadoDTO = new PersonaDocumentoDTO();
 
         documentoAnexos.forEach(anexo -> {
 
-            if ("Actor".equals(anexo.getTipoParteNombre())) {
-                actor.put("nombre", anexo.getNombre());
-                actor.put("apellidoPaterno", anexo.getApellidoPaterno());
-                actor.put("apellidoMaterno", anexo.getApellidoMaterno());
-                actor.put("pseudonimo", anexo.getPseudonimo());
-                actor.put("tipoPersona", anexo.getTipoPersona());
-                actor.put("tipoParte", anexo.getTipoParteId());
-            } else if ("Demandado".equals(anexo.getTipoParteNombre())) {
-
-                demandado.put("nombre", anexo.getNombre());
-                demandado.put("apellidoPaterno", anexo.getApellidoPaterno());
-                demandado.put("apellidoMaterno", anexo.getApellidoMaterno());
-                demandado.put("pseudonimo", anexo.getPseudonimo());
-                demandado.put("tipoPersona", anexo.getTipoPersona());
-                demandado.put("tipoParte", anexo.getTipoParteId());
+            if ("Actor".equals(anexo.tipoParteNombre())) {
+                actorDTO.setNombre(anexo.nombre());
+                actorDTO.setApellidoPaterno(anexo.apellidoPaterno());
+                actorDTO.setApellidoMaterno(anexo.apellidoMaterno());
+                actorDTO.setPseudonimo(anexo.pseudonimo());
+                actorDTO.setTipoPersona(anexo.tipoPersona());
+                actorDTO.setTipoParte(anexo.tipoParteId());
+            } else if ("Demandado".equals(anexo.tipoParteNombre())) {
+                demandadoDTO.setNombre(anexo.nombre());
+                demandadoDTO.setApellidoPaterno(anexo.apellidoPaterno());
+                demandadoDTO.setApellidoMaterno(anexo.apellidoMaterno());
+                demandadoDTO.setPseudonimo(anexo.pseudonimo());
+                demandadoDTO.setTipoPersona(anexo.tipoPersona());
+                demandadoDTO.setTipoParte(anexo.tipoParteId());
             }
         });
+        return new DocumentoResponseRecord(actorDTO, demandadoDTO, anexos);
 
-        Map<String, Object> editDocumento = new HashMap<>();
-        editDocumento.put("actor", actor);
-        editDocumento.put("demandado", demandado);
-        editDocumento.put("anexos", anexos);
-
-        return  editDocumento;
     }
     /**
      * Devuelve un numero de folio

@@ -31,6 +31,7 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -252,11 +253,13 @@ class DocumentoServiceTest {
     void getEditDocumentoAnexo_success() {
 
         Integer documentoId = 1;
+        List<DocumentoAnexoRecord> documentoAnexos = new ArrayList<>();
+        DocumentoAnexoRecord actor =  new DocumentoAnexoRecord(1, "Carlos", "Pérez", "García", "CP", "Actor", "Actor", 1);
+        DocumentoAnexoRecord demandado =   new DocumentoAnexoRecord(2, "María", "López", "Martínez", "ML", "Demandado", "Demandado", 2);
 
-        List<DocumentoAnexoRecord> documentoAnexos = Arrays.asList(
-                new DocumentoAnexoRecord(1, "Carlos", "Pérez", "García", "CP", "Actor", "Actor", 1),
-                new DocumentoAnexoRecord(2, "María", "López", "Martínez", "ML", "Demandado", "Demandado", 2)
-        );
+        documentoAnexos.add(actor);
+
+        documentoAnexos.add(demandado);
 
 
         List<String> anexos = Arrays.asList("Anexo1", "Anexo2");
@@ -265,39 +268,33 @@ class DocumentoServiceTest {
         given(personaDocumentoRepository.findDocumentoAnexoByDocumentoId(documentoId)).willReturn(documentoAnexos);
         given(personaDocumentoRepository.findNombresAnexosByDocumentoId(documentoId)).willReturn(anexos);
 
+        DocumentoResponseRecord resultado = documentoService.getEditDocumentoAnexo(documentoId);
 
-        Map<String, Object> resultado = documentoService.getEditDocumentoAnexo(documentoId);
+        PersonaDocumentoDTO actorResult = resultado.actor();
+        PersonaDocumentoDTO demandadoResult = resultado.demandado();
+        List<String> anexosResultado = resultado.anexos();
 
+        assertThat(actorResult).isNotNull();
+        assertThat(actorResult.getNombre()).isEqualTo("Carlos");
+        assertThat(actorResult.getApellidoPaterno()).isEqualTo("Pérez");
+        assertThat(actorResult.getApellidoMaterno()).isEqualTo("García");
+        assertThat(actorResult.getPseudonimo()).isEqualTo("CP");
+        assertThat(actorResult.getTipoPersona()).isEqualTo("Actor");
+        assertThat(actorResult.getTipoParte()).isEqualTo(1);
 
+        assertThat(demandadoResult).isNotNull();
+        assertThat(demandadoResult.getNombre()).isEqualTo("María");
+        assertThat(demandadoResult.getApellidoPaterno()).isEqualTo("López");
+        assertThat(demandadoResult.getApellidoMaterno()).isEqualTo("Martínez");
+        assertThat(demandadoResult.getPseudonimo()).isEqualTo("ML");
+        assertThat(demandadoResult.getTipoPersona()).isEqualTo("Demandado");
+        assertThat(demandadoResult.getTipoParte()).isEqualTo(2);
 
-        Map<String, Object> actor = (Map<String, Object>) resultado.get("actor");
-        assertThat(actor).containsEntry("nombre", "Carlos")
-                .containsEntry("apellidoPaterno", "Pérez")
-                .containsEntry("apellidoMaterno", "García")
-                .containsEntry("pseudonimo", "CP")
-                .containsEntry("tipoPersona", "Actor")
-                .containsEntry("tipoParte", 1);
-
-        Map<String, Object> demandado = (Map<String, Object>) resultado.get("demandado");
-        assertThat(demandado).containsEntry("nombre", "María")
-                .containsEntry("apellidoPaterno", "López")
-                .containsEntry("apellidoMaterno", "Martínez")
-                .containsEntry("pseudonimo", "ML")
-                .containsEntry("tipoPersona", "Demandado")
-                .containsEntry("tipoParte", 2);
-
-        List<String> anexosResultado = (List<String>) resultado.get("anexos");
-
-
-        verify(personaDocumentoRepository, times(1)).findDocumentoAnexoByDocumentoId(documentoId);
-        verify(personaDocumentoRepository, times(1)).findNombresAnexosByDocumentoId(documentoId);
+        assertThat(anexosResultado).isNotNull().containsExactly("Anexo1", "Anexo2");
 
         assertThat(resultado).isNotNull();
-        assertThat(anexosResultado).containsExactly("Anexo1", "Anexo2");
-        assertThat(resultado).containsKey("actor");
-        assertThat(resultado).containsKey("demandado");
-        assertThat(resultado).containsKey("anexos");
     }
+
 
 
 

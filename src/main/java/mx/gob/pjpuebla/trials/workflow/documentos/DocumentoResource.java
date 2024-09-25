@@ -46,9 +46,9 @@ public class DocumentoResource {
     }
 
 
-    @GetMapping(value = "/demanda/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getEditDocumento(@PathVariable Integer documentoId) {
-        Map<String, Object>  editDocumento  = documentoService.getEditDocumentoAnexo(documentoId);
+    @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DocumentoResponseRecord> getEditDocumento(@PathVariable Integer id) {
+        DocumentoResponseRecord  editDocumento  = documentoService.getEditDocumentoAnexo(id);
         return  ResponseEntity.ok(editDocumento);
     }
 
