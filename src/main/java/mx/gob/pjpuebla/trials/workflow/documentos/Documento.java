@@ -14,11 +14,13 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import java.io.Serializable;
 import org.hibernate.annotations.Type;
 
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
 @Table(name = "TBL_DOCUMENTOS")
-
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Documento implements Serializable, Auditable {
 
     @Id
