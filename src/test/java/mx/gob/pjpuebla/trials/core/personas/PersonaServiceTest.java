@@ -12,15 +12,23 @@ import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,6 +71,8 @@ class PersonaServiceTest {
     RoleService roleService;
     @Mock
     SalaRepository salaRepository;
+    @Mock
+    OficialiaRepository oficialiaRepository;
 
     private Persona validPersona;
     private PersonaRecord validPersonaRecord;
@@ -70,6 +80,7 @@ class PersonaServiceTest {
     private Escolaridad escolaridad;
     private EstadoCivil estadoCivil;
     private Juzgado juzgado;
+    private Oficialia oficialia;
 
     @BeforeEach
     public void setUp() {
@@ -79,6 +90,7 @@ class PersonaServiceTest {
         escolaridad = EscolaridadSetUp.createEscolaridad();
         estadoCivil = EstadoCivilSetUp.createEstadoCivil();
         juzgado = JuzgadoSetUp.createJuzgado(Estado.ACTIVE);
+        oficialia = OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede());
         validPersona.setEscolaridad(escolaridad);
         validPersona.setEstadoCivil(estadoCivil);
         validPersona.setJuzgado(juzgado);
@@ -162,6 +174,8 @@ class PersonaServiceTest {
         List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         given(usuarioService.create(validPersona)).willReturn("usuario-valido");
         roleService.addRoles(validPersona.getUsuario(), roles);
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado);
+
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
@@ -174,6 +188,18 @@ class PersonaServiceTest {
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
                 .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado)
+                .hasFieldOrPropertyWithValue("oficialia", null);
+
+        validPersona.setJuzgado(null);
+        validPersona.setOficialia(oficialia);
+
+        mockPersonaRepository.save(validPersona);
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("oficialia", oficialia)
+                .hasFieldOrPropertyWithValue("juzgado", null);
+                
     }
 
     @Test
@@ -182,11 +208,14 @@ class PersonaServiceTest {
         List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         Mockito.doNothing().when(roleService).updateRoles(validPersona.getUsuario(), roles);
         roleService.updateRoles(validPersona.getUsuario(), roles);
+        validPersona.setJuzgado(juzgado);
+
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
+        
 
         PersonaRecordResponse response = personaService.update(validPersona, rolesRecord);
 
@@ -194,6 +223,17 @@ class PersonaServiceTest {
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
                 .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+        
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado)
+                .hasFieldOrPropertyWithValue("oficialia", null);
+
+        validPersona.setJuzgado(null);
+        validPersona.setOficialia(oficialia);
+
+        mockPersonaRepository.save(validPersona);
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("oficialia", oficialia)
+                .hasFieldOrPropertyWithValue("juzgado", null);
     }
 
     @Test
@@ -240,5 +280,18 @@ class PersonaServiceTest {
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombreCompleto", name);
+    }
+
+    @Test
+    void getAll_CentrosTrabajo(){
+        given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
+        given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
+
+        List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo();
+
+        assertThat(centrosTrabajo)
+                .hasSize(2)
+                .anyMatch(centro -> centro.tipo().equals(TipoCentroTrabajo.JUZGADO))
+                .anyMatch(centro -> centro.tipo().equals(TipoCentroTrabajo.OFICIALIA_COMUN));
     }
 }
