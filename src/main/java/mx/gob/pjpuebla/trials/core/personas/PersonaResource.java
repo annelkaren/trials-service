@@ -55,7 +55,7 @@ public class PersonaResource {
         return this.personaService.findByCurp(curp);
     }
 
-    @GetMapping("/centros-trabajo")
+    @GetMapping("/centrostrabajo")
     public List<CentroTrabajoRecord> getCentroTrabajo(){
         return this.personaService.findAllCentroTrabajo();
     }

@@ -174,6 +174,8 @@ class PersonaServiceTest {
         List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         given(usuarioService.create(validPersona)).willReturn("usuario-valido");
         roleService.addRoles(validPersona.getUsuario(), roles);
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado);
+
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
@@ -186,6 +188,18 @@ class PersonaServiceTest {
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
                 .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado)
+                .hasFieldOrPropertyWithValue("oficialia", null);
+
+        validPersona.setJuzgado(null);
+        validPersona.setOficialia(oficialia);
+
+        mockPersonaRepository.save(validPersona);
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("oficialia", oficialia)
+                .hasFieldOrPropertyWithValue("juzgado", null);
+                
     }
 
     @Test
@@ -194,11 +208,14 @@ class PersonaServiceTest {
         List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         Mockito.doNothing().when(roleService).updateRoles(validPersona.getUsuario(), roles);
         roleService.updateRoles(validPersona.getUsuario(), roles);
+        validPersona.setJuzgado(juzgado);
+
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
+        
 
         PersonaRecordResponse response = personaService.update(validPersona, rolesRecord);
 
@@ -206,6 +223,17 @@ class PersonaServiceTest {
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
                 .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
+        
+        assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado)
+                .hasFieldOrPropertyWithValue("oficialia", null);
+
+        validPersona.setJuzgado(null);
+        validPersona.setOficialia(oficialia);
+
+        mockPersonaRepository.save(validPersona);
+
+        assertThat(validPersona).hasFieldOrPropertyWithValue("oficialia", oficialia)
+                .hasFieldOrPropertyWithValue("juzgado", null);
     }
 
     @Test
