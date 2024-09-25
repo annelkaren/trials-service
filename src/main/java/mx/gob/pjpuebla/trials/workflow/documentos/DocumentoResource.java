@@ -11,11 +11,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 
 import java.io.IOException;
+
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 @RequiredArgsConstructor
@@ -55,20 +58,20 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
     }
 
-//    @PostMapping("/documentos/digitalizacion/{documentoId}")
-//    public DigitalizacionRecord digitizationDocument(
-//            @RequestParam("file") MultipartFile file,
-//            @PathVariable("documentoId") Integer documentoId) {
-//        return digitalizacionService.procesarArchivo(file, documentoId);
-//    }
+    @PostMapping("/documentos/digitalizacion/{documentoId}")
+    public DigitalizacionRecord digitizationDocument(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable("documentoId") Integer documentoId) {
+        return digitalizacionService.procesarArchivo(file, documentoId);
+    }
 
-//    @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<byte[]> getFile(@PathVariable Integer documentoId) throws IOException {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-//        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
-//    }
+    @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFile(@PathVariable Integer documentoId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
+    }
 
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
