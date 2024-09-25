@@ -33,19 +33,20 @@ public class CaratulaGenerator {
     }
 
     private JasperPrint getReport(Documento documento) throws IOException, JRException  {
-        String[] expendienteYear = getNoExpendienteYear(documento.getExpediente());
-        String actor = getNombrePersoaByIdAndParte(documento.getId(), "Actor");
-        String demandado = getNombrePersoaByIdAndParte(documento.getId(), "Demandado");
-
+        String[] expendienteYear = getNoExpendienteYear(documento.getCarpeta().getExpediente());
+        //String actor = getNombrePersoaByIdAndParte(documento.getId(), "Actor");
+        //String demandado = getNombrePersoaByIdAndParte(documento.getId(), "Demandado");
+        String actor = "";
+        String demandado = "";
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("juzgado", documento.getJuzgado().getNombre());
+        parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
         parameters.put("year", expendienteYear[1]);
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
         parameters.put("codigoQR", expendienteYear[0]);
         parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
-        parameters.put("numeroExpediente", documento.getExpediente());
+        parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
 
         return JasperFillManager.fillReport(
                 caratula.getInputStream(),
@@ -57,10 +58,10 @@ public class CaratulaGenerator {
         return expediente.split("/");
     }
 
-    private String getNombrePersoaByIdAndParte(Integer id, String parte) {
-        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
-        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
-        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
-    }
+//    private String getNombrePersoaByIdAndParte(Integer id, String parte) {
+//        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
+//        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
+//        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
+//        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
+//    }
 }

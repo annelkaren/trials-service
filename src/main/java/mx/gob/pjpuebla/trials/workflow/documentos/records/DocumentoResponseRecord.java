@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos;
+package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 

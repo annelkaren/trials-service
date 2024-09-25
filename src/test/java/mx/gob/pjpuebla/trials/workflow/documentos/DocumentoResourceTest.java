@@ -9,6 +9,8 @@ import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;

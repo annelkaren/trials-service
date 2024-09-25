@@ -22,6 +22,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

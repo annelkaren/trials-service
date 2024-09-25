@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
+
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -78,8 +80,8 @@ public class DigitalizacionService {
                     "Error al guardar el archivo en el servidor", e);
         }
 
-        // Actualiza el documento con la ruta del archivo y guarda en la base de datos
-        doc.setRuta(nombreUnicoArchivo);
+        // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
+        doc.getCarpeta().setRuta(nombreUnicoArchivo);
         documentoRepository.save(doc);
 
         // Devuelve los detalles del documento en un record
@@ -103,22 +105,22 @@ public class DigitalizacionService {
                 .orElseThrow(() -> new NotFoundException("Archivo no encontrado", "documentoId"));
 
         // Extrae el expediente y año a partir del formato "expediente/año"
-        String[] expedienteArray = doc.getExpediente().split("/");
+        String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
         String expediente = expedienteArray[0].trim(); // Número del expediente
         String year = expedienteArray[1].trim(); // Año del expediente
-        String juzgado = doc.getJuzgado().getNombre().trim(); // Nombre del juzgado
+        String juzgado = doc.getCarpeta().getJuzgado().getNombre().trim(); // Nombre del juzgado
 
         // Creación de la ruta donde se espera encontrar el archivo
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
        
-        Path filePath = rootPath.resolve(doc.getRuta()); // Ruta completa del archivo
+        Path filePath = rootPath.resolve(doc.getCarpeta().getRuta()); // Ruta completa del archivo
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes
       
         if (Files.exists(filePath)) {
             return Files.readAllBytes(filePath); // Retorna el archivo como un arreglo de bytes
         } else {
-            throw new IOException("El archivo " + doc.getRuta() + " no existe en el directorio");
+            throw new IOException("El archivo " + doc.getCarpeta().getRuta() + " no existe en el directorio");
         }
     }
 

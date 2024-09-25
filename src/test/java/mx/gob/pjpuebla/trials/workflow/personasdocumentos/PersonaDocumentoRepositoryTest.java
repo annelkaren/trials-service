@@ -16,7 +16,7 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoAnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;

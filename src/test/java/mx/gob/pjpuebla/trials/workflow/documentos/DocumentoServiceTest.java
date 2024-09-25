@@ -30,7 +30,10 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -265,7 +268,7 @@ class DocumentoServiceTest {
         List<String> anexos = Arrays.asList("Anexo1", "Anexo2");
 
 
-        given(personaDocumentoRepository.findDocumentoAnexoByDocumentoId(documentoId)).willReturn(documentoAnexos);
+        given(personaDocumentoRepository.findDocumentoAnexoByCarpetaId(documentoId)).willReturn(documentoAnexos);
         given(personaDocumentoRepository.findNombresAnexosByDocumentoId(documentoId)).willReturn(anexos);
 
         DocumentoResponseRecord resultado = documentoService.getEditDocumentoAnexo(documentoId);
