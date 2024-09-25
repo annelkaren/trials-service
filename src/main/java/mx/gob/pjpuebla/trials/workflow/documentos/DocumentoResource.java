@@ -2,7 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -37,18 +39,16 @@ public class DocumentoResource {
         return this.documentoService.createDemanda(documentoSaveRecord);
     }
 
-//    @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<AnexoRecord> editarAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord ){
-//        AnexoRecord updatedAnexos = documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
-//        return ResponseEntity.ok(updatedAnexos);
-//    }
+    @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
+        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
+    }
 
-
-//    @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<DocumentoResponseRecord> getEditDocumento(@PathVariable Integer id) {
-//        DocumentoResponseRecord  editDocumento  = documentoService.getEditDocumentoAnexo(id);
-//        return  ResponseEntity.ok(editDocumento);
-//    }
+    @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DocumentoResponseRecord> getDemandaById(@PathVariable Integer id) {
+        DocumentoResponseRecord editDocumento = documentoService.getDemandaById(id);
+        return ResponseEntity.ok(editDocumento);
+    }
 
     @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
