@@ -21,14 +21,17 @@ public interface OficialiaMateriaRepository extends JpaRepository<OficialiaMater
         SELECT new mx.gob.pjpuebla.trials.core.oficialias.OficialiaMateriaRecord(
             o.id,
             o.nombre,
+            o.estado,
             m.nombre,
             m.id,
+            s.id,
             t.nombre,
             j.nombre,
             j.id
         )
         FROM OficialiaMateria om
         JOIN om.oficialia o
+        JOIN o.sede s
         JOIN om.materia m
         JOIN o.juzgado j
         JOIN o.tipoOficialia t

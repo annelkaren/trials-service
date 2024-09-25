@@ -1,8 +1,11 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,4 +25,15 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
             LEFT JOIN s.distrito dis
             WHERE s.id =:id AND s.estado IN :estados""")
     Optional<SedeRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.core.sedes.SedeDomiciliosRecord(
+            s.id,  s.nombre, d.calle,d.interior, d.exterior, d.colonia, d.codigoPostal, d.municipio,d.estadoRepublica,
+            d.referencia, d.localidad
+        )
+        FROM Sede s
+        JOIN s.domicilio d
+        """)
+    Page<SedeDomiciliosRecord> findSedesDomiciliosByJuzgadoId(Pageable pageable);
+
 }
