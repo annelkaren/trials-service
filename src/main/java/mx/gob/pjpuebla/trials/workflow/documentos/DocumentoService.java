@@ -20,6 +20,12 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+
+import java.util.List;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -34,24 +40,24 @@ public class DocumentoService {
     private final TipoPartesRepository tipoPartesRepository;
     private final CarpetaRepository carpetaRepository;
 
-//    @Transactional(readOnly = true)
-//    public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
-//        key = (key != null) ? key.toLowerCase() : "";
-//        Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
-//
-//        List<DocumentoGridRecord> list = page.getContent().stream()
-//                .map(documento ->
-//                        new DocumentoGridRecord(documento.getId(),
-//                                documento.getFolio(),
-//                                documento.getExpediente(),
-//                                documento.getJuzgado().getMateria().getNombre(),
-//                                documento.getTipoDocumento().name(),
-//                                documento.getAudit().getFechaAlta(),
-//                                documento.getSelloEstatus(),
-//                                (documento.getRuta() != null)))
-//                .toList();
-//        return new PageImpl<>(list, pageable, page.getTotalElements());
-//    }
+    @Transactional(readOnly = true)
+    public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
+
+        List<DocumentoGridRecord> list = page.getContent().stream()
+                .map(documento ->
+                        new DocumentoGridRecord(documento.getId(),
+                                documento.getCarpeta().getFolio(),
+                                documento.getCarpeta().getExpediente(),
+                                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
+                                documento.getTipoDocumento().name(),
+                                documento.getAudit().getFechaAlta(),
+                                documento.getCarpeta().getSelloEstatus(),
+                                (documento.getCarpeta().getRuta() != null)))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
 
     public DocumentoRecord updateStatus(Integer id, Integer status) {
         Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
