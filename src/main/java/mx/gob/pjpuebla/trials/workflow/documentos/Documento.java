@@ -12,11 +12,13 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import java.io.Serializable;
+import org.hibernate.annotations.Type;
 
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
 @Table(name = "TBL_DOCUMENTOS")
+
 public class Documento implements Serializable, Auditable {
 
     @Id
@@ -35,6 +37,7 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
     private TipoDocumento tipoDocumento;
 
+    @Type(type = "jsonb")
     @Column(name = "J_DATA", columnDefinition = "jsonb")
     private String data; //TODO. crear objeto para representar json
 
