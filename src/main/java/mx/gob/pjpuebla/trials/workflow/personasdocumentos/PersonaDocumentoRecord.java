@@ -1,18 +1,18 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.records;
+package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 
 import java.io.Serializable;
 
 public record PersonaDocumentoRecord (
 
-        Integer documentoId,
         String nombre,
         String apellidoPaterno,
         String apellidoMaterno,
         String pseudonimo,
         String tipoPersona,
-        String tipoParteNombre,
-        Integer tipoParteId
+        String tipoParte,
+        Integer tipoParteId,
+        Integer carpetaId
 
 ) implements Serializable {
 }

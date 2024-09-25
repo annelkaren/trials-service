@@ -5,7 +5,6 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
