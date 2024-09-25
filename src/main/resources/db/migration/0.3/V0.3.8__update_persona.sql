@@ -1,0 +1,1 @@
+ALTER TABLE trials.tbl_personas ADD COLUMN fn_oficialia INT;

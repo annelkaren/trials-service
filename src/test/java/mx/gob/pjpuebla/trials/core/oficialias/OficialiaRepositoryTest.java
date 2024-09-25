@@ -76,4 +76,13 @@ class OficialiaRepositoryTest extends AuditConfigTest {
         assertThat(entity).isPresent();
         assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
     }
+
+    @Test
+    void findOficialiasComunes(){
+        oficialia = oficialiaRepository.save(oficialia);
+
+        List<Oficialia> oficialiasComunes = oficialiaRepository.findOficialiaComun();
+
+        assertThat(oficialiasComunes).isNotEmpty().anyMatch(ofi -> ofi.getTipoOficialia().getNombre()=="Común");
+    }
 }
