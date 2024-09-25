@@ -24,10 +24,14 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +43,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -200,4 +202,102 @@ class DocumentoServiceTest {
         verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado);
         verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getTipoJuicio().getMateria());
     }
+
+    @Test
+    void edit_anexos(){
+        Integer documentoId = 1;
+
+        List<String> nuevosAnexos = Arrays.asList("Anexo1", "Anexo2");
+        String motivoEdita = "Corrección";
+
+        Documento documento = new Documento();
+        documento.setId(documentoId);
+        documento.setSelloEstatus(SelloEstatus.VALIDO);
+
+        List<Anexo> anexosActuales = Arrays.asList(new Anexo().setNombre("Anexo1"), new Anexo().setNombre("Anexo3"));
+
+
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(anexoRepository.findAllByDocumentoId(documentoId)).willReturn(anexosActuales);
+
+        AnexoRecord result = documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita);
+
+        verify(documentoRepository).save(documento);
+        verify(anexoRepository).delete(anexosActuales.get(1));
+        verify(anexoRepository, times(1)).save(any(Anexo.class));
+
+        assertThat(result).isNotNull();
+        assertThat(result.anexos()).containsExactly("Anexo1", "Anexo2");
+
+        assertThat(documento.getMotivoEdita()).isEqualTo(motivoEdita);
+        assertThat(documento.getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
+    }
+
+
+    @Test
+    void editarAnexos_documentoNoEncontrado() {
+        Integer documentoId = 1;
+        List<String> nuevosAnexos = Arrays.asList("Anexo1", "Anexo2");
+        String motivoEdita = "Corrección";
+
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita));
+
+        assertThat(exception.getMessage()).contains("Documento no encontrado");
+    }
+
+
+    @Test
+    void getEditDocumentoAnexo_success() {
+
+        Integer documentoId = 1;
+        List<DocumentoAnexoRecord> documentoAnexos = new ArrayList<>();
+        DocumentoAnexoRecord actor =  new DocumentoAnexoRecord(1, "Carlos", "Pérez", "García", "CP", "Actor", "Actor", 1);
+        DocumentoAnexoRecord demandado =   new DocumentoAnexoRecord(2, "María", "López", "Martínez", "ML", "Demandado", "Demandado", 2);
+
+        documentoAnexos.add(actor);
+
+        documentoAnexos.add(demandado);
+
+
+        List<String> anexos = Arrays.asList("Anexo1", "Anexo2");
+
+
+        given(personaDocumentoRepository.findDocumentoAnexoByDocumentoId(documentoId)).willReturn(documentoAnexos);
+        given(personaDocumentoRepository.findNombresAnexosByDocumentoId(documentoId)).willReturn(anexos);
+
+        DocumentoResponseRecord resultado = documentoService.getEditDocumentoAnexo(documentoId);
+
+        PersonaDocumentoDTO actorResult = resultado.actor();
+        PersonaDocumentoDTO demandadoResult = resultado.demandado();
+        List<String> anexosResultado = resultado.anexos();
+
+        assertThat(actorResult).isNotNull();
+        assertThat(actorResult.getNombre()).isEqualTo("Carlos");
+        assertThat(actorResult.getApellidoPaterno()).isEqualTo("Pérez");
+        assertThat(actorResult.getApellidoMaterno()).isEqualTo("García");
+        assertThat(actorResult.getPseudonimo()).isEqualTo("CP");
+        assertThat(actorResult.getTipoPersona()).isEqualTo("Actor");
+        assertThat(actorResult.getTipoParte()).isEqualTo(1);
+
+        assertThat(demandadoResult).isNotNull();
+        assertThat(demandadoResult.getNombre()).isEqualTo("María");
+        assertThat(demandadoResult.getApellidoPaterno()).isEqualTo("López");
+        assertThat(demandadoResult.getApellidoMaterno()).isEqualTo("Martínez");
+        assertThat(demandadoResult.getPseudonimo()).isEqualTo("ML");
+        assertThat(demandadoResult.getTipoPersona()).isEqualTo("Demandado");
+        assertThat(demandadoResult.getTipoParte()).isEqualTo(2);
+
+        assertThat(anexosResultado).isNotNull().containsExactly("Anexo1", "Anexo2");
+
+        assertThat(resultado).isNotNull();
+    }
+
+
+
+
+
+
 }
