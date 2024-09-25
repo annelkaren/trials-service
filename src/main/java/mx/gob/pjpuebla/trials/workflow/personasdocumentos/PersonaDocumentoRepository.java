@@ -36,24 +36,24 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             @Param("rol") List<Rol> rol);
 
     public List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
-
-    @Query("""
-    SELECT new mx.gob.pjpuebla.trials.workflow.documentos.DocumentoAnexoRecord(
-        pd.id,
-        pd.nombre,
-        pd.apellidoPaterno,
-        pd.apellidoMaterno,
-        pd.pseudonimo,
-        pd.tipoPersona,
-        tp.nombre,
-        tp.id
-    )
-    FROM PersonaDocumento pd
-    JOIN pd.carpeta c
-    JOIN pd.tipoPartes tp
-    WHERE c.id = :carpetaId
-   """)
-    List<DocumentoAnexoRecord> findDocumentoAnexoByCarpetaId(@Param("carpetaId") Integer carpetaId);
+//
+//    @Query("""
+//    SELECT new mx.gob.pjpuebla.trials.workflow.documentos.DocumentoAnexoRecord(
+//        pd.id,
+//        pd.nombre,
+//        pd.apellidoPaterno,
+//        pd.apellidoMaterno,
+//        pd.pseudonimo,
+//        pd.tipoPersona,
+//        tp.nombre,
+//        tp.id
+//    )
+//    FROM PersonaDocumento pd
+//    JOIN pd.carpeta c
+//    JOIN pd.tipoPartes tp
+//    WHERE c.id = :carpetaId
+//   """)
+//    List<DocumentoAnexoRecord> findDocumentoAnexoByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     @Query("""
     SELECT a.nombre
