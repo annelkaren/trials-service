@@ -54,38 +54,44 @@ public class DigitalizacionService {
      *                     archivos.
      */
     public DigitalizacionRecord procesarArchivo(MultipartFile file, Integer documentoId) {
-        Documento doc = validarDocumento(file, documentoId);
-
-        // Crea la ruta donde se almacenará el archivo
-        String rutaArchivo = digitalizacionFolderService.createFolderDigitalizacion(doc);
-
-        String nombreUnicoArchivo = generarNombreArchivo(doc.getTipoDocumento());
-        Path path = Paths.get(rutaArchivo);
-
-        // Crear directorios si no existen y guardar el archivo
-        
-        try {
-            Files.createDirectories(path);
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
-
-        // Guardar el archivo y manejar posibles excepciones
-        try {
-            Files.write(path.resolve(nombreUnicoArchivo), file.getBytes());
-        } catch (IOException e) {
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al guardar el archivo en el servidor", e);
-        }
-
-        // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
-        doc.getCarpeta().setRuta(nombreUnicoArchivo);
-        documentoRepository.save(doc);
-
-        // Devuelve los detalles del documento en un record
-        return new DigitalizacionRecord(doc.getId(), path.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+        /*
+         * Documento doc = validarDocumento(file, documentoId);
+         * 
+         * // Crea la ruta donde se almacenará el archivo
+         * String rutaArchivo =
+         * digitalizacionFolderService.createFolderDigitalizacion(doc);
+         * 
+         * String nombreUnicoArchivo = generarNombreArchivo(doc.getTipoDocumento());
+         * Path path = Paths.get(rutaArchivo);
+         * 
+         * // Crear directorios si no existen y guardar el archivo
+         * 
+         * try {
+         * Files.createDirectories(path);
+         * } catch (IOException e) {
+         * 
+         * e.printStackTrace();
+         * }
+         * 
+         * // Guardar el archivo y manejar posibles excepciones
+         * try {
+         * Files.write(path.resolve(nombreUnicoArchivo), file.getBytes());
+         * } catch (IOException e) {
+         * 
+         * throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+         * "Error al guardar el archivo en el servidor", e);
+         * }
+         * 
+         * // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
+         * doc.getCarpeta().setRuta(nombreUnicoArchivo);
+         * documentoRepository.save(doc);
+         * 
+         * // Devuelve los detalles del documento en un record
+         * return new DigitalizacionRecord(doc.getId(),
+         * path.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+         * 
+         */
+        return null;
     }
 
     /**
@@ -112,11 +118,11 @@ public class DigitalizacionService {
 
         // Creación de la ruta donde se espera encontrar el archivo
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
-       
+
         Path filePath = rootPath.resolve(doc.getCarpeta().getRuta()); // Ruta completa del archivo
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes
-      
+
         if (Files.exists(filePath)) {
             return Files.readAllBytes(filePath); // Retorna el archivo como un arreglo de bytes
         } else {
