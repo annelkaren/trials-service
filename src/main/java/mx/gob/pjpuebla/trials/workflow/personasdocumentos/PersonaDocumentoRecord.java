@@ -1,17 +1,18 @@
-package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
+package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.io.Serializable;
 
-@Data
-@AllArgsConstructor
-public class PersonaDocumentoRecord {
-    private String nombre;
-    private String apellidoPaterno;
-    private String apellidoMaterno;
-    private String tipoParteNombre;
-    private Integer tipoParteId;
-    private Integer carpetaId;
+public record PersonaDocumentoRecord (
 
+        Integer documentoId,
+        String nombre,
+        String apellidoPaterno,
+        String apellidoMaterno,
+        String pseudonimo,
+        String tipoPersona,
+        String tipoParteNombre,
+        Integer tipoParteId
+
+) implements Serializable {
 }
