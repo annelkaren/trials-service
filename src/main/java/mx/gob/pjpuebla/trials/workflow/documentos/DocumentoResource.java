@@ -5,8 +5,13 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
+import net.sf.jasperreports.engine.JRException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
@@ -37,13 +42,13 @@ public class DocumentoResource {
 //        return  ResponseEntity.ok(editDocumento);
 //    }
 
-//    @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        headers.setContentDispositionFormData("sello", id + "_sello.pdf");
-//        return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
-//    }
+    @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer id) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", id + "_sello.pdf");
+        return ResponseEntity.ok().headers(headers).body(selloGenerator.exportToPdf(id));
+    }
 
 //    @PostMapping("/documentos/digitalizacion/{documentoId}")
 //    public DigitalizacionRecord digitizationDocument(
