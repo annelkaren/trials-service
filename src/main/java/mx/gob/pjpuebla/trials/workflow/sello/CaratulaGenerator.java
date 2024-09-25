@@ -41,6 +41,7 @@ public class CaratulaGenerator {
         parameters.put("juzgado", documento.getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
         parameters.put("year", expendienteYear[1]);
+        parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
         parameters.put("codigoQR", expendienteYear[0]);
@@ -62,5 +63,10 @@ public class CaratulaGenerator {
         PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
         String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
         return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
+    }
+
+    private String tipoDocumentoFolio(Documento documento){
+        int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
+        return tipoDocumentoOrdinal + "-" + documento.getFolio();
     }
 }
