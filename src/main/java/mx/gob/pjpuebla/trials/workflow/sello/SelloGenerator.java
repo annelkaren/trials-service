@@ -54,6 +54,7 @@ public class SelloGenerator {
         parameters.put("expediente", documento.getExpediente());
         parameters.put("fechaHoraRecepcion", date);
         parameters.put("folio", documento.getFolio());
+        parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
         parameters.put("nombreEntidad", "PENDIENTE");
@@ -117,6 +118,11 @@ public class SelloGenerator {
                 .map(nombre -> "- " + nombre + " <br/>")
                 .toList();
         return String.join("", list);
+    }
+
+    private String tipoDocumentoFolio(Documento documento){
+        int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
+        return tipoDocumentoOrdinal + "-" + documento.getFolio();
     }
 
 }
