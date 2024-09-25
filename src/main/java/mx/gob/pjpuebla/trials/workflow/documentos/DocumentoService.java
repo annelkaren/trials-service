@@ -9,7 +9,9 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
@@ -20,6 +22,8 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 @RequiredArgsConstructor
@@ -137,24 +141,21 @@ public class DocumentoService {
 //        return new AnexoRecord(nuevosAnexos, motivoEdita);
 //    }
 
-//    public  DocumentoResponseRecord getEditDocumentoAnexo(Integer id) {
+//    public DocumentoResponseRecord getDemandaById(Integer id) {
 //
 //        List<DocumentoAnexoRecord> documentoAnexos = personaDocumentoRepository.findDocumentoAnexoByDocumentoId(id);
 //        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(id);
 //
-//        PersonaDocumentoDTO actorDTO = new PersonaDocumentoDTO();
-//        PersonaDocumentoDTO demandadoDTO = new PersonaDocumentoDTO();
+//         PersonaDocumentoItemRecord actor;
+//        PersonaDocumentoItemRecord demandado;
 //
 //        documentoAnexos.forEach(anexo -> {
 //
-//            if ("Actor".equals(anexo.tipoParteNombre())) {
-//                actorDTO.setNombre(anexo.nombre());
-//                actorDTO.setApellidoPaterno(anexo.apellidoPaterno());
-//                actorDTO.setApellidoMaterno(anexo.apellidoMaterno());
-//                actorDTO.setPseudonimo(anexo.pseudonimo());
-//                actorDTO.setTipoPersona(anexo.tipoPersona());
-//                actorDTO.setTipoParte(anexo.tipoParteId());
-//            } else if ("Demandado".equals(anexo.tipoParteNombre())) {
+//            if ("Actor".equalsIgnoreCase(anexo.tipoParteNombre())) {
+//                actor = new PersonaDocumentoItemRecord(
+//                anexo.nombre(), anexo.apellidoPaterno(), anexo.apellidoMaterno(),
+//                anexo.pseudonimo(), anexo.tipoPersona(), anexo.tipoParteId());
+//            } else if ("Demandado".equalsIgnoreCase(anexo.tipoParteNombre())) {
 //                demandadoDTO.setNombre(anexo.nombre());
 //                demandadoDTO.setApellidoPaterno(anexo.apellidoPaterno());
 //                demandadoDTO.setApellidoMaterno(anexo.apellidoMaterno());

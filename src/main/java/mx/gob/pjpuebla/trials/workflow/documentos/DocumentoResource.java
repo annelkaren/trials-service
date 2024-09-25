@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -38,8 +39,8 @@ public class DocumentoResource {
 
 
 //    @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<DocumentoResponseRecord> getEditDocumento(@PathVariable Integer id) {
-//        DocumentoResponseRecord  editDocumento  = documentoService.getEditDocumentoAnexo(id);
+//    public ResponseEntity<DocumentoResponseRecord> getDemandaById(@PathVariable Integer id) {
+//        DocumentoResponseRecord  editDocumento  = documentoService.getDemandaById(id);
 //        return  ResponseEntity.ok(editDocumento);
 //    }
 
