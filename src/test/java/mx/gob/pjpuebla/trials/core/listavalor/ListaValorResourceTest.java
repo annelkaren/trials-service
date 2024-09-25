@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ListaValorResource.class)
 @MockBean(SecurityFilterChain.class)
-public class ListaValorResourceTest {
+class ListaValorResourceTest {
 
     @Autowired
     public MockMvc mockMvc;
@@ -26,7 +26,7 @@ public class ListaValorResourceTest {
     ListaValorService listaValorService;
 
     @Test
-    public void getById() throws Exception {
+    void getById() throws Exception {
         Response response = new Response((ListaValor) createListaValor());
         given(listaValorService.findById(anyInt())).willReturn(response);
 

@@ -1,25 +1,5 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Arrays;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
@@ -41,10 +21,32 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-public class SalaServiceTest {
+class SalaServiceTest {
 
     @Mock
     SalaRepository mockSalaRepository;
@@ -67,7 +69,6 @@ public class SalaServiceTest {
     SalaService salaService;
 
     private Sala sala;
-    private SalaRecord salaRecord;
     private SalaRecordResponse salaRecordResponse;
     private Persona juez;
     private Bloque bloque;
@@ -96,9 +97,7 @@ public class SalaServiceTest {
         salaLocal.setJuez(juez);
 
         sala = salaLocal;
-        salaRecord = SalaSetUp.salaRecord();
         salaRecordResponse = SalaSetUp.salaRecordResponse();
-
     }
 
     @Test
@@ -140,7 +139,7 @@ public class SalaServiceTest {
                 });
 
         assertThat(assertThrows.getMessage()).contains("Sala no encontrada");
-    };
+    }
 
     @Test
     void create() {
@@ -166,13 +165,13 @@ public class SalaServiceTest {
     void update_return_optimistic_exception() {
         given(mockSalaRepository.save(sala)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-        OptimisticLockingFailureException assertThrows = assertThrows(
-                OptimisticLockingFailureException.class,
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
                 () -> {
                     salaService.update(sala);
                 });
 
-        assertThat(assertThrows.getMessage()).contains("Sala modificada por otro usuario");
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 
 }

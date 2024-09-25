@@ -1,11 +1,9 @@
 package mx.gob.pjpuebla.trials.error;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -49,11 +47,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         );
     }
 
-    @ExceptionHandler(OptimisticLockingFailureException.class)
-    protected ResponseEntity<Object> handleNotFoundException(OptimisticLockingFailureException ex, WebRequest request) {
+    @ExceptionHandler(InvalidVersionException.class)
+    protected ResponseEntity<Object> handleInvalidVersionException(InvalidVersionException ex, WebRequest request) {
         return handleExceptionInternal(ex,
                 Collections.singleton(
-                        new ErrorRecord(ex.getField(), ex.getReason())
+                        new ErrorRecord("version", ex.getEntity())
                 ),
                 new HttpHeaders(),
                 HttpStatus.BAD_REQUEST,
@@ -73,29 +71,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         );
     }
 
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        if (ex.getCause() instanceof InvalidFormatException) {
-            InvalidFormatException cause = (InvalidFormatException) ex.getCause();
-            return handleExceptionInternal(ex,
-                    Collections.singleton(
-                            new ErrorRecord(cause.getPath().get(0).getFieldName(), cause.getOriginalMessage())
-                    ),
-                    new HttpHeaders(),
-                    HttpStatus.BAD_REQUEST,
-                    request
-            );
-        }
-        return handleExceptionInternal(ex,
-                Collections.singleton(
-                        new ErrorRecord(null, ex.getMessage())
-                ),
-                new HttpHeaders(),
-                HttpStatus.BAD_REQUEST,
-                request
-        );
-    }
-
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         return handleExceptionInternal(ex,
                 buildBindingResultErrorsList(ex.getBindingResult()),
                 new HttpHeaders(),
@@ -104,16 +81,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         );
     }
 
-    protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return handleExceptionInternal(ex,
-                buildBindingResultErrorsList(ex.getBindingResult()),
-                new HttpHeaders(),
-                HttpStatus.BAD_REQUEST,
-                request
-        );
-    }
-
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         return handleExceptionInternal(ex,
                 Collections.singleton(
                         new ErrorRecord(ex.getParameterName(), ex.getMessage())
@@ -139,9 +108,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         for (ObjectError objectError : globalErrors) {
             errors.add(
                     new ErrorRecord(objectError.getObjectName(), objectError.getDefaultMessage())
-//                            .setMessage(objectError.getCode())
-//                            .setCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-//                            .setField(objectError.getObjectName())
             );
         }
         return errors;
@@ -152,9 +118,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         for (FieldError fieldError : fieldErrors) {
             errors.add(
                     new ErrorRecord(fieldError.getField(), fieldError.getDefaultMessage())
-//                            .setMessage(fieldError.getCode())
-//                            .setCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-//                            .setField(fieldError.getField())
             );
         }
         return errors;

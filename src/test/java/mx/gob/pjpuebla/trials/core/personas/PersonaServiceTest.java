@@ -19,7 +19,7 @@ import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +104,7 @@ class PersonaServiceTest {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockPersonaRepository.findByIdAndEstadoIn(validPersona.getId(), estados))
                 .willReturn(Optional.ofNullable(validPersonaRecord));
-        given(roleService.getRolesByUserId(validPersonaRecord.usuario())).willReturn(Arrays.asList(roleRecord));
+        given(roleService.getRolesByUserId(validPersonaRecord.usuario())).willReturn(List.of(roleRecord));
 
         PersonaRecord mr = personaService.findById(validPersonaRecord.id());
         assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
@@ -122,9 +122,7 @@ class PersonaServiceTest {
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    personaService.findById(personaId);
-                }
+                () -> personaService.findById(personaId)
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
@@ -135,7 +133,7 @@ class PersonaServiceTest {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
         given(mockPersonaRepository.findByCurp(validPersona.getCurp()))
                 .willReturn(Optional.ofNullable(validPersonaRecord));
-        given(roleService.getRolesByUserId(validPersonaRecord.usuario())).willReturn(Arrays.asList(roleRecord));
+        given(roleService.getRolesByUserId(validPersonaRecord.usuario())).willReturn(List.of(roleRecord));
 
         PersonaRecord mr = personaService.findByCurp(validPersona.getCurp());
         assertThat(mr).isOfAnyClassIn(PersonaRecord.class)
@@ -152,9 +150,7 @@ class PersonaServiceTest {
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    personaService.findByCurp(curp);
-                }
+                () -> personaService.findByCurp(curp)
         );
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
@@ -162,8 +158,8 @@ class PersonaServiceTest {
 
     @Test
     void create() {
-        List<String> roles = Arrays.asList("JUEZ");
-        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        List<String> roles = List.of("JUEZ");
+        List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         given(usuarioService.create(validPersona)).willReturn("usuario-valido");
         roleService.addRoles(validPersona.getUsuario(), roles);
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
@@ -182,8 +178,8 @@ class PersonaServiceTest {
 
     @Test
     void update() {
-        List<String> roles = Arrays.asList("JUEZ");
-        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        List<String> roles = List.of("JUEZ");
+        List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         Mockito.doNothing().when(roleService).updateRoles(validPersona.getUsuario(), roles);
         roleService.updateRoles(validPersona.getUsuario(), roles);
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
@@ -202,8 +198,8 @@ class PersonaServiceTest {
 
     @Test
     void update_return_optimistic_exception() {
-        List<String> roles = Arrays.asList("JUEZ");
-        List<RoleRecord> rolesRecord = Arrays.asList(new RoleRecord("JUEZ", "JUEZ"));
+        List<String> roles = List.of("JUEZ");
+        List<RoleRecord> rolesRecord = List.of(new RoleRecord("JUEZ", "JUEZ"));
         roleService.updateRoles(validPersona.getUsuario(), roles);
         given(escolaridadRepository.findById(escolaridad.getId())).willReturn(Optional.ofNullable(escolaridad));
         given(estadoCivilRepository.findById(estadoCivil.getId())).willReturn(Optional.ofNullable(estadoCivil));
@@ -212,22 +208,20 @@ class PersonaServiceTest {
         given(mockPersonaRepository.save(validPersona))
                 .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-        OptimisticLockingFailureException assertThrows = assertThrows(
-                OptimisticLockingFailureException.class,
-                () -> {
-                    personaService.update(validPersona, rolesRecord);
-                }
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
+                () -> personaService.update(validPersona, rolesRecord)
         );
 
-        assertThat(assertThrows.getMessage()).contains("Persona modificada por otro usuario");
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 
     @Test
     void getAll_jueces_return_empty_list() {
         Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
-        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(Arrays.asList("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
         given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
-        given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(Arrays.asList(sala));
+        given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(List.of(sala));
 
         List<JuezRecord> jueces = personaService.findAllJueces(juzgado.getId());
         assertThat(jueces).isEmpty();
@@ -235,7 +229,7 @@ class PersonaServiceTest {
 
     @Test
     void getAll_jueces_return_list() {
-        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(Arrays.asList("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
         given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
         given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(new ArrayList<>());
 

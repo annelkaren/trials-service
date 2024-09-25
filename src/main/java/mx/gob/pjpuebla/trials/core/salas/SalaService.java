@@ -4,7 +4,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
@@ -13,7 +13,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import java.util.Arrays;
 import java.util.List;
-
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -21,9 +20,9 @@ import java.util.List;
 public class SalaService {
 
     private final SalaRepository salaRepository;
-    private final JuzgadoRepository JuzgadoRepository;
-    private final BloqueRepository BloqueRepository;
-    private final PersonaRepository JuezRepository;
+    private final JuzgadoRepository juzgadoRepository;
+    private final BloqueRepository bloqueRepository;
+    private final PersonaRepository juezRepository;
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
@@ -59,9 +58,9 @@ public class SalaService {
 
     public Integer create(Sala sala) {
 
-        sala.setJuez(JuezRepository.findById(sala.getJuez().getId()).orElse(null));
-        sala.setBloque(BloqueRepository.findById(sala.getBloque().getId()).orElse(null));
-        sala.setJuzgado(JuzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
+        sala.setJuez(juezRepository.findById(sala.getJuez().getId()).orElse(null));
+        sala.setBloque(bloqueRepository.findById(sala.getBloque().getId()).orElse(null));
+        sala.setJuzgado(juzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
         sala.setNombre(getNameOfSala(sala));
 
         sala = salaRepository.save(sala);
@@ -71,15 +70,15 @@ public class SalaService {
     public Integer update(Sala sala) {
         try {
 
-            sala.setJuez(JuezRepository.findById(sala.getJuez().getId()).orElse(null));
-            sala.setBloque(BloqueRepository.findById(sala.getBloque().getId()).orElse(null));
-            sala.setJuzgado(JuzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
+            sala.setJuez(juezRepository.findById(sala.getJuez().getId()).orElse(null));
+            sala.setBloque(bloqueRepository.findById(sala.getBloque().getId()).orElse(null));
+            sala.setJuzgado(juzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
 
             sala = salaRepository.save(sala);
             return sala.getId();
 
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
-            throw new OptimisticLockingFailureException("Sala modificada por otro usuario", "salaId");
+            throw new InvalidVersionException(Sala.class.getSimpleName());
         }
     }
 

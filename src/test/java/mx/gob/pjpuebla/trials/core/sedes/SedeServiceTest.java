@@ -8,7 +8,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,9 +95,7 @@ class SedeServiceTest {
 
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    sedeService.findById(id);
-                }
+                () -> sedeService.findById(id)
         );
 
         assertThat(assertThrows.getMessage()).contains("Sede no encontrada");
@@ -126,6 +124,7 @@ class SedeServiceTest {
     void update() {
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
+        
         given(mockDistritoRepository.findById(distrito.getId()))
                 .willReturn(Optional.ofNullable(distrito));
         given(domicilioService.save(domicilio))
@@ -152,13 +151,11 @@ class SedeServiceTest {
                 .willReturn(domicilio);
         given(mockSedeRepository.save(sede)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-        OptimisticLockingFailureException assertThrows = assertThrows(
-                OptimisticLockingFailureException.class,
-                () -> {
-                    sedeService.update(sede);
-                }
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
+                () -> sedeService.update(sede)
         );
 
-        assertThat(assertThrows.getMessage()).contains("Sede modificada por otro usuario");
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 }

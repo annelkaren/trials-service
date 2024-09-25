@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
@@ -60,7 +61,7 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 post("/api/workflow/demanda")
-                        .content(asJsonString(documentoRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -77,7 +78,7 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 get("/api/workflow/bandeja/entrada")
-                        .content(asJsonString(documentoGridRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoGridRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -93,7 +94,7 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 patch("/api/workflow/bandeja/1/status/1")
-                        .content(asJsonString(documentoRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());

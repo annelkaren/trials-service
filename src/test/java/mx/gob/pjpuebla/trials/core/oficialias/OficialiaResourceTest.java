@@ -1,15 +1,10 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.oficialias.*;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -17,8 +12,8 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.error.OptimisticLockingFailureException;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +29,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
@@ -121,7 +115,7 @@ class OficialiaResourceTest {
 
         mockMvc.perform(
                 post("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -134,7 +128,7 @@ class OficialiaResourceTest {
 
         mockMvc.perform(
                 put("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -143,11 +137,11 @@ class OficialiaResourceTest {
     @Test
     void update_error() throws Exception {
         given(mockOficialiaService.update(oficialia))
-                .willThrow(OptimisticLockingFailureException.class);
+                .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
                 put("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -159,15 +153,5 @@ class OficialiaResourceTest {
                 delete("/api/core/oficialias/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

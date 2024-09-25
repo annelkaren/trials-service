@@ -16,7 +16,7 @@ import org.springframework.data.domain.PageRequest;
     "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class BloqueRepositoryTest extends AuditConfigTest  {
+class BloqueRepositoryTest extends AuditConfigTest  {
 
     @Autowired
     private BloqueRepository bloqueRepository;
