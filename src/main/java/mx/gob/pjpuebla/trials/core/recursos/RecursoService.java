@@ -59,7 +59,7 @@ public class RecursoService {
                         }
                     }
                     return false;
-                }).flatMap(r -> modifyUrl(r.getDisplayName(),  r.getAttributes() ,r.getUris()).stream())
+                }).flatMap(r -> modifyUrl(r.getDisplayName(), r.getAttributes(), r.getUris()).stream())
                 .collect(Collectors.toSet());
 
         return Menu.parseToMenu(uris);
@@ -69,7 +69,7 @@ public class RecursoService {
     private Set<String> modifyUrl(String displayName, Map<String, List<String>> attributes, Set<String> uris) {
         Set<String> newHashSet = new HashSet<>();
         for (String uri : uris) {
-            newHashSet.add(uri + "--" + displayName );
+            newHashSet.add(uri + "--" + displayName);
         }
         return newHashSet;
     }
