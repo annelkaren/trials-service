@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordResponse;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
@@ -161,10 +161,10 @@ public class PersonaService {
     public List<CentroTrabajoRecord> findAllCentroTrabajo(){
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
-        List<JuzgadoRecordResponse> juzgados = juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE));
+        List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE));
         List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
 
-        for (JuzgadoRecordResponse juzgado: juzgados){
+        for (JuzgadoRecordItem juzgado: juzgados){
             centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
         }
 
