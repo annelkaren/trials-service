@@ -7,5 +7,6 @@ public enum TipoDocumento {
     PROMOCION,
     EXHORTO_ENTRADA,
     DEMANDA,
-
+    EXHORTO_SALIDA,
+    APELACION
 }
