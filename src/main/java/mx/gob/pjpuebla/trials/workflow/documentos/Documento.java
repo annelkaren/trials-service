@@ -55,6 +55,10 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_IMPRESION_SELLO", nullable = false)
     private SelloEstatus selloEstatus;
 
+    @Size(max = 250)
+    @Column(name = "S_MOTIVO_EDITA")
+    private String motivoEdita;
+
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
