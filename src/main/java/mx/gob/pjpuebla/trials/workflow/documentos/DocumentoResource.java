@@ -67,13 +67,13 @@ public class DocumentoResource {
 //    }
 
 
-//    @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        headers.setContentDispositionFormData("caratula", id + "_caratula.pdf");
-//        return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
-//    }
+    @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("caratula", id + "_caratula.pdf");
+        return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
+    }
 
 //    @GetMapping("/bandeja/entrada")
 //    public Page<DocumentoGridRecord> getAll(

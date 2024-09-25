@@ -12,6 +12,6 @@ public class PersonaDocumentoRecord {
     private String apellidoMaterno;
     private String tipoParteNombre;
     private Integer tipoParteId;
-    private Integer documentoId;
+    private Integer carpetaId;
 
 }
