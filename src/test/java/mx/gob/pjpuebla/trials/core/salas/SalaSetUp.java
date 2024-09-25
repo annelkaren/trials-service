@@ -48,7 +48,7 @@ public class SalaSetUp {
                 0,
                 new JuezRecord(idPersona, "Angel Lopez Perez"),
                 new JuzgadoRecordItem(1, "juzgado 1", Estado.ACTIVE, "Civil"),
-                new BloqueRecord(1, LocalTime.now(), LocalTime.now(), Estado.ACTIVE));
+                new BloqueRecord(1, LocalTime.now(), LocalTime.now()));
     }
 
     public static SalaRecord salaRecord() {
@@ -57,7 +57,7 @@ public class SalaSetUp {
                 "1",
                 "Juez Juan Perez",
                 "Juzgado Primero",
-                new BloqueRecord(1, LocalTime.now(), LocalTime.now(), Estado.ACTIVE),
+                new BloqueRecord(1, LocalTime.now(), LocalTime.now()),
                 Estado.ACTIVE);
     }
 }

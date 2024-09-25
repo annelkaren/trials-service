@@ -50,7 +50,7 @@ class BloqueResourceTest {
     @Test
     void getAll_success() throws Exception {
         given(mockBloqueService.getAll(any(Bloque.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(bloqueRecord)));
+                .willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse)));
 
         mockMvc.perform(
                 get("/api/core/bloques")
@@ -62,7 +62,7 @@ class BloqueResourceTest {
     @Test
     void getById_success() throws Exception {
         given(mockBloqueService.findById(anyInt()))
-                .willReturn(bloqueRecord);
+                .willReturn(bloqueRecordResponse);
 
         mockMvc.perform(
                 get("/api/core/bloques/1")

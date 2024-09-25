@@ -21,17 +21,17 @@ public class BloqueService {
     private final BloqueRepository bloqueRepository;
 
     @Transactional(readOnly = true)
-    public Page<BloqueRecord> getAll(Bloque example, Pageable pageable) {
+    public Page<BloqueRecordResponse> getAll(Bloque example, Pageable pageable) {
 
         if (example.getHoraInicial() != null) {
 
             return bloqueRepository.findByHoraInicial(example.getHoraInicial(), pageable)
-                    .map(bloque -> new BloqueRecord(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()));
+                    .map(bloque -> new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()));
         } else {
 
             Page<Bloque> page = bloqueRepository.findAll(pageable);
-            List<BloqueRecord> list = page.getContent().stream()
-                    .map(bloque -> new BloqueRecord(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()))
+            List<BloqueRecordResponse> list = page.getContent().stream()
+                    .map(bloque -> new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()))
                     .toList();
 
             return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -39,7 +39,7 @@ public class BloqueService {
     }
 
     @Transactional(readOnly = true)
-    public BloqueRecord findById(Integer id) {
+    public BloqueRecordResponse findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         return bloqueRepository.findByIdAndEstadoIn(id, estados)
                 .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "bloqueId"));

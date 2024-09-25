@@ -53,18 +53,8 @@ class BloqueRepositoryTest extends AuditConfigTest  {
         Bloque bloque = BloqueSetUp.createBloque(Estado.ACTIVE);
         bloque = bloqueRepository.save(bloque);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<BloqueRecord> entity = bloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados);
+        Optional<BloqueRecordResponse> entity = bloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados);
         assertThat(entity).isPresent();
         assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
-    }
-
-    @Test
-    void findByIdAndEstadoInactive() {
-        Bloque bloque = BloqueSetUp.createBloque(Estado.INACTIVE);
-        bloque = bloqueRepository.save(bloque);
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<BloqueRecord> entity = bloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados);
-        assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
     }
 }

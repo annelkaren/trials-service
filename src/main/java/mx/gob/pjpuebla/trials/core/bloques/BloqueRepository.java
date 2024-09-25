@@ -19,9 +19,9 @@ public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
 
     @Query("""
             SELECT 
-            new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(b.id, b.horaInicial, b.horaFinal, b.estado)
+            new mx.gob.pjpuebla.trials.core.bloques.BloqueRecordResponse(b.id, b.horaInicial, b.horaFinal, b.estado)
             FROM Bloque b
             WHERE b.id = :id AND b.estado IN :estados""")
-    Optional<BloqueRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+    Optional<BloqueRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
 }

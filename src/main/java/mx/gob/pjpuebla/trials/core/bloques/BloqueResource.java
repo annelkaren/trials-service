@@ -21,7 +21,7 @@ public class BloqueResource {
     private final BloqueService bloqueService;
 
     @GetMapping
-    public Page<BloqueRecord> getAll(
+    public Page<BloqueRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "horaInicial", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaInicial) {
 
@@ -29,7 +29,7 @@ public class BloqueResource {
     }
 
     @GetMapping("/{id}")
-    public BloqueRecord getById(@PathVariable Integer id) {
+    public BloqueRecordResponse getById(@PathVariable Integer id) {
         return this.bloqueService.findById(id);
     }
 

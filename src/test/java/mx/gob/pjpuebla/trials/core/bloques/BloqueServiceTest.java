@@ -35,11 +35,13 @@ class BloqueServiceTest {
 
     private Bloque bloque;
     private BloqueRecord bloqueRecord;
+    private BloqueRecordResponse bloqueRecordResponse;
 
     @BeforeEach
     public void setUp() {
         bloque = BloqueSetUp.createBloque();
         bloqueRecord = BloqueSetUp.createBloqueRecord();
+        bloqueRecordResponse = BloqueSetUp.createBloqueRecordResponse();
         bloque.setHoraInicial(LocalTime.of(8, 30));
         bloque.setHoraFinal(LocalTime.of(9, 30));
     }
@@ -51,7 +53,7 @@ class BloqueServiceTest {
         given(mockBloqueRepository.findByHoraInicial(any(LocalTime.class), any(PageRequest.class)))
             .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
-        Page<BloqueRecord> page = bloqueService.getAll(bloque, PageRequest.of(0, listPage.size()));
+        Page<BloqueRecordResponse> page = bloqueService.getAll(bloque, PageRequest.of(0, listPage.size()));
 
         assertThat(page.getContent())
             .hasSize(1)
@@ -68,7 +70,7 @@ class BloqueServiceTest {
         given(mockBloqueRepository.findAll(any(PageRequest.class)))
             .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
-        Page<BloqueRecord> page = bloqueService.getAll(new Bloque(), PageRequest.of(0, listPage.size()));
+        Page<BloqueRecordResponse> page = bloqueService.getAll(new Bloque(), PageRequest.of(0, listPage.size()));
 
         assertThat(page.getContent())
             .hasSize(1)
@@ -82,10 +84,10 @@ class BloqueServiceTest {
     void getById_return_bloqueRecord() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockBloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados))
-                .willReturn(Optional.ofNullable(bloqueRecord));
+                .willReturn(Optional.ofNullable(bloqueRecordResponse));
 
-        BloqueRecord result = bloqueService.findById(bloque.getId());
-        assertThat(result).isOfAnyClassIn(BloqueRecord.class)
+        BloqueRecordResponse result = bloqueService.findById(bloque.getId());
+        assertThat(result).isOfAnyClassIn(BloqueRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", bloque.getId())
                 .hasFieldOrPropertyWithValue("horaInicial", bloque.getHoraInicial())
                 .hasFieldOrPropertyWithValue("horaFinal", bloque.getHoraFinal())
@@ -134,7 +136,7 @@ class BloqueServiceTest {
     }
 
     @Test
-    void update_return_optimistic_exception() {
+    void update_invalid_version_exception() {
         given(mockBloqueRepository.save(bloque)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
         InvalidVersionException assertThrows = assertThrows(

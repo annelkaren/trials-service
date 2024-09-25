@@ -36,11 +36,11 @@ public class BloqueSetUp {
     }
 
     public static BloqueRecordResponse createBloqueRecordResponse() {
-        return new BloqueRecordResponse(1, LocalTime.of(6, 30), LocalTime.of(7, 30),  Estado.ACTIVE);
+        return new BloqueRecordResponse(1, LocalTime.of(8, 30), LocalTime.of(9, 30),  Estado.ACTIVE);
     }
 
     public static BloqueRecord createBloqueRecord(){
-        return new BloqueRecord(1, LocalTime.of(8, 30), LocalTime.of(9, 30), Estado.ACTIVE);
+        return new BloqueRecord(1, LocalTime.of(8, 30), LocalTime.of(9, 30));
                                       
     }
 
