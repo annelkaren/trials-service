@@ -10,8 +10,9 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
@@ -60,14 +61,14 @@ public class DocumentoService {
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getTipoDocumento());
     }
 
-    public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
+    public DocumentoRecord createDemanda(DocumentoSaveRecord documentoRecord) {
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
 
-        carpeta.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoDTO.getTipoJuicioId().toString())));
+        carpeta.setTipoJuicio(tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString())));
         carpeta.setFolio(getFolio("D"));
-        carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), carpeta.getTipoJuicio()));
+        carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
 
         if (carpeta.getJuzgado() == null) {
             carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio()));
@@ -81,10 +82,10 @@ public class DocumentoService {
         documento.setCarpeta(carpeta);
         documento = documentoRepository.save(documento);
 
-        createPersonaDocumento(documentoDTO.getActor(), carpeta);
-        createPersonaDocumento(documentoDTO.getDemandado(), carpeta);
+        createPersonaDocumento(documentoRecord.actor(), carpeta);
+        createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
-        for (String anexo : documentoDTO.getAnexos()) {
+        for (String anexo : documentoRecord.anexos()) {
             Anexo entity = new Anexo();
             entity.setNombre(anexo);
             entity.setDocumento(documento);
@@ -96,14 +97,14 @@ public class DocumentoService {
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getTipoDocumento());
     }
 
-    private void createPersonaDocumento(PersonaDocumentoDTO persona, Carpeta carpeta) {
-        String tipoParte = (persona.getTipoParte().equals(1)) ? "Actor" : "Demandado";
+    private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
+        String tipoParte = (persona.tipoParte().equals(1)) ? "Actor" : "Demandado";
         PersonaDocumento entity = new PersonaDocumento();
-        entity.setNombre(persona.getNombre());
-        entity.setApellidoPaterno(persona.getApellidoPaterno());
-        entity.setApellidoMaterno(persona.getApellidoMaterno());
-        entity.setPseudonimo(persona.getPseudonimo());
-        entity.setTipoPersona(persona.getTipoPersona());
+        entity.setNombre(persona.nombre());
+        entity.setApellidoPaterno(persona.apellidoPaterno());
+        entity.setApellidoMaterno(persona.apellidoMaterno());
+        entity.setPseudonimo(persona.pseudonimo());
+        entity.setTipoPersona(persona.tipoPersona());
         entity.setRol(Rol.PRINCIPAL);
         entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, carpeta.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));

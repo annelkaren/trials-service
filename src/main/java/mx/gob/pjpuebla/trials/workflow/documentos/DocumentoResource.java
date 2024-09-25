@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -25,8 +26,8 @@ public class DocumentoResource {
     private final DigitalizacionService digitalizacionService;
 
     @PostMapping("/demanda")
-    public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
-        return this.documentoService.createDemanda(documentoDTO);
+    public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
+        return this.documentoService.createDemanda(documentoSaveRecord);
     }
 
 //    @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
