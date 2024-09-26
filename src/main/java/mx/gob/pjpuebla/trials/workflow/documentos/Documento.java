@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -34,18 +33,17 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @NotNull
     @Enumerated
-    @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
+    @Column(name = "N_TIPO_DOCUMENTO")
     private TipoDocumento tipoDocumento;
 
     @Type(JsonBinaryType.class)
-    @Column(name = "J_DATA", columnDefinition = "jsonb")
+    @Column(name = "J_DATA")
     private DocumentoData data;
 
-    @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Documento documentoParent;
+    @Size(max = 50)
+    @Column(name = "S_RUTA")
+    private String ruta;
 
     @Size(max = 250)
     @Column(name = "S_MOTIVO_EDITA")

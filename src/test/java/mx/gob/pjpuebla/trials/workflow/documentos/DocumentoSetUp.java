@@ -18,7 +18,7 @@ public class DocumentoSetUp {
     private DocumentoSetUp() {
     }
 
-    public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio) {
+    public static Documento create(TipoJuicio tipoJuicio) {
         Carpeta carpeta = new Carpeta()
                 .setId(1)
                 .setVersion(1)
@@ -30,7 +30,6 @@ public class DocumentoSetUp {
         Documento documento = new Documento()
                 .setId(1)
                 .setVersion(1)
-                .setTipoDocumento(tipoDocumento)
                 .setCarpeta(carpeta);
         documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return documento;

@@ -121,7 +121,7 @@ public class SelloGenerator {
     }
 
     private String tipoDocumentoFolio(Documento documento) {
-        int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
+        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
         return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
     }
 
