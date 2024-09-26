@@ -106,9 +106,9 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
             for (int i = 1; i < 5; i++) {
                 String tmpExpediente = juzgadoRepository.getNumeroExpediente(tmpJuzgado.getId());
 
-                documento.setFolio(Integer.valueOf(i).toString());
-                documento.setExpediente(tmpExpediente);
-                documento.setJuzgado(tmpJuzgado);
+                documento.getCarpeta().setFolio(Integer.valueOf(i).toString());
+                documento.getCarpeta().setExpediente(tmpExpediente);
+                documento.getCarpeta().setJuzgado(tmpJuzgado);
                 documentoRepository.save(documento);
             }
 

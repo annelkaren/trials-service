@@ -25,11 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 import java.util.List;
+
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 @Transactional
 @RequiredArgsConstructor
@@ -132,7 +131,7 @@ public class DocumentoService {
         List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
         anexosActuales.stream()
                 .filter(anexo -> !nuevosAnexos.contains(anexo.getNombre()))
-                .forEach(anexo -> anexoRepository.delete(anexo));
+                .forEach(anexoRepository::delete);
 
         for (String anexo : nuevosAnexos) {
             if (anexosActuales.stream().noneMatch(existingAnexo -> existingAnexo.getNombre().equals(anexo))) {
@@ -152,7 +151,7 @@ public class DocumentoService {
 
         Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", id.toString()));
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonasByCarpetaId(documento.getCarpeta().getId(), Rol.PRINCIPAL);
-        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(id);
+        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
 
         PersonaDocumentoRecord actor = null;
         PersonaDocumentoRecord demandado = null;
@@ -176,14 +175,14 @@ public class DocumentoService {
     private String getFolio(String tipo) {
         Long valNum;
         switch (tipo) {
-            case "E":           // Case para exhorto
-                valNum = documentoRepository.getNextValExhorto();
+            case "E": // Case para exhorto
+                valNum = documentoRepository.getNextValFolio("SEQ_EXHORTO_FOLIO");
                 break;
-            case "D":           // Case para demanda
-                valNum = documentoRepository.getNextValDemanda();
+            case "D": // Case para demanda
+                valNum = documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO");
                 break;
-            case "P":           // Case para promocion
-                valNum = documentoRepository.getNextValPromocion();
+            case "P": // Case para promocion
+                valNum = documentoRepository.getNextValFolio("SEQ_PROMOCION_FOLIO");
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);

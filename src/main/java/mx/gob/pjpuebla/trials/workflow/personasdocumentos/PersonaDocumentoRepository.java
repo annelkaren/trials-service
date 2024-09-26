@@ -11,7 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
-    public List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+
+    List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
@@ -56,11 +57,4 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
              AND pd.rol = :rol
             """)
     List<PersonaDocumentoRecord> findPersonasByCarpetaId(@Param("carpetaId") Integer carpetaId, @Param("rol") Rol rol);
-
-    @Query("""
-                SELECT a.nombre
-                FROM Anexo a
-                WHERE a.documento.id = :documentoId
-            """)
-    List<String> findNombresAnexosByDocumentoId(@Param("documentoId") Integer documentoId);
 }

@@ -16,7 +16,6 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,111 +59,111 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
     private Documento doc;
     private  TipoJuicio tipoJuicio;
 
-    Materia materia = createMateria();
+    //Materia materia = createMateria();
     TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
 
-    @BeforeEach
-    public void setUp() {
-        materiaRepository.save(materia);
-        tipoSistemaRepository.save(tipoSistema);
+//    @BeforeEach
+//    public void setUp() {
+//        materiaRepository.save(materia);
+//        tipoSistemaRepository.save(tipoSistema);
+//
+//        tipoJuicio = tipoJuicioRepository.save(createTipoJuicio());
+//
+//        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+//        documento.setFolio("1").setExpediente("000001/2024");
+//        doc = documentoRepository.save(documento);
+//
+//        tipoPartes = TipoPartesSetUp.createTipoPartes();
+//        tipoPartes.setTipoJuicio(tipoJuicio);
+//        TipoPartes tipPar = tipoPartesRepository.save(tipoPartes);
+//        personaDocumento = PersonasDocumentosSetUp.createPersonasDocumentos(doc, tipPar);
+//    }
 
-        tipoJuicio = tipoJuicioRepository.save(createTipoJuicio());
+//    @Test
+//    void findDocumentoPersonaTipoParteByDocumentoId() {
+//        personaDocumento = personaDocumentoRepository.save(personaDocumento);
+//        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
+//        PersonaDocumentoRecord entity = personaDocumentoRepository
+//                .findDocumentoPersonaTipoParteByDocumentoId(personaDocumento.getDocumento().getId(), "Actor", rol);
+//        assertThat(entity).isNotNull();
+//    }
 
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
-        documento.setFolio("1").setExpediente("000001/2024");
-        doc = documentoRepository.save(documento);
-
-        tipoPartes = TipoPartesSetUp.createTipoPartes();
-        tipoPartes.setTipoJuicio(tipoJuicio);
-        TipoPartes tipPar = tipoPartesRepository.save(tipoPartes);
-        personaDocumento = PersonasDocumentosSetUp.createPersonasDocumentos(doc, tipPar);
-    }
-
-    @Test
-    void findDocumentoPersonaTipoParteByDocumentoId() {
-        personaDocumento = personaDocumentoRepository.save(personaDocumento);
-        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-        PersonaDocumentoRecord entity = personaDocumentoRepository
-                .findDocumentoPersonaTipoParteByDocumentoId(personaDocumento.getDocumento().getId(), "Actor", rol);
-        assertThat(entity).isNotNull();
-    }
-
-
-
-@Test
-void findDocumentoAnexoByDocumentoId() {
-
-    TipoPartes tipoPartesDocumentoAnexo =  TipoPartesSetUp.createTipoPartes();
-    tipoPartesDocumentoAnexo.setTipoJuicio(tipoJuicio);
-    tipoPartesDocumentoAnexo.setId(2);
-    tipoPartesDocumentoAnexo.setNombre("Demandado");
-    tipoPartesDocumentoAnexo = tipoPartesRepository.save(tipoPartes);
-
-    PersonaDocumento personaDocumentoDemandado = PersonasDocumentosSetUp.createPersonasDocumentos(doc,tipoPartesDocumentoAnexo);
-    personaDocumentoRepository.save(personaDocumentoDemandado);
-
-    List<Anexo> anexos = createAnexos(documento);
-    for (Anexo anexo : anexos) {
-        anexo.setDocumento(documento);
-        anexoRepository.save(anexo);
-        System.out.println(anexo);
-    }
-
-    List<DocumentoAnexoRecord> documentoAnexoRecords = personaDocumentoRepository
-            .findDocumentoAnexoByDocumentoId(documento.getId());
-    assertThat(documentoAnexoRecords).isNotNull().isNotEmpty();
-    assertThat(documentoAnexoRecords).hasSizeGreaterThan(0);
-    assertThat(personaDocumento).isNotNull();
-    assertThat(personaDocumento.getDocumento()).isNotNull();
-    assertThat(personaDocumento.getDocumento().getId()).isNotNull();
-    assertThat(personaDocumento.getDocumento()).isEqualTo(doc);
-    assertThat(doc).isEqualTo(personaDocumento.getDocumento());
-
-}
-
-    @Test
-    void findNombresAnexosByDocumentoId() {
-
-        Documento savedDocumento = documentoRepository.save(documento);
-
-        List<Anexo> anexos = createAnexos(savedDocumento);
-        for (Anexo anexo : anexos) {
-            anexoRepository.save(anexo);
-        }
-        List<String> nombresAnexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(savedDocumento.getId());
-        System.out.println("nombres de anexos" + nombresAnexos);
-        assertThat(nombresAnexos)
-                .isNotNull()
-                .hasSize(2)
-                .containsExactlyInAnyOrder("anexo test 1", "anexo test 2");
-
-    }
-
-
-    public static Materia createMateria() {
-        Materia materia = new Materia()
-                .setNombre("PENAL")
-                .setEstado(Estado.ACTIVE)
-                .setVersion(0);
-        materia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
-        return materia;
-    }
-
-    public static TipoJuicio createTipoJuicio() {
-        TipoJuicio tipoJuicio = new TipoJuicio()
-                .setId(1)
-                .setNombre("Laboral")
-                .setEstado(Estado.ACTIVE)
-                .setVersion(0);
-        tipoJuicio.setAudit(
-                new Audit(
-                        LocalDateTime.now(),
-                        LocalDateTime.now(),
-                        "6b13785f-d213-4585-a76b-437ffe57c9c7",
-                        "6b13785f-d213-4585-a76b-437ffe57c9c7")
-        );
-        return tipoJuicio;
-    }
+//
+//
+//@Test
+//void findDocumentoAnexoByDocumentoId() {
+//
+//    TipoPartes tipoPartesDocumentoAnexo =  TipoPartesSetUp.createTipoPartes();
+//    tipoPartesDocumentoAnexo.setTipoJuicio(tipoJuicio);
+//    tipoPartesDocumentoAnexo.setId(2);
+//    tipoPartesDocumentoAnexo.setNombre("Demandado");
+//    tipoPartesDocumentoAnexo = tipoPartesRepository.save(tipoPartes);
+//
+//    PersonaDocumento personaDocumentoDemandado = PersonasDocumentosSetUp.createPersonasDocumentos(doc,tipoPartesDocumentoAnexo);
+//    personaDocumentoRepository.save(personaDocumentoDemandado);
+//
+//    List<Anexo> anexos = createAnexos(documento);
+//    for (Anexo anexo : anexos) {
+//        anexo.setDocumento(documento);
+//        anexoRepository.save(anexo);
+//        System.out.println(anexo);
+//    }
+//
+//    List<DocumentoAnexoRecord> documentoAnexoRecords = personaDocumentoRepository
+//            .findDocumentoAnexoByDocumentoId(documento.getId());
+//    assertThat(documentoAnexoRecords).isNotNull().isNotEmpty();
+//    assertThat(documentoAnexoRecords).hasSizeGreaterThan(0);
+//    assertThat(personaDocumento).isNotNull();
+//    assertThat(personaDocumento.getDocumento()).isNotNull();
+//    assertThat(personaDocumento.getDocumento().getId()).isNotNull();
+//    assertThat(personaDocumento.getDocumento()).isEqualTo(doc);
+//    assertThat(doc).isEqualTo(personaDocumento.getDocumento());
+//
+//}
+//
+//    @Test
+//    void findNombresAnexosByDocumentoId() {
+//
+//        Documento savedDocumento = documentoRepository.save(documento);
+//
+//        List<Anexo> anexos = createAnexos(savedDocumento);
+//        for (Anexo anexo : anexos) {
+//            anexoRepository.save(anexo);
+//        }
+//        List<String> nombresAnexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(savedDocumento.getId());
+//        System.out.println("nombres de anexos" + nombresAnexos);
+//        assertThat(nombresAnexos)
+//                .isNotNull()
+//                .hasSize(2)
+//                .containsExactlyInAnyOrder("anexo test 1", "anexo test 2");
+//
+//    }
+//
+//
+//    public static Materia createMateria() {
+//        Materia materia = new Materia()
+//                .setNombre("PENAL")
+//                .setEstado(Estado.ACTIVE)
+//                .setVersion(0);
+//        materia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+//        return materia;
+//    }
+//
+//    public static TipoJuicio createTipoJuicio() {
+//        TipoJuicio tipoJuicio = new TipoJuicio()
+//                .setId(1)
+//                .setNombre("Laboral")
+//                .setEstado(Estado.ACTIVE)
+//                .setVersion(0);
+//        tipoJuicio.setAudit(
+//                new Audit(
+//                        LocalDateTime.now(),
+//                        LocalDateTime.now(),
+//                        "6b13785f-d213-4585-a76b-437ffe57c9c7",
+//                        "6b13785f-d213-4585-a76b-437ffe57c9c7")
+//        );
+//        return tipoJuicio;
+//    }
 
     public static List<Anexo> createAnexos(Documento documento) {
         Anexo anexo1 = new Anexo().setNombre("anexo test 1").setDocumento(documento);

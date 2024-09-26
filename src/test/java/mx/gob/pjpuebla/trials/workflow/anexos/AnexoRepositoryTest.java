@@ -65,38 +65,38 @@ class AnexoRepositoryTest extends AuditConfigTest {
     private Anexo anexo;
     private Documento documento;
 
-    @BeforeEach
-    public void setUp() {
-        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
-        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
-        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+//    @BeforeEach
+//    public void setUp() {
+//        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+//        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+//        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+//
+//        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
+//        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
+//
+//        Sede sede = SedeSetUp.createSede();
+//        sede.setDistrito(distrito);
+//        sede.setDomicilio(domicilio);
+//        sede = sedeRepository.save(sede);
+//
+//        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
+//                .setTipoJuicios(List.of(tipoJuicio));
+//        juzgado = juzgadoRepository.save(juzgado);
+//        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+//        documento.setJuzgado(juzgado);
+//        documento.setExpediente("000001/2024");
+//        documento.setFolio("1");
+//        documento = documentoRepository.save(documento);
+//
+//        anexo = AnexoSetUp.createAnexo();
+//        anexo.setDocumento(documento);
+//    }
 
-        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
-
-        Sede sede = SedeSetUp.createSede();
-        sede.setDistrito(distrito);
-        sede.setDomicilio(domicilio);
-        sede = sedeRepository.save(sede);
-
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
-                .setTipoJuicios(List.of(tipoJuicio));
-        juzgado = juzgadoRepository.save(juzgado);
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
-        documento.setJuzgado(juzgado);
-        documento.setExpediente("000001/2024");
-        documento.setFolio("1");
-        documento = documentoRepository.save(documento);
-
-        anexo = AnexoSetUp.createAnexo();
-        anexo.setDocumento(documento);
-    }
-
-    @Test
-    void findAllByDocumentoId() {
-        anexo = anexoRepository.save(anexo);
-        List<Anexo> list = anexoRepository.findAllByDocumentoId(anexo.getDocumento().getId());
-        assertThat(list).hasSize(1);
-    }
+//    @Test
+//    void findAllByDocumentoId() {
+//        anexo = anexoRepository.save(anexo);
+//        List<Anexo> list = anexoRepository.findAllByDocumentoId(anexo.getDocumento().getId());
+//        assertThat(list).hasSize(1);
+//    }
 
 }

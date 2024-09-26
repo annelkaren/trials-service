@@ -33,7 +33,7 @@ class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getIdByDemandaSecuence_success() {
-        Long result = documentoRepository.getNextValDemanda();
+        Long result = documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO");
         assertThat(result)
                 .isNotNull()
                 .isPositive();
@@ -41,7 +41,7 @@ class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getIdByExhortoSecuence_success() {
-        Long result = documentoRepository.getNextValExhorto();
+        Long result = documentoRepository.getNextValFolio("SEQ_EXHORTO_FOLIO");
         assertThat(result)
                 .isNotNull()
                 .isPositive();
@@ -49,7 +49,7 @@ class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getIdByPromocionSecuence_success() {
-        Long result = documentoRepository.getNextValPromocion();
+        Long result = documentoRepository.getNextValFolio("SEQ_PROMOCION_FOLIO");
         assertThat(result)
                 .isNotNull()
                 .isPositive();

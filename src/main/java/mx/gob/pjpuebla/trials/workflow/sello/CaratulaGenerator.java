@@ -67,6 +67,6 @@ public class CaratulaGenerator {
 
     private String tipoDocumentoFolio(Documento documento){
         int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
-        return tipoDocumentoOrdinal + "-" + documento.getFolio();
+        return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
     }
 }
