@@ -7,6 +7,9 @@ import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -43,6 +46,8 @@ class OficialiaResourceTest {
 
     @MockBean
     private OficialiaService mockOficialiaService;
+    @MockBean
+    private JuzgadoRepository juzgadoRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,8 +56,10 @@ class OficialiaResourceTest {
     private OficialiaRecord validOficialiaRecord;
     private OficialiaRecordResponse oficialiaRecordResponse;
 
+
     @BeforeEach
     void setUp() {
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
         TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
         Distrito distrito = DistritoSetUp.createDistrito();
         Domicilio domicilio = DomicilioSetUp.createDomicilio();
@@ -60,6 +67,7 @@ class OficialiaResourceTest {
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+        oficialia.setJuzgado(juzgado);
         validOficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(),sede.getNombre(),sede.getEstado()));
         oficialiaRecordResponse =  OficialiaSetUp.createOficialiaRecordResponse(oficialia);
     }
