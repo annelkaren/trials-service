@@ -21,9 +21,12 @@ import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -58,29 +61,36 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
     private DocumentoRepository documentoRepository;
     @Autowired
     private TipoSistemaRepository tipoSistemaRepository;
+    @Autowired
+    private CarpetaRepository carpetaRepository;
 
     private Documento documento;
     private Juzgado juzgado;
+    private Carpeta carpeta;
 
     @BeforeEach
     public void setUp() {
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
-        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        //Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         Sede sede = SedeSetUp.createSede();
 
         TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
-        tipoSistema =  tipoSistemaRepository.save(tipoSistema);
+        tipoSistema = tipoSistemaRepository.save(tipoSistema);
         TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
-                tipoJuicio = tipoJuicioRepository.save(tipoJuicio);
+        tipoJuicio = tipoJuicioRepository.save(tipoJuicio);
 
-        sede.setDistrito(distrito);
+        sede.setDistrito(distritoRepository.findById(100).get());
         sede.setDomicilio(domicilio);
         sede = sedeRepository.save(sede);
 
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
                 .setTipoJuicios(List.of(tipoJuicio));
+        juzgado = juzgadoRepository.save(juzgado);
         documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        documento.getCarpeta().setJuzgado(juzgado);
+        carpeta = carpetaRepository.save(documento.getCarpeta());
+        documento.setCarpeta(carpeta);
     }
 
     @Test
@@ -88,7 +98,6 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         String anioActual = Integer.toString(LocalDate.now().getYear());
         String numExpediente;
 
-        juzgado = juzgadoRepository.save(juzgado);
         juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
 
         numExpediente = juzgadoRepository.getNumeroExpediente(juzgado.getId());

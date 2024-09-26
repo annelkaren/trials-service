@@ -22,12 +22,14 @@ public class DocumentoSetUp {
         Carpeta carpeta = new Carpeta()
                 .setId(1)
                 .setVersion(1)
+                .setFolio("1")
                 .setExpediente("000001/2024")
                 .setEstatus(EstadoCarpeta.CAPTURA)
                 .setTipoJuicio(tipoJuicio)
                 .setSelloEstatus(SelloEstatus.VALIDO);
         Documento documento = new Documento()
                 .setId(1)
+                .setVersion(1)
                 .setTipoDocumento(tipoDocumento)
                 .setCarpeta(carpeta);
         documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
