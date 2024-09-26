@@ -26,20 +26,20 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {
-        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
-})
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@RunWith(SpringRunner.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class JuzgadoRepositoryCustomTest extends AuditConfigTest {
 
     @Autowired
@@ -69,8 +69,10 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         Sede sede = SedeSetUp.createSede();
 
-        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        tipoSistema =  tipoSistemaRepository.save(tipoSistema);
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+                tipoJuicio = tipoJuicioRepository.save(tipoJuicio);
 
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);

@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -76,6 +75,7 @@ class DigitalizacionServiceTest {
     private DigitalizacionService digitalizacionService;
 
     private Documento documento;
+
     @BeforeEach
     void setUp() {
         // Configurar los mocks para los repositorios
@@ -87,8 +87,8 @@ class DigitalizacionServiceTest {
         given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(TipoJuicioSetUp.createTipoJuicio());
 
         // Configurar el mock para DocumentoRepository y DigitalizacionFolderService
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio(),
-                JuzgadoSetUp.createJuzgado());
+        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
         given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))

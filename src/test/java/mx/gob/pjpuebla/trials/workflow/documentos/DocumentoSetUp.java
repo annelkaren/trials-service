@@ -21,6 +21,8 @@ public class DocumentoSetUp {
     public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio) {
         Carpeta carpeta = new Carpeta()
                 .setId(1)
+                .setVersion(1)
+                .setExpediente("000001/2024")
                 .setEstatus(EstadoCarpeta.CAPTURA)
                 .setTipoJuicio(tipoJuicio)
                 .setSelloEstatus(SelloEstatus.VALIDO);
@@ -40,22 +42,4 @@ public class DocumentoSetUp {
                 anexos,
                 tipoJuicio);
     }
-
-    public static Documento create(TipoDocumento demanda, TipoJuicio tipoJuicio, Juzgado juzgado) {
-
-        Carpeta carpeta = new Carpeta()
-                .setId(1)
-                .setExpediente("000001/2024")
-                .setEstatus(EstadoCarpeta.CAPTURA)
-                .setTipoJuicio(tipoJuicio)
-                .setSelloEstatus(SelloEstatus.VALIDO)
-                .setJuzgado(juzgado);
-
-        return new Documento()
-                .setId(1)
-                .setTipoDocumento(demanda)
-                .setCarpeta(carpeta);
-
-    }
-
 }
