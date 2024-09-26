@@ -61,33 +61,29 @@ public class OficialiaService {
 
     public OficialiaRecordResponse create(Oficialia oficialia) {
 
-            // Verificar y cargar la sede si el ID no es nulo
             if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
                 Sede sede = sedeRepository.findById(oficialia.getSede().getId())
                         .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
                 oficialia.setSede(sede);
             }
 
-            // Verificar y cargar el tipo de oficialia si el ID no es nulo
             if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
                 TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
                         .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
                 oficialia.setTipoOficialia(tipoOficialia);
             }
 
-            // El campo Juzgado puede ser nulo, así que no hacemos nada si es nulo
             if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
                 Juzgado juzgado = juzgadoRepository.findById(oficialia.getJuzgado().getId())
                         .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
                 oficialia.setJuzgado(juzgado);
             } else {
-                oficialia.setJuzgado(null); // Asegúrate de que se establezca a nulo explícitamente
+                oficialia.setJuzgado(null);
             }
 
-            // Cargar las materias y asignarlas si hay IDs
             if (oficialia.getMateria() != null) {
                 List<Integer> mIds = oficialia.getMateria().stream()
-                        .filter(materia -> materia.getId() != null)  // Filtrar nulos
+                        .filter(materia -> materia.getId() != null)
                         .map(Materia::getId)
                         .toList();
 
@@ -110,21 +106,26 @@ public class OficialiaService {
 
             existingOficialia.setSede(sedeRepository.findById(oficialia.getSede().getId())
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            System.out.println(oficialia.getTipoOficialia().getId());
+
             existingOficialia.setTipoOficialia(tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
                     .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId")));
 
+            if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
             existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
                     .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+            } else {
+                oficialia.setJuzgado(null);
+            }
 
-            // Manejar la relación muchos a muchos
+
+            if (oficialia.getMateria() != null) {
                 List<Integer> mIds = oficialia.getMateria().stream()
                         .map(Materia::getId).toList();
 
                 List<Materia> materias = materiaRepository.findAllById(mIds);
                 existingOficialia.setMateria(materias);
+            }
 
-            // Guardar los cambios
             oficialiaRepository.save(existingOficialia);
 
             return new OficialiaRecordResponse(existingOficialia.getId(), existingOficialia.getNombre());
