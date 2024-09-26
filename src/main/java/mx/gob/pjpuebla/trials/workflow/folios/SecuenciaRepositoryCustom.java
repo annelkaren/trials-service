@@ -2,6 +2,10 @@ package mx.gob.pjpuebla.trials.workflow.folios;
 
 public interface SecuenciaRepositoryCustom {
 
-    Long getNextValFolio(String sequenceName);
+    Long getNextValDemanda();
+
+    Long getNextValExhorto();
+
+    Long getNextValPromocion();
 
 }

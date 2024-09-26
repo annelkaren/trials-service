@@ -122,7 +122,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        given(documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO")).willReturn(2L);
+        given(documentoRepository.getNextValDemanda()).willReturn(2L);
         given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));

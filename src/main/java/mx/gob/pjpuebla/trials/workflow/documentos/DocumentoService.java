@@ -172,14 +172,14 @@ public class DocumentoService {
     private String getFolio(String tipo) {
         Long valNum;
         switch (tipo) {
-            case "E": // Case para exhorto
-                valNum = documentoRepository.getNextValFolio("SEQ_EXHORTO_FOLIO");
+            case "E":           // Case para exhorto
+                valNum = documentoRepository.getNextValExhorto();
                 break;
-            case "D": // Case para demanda
-                valNum = documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO");
+            case "D":           // Case para demanda
+                valNum = documentoRepository.getNextValDemanda();
                 break;
-            case "P": // Case para promocion
-                valNum = documentoRepository.getNextValFolio("SEQ_PROMOCION_FOLIO");
+            case "P":           // Case para promocion
+                valNum = documentoRepository.getNextValPromocion();
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);

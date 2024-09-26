@@ -191,12 +191,14 @@
 										<exclude>*sello*</exclude>
 										<exclude>*listavalor*</exclude>
 										<exclude>*DocumentoResource</exclude>
+										<exclude>*SecuenciaRepositoryCustomImpl</exclude>
+										<exclude>*JuzgadoRepositoryCustomImpl</exclude>
 									</excludes>
 									<limits>
 										<limit>
 											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>4%</minimum>
+											<minimum>6%</minimum>
 										</limit>
 									</limits>
 								</rule>
