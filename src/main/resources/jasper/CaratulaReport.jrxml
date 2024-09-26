@@ -19,6 +19,7 @@
 	<parameter name="codigoQR" class="java.lang.String"/>
 	<parameter name="logotipoHeder" class="java.lang.String"/>
 	<parameter name="numeroExpediente" class="java.lang.String"/>
+	<parameter name="documentoFolio" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -110,7 +111,7 @@
 			<componentElement>
 				<reportElement x="170" y="360" width="219" height="168" uuid="15f4ba98-eefe-4597-8f61-f08a1bd94c14"/>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<jr:codeExpression><![CDATA["123456789"]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
 		</band>
