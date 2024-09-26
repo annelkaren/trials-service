@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,8 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-import mx.gob.pjpuebla.trials.core.materias.Materia;
 
 @Repository
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
@@ -45,10 +44,18 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, Juzg
             """)
     void reiniciarContadorAsignaciones(Materia materia);
 
-    @Query("SELECT SUM(j.contadorAsignaciones) FROM Juzgado j where j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE ")
+    @Query("""
+            SELECT COALESCE(SUM(j.contadorAsignaciones), 0)
+            FROM Juzgado j
+            WHERE j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
     Integer sumContadorAsignacionesByMateria(Materia materia);
 
-    @Query("SELECT SUM(j.maxAsignacionesRonda) FROM Juzgado j where j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE")
+    @Query("""
+            SELECT COALESCE(SUM(j.maxAsignacionesRonda), 0)
+            FROM Juzgado j
+            WHERE j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
     Integer sumMaxAsignacionesRondaByMateria(Materia materia);
 
 }
