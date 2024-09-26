@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -18,4 +19,5 @@ public class DocumentoTestSetUp {
                 .setTipoDocumento(TipoDocumento.DEMANDA)
                 .setCarpeta(carpeta);
     }
+
 }

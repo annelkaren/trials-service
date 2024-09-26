@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -38,6 +39,23 @@ public class DocumentoSetUp {
                 PersonasDocumentosSetUp.createPersonaDocumentoItemRecord(),
                 anexos,
                 tipoJuicio);
+    }
+
+    public static Documento create(TipoDocumento demanda, TipoJuicio tipoJuicio, Juzgado juzgado) {
+
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO)
+                .setJuzgado(juzgado);
+
+        return new Documento()
+                .setId(1)
+                .setTipoDocumento(demanda)
+                .setCarpeta(carpeta);
+
     }
 
 }
