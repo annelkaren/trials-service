@@ -30,6 +30,10 @@ public class AuditListener {
     @PreUpdate
     public void setUpdatedOn(Auditable auditable) {
         Audit audit = auditable.getAudit();
+        if(audit == null) {
+            audit = new Audit();
+            auditable.setAudit(audit);
+        }
         audit.setFechaEdita(LocalDateTime.now());
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         audit.setUsuarioEdita(jwt.getSubject());

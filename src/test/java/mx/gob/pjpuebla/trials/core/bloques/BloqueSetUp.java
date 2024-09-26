@@ -35,17 +35,8 @@ public class BloqueSetUp {
         return bloque;
     }
 
-
-    public static Bloque createBloque(int bloque_id) {
-        Bloque bloque = new Bloque()
-                .setId(bloque_id)
-                .setEstado(Estado.ACTIVE)
-                .setHoraInicial(LocalTime.now())
-                .setHoraFinal(LocalTime.now());
-        bloque.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7",
-                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
-
-        return bloque;
+    public static BloqueRecordResponse createBloqueRecordResponse() {
+        return new BloqueRecordResponse(1, LocalTime.of(8, 30), LocalTime.of(9, 30),  Estado.ACTIVE);
     }
 
     public static BloqueRecord createBloqueRecord(){

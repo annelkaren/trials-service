@@ -65,11 +65,11 @@ class MateriaServiceTest {
     void getById_return_not_found() {
         given(mockMateriaRepository.findByIdAndEstado(validMateria.getId(), validMateria.getEstado()))
                 .willReturn(Optional.empty());
-
+        int materiaId = validMateria.getId();
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> {
-                    target.findById(validMateria.getId());
+                    target.findById(materiaId);
                 }
         );
 

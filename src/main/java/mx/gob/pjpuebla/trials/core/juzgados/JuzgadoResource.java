@@ -8,9 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/juzgados")
@@ -24,11 +21,6 @@ public class JuzgadoResource {
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.juzgadoService.getAll(new Juzgado().setNombre(nombre), pageable);
-    }
-
-    @GetMapping("all")
-    public List<JuzgadoRecordItem> getAllWithoutPagination() {
-        return this.juzgadoService.getAllWithoutPagination();
     }
 
     @GetMapping("/{id}")

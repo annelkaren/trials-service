@@ -185,7 +185,6 @@
 										<exclude>*roles*</exclude>
 										<exclude>*sello*</exclude>
 										<exclude>*listavalor*</exclude>
-										<exclude>*BloqueResource</exclude>
 										<exclude>*DocumentoResource</exclude>
 									</excludes>
 									<limits>

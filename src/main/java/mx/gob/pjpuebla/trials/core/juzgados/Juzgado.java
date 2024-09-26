@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -57,7 +58,7 @@ public class Juzgado implements Serializable, Auditable {
     private Materia materia;
 
     @JoinColumn(name = "FN_SEDE", referencedColumnName = "PN_ID", nullable = false)
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Sede sede;
 
     @Accessors(chain = false)
@@ -80,6 +81,8 @@ public class Juzgado implements Serializable, Auditable {
             "fn_tipojuicio"
     }))
     @OrderBy("id")
+    @NotNull
+    @Size(min = 1, max = 50)
     private List<TipoJuicio> tipoJuicios;
 }
 

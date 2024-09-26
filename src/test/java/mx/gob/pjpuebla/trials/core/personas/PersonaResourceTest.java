@@ -1,11 +1,11 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,7 +100,7 @@ class PersonaResourceTest {
 
         mockMvc.perform(
                 post("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -114,7 +114,7 @@ class PersonaResourceTest {
 
         mockMvc.perform(
                 put("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -128,20 +128,10 @@ class PersonaResourceTest {
 
         mockMvc.perform(
                 put("/api/core/personas")
-                        .content(asJsonString(PersonaSetUp.createPersona()))
+                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -164,6 +154,15 @@ class PersonaResourceTest {
 
         mockMvc.perform(
                 get("/api/core/personas/jueces/" + anyInt())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAll_CentrosTrabajo() throws Exception{
+        given(mockPersonaService.findAllCentroTrabajo()).willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
+        mockMvc.perform(
+                get("/api/core/personas/centrostrabajo")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

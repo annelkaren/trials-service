@@ -12,10 +12,11 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoAnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,8 +51,15 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
     private MateriaRepository materiaRepository;
     @Autowired
     private TipoSistemaRepository tipoSistemaRepository;
+    @Autowired
+    private AnexoRepository anexoRepository;
 
     private PersonaDocumento personaDocumento;
+    private Documento documento;
+    private TipoPartes tipoPartes;
+    private Documento doc;
+    private  TipoJuicio tipoJuicio;
+
     Materia materia = createMateria();
     TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
 
@@ -60,13 +68,13 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
         materiaRepository.save(materia);
         tipoSistemaRepository.save(tipoSistema);
 
-        TipoJuicio tipoJuicio = tipoJuicioRepository.save(createTipoJuicio());
+        tipoJuicio = tipoJuicioRepository.save(createTipoJuicio());
 
-        Documento documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
         documento.setFolio("1").setExpediente("000001/2024");
-        Documento doc = documentoRepository.save(documento);
+        doc = documentoRepository.save(documento);
 
-        TipoPartes tipoPartes = TipoPartesSetUp.createTipoPartes();
+        tipoPartes = TipoPartesSetUp.createTipoPartes();
         tipoPartes.setTipoJuicio(tipoJuicio);
         TipoPartes tipPar = tipoPartesRepository.save(tipoPartes);
         personaDocumento = PersonasDocumentosSetUp.createPersonasDocumentos(doc, tipPar);
@@ -80,6 +88,58 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
                 .findDocumentoPersonaTipoParteByDocumentoId(personaDocumento.getDocumento().getId(), "Actor", rol);
         assertThat(entity).isNotNull();
     }
+
+
+
+@Test
+void findDocumentoAnexoByDocumentoId() {
+
+    TipoPartes tipoPartesDocumentoAnexo =  TipoPartesSetUp.createTipoPartes();
+    tipoPartesDocumentoAnexo.setTipoJuicio(tipoJuicio);
+    tipoPartesDocumentoAnexo.setId(2);
+    tipoPartesDocumentoAnexo.setNombre("Demandado");
+    tipoPartesDocumentoAnexo = tipoPartesRepository.save(tipoPartes);
+
+    PersonaDocumento personaDocumentoDemandado = PersonasDocumentosSetUp.createPersonasDocumentos(doc,tipoPartesDocumentoAnexo);
+    personaDocumentoRepository.save(personaDocumentoDemandado);
+
+    List<Anexo> anexos = createAnexos(documento);
+    for (Anexo anexo : anexos) {
+        anexo.setDocumento(documento);
+        anexoRepository.save(anexo);
+        System.out.println(anexo);
+    }
+
+    List<DocumentoAnexoRecord> documentoAnexoRecords = personaDocumentoRepository
+            .findDocumentoAnexoByDocumentoId(documento.getId());
+    assertThat(documentoAnexoRecords).isNotNull().isNotEmpty();
+    assertThat(documentoAnexoRecords).hasSizeGreaterThan(0);
+    assertThat(personaDocumento).isNotNull();
+    assertThat(personaDocumento.getDocumento()).isNotNull();
+    assertThat(personaDocumento.getDocumento().getId()).isNotNull();
+    assertThat(personaDocumento.getDocumento()).isEqualTo(doc);
+    assertThat(doc).isEqualTo(personaDocumento.getDocumento());
+
+}
+
+    @Test
+    void findNombresAnexosByDocumentoId() {
+
+        Documento savedDocumento = documentoRepository.save(documento);
+
+        List<Anexo> anexos = createAnexos(savedDocumento);
+        for (Anexo anexo : anexos) {
+            anexoRepository.save(anexo);
+        }
+        List<String> nombresAnexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(savedDocumento.getId());
+        System.out.println("nombres de anexos" + nombresAnexos);
+        assertThat(nombresAnexos)
+                .isNotNull()
+                .hasSize(2)
+                .containsExactlyInAnyOrder("anexo test 1", "anexo test 2");
+
+    }
+
 
     public static Materia createMateria() {
         Materia materia = new Materia()
@@ -105,5 +165,14 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
         );
         return tipoJuicio;
     }
+
+    public static List<Anexo> createAnexos(Documento documento) {
+        Anexo anexo1 = new Anexo().setNombre("anexo test 1").setDocumento(documento);
+        Anexo anexo2 = new Anexo().setNombre("anexo test 2").setDocumento(documento);
+        return Arrays.asList(anexo1, anexo2);
+    }
+
+
+
 
 }

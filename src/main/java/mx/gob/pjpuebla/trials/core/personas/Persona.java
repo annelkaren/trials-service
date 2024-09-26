@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.escolaridades.Escolaridad;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivil;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -99,11 +100,14 @@ public class Persona implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
+    @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY)
+    private Oficialia oficialia;
+
     @Column(name = "S_USUARIO")
     private String usuario;
 
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
-
 }

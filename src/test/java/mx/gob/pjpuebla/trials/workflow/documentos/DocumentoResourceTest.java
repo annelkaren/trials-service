@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
 import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
@@ -21,7 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -58,7 +61,7 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 post("/api/workflow/demanda")
-                        .content(asJsonString(documentoRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -75,7 +78,7 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 get("/api/workflow/bandeja/entrada")
-                        .content(asJsonString(documentoGridRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoGridRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -91,11 +94,75 @@ class DocumentoResourceTest {
 
         mockMvc.perform(
                 patch("/api/workflow/bandeja/1/status/1")
-                        .content(asJsonString(documentoRecord))
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+
+    @Test
+    void edit_anexos() throws  Exception{
+
+        AnexoRecord anexoRecord = new AnexoRecord(
+                Arrays.asList("Anexo1", "Anexo2"),
+                "Motivo de edición"
+        );
+
+
+        AnexoRecord updatedAnexos = new AnexoRecord(
+                Arrays.asList("Anexo1 actualizado", "Anexo2 actualizado"),
+                "Motivo de edición actualizado"
+        );
+
+        given(documentoService.editarAnexos(any(Integer.class), any(), any()))
+                .willReturn(updatedAnexos);
+
+        mockMvc.perform(
+                patch("/api/workflow/demanda/1/anexos")
+                        .content(asJsonString(anexoRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+
+    @Test
+    void getEditDocumento() throws Exception {
+
+    PersonaDocumentoDTO actor = new PersonaDocumentoDTO();
+    actor.setNombre("John");
+    actor.setApellidoPaterno("Doe");
+    actor.setApellidoMaterno("Smith");
+    actor.setPseudonimo("JD");
+    actor.setTipoPersona("fisica");
+    actor.setTipoParte(1);
+
+    PersonaDocumentoDTO demandado = new PersonaDocumentoDTO();
+    demandado.setNombre("Jane");
+    demandado.setApellidoPaterno("Doe");
+    demandado.setApellidoMaterno("Johnson");
+    demandado.setPseudonimo("JJ");
+    demandado.setTipoPersona("fisica");
+    demandado.setTipoParte(2);
+    List<String> anexos = List.of("Anexo1", "Anexo2");
+
+
+    DocumentoResponseRecord documentoResponse = new DocumentoResponseRecord(actor, demandado, anexos);
+
+
+    given(documentoService.getEditDocumentoAnexo(any(Integer.class)))
+            .willReturn(documentoResponse);
+
+
+    mockMvc.perform(
+                    get("/api/workflow/demanda/1")
+                            .accept(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk());
+
+}
+
+
 
     private static String asJsonString(final Object obj) {
         try {

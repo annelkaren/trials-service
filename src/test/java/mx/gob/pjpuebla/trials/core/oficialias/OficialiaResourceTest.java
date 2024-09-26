@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -18,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -124,7 +123,7 @@ class OficialiaResourceTest {
 
         mockMvc.perform(
                 post("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -137,7 +136,7 @@ class OficialiaResourceTest {
 
         mockMvc.perform(
                 put("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -150,7 +149,7 @@ class OficialiaResourceTest {
 
         mockMvc.perform(
                 put("/api/core/oficialias")
-                        .content(asJsonString(oficialiaRecordResponse))
+                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -162,15 +161,5 @@ class OficialiaResourceTest {
                 delete("/api/core/oficialias/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

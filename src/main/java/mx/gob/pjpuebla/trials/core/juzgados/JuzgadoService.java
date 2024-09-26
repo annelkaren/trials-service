@@ -80,10 +80,6 @@ public class JuzgadoService {
         );
     }
 
-    public List<JuzgadoRecordItem> getAllWithoutPagination() {
-        return juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE, Estado.INACTIVE));
-    }
-
     public JuzgadoRecordItem create(Juzgado juzgado) {
         Materia materia = materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
         juzgado.setMateria(materia);

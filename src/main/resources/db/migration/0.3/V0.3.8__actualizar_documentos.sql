@@ -1,0 +1,2 @@
+ALTER TABLE trials.tbl_documentos
+ADD COLUMN S_MOTIVO_EDITA VARCHAR(250);
