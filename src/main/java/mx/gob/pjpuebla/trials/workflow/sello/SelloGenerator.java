@@ -61,8 +61,8 @@ public class SelloGenerator {
         parameters.put("nombreJuzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("capturista", getCapturista());
         parameters.put("reimpresion", isReimpresion(documento.getAudit().getUsuarioAlta(), documento.getAudit().getFechaAlta()));
-        parameters.put("marcaAgua", "src/main/resources/jasper/escudo.png");
-        parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
+        parameters.put("marcaAgua", "jasper/escudo.png");
+        parameters.put("logotipoHeder", "jasper/header.jpg");
 
         return JasperFillManager.fillReport(
                 sello.getInputStream(),
