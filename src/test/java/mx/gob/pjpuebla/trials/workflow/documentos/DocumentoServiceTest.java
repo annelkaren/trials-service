@@ -128,10 +128,10 @@ class DocumentoServiceTest {
         given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
-        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Demandado"), any())).willReturn(Optional.of(demandado));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getNumeroExpediente(any())).willReturn(new NumeroExpedienteRecord("1"));
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoDocumento.DEMANDA);
 
@@ -240,7 +240,7 @@ class DocumentoServiceTest {
 
 
     @Test
-    void editarAnexos_documentoNoEncontrado() {
+    void getDemandaById_notFoundException() {
         Integer documentoId = 1;
         List<String> nuevosAnexos = Arrays.asList("Anexo1", "Anexo2");
         String motivoEdita = "Corrección";
@@ -265,6 +265,7 @@ class DocumentoServiceTest {
         List<PersonaDocumentoRecord> personas = Arrays.asList(actorRecord, demandadoRecord);
         List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
 
+        given(documentoRepository.findById(demanda.getId())).willReturn(Optional.of(demanda));
         given(personaDocumentoRepository.findPersonasByCarpetaId(demanda.getCarpeta().getId(), Rol.PRINCIPAL)).willReturn(personas);
         given(anexoRepository.findNombresAnexosByDocumentoId(demanda.getId())).willReturn(anexos);
 
