@@ -149,7 +149,7 @@ public class DocumentoService {
 
     public DocumentoResponseRecord getDemandaById(Integer id) {
 
-        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", id.toString()));
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", id.toString()));
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonasByCarpetaId(documento.getCarpeta().getId(), Rol.PRINCIPAL);
         List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
 

@@ -24,6 +24,7 @@ public class DocumentoSetUp {
                 .setTipoJuicio(tipoJuicio)
                 .setSelloEstatus(SelloEstatus.VALIDO);
         Documento documento = new Documento()
+                .setId(1)
                 .setTipoDocumento(tipoDocumento)
                 .setCarpeta(carpeta);
         documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
