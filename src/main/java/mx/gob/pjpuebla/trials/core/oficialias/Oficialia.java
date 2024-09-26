@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.oficialiamateria.OficialiaMateria;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
@@ -56,7 +55,7 @@ public class Oficialia implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY)
     private Sede sede;
 
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", nullable = false)
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", nullable = true)
     @OneToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 

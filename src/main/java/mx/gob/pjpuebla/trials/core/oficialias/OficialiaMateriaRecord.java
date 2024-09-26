@@ -10,6 +10,7 @@ public record OficialiaMateriaRecord(
         Integer materiaId,
         Integer sedeId,
         String  tipoOficialiaNombre,
+        Integer tipoId,
         String  juzgadoNombre,
         Integer juzgadoId
 ) {}
