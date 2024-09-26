@@ -1,0 +1,67 @@
+package mx.gob.pjpuebla.trials.workflow.audiencias;
+
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
+import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.enums.TipoAudiencia;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+
+@Entity
+@EntityListeners(AuditListener.class)
+@Data
+@Table(name = "TBL_DOCUMENTOS")
+public class Audiencia {
+
+    @Id
+    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIAS_ID", allocationSize = 50)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAsistencia")
+    @Column(name = "PN_ID", insertable = false, updatable = false)
+    private Integer id;
+
+    @Column(name = "T_FECHA_AUDIENCIA")
+    private LocalDateTime fechaAudiencia;
+
+    @Column(name = "N_TIPO_AUDIENCIA")
+    private TipoAudiencia tipoAudiencia;
+
+    @Column(name = "N_ASISTENCIA_ACTOR")
+    private Boolean asisteActor;
+
+    @Column(name = "N_ASISTENCIA_DEMANDADO")
+    private Boolean asisteDemandano;
+
+    @JoinColumn(name = "FN_SALA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Sala sala;
+
+
+    private Documento carpeta;
+    
+    @JoinColumn(name = "FN_BLOQUE", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bloque bloque;
+
+    @Column(name = "N_ESTATUS")
+    private Integer estatus;
+
+    @Accessors(chain = false)
+    @Embedded
+    private Audit audit;
+}
