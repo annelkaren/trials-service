@@ -11,34 +11,12 @@ public class SecuenciaRepositoryCustomImpl implements SecuenciaRepositoryCustom 
     private EntityManager entityManager;
 
     @Override
-    public Long getNextValDemanda() {
+    public Long getNextValFolio(String sequenceName) {
         try {
-            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_DEMANDA_FOLIO')");
+            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('" + sequenceName +"')");
             return ((Number) query.getSingleResult()).longValue();  // Cambiado a getSingleResult
         } catch (Exception e) {
             log.error("Error al obtener el siguiente valor de la secuencia de demanda", e);
-            return null;
-        }
-    }
-
-    @Override
-    public Long getNextValExhorto() {
-        try {
-            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_EXHORTO_FOLIO')");
-            return ((Number) query.getSingleResult()).longValue();  // Cambiado a getSingleResult
-        } catch (Exception e) {
-            log.error("Error al obtener el siguiente valor de la secuencia de exhorto", e);
-            return null;
-        }
-    }
-
-    @Override
-    public Long getNextValPromocion() {
-        try {
-            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_PROMOCION_FOLIO')");
-            return ((Number) query.getSingleResult()).longValue();  // Cambiado a getSingleResult
-        } catch (Exception e) {
-            log.error("Error al obtener el siguiente valor de la secuencia de promoción", e);
             return null;
         }
     }

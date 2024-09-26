@@ -77,24 +77,24 @@ class DigitalizacionServiceTest {
 
     private Documento documento;
 
-    @BeforeEach
-    void setUp() {
-        // Configurar los mocks para los repositorios
-        given(materiaRepository.save(any(Materia.class))).willReturn(MateriaSetUp.createMateria());
-        given(distritoRepository.save(any(Distrito.class))).willReturn(DistritoSetUp.createDistrito());
-        given(domicilioRepository.save(any(Domicilio.class))).willReturn(DomicilioSetUp.createDomicilio());
-        given(sedeRepository.save(any(Sede.class))).willReturn(SedeSetUp.createSede());
-        given(tipoSistemaRepository.save(any(TipoSistema.class))).willReturn(TipoSistemaSetUp.createTipoSistema());
-        given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(TipoJuicioSetUp.createTipoJuicio());
-
-        // Configurar el mock para DocumentoRepository y DigitalizacionFolderService
-        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio(),
-                JuzgadoSetUp.createJuzgado());
-        given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
-        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
-        given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
-                .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
-    }
+//    @BeforeEach
+//    void setUp() {
+//        // Configurar los mocks para los repositorios
+//        given(materiaRepository.save(any(Materia.class))).willReturn(MateriaSetUp.createMateria());
+//        given(distritoRepository.save(any(Distrito.class))).willReturn(DistritoSetUp.createDistrito());
+//        given(domicilioRepository.save(any(Domicilio.class))).willReturn(DomicilioSetUp.createDomicilio());
+//        given(sedeRepository.save(any(Sede.class))).willReturn(SedeSetUp.createSede());
+//        given(tipoSistemaRepository.save(any(TipoSistema.class))).willReturn(TipoSistemaSetUp.createTipoSistema());
+//        given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(TipoJuicioSetUp.createTipoJuicio());
+//
+//        // Configurar el mock para DocumentoRepository y DigitalizacionFolderService
+//        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio(),
+//                JuzgadoSetUp.createJuzgado());
+//        given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
+//        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+//        given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
+//                .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
+//    }
 
     @Test
     void cargarArchivoPdf() throws IOException {
