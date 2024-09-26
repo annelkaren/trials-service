@@ -108,7 +108,7 @@ public class DigitalizacionService {
         String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
         String expediente = expedienteArray[0].trim(); // Número del expediente
         String year = expedienteArray[1].trim(); // Año del expediente
-        String juzgado = doc.getCarpeta().getJuzgado().getNombre().trim(); // Nombre del juzgado
+        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", ""); // Nombre del juzgado
 
         // Creación de la ruta donde se espera encontrar el archivo
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);

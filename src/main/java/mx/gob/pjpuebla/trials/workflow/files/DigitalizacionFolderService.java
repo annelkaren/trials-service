@@ -36,7 +36,7 @@ public class DigitalizacionFolderService {
 
         String expediente = expedienteArray[0].trim();
         String year = expedienteArray[1].trim();
-        String juzgado = doc.getCarpeta().getJuzgado().getNombre().trim();
+        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
 
 
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
