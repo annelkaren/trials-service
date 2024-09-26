@@ -45,7 +45,7 @@ public class CaratulaGenerator {
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
         parameters.put("codigoQR", expendienteYear[0]);
-        parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
+        parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getExpediente());
 
         return JasperFillManager.fillReport(
