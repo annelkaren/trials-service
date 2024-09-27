@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.estadocivil;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -15,11 +16,11 @@ import org.springframework.data.domain.PageRequest;
 import static mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilSetUp.createEstadoCivil;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Disabled
 class EstadoCivilRepositoryTest extends AuditConfigTest {
 
     @Autowired

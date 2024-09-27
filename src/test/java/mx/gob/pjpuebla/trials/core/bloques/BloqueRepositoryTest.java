@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
     "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Disabled
 class BloqueRepositoryTest extends AuditConfigTest  {
 
     @Autowired

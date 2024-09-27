@@ -76,7 +76,8 @@ public class DigitalizacionFolderServiceTest {
 
         ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
         Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        Documento documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio(), juzgado);
+        Documento documento = DocumentoTestSetUp.create(TipoDocumento.PROMOCION, TipoJuicioSetUp.createTipoJuicio(),
+                juzgado);
 
         try (MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
             files.when(() -> Files.createDirectories(any(Path.class)))

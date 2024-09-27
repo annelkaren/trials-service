@@ -38,8 +38,8 @@ public class SelloGenerator {
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
-        if (documento.getSelloEstatus() == SelloEstatus.NO_VALIDO) {
-            documento.setSelloEstatus(SelloEstatus.VALIDO);
+        if (documento.getCarpeta().getSelloEstatus() == SelloEstatus.NO_VALIDO) {
+            documento.getCarpeta().setSelloEstatus(SelloEstatus.VALIDO);
             documentoRepository.save(documento);
         }
         List<Anexo> anexos = anexoRepository.findAllByDocumentoId(documento.getId());
@@ -51,14 +51,14 @@ public class SelloGenerator {
         String verificationCode = generateVerificationCode(documento, anexos, date);
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("expediente", documento.getExpediente());
+        parameters.put("expediente", documento.getCarpeta().getExpediente());
         parameters.put("fechaHoraRecepcion", date);
-        parameters.put("folio", documento.getFolio());
+        parameters.put("folio", documento.getCarpeta().getFolio());
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
         parameters.put("nombreEntidad", "PENDIENTE");
-        parameters.put("nombreJuzgado", documento.getJuzgado().getNombre());
+        parameters.put("nombreJuzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("capturista", getCapturista());
         parameters.put("reimpresion", isReimpresion(documento.getAudit().getUsuarioAlta(), documento.getAudit().getFechaAlta()));
         parameters.put("marcaAgua", "jasper/escudo.png");
@@ -97,9 +97,9 @@ public class SelloGenerator {
 
     public String generateVerificationCode(Documento documento, List<Anexo> anexos, String date) {
         String verificationStringCode = String.join("|",
-                documento.getJuzgado().getNombre(),
-                documento.getExpediente(),
-                documento.getFolio(),
+                documento.getCarpeta().getJuzgado().getNombre(),
+                documento.getCarpeta().getExpediente(),
+                documento.getCarpeta().getFolio(),
                 date,
                 getAnexos(anexos)
         );
@@ -120,9 +120,9 @@ public class SelloGenerator {
         return String.join("", list);
     }
 
-    private String tipoDocumentoFolio(Documento documento){
-        int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
-        return tipoDocumentoOrdinal + "-" + documento.getFolio();
+    private String tipoDocumentoFolio(Documento documento) {
+        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
+        return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
     }
 
 }
