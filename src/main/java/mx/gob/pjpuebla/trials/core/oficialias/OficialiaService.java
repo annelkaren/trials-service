@@ -114,7 +114,7 @@ public class OficialiaService {
             existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
                     .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             } else {
-                oficialia.setJuzgado(null);
+                existingOficialia.setJuzgado(null);
             }
 
 
