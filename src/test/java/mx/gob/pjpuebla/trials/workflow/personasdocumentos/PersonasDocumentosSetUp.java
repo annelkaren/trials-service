@@ -24,7 +24,7 @@ public class PersonasDocumentosSetUp {
                 .setId(21)
                 .setNombre("Alberto")
                 .setApellidoPaterno("Marcos")
-                .setApellidoPaterno("Leña")
+                .setApellidoMaterno("Leña")
                 .setPseudonimo("leños")
                 .setTipoPersona("fisica")
                 .setRol(Rol.PRINCIPAL);
