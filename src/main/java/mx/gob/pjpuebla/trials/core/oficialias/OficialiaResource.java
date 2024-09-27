@@ -48,9 +48,4 @@ public class OficialiaResource {
         this.oficialiaService.delete(id);
     }
 
-    @GetMapping("/oficialiaMateria")
-    public Page<OficialiaMateriaRecord> getOficialiaMateria(@PageableDefault(size = 20) Pageable pageable) {
-        return this.oficialiaService.getAllByOficialiaMateria(pageable);
-    }
-
 }
