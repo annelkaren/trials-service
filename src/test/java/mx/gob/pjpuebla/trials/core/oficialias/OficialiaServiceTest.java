@@ -40,6 +40,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,10 +68,11 @@ class OficialiaServiceTest {
 
 
     private Oficialia oficialia;
+    private OficialiaMateriaRecord oficialiaMateriaRecordResponse;
     private OficialiaRecord oficialiaRecord;
     private TipoOficialia tipoOficialia;
-    private  Oficialia oficialia1;
-    private  Juzgado juzgado;
+    private Sede sede;
+    private Juzgado juzgado;
     private Materia materia;
 
     @BeforeEach
@@ -79,7 +81,7 @@ class OficialiaServiceTest {
         Distrito distrito = DistritoSetUp.createDistrito();
         Domicilio domicilio = DomicilioSetUp.createDomicilio();
         juzgado = JuzgadoSetUp.createJuzgado();
-        Sede sede = SedeSetUp.createSede();
+        sede = SedeSetUp.createSede();
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         materia = MateriaSetUp.createMateria();
@@ -205,35 +207,50 @@ class OficialiaServiceTest {
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 
-    public static List<Materia> listcreateMateria() {
-        Materia materia1 = new Materia()
-                .setNombre("PENAL")
-                .setEstado(Estado.ACTIVE)
-                .setVersion(0);
-        materia1.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+    @Test
+    void get_All_oficialia_materias() {
+        oficialiaMateriaRecordResponse = new OficialiaMateriaRecord(
+                oficialia.getId(),
+                oficialia.getNombre(),
+                oficialia.getEstado(),
+                String.join(", ", oficialia.getMateria().stream().map(Materia::getNombre).toArray(String[]::new)), // Concatenar nombres de materias
+                materia.getId(),
+                sede.getId(),
+                tipoOficialia.getNombre(),
+                tipoOficialia.getId(),
+                juzgado.getNombre(),
+                juzgado.getId()
+        );
 
-        Materia materia2 = new Materia()
-                .setNombre("CIVIL")
-                .setEstado(Estado.ACTIVE)
-                .setVersion(0);
-        materia2.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        List<OficialiaMateriaRecord> listPage = Collections.singletonList(oficialiaMateriaRecordResponse);
+        given(oficialiaRepository.findOficialiaDetails(anyList(), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
-        return Arrays.asList(materia1, materia2);
-    }
+        Page<OficialiaMateriaRecord> page = oficialiaService.getAllByOficialiaMateria(PageRequest.of(1, listPage.size()));
 
-    public static Oficialia createOficialia(TipoOficialia tipoOficialia, Sede sede, List<Materia> materias, Juzgado juzgado) {
-        Oficialia oficialia = new Oficialia()
-                .setId(1)
-                .setVersion(0)
-                .setEstado(Estado.ACTIVE)
-                .setJuzgado(juzgado)
-                .setTipoOficialia(tipoOficialia)
-                .setNombre("Común")
-                .setResponsable("Responsable")
-                .setSede(sede)
-                .setMateria(materias);
-        oficialia.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
-        return oficialia;
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", oficialia.getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre())
+                .hasFieldOrPropertyWithValue("estado", oficialia.getEstado());
+
+        for (Materia materiaItem : oficialia.getMateria()) {
+            assertThat(materiaItem)
+                    .hasFieldOrPropertyWithValue("id", materiaItem.getId())
+                    .hasFieldOrPropertyWithValue("nombre", materiaItem.getNombre());
+        }
+
+        assertThat(oficialia.getSede())
+                .hasFieldOrPropertyWithValue("id", oficialia.getSede().getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getSede().getNombre());
+
+        assertThat(oficialia.getTipoOficialia())
+                .hasFieldOrPropertyWithValue("id", oficialia.getTipoOficialia().getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getTipoOficialia().getNombre());
+
+        assertThat(oficialia.getJuzgado())
+                .hasFieldOrPropertyWithValue("id", oficialia.getJuzgado().getId())
+                .hasFieldOrPropertyWithValue("nombre", oficialia.getJuzgado().getNombre());
     }
 }
-

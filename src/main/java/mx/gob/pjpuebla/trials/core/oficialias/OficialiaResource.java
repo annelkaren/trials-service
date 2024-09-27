@@ -20,16 +20,12 @@ public class OficialiaResource {
     private final OficialiaService oficialiaService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<OficialiaRecord> getAll(
+    public Page<OficialiaMateriaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId
     ) {
-        return oficialiaService.getAllActive(pageable, new Oficialia()
-                .setNombre(nombre)
-                .setTipoOficialia(new TipoOficialia().setNombre(tipoOficialiaId))
-        );
-
+        return this.oficialiaService.getAllByOficialiaMateria(pageable);
     }
 
     @GetMapping("/{id}")

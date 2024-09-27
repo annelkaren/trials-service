@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -46,5 +47,9 @@ public class SedeSetUp {
                 "", "",
                 new DistritoRecord(1, ""),
                 new DomicilioRecord(1L, "", "", "", "", "", "", "", "", ""));
+    }
+
+    public  static SedeDomiciliosRecord createSedeDomiciliosRecord(Sede sede, Domicilio domicilio){
+        return new SedeDomiciliosRecord(sede.getId(), sede.getNombre(), domicilio.getCalle(), domicilio.getInterior(), domicilio.getExterior(), domicilio.getColonia(), domicilio.getCodigoPostal(), domicilio.getMunicipio(), domicilio.getEstadoRepublica(), domicilio.getReferencia(), domicilio.getLocalidad());
     }
 }
