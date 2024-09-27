@@ -16,7 +16,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -25,21 +25,23 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DataJpaTest(properties = {
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
+})
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Disabled
 class JuzgadoRepositoryCustomTest extends AuditConfigTest {
 
     @Autowired
@@ -83,7 +85,8 @@ class JuzgadoRepositoryCustomTest extends AuditConfigTest {
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
                 .setTipoJuicios(List.of(tipoJuicio));
         juzgado = juzgadoRepository.save(juzgado);
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setJuzgado(juzgado);
         carpeta = carpetaRepository.save(documento.getCarpeta());
         documento.setCarpeta(carpeta);

@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -12,6 +13,7 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
 
@@ -40,10 +42,6 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "S_EXPEDIENTE", nullable = false)
     private String expediente;
 
-    @Size(max = 50)
-    @Column(name = "S_RUTA")
-    private String ruta;
-
     @Enumerated
     @Column(name = "N_IMPRESION_SELLO", nullable = false)
     private SelloEstatus selloEstatus;
@@ -51,6 +49,11 @@ public class Carpeta implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoCarpeta estatus;
+
+    @NotNull
+    @Enumerated
+    @Column(name = "N_TIPO_CARPETA", nullable = false)
+    private TipoCarpeta tipoCarpeta;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

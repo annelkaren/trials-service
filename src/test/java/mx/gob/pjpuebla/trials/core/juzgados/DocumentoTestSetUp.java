@@ -16,8 +16,19 @@ public class DocumentoTestSetUp {
                 .setExpediente("000001/2024");
         return new Documento()
                 .setId(1)
-                .setTipoDocumento(TipoDocumento.DEMANDA)
                 .setCarpeta(carpeta);
+    }
+
+    public static Documento create(TipoDocumento tipoDocumento, TipoJuicio tipoJuicio, Juzgado jusgado) {
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setExpediente("000001/2024")
+                .setTipoJuicio(tipoJuicio)
+                .setJuzgado(jusgado);
+        return new Documento()
+                .setId(1)
+                .setCarpeta(carpeta)
+                .setTipoDocumento(tipoDocumento);
     }
 
 }

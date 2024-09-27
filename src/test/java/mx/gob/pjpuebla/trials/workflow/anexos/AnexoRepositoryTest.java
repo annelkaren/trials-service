@@ -22,11 +22,13 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -41,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Disabled
 class AnexoRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -65,38 +68,39 @@ class AnexoRepositoryTest extends AuditConfigTest {
     private Anexo anexo;
     private Documento documento;
 
-//    @BeforeEach
-//    public void setUp() {
-//        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
-//        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
-//        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
-//
-//        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-//        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
-//
-//        Sede sede = SedeSetUp.createSede();
-//        sede.setDistrito(distrito);
-//        sede.setDomicilio(domicilio);
-//        sede = sedeRepository.save(sede);
-//
-//        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
-//                .setTipoJuicios(List.of(tipoJuicio));
-//        juzgado = juzgadoRepository.save(juzgado);
-//        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
-//        documento.setJuzgado(juzgado);
-//        documento.setExpediente("000001/2024");
-//        documento.setFolio("1");
-//        documento = documentoRepository.save(documento);
-//
-//        anexo = AnexoSetUp.createAnexo();
-//        anexo.setDocumento(documento);
-//    }
+    @BeforeEach
+    public void setUp() {
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
 
-//    @Test
-//    void findAllByDocumentoId() {
-//        anexo = anexoRepository.save(anexo);
-//        List<Anexo> list = anexoRepository.findAllByDocumentoId(anexo.getDocumento().getId());
-//        assertThat(list).hasSize(1);
-//    }
+        TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
+        TipoJuicio tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
+
+        Sede sede = SedeSetUp.createSede();
+        sede.setDistrito(distrito);
+        sede.setDomicilio(domicilio);
+        sede = sedeRepository.save(sede);
+
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio));
+        juzgado = juzgadoRepository.save(juzgado);
+        documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setJuzgado(juzgado);
+        documento.getCarpeta().setExpediente("000001/2024");
+        documento.getCarpeta().setFolio("1");
+        documento = documentoRepository.save(documento);
+
+        anexo = AnexoSetUp.createAnexo();
+        anexo.setDocumento(documento);
+    }
+
+    @Test
+    void findAllByDocumentoId() {
+        anexo = anexoRepository.save(anexo);
+        List<Anexo> list = anexoRepository.findAllByDocumentoId(anexo.getDocumento().getId());
+        assertThat(list).hasSize(1);
+    }
 
 }

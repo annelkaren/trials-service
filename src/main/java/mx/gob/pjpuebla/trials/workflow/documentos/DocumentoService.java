@@ -2,9 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -19,7 +17,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
@@ -54,10 +51,10 @@ public class DocumentoService {
                                 documento.getCarpeta().getFolio(),
                                 documento.getCarpeta().getExpediente(),
                                 documento.getCarpeta().getJuzgado().getMateria().getNombre(),
-                                documento.getTipoDocumento().name(),
+                                documento.getCarpeta().getTipoCarpeta().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getCarpeta().getSelloEstatus(),
-                                (documento.getCarpeta().getRuta() != null)))
+                                (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -67,7 +64,7 @@ public class DocumentoService {
         EstadoCarpeta value = EstadoCarpeta.values()[status];
         documento.getCarpeta().setEstatus(value);
         carpetaRepository.save(documento.getCarpeta());
-        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getTipoDocumento());
+        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
     public DocumentoRecord createDemanda(DocumentoSaveRecord documentoRecord) {
@@ -84,7 +81,7 @@ public class DocumentoService {
         }
 
         carpeta.setExpediente(juzgadoService.getNumeroExpediente(carpeta.getJuzgado().getId()).numeroExpediente());
-        documento.setTipoDocumento(TipoDocumento.DEMANDA);
+        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta = carpetaRepository.save(carpeta);
@@ -103,7 +100,7 @@ public class DocumentoService {
 
         juzgadoService.actualizarCarga(carpeta.getJuzgado());
 
-        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getTipoDocumento());
+        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
@@ -144,7 +141,7 @@ public class DocumentoService {
         carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
-        return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getTipoDocumento());
+        return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
     public DocumentoResponseRecord getDemandaById(Integer id) {
@@ -175,14 +172,14 @@ public class DocumentoService {
     private String getFolio(String tipo) {
         Long valNum;
         switch (tipo) {
-            case "E": // Case para exhorto
-                valNum = documentoRepository.getNextValFolio("SEQ_EXHORTO_FOLIO");
+            case "E":           // Case para exhorto
+                valNum = documentoRepository.getNextValExhorto();
                 break;
-            case "D": // Case para demanda
-                valNum = documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO");
+            case "D":           // Case para demanda
+                valNum = documentoRepository.getNextValDemanda();
                 break;
-            case "P": // Case para promocion
-                valNum = documentoRepository.getNextValFolio("SEQ_PROMOCION_FOLIO");
+            case "P":           // Case para promocion
+                valNum = documentoRepository.getNextValPromocion();
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);

@@ -23,10 +23,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
@@ -122,9 +119,10 @@ class DocumentoServiceTest {
 
     @Test
     void create_demanda() {
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
-        given(documentoRepository.getNextValFolio("SEQ_DEMANDA_FOLIO")).willReturn(2L);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        given(documentoRepository.getNextValDemanda()).willReturn(2L);
         given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
@@ -133,29 +131,30 @@ class DocumentoServiceTest {
         given(juzgadoService.getNumeroExpediente(any())).willReturn(new NumeroExpedienteRecord("1"));
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
 
-        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoDocumento.DEMANDA);
+        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
 
         DocumentoRecord response = documentoService.createDemanda(recordRequest);
         assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
-                .hasFieldOrPropertyWithValue("tipoDocumento", documentoRecord.tipoDocumento());
+                .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
     }
 
     @Test
     void update_status_success() {
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         given(documentoRepository.findById(any())).willReturn(Optional.of(demanda));
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.SALIDA));
 
-        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), demanda.getTipoDocumento());
+        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), demanda.getCarpeta().getTipoCarpeta());
 
         DocumentoRecord response = documentoService.updateStatus(demanda.getId(), 1);
         assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
-                .hasFieldOrPropertyWithValue("tipoDocumento", documentoRecord.tipoDocumento());
+                .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
 
     }
 
@@ -175,7 +174,8 @@ class DocumentoServiceTest {
 
     @Test
     void getAll_return_page() {
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
         demanda.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
@@ -188,14 +188,15 @@ class DocumentoServiceTest {
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", demanda.getId())
-                .hasFieldOrPropertyWithValue("tipoEntrada", demanda.getTipoDocumento().toString())
+                .hasFieldOrPropertyWithValue("tipoEntrada", demanda.getCarpeta().getTipoCarpeta().toString())
                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
     }
 
     @Test
     void asignaJuzgado() {
         int invocaciones = 2;
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
         given(juzgadoService.getJuzgado(any())).willReturn(juzgado);
 
@@ -214,7 +215,8 @@ class DocumentoServiceTest {
 
     @Test
     void edit_anexos() {
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1").setSelloEstatus(SelloEstatus.VALIDO);
 
         List<String> nuevosAnexos = Arrays.asList("INE", "Acta de nacimiento");
@@ -256,7 +258,8 @@ class DocumentoServiceTest {
 
     @Test
     void getDemandaById_success() {
-        Documento demanda = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
 
         PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "Actor", 1, demanda.getCarpeta().getId());

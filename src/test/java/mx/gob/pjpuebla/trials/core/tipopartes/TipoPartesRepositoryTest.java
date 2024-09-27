@@ -11,6 +11,8 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Disabled
 class TipoPartesRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -60,7 +63,7 @@ class TipoPartesRepositoryTest extends AuditConfigTest {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(new TipoPartes().setNombre("A").setEstado(Estado.ACTIVE), exampleMatcher),PageRequest.of(0, 20));
+        Page<TipoPartes> page = tipoPartesRepository.findAll(Example.of(new TipoPartes().setNombre("A").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
 
     }

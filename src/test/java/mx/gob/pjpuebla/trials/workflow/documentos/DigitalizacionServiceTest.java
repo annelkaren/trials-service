@@ -20,6 +20,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
@@ -87,7 +88,8 @@ class DigitalizacionServiceTest {
         given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(TipoJuicioSetUp.createTipoJuicio());
 
         // Configurar el mock para DocumentoRepository y DigitalizacionFolderService
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio());
+        documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
         given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);

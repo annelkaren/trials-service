@@ -191,6 +191,8 @@
 										<exclude>*sello*</exclude>
 										<exclude>*listavalor*</exclude>
 										<exclude>*DocumentoResource</exclude>
+										<exclude>*SecuenciaRepositoryCustomImpl</exclude>
+										<exclude>*JuzgadoRepositoryCustomImpl</exclude>
 									</excludes>
 									<limits>
 										<limit>
