@@ -45,7 +45,7 @@ public class CaratulaGenerator {
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
         parameters.put("codigoQR", expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte
-        parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
+        parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
 
         return JasperFillManager.fillReport(

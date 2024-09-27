@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -33,6 +37,8 @@ public class SelloGenerator {
     private final AuditorAware<Jwt> auditorAware;
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
+    private final JuzgadoRepository juzgadoRepository;
+    private final OficialiaRepository oficialiaRepository;
     @Value("classpath:jasper/selloReport.jasper")
     private Resource sello;
 
@@ -57,7 +63,7 @@ public class SelloGenerator {
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
-        parameters.put("nombreEntidad", "PENDIENTE");
+        parameters.put("nombreEntidad", getCentroTrabajoCapturista());
         parameters.put("nombreJuzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("capturista", getCapturista());
         parameters.put("reimpresion", isReimpresion(documento.getAudit().getUsuarioAlta(), documento.getAudit().getFechaAlta()));
@@ -123,6 +129,32 @@ public class SelloGenerator {
     private String tipoDocumentoFolio(Documento documento) {
         int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
         return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
+    }
+
+    private String getCentroTrabajoCapturista() {
+        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
+        String user = jwt.getSubject();
+        Persona persona = personaRepository.findByUsuario(user).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario"));
+        String nombreCapturista;
+        if (persona.getJuzgado() != null) {
+            Optional<Juzgado> juzgadoOptional = juzgadoRepository.findById(persona.getJuzgado().getId());
+            if (juzgadoOptional.isPresent()) {
+                nombreCapturista = juzgadoOptional.get().getNombre();
+            } else {
+                throw new NotFoundException("Juzgado no encontrado", "juzgadoId");
+            }
+        }
+        else if (persona.getOficialia() != null) {
+            Optional<Oficialia> oficialiaOptional = oficialiaRepository.findById(persona.getOficialia().getId());
+            if (oficialiaOptional.isPresent()) {
+                nombreCapturista = oficialiaOptional.get().getNombre();
+            } else {
+                throw new NotFoundException("Oficialia no encontrada", "oficialiaId");
+            }
+        } else {
+            nombreCapturista = "";
+        }
+        return  nombreCapturista;
     }
 
 }
