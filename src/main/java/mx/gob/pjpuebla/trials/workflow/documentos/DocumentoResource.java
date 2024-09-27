@@ -2,26 +2,26 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
-import net.sf.jasperreports.engine.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.io.IOException;
-import java.util.Map;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 @RequiredArgsConstructor
 @RestController
@@ -35,21 +35,19 @@ public class DocumentoResource {
     private final DigitalizacionService digitalizacionService;
 
     @PostMapping("/demanda")
-    public DocumentoRecord createDemanda(@RequestBody DocumentoDTO documentoDTO) {
-        return this.documentoService.createDemanda(documentoDTO);
+    public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
+        return this.documentoService.createDemanda(documentoSaveRecord);
     }
 
     @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AnexoRecord> editarAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord ){
-        AnexoRecord updatedAnexos = documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
-        return ResponseEntity.ok(updatedAnexos);
+    public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
+        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
     }
 
-
     @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DocumentoResponseRecord> getEditDocumento(@PathVariable Integer id) {
-        DocumentoResponseRecord  editDocumento  = documentoService.getEditDocumentoAnexo(id);
-        return  ResponseEntity.ok(editDocumento);
+    public ResponseEntity<DocumentoResponseRecord> getDemandaById(@PathVariable Integer id) {
+        DocumentoResponseRecord editDocumento = documentoService.getDemandaById(id);
+        return ResponseEntity.ok(editDocumento);
     }
 
     @GetMapping(value = "/documentos/{id}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,9 +83,7 @@ public class DocumentoResource {
     }
 
     @GetMapping("/bandeja/entrada")
-    public Page<DocumentoGridRecord> getAll(
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
+    public Page<DocumentoGridRecord> getAll(@PageableDefault(size = 20)  Pageable pageable, @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAll(key, pageable);
     }
 

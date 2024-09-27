@@ -7,7 +7,6 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.DocumentoTestSetUp;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
@@ -21,7 +20,9 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,8 +88,9 @@ class DigitalizacionServiceTest {
         given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(TipoJuicioSetUp.createTipoJuicio());
 
         // Configurar el mock para DocumentoRepository y DigitalizacionFolderService
-        documento = DocumentoTestSetUp.create(TipoDocumento.DEMANDA, TipoJuicioSetUp.createTipoJuicio(),
-                JuzgadoSetUp.createJuzgado());
+        documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
         given(documentoRepository.findById(documento.getId())).willReturn(java.util.Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
