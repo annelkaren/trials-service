@@ -8,11 +8,26 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -23,6 +38,9 @@ public class SalaService {
     private final JuzgadoRepository juzgadoRepository;
     private final BloqueRepository bloqueRepository;
     private final PersonaRepository juezRepository;
+    private final AudienciaRepository audienciaRepository;
+    private final TipoPartesRepository tipoPartesRepository;
+    private final PersonaDocumentoRepository personaDocumentoRepository;
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
@@ -93,6 +111,62 @@ public class SalaService {
 
             return "1";
         }
+    }
+
+    public SalaRecord findSalaDisponible(LocalDateTime fechaAudiencia, Juzgado juzgado){
+
+        Optional<SalaRecord> salaDisponible = salaRepository.findSalaDisponible(fechaAudiencia, juzgado).stream().findFirst();
+
+        while (salaDisponible.isEmpty()){
+            LocalDateTime siguienteFecha = fechaAudiencia.plusDays(1);
+
+            if (siguienteFecha.getDayOfWeek()==DayOfWeek.SATURDAY){
+                siguienteFecha = siguienteFecha.plusDays(2);
+            }else if(siguienteFecha.getDayOfWeek()==DayOfWeek.SUNDAY){
+                siguienteFecha = siguienteFecha.plusDays(1);
+            }
+
+            salaDisponible = salaRepository.findSalaDisponible(siguienteFecha, juzgado).stream().findFirst();
+        }
+
+        return salaDisponible.get();
+    }
+
+    public Sala findConexidadSala(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio){
+         List<Carpeta> carpetas = new ArrayList<>();
+        
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte().toString()));
+
+        List<PersonaDocumento> registrosActor = personaDocumentoRepository
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(), actorParte.getId());
+
+        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(), demandado.pseudonimo(), demandadoParte.getId());
+
+        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
+            return null;
+        }
+
+        for (PersonaDocumento tmp : registrosActor) {
+            carpetas.add(tmp.getCarpeta());
+        }
+
+        for (PersonaDocumento tmp : registrosDemandado) {
+            Optional<Audiencia> audiencia;
+
+            if (!carpetas.contains(tmp.getCarpeta()))
+                continue;
+
+            audiencia = audienciaRepository.findByCarpeta(tmp.getCarpeta());
+
+            if (audiencia.isPresent()){
+                return audiencia.get().getSala();
+            }
+        }
+        return null;
     }
 
 }

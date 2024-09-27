@@ -21,7 +21,7 @@ import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.TipoAudiencia;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -52,7 +52,7 @@ public class Audiencia {
     private Sala sala;
 
 
-    private Documento carpeta;
+    private Carpeta carpeta;
     
     @JoinColumn(name = "FN_BLOQUE", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
