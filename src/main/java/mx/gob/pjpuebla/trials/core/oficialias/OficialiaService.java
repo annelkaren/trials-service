@@ -9,7 +9,6 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
@@ -21,10 +20,8 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Console;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor

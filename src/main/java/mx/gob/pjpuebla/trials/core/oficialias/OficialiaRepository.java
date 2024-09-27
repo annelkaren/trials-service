@@ -54,6 +54,4 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
         WHERE o.estado IN :estados
         """)
     Page<OficialiaMateriaRecord> findOficialiaDetails(@Param("estados") List<Estado> estados, Pageable pageable);
-
-
 }

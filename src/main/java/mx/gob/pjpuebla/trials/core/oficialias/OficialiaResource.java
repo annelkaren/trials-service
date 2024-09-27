@@ -20,16 +20,8 @@ public class OficialiaResource {
     private final OficialiaService oficialiaService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<OficialiaRecord> getAll(
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId
-    ) {
-        return oficialiaService.getAllActive(pageable, new Oficialia()
-                .setNombre(nombre)
-                .setTipoOficialia(new TipoOficialia().setNombre(tipoOficialiaId))
-        );
-
+    public Page<OficialiaMateriaRecord> getAll(@PageableDefault(size = 20) Pageable pageable) {
+        return this.oficialiaService.getAllByOficialiaMateria(pageable);
     }
 
     @GetMapping("/{id}")
@@ -50,11 +42,6 @@ public class OficialiaResource {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         this.oficialiaService.delete(id);
-    }
-
-    @GetMapping("/oficialiaMateria")
-    public Page<OficialiaMateriaRecord> getOficialiaMateria(@PageableDefault(size = 20) Pageable pageable) {
-        return this.oficialiaService.getAllByOficialiaMateria(pageable);
     }
 
 }
