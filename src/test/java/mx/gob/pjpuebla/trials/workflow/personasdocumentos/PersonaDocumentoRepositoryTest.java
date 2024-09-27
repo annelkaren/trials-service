@@ -22,7 +22,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -32,12 +32,10 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -101,7 +99,8 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
                 .setTipoJuicios(Arrays.asList(tj1, tj2));
         juzgado = juzgadoRepository.save(juzgado);
 
-        documento = DocumentoSetUp.create(TipoDocumento.DEMANDA, tipoJuicio).setVersion(0);
+        documento = DocumentoSetUp.create(tipoJuicio).setVersion(0);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         carpeta = documento.getCarpeta();
         carpeta.setJuzgado(juzgado);
         carpeta = carpetaRepository.save(carpeta);
