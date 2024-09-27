@@ -1,4 +1,5 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,167 +36,168 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class InstitucionServiceTest {
 
-        @Mock
-        InstitucionRepository mockInstitucionRepository;
+    @Mock
+    InstitucionRepository mockInstitucionRepository;
 
-        @Mock
-        DistritoRepository mockDistritoRepository;
+    @Mock
+    DistritoRepository mockDistritoRepository;
 
-        @Mock
-        DomicilioRepository mockDomicilioRepository;
+    @Mock
+    DomicilioRepository mockDomicilioRepository;
 
-        @InjectMocks
-        InstitucionService mockInstitucionService;
+    @InjectMocks
+    InstitucionService mockInstitucionService;
 
-        @Mock
-        DomicilioService domicilioService;
+    @Mock
+    DomicilioService domicilioService;
 
-        private Institucion institucion;
-        private InstitucionRecord institucionRecord;
-        private InstitucionRecordResponse institucionRecordResponse;
-        private Distrito distrito;
-        private Domicilio domicilio;
+    private Institucion institucion;
+    private InstitucionRecord institucionRecord;
+    private InstitucionRecordResponse institucionRecordResponse;
+    private Distrito distrito;
+    private Domicilio domicilio;
 
-        @BeforeEach
-        public void setUp() {
-                institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
-                institucionRecord = InstitucionSetUp.createInstitucionRecord();
-                institucionRecordResponse = InstitucionSetUp.createInstitucionRecordResponse();
+    @BeforeEach
+    public void setUp() {
+        institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
+        institucionRecord = InstitucionSetUp.createInstitucionRecord();
+        institucionRecordResponse = InstitucionSetUp.createInstitucionRecordResponse();
 
-                distrito = DistritoSetUp.createDistrito();
-                domicilio = DomicilioSetUp.createDomicilio();
-        }
+        distrito = DistritoSetUp.createDistrito();
+        domicilio = DomicilioSetUp.createDomicilio();
+    }
 
 
-        @Test
-        void getAll_return_page() {
-                institucion.setDistrito(distrito);
-                institucion.setDomicilio(domicilio);
-                
-                List<Institucion> listPage = Collections.singletonList(institucion);
-                given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
-                                                listPage.size()));
-                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion,
-                                PageRequest.of(1, listPage.size()));
-                assertThat(page.getContent())
-                                .hasSize(1)
-                                .first().hasFieldOrPropertyWithValue("id", institucion.getId())
-                                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre());
+    @Test
+    void getAll_return_page() {
+        institucion.setDistrito(distrito);
+        institucion.setDomicilio(domicilio);
 
-        }
+        List<Institucion> listPage = Collections.singletonList(institucion);
+        given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                        listPage.size()));
+        Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion,
+                PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first().hasFieldOrPropertyWithValue("id", institucion.getId())
+                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre());
 
-        @Test
-        void getById_return_institucionRecordResponse() {
-                List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-                given(mockInstitucionRepository.findByIdAndEstadoIn(institucion.getId(), estados))
-                                .willReturn(Optional.ofNullable(institucionRecordResponse));
+    }
 
-                InstitucionRecordResponse result = mockInstitucionService.findById(institucion.getId());
-                assertThat(result).isOfAnyClassIn(InstitucionRecordResponse.class)
-                                .hasFieldOrPropertyWithValue("id", institucion.getId())
-                                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre());
-        }
+    @Test
+    void getById_return_institucionRecordResponse() {
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        given(mockInstitucionRepository.findByIdAndEstadoIn(institucion.getId(), estados))
+                .willReturn(Optional.ofNullable(institucionRecordResponse));
 
-        @Test
-        void getById_return_not_found() {
-                Integer id = institucion.getId();
-                List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-                given(mockInstitucionRepository.findByIdAndEstadoIn(institucion.getId(), estados))
-                                .willReturn(Optional.empty());
+        InstitucionRecordResponse result = mockInstitucionService.findById(institucion.getId());
+        assertThat(result).isOfAnyClassIn(InstitucionRecordResponse.class)
+                .hasFieldOrPropertyWithValue("id", institucion.getId())
+                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre());
+    }
 
-                NotFoundException assertThrows = assertThrows(
-                                NotFoundException.class,
-                                () -> mockInstitucionService.findById(id));
+    @Test
+    void getById_return_not_found() {
+        Integer id = institucion.getId();
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        given(mockInstitucionRepository.findByIdAndEstadoIn(institucion.getId(), estados))
+                .willReturn(Optional.empty());
 
-                assertThat(assertThrows.getMessage()).contains("Institución no encontrada");
-        }
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> mockInstitucionService.findById(id));
 
-        @Test
-        void create() {
-                institucion.setDistrito(distrito);
-                institucion.setDomicilio(domicilio);
+        assertThat(assertThrows.getMessage()).contains("Institución no encontrada");
+    }
 
-                given(mockDistritoRepository.findById(distrito.getId()))
-                                .willReturn(Optional.of(distrito));
-                given(mockDomicilioRepository.save(domicilio))
-                                .willReturn(domicilio);
-                given(mockInstitucionRepository.save(institucion))
-                                .willReturn(institucion);
+    @Test
+    void create() {
+        institucion.setDistrito(distrito);
+        institucion.setDomicilio(domicilio);
 
-                Integer response = mockInstitucionService.create(institucion);
+        given(mockDistritoRepository.findById(distrito.getId()))
+                .willReturn(Optional.of(distrito));
+        given(mockDomicilioRepository.save(domicilio))
+                .willReturn(domicilio);
+        given(mockInstitucionRepository.save(institucion))
+                .willReturn(institucion);
 
-                assertThat(response).isEqualTo(institucion.getId());
-        }
+        Integer response = mockInstitucionService.create(institucion);
 
-        @Test
-        void update_success() {
+        assertThat(response).isEqualTo(institucion.getId());
+    }
 
-                institucion.setDistrito(distrito);
-                institucion.setDomicilio(domicilio);
+    @Test
+    void update_success() {
 
-                given(mockDistritoRepository.findById(distrito.getId()))
-                                .willReturn(Optional.of(distrito));
+        institucion.setDistrito(distrito);
+        institucion.setDomicilio(domicilio);
 
-                given(mockDomicilioRepository.save(domicilio))
-                                .willReturn(domicilio);
+        given(mockDistritoRepository.findById(distrito.getId()))
+                .willReturn(Optional.of(distrito));
 
-                given(mockInstitucionRepository.save(institucion))
-                                .willReturn(institucion);
+        given(mockDomicilioRepository.save(domicilio))
+                .willReturn(domicilio);
 
-                Integer response = mockInstitucionService.update(institucion);
+        given(mockInstitucionRepository.save(institucion))
+                .willReturn(institucion);
 
-                assertThat(response).isEqualTo(institucion.getId());
-        }
+        Integer response = mockInstitucionService.update(institucion);
 
-        @Test
-        void update_return_optimistic_exception() {
-                institucion.setDistrito(distrito);
-                institucion.setDomicilio(domicilio);
-                institucion.setVersion(8);
+        assertThat(response).isEqualTo(institucion.getId());
+    }
 
-                given(mockDistritoRepository.findById(distrito.getId()))
-                                .willReturn(Optional.of(distrito));
+    @Test
+    void update_return_optimistic_exception() {
+        institucion.setDistrito(distrito);
+        institucion.setDomicilio(domicilio);
+        institucion.setVersion(8);
 
-                given(mockDomicilioRepository.save(domicilio))
-                                .willReturn(domicilio);
+        given(mockDistritoRepository.findById(distrito.getId()))
+                .willReturn(Optional.of(distrito));
 
-                given(mockInstitucionRepository.save(institucion))
-                                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
+        given(mockDomicilioRepository.save(domicilio))
+                .willReturn(domicilio);
 
-                InvalidVersionException assertThrows = assertThrows(
-                                InvalidVersionException.class,
-                                () -> mockInstitucionService.update(institucion));
+        given(mockInstitucionRepository.save(institucion))
+                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-                assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
+        InvalidVersionException assertThrows = assertThrows(
+                InvalidVersionException.class,
+                () -> mockInstitucionService.update(institucion));
 
-        }
+        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
 
-        @Test
-        void delete_success() {
+    }
 
-                doNothing().when(mockInstitucionRepository).deleteById(anyInt());
+    @Test
+    void delete_success() {
 
-                mockInstitucionService.delete(1);
+        doNothing().when(mockInstitucionRepository).deleteById(anyInt());
 
-                verify(mockInstitucionRepository, times(1)).deleteById(1);
-        }
+        mockInstitucionService.delete(1);
 
-        @Test
-        void delete_nonExistentId_throwsException() {
-                
-                doThrow(new IllegalArgumentException("Invalid ID")).when(mockInstitucionRepository).deleteById(anyInt());
+        verify(mockInstitucionRepository, times(1)).deleteById(1);
+    }
 
-                
-                assertThatThrownBy(() -> mockInstitucionService.delete(999))
-                                .isInstanceOf(IllegalArgumentException.class)
-                                .hasMessageContaining("Invalid ID");
-        }
+    @Test
+    void delete_nonExistentId_throwsException() {
+
+        doThrow(new IllegalArgumentException("Invalid ID")).when(mockInstitucionRepository).deleteById(anyInt());
+
+
+        assertThatThrownBy(() -> mockInstitucionService.delete(999))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid ID");
+    }
 
 }

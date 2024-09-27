@@ -23,30 +23,30 @@ public class CaratulaGenerator {
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DocumentoRepository documentoRepository;
-    private final JuzgadoRepository  juzgadoRepository;
+    private final JuzgadoRepository juzgadoRepository;
     @Value("classpath:jasper/CaratulaReport.jasper")
     private Resource caratula;
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
-          Documento documento = documentoRepository.findById(id).orElseThrow();
-          return JasperExportManager.exportReportToPdf(getReport(documento));
+        Documento documento = documentoRepository.findById(id).orElseThrow();
+        return JasperExportManager.exportReportToPdf(getReport(documento));
     }
 
-    private JasperPrint getReport(Documento documento) throws IOException, JRException  {
-        String[] expendienteYear = getNoExpendienteYear(documento.getExpediente());
-        String actor = getNombrePersoaByIdAndParte(documento.getId(), "Actor");
-        String demandado = getNombrePersoaByIdAndParte(documento.getId(), "Demandado");
+    private JasperPrint getReport(Documento documento) throws IOException, JRException {
+        String[] expendienteYear = getNoExpendienteYear(documento.getCarpeta().getExpediente());
+        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("juzgado", documento.getJuzgado().getNombre());
+        parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
         parameters.put("year", expendienteYear[1]);
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
-        parameters.put("codigoQR", expendienteYear[0]);
-        parameters.put("logotipoHeder", "src/main/resources/jasper/header.jpg");
-        parameters.put("numeroExpediente", documento.getExpediente());
+        parameters.put("codigoQR", expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte
+        parameters.put("logotipoHeder", "jasper/header.jpg");
+        parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
 
         return JasperFillManager.fillReport(
                 caratula.getInputStream(),
@@ -54,19 +54,19 @@ public class CaratulaGenerator {
                 new JREmptyDataSource());
     }
 
-    private String[] getNoExpendienteYear(String expediente){
+    private String[] getNoExpendienteYear(String expediente) {
         return expediente.split("/");
     }
 
-    private String getNombrePersoaByIdAndParte(Integer id, String parte) {
+    private String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findDocumentoPersonaTipoParteByDocumentoId(id, parte, rol);
-        String apellidoMaterno = persona.getApellidoMaterno() != null ? persona.getApellidoMaterno() : "";
-        return String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), apellidoMaterno);
+        PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+        String apellidoMaterno = persona.apellidoPaterno() != null ? persona.apellidoMaterno() : "";
+        return String.format("%s %s %s", persona.nombre(), persona.apellidoPaterno(), apellidoMaterno);
     }
 
     private String tipoDocumentoFolio(Documento documento){
-        int tipoDocumentoOrdinal = documento.getTipoDocumento().ordinal();
-        return tipoDocumentoOrdinal + "-" + documento.getFolio();
+        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
+        return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
     }
 }

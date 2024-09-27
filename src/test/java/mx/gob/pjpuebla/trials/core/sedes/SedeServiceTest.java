@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaMateriaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -16,10 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +51,7 @@ class SedeServiceTest {
     private SedeRecord sedeRecord;
     private Distrito distrito;
     private Domicilio domicilio;
+    private SedeDomiciliosRecord sedeDomiciliosRecord;
 
     @BeforeEach
     public void setUp() {
@@ -158,4 +157,44 @@ class SedeServiceTest {
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
+    @Test
+    void getAllSedesAndDomicilios_return_page() {
+        // Inicializar el objeto SedeDomiciliosRecord
+        sedeDomiciliosRecord = new SedeDomiciliosRecord(
+                sede.getId(),
+                sede.getNombre(),
+                domicilio.getCalle(),
+                domicilio.getInterior(),
+                domicilio.getExterior(),
+                domicilio.getColonia(),
+                domicilio.getCodigoPostal(),
+                domicilio.getMunicipio(),
+                domicilio.getEstadoRepublica(),
+                domicilio.getReferencia(),
+                domicilio.getLocalidad()
+        );
+
+        List<SedeDomiciliosRecord> listPage = Collections.singletonList(sedeDomiciliosRecord);
+        given(mockSedeRepository.findSedesDomiciliosByJuzgadoId(any(Pageable.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+
+        // Llamar al método de servicio
+        Page<SedeDomiciliosRecord> page = sedeService.getAllSedesAndDomicilios(PageRequest.of(0, 10));
+
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("IdSedes", sede.getId()) // Cambia "id" a "IdSedes"
+                .hasFieldOrPropertyWithValue("sedeNombre", sede.getNombre())
+                .hasFieldOrPropertyWithValue("calle", domicilio.getCalle())
+                .hasFieldOrPropertyWithValue("interior", domicilio.getInterior())
+                .hasFieldOrPropertyWithValue("exterior", domicilio.getExterior())
+                .hasFieldOrPropertyWithValue("colonia", domicilio.getColonia())
+                .hasFieldOrPropertyWithValue("codigoPostal", domicilio.getCodigoPostal())
+                .hasFieldOrPropertyWithValue("municipio", domicilio.getMunicipio())
+                .hasFieldOrPropertyWithValue("estadoRepublica", domicilio.getEstadoRepublica())
+                .hasFieldOrPropertyWithValue("referencia", domicilio.getReferencia())
+                .hasFieldOrPropertyWithValue("localidad", domicilio.getLocalidad());
+    }
+
 }

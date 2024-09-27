@@ -67,9 +67,10 @@ public class SedeService {
         return sedeRepository.findSedesDomiciliosByJuzgadoId(pageable);
     }
 
-
     public void delete(Integer id) {
         sedeRepository.deleteById(id);
     }
+
+
 
 }

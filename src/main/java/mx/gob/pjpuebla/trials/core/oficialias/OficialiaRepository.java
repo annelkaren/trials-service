@@ -47,7 +47,7 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             j.id
         )
         FROM Oficialia o
-        JOIN o.materia m
+        LEFT JOIN o.materia m
         JOIN o.sede s
         LEFT JOIN o.juzgado j
         JOIN o.tipoOficialia t
