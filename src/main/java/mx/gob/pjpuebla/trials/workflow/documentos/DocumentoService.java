@@ -2,27 +2,30 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
-import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
-import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class DocumentoService {
     private final AnexoRepository anexoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
+    private final CarpetaRepository carpetaRepository;
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -44,89 +48,87 @@ public class DocumentoService {
         List<DocumentoGridRecord> list = page.getContent().stream()
                 .map(documento ->
                         new DocumentoGridRecord(documento.getId(),
-                                documento.getFolio(),
-                                documento.getExpediente(),
-                                documento.getJuzgado().getMateria().getNombre(),
-                                documento.getTipoDocumento().name(),
+                                documento.getCarpeta().getFolio(),
+                                documento.getCarpeta().getExpediente(),
+                                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
+                                documento.getCarpeta().getTipoCarpeta().name(),
                                 documento.getAudit().getFechaAlta(),
-                                documento.getSelloEstatus(),
+                                documento.getCarpeta().getSelloEstatus(),
                                 (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     public DocumentoRecord updateStatus(Integer id, Integer status) {
-        Documento doc = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
-        EstadoDocumento value = EstadoDocumento.values()[status];
-        doc.setEstatus(value);
-        documentoRepository.save(doc);
-        return new DocumentoRecord(doc.getId(), doc.getFolio(), doc.getTipoDocumento());
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+        EstadoCarpeta value = EstadoCarpeta.values()[status];
+        documento.getCarpeta().setEstatus(value);
+        carpetaRepository.save(documento.getCarpeta());
+        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-    public DocumentoRecord createDemanda(DocumentoDTO documentoDTO) {
+    public DocumentoRecord createDemanda(DocumentoSaveRecord documentoRecord) {
         Documento documento = new Documento();
+        Carpeta carpeta = new Carpeta();
 
-        documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
-        documento.setFolio(getFolio("D"));
-        //TODO. Asignación de juzgado correctamente
-        documento.setJuzgado(juzgadoService.getConexidadJuzgado(documentoDTO.actor, documentoDTO.getDemandado(), documento.getTipoJuicio()));
+        carpeta.setTipoJuicio(tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString())));
+        carpeta.setFolio(getFolio("D"));
+        carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
 
-        if (documento.getJuzgado() == null) {
-            documento.setJuzgado(juzgadoService.getJuzgado(documento.getTipoJuicio()));
+        if (carpeta.getJuzgado() == null) {
+            carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio()));
         }
 
-        documento.setExpediente(juzgadoService.getNumeroExpediente(documento.getJuzgado().getId()).numeroExpediente());
-        documento.setTipoDocumento(TipoDocumento.DEMANDA);
-        documento.setEstatus(EstadoDocumento.CAPTURA);
-        documento.setSelloEstatus(SelloEstatus.VALIDO);
-        //TODO. Falta definir reglas de este estatus
-        documento.setEstatusProcesal("Recepción documentos");
-        documento.setTipoJuicio(tipoJuicioRepository.findById(documentoDTO.getTipoJuicioId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId")));
+        carpeta.setExpediente(juzgadoService.getNumeroExpediente(carpeta.getJuzgado().getId()).numeroExpediente());
+        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
+        carpeta.setEstatus(EstadoCarpeta.CAPTURA);
+        carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta = carpetaRepository.save(carpeta);
+        documento.setCarpeta(carpeta);
         documento = documentoRepository.save(documento);
 
-        createPersonaDocumento(documentoDTO.getActor(), documento);
-        createPersonaDocumento(documentoDTO.getDemandado(), documento);
+        createPersonaDocumento(documentoRecord.actor(), carpeta);
+        createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
-        for (String anexo : documentoDTO.getAnexos()) {
+        for (String anexo : documentoRecord.anexos()) {
             Anexo entity = new Anexo();
             entity.setNombre(anexo);
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
 
-        juzgadoService.actualizarCarga(documento.getJuzgado());
+        juzgadoService.actualizarCarga(carpeta.getJuzgado());
 
-        return new DocumentoRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-    private void createPersonaDocumento(PersonaDocumentoDTO persona, Documento documento) {
-        String tipoParte = (persona.getTipoParte().equals(1)) ? "Actor" : "Demandado";
+    private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
+        String tipoParte = (persona.tipoParte().equals(1)) ? "Actor" : "Demandado";
         PersonaDocumento entity = new PersonaDocumento();
-        entity.setNombre(persona.getNombre());
-        entity.setApellidoPaterno(persona.getApellidoPaterno());
-        entity.setApellidoMaterno(persona.getApellidoMaterno());
-        entity.setPseudonimo(persona.getPseudonimo());
-        entity.setTipoPersona(persona.getTipoPersona());
+        entity.setNombre(persona.nombre());
+        entity.setApellidoPaterno(persona.apellidoPaterno());
+        entity.setApellidoMaterno(persona.apellidoMaterno());
+        entity.setPseudonimo(persona.pseudonimo());
+        entity.setTipoPersona(persona.tipoPersona());
         entity.setRol(Rol.PRINCIPAL);
-        entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, documento.getTipoJuicio().getId())
+        entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, carpeta.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
-        entity.setDocumento(documento);
+        entity.setCarpeta(carpeta);
         personaDocumentoRepository.save(entity);
     }
 
-    public AnexoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
+    public DocumentoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
 
         Documento documento = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId " + documentoId));
         documento.setMotivoEdita(motivoEdita);
-        documento.setSelloEstatus(SelloEstatus.NO_VALIDO);
+        documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
 
         List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
         anexosActuales.stream()
                 .filter(anexo -> !nuevosAnexos.contains(anexo.getNombre()))
-                .forEach(anexo -> anexoRepository.delete(anexo));
+                .forEach(anexoRepository::delete);
 
         for (String anexo : nuevosAnexos) {
             if (anexosActuales.stream().noneMatch(existingAnexo -> existingAnexo.getNombre().equals(anexo))) {
@@ -136,40 +138,31 @@ public class DocumentoService {
                 anexoRepository.save(nuevoAnexo);
             }
         }
+        carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
-        return new AnexoRecord(nuevosAnexos, motivoEdita);
+        return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-    public  DocumentoResponseRecord getEditDocumentoAnexo(Integer id) {
+    public DocumentoResponseRecord getDemandaById(Integer id) {
 
-        List<DocumentoAnexoRecord> documentoAnexos = personaDocumentoRepository.findDocumentoAnexoByDocumentoId(id);
-        List<String> anexos = personaDocumentoRepository.findNombresAnexosByDocumentoId(id);
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", id.toString()));
+        List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonasByCarpetaId(documento.getCarpeta().getId(), Rol.PRINCIPAL);
+        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
 
-        PersonaDocumentoDTO actorDTO = new PersonaDocumentoDTO();
-        PersonaDocumentoDTO demandadoDTO = new PersonaDocumentoDTO();
+        PersonaDocumentoRecord actor = null;
+        PersonaDocumentoRecord demandado = null;
 
-        documentoAnexos.forEach(anexo -> {
-
-            if ("Actor".equals(anexo.tipoParteNombre())) {
-                actorDTO.setNombre(anexo.nombre());
-                actorDTO.setApellidoPaterno(anexo.apellidoPaterno());
-                actorDTO.setApellidoMaterno(anexo.apellidoMaterno());
-                actorDTO.setPseudonimo(anexo.pseudonimo());
-                actorDTO.setTipoPersona(anexo.tipoPersona());
-                actorDTO.setTipoParte(anexo.tipoParteId());
-            } else if ("Demandado".equals(anexo.tipoParteNombre())) {
-                demandadoDTO.setNombre(anexo.nombre());
-                demandadoDTO.setApellidoPaterno(anexo.apellidoPaterno());
-                demandadoDTO.setApellidoMaterno(anexo.apellidoMaterno());
-                demandadoDTO.setPseudonimo(anexo.pseudonimo());
-                demandadoDTO.setTipoPersona(anexo.tipoPersona());
-                demandadoDTO.setTipoParte(anexo.tipoParteId());
+        for (PersonaDocumentoRecord persona : personas) {
+            if ("Actor".equalsIgnoreCase(persona.tipoParte())) {
+                actor = persona;
+            } else if ("Demandado".equalsIgnoreCase(persona.tipoParte())) {
+                demandado = persona;
             }
-        });
-        return new DocumentoResponseRecord(actorDTO, demandadoDTO, anexos);
-
+        }
+        return new DocumentoResponseRecord(actor, demandado, anexos);
     }
+
     /**
      * Devuelve un numero de folio
      *
@@ -192,13 +185,6 @@ public class DocumentoService {
                 throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         }
         return valNum.toString();
-    }
-
-
-    public void actualizarCargaJuzgado(DocumentoRecord documentoRecord) {
-        Documento documento = documentoRepository.findById(documentoRecord.id()).orElseThrow();
-
-        juzgadoService.actualizarCarga(documento.getJuzgado());
     }
 }
 

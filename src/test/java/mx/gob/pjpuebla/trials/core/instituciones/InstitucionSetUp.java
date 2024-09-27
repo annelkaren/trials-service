@@ -15,7 +15,7 @@ public class InstitucionSetUp {
     }
 
     public static Institucion createInstitucion(Estado estado) {
-    
+
         return new Institucion()
                 .setId(1)
                 .setNombre("institución prueba")

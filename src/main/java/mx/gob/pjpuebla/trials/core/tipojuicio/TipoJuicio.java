@@ -41,11 +41,11 @@ public class TipoJuicio implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoSistema tipoSistema;
 
-    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Materia materia;
 

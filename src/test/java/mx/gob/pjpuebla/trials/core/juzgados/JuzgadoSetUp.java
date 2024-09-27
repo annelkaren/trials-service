@@ -42,7 +42,7 @@ public class JuzgadoSetUp {
     public static Juzgado createJuzgado(Materia materia, Sede sede) {
         Juzgado juzgado = new Juzgado()
                 .setId(1)
-                .setVersion(0)
+                .setVersion(1)
                 .setNombre("Juzgado")
                 .setEstado(Estado.ACTIVE)
                 .setMateria(materia)
