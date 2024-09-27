@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
+
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 /**
  * Servicio para la gestión de documentos, incluyendo la validación y el
@@ -43,11 +45,11 @@ public class DigitalizacionService {
      * Valida que el archivo y el documento cumplan con los requisitos, crea una
      * ruta de almacenamiento, y actualiza la entidad del documento con la ruta
      * del archivo. Devuelve un record con los detalles del archivo procesado.
-     * 
+     *
      * @param file        El archivo PDF a procesar.
      * @param documentoId El ID del documento asociado al archivo.
      * @return Un record que contiene el ID del documento, la ruta del archivo
-     *         almacenado y el nombre único del archivo.
+     * almacenado y el nombre único del archivo.
      * @throws IOException Si ocurre un error al guardar el archivo en el sistema de
      *                     archivos.
      */
@@ -57,11 +59,11 @@ public class DigitalizacionService {
         // Crea la ruta donde se almacenará el archivo
         String rutaArchivo = digitalizacionFolderService.createFolderDigitalizacion(doc);
 
-        String nombreUnicoArchivo = generarNombreArchivo(doc.getTipoDocumento());
+        String nombreUnicoArchivo = generarNombreArchivo(doc.getCarpeta().getTipoCarpeta());
         Path path = Paths.get(rutaArchivo);
 
         // Crear directorios si no existen y guardar el archivo
-        
+
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
@@ -78,7 +80,7 @@ public class DigitalizacionService {
                     "Error al guardar el archivo en el servidor", e);
         }
 
-        // Actualiza el documento con la ruta del archivo y guarda en la base de datos
+        // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         doc.setRuta(nombreUnicoArchivo);
         documentoRepository.save(doc);
 
@@ -89,7 +91,7 @@ public class DigitalizacionService {
     /**
      * Obtiene el documento digitalizado en forma de arreglo de bytes según el ID
      * proporcionado.
-     * 
+     *
      * @param documentoId ID del documento que se desea obtener.
      * @return Un arreglo de bytes que representa el contenido del archivo.
      * @throws IOException       Si el archivo no se encuentra o si ocurre un error
@@ -103,18 +105,18 @@ public class DigitalizacionService {
                 .orElseThrow(() -> new NotFoundException("Archivo no encontrado", "documentoId"));
 
         // Extrae el expediente y año a partir del formato "expediente/año"
-        String[] expedienteArray = doc.getExpediente().split("/");
+        String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
         String expediente = expedienteArray[0].trim(); // Número del expediente
         String year = expedienteArray[1].trim(); // Año del expediente
-        String juzgado = doc.getJuzgado().getNombre().trim(); // Nombre del juzgado
+        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", ""); // Nombre del juzgado
 
         // Creación de la ruta donde se espera encontrar el archivo
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
-       
+
         Path filePath = rootPath.resolve(doc.getRuta()); // Ruta completa del archivo
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes
-      
+
         if (Files.exists(filePath)) {
             return Files.readAllBytes(filePath); // Retorna el archivo como un arreglo de bytes
         } else {
@@ -127,7 +129,7 @@ public class DigitalizacionService {
      * de datos.
      * Además, asegura que el archivo cumpla con los criterios (no esté vacío, sea
      * un PDF, y esté dentro del tamaño permitido).
-     * 
+     *
      * @param file        El archivo a validar.
      * @param documentoId El ID del documento asociado.
      * @return El documento validado.
@@ -144,8 +146,8 @@ public class DigitalizacionService {
         validarArchivo(file);
 
         // Verifica que el tipo de documento no sea nulo
-        if (doc.getTipoDocumento() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de documento es obligatorio.");
+        if (doc.getCarpeta().getTipoCarpeta() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de carpeta es obligatorio.");
         }
 
         return doc;
@@ -154,7 +156,7 @@ public class DigitalizacionService {
     /**
      * Valida las propiedades del archivo: que no esté vacío, que sea un PDF, y que
      * no exceda el tamaño máximo permitido.
-     * 
+     *
      * @param file El archivo a validar.
      * @throws ResponseStatusException Si el archivo no cumple con las condiciones.
      */
@@ -175,12 +177,12 @@ public class DigitalizacionService {
     /**
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
-     * 
-     * @param tipoDocumento El tipo de documento para incluir en el nombre del
-     *                      archivo.
+     *
+     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
+     *                    archivo.
      * @return Un nombre único generado para el archivo PDF.
      */
-    private String generarNombreArchivo(TipoDocumento tipoDocumento) {
-        return tipoDocumento.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
+        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 }

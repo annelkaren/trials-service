@@ -14,9 +14,9 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDTO;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
@@ -137,37 +137,37 @@ public class JuzgadoService {
         return juzgadoRepository.reiniciarSecuenciasExpedientes();
     }
 
-    public Juzgado getConexidadJuzgado(PersonaDocumentoDTO actor, PersonaDocumentoDTO demandado, TipoJuicio tipoJuicio) {
-        List<Documento> documentos = new ArrayList<>();
-        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.getTipoParte().toString()));
-        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.getTipoParte().toString()));
+    public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio) {
+        List<Carpeta> carpetas = new ArrayList<>();
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte().toString()));
 
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                        actor.getNombre(), actor.getApellidoPaterno(), actor.getApellidoMaterno(), actor.getPseudonimo(), actorParte.getId());
+                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(), actorParte.getId());
 
         List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                        demandado.getNombre(), demandado.getApellidoPaterno(), demandado.getApellidoMaterno(), demandado.getPseudonimo(), demandadoParte.getId());
+                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(), demandado.pseudonimo(), demandadoParte.getId());
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
         }
 
         for (PersonaDocumento tmp : registrosActor) {
-            documentos.add(tmp.getDocumento());
+            carpetas.add(tmp.getCarpeta());
         }
 
         for (PersonaDocumento tmp : registrosDemandado) {
-            Documento documento;
+            Carpeta carpeta;
 
-            if (!documentos.contains(tmp.getDocumento()))
+            if (!carpetas.contains(tmp.getCarpeta()))
                 continue;
 
-            documento = tmp.getDocumento();
+            carpeta = tmp.getCarpeta();
 
-            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(documento.getJuzgado()))
-                return documento.getJuzgado();
+            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(carpeta.getJuzgado()))
+                return carpeta.getJuzgado();
         }
         return null;
     }

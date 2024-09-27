@@ -1,17 +1,18 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 
@@ -27,49 +28,33 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @Size(max = 15)
-    @Column(name = "S_FOLIO", nullable = false)
-    private String folio;
+    @Max(Integer.MAX_VALUE)
+    @Version
+    @Column(name = "N_VERSION")
+    private Integer version;
 
-    @Size(max = 20)
-    @Column(name = "S_EXPEDIENTE", nullable = false)
-    private String expediente;
+    @Enumerated
+    @Column(name = "N_TIPO_DOCUMENTO")
+    private TipoDocumento tipoDocumento;
+
+    @Type(JsonBinaryType.class)
+    @Column(name = "J_DATA")
+    private DocumentoData data;
 
     @Size(max = 50)
     @Column(name = "S_RUTA")
     private String ruta;
 
-    @Size(max = 30)
-    @Column(name = "S_ESTATUS_PROCESAL", nullable = false)
-    private String estatusProcesal;
-
-    @Enumerated
-    @Column(name = "N_TIPO_DOCUMENTO", nullable = false)
-    private TipoDocumento tipoDocumento;
-
-    @Enumerated
-    @Column(name = "N_ESTADO_DOCUMENTO", nullable = false)
-    private EstadoDocumento estatus;
-
-    @Enumerated
-    @Column(name = "N_IMPRESION_SELLO", nullable = false)
-    private SelloEstatus selloEstatus;
-
     @Size(max = 250)
     @Column(name = "S_MOTIVO_EDITA")
     private String motivoEdita;
 
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-    private Juzgado juzgado;
-
-    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private TipoJuicio tipoJuicio;
+    private Carpeta carpeta;
 
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
-
 
 }

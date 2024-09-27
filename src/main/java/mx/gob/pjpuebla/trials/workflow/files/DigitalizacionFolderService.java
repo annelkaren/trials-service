@@ -23,11 +23,11 @@ public class DigitalizacionFolderService {
 
     public String createFolderDigitalizacion(Documento doc) {
 
-        if (doc == null || doc.getExpediente() == null || doc.getJuzgado() == null) {
+        if (doc == null || doc.getCarpeta().getExpediente() == null || doc.getCarpeta().getJuzgado() == null) {
             throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
         }
 
-        String[] expedienteArray = doc.getExpediente().split("/");
+        String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
 
 
         if (expedienteArray.length < 2) {
@@ -36,7 +36,7 @@ public class DigitalizacionFolderService {
 
         String expediente = expedienteArray[0].trim();
         String year = expedienteArray[1].trim();
-        String juzgado = doc.getJuzgado().getNombre().trim();
+        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
 
 
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);

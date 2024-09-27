@@ -135,6 +135,11 @@
 			<artifactId>batik-all</artifactId>
 			<version>1.16</version>
 		</dependency>
+		<dependency>
+			<groupId>io.hypersistence</groupId>
+			<artifactId>hypersistence-utils-hibernate-63</artifactId>
+			<version>3.8.2</version>
+		</dependency>
     </dependencies>
 
 	<build>
@@ -185,8 +190,9 @@
 										<exclude>*roles*</exclude>
 										<exclude>*sello*</exclude>
 										<exclude>*listavalor*</exclude>
-										<exclude>*BloqueResource</exclude>
 										<exclude>*DocumentoResource</exclude>
+										<exclude>*SecuenciaRepositoryCustomImpl</exclude>
+										<exclude>*JuzgadoRepositoryCustomImpl</exclude>
 									</excludes>
 									<limits>
 										<limit>

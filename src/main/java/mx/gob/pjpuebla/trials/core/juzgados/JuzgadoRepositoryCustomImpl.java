@@ -121,7 +121,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
 
     private String getUltimoExpediente(Integer juzgadoId){
         String ultimoExpediente=null;
-        String sql = String.format("SELECT S_EXPEDIENTE FROM TBL_DOCUMENTOS WHERE FN_JUZGADO = %d ORDER BY T_FECHA_ALTA DESC LIMIT 1 ", juzgadoId);
+        String sql = String.format("SELECT S_EXPEDIENTE FROM TBL_CARPETAS WHERE FN_JUZGADO = %d ORDER BY T_FECHA_ALTA DESC LIMIT 1 ", juzgadoId);
 
         try{
             Query query = entityManager.createNativeQuery(sql);
