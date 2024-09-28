@@ -74,6 +74,6 @@ public class Oficialia implements Serializable, Auditable {
             "FN_MATERIA"
     }))
     @OrderBy("id")
-    private List<Materia> materia;
+    private List<Materia> materias;
 
 }

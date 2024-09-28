@@ -78,14 +78,14 @@ public class OficialiaService {
                 oficialia.setJuzgado(null);
             }
 
-            if (oficialia.getMateria() != null) {
-                List<Integer> mIds = oficialia.getMateria().stream()
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
                         .filter(materia -> materia.getId() != null)
                         .map(Materia::getId)
                         .toList();
 
                 List<Materia> materias = materiaRepository.findAllById(mIds);
-                oficialia.setMateria(materias);
+                oficialia.setMaterias(materias);
             }
 
             oficialia = oficialiaRepository.save(oficialia);
@@ -115,12 +115,12 @@ public class OficialiaService {
             }
 
 
-            if (oficialia.getMateria() != null) {
-                List<Integer> mIds = oficialia.getMateria().stream()
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
                         .map(Materia::getId).toList();
 
                 List<Materia> materias = materiaRepository.findAllById(mIds);
-                existingOficialia.setMateria(materias);
+                existingOficialia.setMaterias(materias);
             }
 
             oficialiaRepository.save(existingOficialia);
