@@ -27,7 +27,7 @@ public class ListaValor implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idListaValor")
-    @SequenceGenerator(name = "idListaValor", sequenceName = "SEQ_LISTA_VALOR_ID", allocationSize = 50)
+    @SequenceGenerator(name = "idListaValor", sequenceName = "SEQ_LISTA_VALOR_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

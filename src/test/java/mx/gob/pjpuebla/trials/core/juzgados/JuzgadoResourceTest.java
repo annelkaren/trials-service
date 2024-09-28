@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(JuzgadoResource.class)
@@ -117,6 +118,21 @@ class JuzgadoResourceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
+    }
+
+    @Test
+    void create_error() throws Exception {
+        given(mockJuzgadoService.create(juzgado))
+                .willReturn(juzgadoRecordItem);
+        juzgado.setNombre("12");
+        mockMvc.perform(
+                post("/api/core/juzgados")
+                        .content(ResourceUtilTest.asJsonString(juzgado))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("[0].field").value("nombre"))
+                .andExpect(jsonPath("[0].message").value("size must be between 3 and 250"));
     }
 
     @Test

@@ -5,12 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
 
@@ -21,7 +19,7 @@ import java.io.Serializable;
 public class Anexo implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idAnexo" , sequenceName = "SEQ_ANEXOS_ID",allocationSize = 50)
+    @SequenceGenerator(name = "idAnexo", sequenceName = "SEQ_ANEXOS_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAnexo")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

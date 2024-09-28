@@ -13,7 +13,7 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
-    private String PREFIX_SEQ = "SEQ_JUZGADO_EXPEDIENTE_";
+    private final String PREFIX_SEQ = "SEQ_JUZGADO_EXPEDIENTE_";
 
     @Override
     public String generarSecuenciaExpediente(Integer juzgadoId){
@@ -52,7 +52,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
     @Override
     public String getNumeroExpediente(Integer juzgadoId) {
         LocalDate date = LocalDate.now();
-        String numExpediente = "";
+        String numExpediente;
         String nombreSecuencia = PREFIX_SEQ + juzgadoId;
 
         String sqlNumExp = String.format("SELECT LPAD(NEXTVAL('%s')::text,6,'0')", nombreSecuencia);
@@ -96,7 +96,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
                 }
             }
         }catch(Exception e){
-            log.error("error ->", e.getMessage());
+            log.error("error -> {}", e.getMessage());
             return Boolean.FALSE;
         }
 
@@ -128,7 +128,7 @@ public class JuzgadoRepositoryCustomImpl implements JuzgadoRepositoryCustom {
 
             ultimoExpediente = query.getSingleResult().toString();
         }catch(Exception e){
-            log.error("error ->", e.getMessage());
+            log.error("error -> {}", e.getMessage());
         }
 
         return ultimoExpediente;

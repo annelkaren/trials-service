@@ -42,4 +42,9 @@ public class SedeResource {
     public void delete(@PathVariable Integer id) {
         this.sedeService.delete(id);
     }
+
+    @GetMapping("/domicilios")
+    public Page<SedeDomiciliosRecord> getAllDomicilosOfSede(@PageableDefault(size = 20) Pageable pageable) {
+        return this.sedeService.getAllSedesAndDomicilios(pageable);
+    }
 }

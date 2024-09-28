@@ -53,7 +53,7 @@ public class RecursoService {
                 .filter(r -> r.getAttributes().containsKey("menu"))
                 .filter(r -> r.getAttributes().get(("menu")).contains("true"))
                 .filter(r -> {
-                    for (PolicyEvaluationResponse.EvaluationResultRepresentation result : Collections.unmodifiableList(results)) {
+                    for (PolicyEvaluationResponse.EvaluationResultRepresentation result : results) {
                         if (result.getResource().getId().equalsIgnoreCase(r.getId())) {
                             return true;
                         }

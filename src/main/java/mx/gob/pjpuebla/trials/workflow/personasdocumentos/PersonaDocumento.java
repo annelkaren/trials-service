@@ -5,13 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import java.io.Serializable;
 
@@ -22,8 +21,8 @@ import java.io.Serializable;
 public class PersonaDocumento implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idPersonasDocumentos", sequenceName = "SEQ_PERSONAS_DOCUMENTOS_ID" , allocationSize = 50)
-    @GeneratedValue(strategy =  GenerationType.SEQUENCE, generator = "idPersonasDocumentos")
+    @SequenceGenerator(name = "idPersonasDocumentos", sequenceName = "SEQ_PERSONAS_DOCUMENTOS_ID")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idPersonasDocumentos")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -4,9 +4,9 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+@Getter
 public class NotFoundException extends ResponseStatusException {
 
-    @Getter
     private final String field;
 
     public NotFoundException(String reason, String field) {

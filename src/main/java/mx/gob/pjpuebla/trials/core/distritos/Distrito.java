@@ -20,7 +20,7 @@ public class Distrito implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDistrito")
-    @SequenceGenerator(name = "idDistrito", sequenceName = "SEQ_DISTRITOS_ID", allocationSize = 50)
+    @SequenceGenerator(name = "idDistrito", sequenceName = "SEQ_DISTRITOS_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

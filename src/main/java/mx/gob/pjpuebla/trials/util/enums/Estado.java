@@ -6,5 +6,5 @@ import lombok.Getter;
 public enum Estado {
     ACTIVE,
     INACTIVE,
-    DELETED;
+    DELETED
 }

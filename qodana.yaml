@@ -1,0 +1,39 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+linter: jetbrains/qodana-jvm:2024.2
+projectJDK: "17"
+failureConditions:
+  severityThresholds:
+    any: 30
+  testCoverageThresholds:
+    fresh: 60
+    total: 60
+coverage:
+  reportProblems: false
+include:
+  - name: UnnecessaryModifier
+  - name: UNUSED_IMPORT
+  - name: ArraysAsListWithZeroOrOneArgument
+  - name: DefaultAnnotationParam
+  - name: DuplicatedCode
+  - name: RedundantUnmodifiable
+  - name: NullableProblems
+  - name: JavadocDeclaration
+exclude:
+  - name: JvmCoverageInspection
+    paths:
+      - src/main/java/mx/gob/pjpuebla/trials/TrialsApplication.java
+      - src/main/java/mx/gob/pjpuebla/trials/config
+      - src/main/java/mx/gob/pjpuebla/trials/recursos
+      - src/main/java/mx/gob/pjpuebla/trials/estados
+      - src/main/java/mx/gob/pjpuebla/trials/usuarios
+      - src/main/java/mx/gob/pjpuebla/trials/roles
+      - src/main/java/mx/gob/pjpuebla/trials/sello
+      - src/main/java/mx/gob/pjpuebla/trials/listavalor
+      - src/main/java/mx/gob/pjpuebla/trials/core/oficialias/OficialiaValidator.java
+      - src/main/java/mx/gob/pjpuebla/trials/core/materias/MateriaValidator.java
+      - src/main/java/mx/gob/pjpuebla/trials/workflow/documentos/DocumentoResource.java
+      - src/main/java/mx/gob/pjpuebla/trials/workflow/folios/SecuenciaRepositoryCustomImpl.java
+      - src/main/java/mx/gob/pjpuebla/trials/core/juzgados/JuzgadoRepositoryCustomImpl.java
+  - name: CheckDependencyLicenses
