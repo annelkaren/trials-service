@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.error;
 
+import mx.gob.pjpuebla.trials.util.Messages;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -15,60 +16,57 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        return handleExceptionInternal(ex,
+        return Objects.requireNonNull(handleExceptionInternal(ex,
                 Collections.singleton(
                         new ErrorRecord(ex.getName(), ex.getMessage())
                 ),
                 new HttpHeaders(),
                 HttpStatus.BAD_REQUEST,
                 request
-        );
+        ));
     }
 
     @ExceptionHandler(NotFoundException.class)
     protected ResponseEntity<Object> handleNotFoundException(NotFoundException ex, WebRequest request) {
-        return handleExceptionInternal(ex,
+        return Objects.requireNonNull(handleExceptionInternal(ex,
                 Collections.singleton(
-                        new ErrorRecord(ex.getField(), ex.getReason())
+                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))
                 ),
                 new HttpHeaders(),
                 HttpStatus.NOT_FOUND,
                 request
-        );
+        ));
     }
 
     @ExceptionHandler(InvalidVersionException.class)
     protected ResponseEntity<Object> handleInvalidVersionException(InvalidVersionException ex, WebRequest request) {
-        return handleExceptionInternal(ex,
+        return Objects.requireNonNull(handleExceptionInternal(ex,
                 Collections.singleton(
-                        new ErrorRecord("version", ex.getEntity())
+                        new ErrorRecord(ex.getEntity() + ".version", Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))
                 ),
                 new HttpHeaders(),
                 HttpStatus.BAD_REQUEST,
                 request
-        );
+        ));
     }
 
     @ExceptionHandler(UserAlreadyExistException.class)
     protected ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistException ex, WebRequest request) {
-        return handleExceptionInternal(ex,
+        return Objects.requireNonNull(handleExceptionInternal(ex,
                 Collections.singleton(
-                        new ErrorRecord(ex.getField(), ex.getReason())
+                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))
                 ),
                 new HttpHeaders(),
                 HttpStatus.CONFLICT,
                 request
-        );
+        ));
     }
 
     @Override
@@ -107,7 +105,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         List<ErrorRecord> errors = new ArrayList<>();
         for (ObjectError objectError : globalErrors) {
             errors.add(
-                    new ErrorRecord(objectError.getObjectName(), objectError.getDefaultMessage())
+                    new ErrorRecord(objectError.getObjectName(), Optional.ofNullable(objectError.getDefaultMessage()).orElse(Messages.UNKNOWN_ERROR))
             );
         }
         return errors;
@@ -117,7 +115,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         List<ErrorRecord> errors = new ArrayList<>();
         for (FieldError fieldError : fieldErrors) {
             errors.add(
-                    new ErrorRecord(fieldError.getField(), fieldError.getDefaultMessage())
+                    new ErrorRecord(fieldError.getField(), Optional.ofNullable(fieldError.getDefaultMessage()).orElse(Messages.UNKNOWN_ERROR))
             );
         }
         return errors;

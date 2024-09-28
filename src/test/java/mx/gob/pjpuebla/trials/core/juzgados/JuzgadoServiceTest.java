@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
+import static mx.gob.pjpuebla.trials.util.Messages.OPTIMISTIC_LOCKING_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -192,7 +193,7 @@ class JuzgadoServiceTest {
                 () -> juzgadoService.update(juzgado)
         );
 
-        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
+        assertThat(assertThrows.getMessage()).contains(OPTIMISTIC_LOCKING_ERROR);
     }
 
     @Test

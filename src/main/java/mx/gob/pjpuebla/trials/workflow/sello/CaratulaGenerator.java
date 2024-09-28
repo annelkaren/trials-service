@@ -59,7 +59,7 @@ public class CaratulaGenerator {
     }
 
     private String getNombrePersonaByIdAndParte(Integer id, String parte) {
-        List<Rol> rol = Arrays.asList(Rol.PRINCIPAL);
+        List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
         String apellidoMaterno = persona.apellidoPaterno() != null ? persona.apellidoMaterno() : "";
         return String.format("%s %s %s", persona.nombre(), persona.apellidoPaterno(), apellidoMaterno);

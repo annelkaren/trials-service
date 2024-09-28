@@ -1,5 +1,17 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,21 +19,11 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
 
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-
 /**
  * Servicio para la gestión de documentos, incluyendo la validación y el
  * almacenamiento de archivos PDF.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DigitalizacionService {
@@ -35,7 +37,7 @@ public class DigitalizacionService {
 
     private final DigitalizacionFolderService digitalizacionFolderService;
     private final DocumentoRepository documentoRepository;
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // Tamaño máximo del archivo en bytes (50 MB)
+    private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final String EXTENSION_ARCHIVO = ".pdf";
 
@@ -50,8 +52,7 @@ public class DigitalizacionService {
      * @param documentoId El ID del documento asociado al archivo.
      * @return Un record que contiene el ID del documento, la ruta del archivo
      * almacenado y el nombre único del archivo.
-     * @throws IOException Si ocurre un error al guardar el archivo en el sistema de
-     *                     archivos.
+     * archivos.
      */
     public DigitalizacionRecord procesarArchivo(MultipartFile file, Integer documentoId) {
         Documento doc = validarDocumento(file, documentoId);
@@ -67,8 +68,7 @@ public class DigitalizacionService {
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
-
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
         // Guardar el archivo y manejar posibles excepciones

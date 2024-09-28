@@ -1,13 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
-import java.util.List;
-
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import org.springframework.data.jpa.repository.Query;
+import java.util.List;
 
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
@@ -37,7 +36,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);
 
-    public List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+    List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
 
     @Query("""
              SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
@@ -53,7 +52,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
              FROM PersonaDocumento pd
              JOIN pd.carpeta c
              JOIN pd.tipoPartes tp
-             WHERE c.id = :carpetaId 
+             WHERE c.id = :carpetaId
              AND pd.rol = :rol
             """)
     List<PersonaDocumentoRecord> findPersonasByCarpetaId(@Param("carpetaId") Integer carpetaId, @Param("rol") Rol rol);
