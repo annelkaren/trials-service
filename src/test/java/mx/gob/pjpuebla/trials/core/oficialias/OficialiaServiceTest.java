@@ -87,7 +87,7 @@ class OficialiaServiceTest {
         materia = MateriaSetUp.createMateria();
 
         oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede)
-                .setMateria(List.of(materia));
+                .setMaterias(List.of(materia));
         oficialia.setJuzgado(juzgado);
         oficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado()));
     }
@@ -213,7 +213,7 @@ class OficialiaServiceTest {
                 oficialia.getId(),
                 oficialia.getNombre(),
                 oficialia.getEstado(),
-                String.join(", ", oficialia.getMateria().stream().map(Materia::getNombre).toArray(String[]::new)), // Concatenar nombres de materias
+                String.join(", ", oficialia.getMaterias().stream().map(Materia::getNombre).toArray(String[]::new)), // Concatenar nombres de materias
                 materia.getId(),
                 sede.getId(),
                 tipoOficialia.getNombre(),
@@ -235,7 +235,7 @@ class OficialiaServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre())
                 .hasFieldOrPropertyWithValue("estado", oficialia.getEstado());
 
-        for (Materia materiaItem : oficialia.getMateria()) {
+        for (Materia materiaItem : oficialia.getMaterias()) {
             assertThat(materiaItem)
                     .hasFieldOrPropertyWithValue("id", materiaItem.getId())
                     .hasFieldOrPropertyWithValue("nombre", materiaItem.getNombre());

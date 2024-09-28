@@ -184,7 +184,7 @@ class SedeServiceTest {
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("IdSedes", sede.getId()) // Cambia "id" a "IdSedes"
+                .hasFieldOrPropertyWithValue("sedeId", sede.getId())
                 .hasFieldOrPropertyWithValue("sedeNombre", sede.getNombre())
                 .hasFieldOrPropertyWithValue("calle", domicilio.getCalle())
                 .hasFieldOrPropertyWithValue("interior", domicilio.getInterior())
