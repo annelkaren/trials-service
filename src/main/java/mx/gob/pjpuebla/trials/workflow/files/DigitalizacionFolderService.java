@@ -23,7 +23,7 @@ public class DigitalizacionFolderService {
 
     public String createFolderDigitalizacion(Documento doc) {
 
-        if (doc == null || doc.getCarpeta().getExpediente() == null || doc.getCarpeta().getJuzgado() == null) {
+        if (doc == null || doc.getCarpeta().getExpediente() == null || doc.getCarpeta().getJuzgado() == null || doc.getCarpeta().getTipoCarpeta() == null) {
             throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
         }
 
@@ -39,14 +39,18 @@ public class DigitalizacionFolderService {
         String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
         String tipoCarpeta = doc.getCarpeta().getTipoCarpeta().name();
 
-        String nombreCarpeta = "";
+        String nombreCarpeta ;
         Path rootPath;
+        if (juzgado.isEmpty()) {
+            throw new IllegalArgumentException("El juzgado no puede ser nulo o vacío");
+        }
 
         if ("EXHORTO".equals(tipoCarpeta)) {
             nombreCarpeta = "E" + String.format("%06d", Integer.parseInt(expediente));
             rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, "entrada", nombreCarpeta);
         } else {
-            nombreCarpeta = expediente;
+
+            nombreCarpeta = String.format("%06d", Integer.parseInt(expediente));
             rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, nombreCarpeta);
         }
 
