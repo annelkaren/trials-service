@@ -200,4 +200,40 @@ class DigitalizacionServiceTest {
         Files.deleteIfExists(pathArchivo);
     }
 
+    @Test
+    void cargarArchivoPdfExhortos() throws IOException {
+
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+        long expectedFileSize = fileMock.getSize();
+
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+
+        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
+        ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
+
+
+        String expectedFolderPath = rootFolder + "/digitalizacion/entrada/E000006";
+
+        given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
+                .willReturn(expectedFolderPath);
+
+        DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
+
+        verify(documentoRepository).findById(documento.getId());
+        verify(documentoRepository).save(any(Documento.class));
+        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
+        
+        Path expectedFolderPathNormalized = Paths.get(expectedFolderPath).normalize();
+        Path actualFolderPathNormalized = Paths.get(result.rutaArchivo()).getParent().normalize();
+        Path pathArchivo = Paths.get(result.rutaArchivo());
+        long actualFileSize = Files.size(pathArchivo);
+
+        assertEquals(expectedFolderPathNormalized, actualFolderPathNormalized, "La carpeta de exhorto no fue creada correctamente");
+        assert Files.exists(pathArchivo) : "El archivo no fue creado correctamente";
+        assert actualFileSize == expectedFileSize : "El tamaño del archivo no coincide";
+        assert result.rutaArchivo().endsWith(".pdf") : "El archivo creado no es un PDF";
+        Files.deleteIfExists(pathArchivo);
+    }
+
+
 }

@@ -37,9 +37,19 @@ public class DigitalizacionFolderService {
         String expediente = expedienteArray[0].trim();
         String year = expedienteArray[1].trim();
         String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
+        String tipoCarpeta = doc.getCarpeta().getTipoCarpeta().name();
 
+        String nombreCarpeta = "";
+        Path rootPath;
 
-        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
+        if ("EXHORTO".equals(tipoCarpeta)) {
+            nombreCarpeta = "E" + String.format("%06d", Integer.parseInt(expediente));
+            rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, "entrada", nombreCarpeta);
+        } else {
+            nombreCarpeta = expediente;
+            rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, nombreCarpeta);
+        }
+
 
         try {
             // Crear las carpetas si no existen
