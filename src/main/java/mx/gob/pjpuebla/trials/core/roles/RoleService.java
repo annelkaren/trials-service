@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class RoleService {
         List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
 
         for (RoleRepresentation current : currentRoles) {
-            boolean isAnExistingRole = newRoles.stream().filter(role -> role.equalsIgnoreCase(current.getName())).findFirst().isPresent();
+            boolean isAnExistingRole = newRoles.stream().anyMatch(role -> role.equalsIgnoreCase(current.getName()));
             if (!isAnExistingRole && !current.getName().toLowerCase().contains("default")) {
                 rolesToRemove.add(current);
             }
@@ -59,7 +58,7 @@ public class RoleService {
         try {
             UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
             List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
-            currentRoles.stream().forEach(role -> {
+            currentRoles.forEach(role -> {
                 if (!role.getName().toLowerCase().contains("default"))
                     roles.add(mapRole(role));
             });
@@ -76,8 +75,8 @@ public class RoleService {
         try {
             UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
             List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
-            allRoles.stream().forEach(role -> {
-                boolean isAnExistingRole = currentRoles.stream().filter(current -> role.getName().equalsIgnoreCase(current.getName())).findFirst().isPresent();
+            allRoles.forEach(role -> {
+                boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
                 if (!isAnExistingRole && !role.getName().toLowerCase().contains("default")) {
                     roles.add(role);
                 }

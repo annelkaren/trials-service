@@ -2,11 +2,18 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
-import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
@@ -14,18 +21,13 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
-import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 import java.util.List;
-
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -163,27 +165,16 @@ public class DocumentoService {
         return new DocumentoResponseRecord(actor, demandado, anexos);
     }
 
-    /**
-     * Devuelve un numero de folio
-     *
-     * @param tipo E-exhorto, D-demanda, P-promocion.
-     * @return
-     */
     private String getFolio(String tipo) {
-        Long valNum;
-        switch (tipo) {
-            case "E":           // Case para exhorto
-                valNum = documentoRepository.getNextValExhorto();
-                break;
-            case "D":           // Case para demanda
-                valNum = documentoRepository.getNextValDemanda();
-                break;
-            case "P":           // Case para promocion
-                valNum = documentoRepository.getNextValPromocion();
-                break;
-            default:
-                throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
-        }
+        Long valNum = switch (tipo) {
+            case "E" ->           // Case para exhorto
+                    documentoRepository.getNextValExhorto();
+            case "D" ->           // Case para demanda
+                    documentoRepository.getNextValDemanda();
+            case "P" ->           // Case para promocion
+                    documentoRepository.getNextValPromocion();
+            default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
+        };
         return valNum.toString();
     }
 }

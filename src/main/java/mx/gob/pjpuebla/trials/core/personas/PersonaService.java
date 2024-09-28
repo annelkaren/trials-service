@@ -165,7 +165,7 @@ public class PersonaService {
     public List<CentroTrabajoRecord> findAllCentroTrabajo(){
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
-        List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE));
+        List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));
         List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
 
         for (JuzgadoRecordItem juzgado: juzgados){

@@ -6,13 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-
-import java.util.List;
-
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -56,7 +53,7 @@ public class PersonaResource {
     }
 
     @GetMapping("/centrostrabajo")
-    public List<CentroTrabajoRecord> getCentroTrabajo(){
+    public List<CentroTrabajoRecord> getCentroTrabajo() {
         return this.personaService.findAllCentroTrabajo();
     }
 

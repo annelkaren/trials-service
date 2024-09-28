@@ -12,14 +12,15 @@ import java.util.Optional;
 public interface SedeRepository extends JpaRepository<Sede, Integer> {
 
     @Query("""
-            SELECT 
+            SELECT
             new mx.gob.pjpuebla.trials.core.sedes.SedeRecord(s.id, s.version, s.nombre, s.estado, s.tipo, s.telefono, s.extension,
             new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
-            new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior, 
+            new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia))
-            FROM Sede s 
+            FROM Sede s
             LEFT JOIN s.domicilio dom
             LEFT JOIN s.distrito dis
-            WHERE s.id =:id AND s.estado IN :estados""")
+            WHERE s.id =:id AND s.estado IN :estados
+            """)
     Optional<SedeRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 }

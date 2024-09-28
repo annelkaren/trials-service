@@ -4,9 +4,9 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+@Getter
 public class UserAlreadyExistException extends ResponseStatusException {
 
-    @Getter
     private final String field;
 
     public UserAlreadyExistException(String reason, String field) {
