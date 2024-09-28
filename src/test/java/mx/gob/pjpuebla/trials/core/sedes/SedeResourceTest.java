@@ -1,6 +1,9 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
@@ -33,17 +36,23 @@ class SedeResourceTest {
 
     @MockBean
     private SedeService mockSedeService;
+    @MockBean
+    private DomicilioRepository domicilioRepository;
 
     @Autowired
     private MockMvc mockMvc;
 
     private SedeRecordResponse sedeRecordResponse;
+    private SedeDomiciliosRecord sedeDomiciliosRecord;
     private SedeRecord sedeRecord;
 
     @BeforeEach
     void setUp() {
         sedeRecordResponse = SedeSetUp.sedeRecordResponse();
+        Domicilio domicilio = DomicilioSetUp.createDomicilio();
+        Sede sede = SedeSetUp.createSede();
         sedeRecord = SedeSetUp.sedeRecord();
+        sedeDomiciliosRecord = SedeSetUp.createSedeDomiciliosRecord(sede, domicilio);
     }
 
     @Test
@@ -134,6 +143,18 @@ class SedeResourceTest {
     void delete_success() throws Exception {
         mockMvc.perform(
                 delete("/api/core/sedes/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllSedesDomicilios_success() throws Exception {
+        given(mockSedeService.getAllSedesAndDomicilios(any(Pageable.class)))
+                .willReturn(new PageImpl<SedeDomiciliosRecord>(Collections.singletonList(sedeDomiciliosRecord)));
+
+        mockMvc.perform(
+                get("/api/core/sedes/domicilios")
+                        .param("nombre", "S")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

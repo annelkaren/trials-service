@@ -2,8 +2,14 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -26,6 +32,8 @@ public class OficialiaService {
     private final OficialiaRepository oficialiaRepository;
     private final SedeRepository sedeRepository;
     private final TipoOficialiaRepository tipoOficialiaRepository;
+    private final MateriaRepository materiaRepository;
+    private final JuzgadoRepository juzgadoRepository;
 
     @Transactional(readOnly = true)
     public Page<OficialiaRecord> getAllActive(Pageable pageable, Oficialia example) {
@@ -49,25 +57,85 @@ public class OficialiaService {
     }
 
     public OficialiaRecordResponse create(Oficialia oficialia) {
-        oficialia.setSede(sedeRepository.findById(oficialia.getSede().getId())
-                .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-        oficialia.setTipoOficialia(tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
-                .orElseThrow(() -> new NotFoundException("Tipo oficialia no encontrada", "tipoOficialiaId")));
-        oficialia = oficialiaRepository.save(oficialia);
-        return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
+
+            if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
+                Sede sede = sedeRepository.findById(oficialia.getSede().getId())
+                        .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
+                oficialia.setSede(sede);
+            }
+
+            if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
+                TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
+                        .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
+                oficialia.setTipoOficialia(tipoOficialia);
+            }
+
+            if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
+                Juzgado juzgado = juzgadoRepository.findById(oficialia.getJuzgado().getId())
+                        .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+                oficialia.setJuzgado(juzgado);
+            } else {
+                oficialia.setJuzgado(null);
+            }
+
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
+                        .filter(materia -> materia.getId() != null)
+                        .map(Materia::getId)
+                        .toList();
+
+                List<Materia> materias = materiaRepository.findAllById(mIds);
+                oficialia.setMaterias(materias);
+            }
+
+            oficialia = oficialiaRepository.save(oficialia);
+            return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
     }
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
         try {
-            oficialia.setSede(sedeRepository.findById(oficialia.getSede().getId())
+            Oficialia existingOficialia = oficialiaRepository.findById(oficialia.getId())
+
+                    .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId"));
+            existingOficialia.setNombre(oficialia.getNombre());
+            existingOficialia.setEstado(oficialia.getEstado());
+
+
+            existingOficialia.setSede(sedeRepository.findById(oficialia.getSede().getId())
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            oficialia.setTipoOficialia(tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
-                    .orElseThrow(() -> new NotFoundException("Tipo oficialia no encontrada", "tipoOficialiaId")));
-            oficialia = oficialiaRepository.save(oficialia);
-            return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
+
+            existingOficialia.setTipoOficialia(tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
+                    .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId")));
+
+            if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
+            existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
+                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+            } else {
+                existingOficialia.setJuzgado(null);
+            }
+
+
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
+                        .map(Materia::getId).toList();
+
+                List<Materia> materias = materiaRepository.findAllById(mIds);
+                existingOficialia.setMaterias(materias);
+            }
+
+            oficialiaRepository.save(existingOficialia);
+
+            return new OficialiaRecordResponse(existingOficialia.getId(), existingOficialia.getNombre());
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Oficialia.class.getSimpleName());
         }
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
+        List<Estado> estados = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+        return oficialiaRepository.findOficialiaDetails(estados, pageable);
     }
 
     public void delete(Integer id) {

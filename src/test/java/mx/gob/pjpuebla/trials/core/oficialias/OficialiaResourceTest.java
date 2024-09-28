@@ -1,10 +1,17 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -42,6 +49,10 @@ class OficialiaResourceTest {
 
     @MockBean
     private OficialiaService mockOficialiaService;
+    @MockBean
+    private JuzgadoRepository juzgadoRepository;
+    @MockBean
+    private MateriaRepository materiaRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,24 +60,31 @@ class OficialiaResourceTest {
     private Oficialia oficialia;
     private OficialiaRecord validOficialiaRecord;
     private OficialiaRecordResponse oficialiaRecordResponse;
+    private OficialiaMateriaRecord oficialiaMateriaRecordResponse;
+
+
 
     @BeforeEach
     void setUp() {
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
         TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
         Distrito distrito = DistritoSetUp.createDistrito();
         Domicilio domicilio = DomicilioSetUp.createDomicilio();
+        Materia materia = MateriaSetUp.createMateria();
         Sede sede = SedeSetUp.createSede();
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+        oficialia.setJuzgado(juzgado);
         validOficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(),sede.getNombre(),sede.getEstado()));
+        oficialiaMateriaRecordResponse = OficialiaSetUp.CreateOficialiaMateriaRecord(oficialia, materia, sede, tipoOficialia, juzgado);
         oficialiaRecordResponse =  OficialiaSetUp.createOficialiaRecordResponse(oficialia);
     }
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockOficialiaService.getAllActive(any(Pageable.class), any(Oficialia.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(validOficialiaRecord)));
+        given(mockOficialiaService.getAllByOficialiaMateria(any(Pageable.class)))
+                .willReturn(new PageImpl<OficialiaMateriaRecord>(Collections.singletonList(oficialiaMateriaRecordResponse)));
 
         mockMvc.perform(
                 get("/api/core/oficialias")
