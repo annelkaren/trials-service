@@ -20,8 +20,6 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
-import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Views;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
