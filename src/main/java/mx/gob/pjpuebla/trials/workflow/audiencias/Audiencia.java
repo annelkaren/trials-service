@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -25,12 +24,13 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
+import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
-@Table(name = "TBL_DOCUMENTOS")
+@Table(name = "TBL_AUDIENCIA")
 public class Audiencia {
 
     @Id
@@ -43,11 +43,13 @@ public class Audiencia {
     @Column(name = "T_FECHA_AUDIENCIA")
     private LocalDateTime fechaAudiencia;
 
+    @Enumerated
     @Column(name = "N_ASISTENCIA_ACTOR")
-    private Boolean asisteActor;
+    private Asistencia asisteActor;
 
+    @Enumerated
     @Column(name = "N_ASISTENCIA_DEMANDADO")
-    private Boolean asisteDemandano;
+    private Asistencia asisteDemandano;
 
     @NotNull
     @JoinColumn(name = "FN_SALA", referencedColumnName = "PN_ID")
