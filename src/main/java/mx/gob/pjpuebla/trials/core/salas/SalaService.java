@@ -7,10 +7,14 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
@@ -22,12 +26,13 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -41,6 +46,7 @@ public class SalaService {
     private final AudienciaRepository audienciaRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private static final Integer TIEMPO_ESPERA_AUDIENCIA =  3;
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
@@ -113,26 +119,64 @@ public class SalaService {
         }
     }
 
-    public SalaRecord findSalaDisponible(LocalDateTime fechaAudiencia, Juzgado juzgado){
+    public SalaAudienciaRecord asignarSala(Juzgado juzgado, TipoAudiencia tipoAudiencia){
+        LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
+        LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(juzgado, tipoAudiencia);
+        List<Sala> salas = salaRepository.findByJuzgado(juzgado);
+        List<Bloque> bloques = new ArrayList<>();
+        Sala salaDisponible = null;
 
-        Optional<SalaRecord> salaDisponible = salaRepository.findSalaDisponible(fechaAudiencia, juzgado).stream().findFirst();
+        for (Sala sala: salas){
+            bloques.add(sala.getBloque());
+        }
 
-        while (salaDisponible.isEmpty()){
-            LocalDateTime siguienteFecha = fechaAudiencia.plusDays(1);
+        if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){
+            fecha = ultimaFechaAudiencia.toLocalDate();
+        }
 
-            if (siguienteFecha.getDayOfWeek()==DayOfWeek.SATURDAY){
-                siguienteFecha = siguienteFecha.plusDays(2);
-            }else if(siguienteFecha.getDayOfWeek()==DayOfWeek.SUNDAY){
-                siguienteFecha = siguienteFecha.plusDays(1);
+        int max = 7;
+        int intentos = 0;
+
+        while(salaDisponible == null){
+            for (Bloque bloque: bloques){
+                List<BloqueCitaItem> citas = bloque.getData().getCitas();
+    
+                for (BloqueCitaItem cita: citas){
+                    LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
+    
+                    salaDisponible = findSalaDisponible(fechaHoraAudiencia, bloque, juzgado);
+    
+                    if (salaDisponible!=null){
+                        return new SalaAudienciaRecord(salaDisponible.getId(), salaDisponible.getNombre(), 
+                        salaDisponible.getJuez().getId(), salaDisponible.getJuez().getNombre(), juzgado.getNombre(), 
+                        bloque.getId(), fechaHoraAudiencia);
+                    }
+                }
             }
 
-            salaDisponible = salaRepository.findSalaDisponible(siguienteFecha, juzgado).stream().findFirst();
+            fecha = fecha.plusDays(1);
+
+            if(intentos > max){
+                break;
+            }
+        }
+
+        throw new NotFoundException("No hay Sala disponible", "Sala");
+    }
+
+    public Sala findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado){
+
+        Optional<Sala> salaDisponible = salaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)
+            .stream().findFirst();
+
+        if (salaDisponible.isEmpty()){
+            return null;
         }
 
         return salaDisponible.get();
     }
 
-    public Sala findConexidadSala(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio){
+    public JuezRecord findConexidadJuez(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio){
          List<Carpeta> carpetas = new ArrayList<>();
         
         TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
@@ -163,9 +207,11 @@ public class SalaService {
             audiencia = audienciaRepository.findByCarpeta(tmp.getCarpeta());
 
             if (audiencia.isPresent()){
-                return audiencia.get().getSala();
+                return new JuezRecord(audiencia.get().getSala().getJuez().getId(), 
+                    audiencia.get().getSala().getJuez().getNombre());
             }
         }
+
         return null;
     }
 

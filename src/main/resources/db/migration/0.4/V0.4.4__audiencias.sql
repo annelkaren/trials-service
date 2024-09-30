@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS TRIALS.TBL_AUDIENCIAS;
 
 CREATE TABLE trials.TBL_AUDIENCIAS (
 	n_id INT NOT NULL PRIMARY KEY,
-	n_version INT NOT NULL
+	n_version INT NOT NULL,
 	t_fecha_audiencia TIMESTAMP NOT NULL,
 	n_asistencia_actor INT NULL,
 	n_asistencia_demandado INT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE trials.TBL_AUDIENCIAS (
 
 ALTER TABLE trials.TBL_AUDIENCIAS ADD CONSTRAINT fk_salas FOREIGN KEY (fn_sala) REFERENCES trials.TBL_SALAS(pn_id);
 ALTER TABLE trials.TBL_AUDIENCIAS ADD CONSTRAINT fk_bloque FOREIGN KEY (fn_bloque) REFERENCES trials.TBL_BLOQUES(pn_id);
-ALTER TABLE trials.TBL_AUDIENCIAS ADD CONSTRAINT fk_carpeta FOREIGN KEY (fn_carpeta) REFERENCES trials.TBL_CARPETA(pn_id);
+ALTER TABLE trials.TBL_AUDIENCIAS ADD CONSTRAINT fk_carpeta FOREIGN KEY (fn_carpeta) REFERENCES trials.TBL_CARPETAS(pn_id);
 ALTER TABLE trials.TBL_AUDIENCIAS ADD CONSTRAINT fk_tipo_audiencia FOREIGN KEY (fn_tipo_audiencia) REFERENCES trials.TBL_TIPO_AUDIENCIA(pn_id);
 
 /** crear indices, actualizaciones en cascada

@@ -25,7 +25,6 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import java.util.List;
 
 @Data
 @Entity
@@ -53,7 +52,7 @@ public class Bloque implements Serializable, Auditable {
     
     @Type(JsonBinaryType.class)
     @Column(name = "J_DATA")
-    private List<BloqueCitaRecord> citas;
+    private BloqueData data;
 
     @JsonIgnore
     @Accessors(chain = false)

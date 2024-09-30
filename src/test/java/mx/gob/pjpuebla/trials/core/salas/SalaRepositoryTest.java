@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueData;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
@@ -38,6 +40,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -190,6 +194,42 @@ class SalaRepositoryTest extends AuditConfigTest {
         long count = salaRepository.countByJuzgadoId(juzgado.getId());
 
         assertThat(count).isZero();
+    }
+
+    @Test
+    void testFindSalaDisponible(){
+        Bloque bloque = BloqueSetUp.createBloque();
+        BloqueCitaItem cita = new BloqueCitaItem();
+
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8,30,00));
+
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+
+        Persona juez = personaRepository.save(PersonaSetUp.createPersona());
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
+
+        Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
+        sala.setBloque(bloque);
+        sala.setJuzgado(juzgado);
+        sala.setJuez(juez);
+        salaRepository.save(sala);
+
+        List<Sala> salas = salaRepository.findSalaDisponible(LocalDateTime.now(), bloque, juzgado);
+
+        assertThat(salas).isNotEmpty();
     }
 
 }

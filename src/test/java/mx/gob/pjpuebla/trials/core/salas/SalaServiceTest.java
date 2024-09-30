@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueData;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
@@ -21,6 +23,7 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -35,6 +38,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -172,6 +179,33 @@ class SalaServiceTest {
                 });
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
+    }
+
+    @Test
+    void asignarSalaAudiencia(){
+        BloqueCitaItem cita = new BloqueCitaItem();
+        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
+        SalaAudienciaRecord salaAudienciaRecord = new SalaAudienciaRecord(sala.getId(), sala.getNombre(), juez.getId(), juez.getNombre(), juzgado.getNombre(), bloque.getId(), fechaAudiencia);
+        TipoAudiencia tipoAudiencia = new TipoAudiencia();
+        tipoAudiencia.setNombre("INICIAL");
+
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8,30,00));
+
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        sala.setBloque(bloque);
+        given(salaService.asignarSala(juzgado, tipoAudiencia)).willReturn(salaAudienciaRecord);
+
+        salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
+
+        assertThat(salaAudienciaRecord)
+            .isNotNull()
+            .hasFieldOrPropertyWithValue("id", sala.getId())
+            .hasFieldOrPropertyWithValue("sala", sala.getNombre())
+            .hasFieldOrPropertyWithValue("juezId", juez.getId())
+            .hasFieldOrPropertyWithValue("juezNombre", juez.getNombre())
+            .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
+            .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
     }
 
 }

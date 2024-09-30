@@ -14,17 +14,21 @@ import jakarta.persistence.Version;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
+import java.io.Serializable;
+
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.Auditable;
 
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_TIPO_AUDIENCIA")
-public class TipoAudiencia {
+public class TipoAudiencia implements  Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoAudiencia")

@@ -16,22 +16,27 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
+import java.io.Serializable;
+
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.Asistencia;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
 @Table(name = "TBL_AUDIENCIA")
-public class Audiencia {
+public class Audiencia implements  Serializable, Auditable {
 
     @Id
     @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIAS_ID", allocationSize = 50)
@@ -77,8 +82,9 @@ public class Audiencia {
     @ManyToOne(fetch = FetchType.LAZY)
     private Bloque bloque;
 
-    @Column(name = "N_ESTATUS")
-    private Integer estatus;
+    @Enumerated
+    @Column(name = "N_ESTADO")
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded
