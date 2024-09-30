@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.files;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,21 @@ public class DigitalizacionFolderService {
 
     public String createFolderDigitalizacion(Documento doc) {
 
-        if (doc == null || doc.getCarpeta().getExpediente() == null || doc.getCarpeta().getJuzgado() == null || doc.getCarpeta().getTipoCarpeta() == null) {
-            throw new IllegalArgumentException("Documento o sus propiedades no pueden ser nulos");
+
+
+        if (doc == null) {
+            throw new IllegalArgumentException("El documento no puede ser nulo");
         }
+
+        Carpeta carpeta = doc.getCarpeta();
+        if (carpeta == null) {
+            throw new IllegalArgumentException("La carpeta no puede ser nula");
+        }
+
+        if (carpeta.getExpediente() == null || carpeta.getJuzgado() == null || carpeta.getTipoCarpeta() == null) {
+            throw new IllegalArgumentException("Algunas propiedades de la carpeta no pueden ser nulas");
+        }
+
 
         String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
 
@@ -37,7 +50,6 @@ public class DigitalizacionFolderService {
         String expediente = expedienteArray[0].trim();
         String year = expedienteArray[1].trim();
         String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
-        String tipoCarpeta = doc.getCarpeta().getTipoCarpeta().name();
 
         String nombreCarpeta ;
         Path rootPath;
@@ -45,13 +57,16 @@ public class DigitalizacionFolderService {
             throw new IllegalArgumentException("El juzgado no puede ser nulo o vacío");
         }
 
-        if ("EXHORTO".equals(tipoCarpeta)) {
-            nombreCarpeta = "E" + String.format("%06d", Integer.parseInt(expediente));
-            rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, "entrada", nombreCarpeta);
-        } else {
+        Path basePath = Paths.get(rootFolder, "digitalizacion", year, juzgado);
 
+        if ("EXHORTO".equals(doc.getCarpeta().getTipoCarpeta().name())) {
+            nombreCarpeta = "E" + String.format("%06d", Integer.parseInt(expediente));
+
+            rootPath = basePath.resolve(Paths.get("entrada", nombreCarpeta));
+        } else {
             nombreCarpeta = String.format("%06d", Integer.parseInt(expediente));
-            rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, nombreCarpeta);
+
+            rootPath = basePath.resolve(nombreCarpeta);
         }
 
 
