@@ -1,33 +1,34 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
-import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.apache.commons.lang3.StringUtils;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 import java.util.List;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class DocumentoService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final CarpetaRepository carpetaRepository;
+    private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -62,7 +64,7 @@ public class DocumentoService {
     }
 
     public DocumentoRecord updateStatus(Integer id, Integer status) {
-        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId" + id));
         EstadoCarpeta value = EstadoCarpeta.values()[status];
         documento.getCarpeta().setEstatus(value);
         carpetaRepository.save(documento.getCarpeta());
@@ -75,14 +77,15 @@ public class DocumentoService {
 
         carpeta.setTipoJuicio(tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString())));
-        carpeta.setFolio(getFolio("D"));
+
         carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
+        carpeta.setFolio(getFolio("D"));
 
         if (carpeta.getJuzgado() == null) {
             carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio()));
         }
 
-        carpeta.setExpediente(juzgadoService.getNumeroExpediente(carpeta.getJuzgado().getId()).numeroExpediente());
+        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
@@ -123,7 +126,7 @@ public class DocumentoService {
     public DocumentoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
 
         Documento documento = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId " + documentoId));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId " + documentoId));
         documento.setMotivoEdita(motivoEdita);
         documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
 
@@ -148,7 +151,7 @@ public class DocumentoService {
 
     public DocumentoResponseRecord getDemandaById(Integer id) {
 
-        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException("Documento no encontrado", id.toString()));
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, id.toString()));
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonasByCarpetaId(documento.getCarpeta().getId(), Rol.PRINCIPAL);
         List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
 
@@ -165,6 +168,12 @@ public class DocumentoService {
         return new DocumentoResponseRecord(actor, demandado, anexos);
     }
 
+    /**
+     * Devuelve un numero de folio
+     *
+     * @param tipo E-exhorto, D-demanda, P-promocion.
+     * @return string
+     */
     private String getFolio(String tipo) {
         Long valNum = switch (tipo) {
             case "E" ->           // Case para exhorto
@@ -176,6 +185,20 @@ public class DocumentoService {
             default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         };
         return valNum.toString();
+    }
+
+    public String generateNumExpediente(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+        JuzgadoFolios juzgadoFolios = juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta);
+        juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(juzgadoFolios);
+        String letraInicial = switch (tipoCarpeta) {
+            case EXHORTO -> "E";
+            case DESPACHO -> "D";
+            case APELACION_MUNICIPAL -> "T";
+            default -> "";
+        };
+        String numExpedienteExhorto = letraInicial + StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0') + "/" + juzgadoFolios.getYear();
+        juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+        return numExpedienteExhorto;
     }
 }
 
