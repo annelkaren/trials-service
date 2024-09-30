@@ -9,7 +9,7 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ class DocumentoResourceTest {
     private SelloGenerator selloGenerator;
 
     @MockBean
-    private CaratulaGenerator caratulaGenerator;
+    private SelloCaratulaService caratulaGenerator;
 
     @MockBean
     private DigitalizacionService digitalizacionService;

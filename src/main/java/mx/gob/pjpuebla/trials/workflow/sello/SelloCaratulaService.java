@@ -19,7 +19,7 @@ import java.util.*;
 @Service
 @Component
 @RequiredArgsConstructor
-public class CaratulaGenerator {
+public class SelloCaratulaService {
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DocumentoRepository documentoRepository;
@@ -33,7 +33,7 @@ public class CaratulaGenerator {
     }
 
     private JasperPrint getReport(Documento documento) throws IOException, JRException {
-        String[] expendienteYear = getNoExpendienteYear(documento.getCarpeta().getExpediente());
+        String[] expendienteYear = documento.getCarpeta().getExpediente().split("/");
         String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
         String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
 
@@ -54,15 +54,16 @@ public class CaratulaGenerator {
                 new JREmptyDataSource());
     }
 
-    private String[] getNoExpendienteYear(String expediente) {
-        return expediente.split("/");
-    }
 
-    private String getNombrePersonaByIdAndParte(Integer id, String parte) {
+    public String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
-        String apellidoMaterno = persona.apellidoPaterno() != null ? persona.apellidoMaterno() : "";
-        return String.format("%s %s %s", persona.nombre(), persona.apellidoPaterno(), apellidoMaterno);
+
+        String nombre = persona.nombre() != null ? persona.nombre() : "";
+        String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
+        String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
+
+        return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
     }
 
     private String tipoDocumentoFolio(Documento documento){
