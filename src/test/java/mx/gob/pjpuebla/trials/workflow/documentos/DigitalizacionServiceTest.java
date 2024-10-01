@@ -41,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,6 +81,7 @@ class DigitalizacionServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // Configurar los mocks para los repositorios
         given(materiaRepository.save(any(Materia.class))).willReturn(MateriaSetUp.createMateria());
         given(distritoRepository.save(any(Distrito.class))).willReturn(DistritoSetUp.createDistrito());
@@ -97,9 +99,17 @@ class DigitalizacionServiceTest {
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
                 .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
     }
-    @AfterEach
-    void tearDown() throws IOException {
-        Path folderPath = Paths.get(rootFolder);
+
+@AfterEach
+void tearDown() throws IOException {
+
+    Path folderPath1 = Paths.get(rootFolder + "/digitalizacion/2024/Juzgado");
+    Path folderPath2 = Paths.get(rootFolder + "/digitalizacion/2024/juzgadoPrueba");
+
+    List<Path> pathsToDelete = List.of(folderPath1, folderPath2);
+
+
+    for (Path folderPath : pathsToDelete) {
         if (Files.exists(folderPath)) {
             Files.walk(folderPath)
                     .sorted(Comparator.reverseOrder())
@@ -112,6 +122,9 @@ class DigitalizacionServiceTest {
                     });
         }
     }
+}
+
+
     @Test
     void cargarArchivoPdf() throws IOException {
 
@@ -227,7 +240,7 @@ class DigitalizacionServiceTest {
         ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
 
 
-        String expectedFolderPath = rootFolder + "/digitalizacion/2024/entrada/E000006";
+        String expectedFolderPath = rootFolder + "/digitalizacion/2024/juzgadoPrueba/entrada/E000006";
 
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
                 .willReturn(expectedFolderPath);
