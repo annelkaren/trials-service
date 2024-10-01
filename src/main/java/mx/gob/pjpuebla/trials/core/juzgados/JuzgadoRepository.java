@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer>, JuzgadoRepositoryCustom {
+public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
     Optional<Juzgado> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 

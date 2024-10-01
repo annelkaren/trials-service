@@ -1,27 +1,21 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import mx.gob.pjpuebla.trials.core.bloques.Bloque;
-import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
-import mx.gob.pjpuebla.trials.core.bloques.BloqueData;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.*;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.salas.Sala;
-import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
-import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
-import mx.gob.pjpuebla.trials.core.salas.SalaService;
-import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
-import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
@@ -31,23 +25,23 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
-import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
-import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,11 +53,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
+import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -103,18 +98,16 @@ class DocumentoServiceTest {
     private JuzgadoService juzgadoService;
     @Mock
     private CarpetaRepository carpetaRepository;
-    @Mock 
-    private SalaRepository salaRepository;
     @Mock
-    private SalaService salaService;
-    @Mock
-    private AudienciaRepository audienciaRepository;
+    private JuzgadoFoliosRepository juzgadoFoliosRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
     private TipoPartes actor;
     private TipoPartes demandado;
     private DocumentoSaveRecord recordRequest;
+    private JuzgadoFolios juzgadoFolios;
+
 
     @BeforeEach
     public void setUp() {
@@ -137,6 +130,10 @@ class DocumentoServiceTest {
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
         juzgado.setContadorAsignaciones(0);
         juzgado.setMaxAsignacionesRonda(0);
+
+        juzgadoFolios = createJuzgadoFolios();
+        juzgadoFolios.setJuzgado(juzgado);
+
         juzgadoRepository.save(juzgado);
         recordRequest = DocumentoSetUp.createDocumentoSaveRecord(tipoJuicio.getId());
     }
@@ -146,13 +143,14 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        given(documentoRepository.getNextValDemanda()).willReturn(2L);
+
         given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
+        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
-        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
-        given(juzgadoService.getNumeroExpediente(any())).willReturn(new NumeroExpedienteRecord("1"));
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
@@ -323,58 +321,62 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void testAsignaSalaConexidad() {
-        BloqueCitaItem cita = new BloqueCitaItem();
-        TipoAudiencia tipoAudiencia = new TipoAudiencia();
-        Bloque bloque = new Bloque();
-        Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        tipoAudiencia.setNombre("INICIAL");
+    void generateNumExpediente_demanda() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.DEMANDA
+        );
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+    }
 
-        cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+    @Test
+    void generateNumExpediente_exhorto() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.EXHORTO
+        );
+        assertThat(numExpediente).containsPattern("E[0-9]{6}/2024");
+    }
 
-        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
-        sala.setBloque(bloque);
-        Documento demanda = DocumentoSetUp.create(tipoJuicio);
-        Audiencia audiencia = new Audiencia();
-        audiencia.setCarpeta(demanda.getCarpeta());
-        
-        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        demanda.getCarpeta().setFolio("1");
+    @Test
+    void generateNumExpediente_apelacion() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.APELACION
+        );
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+    }
 
-        PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "Actor", 1, demanda.getCarpeta().getId());
-        PersonaDocumentoRecord demandadoRecord = new PersonaDocumentoRecord("María", "López", "Martínez", null, "fisica", "Demandado", 2, demanda.getCarpeta().getId());
+    @Test
+    void generateNumExpediente_despacho() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.DESPACHO
+        );
+        assertThat(numExpediente).containsPattern("D[0-9]{6}/2024");
+    }
 
-        
-        tipoAudiencia.setNombre("INICIAL");
-        
-        PersonaDocumento personaDocumentoActor = PersonasDocumentosSetUp.createPersonasDocumentos()
-                .setCarpeta(demanda.getCarpeta())
-                .setTipoPartes(actor);
+    @Test
+    void generateNumExpediente_apelacion_municipal() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.APELACION_MUNICIPAL
+        );
+        assertThat(numExpediente).containsPattern("T[0-9]{6}/2024");
+    }
 
-        PersonaDocumento personaDocumentoDemandado = PersonasDocumentosSetUp.createPersonasDocumentos()
-        .setCarpeta(demanda.getCarpeta())
-        .setTipoPartes(demandado);
-
-        List<PersonaDocumento> registrosActor = List.of(personaDocumentoActor);
-        List<PersonaDocumento> registrosDemandado = List.of(personaDocumentoDemandado);
-        SalaAudienciaRecord salaAudiencia = new SalaAudienciaRecord(sala.getId(), sala.getNombre(), any(), "", juzgado.getNombre() , bloque.getId(), fechaAudiencia);
-
-        given(documentoRepository.findById(demanda.getId())).willReturn(Optional.of(demanda));
-        given(personaDocumentoRepository
-        .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(actorRecord.nombre(), "", "", "",any())).willReturn(registrosActor);
-        given(personaDocumentoRepository
-        .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(demandadoRecord.nombre(), "", "", "", any())).willReturn(registrosDemandado);
-
-        given(audienciaRepository.findByCarpeta(demanda.getCarpeta())).willReturn(Optional.of(audiencia));
-        given(salaService.asignarAudiencia(sala, tipoAudiencia)).willReturn(salaAudiencia);
-
-
-        salaAudiencia = salaService.asignarSalaConexidad(actorRecord, demandadoRecord, tipoJuicio, tipoAudiencia);
-
-        assertThat(salaAudiencia).isNotNull();
-
-
+    @Test
+    void generateNumExpediente_amparo() {
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        String numExpediente = documentoService.generateNumExpediente(
+                juzgado, TipoCarpeta.AMPARO
+        );
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
     }
 }

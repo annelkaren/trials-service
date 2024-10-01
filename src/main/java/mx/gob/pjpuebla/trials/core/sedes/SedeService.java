@@ -62,8 +62,15 @@ public class SedeService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public Page<SedeDomiciliosRecord> getAllSedesAndDomicilios(Pageable pageable) {
+        return sedeRepository.findSedesDomiciliosByJuzgadoId(pageable);
+    }
+
     public void delete(Integer id) {
         sedeRepository.deleteById(id);
     }
+
+
 
 }

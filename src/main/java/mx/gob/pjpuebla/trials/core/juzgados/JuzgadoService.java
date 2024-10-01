@@ -14,7 +14,10 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -23,7 +26,11 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Transactional
@@ -37,6 +44,7 @@ public class JuzgadoService {
     private final MateriaRepository materiaRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
+    private final JuzgadoFoliosRepository juzgadoFoliosRepository;
 
     private static final Random RANDOM = new Random();
 
@@ -93,8 +101,18 @@ public class JuzgadoService {
         List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
         juzgado.setTipoJuicios(tipojuicios);
 
+        //Llena JuzgadoFolios para insertar en tabla JUZGADO_FOLIOS: crea folio para exhorto_entrada
+        //Añadir otra linea juzgadoFolios.add(); para añadir otro tipo de folio
+        List<JuzgadoFolios> juzgadoFolios = new ArrayList<>();
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DEMANDA).setJuzgado(juzgado));
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.EXHORTO).setJuzgado(juzgado));
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION).setJuzgado(juzgado));
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DESPACHO).setJuzgado(juzgado));
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION_MUNICIPAL).setJuzgado(juzgado));
+        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
+        juzgado.setJuzgadoFolios(juzgadoFolios);
+
         juzgado = juzgadoRepository.save(juzgado);
-        juzgadoRepository.generarSecuenciaExpediente(juzgado.getId());
         return new JuzgadoRecordItem(
                 juzgado.getId(),
                 juzgado.getNombre(),
@@ -126,15 +144,6 @@ public class JuzgadoService {
 
     public void delete(Integer id) {
         juzgadoRepository.deleteById(id);
-        juzgadoRepository.eliminarSecuenciaExpediente(id);
-    }
-
-    public NumeroExpedienteRecord getNumeroExpediente(Integer id) {
-        return new NumeroExpedienteRecord(juzgadoRepository.getNumeroExpediente(id));
-    }
-
-    public Boolean reiniciarSecuenciasExpedientes() {
-        return juzgadoRepository.reiniciarSecuenciasExpedientes();
     }
 
     public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio) {
@@ -204,4 +213,27 @@ public class JuzgadoService {
             juzgadoRepository.reiniciarContadorAsignaciones(materia);
         }
     }
+
+    public JuzgadoFolios getJuzgadoFolios(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+        return juzgadoFoliosRepository.findByJuzgadoAndTipoCarpeta(juzgado, tipoCarpeta)
+                .orElseThrow(() -> new NotFoundException("juzgadoFolio no encontrado", "tipoCarpeta"));
+    }
+
+    public JuzgadoFolios checkYearJuzgadoFolios(JuzgadoFolios juzgadoFolios) {
+        Integer currentYear = LocalDate.now().getYear();
+        if (juzgadoFolios.getYear() < currentYear) {
+            juzgadoFolios.setYear(currentYear);
+            juzgadoFolios.setValue(1);
+            juzgadoFolios = juzgadoFoliosRepository.save(juzgadoFolios);
+        }
+        return juzgadoFolios;
+    }
+
+    public JuzgadoFolios increaseValueJuzgadoFolios(JuzgadoFolios juzgadoFolios) {
+        juzgadoFolios.setValue(juzgadoFolios.getValue() + 1);
+        juzgadoFolios = juzgadoFoliosRepository.save(juzgadoFolios);
+        return juzgadoFolios;
+    }
+
+
 }

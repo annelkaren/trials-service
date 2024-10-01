@@ -6,7 +6,7 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.sello.CaratulaGenerator;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +30,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 public class DocumentoResource {
 
     private final SelloGenerator selloGenerator;
-    private final CaratulaGenerator caratulaGenerator;
+    private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
 

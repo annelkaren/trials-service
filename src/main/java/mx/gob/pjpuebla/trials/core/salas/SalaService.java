@@ -128,7 +128,7 @@ public class SalaService {
     public SalaAudienciaRecord asignarSala(Juzgado juzgado, TipoAudiencia tipoAudiencia){
         LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
         LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(juzgado, tipoAudiencia);
-        List<Bloque> bloques = bloqueRepository.findBloquesBySalasJuzgado(juzgado);
+        List<Bloque> bloques = bloqueRepository.findBloquesSalasJuzgado(juzgado);
         Sala salaDisponible = null;
 
         if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){

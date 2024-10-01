@@ -29,9 +29,9 @@ public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
             Select b from Bloque b
             WHERE b.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             AND EXISTS
-                (SELECT 1 FROM Salas s where s.bloque = b and s.juzgado=:juzgado
+                (SELECT 1 FROM Sala s where s.bloque = b and s.juzgado=:juzgado
                 and s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
             """)
-    List<Bloque> findBloquesBySalasJuzgado(Juzgado juzgado);
+    List<Bloque> findBloquesSalasJuzgado(Juzgado juzgado);
 
 }

@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
@@ -35,4 +37,7 @@ public class OficialiaSetUp {
         return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
     }
 
+    public static OficialiaMateriaRecord CreateOficialiaMateriaRecord(Oficialia oficialia, Materia materia, Sede sede, TipoOficialia tipoOficialia, Juzgado juzgado) {
+        return  new OficialiaMateriaRecord(oficialia.getId(), oficialia.getNombre(), oficialia.getEstado(), materia.getNombre(), materia.getId(), sede.getId(), tipoOficialia.getNombre(), tipoOficialia.getId(), juzgado.getNombre(), juzgado.getId() );
+    }
 }

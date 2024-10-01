@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 
 import java.io.Serializable;
 import java.util.List;
@@ -84,5 +85,8 @@ public class Juzgado implements Serializable, Auditable {
     @NotNull
     @Size(min = 1, max = 50)
     private List<TipoJuicio> tipoJuicios;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado")
+    private List<JuzgadoFolios> juzgadoFolios;
 }
 

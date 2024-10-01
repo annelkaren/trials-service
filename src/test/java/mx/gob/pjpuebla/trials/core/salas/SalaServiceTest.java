@@ -200,7 +200,7 @@ class SalaServiceTest {
 
         List<Sala> salas = Arrays.asList(sala);
         List<Bloque> bloques = Arrays.asList(bloque);
-        given(bloqueRepository.findBloquesBySalasJuzgado(juzgado)).willReturn(bloques);
+        given(bloqueRepository.findBloquesSalasJuzgado(juzgado)).willReturn(bloques);
         given(mockSalaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)).willReturn(salas);
         
         SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
