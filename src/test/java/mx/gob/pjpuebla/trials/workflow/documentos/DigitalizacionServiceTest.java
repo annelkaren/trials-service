@@ -99,7 +99,7 @@ class DigitalizacionServiceTest {
     }
     @AfterEach
     void tearDown() throws IOException {
-        Path folderPath = Paths.get("/opt");
+        Path folderPath = Paths.get(rootFolder);
         if (Files.exists(folderPath)) {
             Files.walk(folderPath)
                     .sorted(Comparator.reverseOrder())
