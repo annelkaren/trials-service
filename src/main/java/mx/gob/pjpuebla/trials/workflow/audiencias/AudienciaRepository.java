@@ -16,7 +16,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     @Query("""
         SELECT max(a.fechaAudiencia) from Audiencia a
-        WHERE a.tipoAudiencia = :tipoAudiencia 
+        WHERE a.tipoAudiencia = :tipoAudiencia
         and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
         and EXISTS(
             Select 1 FROM Sala s where a.sala = s and s.juzgado = :juzgado

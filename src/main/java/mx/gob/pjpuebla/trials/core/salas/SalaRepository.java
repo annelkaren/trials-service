@@ -69,7 +69,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
     @Query("""
             SELECT s
             FROM Sala s
-            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE 
+            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             and s = :sala
             AND NOT EXISTS
                 (SELECT 1 from Audiencia a WHERE a.sala = s and a.bloque=s.bloque and a.fechaAudiencia=:fechaAudiencia

@@ -121,15 +121,14 @@ public class SalaService {
 
     /***
      * 
-     * @param juzgado
-     * @param tipoAudiencia
+     * @param juzgado Juzgado del Distrito
+     * @param tipoAudiencia Tipo de Audiencia de Oralidad
      * @return SalaAudienciaRecord Primera sala disponible del Juzgado según la configuración del bloque
      */
     public SalaAudienciaRecord asignarSala(Juzgado juzgado, TipoAudiencia tipoAudiencia){
         LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
         LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(juzgado, tipoAudiencia);
         List<Bloque> bloques = bloqueRepository.findBloquesSalasJuzgado(juzgado);
-        Sala salaDisponible = null;
 
         if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){
             fecha = ultimaFechaAudiencia.toLocalDate();
@@ -138,7 +137,7 @@ public class SalaService {
         int max = 3;
         int intentos = 0;
 
-        while(salaDisponible == null || intentos++ <= max){
+        while(intentos <= max){
 
             if (DiaHabil.esInhabil(fecha)==Boolean.TRUE){
                 fecha = DiaHabil.proximoDiaHabil(fecha);
@@ -149,8 +148,8 @@ public class SalaService {
     
                 for (BloqueCitaItem cita: citas){
                     LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
-    
-                    salaDisponible = this.findSalaDisponible(fechaHoraAudiencia, bloque, juzgado);
+
+                    Sala salaDisponible = this.findSalaDisponible(fechaHoraAudiencia, bloque, juzgado);
     
                     if (salaDisponible!=null){
                         return new SalaAudienciaRecord(salaDisponible.getId(), salaDisponible.getNombre(), 
@@ -161,28 +160,24 @@ public class SalaService {
             }
 
             fecha = fecha.plusDays(1);
+            intentos++;
         }
 
         throw new NotFoundException("No hay Sala disponible", "Sala");
     }
 
     public Sala findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado){
-
         Optional<Sala> salaDisponible = salaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)
             .stream().findFirst();
 
-        if (salaDisponible.isEmpty()){
-            return null;
-        }
-
-        return salaDisponible.get();
+        return salaDisponible.orElse(null);
     }
 
     public SalaAudienciaRecord asignarSalaConexidad(PersonaDocumentoRecord actor, PersonaDocumentoRecord demandado, TipoJuicio tipoJuicio, TipoAudiencia tipoAudiencia){
          List<Carpeta> carpetas = new ArrayList<>();
         
-        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
-        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte().toString()));
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte()));
 
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
@@ -219,15 +214,14 @@ public class SalaService {
 
     /***
      * 
-     * @param sala
-     * @param tipoAudiencia
+     * @param sala Sala de Audiencia 
+     * @param tipoAudiencia Tipo de Audiencia de Oralidad
      * @return SalaAudienciaRecord Primer horario disponible de la Sala
      */
     public SalaAudienciaRecord asignarAudiencia(Sala sala, TipoAudiencia tipoAudiencia){
         LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
         LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(sala.getJuzgado(), tipoAudiencia);
         Bloque bloque = sala.getBloque();
-        SalaAudienciaRecord salaAudiencia = null;
         int max = 3;
         int intentos = 0;
 
@@ -237,7 +231,7 @@ public class SalaService {
 
         List<BloqueCitaItem> citas = bloque.getData().getCitas();
 
-        while(salaAudiencia==null){
+        while(intentos<=max){
 
             if (DiaHabil.esInhabil(fecha)==Boolean.TRUE){
                 fecha = DiaHabil.proximoDiaHabil(fecha);
@@ -247,20 +241,14 @@ public class SalaService {
                 LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
     
                 if (checkHoraDisponible(fechaHoraAudiencia, sala)==Boolean.TRUE){
-                    salaAudiencia = new SalaAudienciaRecord(sala.getId(), sala.getNombre(), 
-                    sala.getJuez().getId(), sala.getJuez().getNombre(), sala.getJuzgado().getNombre(), 
+                    return new SalaAudienciaRecord(sala.getId(), sala.getNombre(),
+                    sala.getJuez().getId(), sala.getJuez().getNombre(), sala.getJuzgado().getNombre(),
                     bloque.getId(), fechaHoraAudiencia);
-    
-                    return salaAudiencia;
                 }
-    
             }
 
             fecha = fecha.plusDays(1);
-
-            if(intentos++ > max){
-                break;
-            }
+            intentos++;
         }
 
         throw new NotFoundException("No hay Horario disponible", "Sala");    
