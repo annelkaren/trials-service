@@ -1,10 +1,14 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -47,9 +51,28 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "N_ROL")
     private Rol rol;
 
+    @Column(name = "S_INE")
+    private String ine;
+
+    @Column(name = "S_CURP")
+    private String curp;
+
+    @NotNull
+    @Email
+    @Column(name = "S_EMAIL")
+    private String correoElectronico;
+
+    @Pattern(regexp = "^\\d{10}$")
+    @Column(name = "S_CELULAR")
+    private String celular;
+
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
+
+    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private Domicilio domicilio;
 
     @JoinColumn(name = "FN_TIPO_PARTE", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
