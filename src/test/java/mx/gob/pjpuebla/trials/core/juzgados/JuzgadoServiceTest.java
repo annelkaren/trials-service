@@ -18,6 +18,9 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +40,7 @@ import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static mx.gob.pjpuebla.trials.util.Messages.OPTIMISTIC_LOCKING_ERROR;
+import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,8 +64,11 @@ class JuzgadoServiceTest {
     MateriaRepository materiaRepository;
     @Mock
     TipoSistemaRepository tipoSistemaRepository;
+    @Mock
+    JuzgadoFoliosRepository juzgadoFoliosRepository;
 
     private Juzgado juzgado;
+    private JuzgadoFolios juzgadoFolios;
 
     @BeforeEach
     public void setUp() {
@@ -74,6 +82,8 @@ class JuzgadoServiceTest {
         TipoJuicio tipoJuicio = createTipoJuicio(tipoSistema, materia);
         juzgado = JuzgadoSetUp.createJuzgado(materia, sede)
                 .setTipoJuicios(List.of(tipoJuicio));
+        juzgadoFolios = createJuzgadoFolios();
+        juzgadoFolios.setJuzgado(juzgado);
     }
 
     @Test
@@ -217,4 +227,62 @@ class JuzgadoServiceTest {
         assertThat(assertThrows.getMessage()).contains("Sede no encontrada");
     }
 
+    @Test
+    void getJuzgadoFolios() {
+        given(juzgadoFoliosRepository.findByJuzgadoAndTipoCarpeta(juzgado, TipoCarpeta.DEMANDA))
+                .willReturn(Optional.ofNullable(juzgadoFolios));
+
+        JuzgadoFolios response = juzgadoService.getJuzgadoFolios(juzgado, TipoCarpeta.DEMANDA);
+
+        assertThat(response).isOfAnyClassIn(JuzgadoFolios.class)
+                .hasFieldOrPropertyWithValue("id", juzgadoFolios.getId())
+                .hasFieldOrPropertyWithValue("juzgado", juzgadoFolios.getJuzgado())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", juzgadoFolios.getTipoCarpeta())
+                .hasFieldOrPropertyWithValue("value", juzgadoFolios.getValue())
+                .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
+    }
+
+    @Test
+    void getJuzgadoFolios_return_juzgado_notFound_exception() {
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> juzgadoService.getJuzgadoFolios(juzgado, TipoCarpeta.DEMANDA)
+        );
+        assertThat(assertThrows.getMessage()).contains("juzgadoFolio no encontrado");
+    }
+
+    @Test
+    void checkYearJuzgadoFolios() {
+        given(juzgadoFoliosRepository.save(juzgadoFolios))
+                .willReturn(juzgadoFolios);
+
+        juzgadoFolios.setYear(2023);
+        JuzgadoFolios response = juzgadoService.checkYearJuzgadoFolios(juzgadoFolios);
+
+        assertThat(response).isOfAnyClassIn(JuzgadoFolios.class)
+                .hasFieldOrPropertyWithValue("id", juzgadoFolios.getId())
+                .hasFieldOrPropertyWithValue("juzgado", juzgadoFolios.getJuzgado())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", juzgadoFolios.getTipoCarpeta())
+                .hasFieldOrPropertyWithValue("value", juzgadoFolios.getValue())
+                .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
+        assertThat(response.getYear()).isEqualTo(LocalDate.now().getYear());
+        assertThat(response.getValue()).isEqualTo(1);
+    }
+
+    @Test
+    void increaseValueJuzgadoFolios() {
+        given(juzgadoFoliosRepository.save(juzgadoFolios))
+                .willReturn(juzgadoFolios);
+
+        JuzgadoFolios response = juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+
+        assertThat(response).isOfAnyClassIn(JuzgadoFolios.class)
+                .hasFieldOrPropertyWithValue("id", juzgadoFolios.getId())
+                .hasFieldOrPropertyWithValue("juzgado", juzgadoFolios.getJuzgado())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", juzgadoFolios.getTipoCarpeta())
+                .hasFieldOrPropertyWithValue("value", juzgadoFolios.getValue())
+                .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
+        assertThat(response.getValue()).isEqualTo(2);
+    }
 }
