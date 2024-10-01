@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,5 +24,14 @@ public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
             WHERE b.id = :id AND b.estado IN :estados
             """)
     Optional<BloqueRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+
+    @Query("""
+            Select b from Bloque b
+            WHERE b.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            AND EXISTS
+                (SELECT 1 FROM Salas s where s.bloque = b and s.juzgado=:juzgado
+                and s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
+            """)
+    List<Bloque> findBloquesBySalasJuzgado(Juzgado juzgado);
 
 }

@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -230,6 +231,43 @@ class SalaRepositoryTest extends AuditConfigTest {
         List<Sala> salas = salaRepository.findSalaDisponible(LocalDateTime.now(), bloque, juzgado);
 
         assertThat(salas).isNotEmpty();
+    }
+
+    @Test
+    void testHorarioDisponible(){
+        Bloque bloque = BloqueSetUp.createBloque();
+        BloqueCitaItem cita = new BloqueCitaItem();
+        LocalDateTime fechaAudiciencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
+
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8,30,00));
+
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+
+        Persona juez = personaRepository.save(PersonaSetUp.createPersona());
+        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
+        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
+        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+        sede.setDomicilio(domicilio);
+        sede.setDistrito(distrito);
+        sede = sedeRepository.save(sede);
+        TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+
+        Juzgado juzgado = juzgadoRepository.save(JuzgadoSetUp.createJuzgado(materia, sede)
+                .setTipoJuicios(List.of(tipoJuicio)));
+
+        Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
+        sala.setBloque(bloque);
+        sala.setJuzgado(juzgado);
+        sala.setJuez(juez);
+        salaRepository.save(sala);
+
+        Optional<Sala> salas = salaRepository.checkHoraDisponible(fechaAudiciencia, sala);
+
+        assertThat(salas).isPresent();
     }
 
 }
