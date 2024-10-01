@@ -23,6 +23,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,7 +97,21 @@ class DigitalizacionServiceTest {
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
                 .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
     }
-
+    @AfterEach
+    void tearDown() throws IOException {
+        Path folderPath = Paths.get("/opt");
+        if (Files.exists(folderPath)) {
+            Files.walk(folderPath)
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            System.err.println("No se pudo eliminar: " + path + " - " + e.getMessage());
+                        }
+                    });
+        }
+    }
     @Test
     void cargarArchivoPdf() throws IOException {
 
@@ -211,7 +227,7 @@ class DigitalizacionServiceTest {
         ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
 
 
-        String expectedFolderPath = rootFolder + "/digitalizacion/entrada/E000006";
+        String expectedFolderPath = rootFolder + "/digitalizacion/2024/entrada/E000006";
 
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
                 .willReturn(expectedFolderPath);
