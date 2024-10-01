@@ -3,16 +3,21 @@ package mx.gob.pjpuebla.trials.workflow.sello;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoTipoJuiciosRecord;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumetoJuzgadoRecord;
 import net.sf.jasperreports.engine.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -38,6 +43,7 @@ public class SelloGenerator {
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
     private final JuzgadoRepository juzgadoRepository;
+    private final CarpetaRepository carpetaRepository;
     private final OficialiaRepository oficialiaRepository;
     @Value("classpath:jasper/selloReport.jasper")
     private Resource sello;
@@ -55,6 +61,7 @@ public class SelloGenerator {
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
+        updateExpedientePorTipoJuicio(documento);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getCarpeta().getExpediente());
@@ -155,6 +162,53 @@ public class SelloGenerator {
             nombreCapturista = "";
         }
         return  nombreCapturista;
+    }
+    public Documento updateExpedientePorTipoJuicio (Documento documento){
+        Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
+        DocumetoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
+        if (carpetaOptional.isPresent()) {
+            Carpeta carpeta = carpetaOptional.get();
+            if(documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
+                    && documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("familiar")
+            ){
+                List<JuzgadoTipoJuiciosRecord> listTipoJuicios = juzgadoRepository.findTipoJuiciosByJuzgadoId(documento.getCarpeta().getJuzgado().getId());
+                List<String> listInicialesTipoJuicio = obtenerIniciales(listTipoJuicios);
+                String inicialesTipoJuicios = String.join("-", listInicialesTipoJuicio);
+                String inicialesJuzgado = obtenerInicialesDeString(docJuzDis.nombreJuzgado());
+                String inicialesDistrito = obtenerInicialesDeString(docJuzDis.nombreDistrito());
+                String expenienteOralFamiliar = String.join("/",
+                        inicialesJuzgado,
+                        inicialesDistrito,
+                        carpeta.getExpediente(),
+                        inicialesTipoJuicios
+                );
+                carpeta.setExpediente(expenienteOralFamiliar);
+            }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
+                carpeta.setExpediente(carpeta.getExpediente() + "- Exhorto");
+            }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.PROMOCION)){
+                carpeta.setExpediente(carpeta.getExpediente() + "- Promocion");
+            }
+            documento.setCarpeta(carpeta);
+        } else {
+            throw new NotFoundException("Carperta no encontrada", "carpetaId");
+        }
+        return documento;
+    }
+
+    public static List<String> obtenerIniciales(List<JuzgadoTipoJuiciosRecord> tipoJuiciosLista) {
+        return tipoJuiciosLista.stream()
+                .map(juzgadoTipoJuicio -> obtenerInicialesDeString(juzgadoTipoJuicio.tipoJuicios()))
+                .toList();
+    }
+
+    public static String obtenerInicialesDeString(String str) {
+        return Arrays.stream(str.split(" "))
+                .filter(word -> !word.trim().isEmpty())
+                .map(word -> {
+                    String inicial = word.replaceAll("[^a-zA-Z]", "");
+                    return inicial.isEmpty() ? "" : inicial.substring(0, 1).toUpperCase();
+                })
+                .collect(Collectors.joining());
     }
 
 }

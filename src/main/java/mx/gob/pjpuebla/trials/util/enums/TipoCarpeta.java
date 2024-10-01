@@ -9,5 +9,6 @@ public enum TipoCarpeta {
     APELACION,
     DESPACHO,
     APELACION_MUNICIPAL,
-    AMPARO
+    AMPARO,
+    PROMOCION
 }

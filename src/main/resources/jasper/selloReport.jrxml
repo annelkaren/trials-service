@@ -78,29 +78,29 @@
 				</textElement>
 				<text><![CDATA[Anexos:]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="298" y="243" width="100" height="19" uuid="f2635911-f424-4a73-b6c4-214865044588"/>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="ContainerHeight" x="298" y="243" width="250" height="19" uuid="f2635911-f424-4a73-b6c4-214865044588"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="368" y="262" width="138" height="19" uuid="78c2cd53-8b64-4f33-8fab-473bbcfd74a1"/>
+				<reportElement x="368" y="262" width="180" height="19" uuid="78c2cd53-8b64-4f33-8fab-473bbcfd74a1"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fechaHoraRecepcion}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="268" y="281" width="100" height="18" uuid="2946defa-164c-460e-b0b0-ff0e9189b93a"/>
+				<reportElement x="268" y="281" width="212" height="18" uuid="2946defa-164c-460e-b0b0-ff0e9189b93a"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement x="238" y="330" width="80" height="70" uuid="328aee11-b6f4-4dba-85bd-e567bb82c5a1"/>
+				<reportElement stretchType="ContainerHeight" x="238" y="330" width="120" height="100" uuid="328aee11-b6f4-4dba-85bd-e567bb82c5a1"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
 			</textField>
