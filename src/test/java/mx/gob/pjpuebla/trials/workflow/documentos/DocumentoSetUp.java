@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
@@ -37,10 +38,13 @@ public class DocumentoSetUp {
 
     public static DocumentoSaveRecord createDocumentoSaveRecord(Integer tipoJuicio) {
         List<String> anexos = Arrays.asList("Anexo 1", "Anexo 2", "Anexo3");
+        DocumentoData docData = new DocumentoData();
+
         return new DocumentoSaveRecord(
                 PersonasDocumentosSetUp.createPersonaDocumentoItemRecord(),
                 PersonasDocumentosSetUp.createPersonaDocumentoItemRecord(),
                 anexos,
-                tipoJuicio);
+                tipoJuicio,
+                docData);
     }
 }

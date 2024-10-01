@@ -10,5 +10,6 @@ public record DocumentoSaveRecord(
         PersonaDocumentoItemRecord actor,
         PersonaDocumentoItemRecord demandado,
         List<String> anexos,
-        Integer tipoJuicioId) implements Serializable {
+        Integer tipoJuicioId,
+        DocumentoData general) implements Serializable {
 }

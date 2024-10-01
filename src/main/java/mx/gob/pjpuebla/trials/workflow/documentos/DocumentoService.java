@@ -22,6 +22,8 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 import java.util.List;
@@ -90,7 +92,11 @@ public class DocumentoService {
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta = carpetaRepository.save(carpeta);
+
         documento.setCarpeta(carpeta);
+        //SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
+        
+        documento.setData(documentoRecord.general());
         documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoRecord.actor(), carpeta);
@@ -120,6 +126,14 @@ public class DocumentoService {
         entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, carpeta.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
         entity.setCarpeta(carpeta);
+
+        //campos exlusivos para demanda de tipo familiar 
+        entity.setCurp(persona.curp());
+        entity.setIne(persona.ine());
+        entity.setDomicilio(null); //pendiende de ver como quedara .
+        entity.setCelular(persona.celular());
+        entity.setCorreoElectronico(persona.correoElectronico());
+        
         personaDocumentoRepository.save(entity);
     }
 

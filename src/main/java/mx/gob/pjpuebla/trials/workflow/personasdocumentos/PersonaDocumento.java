@@ -57,7 +57,6 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "S_CURP")
     private String curp;
 
-    @NotNull
     @Email
     @Column(name = "S_EMAIL")
     private String correoElectronico;
