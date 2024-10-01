@@ -23,6 +23,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -39,6 +40,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -78,6 +81,7 @@ class DigitalizacionServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // Configurar los mocks para los repositorios
         given(materiaRepository.save(any(Materia.class))).willReturn(MateriaSetUp.createMateria());
         given(distritoRepository.save(any(Distrito.class))).willReturn(DistritoSetUp.createDistrito());
@@ -95,6 +99,31 @@ class DigitalizacionServiceTest {
         given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
                 .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
     }
+
+@AfterEach
+void tearDown() throws IOException {
+
+    Path folderPath1 = Paths.get(rootFolder + "/digitalizacion/2024/Juzgado");
+    Path folderPath2 = Paths.get(rootFolder + "/digitalizacion/2024/juzgadoPrueba");
+
+    List<Path> pathsToDelete = List.of(folderPath1, folderPath2);
+
+
+    for (Path folderPath : pathsToDelete) {
+        if (Files.exists(folderPath)) {
+            Files.walk(folderPath)
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            System.err.println("No se pudo eliminar: " + path + " - " + e.getMessage());
+                        }
+                    });
+        }
+    }
+}
+
 
     @Test
     void cargarArchivoPdf() throws IOException {
@@ -198,5 +227,40 @@ class DigitalizacionServiceTest {
         // Limpiar el archivo después de la prueba para evitar residuos (opcional)
         Files.deleteIfExists(pathArchivo);
     }
+
+    @Test
+    void cargarArchivoPdfExhortos() throws IOException {
+
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+        long expectedFileSize = fileMock.getSize();
+
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+
+        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", rootFolder);
+        ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
+
+
+        String expectedFolderPath = rootFolder + "/digitalizacion/2024/juzgadoPrueba/entrada/E000006";
+
+        given(digitalizacionFolderService.createFolderDigitalizacion(any(Documento.class)))
+                .willReturn(expectedFolderPath);
+
+        DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
+
+        verify(documentoRepository).findById(documento.getId());
+        verify(documentoRepository).save(any(Documento.class));
+        verify(digitalizacionFolderService).createFolderDigitalizacion(any(Documento.class));
+        Path expectedFolderPathNormalized = Paths.get(expectedFolderPath).normalize();
+        Path actualFolderPathNormalized = Paths.get(result.rutaArchivo()).getParent().normalize();
+        Path pathArchivo = Paths.get(result.rutaArchivo());
+        long actualFileSize = Files.size(pathArchivo);
+
+        assertEquals(expectedFolderPathNormalized, actualFolderPathNormalized, "La carpeta de exhorto no fue creada correctamente");
+        assert Files.exists(pathArchivo) : "El archivo no fue creado correctamente";
+        assert actualFileSize == expectedFileSize : "El tamaño del archivo no coincide";
+        assert result.rutaArchivo().endsWith(".pdf") : "El archivo creado no es un PDF";
+        Files.deleteIfExists(pathArchivo);
+    }
+
 
 }

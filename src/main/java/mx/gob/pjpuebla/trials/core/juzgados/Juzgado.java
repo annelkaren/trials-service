@@ -71,7 +71,7 @@ public class Juzgado implements Serializable, Auditable {
         return this.contadorAsignaciones;
     }
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.LAZY)
     @JoinTable(name = "tbl_juzgado_tipojuicio",
             joinColumns = {
                     @JoinColumn(name = "fn_juzgado", referencedColumnName = "pn_id")
@@ -86,7 +86,7 @@ public class Juzgado implements Serializable, Auditable {
     @Size(min = 1, max = 50)
     private List<TipoJuicio> tipoJuicios;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado", fetch = FetchType.LAZY)
     private List<JuzgadoFolios> juzgadoFolios;
 }
 
