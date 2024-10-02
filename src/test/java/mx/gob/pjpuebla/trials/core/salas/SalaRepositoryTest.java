@@ -1,7 +1,15 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
+import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueData;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -12,10 +20,14 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
+        "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop",
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -54,6 +66,12 @@ class SalaRepositoryTest extends AuditConfigTest {
     @Autowired
     private SalaRepository salaRepository;
 
+    @Autowired
+    private BloqueRepository bloqueRepository;
+
+    @Autowired
+    private JuzgadoRepository juzgadoRepository;
+
     @Test
     void findByIdAndEstado() {
 
@@ -75,6 +93,51 @@ class SalaRepositoryTest extends AuditConfigTest {
         long count = salaRepository.countByJuzgadoId(53);
 
         assertThat(count).isZero();
+    }
+
+    @Test
+    void testFindSalaDisponible(){
+        BloqueCitaItem cita = new BloqueCitaItem();
+        Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElse(null);
+        Sala sala = salaRepository.findByJuzgado(juzgado).stream().findFirst().orElse(null);
+        Bloque bloque = sala.getBloque();
+
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8,30,00));
+
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+        sala.setBloque(bloque);
+
+        salaRepository.save(sala);
+
+        List<Sala> salas = salaRepository.findSalaDisponible(LocalDateTime.now(), bloque, juzgado);
+
+        assertThat(salas).isNotEmpty();
+    }
+
+    @Test
+    void testHorarioDisponible(){
+        BloqueCitaItem cita = new BloqueCitaItem();
+        LocalDateTime fechaAudiciencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
+        Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElse(null);
+        Sala sala = salaRepository.findByJuzgado(juzgado).stream().findFirst().orElse(null);
+        Bloque bloque = sala.getBloque();
+
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8,30,00));
+
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        bloque = bloqueRepository.save(BloqueSetUp.createBloque());
+
+        sala.setBloque(bloque);
+
+        sala = salaRepository.save(sala);
+
+
+        Optional<Sala> salas = salaRepository.checkHoraDisponible(fechaAudiciencia, sala);
+
+        assertThat(salas).isPresent();
     }
 
 }

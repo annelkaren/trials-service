@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -61,6 +63,22 @@ public class BloqueService {
 
     public void delete(Integer id) {
         bloqueRepository.deleteById(id);
+    }
+
+    public List<LocalTime> getCitas(Bloque bloque){
+        List<LocalTime> citas = new ArrayList<>();
+        LocalTime cita = bloque.getHoraInicial();
+
+        citas.add(cita);
+
+        while(cita.isBefore(bloque.getHoraFinal())){
+            cita = cita.plusMinutes(30);
+
+            citas.add(cita);
+        }
+
+        return citas;
+        
     }
 
 }

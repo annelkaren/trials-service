@@ -3,7 +3,11 @@ package mx.gob.pjpuebla.trials.core.bloques;
 import java.io.Serializable;
 import java.time.LocalTime;
 
+import org.hibernate.annotations.Type;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -45,6 +49,10 @@ public class Bloque implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
+    
+    @Type(JsonBinaryType.class)
+    @Column(name = "J_DATA", columnDefinition = "json")
+    private BloqueData data;
 
     @JsonIgnore
     @Accessors(chain = false)
