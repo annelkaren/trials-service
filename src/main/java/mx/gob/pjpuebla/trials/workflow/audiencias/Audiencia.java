@@ -15,6 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
@@ -44,6 +46,11 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
+    @Max(Integer.MAX_VALUE)
+    @Version
+    @Column(name = "N_VERSION")
+    private Integer version;
+
     @NotNull
     @Column(name = "T_FECHA_AUDIENCIA")
     private LocalDateTime fechaAudiencia;
@@ -61,10 +68,10 @@ public class Audiencia implements  Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Sala sala;
 
-    @Column(name="T_INICIO")
+    @Column(name="T_HORA_INICIO")
     private LocalDateTime inicio;
 
-    @Column(name="T_FIN")
+    @Column(name="T_HORA_FIN")
     private LocalDateTime fin;
 
     @NotNull
@@ -72,10 +79,12 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name="N_ESTATUS_AUDIENCIA")
     private EstatusAudiencia estatusAudiencia;
 
-    @Column(name = "FN_TIPO")
+    @JoinColumn(name = "FN_TIPO_AUDIENCIA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
     private TipoAudiencia tipoAudiencia;
 
-    @Column(name = "FN_CARPETA")
+    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
     
     @JoinColumn(name = "FN_BLOQUE", referencedColumnName = "PN_ID")
