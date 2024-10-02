@@ -4,11 +4,17 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -32,6 +38,12 @@ public class TipoJuicioResource {
         );
 
     }
+
+    @GetMapping("/demandas")
+    public List<TipoJuicioDemandasRecord> getTiposJuiciosOralidad() {
+        return tipoJuicioService.getAllTipoJuicios();
+    }
+    
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public TipoJuicioRecord getById(@PathVariable Integer id) {

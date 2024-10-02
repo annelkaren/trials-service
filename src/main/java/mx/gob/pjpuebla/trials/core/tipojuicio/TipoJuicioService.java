@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,11 @@ public class TipoJuicioService {
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    @Transactional
+    public List<TipoJuicioDemandasRecord> getAllTipoJuicios() {
+        return tipoJuicioRepository.findByAllTipoJuicios();
     }
 
     @Transactional(readOnly = true)
