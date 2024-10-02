@@ -31,8 +31,6 @@ exclude:
       - src/main/java/mx/gob/pjpuebla/trials/roles
       - src/main/java/mx/gob/pjpuebla/trials/sello
       - src/main/java/mx/gob/pjpuebla/trials/listavalor
-      - src/main/java/mx/gob/pjpuebla/trials/core/oficialias/OficialiaValidator.java
-      - src/main/java/mx/gob/pjpuebla/trials/core/materias/MateriaValidator.java
       - src/main/java/mx/gob/pjpuebla/trials/workflow/documentos/DocumentoResource.java
       - src/main/java/mx/gob/pjpuebla/trials/workflow/folios/SecuenciaRepositoryCustomImpl.java
       - src/main/java/mx/gob/pjpuebla/trials/core/juzgados/JuzgadoRepositoryCustomImpl.java

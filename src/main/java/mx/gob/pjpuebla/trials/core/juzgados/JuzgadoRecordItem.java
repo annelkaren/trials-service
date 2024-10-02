@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * @param estado
  * @param materia
  */
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record JuzgadoRecordItem(
         Integer id,
         String nombre,

@@ -32,18 +32,18 @@ springdoc:
       client-id: trials-service
       client-secret: 2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj
 
+logging:
+  level:
+    org.keycloak.adapters.authorization.integration.jakarta.ServletPolicyEnforcerFilter: debug
+
 server:
   port: 8888
   servlet:
     context-path: /rest
 
 management:
-  endpoints:
-    web:
-      expose: "*"
-  endpoint:
-    health:
-      show-details: always
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always
 
 keycloak:
   realm: trials-realm
