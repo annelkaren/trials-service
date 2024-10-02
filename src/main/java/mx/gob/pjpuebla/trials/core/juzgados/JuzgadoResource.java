@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.validation.BindException;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class JuzgadoResource {
 
     private final JuzgadoService juzgadoService;
+    private final JuzgadoUpdateValidator juzgadoUpdateValidator;
 
     @GetMapping
     public Page<JuzgadoRecordItem> getAll(
@@ -34,12 +38,21 @@ public class JuzgadoResource {
     }
 
     @PutMapping
-    public JuzgadoRecordItem update(@RequestBody @Valid Juzgado juzgado) {
+    public JuzgadoRecordItem update(@RequestBody @Valid Juzgado juzgado) throws BindException {
+
+        validate(juzgado, juzgadoUpdateValidator);
         return this.juzgadoService.update(juzgado);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         this.juzgadoService.delete(id);
+    }
+
+    public static void validate(Object obj, Validator... validators) throws BindException {
+        DataBinder dataBinder = new DataBinder(obj);
+        dataBinder.addValidators(validators);
+        dataBinder.validate();
+        dataBinder.close();
     }
 }

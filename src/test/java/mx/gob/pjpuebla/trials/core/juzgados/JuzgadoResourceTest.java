@@ -9,9 +9,9 @@ import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +41,8 @@ class JuzgadoResourceTest {
 
     @MockBean
     private JuzgadoService mockJuzgadoService;
+    @MockBean
+    private JuzgadoUpdateValidator mockJuzgadoUpdateValidator;
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,9 +82,10 @@ class JuzgadoResourceTest {
                 .willReturn(juzgadoRecord);
 
         mockMvc.perform(
-                get("/api/core/juzgados/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+                        get("/api/core/juzgados/1")
+                                .accept(MediaType.APPLICATION_JSON)
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("nombre").value(juzgadoRecord.nombre()));
     }
 
     @Test
@@ -126,17 +129,19 @@ class JuzgadoResourceTest {
                 .willReturn(juzgadoRecordItem);
         juzgado.setNombre("12");
         mockMvc.perform(
-                post("/api/core/juzgados")
-                        .content(ResourceUtilTest.asJsonString(juzgado))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest())
+                        post("/api/core/juzgados")
+                                .content(ResourceUtilTest.asJsonString(juzgado))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                ).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("[0].field").value("nombre"))
                 .andExpect(jsonPath("[0].message").value("size must be between 3 and 250"));
     }
 
     @Test
     void update_success() throws Exception {
+        given(mockJuzgadoUpdateValidator.supports(any()))
+                .willReturn(true);
         given(mockJuzgadoService.create(juzgado))
                 .willReturn(juzgadoRecordItem);
 
@@ -150,6 +155,8 @@ class JuzgadoResourceTest {
 
     @Test
     void update_error() throws Exception {
+        given(mockJuzgadoUpdateValidator.supports(any()))
+                .willReturn(true);
         given(mockJuzgadoService.update(any(Juzgado.class)))
                 .willThrow(InvalidVersionException.class);
 

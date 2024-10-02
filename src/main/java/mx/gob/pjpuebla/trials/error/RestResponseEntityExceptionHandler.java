@@ -5,6 +5,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -14,12 +16,38 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.*;
 
+
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+        return Objects.requireNonNull(handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getLocalizedMessage(), ex.getMessage())
+                ),
+                new HttpHeaders(),
+                HttpStatus.UNAUTHORIZED,
+                request
+        ));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+        return Objects.requireNonNull(handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(Messages.INVALID_TOKEN, ex.getMessage())
+                ),
+                new HttpHeaders(),
+                HttpStatus.UNAUTHORIZED,
+                request
+        ));
+    }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
@@ -75,6 +103,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 buildBindingResultErrorsList(ex.getBindingResult()),
                 new HttpHeaders(),
                 HttpStatus.BAD_REQUEST,
+                request
+        );
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getRequestURL(), ex.getMessage())
+                ),
+                new HttpHeaders(),
+                status,
                 request
         );
     }

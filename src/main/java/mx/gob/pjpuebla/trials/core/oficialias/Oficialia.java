@@ -56,7 +56,7 @@ public class Oficialia implements Serializable, Auditable {
     private Sede sede;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
     @Accessors(chain = false)
