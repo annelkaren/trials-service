@@ -1,16 +1,5 @@
 package mx.gob.pjpuebla.trials.core.bloques;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -24,6 +13,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+
 @ExtendWith(MockitoExtension.class)
 class BloqueServiceTest {
 
@@ -34,13 +34,11 @@ class BloqueServiceTest {
     private BloqueService bloqueService;
 
     private Bloque bloque;
-    private BloqueRecord bloqueRecord;
     private BloqueRecordResponse bloqueRecordResponse;
 
     @BeforeEach
     public void setUp() {
         bloque = BloqueSetUp.createBloque();
-        bloqueRecord = BloqueSetUp.createBloqueRecord();
         bloqueRecordResponse = BloqueSetUp.createBloqueRecordResponse();
         bloque.setHoraInicial(LocalTime.of(8, 30));
         bloque.setHoraFinal(LocalTime.of(9, 30));
@@ -126,7 +124,7 @@ class BloqueServiceTest {
     void update() {
         given(mockBloqueRepository.save(bloque))
                 .willReturn(bloque);
-        BloqueRecordResponse response = bloqueService.create(bloque);
+        BloqueRecordResponse response = bloqueService.update(bloque);
 
         assertThat(response).isOfAnyClassIn(BloqueRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", bloque.getId())

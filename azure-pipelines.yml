@@ -50,11 +50,6 @@ stages:
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.17'
 
-#    - task: PublishCodeCoverageResults@2
-#      inputs:
-#        summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco/jacoco.xml
-#        pathToSources: $(System.DefaultWorkingDirectory)/src/main/java/
-#
     - task: Cache@2
       displayName: Qodana Cache
       inputs:
@@ -63,10 +58,10 @@ stages:
         restoreKeys: |
           "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
           "$(Build.Repository.Name)"
+
     - task: QodanaScan@2024
       inputs:
         args: "--baseline,qodana.sarif.json"
-#        args: "--baseline,$(Build.SourcesDirectory)/qodana.sarif.json"
       env:
         QODANA_TOKEN: $(QODANA_TOKEN)
         QODANA_ENDPOINT: 'https://qodana.cloud'

@@ -1,5 +1,13 @@
 package mx.gob.pjpuebla.trials.core.tiposistema;
 
-public record TipoSistemaRecord(Integer id, String nombre) {
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record TipoSistemaRecord(
+        Integer id,
+        String nombre
+) implements Serializable {
 
 }

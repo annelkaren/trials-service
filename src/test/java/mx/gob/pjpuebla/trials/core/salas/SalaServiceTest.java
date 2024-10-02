@@ -26,6 +26,7 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.DiaHabil;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 
@@ -198,10 +199,14 @@ class SalaServiceTest {
 
         List<Sala> salas = Arrays.asList(sala);
         List<Bloque> bloques = Arrays.asList(bloque);
-        given(bloqueRepository.findBloquesSalasJuzgado(juzgado)).willReturn(bloques);
-        given(mockSalaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)).willReturn(salas);
+        given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
+        given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
         
         SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
+        
+        if (DiaHabil.esInhabil(fechaAudiencia.toLocalDate())){
+            fechaAudiencia = LocalDateTime.of(DiaHabil.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
+        }
 
         assertThat(salaAudienciaRecord)
             .isNotNull()
@@ -263,11 +268,16 @@ class SalaServiceTest {
         bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         sala.setBloque(bloque);
 
-        given(mockSalaRepository.checkHoraDisponible(fechaAudiencia, sala)).willReturn(Optional.of(sala));        
+        if (DiaHabil.esInhabil(fechaAudiencia.toLocalDate())){
+            fechaAudiencia = LocalDateTime.of(DiaHabil.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
+        }
+
+        given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));        
 
         SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
 
-        assertThat(salaAudiencia).isNotNull();
+        assertThat(salaAudiencia).isNotNull()
+        .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
     }
 
 

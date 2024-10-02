@@ -51,7 +51,7 @@ public class Bloque implements Serializable, Auditable {
     private Estado estado;
     
     @Type(JsonBinaryType.class)
-    @Column(name = "J_DATA")
+    @Column(name = "J_DATA", columnDefinition = "json")
     private BloqueData data;
 
     @JsonIgnore

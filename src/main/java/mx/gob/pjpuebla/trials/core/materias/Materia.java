@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.materias;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
@@ -36,6 +37,7 @@ public class Materia implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    @Size(max = 100)
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
 
