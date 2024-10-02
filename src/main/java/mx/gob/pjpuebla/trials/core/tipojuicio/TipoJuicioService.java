@@ -37,7 +37,7 @@ public class TipoJuicioService {
 
     @Transactional
     public List<TipoJuicioDemandasRecord> getAllTipoJuicios() {
-        return tipoJuicioRepository.findByAllTipoJuicios();
+        return tipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR");
     }
 
     @Transactional(readOnly = true)

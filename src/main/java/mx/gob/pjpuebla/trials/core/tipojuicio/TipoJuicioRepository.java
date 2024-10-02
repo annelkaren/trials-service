@@ -13,12 +13,11 @@ import java.util.Optional;
 public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer> {
 
     @Query("""
-            SELECT 
-                new mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord(t.id, t.nombre)
+            SELECT new mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord(t.id, t.nombre)
             FROM TipoJuicio t
-            WHERE t.estado = Estado.ACTIVE AND t.tipoSistema.nombre = 'Oral' AND t.materia.nombre = 'FAMILIAR'
+            WHERE t.estado = Estado.ACTIVE AND t.tipoSistema.nombre = :nombreSistema AND t.materia.nombre = :nombreMateria
             """)
-    List<TipoJuicioDemandasRecord> findByAllTipoJuicios();
+    List<TipoJuicioDemandasRecord> findByAllTipoJuicios(String nombreSistema, String nombreMateria);
 
     Optional<TipoJuicio> findByIdAndEstado(Integer integer, Estado estado);
 
