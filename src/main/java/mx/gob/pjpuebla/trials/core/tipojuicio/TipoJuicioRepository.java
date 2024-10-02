@@ -16,7 +16,7 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
             SELECT 
                 new mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord(t.id, t.nombre)
             FROM TipoJuicio t
-            WHERE t.estado = Estado.ACTIVE
+            WHERE t.estado = Estado.ACTIVE AND t.tipoSistema.nombre = 'Oral' AND t.materia.nombre = 'FAMILIAR'
             """)
     List<TipoJuicioDemandasRecord> findByAllTipoJuicios();
 
