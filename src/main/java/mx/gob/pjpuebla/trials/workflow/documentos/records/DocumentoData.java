@@ -8,10 +8,11 @@ import java.util.List;
 @Data
 public class DocumentoData implements Serializable {
 
-    private List<String> tipoJuicios;
+    private List<String> tiposJuicios;
     private Integer tieneAbogado;
-    private String nombreAgobago;
-    private String cedulaAgogado;
+    private String nombreAbogado;
+    private String cedulaAbogado;
     private String correoAbogado;
+    private String domicilio;
 }
 

@@ -130,7 +130,7 @@ public class DocumentoService {
         //campos exlusivos para demanda de tipo familiar 
         entity.setCurp(persona.curp());
         entity.setIne(persona.ine());
-        entity.setDomicilio(null); //pendiende de ver como quedara .
+        entity.setDomicilio(persona.domicilio());
         entity.setCelular(persona.celular());
         entity.setCorreoElectronico(persona.correoElectronico());
         

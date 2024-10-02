@@ -69,9 +69,8 @@ public class PersonaDocumento implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
 
-    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private Domicilio domicilio;
+    @Column(name = "S_DOMICILIO")
+    private String domicilio;
 
     @JoinColumn(name = "FN_TIPO_PARTE", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
