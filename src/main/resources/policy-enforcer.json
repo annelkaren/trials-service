@@ -7,6 +7,10 @@
   "http-method-as-scope": true,
   "paths": [
     {
+      "path": "/error",
+      "enforcement-mode": "DISABLED"
+    },
+    {
       "path": "/swagger-ui/*",
       "enforcement-mode": "DISABLED"
     },

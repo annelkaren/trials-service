@@ -7,5 +7,6 @@ public class Messages {
     }
 
     public static final String UNKNOWN_ERROR = "Error desconocido";
+    public static final String INVALID_TOKEN = "Token invalido";
     public static final String OPTIMISTIC_LOCKING_ERROR = "Version modificada por otro usuario";
 }
