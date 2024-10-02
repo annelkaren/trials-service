@@ -55,9 +55,6 @@ class InstitucionServiceTest {
     @InjectMocks
     InstitucionService mockInstitucionService;
 
-    @Mock
-    DomicilioService domicilioService;
-
     private Institucion institucion;
     private InstitucionRecord institucionRecord;
     private InstitucionRecordResponse institucionRecordResponse;

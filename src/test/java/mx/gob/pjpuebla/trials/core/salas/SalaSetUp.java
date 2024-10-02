@@ -1,13 +1,13 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class SalaSetUp {
 

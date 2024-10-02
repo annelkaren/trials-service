@@ -16,9 +16,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
-import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;

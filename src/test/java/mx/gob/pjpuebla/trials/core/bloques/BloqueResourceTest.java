@@ -4,7 +4,6 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +19,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
@@ -39,12 +37,10 @@ class BloqueResourceTest {
     private MockMvc mockMvc;
 
     private BloqueRecordResponse bloqueRecordResponse;
-    private BloqueRecord bloqueRecord;
 
     @BeforeEach
     void setUp() {
         bloqueRecordResponse = BloqueSetUp.createBloqueRecordResponse();
-        bloqueRecord = BloqueSetUp.createBloqueRecord();
     }
 
     @Test
@@ -94,12 +90,12 @@ class BloqueResourceTest {
 
     @Test
     void create_success() throws Exception {
-        given(mockBloqueService.create(BloqueSetUp.createBloque(Estado.ACTIVE)))
+        given(mockBloqueService.create(BloqueSetUp.createBloque()))
                 .willReturn(bloqueRecordResponse);
 
         mockMvc.perform(
                 post("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -107,12 +103,12 @@ class BloqueResourceTest {
 
     @Test
     void update_success() throws Exception {
-        given(mockBloqueService.create(BloqueSetUp.createBloque(Estado.ACTIVE)))
+        given(mockBloqueService.create(BloqueSetUp.createBloque()))
                 .willReturn(bloqueRecordResponse);
 
         mockMvc.perform(
                 put("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
@@ -120,12 +116,12 @@ class BloqueResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockBloqueService.update(BloqueSetUp.createBloque(Estado.ACTIVE)))
+        given(mockBloqueService.update(BloqueSetUp.createBloque()))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
                 put("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque(Estado.ACTIVE)))
+                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());

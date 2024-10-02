@@ -38,7 +38,7 @@ public class Documento implements Serializable, Auditable {
     private TipoDocumento tipoDocumento;
 
     @Type(JsonBinaryType.class)
-    @Column(name = "J_DATA")
+    @Column(name = "J_DATA", columnDefinition = "json")
     private DocumentoData data;
 
     @Size(max = 50)
