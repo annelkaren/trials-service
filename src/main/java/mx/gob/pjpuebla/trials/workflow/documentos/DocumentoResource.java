@@ -91,5 +91,4 @@ public class DocumentoResource {
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);
     }
-
 }

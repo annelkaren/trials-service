@@ -9,6 +9,5 @@ import java.util.List;
 public class DocumentoData implements Serializable {
 
     private List<String> tipoJuicios;
-
 }
 
