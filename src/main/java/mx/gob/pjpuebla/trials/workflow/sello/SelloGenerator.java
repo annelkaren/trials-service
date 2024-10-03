@@ -47,6 +47,8 @@ public class SelloGenerator {
     private final OficialiaRepository oficialiaRepository;
     @Value("classpath:jasper/selloReport.jasper")
     private Resource sello;
+    boolean isPromocionOralidadExhorto;
+    boolean isOralidadFamiliar;
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
@@ -60,9 +62,10 @@ public class SelloGenerator {
 
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
-        String verificationCode = generateVerificationCode(documento, anexos, date);
-        updateExpedientePorTipoJuicio(documento);
 
+        String verificationCode = generateVerificationCode(documento, anexos, date);
+
+        updateExpedientePorTipoJuicio(documento);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getCarpeta().getExpediente());
         parameters.put("fechaHoraRecepcion", date);
@@ -76,6 +79,21 @@ public class SelloGenerator {
         parameters.put("reimpresion", isReimpresion(documento.getAudit().getUsuarioAlta(), documento.getAudit().getFechaAlta()));
         parameters.put("marcaAgua", "jasper/escudo.png");
         parameters.put("logotipoHeder", "jasper/header.jpg");
+        parameters.put("isOralProExh", isPromocionOralidadExhorto); //es - Promocion - Oralidad - Exhorto
+        parameters.put("sala", "Pendiente sala");
+        parameters.put("fechaHoraAudiencia", "Pendiente fechaHoraAudiencia");
+        parameters.put("tipoJuicio", documento.getCarpeta().getTipoJuicio().getNombre());
+        parameters.put("actor", "Pendiente ");
+        parameters.put("curpActor", "Pendiente");
+        parameters.put("celularActor", "Pendiente");
+        parameters.put("correoActor", "Pendiente");
+        parameters.put("demandado", "Pendiente");
+        parameters.put("curpDemandado", "Pendiente");
+        parameters.put("domicilioDemandado", "Pendiente");
+        parameters.put("domiciliofamiliar", "Pendiente Domicilio familiar");
+        parameters.put("relacionExpediente", "Pendiente relacion Expediente");
+        parameters.put("juez", "Pendiente");
+        parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
 
         return JasperFillManager.fillReport(
                 sello.getInputStream(),
@@ -163,9 +181,10 @@ public class SelloGenerator {
         }
         return  nombreCapturista;
     }
-    public Documento updateExpedientePorTipoJuicio (Documento documento){
+    public Documento updateExpedientePorTipoJuicio(Documento documento){
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
         DocumetoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
+
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
             if(documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
@@ -182,11 +201,15 @@ public class SelloGenerator {
                         carpeta.getExpediente(),
                         inicialesTipoJuicios
                 );
+                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad"));
+                isOralidadFamiliar = true;
                 carpeta.setExpediente(expenienteOralFamiliar);
             }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
                 carpeta.setExpediente(carpeta.getExpediente() + "- Exhorto");
+                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.EXHORTO));
             }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.PROMOCION)){
                 carpeta.setExpediente(carpeta.getExpediente() + "- Promocion");
+                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PROMOCION));
             }
             documento.setCarpeta(carpeta);
         } else {
