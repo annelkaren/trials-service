@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.bloques;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -30,24 +29,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Sql(value = {
         "/scripts/DELETE_BLOQUES.sql",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@Disabled
 class BloqueRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private BloqueRepository bloqueRepository;
 
     @Test
-    void findByHoraInicialSuccess() {
-        LocalTime horaInicial = LocalTime.of(8, 30, 0);
-        Pageable pageable = PageRequest.of(0, 10);
-
-        Page<Bloque> entity = bloqueRepository.findByHoraInicial(horaInicial, pageable);
-        assertThat(entity.getContent()).isEmpty();
-    }
-
-    @Test
-    void findByHoraInicialFail() {
-        LocalTime horaInicial = LocalTime.of(8, 30, 0);
+    void findByHoraInicial() {
+        LocalTime horaInicial = LocalTime.parse("08:30:00");
         Pageable pageable = PageRequest.of(0, 10);
         Bloque b = BloqueSetUp.createBloque();
         b.setHoraInicial(horaInicial);
@@ -61,7 +50,6 @@ class BloqueRepositoryTest extends AuditConfigTest {
     @Test
     void findByIdAndEstadoActive() {
         Bloque bloque = BloqueSetUp.createBloque();
-        bloque = bloqueRepository.save(bloque);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         Optional<BloqueRecordResponse> entity = bloqueRepository.findByIdAndEstadoIn(bloque.getId(), estados);
         assertThat(entity).isPresent();

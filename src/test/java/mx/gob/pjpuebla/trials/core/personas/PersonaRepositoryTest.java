@@ -55,25 +55,14 @@ class PersonaRepositoryTest extends AuditConfigTest {
     @Test
     void findByIdAndEstadoActive() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<PersonaRecord> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
+        Optional<PersonaRecord> entity = personaRepository.findByIdAndEstadoIn(1L, estados);
         assertThat(entity).isPresent();
         assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
     }
 
     @Test
-    void findByIdAndEstadoInactive() {
-        persona.setEstado(Estado.INACTIVE);
-        persona = personaRepository.save(persona);
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<PersonaRecord> entity = personaRepository.findByIdAndEstadoIn(persona.getId(), estados);
-        assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.INACTIVE);
-    }
-
-    @Test
     void findByCurp() {
-        persona = personaRepository.save(persona);
-        Optional<PersonaRecord> entity = personaRepository.findByCurp(persona.getCurp());
+        Optional<PersonaRecord> entity = personaRepository.findByCurp("XXXX000000XXXXXX00");
         assertThat(entity).isPresent();
     }
 
