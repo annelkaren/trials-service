@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class EstadosResource {
 
     @GetMapping(value = "/{id}/municipios")
     @Cacheable(value = "municipios", key = "#id")
-    public Response getMunByState(@PathVariable String id) throws IOException {
+    public Response getMunByState(@PathVariable String id) {
         RestTemplate restTemplate = new RestTemplate();
         MunicipiosDTO response = restTemplate.getForObject(
                 INEGI_PATH + MUN_PATH + id, MunicipiosDTO.class, new HashMap<>());
