@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +55,13 @@ class CarpetaRepositoryTest extends AuditConfigTest {
 
         assertThat(entity).isPresent();
         assertThat(entity.get().getId()).isEqualTo(1);
+    }
+
+    @Test
+    void findPersonaDocumentoByCarpetaId() {
+        Carpeta carpeta = CarpetaSetUp.create();
+        List<ApelacionRecordResponse> entity = carpetaRepository.findPersonaDocumentoByCarpetaId(carpeta.getId());
+        assertThat(entity).isNotEmpty();
     }
 
 }
