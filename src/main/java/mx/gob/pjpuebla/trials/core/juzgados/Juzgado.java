@@ -3,10 +3,7 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -43,15 +40,19 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "S_NOMBRE")
     private String nombre;
 
+    @NotNull
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @PositiveOrZero
+    @Max(Integer.MAX_VALUE)
     @Column(name = "N_MAX_ASIGNACIONES")
     private Integer maxAsignacionesRonda;
 
+    @PositiveOrZero
     @JsonIgnore
-    @Column(name = "N_CONTADOR_ASIGNACIONes")
+    @Column(name = "N_CONTADOR_ASIGNACIONES")
     private Integer contadorAsignaciones;
 
     @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", nullable = false)
@@ -71,7 +72,7 @@ public class Juzgado implements Serializable, Auditable {
         return this.contadorAsignaciones;
     }
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.LAZY)
     @JoinTable(name = "tbl_juzgado_tipojuicio",
             joinColumns = {
                     @JoinColumn(name = "fn_juzgado", referencedColumnName = "pn_id")
@@ -86,7 +87,7 @@ public class Juzgado implements Serializable, Auditable {
     @Size(min = 1, max = 50)
     private List<TipoJuicio> tipoJuicios;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado", fetch = FetchType.LAZY)
     private List<JuzgadoFolios> juzgadoFolios;
 }
 

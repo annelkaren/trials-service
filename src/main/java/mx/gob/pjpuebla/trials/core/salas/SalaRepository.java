@@ -1,12 +1,17 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 
 @Repository
 public interface SalaRepository extends JpaRepository<Sala, Integer> {
@@ -47,4 +52,29 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
 
     List<Sala> findAllByJuezId(Long id);
 
+    List<Sala> findByJuzgado(Juzgado juzgado);
+
+    @Query("""
+            SELECT s
+            FROM Sala s
+            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE and s.juzgado=:juzgado
+            and s.bloque = :bloque
+            AND NOT EXISTS
+                (SELECT 1 from Audiencia a WHERE a.sala = s and a.bloque=s.bloque and a.fechaAudiencia=:fechaAudiencia
+                and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
+            ORDER BY s.bloque, s.juez
+            """)
+    List<Sala> findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado);
+
+    @Query("""
+            SELECT s
+            FROM Sala s
+            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            and s = :sala
+            AND NOT EXISTS
+                (SELECT 1 from Audiencia a WHERE a.sala = s and a.bloque=s.bloque and a.fechaAudiencia=:fechaAudiencia
+                and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
+            """)
+    Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
+ 
 }

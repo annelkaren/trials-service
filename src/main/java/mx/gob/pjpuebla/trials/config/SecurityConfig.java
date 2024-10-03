@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.config;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import lombok.RequiredArgsConstructor;
 import org.keycloak.adapters.authorization.integration.jakarta.ServletPolicyEnforcerFilter;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.util.JsonSerialization;
@@ -42,10 +43,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableSpringDataWebSupport(
         pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO
 )
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${keycloak.server-url}")
     private String keycloakServerUrl;
+    private final DelegatedAuthenticationEntryPoint delegatedAuthenticationEntryPoint;
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
@@ -66,16 +69,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer(t -> t.jwt(withDefaults()))
+                .oauth2ResourceServer(t -> t.jwt(withDefaults()).authenticationEntryPoint(delegatedAuthenticationEntryPoint))
                 .addFilterAfter(createPolicyEnforcerFilter(), BearerTokenAuthenticationFilter.class)
                 .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .cors(c -> c.configurationSource(corsConfigurationSource()));
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
+        ;
         return http.build();
     }
 
     private ServletPolicyEnforcerFilter createPolicyEnforcerFilter() {
         PolicyEnforcerConfig config;
-
         try {
             config = JsonSerialization.readValue(getClass().getResourceAsStream("/policy-enforcer.json"), PolicyEnforcerConfig.class);
             config.setAuthServerUrl(keycloakServerUrl);

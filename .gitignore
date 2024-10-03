@@ -3,6 +3,7 @@
 /.project
 /.settings/
 /target/
+.qodana
 
 # OS generated files #
 ######################
@@ -15,3 +16,4 @@ ehthumbs.db
 Thumbs.db
 .idea/
 /target/
+.qodana/

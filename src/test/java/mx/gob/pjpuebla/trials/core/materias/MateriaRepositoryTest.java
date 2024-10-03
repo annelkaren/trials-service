@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.materias;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -12,10 +11,10 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 
-import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -23,7 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Disabled
+@Sql(value = {
+        "/scripts/INSERT_MATERIAS.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {
+        "/scripts/DELETE_MATERIAS.sql"
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class MateriaRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -31,8 +35,6 @@ class MateriaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByAllAndEstadoActive() {
-        Materia validMateria = createMateria();
-        materiaRepository.save(validMateria);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
@@ -43,9 +45,7 @@ class MateriaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByIdAndEstadoActive() {
-        Materia save = materiaRepository.save(createMateria());
-
-        Optional<Materia> materia = materiaRepository.findByIdAndEstado(save.getId(), Estado.ACTIVE);
+        Optional<Materia> materia = materiaRepository.findByIdAndEstado(100, Estado.ACTIVE);
         assertThat(materia).isPresent();
         assertThat(materia.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }

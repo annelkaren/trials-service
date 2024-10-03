@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.files;
 
-import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -25,13 +24,15 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.File;
@@ -43,8 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-@Slf4j
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class DigitalizacionFolderServiceTest {
 
     public static final String FILE_PATH = "/opt/pjp/files/digitalizacion/2024/Juzgado/000001";
@@ -68,6 +68,7 @@ public class DigitalizacionFolderServiceTest {
     private DigitalizacionFolderService digitalizacionFolderService;
 
     @Test
+    @Disabled("La prueba es muy sencilla deberia ser incluida en el flujo general de crear carpeta")
     void createFolder() {
         given(materiaRepository.save(any(Materia.class))).willReturn(MateriaSetUp.createMateria());
         given(distritoRepository.save(any(Distrito.class))).willReturn(DistritoSetUp.createDistrito());

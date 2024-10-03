@@ -1,10 +1,14 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
+import java.io.Serializable;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record SalaRecordResponse(
         Integer id,
         String nombre,
@@ -12,6 +16,6 @@ public record SalaRecordResponse(
         Integer version,
         JuezRecord juez,
         JuzgadoRecordItem juzgado,
-        BloqueRecord bloque) {
-
+        BloqueRecord bloque
+) implements Serializable {
 }
