@@ -1,15 +1,15 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaSearchRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,5 +24,16 @@ public class CarpetaResource {
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(carpetaSearchRecord.numExpediente() + "/" + carpetaSearchRecord.year(), carpetaSearchRecord.idJuzgado());
         return ResponseEntity.ok(carpetaResponseRecord);
     }
+
+    @GetMapping("/apelacion/{carpetaId}")
+    public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {
+        return this.carpetaService.getPersonasDocumentoByCarpetaId(carpetaId);
+    }
+
+    @PostMapping("/apelacion")
+    public DocumentoRecord create(@RequestBody @Valid ApelacionRecord apelacionRecord) {
+        return this.carpetaService.createApelacion(apelacionRecord);
+    }
+
 
 }
