@@ -11,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -39,7 +38,7 @@ public class TipoJuicioResource {
 
     }
 
-    @GetMapping("/demandas")
+    @GetMapping(value = "/oralidad", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TipoJuicioDemandasRecord> getTiposJuiciosOralidad() {
         return tipoJuicioService.getAllTipoJuicios();
     }

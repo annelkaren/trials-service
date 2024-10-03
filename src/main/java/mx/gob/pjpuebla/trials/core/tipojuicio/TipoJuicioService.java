@@ -9,7 +9,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.util.List;
 
 
@@ -37,7 +38,11 @@ public class TipoJuicioService {
 
     @Transactional
     public List<TipoJuicioDemandasRecord> getAllTipoJuicios() {
-        return tipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR");
+        List<TipoJuicioDemandasRecord> results = tipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR");
+        if (results.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron tipos de juicio para Oral y FAMILIAR");
+        }
+        return results;
     }
 
     @Transactional(readOnly = true)
