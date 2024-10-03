@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Persona</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.personas</a>
+</div>
+
+<h1>Coverage Summary for Class: Persona (mx.gob.pjpuebla.trials.core.personas)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Persona</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.personas;
+&nbsp;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import jakarta.validation.constraints.*;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+&nbsp;import mx.gob.pjpuebla.trials.core.escolaridades.Escolaridad;
+&nbsp;import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivil;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+&nbsp;import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Sexo;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.time.LocalDate;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Table(name = &quot;TBL_PERSONAS&quot;)
+&nbsp;public class Persona implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idPersona&quot;)
+&nbsp;    @SequenceGenerator(name = &quot;idPersona&quot;, sequenceName = &quot;SEQ_PERSONAS_ID&quot;)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Long id;
+&nbsp;
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Version
+&nbsp;    @Column(name = &quot;N_VERSION&quot;)
+&nbsp;    private Integer version;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Size(min = 3, max = 50)
+&nbsp;    @Column(name = &quot;S_NOMBRES&quot;)
+&nbsp;    private String nombre;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Size(min = 3, max = 40)
+&nbsp;    @Column(name = &quot;S_APELLIDO_PATERNO&quot;)
+&nbsp;    private String apellidoPaterno;
+&nbsp;
+&nbsp;    @Column(name = &quot;S_APELLIDO_MATERNO&quot;)
+&nbsp;    private String apellidoMaterno;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Pattern(regexp = &quot;^[A-Z][AEIOU][A-Z][A-Z]\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z0-9]{2}$&quot;)
+&nbsp;    @Column(name = &quot;S_CURP&quot;)
+&nbsp;    private String curp;
+&nbsp;
+&nbsp;    @Column(name = &quot;S_RFC&quot;)
+&nbsp;    private String rfc;
+&nbsp;
+&nbsp;    @Past
+&nbsp;    @Column(name = &quot;T_FECHA_NACIMIENTO&quot;)
+&nbsp;    private LocalDate fechaNacimiento;
+&nbsp;
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_SEXO&quot;, nullable = false)
+&nbsp;    private Sexo sexo;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Column(name = &quot;S_OCUPACION&quot;)
+&nbsp;    private String ocupacion;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Email
+&nbsp;    @Column(name = &quot;S_CORREO_ELECTRONICO&quot;)
+&nbsp;    private String correoElectronico;
+&nbsp;
+&nbsp;    @Column(name = &quot;S_TELEFONO&quot;)
+&nbsp;    private String telefono;
+&nbsp;
+&nbsp;    @Pattern(regexp = &quot;^\\d{10}$&quot;)
+&nbsp;    @Column(name = &quot;S_CELULAR&quot;)
+&nbsp;    private String celular;
+&nbsp;
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_ESTADO&quot;, nullable = false)
+&nbsp;    private Estado estado;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_DOMICILIO&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+&nbsp;    private Domicilio domicilio;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_ESCOLARIDAD&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private Escolaridad escolaridad;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_ESTADO_CIVIL&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private EstadoCivil estadoCivil;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_JUZGADO&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private Juzgado juzgado;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_OFICIALIA&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private Oficialia oficialia;
+&nbsp;
+&nbsp;    @Column(name = &quot;S_USUARIO&quot;)
+&nbsp;    private String usuario;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

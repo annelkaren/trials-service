@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipooficialias;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -12,14 +11,20 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.jdbc.Sql;
 
-import static mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp.createtipoOficialia;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Sql(value = {
+        "/scripts/INSERT_TIPO_OFICIALIAS.sql",
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {
+        "/scripts/DELETE_TIPO_OFICIALIAS.sql",
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class TipoOficialiaRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -27,8 +32,6 @@ class TipoOficialiaRepositoryTest extends AuditConfigTest {
 
     @Test
     void getAllEstadoActive() {
-        TipoOficialia tipoOficialia = createtipoOficialia();
-        tipoOficialiaRepository.save(tipoOficialia);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());

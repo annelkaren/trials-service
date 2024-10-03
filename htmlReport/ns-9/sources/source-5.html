@@ -1,0 +1,140 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InstitucionRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.instituciones</a>
+</div>
+
+<h1>Coverage Summary for Class: InstitucionRepository (mx.gob.pjpuebla.trials.core.instituciones)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">InstitucionRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.instituciones;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;import org.springframework.data.repository.query.Param;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.stereotype.Repository;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;
+&nbsp;@Repository
+&nbsp;public interface InstitucionRepository extends JpaRepository&lt;Institucion, Integer&gt; {
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;                SELECT new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecordResponse(
+&nbsp;                    i.id,
+&nbsp;                    i.version,
+&nbsp;                    i.nombre,
+&nbsp;                    i.estado,
+&nbsp;                    i.telefono,
+&nbsp;                    i.extension,
+&nbsp;                    new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
+&nbsp;                    new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
+&nbsp;                        d.id,
+&nbsp;                        d.calle,
+&nbsp;                        d.exterior,
+&nbsp;                        d.interior,
+&nbsp;                        d.estadoRepublica,
+&nbsp;                        d.municipio,
+&nbsp;                        d.localidad,
+&nbsp;                        d.colonia,
+&nbsp;                        d.codigoPostal,
+&nbsp;                        d.referencia
+&nbsp;                    )
+&nbsp;                )
+&nbsp;                FROM Institucion i
+&nbsp;                JOIN i.domicilio d
+&nbsp;                JOIN i.distrito dis
+&nbsp;                WHERE i.id = :id AND i.estado IN :estados
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Optional&lt;InstitucionRecordResponse&gt; findByIdAndEstadoIn(Integer id, List&lt;Estado&gt; estados);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT
+&nbsp;                new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecord(
+&nbsp;                    i.id,
+&nbsp;                    i.nombre,
+&nbsp;                    CONCAT(
+&nbsp;                        d.calle, &#39; &#39;,
+&nbsp;                        d.colonia, &#39; &#39;,
+&nbsp;                        d.exterior,
+&nbsp;                        CASE WHEN d.interior IS NOT NULL THEN CONCAT(&#39; Int. &#39;, d.interior) ELSE &#39;&#39; END,
+&nbsp;                        &#39; &#39;,
+&nbsp;                        d.estadoRepublica, &#39; &#39;,
+&nbsp;                        d.municipio, &#39; &#39;,
+&nbsp;                        d.localidad, &#39; &#39;,
+&nbsp;                        d.codigoPostal,
+&nbsp;                        CASE WHEN d.referencia IS NOT NULL THEN CONCAT(&#39; Ref: &#39;, d.referencia) ELSE &#39;&#39; END
+&nbsp;                    ),
+&nbsp;                    i.telefono
+&nbsp;                )
+&nbsp;            FROM Institucion i
+&nbsp;            JOIN i.domicilio d
+&nbsp;            WHERE i.estado IN :estados
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Page&lt;InstitucionRecord&gt; findAllEstadoIn(@Param(&quot;estados&quot;) List&lt;Estado&gt; estados, Pageable pageable);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

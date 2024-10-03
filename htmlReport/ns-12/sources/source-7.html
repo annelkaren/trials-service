@@ -1,0 +1,135 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Sala</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.salas</a>
+</div>
+
+<h1>Coverage Summary for Class: Sala (mx.gob.pjpuebla.trials.core.salas)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Sala</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.salas;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import jakarta.persistence.Column;
+&nbsp;import jakarta.persistence.Embedded;
+&nbsp;import jakarta.persistence.Entity;
+&nbsp;import jakarta.persistence.EntityListeners;
+&nbsp;import jakarta.persistence.Enumerated;
+&nbsp;import jakarta.persistence.GeneratedValue;
+&nbsp;import jakarta.persistence.GenerationType;
+&nbsp;import jakarta.persistence.Id;
+&nbsp;import jakarta.persistence.JoinColumn;
+&nbsp;import jakarta.persistence.ManyToOne;
+&nbsp;import jakarta.persistence.SequenceGenerator;
+&nbsp;import jakarta.persistence.Table;
+&nbsp;import jakarta.persistence.Version;
+&nbsp;import jakarta.validation.constraints.Max;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+&nbsp;import mx.gob.pjpuebla.trials.core.personas.Persona;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Table(name = &quot;TBL_SALAS&quot;)
+&nbsp;public class Sala implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idSala&quot;)
+&nbsp;    @SequenceGenerator(name = &quot;idSala&quot;, sequenceName = &quot;SEQ_SALA_ID&quot;, allocationSize = 1)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Integer id;
+&nbsp;
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Version
+&nbsp;    @Column(name = &quot;N_VERSION&quot;)
+&nbsp;    private Integer version;
+&nbsp;
+&nbsp;    @Column(name = &quot;S_NOMBRE&quot;)
+&nbsp;    private String nombre;
+&nbsp;
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_ESTADO&quot;, nullable = false)
+&nbsp;    private Estado estado;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_JUEZ_ID&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @ManyToOne()
+&nbsp;    private Persona juez;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_BLOQUE_ID&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @ManyToOne()
+&nbsp;    private Bloque bloque;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_JUZGADO_ID&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @ManyToOne()
+&nbsp;    private Juzgado juzgado;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

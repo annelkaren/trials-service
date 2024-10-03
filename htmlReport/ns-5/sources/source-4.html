@@ -1,0 +1,137 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Domicilio</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.domicilios</a>
+</div>
+
+<h1>Coverage Summary for Class: Domicilio (mx.gob.pjpuebla.trials.core.domicilios)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Domicilio</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.domicilios;
+&nbsp;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import jakarta.validation.constraints.NotBlank;
+&nbsp;import jakarta.validation.constraints.Size;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Table(name = &quot;TBL_DOMICILIOS&quot;)
+&nbsp;public class Domicilio implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idDomicilio&quot;)
+&nbsp;    @SequenceGenerator(name = &quot;idDomicilio&quot;, sequenceName = &quot;SEQ_DOMICILIOS_ID&quot;)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Long id;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 3, max = 250)
+&nbsp;    @Column(name = &quot;S_CALLE&quot;, nullable = false)
+&nbsp;    private String calle;
+&nbsp;
+&nbsp;    @Size(max = 20)
+&nbsp;    @Column(name = &quot;S_INTERIOR&quot;)
+&nbsp;    private String interior;
+&nbsp;
+&nbsp;    @Size(min = 1, max = 20)
+&nbsp;    @Column(name = &quot;S_EXTERIOR&quot;, nullable = false)
+&nbsp;    private String exterior;
+&nbsp;
+&nbsp;    @Size(max = 250)
+&nbsp;    @Column(name = &quot;S_COLONIA&quot;)
+&nbsp;    private String colonia;
+&nbsp;
+&nbsp;    @Size(max = 250)
+&nbsp;    @Column(name = &quot;S_LOCALIDAD&quot;)
+&nbsp;    private String localidad;
+&nbsp;
+&nbsp;    @Size(max = 5)
+&nbsp;    @Column(name = &quot;S_CODIGO_POSTAL&quot;)
+&nbsp;    private String codigoPostal;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 3, max = 250)
+&nbsp;    @Column(name = &quot;S_MUNICIPIO&quot;, nullable = false)
+&nbsp;    private String municipio;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 3, max = 250)
+&nbsp;    @Column(name = &quot;S_ESTADO_REPUBLICA&quot;, nullable = false)
+&nbsp;    private String estadoRepublica;
+&nbsp;
+&nbsp;    @Size(max = 250)
+&nbsp;    @Column(name = &quot;S_REFERENCIA&quot;)
+&nbsp;    private String referencia;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

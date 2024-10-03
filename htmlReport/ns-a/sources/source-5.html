@@ -1,0 +1,355 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JuzgadoService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.juzgados</a>
+</div>
+
+<h1>Coverage Summary for Class: JuzgadoService (mx.gob.pjpuebla.trials.core.juzgados)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JuzgadoService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/111)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.juzgados;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import mx.gob.pjpuebla.trials.core.materias.Materia;
+&nbsp;import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.sedes.Sede;
+&nbsp;import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+&nbsp;import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+&nbsp;import mx.gob.pjpuebla.trials.error.NotFoundException;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+&nbsp;import org.springframework.dao.OptimisticLockingFailureException;
+&nbsp;import org.springframework.data.domain.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Random;
+&nbsp;
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;@Transactional
+&nbsp;@RequiredArgsConstructor
+&nbsp;@Service
+&nbsp;public class JuzgadoService {
+&nbsp;
+&nbsp;    private final JuzgadoRepository juzgadoRepository;
+&nbsp;    private final TipoJuicioRepository tipoJuicioRepository;
+&nbsp;    private final SedeRepository sedeRepository;
+&nbsp;    private final MateriaRepository materiaRepository;
+&nbsp;    private final PersonaDocumentoRepository personaDocumentoRepository;
+&nbsp;    private final TipoPartesRepository tipoPartesRepository;
+&nbsp;    private final JuzgadoFoliosRepository juzgadoFoliosRepository;
+&nbsp;
+<b class="nc">&nbsp;    private static final Random RANDOM = new Random();</b>
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public Page&lt;JuzgadoRecordItem&gt; getAll(Juzgado example, Pageable pageable) {
+<b class="nc">&nbsp;        ExampleMatcher exampleMatcher = ExampleMatcher.matching()</b>
+<b class="nc">&nbsp;                .withMatcher(&quot;nombre&quot;, ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());</b>
+&nbsp;
+<b class="nc">&nbsp;        Page&lt;Juzgado&gt; page = juzgadoRepository.findAll(Example.of(example, exampleMatcher), pageable);</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;JuzgadoRecordItem&gt; list = page.getContent().stream()</b>
+<b class="nc">&nbsp;                .map(juzgado -&gt; new JuzgadoRecordItem(</b>
+<b class="nc">&nbsp;                        juzgado.getId(),</b>
+<b class="nc">&nbsp;                        juzgado.getNombre(),</b>
+<b class="nc">&nbsp;                        juzgado.getEstado(),</b>
+<b class="nc">&nbsp;                        juzgado.getMateria().getNombre()</b>
+<b class="nc">&nbsp;                )).toList();</b>
+<b class="nc">&nbsp;        return new PageImpl&lt;&gt;(list, pageable, page.getTotalElements());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public JuzgadoRecord findById(Integer id) {
+<b class="nc">&nbsp;        List&lt;Estado&gt; estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);</b>
+<b class="nc">&nbsp;        Juzgado juzgado = juzgadoRepository.findByIdAndEstadoIn(id, estados)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Juzgado no encontrado&quot;, &quot;juzgadoId&quot;));</b>
+<b class="nc">&nbsp;        List&lt;TipoJuicioRecord&gt; tipoJuicios = juzgado.getTipoJuicios().stream()</b>
+<b class="nc">&nbsp;                .map(tj -&gt; new TipoJuicioRecord(</b>
+<b class="nc">&nbsp;                        tj.getId(),</b>
+<b class="nc">&nbsp;                        tj.getNombre(), null, null</b>
+<b class="nc">&nbsp;                )).toList();</b>
+<b class="nc">&nbsp;        return new JuzgadoRecord(</b>
+<b class="nc">&nbsp;                juzgado.getId(),</b>
+<b class="nc">&nbsp;                juzgado.getVersion(),</b>
+<b class="nc">&nbsp;                juzgado.getNombre(),</b>
+<b class="nc">&nbsp;                juzgado.getEstado(),</b>
+<b class="nc">&nbsp;                juzgado.getMateria().getId(),</b>
+<b class="nc">&nbsp;                juzgado.getSede().getId(),</b>
+<b class="nc">&nbsp;                juzgado.getMaxAsignacionesRonda(),</b>
+<b class="nc">&nbsp;                juzgado.getContadorAsignaciones(),</b>
+&nbsp;                tipoJuicios
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public JuzgadoRecordItem create(Juzgado juzgado) {
+<b class="nc">&nbsp;        Materia materia = materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Materia no encontrada&quot;, &quot;materiaId&quot;));</b>
+<b class="nc">&nbsp;        juzgado.setMateria(materia);</b>
+&nbsp;
+<b class="nc">&nbsp;        Sede sede = sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Sede no encontrada&quot;, &quot;sedeId&quot;));</b>
+<b class="nc">&nbsp;        juzgado.setSede(sede);</b>
+&nbsp;
+<b class="nc">&nbsp;        juzgado.setContadorAsignaciones(0);</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;Integer&gt; tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();</b>
+<b class="nc">&nbsp;        List&lt;TipoJuicio&gt; tipojuicios = tipoJuicioRepository.findAllById(tjIds);</b>
+<b class="nc">&nbsp;        juzgado.setTipoJuicios(tipojuicios);</b>
+&nbsp;
+&nbsp;        //Llena JuzgadoFolios para insertar en tabla JUZGADO_FOLIOS: crea folio para exhorto_entrada
+&nbsp;        //Añadir otra linea juzgadoFolios.add(); para añadir otro tipo de folio
+<b class="nc">&nbsp;        List&lt;JuzgadoFolios&gt; juzgadoFolios = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DEMANDA).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.EXHORTO).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DESPACHO).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION_MUNICIPAL).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));</b>
+<b class="nc">&nbsp;        juzgado.setJuzgadoFolios(juzgadoFolios);</b>
+&nbsp;
+<b class="nc">&nbsp;        juzgado = juzgadoRepository.save(juzgado);</b>
+<b class="nc">&nbsp;        return new JuzgadoRecordItem(</b>
+<b class="nc">&nbsp;                juzgado.getId(),</b>
+<b class="nc">&nbsp;                juzgado.getNombre(),</b>
+<b class="nc">&nbsp;                juzgado.getEstado(),</b>
+<b class="nc">&nbsp;                juzgado.getMateria().getNombre()</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public JuzgadoRecordItem update(Juzgado juzgado) {
+&nbsp;        try {
+<b class="nc">&nbsp;            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Materia no encontrada&quot;, &quot;materiaId&quot;)));</b>
+<b class="nc">&nbsp;            juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Sede no encontrada&quot;, &quot;sedeId&quot;)));</b>
+&nbsp;
+<b class="nc">&nbsp;            List&lt;Integer&gt; tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();</b>
+<b class="nc">&nbsp;            List&lt;TipoJuicio&gt; tipojuicios = tipoJuicioRepository.findAllById(tjIds);</b>
+<b class="nc">&nbsp;            juzgado.setTipoJuicios(tipojuicios);</b>
+&nbsp;
+<b class="nc">&nbsp;            juzgado = juzgadoRepository.save(juzgado);</b>
+<b class="nc">&nbsp;            return new JuzgadoRecordItem(</b>
+<b class="nc">&nbsp;                    juzgado.getId(),</b>
+<b class="nc">&nbsp;                    juzgado.getNombre(),</b>
+<b class="nc">&nbsp;                    juzgado.getEstado(),</b>
+<b class="nc">&nbsp;                    juzgado.getMateria().getNombre()</b>
+&nbsp;            );
+<b class="nc">&nbsp;        } catch (OptimisticLockingFailureException ex) {</b>
+<b class="nc">&nbsp;            throw new InvalidVersionException(Juzgado.class.getSimpleName());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void delete(Integer id) {
+<b class="nc">&nbsp;        juzgadoRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio) {
+<b class="nc">&nbsp;        List&lt;Carpeta&gt; carpetas = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId(&quot;Actor&quot;, tipoJuicio.getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Tipo Parte no encontrado&quot;, actor.tipoParte().toString()));</b>
+<b class="nc">&nbsp;        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId(&quot;Demandado&quot;, tipoJuicio.getId()).orElseThrow(() -&gt; new NotFoundException(&quot;Tipo Parte no encontrado&quot;, demandado.tipoParte().toString()));</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;PersonaDocumento&gt; registrosActor = personaDocumentoRepository</b>
+<b class="nc">&nbsp;                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(</b>
+<b class="nc">&nbsp;                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(), actorParte.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;PersonaDocumento&gt; registrosDemandado = personaDocumentoRepository</b>
+<b class="nc">&nbsp;                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(</b>
+<b class="nc">&nbsp;                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(), demandado.pseudonimo(), demandadoParte.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for (PersonaDocumento tmp : registrosActor) {</b>
+<b class="nc">&nbsp;            carpetas.add(tmp.getCarpeta());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for (PersonaDocumento tmp : registrosDemandado) {</b>
+&nbsp;            Carpeta carpeta;
+&nbsp;
+<b class="nc">&nbsp;            if (!carpetas.contains(tmp.getCarpeta()))</b>
+&nbsp;                continue;
+&nbsp;
+<b class="nc">&nbsp;            carpeta = tmp.getCarpeta();</b>
+&nbsp;
+<b class="nc">&nbsp;            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(carpeta.getJuzgado()))</b>
+<b class="nc">&nbsp;                return carpeta.getJuzgado();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Juzgado getJuzgado(TipoJuicio tipoJuicio) {
+<b class="nc">&nbsp;        List&lt;Juzgado&gt; juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (juzgados.isEmpty()) {</b>
+<b class="nc">&nbsp;            revisarCargaJuzgados(tipoJuicio.getMateria());</b>
+&nbsp;
+<b class="nc">&nbsp;            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());</b>
+&nbsp;
+<b class="nc">&nbsp;            if (juzgados.isEmpty())</b>
+<b class="nc">&nbsp;                throw (new NotFoundException(&quot;No se puede asignar un Juzgado&quot;, tipoJuicio.getNombre()));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int rand = RANDOM.nextInt(juzgados.size());</b>
+&nbsp;
+<b class="nc">&nbsp;        return juzgados.get(rand);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void actualizarCarga(Juzgado juzgado) {
+<b class="nc">&nbsp;        juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());</b>
+<b class="nc">&nbsp;        revisarCargaJuzgados(juzgado.getMateria());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void revisarCargaJuzgados(Materia materia) {
+<b class="nc">&nbsp;        int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia);</b>
+<b class="nc">&nbsp;        int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia);</b>
+<b class="nc">&nbsp;        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia).size();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (totalAsignaciones &gt;= totalMaxAsignaciones &amp;&amp; totalJuzgadosMenosAsignaciones == 0) {</b>
+<b class="nc">&nbsp;            juzgadoRepository.reiniciarContadorAsignaciones(materia);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public JuzgadoFolios getJuzgadoFolios(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+<b class="nc">&nbsp;        return juzgadoFoliosRepository.findByJuzgadoAndTipoCarpeta(juzgado, tipoCarpeta)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;juzgadoFolio no encontrado&quot;, &quot;tipoCarpeta&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JuzgadoFolios checkYearJuzgadoFolios(JuzgadoFolios juzgadoFolios) {
+<b class="nc">&nbsp;        Integer currentYear = LocalDate.now().getYear();</b>
+<b class="nc">&nbsp;        if (juzgadoFolios.getYear() &lt; currentYear) {</b>
+<b class="nc">&nbsp;            juzgadoFolios.setYear(currentYear);</b>
+<b class="nc">&nbsp;            juzgadoFolios.setValue(1);</b>
+<b class="nc">&nbsp;            juzgadoFolios = juzgadoFoliosRepository.save(juzgadoFolios);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return juzgadoFolios;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JuzgadoFolios increaseValueJuzgadoFolios(JuzgadoFolios juzgadoFolios) {
+<b class="nc">&nbsp;        juzgadoFolios.setValue(juzgadoFolios.getValue() + 1);</b>
+<b class="nc">&nbsp;        juzgadoFolios = juzgadoFoliosRepository.save(juzgadoFolios);</b>
+<b class="nc">&nbsp;        return juzgadoFolios;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

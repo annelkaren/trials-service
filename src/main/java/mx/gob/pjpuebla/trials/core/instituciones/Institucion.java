@@ -37,7 +37,7 @@ public class Institucion implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idInstitucion")
-    @SequenceGenerator(name = "idInstitucion", sequenceName = "SEQ_INSTITUCIONES_ID", allocationSize = 1)
+    @SequenceGenerator(name = "idInstitucion", sequenceName = "SEQ_INSTITUCIONES_ID", allocationSize = 50)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

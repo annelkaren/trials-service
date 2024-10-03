@@ -1,0 +1,147 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Oficialia</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.oficialias</a>
+</div>
+
+<h1>Coverage Summary for Class: Oficialia (mx.gob.pjpuebla.trials.core.oficialias)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Oficialia</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.oficialias;
+&nbsp;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import jakarta.validation.constraints.Max;
+&nbsp;import jakarta.validation.constraints.NotNull;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+&nbsp;import mx.gob.pjpuebla.trials.core.materias.Materia;
+&nbsp;import mx.gob.pjpuebla.trials.core.sedes.Sede;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Table(name = &quot;TBL_OFICIALIAS&quot;)
+&nbsp;public class Oficialia implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idOficialia&quot;)
+&nbsp;    @SequenceGenerator(name = &quot;idOficialia&quot;, sequenceName = &quot;SEQ_OFICIALIAS_ID&quot;)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Integer id;
+&nbsp;
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Version
+&nbsp;    @Column(name = &quot;N_VERSION&quot;)
+&nbsp;    private Integer version;
+&nbsp;
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_ESTADO&quot;, nullable = false)
+&nbsp;    private Estado estado;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_TIPO&quot;, referencedColumnName = &quot;PN_ID&quot;, nullable = false)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private TipoOficialia tipoOficialia;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Column(name = &quot;S_NOMBRE&quot;, nullable = false)
+&nbsp;    private String nombre;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Column(name = &quot;S_RESPONSABLE&quot;, nullable = false)
+&nbsp;    private String responsable;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_SEDE&quot;, referencedColumnName = &quot;PN_ID&quot;, nullable = false)
+&nbsp;    @OneToOne(fetch = FetchType.LAZY)
+&nbsp;    private Sede sede;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_JUZGADO&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @ManyToOne(fetch = FetchType.LAZY)
+&nbsp;    private Juzgado juzgado;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;
+&nbsp;    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
+&nbsp;    @JoinTable(name = &quot;TBL_OFICIALIAS_MATERIAS&quot;,
+&nbsp;            joinColumns = {
+&nbsp;                    @JoinColumn(name = &quot;FN_OFICIALIA&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;            }, inverseJoinColumns = {
+&nbsp;            @JoinColumn(name = &quot;FN_MATERIA&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    }, uniqueConstraints = @UniqueConstraint(columnNames = {
+&nbsp;            &quot;FN_OFICIALIA&quot;,
+&nbsp;            &quot;FN_MATERIA&quot;
+&nbsp;    }))
+&nbsp;    @OrderBy(&quot;id&quot;)
+&nbsp;    private List&lt;Materia&gt; materias;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

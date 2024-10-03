@@ -1,0 +1,129 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JuzgadoRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.juzgados</a>
+</div>
+
+<h1>Coverage Summary for Class: JuzgadoRepository (mx.gob.pjpuebla.trials.core.juzgados)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">JuzgadoRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.juzgados;
+&nbsp;
+&nbsp;import mx.gob.pjpuebla.trials.core.materias.Materia;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.data.jpa.repository.Modifying;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;import org.springframework.stereotype.Repository;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Repository
+&nbsp;public interface JuzgadoRepository extends JpaRepository&lt;Juzgado, Integer&gt; {
+&nbsp;
+&nbsp;    Optional&lt;Juzgado&gt; findByIdAndEstadoIn(Integer id, List&lt;Estado&gt; estados);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT
+&nbsp;            new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id,  f.nombre, f.estado, m.nombre)
+&nbsp;            FROM Juzgado f
+&nbsp;            LEFT JOIN f.materia m
+&nbsp;            WHERE f.estado IN :estados&quot;&quot;&quot;)
+&nbsp;    List&lt;JuzgadoRecordItem&gt; findAllByEstadoIn(List&lt;Estado&gt; estados);
+&nbsp;
+&nbsp;    List&lt;Juzgado&gt; findByMateriaAndEstado(Materia materia, Estado estado);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT j FROM Juzgado j
+&nbsp;            WHERE j.contadorAsignaciones &lt; j.maxAsignacionesRonda
+&nbsp;            AND j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;            AND j.contadorAsignaciones = (SELECT MIN(t.contadorAsignaciones) from Juzgado t WHERE t.materia = j.materia and j.estado = t.estado)
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    List&lt;Juzgado&gt; findJuzgadosMenosAsignaciones(Materia materia);
+&nbsp;
+&nbsp;    @Modifying(flushAutomatically = true)
+&nbsp;    @Query(&quot;UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones + 1 WHERE j.id = :juzgadoId&quot;)
+&nbsp;    void actualizarContadorAsignaciones(Integer juzgadoId);
+&nbsp;
+&nbsp;    @Modifying(flushAutomatically = true)
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda
+&nbsp;            WHERE j.materia = :materia
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    void reiniciarContadorAsignaciones(Materia materia);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT COALESCE(SUM(j.contadorAsignaciones), 0)
+&nbsp;            FROM Juzgado j
+&nbsp;            WHERE j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Integer sumContadorAsignacionesByMateria(Materia materia);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT COALESCE(SUM(j.maxAsignacionesRonda), 0)
+&nbsp;            FROM Juzgado j
+&nbsp;            WHERE j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Integer sumMaxAsignacionesRondaByMateria(Materia materia);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

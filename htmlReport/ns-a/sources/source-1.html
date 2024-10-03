@@ -1,0 +1,197 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Juzgado</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.juzgados</a>
+</div>
+
+<h1>Coverage Summary for Class: Juzgado (mx.gob.pjpuebla.trials.core.juzgados)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Juzgado</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.juzgados;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIgnore;
+&nbsp;import com.fasterxml.jackson.annotation.JsonProperty;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import jakarta.validation.constraints.*;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.core.materias.Materia;
+&nbsp;import mx.gob.pjpuebla.trials.core.sedes.Sede;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Table(name = &quot;TBL_JUZGADOS&quot;)
+&nbsp;public class Juzgado implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idJuzgado&quot;)
+&nbsp;    @SequenceGenerator(name = &quot;idJuzgado&quot;, sequenceName = &quot;SEQ_JUZGADOS_ID&quot;)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Integer id;
+&nbsp;
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Version
+&nbsp;    @Column(name = &quot;N_VERSION&quot;)
+&nbsp;    private Integer version;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 3, max = 250)
+&nbsp;    @Column(name = &quot;S_NOMBRE&quot;)
+&nbsp;    private String nombre;
+&nbsp;
+&nbsp;    @NotNull
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_ESTADO&quot;, nullable = false)
+&nbsp;    private Estado estado;
+&nbsp;
+&nbsp;    @PositiveOrZero
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Column(name = &quot;N_MAX_ASIGNACIONES&quot;)
+&nbsp;    private Integer maxAsignacionesRonda;
+&nbsp;
+&nbsp;    @PositiveOrZero
+&nbsp;    @JsonIgnore
+&nbsp;    @Column(name = &quot;N_CONTADOR_ASIGNACIONES&quot;)
+&nbsp;    private Integer contadorAsignaciones;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_MATERIA&quot;, referencedColumnName = &quot;PN_ID&quot;, nullable = false)
+&nbsp;    @ManyToOne(fetch = FetchType.LAZY)
+&nbsp;    private Materia materia;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_SEDE&quot;, referencedColumnName = &quot;PN_ID&quot;, nullable = false)
+&nbsp;    @ManyToOne(fetch = FetchType.LAZY)
+&nbsp;    private Sede sede;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;
+&nbsp;    @JsonProperty
+&nbsp;    public Integer getContadorAsignaciones() {
+<b class="nc">&nbsp;        return this.contadorAsignaciones;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.LAZY)
+&nbsp;    @JoinTable(name = &quot;tbl_juzgado_tipojuicio&quot;,
+&nbsp;            joinColumns = {
+&nbsp;                    @JoinColumn(name = &quot;fn_juzgado&quot;, referencedColumnName = &quot;pn_id&quot;)
+&nbsp;            }, inverseJoinColumns = {
+&nbsp;            @JoinColumn(name = &quot;fn_tipojuicio&quot;, referencedColumnName = &quot;pn_id&quot;)
+&nbsp;    }, uniqueConstraints = @UniqueConstraint(columnNames = {
+&nbsp;            &quot;fn_juzgado&quot;,
+&nbsp;            &quot;fn_tipojuicio&quot;
+&nbsp;    }))
+&nbsp;    @OrderBy(&quot;id&quot;)
+&nbsp;    @NotNull
+&nbsp;    @Size(min = 1, max = 50)
+&nbsp;    private List&lt;TipoJuicio&gt; tipoJuicios;
+&nbsp;
+&nbsp;    @OneToMany(cascade = CascadeType.ALL, mappedBy = &quot;juzgado&quot;, fetch = FetchType.LAZY)
+&nbsp;    private List&lt;JuzgadoFolios&gt; juzgadoFolios;
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

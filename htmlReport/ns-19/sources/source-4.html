@@ -1,0 +1,279 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RestResponseEntityExceptionHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.error</a>
+</div>
+
+<h1>Coverage Summary for Class: RestResponseEntityExceptionHandler (mx.gob.pjpuebla.trials.error)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RestResponseEntityExceptionHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.error;
+&nbsp;
+&nbsp;import mx.gob.pjpuebla.trials.util.Messages;
+&nbsp;import org.springframework.http.HttpHeaders;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.HttpStatusCode;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.access.AccessDeniedException;
+&nbsp;import org.springframework.security.core.AuthenticationException;
+&nbsp;import org.springframework.validation.BindingResult;
+&nbsp;import org.springframework.validation.FieldError;
+&nbsp;import org.springframework.validation.ObjectError;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.MissingServletRequestParameterException;
+&nbsp;import org.springframework.web.bind.annotation.ControllerAdvice;
+&nbsp;import org.springframework.web.bind.annotation.ExceptionHandler;
+&nbsp;import org.springframework.web.context.request.WebRequest;
+&nbsp;import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+&nbsp;import org.springframework.web.servlet.NoHandlerFoundException;
+&nbsp;import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;
+&nbsp;@ControllerAdvice
+<b class="nc">&nbsp;public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {</b>
+&nbsp;
+&nbsp;    @ExceptionHandler(AccessDeniedException.class)
+&nbsp;    public ResponseEntity&lt;Object&gt; handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getLocalizedMessage(), ex.getMessage())</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.UNAUTHORIZED,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler(AuthenticationException.class)
+&nbsp;    public ResponseEntity&lt;Object&gt; handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(Messages.INVALID_TOKEN, ex.getMessage())</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.UNAUTHORIZED,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getName(), ex.getMessage())</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.BAD_REQUEST,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler(NotFoundException.class)
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleNotFoundException(NotFoundException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.NOT_FOUND,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler(InvalidVersionException.class)
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleInvalidVersionException(InvalidVersionException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getEntity() + &quot;.version&quot;, Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.BAD_REQUEST,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler(UserAlreadyExistException.class)
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleUserAlreadyExistsException(UserAlreadyExistException ex, WebRequest request) {
+<b class="nc">&nbsp;        return Objects.requireNonNull(handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.CONFLICT,
+&nbsp;                request
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+<b class="nc">&nbsp;        return handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                buildBindingResultErrorsList(ex.getBindingResult()),</b>
+&nbsp;                new HttpHeaders(),
+&nbsp;                HttpStatus.BAD_REQUEST,
+&nbsp;                request
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+<b class="nc">&nbsp;        return handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getRequestURL(), ex.getMessage())</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                status,
+&nbsp;                request
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected ResponseEntity&lt;Object&gt; handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+<b class="nc">&nbsp;        return handleExceptionInternal(ex,</b>
+<b class="nc">&nbsp;                Collections.singleton(</b>
+<b class="nc">&nbsp;                        new ErrorRecord(ex.getParameterName(), ex.getMessage())</b>
+&nbsp;                ),
+&nbsp;                new HttpHeaders(),
+&nbsp;                status,
+&nbsp;                request
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;ErrorRecord&gt; buildBindingResultErrorsList(BindingResult bindingResult) {
+<b class="nc">&nbsp;        List&lt;FieldError&gt; fieldErrors = bindingResult.getFieldErrors();</b>
+<b class="nc">&nbsp;        List&lt;ObjectError&gt; globalErrors = bindingResult.getGlobalErrors();</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;ErrorRecord&gt; errors = new ArrayList&lt;&gt;(fieldErrors.size() + globalErrors.size());</b>
+<b class="nc">&nbsp;        errors.addAll(buildFieldErrorsList(fieldErrors));</b>
+<b class="nc">&nbsp;        errors.addAll(buildGlobalErrorsList(globalErrors));</b>
+<b class="nc">&nbsp;        return errors;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;ErrorRecord&gt; buildGlobalErrorsList(Collection&lt;ObjectError&gt; globalErrors) {
+<b class="nc">&nbsp;        List&lt;ErrorRecord&gt; errors = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        for (ObjectError objectError : globalErrors) {</b>
+<b class="nc">&nbsp;            errors.add(</b>
+<b class="nc">&nbsp;                    new ErrorRecord(objectError.getObjectName(), Optional.ofNullable(objectError.getDefaultMessage()).orElse(Messages.UNKNOWN_ERROR))</b>
+&nbsp;            );
+&nbsp;        }
+<b class="nc">&nbsp;        return errors;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;ErrorRecord&gt; buildFieldErrorsList(Collection&lt;FieldError&gt; fieldErrors) {
+<b class="nc">&nbsp;        List&lt;ErrorRecord&gt; errors = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        for (FieldError fieldError : fieldErrors) {</b>
+<b class="nc">&nbsp;            errors.add(</b>
+<b class="nc">&nbsp;                    new ErrorRecord(fieldError.getField(), Optional.ofNullable(fieldError.getDefaultMessage()).orElse(Messages.UNKNOWN_ERROR))</b>
+&nbsp;            );
+&nbsp;        }
+<b class="nc">&nbsp;        return errors;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

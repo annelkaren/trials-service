@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InstitucionService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.instituciones</a>
+</div>
+
+<h1>Coverage Summary for Class: InstitucionService (mx.gob.pjpuebla.trials.core.instituciones)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InstitucionService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.instituciones;
+&nbsp;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageImpl;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import org.springframework.data.domain.Example;
+&nbsp;import org.springframework.data.domain.ExampleMatcher;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.sedes.Sede;
+&nbsp;import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+&nbsp;import mx.gob.pjpuebla.trials.error.NotFoundException;
+&nbsp;
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;@Transactional
+&nbsp;@RequiredArgsConstructor
+&nbsp;@Service
+&nbsp;public class InstitucionService {
+&nbsp;    
+&nbsp;    private final InstitucionRepository institucionRepository;
+&nbsp;    private final DomicilioRepository domicilioRepository;
+&nbsp;    private final DistritoRepository distritoRepository;
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public Page&lt;InstitucionRecord&gt; getAll(Institucion example, Pageable pageable) {
+&nbsp;        
+<b class="nc">&nbsp;        ExampleMatcher exampleMatcher = ExampleMatcher.matching()</b>
+<b class="nc">&nbsp;                .withMatcher(&quot;nombre&quot;, ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());</b>
+&nbsp;
+<b class="nc">&nbsp;        Page&lt;Institucion&gt; page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);</b>
+&nbsp;    
+<b class="nc">&nbsp;        List&lt;InstitucionRecord&gt; list = page.getContent().stream()</b>
+<b class="nc">&nbsp;                .map(institucion -&gt; new InstitucionRecord(</b>
+<b class="nc">&nbsp;                        institucion.getId(),</b>
+<b class="nc">&nbsp;                        institucion.getNombre(),</b>
+<b class="nc">&nbsp;                        String.join(&quot; &quot;,</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getCalle(),</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getColonia(),</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getExterior(),</b>
+<b class="nc">&nbsp;                        (institucion.getDomicilio().getInterior() != null &amp;&amp; !institucion.getDomicilio().getInterior().isEmpty())</b>
+<b class="nc">&nbsp;                            ? &quot;Int. &quot; + institucion.getDomicilio().getInterior() : &quot;&quot;,</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getEstadoRepublica(),</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getMunicipio(),</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getLocalidad(),</b>
+<b class="nc">&nbsp;                        institucion.getDomicilio().getCodigoPostal(),</b>
+<b class="nc">&nbsp;                        (institucion.getDomicilio().getReferencia() != null &amp;&amp; !institucion.getDomicilio().getReferencia().isEmpty())</b>
+<b class="nc">&nbsp;                            ? &quot;Ref: &quot; + institucion.getDomicilio().getReferencia() : &quot;&quot;</b>
+<b class="nc">&nbsp;                    ).trim(),</b>
+<b class="nc">&nbsp;                        institucion.getTelefono() ))</b>
+<b class="nc">&nbsp;                .toList();</b>
+&nbsp;    
+<b class="nc">&nbsp;        return new PageImpl&lt;&gt;(list, pageable, page.getTotalElements());</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public InstitucionRecordResponse findById(Integer id){
+<b class="nc">&nbsp;        List&lt;Estado&gt; estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);</b>
+&nbsp;
+<b class="nc">&nbsp;        return institucionRepository.findByIdAndEstadoIn(id, estados)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Institución no encontrada&quot;, &quot;institucionId&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Integer create(Institucion institucion){
+<b class="nc">&nbsp;        institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));</b>
+<b class="nc">&nbsp;        institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));</b>
+<b class="nc">&nbsp;        institucion = institucionRepository.save(institucion);</b>
+<b class="nc">&nbsp;        return institucion.getId();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Integer update(Institucion institucion) {
+&nbsp;        try {
+<b class="nc">&nbsp;            institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));</b>
+<b class="nc">&nbsp;            institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));</b>
+<b class="nc">&nbsp;            institucion = institucionRepository.save(institucion);</b>
+&nbsp;
+<b class="nc">&nbsp;            return institucion.getId();</b>
+&nbsp;
+<b class="nc">&nbsp;        } catch (org.springframework.dao.OptimisticLockingFailureException ex) {</b>
+<b class="nc">&nbsp;          throw new InvalidVersionException(Sede.class.getSimpleName());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void delete(Integer id){
+<b class="nc">&nbsp;        institucionRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

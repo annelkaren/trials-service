@@ -1,0 +1,297 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PersonaService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.personas</a>
+</div>
+
+<h1>Coverage Summary for Class: PersonaService (mx.gob.pjpuebla.trials.core.personas)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PersonaService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/78)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.personas;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+&nbsp;import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+&nbsp;import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+&nbsp;import mx.gob.pjpuebla.trials.core.roles.RoleService;
+&nbsp;import mx.gob.pjpuebla.trials.core.salas.Sala;
+&nbsp;import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
+&nbsp;import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+&nbsp;import mx.gob.pjpuebla.trials.error.InvalidVersionException;
+&nbsp;import mx.gob.pjpuebla.trials.error.NotFoundException;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+&nbsp;
+&nbsp;import org.springframework.dao.OptimisticLockingFailureException;
+&nbsp;import org.springframework.data.domain.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;@RequiredArgsConstructor
+&nbsp;@Service
+&nbsp;@Transactional
+&nbsp;public class PersonaService {
+&nbsp;
+&nbsp;    private final PersonaRepository personaRepository;
+&nbsp;    private final DomicilioService domicilioService;
+&nbsp;    private final EscolaridadRepository escolaridadRepository;
+&nbsp;    private final EstadoCivilRepository estadoCivilRepository;
+&nbsp;    private final JuzgadoRepository juzgadoRepository;
+&nbsp;    private final OficialiaRepository oficialiaRepository;
+&nbsp;    private final UsuarioService usuarioService;
+&nbsp;    private final RoleService roleService;
+&nbsp;    private final SalaRepository salaRepository;
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public Page&lt;PersonaRecordResponse&gt; getAll(Persona example, Pageable pageable) {
+<b class="nc">&nbsp;        ExampleMatcher exampleMatcher = ExampleMatcher.matching()</b>
+<b class="nc">&nbsp;                .withMatcher(&quot;nombre&quot;, ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());</b>
+&nbsp;
+<b class="nc">&nbsp;        Page&lt;Persona&gt; page = personaRepository.findAll(Example.of(example, exampleMatcher), pageable);</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;PersonaRecordResponse&gt; list = page.getContent().stream()</b>
+<b class="nc">&nbsp;                .map(persona -&gt;</b>
+<b class="nc">&nbsp;                        new PersonaRecordResponse(persona.getId(),</b>
+<b class="nc">&nbsp;                                persona.getNombre() + &quot; &quot; + persona.getApellidoPaterno() + &quot; &quot; + persona.getApellidoMaterno(),</b>
+<b class="nc">&nbsp;                                persona.getCorreoElectronico(),</b>
+<b class="nc">&nbsp;                                persona.getCelular()))</b>
+<b class="nc">&nbsp;                .toList();</b>
+<b class="nc">&nbsp;        return new PageImpl&lt;&gt;(list, pageable, page.getTotalElements());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public PersonaRecord findById(Long id) {
+<b class="nc">&nbsp;        PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Persona no encontrada&quot;, &quot;personaId&quot;));</b>
+<b class="nc">&nbsp;        List&lt;RoleRecord&gt; roles = roleService.getRolesByUserId(persona.usuario());</b>
+<b class="nc">&nbsp;        return persona.withRoles(roles);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PersonaRecordResponse create(Persona persona, List&lt;RoleRecord&gt; roles) {
+<b class="nc">&nbsp;        persona.setUsuario(usuarioService.create(persona));</b>
+<b class="nc">&nbsp;        roleService.addRoles(persona.getUsuario(), getNames(roles));</b>
+<b class="nc">&nbsp;        persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Escolaridad no encontrada&quot;, &quot;escolaridadId&quot;)));</b>
+<b class="nc">&nbsp;        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Estado Civil no encontrado&quot;, &quot;estadoCivilId&quot;)));</b>
+<b class="nc">&nbsp;        persona.setDomicilio(domicilioService.save(persona.getDomicilio()));</b>
+&nbsp;
+<b class="nc">&nbsp;        if (persona.getJuzgado()!=null &amp;&amp; persona.getJuzgado().getId()!=null){</b>
+<b class="nc">&nbsp;            persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new NotFoundException(&quot;Juzgado no encontrado&quot;, &quot;juzgadoId&quot;)));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            persona.setJuzgado(null);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (persona.getOficialia()!=null &amp;&amp; persona.getOficialia().getId()!=null){</b>
+<b class="nc">&nbsp;            persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())</b>
+<b class="nc">&nbsp;            .orElseThrow(() -&gt; new NotFoundException(&quot;Oficialia no encontrada&quot;, &quot;oficialiaId&quot;)));</b>
+&nbsp;        }else{
+<b class="nc">&nbsp;            persona.setOficialia(null);</b>
+&nbsp;        }
+&nbsp;        
+<b class="nc">&nbsp;        persona = personaRepository.save(persona);</b>
+<b class="nc">&nbsp;        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PersonaRecordResponse update(Persona persona, List&lt;RoleRecord&gt; roles) {
+&nbsp;        try {
+<b class="nc">&nbsp;            persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())</b>
+<b class="nc">&nbsp;                    .orElseThrow(() -&gt; new NotFoundException(&quot;Escolaridad no encontrada&quot;, &quot;escolaridadId&quot;)));</b>
+<b class="nc">&nbsp;            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())</b>
+<b class="nc">&nbsp;                    .orElseThrow(() -&gt; new NotFoundException(&quot;Estado Civil no encontrado&quot;, &quot;estadoCivilId&quot;)));</b>
+<b class="nc">&nbsp;            persona.setDomicilio(domicilioService.save(persona.getDomicilio()));</b>
+&nbsp;
+<b class="nc">&nbsp;            if (persona.getJuzgado()!=null &amp;&amp; persona.getJuzgado().getId()!=null){</b>
+<b class="nc">&nbsp;                persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Juzgado no encontrado&quot;, &quot;juzgadoId&quot;)));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                persona.setJuzgado(null);</b>
+&nbsp;            }
+&nbsp;    
+<b class="nc">&nbsp;            if (persona.getOficialia()!=null &amp;&amp;persona.getOficialia().getId()!=null){</b>
+<b class="nc">&nbsp;                persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Oficialia no encontrada&quot;, &quot;oficialiaId&quot;)));</b>
+&nbsp;            }else{
+<b class="nc">&nbsp;                persona.setOficialia(null);</b>
+&nbsp;            }
+&nbsp;            
+<b class="nc">&nbsp;            persona = personaRepository.save(persona);</b>
+<b class="nc">&nbsp;            roleService.updateRoles(persona.getUsuario(), getNames(roles));</b>
+<b class="nc">&nbsp;            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());</b>
+<b class="nc">&nbsp;        } catch (OptimisticLockingFailureException ex) {</b>
+<b class="nc">&nbsp;            throw new InvalidVersionException(Persona.class.getSimpleName());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public PersonaRecord findByCurp(String curp) {
+<b class="nc">&nbsp;        PersonaRecord persona = personaRepository.findByCurp(curp)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new NotFoundException(&quot;Persona no encontrada&quot;, &quot;curp&quot;));</b>
+<b class="nc">&nbsp;        List&lt;RoleRecord&gt; roles = roleService.getRolesByUserId(persona.usuario());</b>
+<b class="nc">&nbsp;        return persona.withRoles(roles);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;String&gt; getNames(List&lt;RoleRecord&gt; list) {
+<b class="nc">&nbsp;        List&lt;String&gt; roles = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        list.forEach(roleRecord -&gt; roles.add(roleRecord.name()));</b>
+<b class="nc">&nbsp;        return roles;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public List&lt;JuezRecord&gt; findAllJueces(Integer juzgadoId) {
+&nbsp;        List&lt;Sala&gt; salas;
+<b class="nc">&nbsp;        List&lt;JuezRecord&gt; jueces = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        List&lt;String&gt; ids = usuarioService.findAllByRolJuezAndSecretario();</b>
+<b class="nc">&nbsp;        for (String id : ids) {</b>
+<b class="nc">&nbsp;            Optional&lt;Persona&gt; juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, List.of(Estado.ACTIVE));</b>
+<b class="nc">&nbsp;            if (juez.isPresent()) {</b>
+<b class="nc">&nbsp;                salas = salaRepository.findAllByJuezId(juez.get().getId());</b>
+<b class="nc">&nbsp;                if (salas.isEmpty()) {</b>
+<b class="nc">&nbsp;                    String name = juez.get().getNombre() + &quot; &quot; + juez.get().getApellidoPaterno();</b>
+<b class="nc">&nbsp;                    name += ((juez.get().getApellidoMaterno() != null) ? &quot; &quot; + juez.get().getApellidoMaterno() : &quot;&quot;);</b>
+<b class="nc">&nbsp;                    JuezRecord juezRecord = new JuezRecord(juez.get().getId(), name);</b>
+<b class="nc">&nbsp;                    jueces.add(juezRecord);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return jueces;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional(readOnly = true)
+&nbsp;    public List&lt;CentroTrabajoRecord&gt; findAllCentroTrabajo(){
+<b class="nc">&nbsp;        List&lt;CentroTrabajoRecord&gt; centrosTrabajo = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;JuzgadoRecordItem&gt; juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));</b>
+<b class="nc">&nbsp;        List&lt;Oficialia&gt; oficialias = oficialiaRepository.findOficialiaComun();</b>
+&nbsp;
+<b class="nc">&nbsp;        for (JuzgadoRecordItem juzgado: juzgados){</b>
+<b class="nc">&nbsp;            centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        for(Oficialia oficialia: oficialias){</b>
+<b class="nc">&nbsp;            centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return centrosTrabajo;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

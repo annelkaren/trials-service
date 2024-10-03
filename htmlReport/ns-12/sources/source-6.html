@@ -1,0 +1,148 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SalaRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.core.salas</a>
+</div>
+
+<h1>Coverage Summary for Class: SalaRepository (mx.gob.pjpuebla.trials.core.salas)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">SalaRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.core.salas;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.stereotype.Repository;
+&nbsp;
+&nbsp;import mx.gob.pjpuebla.trials.core.bloques.Bloque;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Estado;
+&nbsp;
+&nbsp;
+&nbsp;@Repository
+&nbsp;public interface SalaRepository extends JpaRepository&lt;Sala, Integer&gt; {
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
+&nbsp;                new mx.gob.pjpuebla.trials.core.personas.JuezRecord(juez.id, juez.nombre ||  juez.apellidoPaterno || juez.apellidoMaterno),
+&nbsp;                new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(juzgado.id, juzgado.nombre, juzgado.estado, &quot;&quot;),
+&nbsp;                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal)
+&nbsp;            )
+&nbsp;            FROM Sala s
+&nbsp;            LEFT JOIN s.juez juez
+&nbsp;            LEFT JOIN s.juzgado juzgado
+&nbsp;            LEFT JOIN s.bloque bloque
+&nbsp;            WHERE s.id = :id AND s.estado IN :estados
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Optional&lt;SalaRecordResponse&gt; findByIdAndEstadoIn(Integer id, List&lt;Estado&gt; estados);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;             SELECT
+&nbsp;                new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
+&nbsp;                s.id,
+&nbsp;                s.nombre,
+&nbsp;                juez.nombre || &quot; &quot; || juez.apellidoPaterno || &quot; &quot; || juez.apellidoMaterno,
+&nbsp;                j.nombre,
+&nbsp;                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal),
+&nbsp;                s.estado
+&nbsp;            )
+&nbsp;            FROM Sala s
+&nbsp;            LEFT JOIN s.juez juez
+&nbsp;            LEFT JOIN s.juzgado j
+&nbsp;            LEFT JOIN s.bloque b
+&nbsp;            WHERE s.estado IN :estados
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    List&lt;SalaRecord&gt; findByAllEstado(List&lt;Estado&gt; estados);
+&nbsp;
+&nbsp;    long countByJuzgadoId(int juzgadoId);
+&nbsp;
+&nbsp;    List&lt;Sala&gt; findAllByJuezId(Long id);
+&nbsp;
+&nbsp;    List&lt;Sala&gt; findByJuzgado(Juzgado juzgado);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT s
+&nbsp;            FROM Sala s
+&nbsp;            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE and s.juzgado=:juzgado
+&nbsp;            and s.bloque = :bloque
+&nbsp;            AND NOT EXISTS
+&nbsp;                (SELECT 1 from Audiencia a WHERE a.sala = s and a.bloque=s.bloque and a.fechaAudiencia=:fechaAudiencia
+&nbsp;                and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
+&nbsp;            ORDER BY s.bloque, s.juez
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    List&lt;Sala&gt; findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;            SELECT s
+&nbsp;            FROM Sala s
+&nbsp;            WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;            and s = :sala
+&nbsp;            AND NOT EXISTS
+&nbsp;                (SELECT 1 from Audiencia a WHERE a.sala = s and a.bloque=s.bloque and a.fechaAudiencia=:fechaAudiencia
+&nbsp;                and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
+&nbsp;            &quot;&quot;&quot;)
+&nbsp;    Optional&lt;Sala&gt; checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
+&nbsp; 
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

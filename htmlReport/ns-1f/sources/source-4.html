@@ -1,0 +1,128 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Documento</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.workflow.documentos</a>
+</div>
+
+<h1>Coverage Summary for Class: Documento (mx.gob.pjpuebla.trials.workflow.documentos)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Documento</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.workflow.documentos;
+&nbsp;
+&nbsp;import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+&nbsp;import jakarta.persistence.*;
+&nbsp;import jakarta.validation.constraints.Max;
+&nbsp;import jakarta.validation.constraints.Size;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.experimental.Accessors;
+&nbsp;import mx.gob.pjpuebla.trials.util.Audit;
+&nbsp;import mx.gob.pjpuebla.trials.util.AuditListener;
+&nbsp;import mx.gob.pjpuebla.trials.util.Auditable;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+&nbsp;import org.hibernate.annotations.Type;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;
+&nbsp;@Entity
+&nbsp;@EntityListeners(AuditListener.class)
+&nbsp;@Data
+&nbsp;@Table(name = &quot;TBL_DOCUMENTOS&quot;)
+&nbsp;public class Documento implements Serializable, Auditable {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @SequenceGenerator(name = &quot;idDocumento&quot;, sequenceName = &quot;SEQ_DOCUMENTOS_ID&quot;)
+&nbsp;    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = &quot;idDocumento&quot;)
+&nbsp;    @Column(name = &quot;PN_ID&quot;, insertable = false, updatable = false)
+&nbsp;    private Integer id;
+&nbsp;
+&nbsp;    @Max(Integer.MAX_VALUE)
+&nbsp;    @Version
+&nbsp;    @Column(name = &quot;N_VERSION&quot;)
+&nbsp;    private Integer version;
+&nbsp;
+&nbsp;    @Enumerated
+&nbsp;    @Column(name = &quot;N_TIPO_DOCUMENTO&quot;)
+&nbsp;    private TipoDocumento tipoDocumento;
+&nbsp;
+&nbsp;    @Type(JsonBinaryType.class)
+&nbsp;    @Column(name = &quot;J_DATA&quot;, columnDefinition = &quot;json&quot;)
+&nbsp;    private DocumentoData data;
+&nbsp;
+&nbsp;    @Size(max = 50)
+&nbsp;    @Column(name = &quot;S_RUTA&quot;)
+&nbsp;    private String ruta;
+&nbsp;
+&nbsp;    @Size(max = 250)
+&nbsp;    @Column(name = &quot;S_MOTIVO_EDITA&quot;)
+&nbsp;    private String motivoEdita;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;FN_CARPETA&quot;, referencedColumnName = &quot;PN_ID&quot;)
+&nbsp;    @ManyToOne(fetch = FetchType.LAZY)
+&nbsp;    private Carpeta carpeta;
+&nbsp;
+&nbsp;    @Accessors(chain = false)
+&nbsp;    @Embedded
+&nbsp;    private Audit audit;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SelloCaratulaService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.workflow.sello</a>
+</div>
+
+<h1>Coverage Summary for Class: SelloCaratulaService (mx.gob.pjpuebla.trials.workflow.sello)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SelloCaratulaService</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.workflow.sello;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+&nbsp;import mx.gob.pjpuebla.trials.util.enums.Rol;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+&nbsp;import net.sf.jasperreports.engine.*;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;@Service
+&nbsp;@Component
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class SelloCaratulaService {
+&nbsp;
+&nbsp;    private final PersonaDocumentoRepository personaDocumentoRepository;
+&nbsp;    private final DocumentoRepository documentoRepository;
+&nbsp;    private final JuzgadoRepository juzgadoRepository;
+&nbsp;    @Value(&quot;classpath:jasper/CaratulaReport.jasper&quot;)
+&nbsp;    private Resource caratula;
+&nbsp;
+&nbsp;    public byte[] exportToPdf(Integer id) throws JRException, IOException {
+<b class="nc">&nbsp;        Documento documento = documentoRepository.findById(id).orElseThrow();</b>
+<b class="nc">&nbsp;        return JasperExportManager.exportReportToPdf(getReport(documento));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private JasperPrint getReport(Documento documento) throws IOException, JRException {
+<b class="nc">&nbsp;        String[] expendienteYear = documento.getCarpeta().getExpediente().split(&quot;/&quot;);</b>
+<b class="nc">&nbsp;        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), &quot;Actor&quot;);</b>
+<b class="nc">&nbsp;        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), &quot;Demandado&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; parameters = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        parameters.put(&quot;juzgado&quot;, documento.getCarpeta().getJuzgado().getNombre());</b>
+<b class="nc">&nbsp;        parameters.put(&quot;expediente&quot;, expendienteYear[0]);</b>
+<b class="nc">&nbsp;        parameters.put(&quot;year&quot;, expendienteYear[1]);</b>
+<b class="nc">&nbsp;        parameters.put(&quot;documentoFolio&quot;, tipoDocumentoFolio(documento));</b>
+<b class="nc">&nbsp;        parameters.put(&quot;actor&quot;, actor);</b>
+<b class="nc">&nbsp;        parameters.put(&quot;demandado&quot;, demandado);</b>
+<b class="nc">&nbsp;        parameters.put(&quot;codigoQR&quot;, expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte</b>
+<b class="nc">&nbsp;        parameters.put(&quot;logotipoHeder&quot;, &quot;jasper/header.jpg&quot;);</b>
+<b class="nc">&nbsp;        parameters.put(&quot;numeroExpediente&quot;, documento.getCarpeta().getExpediente());</b>
+&nbsp;
+<b class="nc">&nbsp;        return JasperFillManager.fillReport(</b>
+<b class="nc">&nbsp;                caratula.getInputStream(),</b>
+&nbsp;                parameters,
+&nbsp;                new JREmptyDataSource());
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public String getNombrePersonaByIdAndParte(Integer id, String parte) {
+<b class="nc">&nbsp;        List&lt;Rol&gt; rol = List.of(Rol.PRINCIPAL);</b>
+<b class="nc">&nbsp;        PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);</b>
+&nbsp;
+<b class="nc">&nbsp;        String nombre = persona.nombre() != null ? persona.nombre() : &quot;&quot;;</b>
+<b class="nc">&nbsp;        String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : &quot;&quot;;</b>
+<b class="nc">&nbsp;        String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        return String.format(&quot;%s %s %s&quot;, nombre, apellidoPaterno, apellidoMaterno).trim();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String tipoDocumentoFolio(Documento documento){
+<b class="nc">&nbsp;        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();</b>
+<b class="nc">&nbsp;        return tipoDocumentoOrdinal + &quot;-&quot; + documento.getCarpeta().getFolio();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

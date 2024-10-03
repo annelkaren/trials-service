@@ -1,0 +1,97 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AudienciaRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">mx.gob.pjpuebla.trials.workflow.audiencias</a>
+</div>
+
+<h1>Coverage Summary for Class: AudienciaRepository (mx.gob.pjpuebla.trials.workflow.audiencias)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">AudienciaRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package mx.gob.pjpuebla.trials.workflow.audiencias;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;
+&nbsp;import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+&nbsp;import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+&nbsp;import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+&nbsp;
+&nbsp;public interface AudienciaRepository extends JpaRepository&lt;Audiencia, Integer&gt; {
+&nbsp;
+&nbsp;    Optional&lt;Audiencia&gt; findByCarpeta(Carpeta carpeta);
+&nbsp;
+&nbsp;    @Query(&quot;&quot;&quot;
+&nbsp;        SELECT max(a.fechaAudiencia) from Audiencia a
+&nbsp;        WHERE a.tipoAudiencia = :tipoAudiencia
+&nbsp;        and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;        and EXISTS(
+&nbsp;            Select 1 FROM Sala s where a.sala = s and s.juzgado = :juzgado
+&nbsp;            and s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+&nbsp;        )
+&nbsp;
+&nbsp;    &quot;&quot;&quot;)
+&nbsp;    LocalDateTime getFechaUltimaAudiencia(Juzgado juzgado, TipoAudiencia tipoAudiencia);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-10-02 23:39</div>
+</div>
+</body>
+</html>

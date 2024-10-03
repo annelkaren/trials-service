@@ -11,14 +11,20 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.jdbc.Sql;
 
-import static mx.gob.pjpuebla.trials.core.organismos.OrganismoSetUp.createOrganismo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Sql(value = {
+        "/scripts/INSERT_ORGANISMOS.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {
+        "/scripts/DELETE_ORGANISMOS.sql"
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class OrganismoRepositoryTest extends AuditConfigTest {
 
     @Autowired
@@ -26,8 +32,6 @@ class OrganismoRepositoryTest extends AuditConfigTest {
 
     @Test
     void getAllEstadoActive() {
-        Organismo organismo = createOrganismo();
-        organismosRepository.save(organismo);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
