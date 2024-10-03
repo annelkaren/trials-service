@@ -94,7 +94,7 @@ public class SelloGenerator {
         parameters.put("demandado", demandado);
         parameters.put("curpDemandado", "Curp Demandado");
         parameters.put("domicilioDemandado", "Domicilio demandado");
-        parameters.put("domiciliofamiliar", "Domicilio familiar");
+        parameters.put("domiciliofamiliar", "Pendiente_Domicilio_familiar");
         parameters.put("relacionExpediente", "Lista relacion Expediente");
         parameters.put("juez", "Pendiente");
         parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
