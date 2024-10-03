@@ -1,0 +1,3 @@
+CREATE TABLE trials.TBL_EVENTOS{
+    
+}
