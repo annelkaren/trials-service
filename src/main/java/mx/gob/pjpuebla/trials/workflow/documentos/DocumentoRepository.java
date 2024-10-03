@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumetoJuzgadoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +22,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumetoJuzgadoRecord(
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
             d.nombre,
             j.nombre
         )
@@ -33,6 +33,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         JOIN s.distrito d
         WHERE doc.id = :documentoId
         """)
-    DocumetoJuzgadoRecord findDistritoJuzgadoByDocumentoId(
+    DocumentoJuzgadoRecord findDistritoJuzgadoByDocumentoId(
             @Param("documentoId") Integer documentoId);
 }

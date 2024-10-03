@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
-public record DocumetoJuzgadoRecord(
+public record DocumentoJuzgadoRecord(
         String nombreDistrito,
         String nombreJuzgado
 ){}

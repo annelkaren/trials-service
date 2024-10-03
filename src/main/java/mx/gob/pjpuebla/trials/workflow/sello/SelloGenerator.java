@@ -18,7 +18,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumetoJuzgadoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import net.sf.jasperreports.engine.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -190,7 +190,7 @@ public class SelloGenerator {
     }
     public Documento updateExpedientePorTipoJuicio(Documento documento){
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
-        DocumetoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
+        DocumentoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
 
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
@@ -213,10 +213,10 @@ public class SelloGenerator {
                 carpeta.setExpediente(expenienteOralFamiliar);
             }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
                 carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
-                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.EXHORTO));
+                isPromocionOralidadExhorto = true;
             }else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)){
                 carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
-                isPromocionOralidadExhorto = (documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
+                isPromocionOralidadExhorto = true;
             }
             documento.setCarpeta(carpeta);
         } else {
