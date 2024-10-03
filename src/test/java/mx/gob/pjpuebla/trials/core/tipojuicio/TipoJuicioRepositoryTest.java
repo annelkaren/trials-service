@@ -12,6 +12,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
+import java.util.List;
 
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,5 +44,11 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
         Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(new TipoJuicio().setNombre("Laboral").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
         assertThat(page.getSize()).isPositive();
+    }
+
+    @Test
+    void findByAllTipoJuicios() {
+        List<TipoJuicioDemandasRecord> resultados = tipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR");
+        assertThat(resultados).hasSize(6);
     }
 }

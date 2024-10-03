@@ -1,7 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -47,9 +49,26 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "N_ROL")
     private Rol rol;
 
+    @Column(name = "S_INE")
+    private String ine;
+
+    @Column(name = "S_CURP")
+    private String curp;
+
+    @Email
+    @Column(name = "S_EMAIL")
+    private String correoElectronico;
+
+    @Pattern(regexp = "^\\d{10}$")
+    @Column(name = "S_CELULAR")
+    private String celular;
+
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
+
+    @Column(name = "S_DOMICILIO")
+    private String domicilio;
 
     @JoinColumn(name = "FN_TIPO_PARTE", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)

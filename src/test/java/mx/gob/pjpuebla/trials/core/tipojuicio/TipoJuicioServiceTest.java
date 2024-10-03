@@ -11,6 +11,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +21,13 @@ import static mx.gob.pjpuebla.trials.core.materias.MateriaSetUp.createMateria;
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp.createTipoSistema;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class TipoJuicioServiceTest {
@@ -39,7 +44,6 @@ class TipoJuicioServiceTest {
     public void setUp() {
         validTipoJuicio = createTipoJuicio(createTipoSistema(), createMateria());
     }
-
 
     @Test
     void getAll_return_page() {
@@ -73,11 +77,38 @@ class TipoJuicioServiceTest {
                 NotFoundException.class,
                 () -> {
                     target.findById(id);
-                }
-        );
+                });
 
         assertThat(assertThrows.getMessage()).contains("Tipo de Juicio no encontrado");
 
+    }
+
+    @Test
+    void getAllTipoJuicios_success() {
+
+        TipoJuicioDemandasRecord record = new TipoJuicioDemandasRecord(1, "Familiar Oralidad (Alimentos)");
+        List<TipoJuicioDemandasRecord> expectedResults = List.of(record);
+
+        when(mockTipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR"))
+                .thenReturn(expectedResults);
+
+        List<TipoJuicioDemandasRecord> results = target.getAllTipoJuicios();
+        assertEquals(expectedResults, results);
+    }
+
+    @Test
+    void getAllTipoJuicios_notFound() {
+        // Arrange
+        when(mockTipoJuicioRepository.findByAllTipoJuicios("Oral", "FAMILIAR"))
+                .thenReturn(Collections.emptyList());
+
+        // Act & Assert
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            target.getAllTipoJuicios();
+        });
+
+       
+        assertEquals("No se encontraron tipos de juicio para Oral y FAMILIAR", exception.getReason());
     }
 
 }

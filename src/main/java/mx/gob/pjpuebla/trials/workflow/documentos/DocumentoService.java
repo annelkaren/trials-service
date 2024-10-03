@@ -85,7 +85,11 @@ public class DocumentoService {
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta = carpetaRepository.save(carpeta);
+
         documento.setCarpeta(carpeta);
+        //SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
+        
+        documento.setData(documentoRecord.general());
         documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoRecord.actor(), carpeta);
@@ -115,6 +119,14 @@ public class DocumentoService {
         entity.setTipoPartes(tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParte, carpeta.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
         entity.setCarpeta(carpeta);
+
+        //campos exlusivos para demanda de tipo familiar 
+        entity.setCurp(persona.curp());
+        entity.setIne(persona.ine());
+        entity.setDomicilio(persona.domicilio());
+        entity.setCelular(persona.celular());
+        entity.setCorreoElectronico(persona.correoElectronico());
+        
         personaDocumentoRepository.save(entity);
     }
 
