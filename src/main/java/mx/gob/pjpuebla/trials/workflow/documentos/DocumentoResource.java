@@ -2,7 +2,12 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
@@ -91,4 +96,38 @@ public class DocumentoResource {
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);
     }
+
+    @GetMapping(value =  "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<DocumentoGridRecord> getAllHistorialRegistroOficialia(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "estatus", required = false) EstadoCarpeta estatus,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "materiaNombre", required = false) String materiaNombre
+    ) {
+
+        Carpeta carpeta = new Carpeta()
+                .setFolio(folio)
+                .setExpediente(expediente)
+                .setEstatus(estatus);
+        if (tipoEntrada != null) {
+            carpeta.setTipoCarpeta(TipoCarpeta.valueOf(tipoEntrada));
+        }
+        if (materiaNombre != null) {
+            Materia materia = new Materia();
+            materia.setNombre(materiaNombre);
+
+            Juzgado juzgado = new Juzgado();
+            juzgado.setMateria(materia);
+
+            carpeta.setJuzgado(juzgado);
+        }
+        return documentoService.getAllHistorialRegistroOficialia(pageable,
+                new Documento().setCarpeta(carpeta)
+
+        );
+    }
+
+
 }

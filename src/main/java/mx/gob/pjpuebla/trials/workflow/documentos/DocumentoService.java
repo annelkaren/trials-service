@@ -18,14 +18,11 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -55,6 +52,7 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getCarpeta().getSelloEstatus(),
+                                documento.getCarpeta().getEstatus(),
                                 (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -197,5 +195,35 @@ public class DocumentoService {
         juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
         return numExpedienteExhorto;
     }
+
+
+    public Page<DocumentoGridRecord> getAllHistorialRegistroOficialia( Pageable pageable, Documento example) {
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("tipoEntrada", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        Page<Documento> paginaDocumentos = documentoRepository.findAll(Example.of(example,exampleMatcher ), pageable);
+
+
+        List<DocumentoGridRecord> listaDocumentoRecords = paginaDocumentos.getContent().stream()
+                .map(doc -> new DocumentoGridRecord(
+                        doc.getId(),
+                        doc.getCarpeta().getFolio(),
+                        doc.getCarpeta().getExpediente(),
+                        doc.getCarpeta().getJuzgado().getMateria().getNombre(),
+                        doc.getTipoDocumento() == null ? doc.getCarpeta().getTipoCarpeta().name(): doc.getTipoDocumento().name(),
+                        doc.getAudit().getFechaAlta(),
+                        doc.getCarpeta().getSelloEstatus(),
+                        doc.getCarpeta().getEstatus(),
+                        (doc.getRuta() != null)))
+                .toList();
+
+        return new PageImpl<>(listaDocumentoRecords, pageable, paginaDocumentos.getTotalElements());
+    }
+
+
 }
 
