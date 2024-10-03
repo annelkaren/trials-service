@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -45,6 +46,7 @@ public class SelloGenerator {
     private final JuzgadoRepository juzgadoRepository;
     private final CarpetaRepository carpetaRepository;
     private final OficialiaRepository oficialiaRepository;
+    private final SelloCaratulaService selloCaratulaService;
     @Value("classpath:jasper/selloReport.jasper")
     private Resource sello;
     boolean isPromocionOralidadExhorto;
@@ -62,10 +64,12 @@ public class SelloGenerator {
 
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
-
         String verificationCode = generateVerificationCode(documento, anexos, date);
 
-        updateExpedientePorTipoJuicio(documento);
+        String actor = selloCaratulaService.getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+        String demandado = selloCaratulaService.getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        documento = updateExpedientePorTipoJuicio(documento);
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente", documento.getCarpeta().getExpediente());
         parameters.put("fechaHoraRecepcion", date);
@@ -83,17 +87,20 @@ public class SelloGenerator {
         parameters.put("sala", "Pendiente sala");
         parameters.put("fechaHoraAudiencia", "Pendiente fechaHoraAudiencia");
         parameters.put("tipoJuicio", documento.getCarpeta().getTipoJuicio().getNombre());
-        parameters.put("actor", "Pendiente ");
-        parameters.put("curpActor", "Pendiente");
-        parameters.put("celularActor", "Pendiente");
-        parameters.put("correoActor", "Pendiente");
-        parameters.put("demandado", "Pendiente");
-        parameters.put("curpDemandado", "Pendiente");
-        parameters.put("domicilioDemandado", "Pendiente");
-        parameters.put("domiciliofamiliar", "Pendiente Domicilio familiar");
-        parameters.put("relacionExpediente", "Pendiente relacion Expediente");
+        parameters.put("actor", actor);
+        parameters.put("curpActor", "Curp Actor");
+        parameters.put("celularActor", "Celular");
+        parameters.put("correoActor", "Correo@exmaple.com");
+        parameters.put("demandado", demandado);
+        parameters.put("curpDemandado", "Curp Demandado");
+        parameters.put("domicilioDemandado", "Domicilio demandado");
+        parameters.put("domiciliofamiliar", "Domicilio familiar");
+        parameters.put("relacionExpediente", "Lista relacion Expediente");
         parameters.put("juez", "Pendiente");
         parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
+
+        isPromocionOralidadExhorto = false;
+        isOralidadFamiliar = false;
 
         return JasperFillManager.fillReport(
                 sello.getInputStream(),
@@ -205,15 +212,15 @@ public class SelloGenerator {
                 isOralidadFamiliar = true;
                 carpeta.setExpediente(expenienteOralFamiliar);
             }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
-                carpeta.setExpediente(carpeta.getExpediente() + "- Exhorto");
+                carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
                 isPromocionOralidadExhorto = (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.EXHORTO));
-            }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.PROMOCION)){
-                carpeta.setExpediente(carpeta.getExpediente() + "- Promocion");
-                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PROMOCION));
+            }else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)){
+                carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
+                isPromocionOralidadExhorto = (documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
             }
             documento.setCarpeta(carpeta);
         } else {
-            throw new NotFoundException("Carperta no encontrada", "carpetaId");
+            throw new NotFoundException("Carpeta no encontrada", "carpetaId");
         }
         return documento;
     }
