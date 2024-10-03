@@ -59,14 +59,14 @@ public class RecursoService {
                         }
                     }
                     return false;
-                }).flatMap(r -> modifyUrl(r.getDisplayName(), r.getAttributes(), r.getUris()).stream())
+                }).flatMap(r -> modifyUrl(r.getDisplayName(), r.getUris()).stream())
                 .collect(Collectors.toSet());
 
         return Menu.parseToMenu(uris);
 
     }
 
-    private Set<String> modifyUrl(String displayName, Map<String, List<String>> attributes, Set<String> uris) {
+    private Set<String> modifyUrl(String displayName, Set<String> uris) {
         Set<String> newHashSet = new HashSet<>();
         for (String uri : uris) {
             newHashSet.add(uri + "--" + displayName);

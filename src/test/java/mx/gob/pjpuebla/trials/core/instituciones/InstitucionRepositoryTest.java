@@ -1,18 +1,15 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
 
-import mx.gob.pjpuebla.trials.core.distritos.Distrito;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
-import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
-import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
-import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,26 +20,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest(properties = {
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Sql(value = {
+        "/scripts/INSERT_DOMICILIOS.sql",
+        "/scripts/INSERT_DISTRITOS.sql",
+        "/scripts/INSERT_INSTITUCIONES.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {
+        "/scripts/DELETE_INSTITUCIONES.sql",
+        "/scripts/DELETE_DOMICILIOS.sql",
+        "/scripts/DELETE_DISTRITOS.sql",
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class InstitucionRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private InstitucionRepository institucionRepository;
-    @Autowired
-    private DomicilioRepository domicilioRepository;
-    @Autowired
-    private DistritoRepository distritoRepository;
 
     @Test
     void findByIdAndEstadoActive() {
-        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
-        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
-
-        Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
-        institucion.setDomicilio(domicilio);
-        institucion.setDistrito(distrito);
-        institucion = institucionRepository.save(institucion);
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<InstitucionRecordResponse> entity = institucionRepository.findByIdAndEstadoIn(institucion.getId(),
+        Optional<InstitucionRecordResponse> entity = institucionRepository.findByIdAndEstadoIn(1,
                 estados);
         assertThat(entity).isPresent();
         assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
@@ -51,22 +48,14 @@ class InstitucionRepositoryTest extends AuditConfigTest {
     @Test
     void findAllEstadoIn_return_page() {
 
-        Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
-        Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
-        Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
-
-        institucion.setDomicilio(domicilio);
-        institucion.setDistrito(distrito);
-        institucion = institucionRepository.save(institucion); // Asegúrate de guardar la institución
-
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
 
         Page<InstitucionRecord> result = institucionRepository.findAllEstadoIn(estados, PageRequest.of(0, 1));
 
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).id()).isEqualTo(institucion.getId());
-        assertThat(result.getContent().get(0).nombre()).isEqualTo(institucion.getNombre());
-        assertThat(result.getContent().get(0).telefono()).isEqualTo(institucion.getTelefono());
+        assertThat(result.getContent().get(0).id()).isEqualTo(1);
+        assertThat(result.getContent().get(0).nombre()).isEqualTo("INSTITUCION 1");
+        assertThat(result.getContent().get(0).telefono()).isEqualTo("2221234567");
     }
 
 

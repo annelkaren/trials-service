@@ -12,7 +12,7 @@ public class Menu {
         Node root = new Node(parent);
         for (String uri : uris) {
             String formattedUri = formatUri(uri,parent);
-            AddNode(formattedUri, root, uri);
+            addNode(formattedUri, root, uri);
         }
         return root;
     }
@@ -25,7 +25,7 @@ public class Menu {
         return uri;
     }
 
-    public static Node AddNode(String filePath, Node rootNode, String uri) {
+    public static Node addNode(String filePath, Node rootNode, String uri) {
         // convenience method. this creates the queue that we need for recursion from
         if (filePath.startsWith("/")) {
             filePath = filePath.substring(1);
@@ -34,10 +34,10 @@ public class Menu {
         tokenList.removeIf(StringUtils::isBlank);
 
         Queue<String> queue = new LinkedList<>(tokenList);
-        return AddNode(queue, rootNode, uri);
+        return addNode(queue, rootNode, uri);
     }
 
-    private static Node AddNode(Queue<String> tokens, Node rootNode, String uri) {
+    private static Node addNode(Queue<String> tokens, Node rootNode, String uri) {
         // base case -> node wasnt found and tokens are gone :(
         if (tokens == null || tokens.isEmpty()) {
             return null;
@@ -48,7 +48,7 @@ public class Menu {
         Node foundNode = rootNode.findNode(current);
         if (foundNode != null) {
             // node exists! recurse
-            return AddNode(tokens, foundNode, uri);
+            return addNode(tokens, foundNode, uri);
         } else {
             // node doesnt exist! add it manually and recurse
             return createNode(tokens, rootNode, current, uri);
@@ -79,6 +79,6 @@ public class Menu {
     private static Node addNewNode(Queue<String> tokens, Node rootNode, String current, String displayName, String uri) {
         Node newNode = new Node(current, displayName, getPath(uri));
         rootNode.getItems().add(newNode);
-        return AddNode(tokens, newNode, uri);
+        return addNode(tokens, newNode, uri);
     }
 }
