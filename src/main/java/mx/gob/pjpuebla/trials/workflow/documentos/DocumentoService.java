@@ -20,7 +20,6 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 import java.util.List;
 
