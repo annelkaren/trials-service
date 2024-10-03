@@ -110,7 +110,7 @@
 				<textFieldExpression><![CDATA[$P{actor}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="371" width="42" height="18" uuid="3c795207-fea6-421e-a30c-0793e92ffd90">
+				<reportElement x="70" y="371" width="47" height="18" uuid="3c795207-fea6-421e-a30c-0793e92ffd90">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -120,7 +120,7 @@
 				<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="389" width="42" height="18" uuid="6c7a1728-a952-4aca-ac11-e5002109dcd3">
+				<reportElement x="70" y="389" width="49" height="18" uuid="6c7a1728-a952-4aca-ac11-e5002109dcd3">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -130,7 +130,7 @@
 				<textFieldExpression><![CDATA["- Celular:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="407" width="41" height="18" uuid="01411372-bea5-47e2-bc21-e7075d7abfa6">
+				<reportElement x="70" y="407" width="48" height="18" uuid="01411372-bea5-47e2-bc21-e7075d7abfa6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -140,7 +140,7 @@
 				<textFieldExpression><![CDATA["- Correo:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="ContainerBottom" x="112" y="371" width="147" height="18" uuid="e799b9e3-0cb8-45d0-85e5-74bf06c66b3c">
+				<reportElement stretchType="ContainerBottom" x="118" y="371" width="147" height="18" uuid="e799b9e3-0cb8-45d0-85e5-74bf06c66b3c">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -149,7 +149,7 @@
 				<textFieldExpression><![CDATA[$P{curpActor}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="ContainerBottom" x="112" y="389" width="147" height="18" uuid="ffcdc70d-ede2-4aaa-a065-b02f3babcd9e">
+				<reportElement stretchType="ContainerBottom" x="119" y="389" width="147" height="18" uuid="ffcdc70d-ede2-4aaa-a065-b02f3babcd9e">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -158,7 +158,7 @@
 				<textFieldExpression><![CDATA[$P{celularActor}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="ContainerBottom" x="111" y="407" width="148" height="18" uuid="84372873-37bc-4039-90d0-2d3eca2acf1e">
+				<reportElement stretchType="ContainerBottom" x="119" y="407" width="148" height="18" uuid="84372873-37bc-4039-90d0-2d3eca2acf1e">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -176,7 +176,7 @@
 				<textFieldExpression><![CDATA["Demandado:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="317" y="371" width="42" height="18" uuid="26cb276f-73ed-4135-bc52-8e162d97e8b9">
+				<reportElement x="317" y="371" width="46" height="18" uuid="26cb276f-73ed-4135-bc52-8e162d97e8b9">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -186,7 +186,7 @@
 				<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="317" y="389" width="53" height="18" uuid="248f1fb4-9198-4556-b425-3844f6f872b7">
+				<reportElement x="317" y="389" width="57" height="18" uuid="248f1fb4-9198-4556-b425-3844f6f872b7">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -196,7 +196,7 @@
 				<textFieldExpression><![CDATA["- Domicilio:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="ContainerBottom" x="359" y="371" width="147" height="18" uuid="5bdad6d7-54f7-4a95-a9fd-e0285a22f946">
+				<reportElement stretchType="ContainerBottom" x="363" y="371" width="147" height="18" uuid="5bdad6d7-54f7-4a95-a9fd-e0285a22f946">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -205,7 +205,7 @@
 				<textFieldExpression><![CDATA[$P{curpDemandado}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="ElementGroupHeight" x="370" y="389" width="147" height="36" uuid="7b7373e1-7a20-4456-954a-8934e65369b0">
+				<reportElement stretchType="ElementGroupHeight" x="374" y="389" width="147" height="36" uuid="7b7373e1-7a20-4456-954a-8934e65369b0">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -250,7 +250,7 @@
 				<textFieldExpression><![CDATA[$P{relacionExpediente}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="70" y="435" width="90" height="19" uuid="611b0b8e-b46b-470e-aff8-72462cf0960f">
+				<reportElement x="70" y="435" width="93" height="19" uuid="611b0b8e-b46b-470e-aff8-72462cf0960f">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
@@ -270,7 +270,7 @@
 				<textFieldExpression><![CDATA[$P{demandado}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="160" y="436" width="400" height="18" uuid="f3b315b0-07ba-4e37-b5f5-dd4eeeefa013">
+				<reportElement x="163" y="436" width="400" height="18" uuid="f3b315b0-07ba-4e37-b5f5-dd4eeeefa013">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -279,7 +279,7 @@
 				<textFieldExpression><![CDATA[$P{domiciliofamiliar}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="366" y="305" width="198" height="18" uuid="997c3f7e-ccf6-483b-98ff-534f75dcabbd">
+				<reportElement x="371" y="305" width="190" height="18" uuid="997c3f7e-ccf6-483b-98ff-534f75dcabbd">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -336,7 +336,8 @@
 				<textFieldExpression><![CDATA["Tipo de Juicio:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="241" y="305" width="128" height="18" uuid="81cfb4bf-9ae9-48b2-b722-79637ec1717c">
+				<reportElement x="241" y="305" width="130" height="18" uuid="81cfb4bf-9ae9-48b2-b722-79637ec1717c">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
@@ -345,7 +346,7 @@
 				<textFieldExpression><![CDATA["Fecha y hora de Audiencia:"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="241" y="218" width="122" height="19" uuid="05dc6b71-ab17-4bbd-a0c4-bd3ad8a21b28">
+				<reportElement x="241" y="218" width="132" height="19" uuid="05dc6b71-ab17-4bbd-a0c4-bd3ad8a21b28">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
@@ -353,7 +354,7 @@
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
-				<text><![CDATA[Fecha y hora de recepción: ]]></text>
+				<text><![CDATA[Fecha y hora de recepción:]]></text>
 			</staticText>
 			<textField textAdjust="StretchHeight">
 				<reportElement stretchType="ContainerHeight" x="297" y="200" width="250" height="19" uuid="dd7356dd-7205-46bd-a86a-e3bfa681e831">
@@ -383,7 +384,7 @@
 				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="365" y="218" width="198" height="19" uuid="1f6a8e0c-17a4-4046-8c3c-d243d345e748">
+				<reportElement x="373" y="218" width="182" height="19" uuid="1f6a8e0c-17a4-4046-8c3c-d243d345e748">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -403,7 +404,7 @@
 				<text><![CDATA[Anexos:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="241" y="199" width="74" height="18" uuid="9ed1d794-b166-49b0-9634-009b084575ec">
+				<reportElement x="241" y="199" width="78" height="18" uuid="9ed1d794-b166-49b0-9634-009b084575ec">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
@@ -450,7 +451,7 @@
 				<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="364" y="235" width="198" height="19" uuid="d5a98b87-985b-4021-bfb4-e77331f284d4">
+				<reportElement x="373" y="235" width="180" height="19" uuid="d5a98b87-985b-4021-bfb4-e77331f284d4">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -469,7 +470,7 @@
 				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="241" y="235" width="123" height="19" uuid="759470ca-3f9b-495e-85d4-64f016cb31b6">
+				<reportElement x="241" y="235" width="132" height="19" uuid="759470ca-3f9b-495e-85d4-64f016cb31b6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
@@ -477,7 +478,7 @@
 				<textElement>
 					<font isBold="false"/>
 				</textElement>
-				<text><![CDATA[Fecha y hora de recepción: ]]></text>
+				<text><![CDATA[Fecha y hora de recepción:]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="241" y="287" width="28" height="18" uuid="d74f36e0-9d79-4261-87d0-75e7fe767a42">
