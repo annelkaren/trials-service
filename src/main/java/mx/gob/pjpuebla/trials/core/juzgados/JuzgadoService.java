@@ -75,6 +75,9 @@ public class JuzgadoService {
                         tj.getId(),
                         tj.getNombre(), null, null
                 )).toList();
+        if (juzgado.getInstanciaJuzgado() == null) {
+            throw new IllegalStateException("InstanciaJuzgado no debe ser null");
+        }
         return new JuzgadoRecord(
                 juzgado.getId(),
                 juzgado.getVersion(),

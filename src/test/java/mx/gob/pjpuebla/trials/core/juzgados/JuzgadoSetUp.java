@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ public class JuzgadoSetUp {
                 .setEstado(Estado.ACTIVE)
                 .setMateria(materia)
                 .setSede(sede)
+                .setInstanciaJuzgado(InstanciaJuzgado.PRIMERA_INSTANCIA)
                 .setTipoJuicios(Arrays.asList(
                         new TipoJuicio().setId(1).setNombre("Tipo Juicio Uno"),
                         new TipoJuicio().setId(2).setNombre("Tipo Juicio Dos")
@@ -65,6 +67,7 @@ public class JuzgadoSetUp {
                 sedeId,
                 0,
                 0,
+                InstanciaJuzgado.PRIMERA_INSTANCIA.ordinal(),
                 Arrays.asList(
                         new TipoJuicioRecord(1, "Tipo Juicio Uno", null, null),
                         new TipoJuicioRecord(2, "Tipo Juicio Dos", null, null)
