@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -10,6 +11,9 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -46,6 +50,7 @@ public class DocumentoService {
     private final CarpetaRepository carpetaRepository;
     private final TipoAudienciaService tipoAudienciaService;
     private final SalaService salaService;
+    private final AudienciaService audienciaService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -116,34 +121,36 @@ public class DocumentoService {
 
         //flujo para demanda de oralidad: 
         if(tpoJuicio.getMateria().getNombre() == "FAMILIAR" && tpoJuicio.getTipoSistema().getNombre() == "Oral"){
-            TipoAudiencia tipoAudiencia = tipoAudienciaService.obtenerTipoAudiencia("Audiencia Inicial");
-            PersonaDocumentoRecord actor = new PersonaDocumentoRecord(
-                documentoRecord.actor().nombre(), 
-                documentoRecord.actor().apellidoPaterno(),
-                documentoRecord.actor().apellidoMaterno(),
-                documentoRecord.actor().pseudonimo(),
-                documentoRecord.actor().tipoPersona(), 
-                "Actor",
-                documentoRecord.actor().tipoParte(),
-                carpeta.getId());
-
-            PersonaDocumentoRecord demandado = new PersonaDocumentoRecord(
-                documentoRecord.demandado().nombre(), 
-                documentoRecord.demandado().apellidoPaterno(),
-                documentoRecord.demandado().apellidoMaterno(),
-                documentoRecord.demandado().pseudonimo(),
-                documentoRecord.demandado().tipoPersona(), 
-                "Demandado",
-                documentoRecord.demandado().tipoParte(),
-                carpeta.getId());
-
-            SalaAudienciaRecord salaAudiencia = salaService.asignarSalaConexidad(actor, demandado, tpoJuicio, tipoAudiencia);
-
-
-            
+           crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
         }
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
+    }
+
+    private void crearAudienciaOralidad(DocumentoSaveRecord documentoRecord, Carpeta carpeta, TipoJuicio tpoJuicio){
+        TipoAudiencia tipoAudiencia = tipoAudienciaService.obtenerTipoAudiencia("Audiencia Inicial");
+        PersonaDocumentoRecord actor = new PersonaDocumentoRecord(
+            documentoRecord.actor().nombre(), 
+            documentoRecord.actor().apellidoPaterno(),
+            documentoRecord.actor().apellidoMaterno(),
+            documentoRecord.actor().pseudonimo(),
+            documentoRecord.actor().tipoPersona(), 
+            "Actor",
+            documentoRecord.actor().tipoParte(),
+            carpeta.getId());
+
+        PersonaDocumentoRecord demandado = new PersonaDocumentoRecord(
+            documentoRecord.demandado().nombre(), 
+            documentoRecord.demandado().apellidoPaterno(),
+            documentoRecord.demandado().apellidoMaterno(),
+            documentoRecord.demandado().pseudonimo(),
+            documentoRecord.demandado().tipoPersona(), 
+            "Demandado",
+            documentoRecord.demandado().tipoParte(),
+            carpeta.getId());
+
+        SalaAudienciaRecord salaAudiencia = salaService.asignarSalaConexidad(actor, demandado, tpoJuicio, tipoAudiencia);
+        audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
