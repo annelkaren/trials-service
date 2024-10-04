@@ -84,6 +84,7 @@ public class JuzgadoService {
                 juzgado.getSede().getId(),
                 juzgado.getMaxAsignacionesRonda(),
                 juzgado.getContadorAsignaciones(),
+                juzgado.getInstanciaJuzgado().ordinal(),
                 tipoJuicios
         );
     }
@@ -112,6 +113,7 @@ public class JuzgadoService {
         juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
         juzgado.setJuzgadoFolios(juzgadoFolios);
 
+        juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
         juzgado = juzgadoRepository.save(juzgado);
         return new JuzgadoRecordItem(
                 juzgado.getId(),
@@ -130,6 +132,7 @@ public class JuzgadoService {
             List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
             juzgado.setTipoJuicios(tipojuicios);
 
+            juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordItem(
                     juzgado.getId(),
