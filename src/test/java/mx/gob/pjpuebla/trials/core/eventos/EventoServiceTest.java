@@ -7,6 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -14,18 +18,23 @@ import static org.mockito.BDDMockito.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class EventoServiceTest {
+class EventoServiceTest {
     @InjectMocks
     private EventoService eventoService;
 
     @Mock
     private EventoRepository eventoRepository;
 
+    @Mock
+    private JuzgadoRepository juzgadoRepository;
+
     private Evento evento;
+    private Juzgado juzgado;
 
     @BeforeEach
     void setUp(){
         evento = EventoSetUp.createEvento();
+        juzgado = JuzgadoSetUp.createJuzgado();
     }
 
     @Test
@@ -62,9 +71,20 @@ public class EventoServiceTest {
     void checkDiaInhabilTest(){
         LocalDate diaInhabil = LocalDate.parse("2024-11-01");
 
-        given(eventoRepository.existsFechaEntreDiaInicioAndDiaFin(diaInhabil)).willReturn(Boolean.TRUE);
+        given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaInhabil, null, null)).willReturn(Boolean.TRUE);
 
-        Boolean esDiaInhabil = eventoService.esDiaHabil(diaInhabil);
+        Boolean esDiaInhabil = eventoService.esDiaHabil(diaInhabil, null, null);
+
+        assertThat(esDiaInhabil).isTrue();
+    }
+
+    @Test
+    void checkDiaInhabilJuzgadoTest(){
+        LocalDate diaInhabil = LocalDate.parse("2024-11-01");
+
+        given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaInhabil, juzgado, null)).willReturn(Boolean.TRUE);
+
+        Boolean esDiaInhabil = eventoService.esDiaHabil(diaInhabil, juzgado, null);
 
         assertThat(esDiaInhabil).isTrue();
     }
@@ -72,9 +92,9 @@ public class EventoServiceTest {
     @Test
     void checkDiaInhabilFalseTest(){
         LocalDate diaHabil = LocalDate.parse("2024-10-31");
-        given(eventoRepository.existsFechaEntreDiaInicioAndDiaFin(diaHabil)).willReturn(Boolean.FALSE);
+        given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaHabil, null, null)).willReturn(Boolean.FALSE);
 
-        Boolean esDiaHabil = eventoService.esDiaHabil(diaHabil);
+        Boolean esDiaHabil = eventoService.esDiaHabil(diaHabil, null, null);
 
         assertThat(esDiaHabil).isFalse();
     }
@@ -82,9 +102,9 @@ public class EventoServiceTest {
     @Test
     void siguienteDiaHabilTest(){
         LocalDate diaInhabil = LocalDate.parse("2024-11-01");
-        given(eventoRepository.findFechaEntreDiaInicioAndDiaFin(diaInhabil)).willReturn(Optional.of(evento));
+        given(eventoRepository.findEntreDiaInicioAndDiaFin(diaInhabil, null, null)).willReturn(Optional.of(evento));
 
-        LocalDate siguienteDia = eventoService.siguienteDiaHabil(diaInhabil);
+        LocalDate siguienteDia = eventoService.siguienteDiaHabil(diaInhabil, null, null);
 
         assertThat(siguienteDia).isAfter(diaInhabil);
 

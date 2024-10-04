@@ -11,6 +11,8 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.eventos.EventoRepository;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
@@ -26,7 +28,7 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.DiaHabil;
+import mx.gob.pjpuebla.trials.util.FinSemana;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 
@@ -75,6 +77,10 @@ class SalaServiceTest {
     JuzgadoRepository juzgadoRepository;
     @Mock
     AudienciaRepository audienciaRepository;
+    @Mock
+    EventoRepository eventoRepository;
+    @Mock
+    EventoService eventoService;
     @InjectMocks
     SalaService salaService;
 
@@ -204,8 +210,8 @@ class SalaServiceTest {
         
         SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
         
-        if (DiaHabil.esInhabil(fechaAudiencia.toLocalDate())){
-            fechaAudiencia = LocalDateTime.of(DiaHabil.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
+        if (FinSemana.esInhabil(fechaAudiencia.toLocalDate())){
+            fechaAudiencia = LocalDateTime.of(FinSemana.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
         }
 
         assertThat(salaAudienciaRecord)
@@ -268,8 +274,8 @@ class SalaServiceTest {
         bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         sala.setBloque(bloque);
 
-        if (DiaHabil.esInhabil(fechaAudiencia.toLocalDate())){
-            fechaAudiencia = LocalDateTime.of(DiaHabil.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
+        if (FinSemana.esInhabil(fechaAudiencia.toLocalDate())){
+            fechaAudiencia = LocalDateTime.of(FinSemana.proximoDiaHabil(fechaAudiencia.toLocalDate()), LocalTime.of(8,30,00));
         }
 
         given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));        

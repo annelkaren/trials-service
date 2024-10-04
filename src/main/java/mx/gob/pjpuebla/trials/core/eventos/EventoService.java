@@ -1,8 +1,9 @@
 package mx.gob.pjpuebla.trials.core.eventos;
 
 import lombok.AllArgsConstructor;
-
-import mx.gob.pjpuebla.trials.util.DiaHabil;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.util.FinSemana;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,18 +52,18 @@ public class EventoService {
         eventoRepository.delete(evento);
     }
 
-    public Boolean esDiaHabil(LocalDate fecha) {
+    public Boolean esDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia) {
 
-        return eventoRepository.existsFechaEntreDiaInicioAndDiaFin(fecha);
+        return eventoRepository.existsEventoEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
     }
 
-    public LocalDate siguienteDiaHabil(LocalDate fecha){
-        Optional<Evento> evento = eventoRepository.findFechaEntreDiaInicioAndDiaFin(fecha);
+    public LocalDate siguienteDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia){
+        Optional<Evento> evento = eventoRepository.findEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
 
         LocalDate siguienteDia = evento.orElseThrow().getDiaFin();
 
-        if (DiaHabil.esInhabil(siguienteDia)) {
-            siguienteDia = DiaHabil.proximoDiaHabil(siguienteDia);
+        if (FinSemana.esInhabil(siguienteDia)==Boolean.TRUE) {
+            siguienteDia = FinSemana.proximoDiaHabil(siguienteDia);
         }else{
             siguienteDia = siguienteDia.plusDays(1);
         }
