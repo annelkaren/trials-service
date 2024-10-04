@@ -209,5 +209,31 @@ public class DocumentoService {
         juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
         return numExpedienteExhorto;
     }
+
+
+    public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord){
+        Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId()).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
+        Documento documento = new Documento();
+        documento.setCarpeta(carpeta);
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setPromocionFolio(getFolio("P"));
+        documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
+
+        documento.setData(documentoData);
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+
+        documento = documentoRepository.save(documento);
+
+        for (String anexo : documentoPromocionRecord.anexos()) {
+            Anexo entity = new Anexo();
+            entity.setNombre(anexo);
+            entity.setDocumento(documento);
+            anexoRepository.save(entity);
+        }
+
+        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
+    }
+
 }
 

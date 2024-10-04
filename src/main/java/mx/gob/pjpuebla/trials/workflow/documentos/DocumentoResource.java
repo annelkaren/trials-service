@@ -3,9 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -19,9 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 
 import java.io.IOException;
-
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 @RequiredArgsConstructor
 @RestController
@@ -91,4 +86,11 @@ public class DocumentoResource {
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);
     }
+
+    @PostMapping("/documento/promocion")
+    public DocumentoPromocionResponseRecord createPromocion(@RequestBody DocumentoPromocionRecord documentoPromocionRecord) {
+        return this.documentoService.createPromocion(documentoPromocionRecord);
+    }
+
+
 }
