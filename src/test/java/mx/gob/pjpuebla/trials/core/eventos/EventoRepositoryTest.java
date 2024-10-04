@@ -36,11 +36,20 @@ class EventoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void checkDiaInhabil(){
+    void checkDiaInhabilTest(){
         LocalDate diaFeriado = LocalDate.of(2024,10,1);
 
         Boolean diaInhabil = eventoRepository.existsFechaEntreDiaInicioAndDiaFin(diaFeriado);
 
         assertThat(diaInhabil).isTrue();
+    }
+
+    @Test
+    void eventoDiaInhabilTest(){
+        LocalDate diaFeriado = LocalDate.of(2024,10,1);
+
+        Optional<Evento> eventoInhabil = eventoRepository.findFechaEntreDiaInicioAndDiaFin(diaFeriado);
+
+        assertThat(eventoInhabil).isPresent().get().hasFieldOrPropertyWithValue("descripcion", "DIA INHABIL");
     }
 }

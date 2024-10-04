@@ -5,18 +5,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -43,7 +32,7 @@ public class Evento implements  Serializable, Auditable{
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Column(name = "s_descripcion")
+    @Column(name = "S_DESCRIPCION")
     private String descripcion;
 
     @NotNull
@@ -54,10 +43,12 @@ public class Evento implements  Serializable, Auditable{
     @Column(name = "T_DIA_FIN")
     private LocalDate diaFin;
 
-    @JoinColumn(name = "fn_oficialia", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
+    @OneToOne
     private Oficialia oficialia;
 
-    @JoinColumn(name = "fn_juzgado", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @OneToOne
     private Juzgado juzgado;
 
     @Enumerated

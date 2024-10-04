@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.eventos;
 
 import lombok.AllArgsConstructor;
 
+import mx.gob.pjpuebla.trials.util.DiaHabil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -58,6 +59,14 @@ public class EventoService {
     public LocalDate siguienteDiaHabil(LocalDate fecha){
         Optional<Evento> evento = eventoRepository.findFechaEntreDiaInicioAndDiaFin(fecha);
 
-        return evento.orElseThrow().getDiaFin().plusDays(1);
+        LocalDate siguienteDia = evento.orElseThrow().getDiaFin();
+
+        if (DiaHabil.esInhabil(siguienteDia)) {
+            siguienteDia = DiaHabil.proximoDiaHabil(siguienteDia);
+        }else{
+            siguienteDia = siguienteDia.plusDays(1);
+        }
+
+        return siguienteDia;
     }
 }

@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface EventoRepository extends JpaRepository<Evento, Integer> {
 
     @Query("""
-            SELECT 1 from Evento e
+            SELECT COUNT(e) > 0 from Evento e
             where e.diaInicio >= :fecha and e.diaFin <= :fecha
             """)
     Boolean existsFechaEntreDiaInicioAndDiaFin(LocalDate fecha);
