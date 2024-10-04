@@ -1,10 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,4 +20,19 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             + "AND (lower(m.nombre) LIKE %:key% OR lower(c.folio) LIKE %:key% OR lower(c.expediente) LIKE %:key%) "
             + "ORDER BY doc.audit.fechaAlta ASC")
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
+            d.nombre,
+            j.nombre
+        )
+        FROM Documento doc
+        JOIN doc.carpeta c
+        JOIN c.juzgado j
+        JOIN j.sede s
+        JOIN s.distrito d
+        WHERE doc.id = :documentoId
+        """)
+    DocumentoJuzgadoRecord findDistritoJuzgadoByDocumentoId(
+            @Param("documentoId") Integer documentoId);
 }

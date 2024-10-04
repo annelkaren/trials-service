@@ -40,8 +40,8 @@ class CarpetaServiceTest {
     @BeforeEach
     public void setUp() {
         validCarpeta = CarpetaSetUp.create(TipoJuicioSetUp.createTipoJuicio(), JuzgadoSetUp.createJuzgado());
-        actor = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "Actor", 1, 200);
-        demandado = new PersonaDocumentoRecord("Nauj", "Zerep", "", null, "fisica", "Demandado", 1, 200);
+        actor = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "","","","", "Actor", 1, 200);
+        demandado = new PersonaDocumentoRecord("Nauj", "Zerep", "", null, "fisica", "","","","","Demandado", 1, 200);
     }
 
     @Test

@@ -10,6 +10,10 @@ public record PersonaDocumentoRecord (
         String apellidoMaterno,
         String pseudonimo,
         String tipoPersona,
+        String curp,
+        String domicilio,
+        String celular,
+        String correoElectronico,
         String tipoParte,
         Integer tipoParteId,
         Integer carpetaId
