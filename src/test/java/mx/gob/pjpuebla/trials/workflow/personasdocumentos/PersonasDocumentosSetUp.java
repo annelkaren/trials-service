@@ -11,7 +11,7 @@ public class PersonasDocumentosSetUp {
 
     public static PersonaDocumentoRecord createPersonasDocumento() {
         return new PersonaDocumentoRecord(
-                "Alberto", "Gonzalez", "", null, "fisica", "Actor", 1, 200);
+                "Alberto", "Gonzalez", "", null, "fisica", "","","","","Actor", 1, 200);
     }
 
     public static PersonaDocumentoItemRecord createPersonaDocumentoItemRecord() {

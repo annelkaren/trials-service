@@ -38,7 +38,6 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +47,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -280,8 +280,8 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
 
-        PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "Actor", 1, demanda.getCarpeta().getId());
-        PersonaDocumentoRecord demandadoRecord = new PersonaDocumentoRecord("María", "López", "Martínez", null, "fisica", "Demandado", 2, demanda.getCarpeta().getId());
+        PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "", "", "", "", "Actor", 1, demanda.getCarpeta().getId());
+        PersonaDocumentoRecord demandadoRecord = new PersonaDocumentoRecord("María", "López", "Martínez", null, "fisica", "", "", "", "", "Demandado", 2, demanda.getCarpeta().getId());
 
         List<PersonaDocumentoRecord> personas = Arrays.asList(actorRecord, demandadoRecord);
         List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
@@ -374,6 +374,66 @@ class DocumentoServiceTest {
                 juzgado, TipoCarpeta.AMPARO
         );
         assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+    }
+
+    @Test
+    void getAllHistorial() {
+
+        Documento documento1 = DocumentoSetUp.create(tipoJuicio);
+        documento1.getCarpeta().setFolio("Folio1");
+        documento1.getCarpeta().setExpediente("Expediente1");
+        documento1.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
+
+
+        Juzgado juzgado1 = new Juzgado();
+        documento1.getCarpeta().setJuzgado(juzgado1);
+        documento1.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
+
+
+        TipoCarpeta tipoCarpeta1 = TipoCarpeta.DEMANDA;
+        documento1.getCarpeta().setTipoCarpeta(tipoCarpeta1);
+
+        Documento documento2 = DocumentoSetUp.create(tipoJuicio);
+        documento2.getCarpeta().setFolio("Folio2");
+        documento2.getCarpeta().setExpediente("Expediente2");
+        documento2.getCarpeta().setEstatus(EstadoCarpeta.SALIDA);
+
+
+        Juzgado juzgado2 = new Juzgado();
+        documento2.getCarpeta().setJuzgado(juzgado2);
+        documento2.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
+
+
+        TipoCarpeta tipoCarpeta2 = TipoCarpeta.EXHORTO;
+        documento2.getCarpeta().setTipoCarpeta(tipoCarpeta2);
+
+        List<Documento> listPage = Arrays.asList(documento1, documento2);
+        Page<Documento> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
+
+        given(documentoRepository.findAll(any(), any(Pageable.class))).willReturn(pageDocumentos);
+
+
+        Documento example = new Documento();
+        example.setCarpeta(new Carpeta());
+
+        Page<DocumentoGridRecord> result = documentoService.getAllHistorial(PageRequest.of(0, 10), example);
+
+
+        assertThat(result.getContent())
+                .hasSize(2)
+                .first()
+                .hasFieldOrPropertyWithValue("folio", "Folio1")
+                .hasFieldOrPropertyWithValue("expediente", "Expediente1")
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CAPTURA);
+
+
+        assertThat(result.getContent().get(1))
+                .hasFieldOrPropertyWithValue("folio", "Folio2")
+                .hasFieldOrPropertyWithValue("expediente", "Expediente2")
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.SALIDA);
+
+
+        assertThat(result.getTotalElements()).isEqualTo(2);
     }
 
     @Test
