@@ -29,6 +29,7 @@ public record JuzgadoRecord(
         Integer sedeId,
         Integer maxAsignacionesRonda,
         Integer contadorAsignaciones,
+        Integer instanciaJuzgado,
         List<TipoJuicioRecord> tipoJuicios
 ) implements Serializable {
 }
