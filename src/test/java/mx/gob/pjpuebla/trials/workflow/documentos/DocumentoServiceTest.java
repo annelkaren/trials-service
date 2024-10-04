@@ -26,18 +26,14 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -378,5 +374,29 @@ class DocumentoServiceTest {
                 juzgado, TipoCarpeta.AMPARO
         );
         assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+    }
+
+    @Test
+    void createPromocion() {
+        Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
+        DocumentoData documentoData = new DocumentoData().setPromocionFolio("1").setTipoPromocion(TipoPromocion.OFICIO);
+        Documento promocion = DocumentoSetUp.create(tipoJuicio);
+        promocion.setData(documentoData);
+        promocion.setTipoDocumento(TipoDocumento.PROMOCION);
+
+        given(carpetaRepository.findById(any())).willReturn(Optional.of((carpeta)));
+        given(documentoRepository.save(any())).willReturn(promocion);
+        given(documentoRepository.getNextValPromocion()).willReturn(1L);
+        given(documentoRepository.getNextValPromocion()).willReturn(1L);
+
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO, anexos);
+        DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord);
+
+        assertThat(documentoResponse)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", promocion.getId())
+                .hasFieldOrPropertyWithValue("folio", documentoData.getPromocionFolio())
+                .hasFieldOrPropertyWithValue("tipoDocumento", promocion.getTipoDocumento());
     }
 }
