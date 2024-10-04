@@ -150,7 +150,7 @@ class DocumentoResourceTest {
     }
 
     @Test
-    void getAllHistorialRegistroOficialia() throws Exception {
+    void getAllHistorial() throws Exception {
 
         String folio = "45";
         String expediente = "000001/2024";

@@ -383,7 +383,7 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void getAllHistorialRegistroOficialia_return_page() {
+    void getAllHistorial() {
 
         Documento documento1 = DocumentoSetUp.create(tipoJuicio);
         documento1.getCarpeta().setFolio("Folio1");

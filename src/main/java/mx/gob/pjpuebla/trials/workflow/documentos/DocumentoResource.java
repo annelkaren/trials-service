@@ -98,7 +98,7 @@ public class DocumentoResource {
     }
 
     @GetMapping(value =  "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<DocumentoGridRecord> getAllHistorialRegistroOficialia(
+    public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "folio", required = false) String folio,
             @RequestParam(value = "expediente", required = false) String expediente,
