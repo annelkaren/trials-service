@@ -62,6 +62,7 @@ import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -73,17 +74,17 @@ import static org.mockito.Mockito.verify;
 class DocumentoServiceTest {
 
     @Mock
-    DocumentoRepository documentoRepository;
+    private DocumentoRepository documentoRepository;
     @Mock
-    TipoJuicioRepository tipoJuicioRepository;
+    private TipoJuicioRepository tipoJuicioRepository;
     @Mock
-    AnexoRepository anexoRepository;
+    private AnexoRepository anexoRepository;
     @InjectMocks
-    DocumentoService documentoService;
+    private DocumentoService documentoService;
     @Mock
-    PersonaDocumentoRepository personaDocumentoRepository;
+    private PersonaDocumentoRepository personaDocumentoRepository;
     @Mock
-    TipoPartesRepository tipoPartesRepository;
+    private TipoPartesRepository tipoPartesRepository;
     @Mock
     private JuzgadoRepository juzgadoRepository;
     @Mock
@@ -114,11 +115,14 @@ class DocumentoServiceTest {
     @BeforeEach
     public void setUp() {
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+  
+
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-        tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
-        tipoJuicioRepository.save(tipoJuicio);
+        tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
+        
+        
         actor = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio);
         tipoPartesRepository.save(actor);
         demandado = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio).setNombre("Demandado");
@@ -145,8 +149,8 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-
-        given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
+        
+        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
