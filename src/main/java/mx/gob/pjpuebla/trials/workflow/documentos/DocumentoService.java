@@ -120,7 +120,9 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado());
 
         //flujo para demanda de oralidad: 
-        if(tpoJuicio.getMateria().getNombre() == "FAMILIAR" && tpoJuicio.getTipoSistema().getNombre() == "Oral"){
+       
+
+        if(tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")){
            crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
         }
 
@@ -149,8 +151,14 @@ public class DocumentoService {
             documentoRecord.demandado().tipoParte(),
             carpeta.getId());
 
-        SalaAudienciaRecord salaAudiencia = salaService.asignarSalaConexidad(actor, demandado, tpoJuicio, tipoAudiencia);
-        audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
+        SalaAudienciaRecord salaAudienciaConexidad = salaService.asignarSalaConexidad(actor, demandado, tpoJuicio, tipoAudiencia);
+        if (salaAudienciaConexidad != null) {
+            audienciaService.create(salaAudienciaConexidad, tipoAudiencia, carpeta);
+        }else{
+     
+            SalaAudienciaRecord salaAudiencia  = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
+            audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
+        }
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
