@@ -286,8 +286,8 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
 
-        PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "Actor", 1, demanda.getCarpeta().getId());
-        PersonaDocumentoRecord demandadoRecord = new PersonaDocumentoRecord("María", "López", "Martínez", null, "fisica", "Demandado", 2, demanda.getCarpeta().getId());
+        PersonaDocumentoRecord actorRecord = new PersonaDocumentoRecord("Juan", "Perez", "", null, "fisica", "","","","","Actor", 1, demanda.getCarpeta().getId());
+        PersonaDocumentoRecord demandadoRecord = new PersonaDocumentoRecord("María", "López", "Martínez", null, "fisica", "","","","","Demandado", 2, demanda.getCarpeta().getId());
 
         List<PersonaDocumentoRecord> personas = Arrays.asList(actorRecord, demandadoRecord);
         List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
