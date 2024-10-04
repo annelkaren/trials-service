@@ -422,7 +422,7 @@ class DocumentoServiceTest {
         Documento example = new Documento();
         example.setCarpeta(new Carpeta());
 
-        Page<DocumentoGridRecord> result = documentoService.getAllHistorialRegistroOficialia(PageRequest.of(0, 10), example);
+        Page<DocumentoGridRecord> result = documentoService.getAllHistorial(PageRequest.of(0, 10), example);
 
 
         assertThat(result.getContent())

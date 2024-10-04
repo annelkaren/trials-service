@@ -163,7 +163,7 @@ class DocumentoResourceTest {
                 materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true);
 
 
-        given(documentoService.getAllHistorialRegistroOficialia(any(Pageable.class), any(Documento.class)))
+        given(documentoService.getAllHistorial(any(Pageable.class), any(Documento.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(

@@ -209,7 +209,7 @@ public class DocumentoService {
     }
 
 
-    public Page<DocumentoGridRecord> getAllHistorialRegistroOficialia( Pageable pageable, Documento example) {
+    public Page<DocumentoGridRecord> getAllHistorial( Pageable pageable, Documento example) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())

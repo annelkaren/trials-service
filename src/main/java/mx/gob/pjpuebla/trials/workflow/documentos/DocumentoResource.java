@@ -123,7 +123,7 @@ public class DocumentoResource {
 
             carpeta.setJuzgado(juzgado);
         }
-        return documentoService.getAllHistorialRegistroOficialia(pageable,
+        return documentoService.getAllHistorial(pageable,
                 new Documento().setCarpeta(carpeta)
 
         );
