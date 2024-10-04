@@ -1,8 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
@@ -90,5 +92,10 @@ public class DocumentoResource {
     @PatchMapping("/bandeja/{id}/status/{status}")
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);
+    }
+
+    @PostMapping("/apelacion")
+    public DocumentoRecord create(@RequestBody @Valid ApelacionRecord apelacionRecord) {
+        return this.documentoService.createApelacion(apelacionRecord);
     }
 }

@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
@@ -146,5 +147,19 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    void create_apelacion_success() throws Exception {
+        DocumentoRecord documentoRecord = new DocumentoRecord(1, "", TipoCarpeta.APELACION);
+
+        given(documentoService.createApelacion(CarpetaSetUp.apelacionRecord()))
+                .willReturn(documentoRecord);
+        mockMvc.perform(
+                post("/api/workflow/apelacion")
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 }

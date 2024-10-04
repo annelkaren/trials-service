@@ -1,11 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +19,6 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CarpetaResource.class)
@@ -37,7 +34,6 @@ class CarpetaResourceTest {
 
     private CarpetaResponseRecord carpetaResponseRecord;
     private ApelacionRecordResponse apelacionRecordResponse;
-    private DocumentoRecord documentoRecord;
 
     @BeforeEach
     void setUp() {
@@ -65,20 +61,7 @@ class CarpetaResourceTest {
                 .willReturn(expectedResponses);
 
         mockMvc.perform(
-                get("/api/workflow/carpeta/apelacion/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
-
-    @Test
-    void create_apelacion_success() throws Exception {
-        given(mockCarpetaService.createApelacion(CarpetaSetUp.apelacionRecord()))
-                .willReturn(documentoRecord);
-
-        mockMvc.perform(
-                post("/api/workflow/carpeta/apelacion")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
-                        .contentType(MediaType.APPLICATION_JSON)
+                get("/api/workflow/carpeta/personas/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
