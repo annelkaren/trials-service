@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 
 import java.io.Serializable;
@@ -44,6 +45,11 @@ public class Juzgado implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
+
+    @NotNull
+    @Enumerated
+    @Column(name = "N_INSTANCIA", nullable = false)
+    private InstanciaJuzgado instanciaJuzgado;
 
     @PositiveOrZero
     @Max(Integer.MAX_VALUE)
