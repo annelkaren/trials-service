@@ -3,6 +3,10 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
+import mx.gob.pjpuebla.trials.core.salas.SalaService;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -14,6 +18,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -39,6 +44,8 @@ public class DocumentoService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final CarpetaRepository carpetaRepository;
+    private final TipoAudienciaService tipoAudienciaService;
+    private final SalaService salaService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -71,9 +78,10 @@ public class DocumentoService {
     public DocumentoRecord createDemanda(DocumentoSaveRecord documentoRecord) {
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
-
-        carpeta.setTipoJuicio(tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString())));
+        TipoJuicio tpoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
+            .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString()));
+        carpeta.setTipoJuicio(tpoJuicio);
+                
 
         carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
         carpeta.setFolio(getFolio("D"));
@@ -105,6 +113,35 @@ public class DocumentoService {
         }
 
         juzgadoService.actualizarCarga(carpeta.getJuzgado());
+
+        //flujo para demanda de oralidad: 
+        if(tpoJuicio.getMateria().getNombre() == "FAMILIAR" && tpoJuicio.getTipoSistema().getNombre() == "Oral"){
+            TipoAudiencia tipoAudiencia = tipoAudienciaService.obtenerTipoAudiencia("Audiencia Inicial");
+            PersonaDocumentoRecord actor = new PersonaDocumentoRecord(
+                documentoRecord.actor().nombre(), 
+                documentoRecord.actor().apellidoPaterno(),
+                documentoRecord.actor().apellidoMaterno(),
+                documentoRecord.actor().pseudonimo(),
+                documentoRecord.actor().tipoPersona(), 
+                "Actor",
+                documentoRecord.actor().tipoParte(),
+                carpeta.getId());
+
+            PersonaDocumentoRecord demandado = new PersonaDocumentoRecord(
+                documentoRecord.demandado().nombre(), 
+                documentoRecord.demandado().apellidoPaterno(),
+                documentoRecord.demandado().apellidoMaterno(),
+                documentoRecord.demandado().pseudonimo(),
+                documentoRecord.demandado().tipoPersona(), 
+                "Demandado",
+                documentoRecord.demandado().tipoParte(),
+                carpeta.getId());
+
+            SalaAudienciaRecord salaAudiencia = salaService.asignarSalaConexidad(actor, demandado, tpoJuicio, tipoAudiencia);
+
+
+            
+        }
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
