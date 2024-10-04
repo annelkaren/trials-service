@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipojuicio;
 
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.http.MediaType;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -83,6 +85,7 @@ class TipoJuicioResourceTest {
         ).andExpect(status().isOk());
     }
 
+
     @Test
     void getAllByTipoSistemaAndActive_success() throws Exception {
         given(mockTipoJuicioService.getAllActive(any(Pageable.class), any(TipoJuicio.class)))
@@ -127,5 +130,23 @@ class TipoJuicioResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest());
     }
+
+    @Test
+    void getTiposJuiciosOralidad() throws Exception {
+        
+        // Creación de una lista de ejemplo de TipoJuicioDemandasRecord
+        List<TipoJuicioDemandasRecord> tipoJuicios = Arrays.asList(
+                new TipoJuicioDemandasRecord(1, "Familiar Oralidad (Alimentos)"),
+                new TipoJuicioDemandasRecord(2, "Familiar Oralidad (Divorcio)")
+        );
+        // Simulación del comportamiento del servicio
+        given(mockTipoJuicioService.getAllTipoJuicios()).willReturn(tipoJuicios);
+        
+                mockMvc.perform(
+                get("/api/core/tipojuicio/oralidad")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+   
+        }
 
 }
