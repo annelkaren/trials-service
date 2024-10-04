@@ -3,6 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -16,18 +19,12 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
-import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @Transactional
 @RequiredArgsConstructor
@@ -57,6 +54,7 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta().name(),
                                 documento.getAudit().getFechaAlta(),
                                 documento.getCarpeta().getSelloEstatus(),
+                                documento.getCarpeta().getEstatus(),
                                 (documento.getRuta() != null)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -211,6 +209,59 @@ public class DocumentoService {
         juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
         return numExpedienteExhorto;
     }
+
+
+    public Page<DocumentoGridRecord> getAllHistorial(Pageable pageable, Documento example) {
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("tipoEntrada", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
+                .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+
+        Page<Documento> paginaDocumentos = documentoRepository.findAll(Example.of(example, exampleMatcher), pageable);
+
+
+        List<DocumentoGridRecord> listaDocumentoRecords = paginaDocumentos.getContent().stream()
+                .map(doc -> new DocumentoGridRecord(
+                        doc.getId(),
+                        doc.getCarpeta().getFolio(),
+                        doc.getCarpeta().getExpediente(),
+                        doc.getCarpeta().getJuzgado().getMateria().getNombre(),
+                        doc.getTipoDocumento() == null ? doc.getCarpeta().getTipoCarpeta().name() : doc.getTipoDocumento().name(),
+                        doc.getAudit().getFechaAlta(),
+                        doc.getCarpeta().getSelloEstatus(),
+                        doc.getCarpeta().getEstatus(),
+                        (doc.getRuta() != null)))
+                .toList();
+
+        return new PageImpl<>(listaDocumentoRecords, pageable, paginaDocumentos.getTotalElements());
+    }
+
+    public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord) {
+        Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId()).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
+        Documento documento = new Documento();
+        documento.setCarpeta(carpeta);
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setPromocionFolio(getFolio("P"));
+        documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
+
+        documento.setData(documentoData);
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+
+        documento = documentoRepository.save(documento);
+
+        for (String anexo : documentoPromocionRecord.anexos()) {
+            Anexo entity = new Anexo();
+            entity.setNombre(anexo);
+            entity.setDocumento(documento);
+            anexoRepository.save(entity);
+        }
+
+        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
+    }
+
 
     public DocumentoRecord createApelacion(ApelacionRecord apelacionRecord) {
         Documento documento = new Documento();

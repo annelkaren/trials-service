@@ -47,7 +47,9 @@ class CarpetaResourceTest {
                 .willReturn(carpetaResponseRecord);
         mockMvc.perform(
                 get("/api/workflow/carpeta")
-                        .content(ResourceUtilTest.asJsonString(CarpetaSetUp.createCarpetaSearchRecord()))
+                        .param("numExpediente", "000001")
+                        .param("year", "2024")
+                        .param("idJuzgado", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());

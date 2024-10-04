@@ -3,9 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
@@ -79,7 +79,7 @@ class DocumentoResourceTest {
         demanda.getCarpeta().setFolio("1");
         DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, demanda.getCarpeta().getFolio(),
                 demanda.getCarpeta().getExpediente(),
-                "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
+                "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO, EstadoCarpeta.CAPTURA,
                 true);
 
         given(documentoService.getAll(any(), any(Pageable.class)))
@@ -146,6 +146,52 @@ class DocumentoResourceTest {
                         get("/api/workflow/demanda/1")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void createPromocion() throws Exception {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO, anexos);
+        DocumentoPromocionResponseRecord documentoPromocionResponseRecord = new DocumentoPromocionResponseRecord(1, "1", TipoDocumento.PROMOCION);
+
+        given(documentoService.createPromocion(any()))
+                .willReturn(documentoPromocionResponseRecord);
+
+        mockMvc.perform(
+                        post("/api/workflow/documento/promocion")
+                                .content(ResourceUtilTest.asJsonString(documentoPromocionRecord))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllHistorial() throws Exception {
+
+        String folio = "45";
+        String expediente = "000001/2024";
+        EstadoCarpeta estatus = EstadoCarpeta.CAPTURA;
+        String tipoEntrada = "DEMANDA";
+        String materiaNombre = "MERCANTIL";
+
+
+        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
+                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true);
+
+
+        given(documentoService.getAllHistorial(any(Pageable.class), any(Documento.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
+
+        mockMvc.perform(
+                        get("/api/workflow/bandeja/historial")
+                                .param("folio", folio)
+                                .param("expediente", expediente)
+                                .param("estatus", estatus.name())
+                                .param("tipoEntrada", tipoEntrada)
+                                .param("materiaNombre", materiaNombre)
+                                .accept(MediaType.APPLICATION_JSON))
+
+                .andExpect(status().isOk());
 
     }
 
@@ -162,4 +208,5 @@ class DocumentoResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
 }

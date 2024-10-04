@@ -21,6 +21,10 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
                 pd.apellidoMaterno,
                 pd.pseudonimo,
                 pd.tipoPersona,
+                pd.curp,
+                pd.domicilio,
+                pd.celular,
+                pd.correoElectronico,
                 tp.nombre,
                 tp.id,
                 c.id
@@ -46,6 +50,10 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
                          pd.apellidoMaterno,
                          pd.pseudonimo,
                          pd.tipoPersona,
+                         pd.curp,
+                         pd.domicilio,
+                         pd.celular,
+                         pd.correoElectronico,
                          tp.nombre,
                          tp.id,
                          c.id

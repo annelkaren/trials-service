@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 
 import java.util.Collections;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 
 public class CarpetaSetUp {
     private CarpetaSetUp() {
@@ -40,10 +41,6 @@ public class CarpetaSetUp {
 
     public static CarpetaResponseRecord createCarpetaResponseRecord(){
         return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2");
-    }
-
-    public static CarpetaSearchRecord createCarpetaSearchRecord(){
-        return new CarpetaSearchRecord("000001", 2024, 1);
     }
 
     public static ApelacionPersonaRecord apelacionPersonaRecord() {

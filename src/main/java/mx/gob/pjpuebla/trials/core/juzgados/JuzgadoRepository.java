@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -57,5 +58,17 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             WHERE j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             """)
     Integer sumMaxAsignacionesRondaByMateria(Materia materia);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoTipoJuiciosRecord (
+            juz.id,
+            j.nombre
+        )
+        FROM Juzgado juz
+        JOIN juz.tipoJuicios j
+        WHERE juz.id = :juzgadoId
+        """)
+    List<JuzgadoTipoJuiciosRecord> findTipoJuiciosByJuzgadoId(
+            @Param("juzgadoId") Integer juzgadoId);
 
 }
