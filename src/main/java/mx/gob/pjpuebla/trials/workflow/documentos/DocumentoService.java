@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
@@ -258,7 +257,6 @@ public class DocumentoService {
             entity.setCarpeta(carpeta);
             personaDocumentoRepository.save(entity);
         }
-
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 }
