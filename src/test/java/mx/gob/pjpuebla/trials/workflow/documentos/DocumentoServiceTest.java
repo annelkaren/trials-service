@@ -34,13 +34,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -117,13 +111,13 @@ class DocumentoServiceTest {
     @BeforeEach
     public void setUp() {
         Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
-  
 
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-        tipoJuicio = tipoJuicioRepository.save(TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia));
         
+        tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
+       
         
         actor = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio);
         tipoPartesRepository.save(actor);
@@ -148,11 +142,14 @@ class DocumentoServiceTest {
 
     @Test
     void create_demanda() {
-        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(tipoJuicio);
+        TipoJuicio tpoJuicio = tipoJuicioRepository.save(tipoJuicio);
+
+        Documento demanda = DocumentoSetUp.create(tpoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         
-        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
+        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tpoJuicio));
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);

@@ -12,14 +12,13 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class SalaSetUp {
 
     private SalaSetUp() {
-
+       
     }
 
     public static Sala createSala() {
@@ -73,7 +72,7 @@ public class SalaSetUp {
         Juzgado juzgado = JuzgadoSetUp.createJuzgado();
         Bloque bloque = BloqueSetUp.createBloque();
         Long juezId = juez.getId();
-
+        
         return new SalaAudienciaRecord(
                 1, 
                 "nombre prueba",
