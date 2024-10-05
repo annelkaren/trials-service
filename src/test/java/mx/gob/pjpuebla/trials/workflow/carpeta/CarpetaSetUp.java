@@ -6,7 +6,6 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaSearchRecord;
 
 public class CarpetaSetUp {
     private CarpetaSetUp() {
@@ -37,9 +36,5 @@ public class CarpetaSetUp {
 
     public static CarpetaResponseRecord createCarpetaResponseRecord(){
         return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2");
-    }
-
-    public static CarpetaSearchRecord createCarpetaSearchRecord(){
-        return new CarpetaSearchRecord("000001", 2024, 1);
     }
 }

@@ -3,13 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
@@ -146,7 +142,23 @@ class DocumentoResourceTest {
                         get("/api/workflow/demanda/1")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
 
+    @Test
+    void createPromocion() throws Exception {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO, anexos);
+        DocumentoPromocionResponseRecord documentoPromocionResponseRecord = new DocumentoPromocionResponseRecord(1, "1", TipoDocumento.PROMOCION);
+
+        given(documentoService.createPromocion(any()))
+                .willReturn(documentoPromocionResponseRecord);
+
+        mockMvc.perform(
+                        post("/api/workflow/documento/promocion")
+                                .content(ResourceUtilTest.asJsonString(documentoPromocionRecord))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -176,8 +188,6 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
 
                 .andExpect(status().isOk());
-
     }
-
 
 }
