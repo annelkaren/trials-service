@@ -135,6 +135,10 @@ public class DocumentoService {
             documentoRecord.actor().apellidoMaterno(),
             documentoRecord.actor().pseudonimo(),
             documentoRecord.actor().tipoPersona(), 
+            "",
+            "",
+            "",
+            "",
             "Actor",
             documentoRecord.actor().tipoParte(),
             carpeta.getId());
@@ -145,6 +149,10 @@ public class DocumentoService {
             documentoRecord.demandado().apellidoMaterno(),
             documentoRecord.demandado().pseudonimo(),
             documentoRecord.demandado().tipoPersona(), 
+            "",
+            "",
+            "",
+            "",
             "Demandado",
             documentoRecord.demandado().tipoParte(),
             carpeta.getId());
