@@ -41,7 +41,7 @@ public class Conceptos implements Serializable, Auditable {
     @NotNull
     @Enumerated
     @Column(name = "N_LISTA", nullable = false)
-    private Lista tipolista;
+    private Lista tipoConcepto;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
