@@ -34,6 +34,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
@@ -466,6 +467,30 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("id", promocion.getId())
                 .hasFieldOrPropertyWithValue("folio", documentoData.getPromocionFolio())
                 .hasFieldOrPropertyWithValue("tipoDocumento", promocion.getTipoDocumento());
+    }
+
+    @Test
+    void create_exhorto() {
+        DocumentoExhortoRecord record = new DocumentoExhortoRecord("", "", Arrays.asList("1", "2"));
+        Documento exhorto = DocumentoSetUp.create(tipoJuicio);
+        exhorto.getCarpeta().setFolio("1");
+        exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+
+        given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
+        given(juzgadoService.getJuzgado(any())).willReturn(juzgado);
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        given(documentoRepository.save(any())).willReturn(exhorto);
+        given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
+        given(carpetaRepository.save(any())).willReturn(exhorto.getCarpeta());
+
+        DocumentoRecord documentoRecord = new DocumentoRecord(exhorto.getId(), exhorto.getCarpeta().getFolio(), TipoCarpeta.EXHORTO);
+
+        DocumentoRecord response = documentoService.createExhorto(record);
+        assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
+                .hasFieldOrPropertyWithValue("id", documentoRecord.id())
+                .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
     }
 
     @Test

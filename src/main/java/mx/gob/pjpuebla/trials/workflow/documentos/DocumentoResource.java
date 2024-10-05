@@ -97,7 +97,7 @@ public class DocumentoResource {
         return this.documentoService.updateStatus(id, status);
     }
 
-    @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value =  "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "folio", required = false) String folio,
@@ -125,7 +125,6 @@ public class DocumentoResource {
         }
         return documentoService.getAllHistorial(pageable,
                 new Documento().setCarpeta(carpeta)
-
         );
     }
 
@@ -134,6 +133,10 @@ public class DocumentoResource {
         return this.documentoService.createPromocion(documentoPromocionRecord);
     }
 
+    @PostMapping("/exhorto")
+    public DocumentoRecord createExhorto(@RequestBody DocumentoExhortoRecord documentoExhortoRecord) {
+        return documentoService.createExhorto(documentoExhortoRecord);
+    }
 
     @PostMapping("/apelacion")
     public DocumentoRecord create(@RequestBody @Valid ApelacionRecord apelacionRecord) {
