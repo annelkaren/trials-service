@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
