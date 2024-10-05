@@ -28,6 +28,11 @@ public class Conceptos implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
+    @Max(Integer.MAX_VALUE)
+    @Version
+    @Column(name = "N_VERSION")
+    private Integer version;
+    
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_NOMBRE")
@@ -40,7 +45,7 @@ public class Conceptos implements Serializable, Auditable {
 
     @NotNull
     @Enumerated
-    @Column(name = "N_LISTA", nullable = false)
+    @Column(name = "N_TIPO_CONCEPTO", nullable = false)
     private Lista tipoConcepto;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
@@ -50,11 +55,6 @@ public class Conceptos implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
-
-    @Max(Integer.MAX_VALUE)
-    @Version
-    @Column(name = "N_VERSION")
-    private Integer version;
 
     @Accessors(chain = false)
     @Embedded
