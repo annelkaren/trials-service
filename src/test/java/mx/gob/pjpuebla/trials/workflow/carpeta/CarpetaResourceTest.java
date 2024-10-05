@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import java.util.Collections;
+import java.util.List;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,10 +33,12 @@ class CarpetaResourceTest {
     private MockMvc mockMvc;
 
     private CarpetaResponseRecord carpetaResponseRecord;
+    private ApelacionRecordResponse apelacionRecordResponse;
 
     @BeforeEach
     void setUp() {
         carpetaResponseRecord = CarpetaSetUp.createCarpetaResponseRecord();
+        apelacionRecordResponse = CarpetaSetUp.apelacionRecordResponse();
     }
 
     @Test
@@ -47,6 +51,19 @@ class CarpetaResourceTest {
                         .param("year", "2024")
                         .param("idJuzgado", "1")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getPersonaDocumentoById_success() throws Exception {
+        List<ApelacionRecordResponse> expectedResponses = Collections.singletonList(apelacionRecordResponse);
+
+        given(mockCarpetaService.getPersonasDocumentoByCarpetaId(anyInt()))
+                .willReturn(expectedResponses);
+
+        mockMvc.perform(
+                get("/api/workflow/carpeta/personas/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

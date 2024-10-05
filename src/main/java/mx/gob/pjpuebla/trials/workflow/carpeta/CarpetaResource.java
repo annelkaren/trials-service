@@ -2,9 +2,12 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -14,7 +17,7 @@ public class CarpetaResource {
 
     private final CarpetaService carpetaService;
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<CarpetaResponseRecord> getCarpetaByExpedienteAndJuzgadoId(
             @RequestParam String numExpediente,
             @RequestParam Integer year,
@@ -25,4 +28,8 @@ public class CarpetaResource {
         return ResponseEntity.ok(carpetaResponseRecord);
     }
 
+    @GetMapping(value = "/personas/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {
+        return this.carpetaService.getPersonasDocumentoByCarpetaId(carpetaId);
+    }
 }

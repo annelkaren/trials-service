@@ -2,6 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -63,5 +66,11 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
                 .findPersonasByCarpetaId(1, Rol.PRINCIPAL);
         assertThat(list).isNotNull()
                 .isNotEmpty();
+    }
+
+    @Test
+    void findPersonaDocumentoByCarpetaId() {
+        List<ApelacionRecordResponse> entity = personaDocumentoRepository.findPersonaDocumentoByCarpetaId(1);
+        assertThat(entity).isNotEmpty();
     }
 }

@@ -8,6 +8,5 @@ public enum TipoDocumento {
     OFICIO,
     ACUERDO,
     AMPARO,
-    EXHORTO
-
+    EXHORTO_SALIDA
 }

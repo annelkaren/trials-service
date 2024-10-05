@@ -1,9 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -18,7 +18,6 @@ import java.util.List;
 public class CarpetaService {
 
     private final CarpetaRepository carpetaRepository;
-    private final JuzgadoRepository juzgadoRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
@@ -39,4 +38,8 @@ public class CarpetaService {
         return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
     }
 
+    @Transactional(readOnly = true)
+    public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(Integer carpetaId) {
+        return personaDocumentoRepository.findPersonaDocumentoByCarpetaId(carpetaId);
+    }
 }

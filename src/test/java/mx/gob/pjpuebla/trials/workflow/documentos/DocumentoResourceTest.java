@@ -5,7 +5,15 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoExhortoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
@@ -159,6 +167,26 @@ class DocumentoResourceTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void create_exhorto() throws Exception {
+        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1));
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+        demanda.getCarpeta().setFolio("1");
+        DocumentoRecord documentoRecord = new DocumentoRecord(1, demanda.getCarpeta().getFolio(),
+                TipoCarpeta.EXHORTO);
+
+        given(documentoService.createExhorto(any(DocumentoExhortoRecord.class)))
+                .willReturn(documentoRecord);
+
+        mockMvc.perform(
+                        post("/api/workflow/exhorto")
+                                .content(ResourceUtilTest.asJsonString(documentoRecord))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -188,6 +216,21 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
 
                 .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void create_apelacion_success() throws Exception {
+        DocumentoRecord documentoRecord = new DocumentoRecord(1, "", TipoCarpeta.APELACION);
+
+        given(documentoService.createApelacion(CarpetaSetUp.apelacionRecord()))
+                .willReturn(documentoRecord);
+        mockMvc.perform(
+                post("/api/workflow/apelacion")
+                        .content(ResourceUtilTest.asJsonString(documentoRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
 }
