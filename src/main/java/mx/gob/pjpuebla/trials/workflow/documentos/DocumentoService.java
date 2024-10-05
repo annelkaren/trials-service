@@ -12,6 +12,8 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -285,6 +287,54 @@ public class DocumentoService {
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
+    }
+
+    public DocumentoRecord createApelacion(ApelacionRecord apelacionRecord) {
+        Documento documento = new Documento();
+        Carpeta carpeta = new Carpeta();
+
+        Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId: " + apelacionRecord.carpetaId()));
+        carpeta.setTipoJuicio(tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
+                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId())));
+
+        carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio())); // TODO.ASIGNAR JUZGADO CORRECTAMENTE
+        carpeta.setFolio("1"); //TODO. ASIGNAR FOLIO CORRECTAMENTE
+        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
+        carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
+        carpeta.setEstatus(EstadoCarpeta.CAPTURA);
+        carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta = carpetaRepository.save(carpeta);
+
+        documento.setCarpeta(carpeta);
+        DocumentoData data = new DocumentoData();
+        data.setApelacionOtroActorNombre(apelacionRecord.otroNombreActor());
+        data.setApelacionOtroDemandadoNombre(apelacionRecord.otroNombreDemandado());
+        data.setApelacionAntecedenteCarpeta(apelacionRecord.carpetaId().toString());
+        documento.setData(data);
+        documento = documentoRepository.save(documento);
+
+        for (Anexo anexo : apelacionRecord.anexos()) {
+            Anexo entity = new Anexo();
+            entity.setNombre(anexo.getNombre());
+            entity.setDocumento(documento);
+            anexoRepository.save(entity);
+        }
+
+        for (ApelacionPersonaRecord persona : apelacionRecord.apelacionPersonaRecords()) {
+            PersonaDocumento entity = new PersonaDocumento();
+            entity.setNombre(persona.nombre());
+            entity.setApellidoPaterno(persona.apellidoPaterno());
+            entity.setApellidoMaterno(persona.apellidoMaterno());
+            entity.setPseudonimo(persona.pseudonimo());
+            entity.setTipoPersona(persona.tipoPersona());
+            entity.setRol(Rol.SECUNDARIO);
+            entity.setTipoPartes(tipoPartesRepository.findById(persona.tipoPartes())
+                    .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", "tipoParteId: " + persona.tipoPartes())));
+            entity.setCarpeta(carpeta);
+            personaDocumentoRepository.save(entity);
+        }
+        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 }
 

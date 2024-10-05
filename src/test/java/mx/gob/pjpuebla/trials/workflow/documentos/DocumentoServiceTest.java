@@ -35,8 +35,15 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +70,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentoServiceTest {
@@ -483,5 +491,42 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
                 .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
+    }
+
+    @Test
+    void create_apelacion() {
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpetaMock = CarpetaSetUp.create();
+        demanda.setCarpeta(carpetaMock);
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.APELACION);
+        TipoPartes tipoPartesMock = new TipoPartes();
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+        lenient().when(carpetaRepository.findById(carpetaMock.getId())).thenReturn(Optional.of(carpetaMock));
+        lenient().when(tipoJuicioRepository.findById(any())).thenReturn(Optional.of(tipoJuicio));
+        lenient().when(juzgadoService.getConexidadJuzgado(any(), any(), any())).thenReturn(new Juzgado());
+        lenient().when(carpetaRepository.findById(carpetaMock.getId())).thenReturn(Optional.of(carpetaMock));
+        lenient().when(tipoJuicioRepository.findById(any())).thenReturn(Optional.of(tipoJuicio));
+        given(tipoPartesRepository.findById(any())).willReturn(Optional.of(tipoPartesMock));
+        given(anexoRepository.save(any())).willReturn(new Anexo());
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
+        given(documentoRepository.save(any(Documento.class))).willReturn(demanda);
+
+        ApelacionRecord apelacionRecord = CarpetaSetUp.apelacionRecord();
+
+        DocumentoRecord response = documentoService.createApelacion(apelacionRecord);
+        assertThat(response)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", TipoCarpeta.APELACION);
+        verify(carpetaRepository).findById(apelacionRecord.carpetaId());
+        verify(tipoJuicioRepository).findById(demanda.getCarpeta().getTipoJuicio().getId());
+        verify(carpetaRepository).save(any(Carpeta.class));
+        verify(documentoRepository).save(any(Documento.class));
+        verify(anexoRepository).save(any(Anexo.class));
+        verify(personaDocumentoRepository, times(apelacionRecord.apelacionPersonaRecords().size())).save(any(PersonaDocumento.class));
     }
 }

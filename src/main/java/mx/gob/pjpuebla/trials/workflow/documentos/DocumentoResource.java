@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -9,6 +10,10 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -131,5 +136,10 @@ public class DocumentoResource {
     @PostMapping("/exhorto")
     public DocumentoRecord createExhorto(@RequestBody DocumentoExhortoRecord documentoExhortoRecord) {
         return documentoService.createExhorto(documentoExhortoRecord);
+    }
+
+    @PostMapping("/apelacion")
+    public DocumentoRecord create(@RequestBody @Valid ApelacionRecord apelacionRecord) {
+        return this.documentoService.createApelacion(apelacionRecord);
     }
 }

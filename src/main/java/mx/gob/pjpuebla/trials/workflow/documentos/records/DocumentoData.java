@@ -20,5 +20,8 @@ public class DocumentoData implements Serializable {
     private TipoPromocion tipoPromocion;
     private String exhortoObservaciones;
     private String exhortoProcedencia;
+    private String apelacionOtroActorNombre;
+    private String apelacionOtroDemandadoNombre;
+    private String apelacionAntecedenteCarpeta;
 }
 
