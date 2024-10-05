@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -95,13 +96,7 @@ public class DocumentoService {
         createPersonaDocumento(documentoRecord.actor(), carpeta);
         createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
-        for (String anexo : documentoRecord.anexos()) {
-            Anexo entity = new Anexo();
-            entity.setNombre(anexo);
-            entity.setDocumento(documento);
-            anexoRepository.save(entity);
-        }
-
+        addAnexos(documentoRecord.anexos(), documento);
         juzgadoService.actualizarCarga(carpeta.getJuzgado());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -236,6 +231,7 @@ public class DocumentoService {
         return new PageImpl<>(listaDocumentoRecords, pageable, paginaDocumentos.getTotalElements());
     }
 
+    @Transactional
     public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord) {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId()).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
         Documento documento = new Documento();
@@ -249,16 +245,46 @@ public class DocumentoService {
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
         documento = documentoRepository.save(documento);
+        addAnexos(documentoPromocionRecord.anexos(), documento);
+        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
+    }
 
-        for (String anexo : documentoPromocionRecord.anexos()) {
+    @Transactional
+    public DocumentoRecord createExhorto(DocumentoExhortoRecord documentoExhortoRecord) {
+        Carpeta carpeta = new Carpeta();
+        Documento documento = new Documento();
+
+        carpeta.setEstatus(EstadoCarpeta.CAPTURA);
+        carpeta.setFolio(getFolio("E"));
+        carpeta.setTipoCarpeta(TipoCarpeta.EXHORTO);
+
+        TipoJuicio tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase("EXHORTO")
+                .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado con nombre: Exhorto", "EXHORTO"));
+        carpeta.setTipoJuicio(tipoJuicio);
+
+        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio));
+        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
+        carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta = carpetaRepository.save(carpeta);
+
+        DocumentoData data = new DocumentoData();
+        data.setExhortoObservaciones(documentoExhortoRecord.observaciones());
+        data.setExhortoProcedencia(documentoExhortoRecord.procedencia());
+        documento.setData(data);
+        documento.setCarpeta(carpeta);
+        documento = documentoRepository.save(documento);
+
+        addAnexos(documentoExhortoRecord.anexos(), documento);
+        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
+    }
+
+    private void addAnexos(List<String> anexos, Documento documento) {
+        for (String anexo : anexos) {
             Anexo entity = new Anexo();
             entity.setNombre(anexo);
             entity.setDocumento(documento);
             anexoRepository.save(entity);
         }
-
-        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
     }
-
 }
 
