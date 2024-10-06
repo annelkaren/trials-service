@@ -135,6 +135,17 @@ public class JuzgadoService {
             List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
             juzgado.setTipoJuicios(tipojuicios);
 
+            List<JuzgadoFolios> juzgadoFolios = new ArrayList<>();
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DEMANDA).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.EXHORTO).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DESPACHO).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION_MUNICIPAL).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
+            juzgado.setJuzgadoFolios(juzgadoFolios);
+
+            juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
+
             juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordItem(
