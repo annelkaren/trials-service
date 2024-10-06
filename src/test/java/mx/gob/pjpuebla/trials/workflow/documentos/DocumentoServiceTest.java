@@ -106,11 +106,12 @@ class DocumentoServiceTest {
     private TipoPartes demandado;
     private DocumentoSaveRecord recordRequest;
     private JuzgadoFolios juzgadoFolios;
+    private Materia materia;
 
 
     @BeforeEach
     public void setUp() {
-        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        materia = MateriaSetUp.createMateria();
 
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
@@ -138,18 +139,17 @@ class DocumentoServiceTest {
 
         juzgadoRepository.save(juzgado);
         recordRequest = DocumentoSetUp.createDocumentoSaveRecord(tipoJuicio.getId());
+
     }
 
     @Test
     void create_demanda() {
-        given(tipoJuicioRepository.save(any(TipoJuicio.class))).willReturn(tipoJuicio);
-        TipoJuicio tpoJuicio = tipoJuicioRepository.save(tipoJuicio);
 
-        Documento demanda = DocumentoSetUp.create(tpoJuicio);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         
-        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tpoJuicio));
+        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
