@@ -3,9 +3,9 @@ package mx.gob.pjpuebla.trials.util;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-public class DiaHabil {
+public class FinSemana {
 
-    private DiaHabil(){
+    private FinSemana(){
 
     }
 
