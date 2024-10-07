@@ -80,7 +80,6 @@ public class OficialiaService {
 
             if (oficialia.getMaterias() != null) {
                 List<Integer> mIds = oficialia.getMaterias().stream()
-                        .filter(materia -> materia.getId() != null)
                         .map(Materia::getId)
                         .toList();
 
