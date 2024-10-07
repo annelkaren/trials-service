@@ -21,4 +21,5 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
 
     Optional<TipoJuicio> findByIdAndEstado(Integer integer, Estado estado);
 
+    Optional<TipoJuicio> findByNombreIgnoreCase(String name);
 }
