@@ -58,38 +58,37 @@ public class OficialiaService {
 
     public OficialiaRecordResponse create(Oficialia oficialia) {
 
-            if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
-                Sede sede = sedeRepository.findById(oficialia.getSede().getId())
-                        .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
-                oficialia.setSede(sede);
-            }
+        if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
+            Sede sede = sedeRepository.findById(oficialia.getSede().getId())
+                    .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
+            oficialia.setSede(sede);
+        }
 
-            if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
-                TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
-                        .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
-                oficialia.setTipoOficialia(tipoOficialia);
-            }
+        if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
+            TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
+                    .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
+            oficialia.setTipoOficialia(tipoOficialia);
+        }
 
-            if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
-                Juzgado juzgado = juzgadoRepository.findById(oficialia.getJuzgado().getId())
-                        .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
-                oficialia.setJuzgado(juzgado);
-            } else {
-                oficialia.setJuzgado(null);
-            }
+        if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
+            Juzgado juzgado = juzgadoRepository.findById(oficialia.getJuzgado().getId())
+                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+            oficialia.setJuzgado(juzgado);
+        } else {
+            oficialia.setJuzgado(null);
+        }
 
-            if (oficialia.getMaterias() != null) {
-                List<Integer> mIds = oficialia.getMaterias().stream()
-                        .filter(materia -> materia.getId() != null)
-                        .map(Materia::getId)
-                        .toList();
+        if (oficialia.getMaterias() != null) {
+            List<Integer> mIds = oficialia.getMaterias().stream()
+                    .map(Materia::getId)
+                    .toList();
 
-                List<Materia> materias = materiaRepository.findAllById(mIds);
-                oficialia.setMaterias(materias);
-            }
+            List<Materia> materias = materiaRepository.findAllById(mIds);
+            oficialia.setMaterias(materias);
+        }
 
-            oficialia = oficialiaRepository.save(oficialia);
-            return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
+        oficialia = oficialiaRepository.save(oficialia);
+        return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
     }
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
@@ -108,8 +107,8 @@ public class OficialiaService {
                     .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId")));
 
             if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
-            existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
-                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+                existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
+                        .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
             } else {
                 existingOficialia.setJuzgado(null);
             }
