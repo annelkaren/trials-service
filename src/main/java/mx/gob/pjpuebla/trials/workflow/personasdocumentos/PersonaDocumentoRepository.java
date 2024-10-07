@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +65,21 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
              AND pd.rol = :rol
             """)
     List<PersonaDocumentoRecord> findPersonasByCarpetaId(@Param("carpetaId") Integer carpetaId, @Param("rol") Rol rol);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse(
+                pd.nombre,
+                pd.apellidoPaterno,
+                pd.apellidoMaterno,
+                pd.pseudonimo,
+                pd.tipoPersona,
+                pd.rol,
+                pd.carpeta.id,
+                pd.tipoPartes.nombre,
+                pd.tipoPartes.id
+            )
+            FROM PersonaDocumento pd
+            WHERE pd.carpeta.id = :carpetaId
+            """)
+    List<ApelacionRecordResponse> findPersonaDocumentoByCarpetaId(Integer carpetaId);
 }

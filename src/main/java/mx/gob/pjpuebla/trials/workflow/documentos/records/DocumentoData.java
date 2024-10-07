@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
+import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,5 +16,12 @@ public class DocumentoData implements Serializable {
     private String cedulaAbogado;
     private String correoAbogado;
     private String domicilio;
+    private String promocionFolio;
+    private TipoPromocion tipoPromocion;
+    private String exhortoObservaciones;
+    private String exhortoProcedencia;
+    private String apelacionOtroActorNombre;
+    private String apelacionOtroDemandadoNombre;
+    private String apelacionAntecedenteCarpeta;
 }
 

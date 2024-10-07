@@ -4,9 +4,13 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+
+import java.util.Collections;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaSearchRecord;
 
 public class CarpetaSetUp {
     private CarpetaSetUp() {
@@ -39,7 +43,15 @@ public class CarpetaSetUp {
         return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2");
     }
 
-    public static CarpetaSearchRecord createCarpetaSearchRecord(){
-        return new CarpetaSearchRecord("000001", 2024, 1);
+    public static ApelacionPersonaRecord apelacionPersonaRecord() {
+        return new ApelacionPersonaRecord("Alex", "Rios", "", "", "Demandado", 1);
+    }
+
+    public static ApelacionRecordResponse apelacionRecordResponse() {
+        return new ApelacionRecordResponse("Alex", "Rios", "", "", "demandado", Rol.SECUNDARIO, 1, "Demandado", 150 );
+    }
+
+    public static ApelacionRecord apelacionRecord() {
+        return new ApelacionRecord(1, Collections.singletonList(apelacionPersonaRecord()), Collections.singletonList(new Anexo()), "actor1", "demandado1");
     }
 }

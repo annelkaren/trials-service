@@ -37,12 +37,12 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 @Entity
 @EntityListeners(AuditListener.class)
 @Data
-@Table(name = "TBL_AUDIENCIA")
+@Table(name = "TBL_AUDIENCIAS")
 public class Audiencia implements  Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIAS_ID")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAsistencia")
+    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudiencia")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
