@@ -1,0 +1,63 @@
+package mx.gob.pjpuebla.trials.workflow.movimientos;
+
+
+import jakarta.persistence.*;
+import lombok.Data;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.UUID;
+
+@Entity
+@Data
+@EntityListeners(AuditListener.class)
+@Table(name = "TBL_MOVIMIENTOS")
+public class Movimiento implements Serializable {
+    @Id
+    @SequenceGenerator(name = "idMovimientos", sequenceName = "SEQ_MOVIMIENTOS_ID")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idMovimientos")
+    @Column(name =  "PN_ID", insertable = false, updatable = false)
+    private Integer id;
+
+
+    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Carpeta carpeta;
+
+    @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Documento documento;
+
+    @Column(name = "T_FECHA_ASIGNACION")
+    private Date fechaAsignacion;
+
+    @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona persona;
+
+    @Column(name = "S_MOTIVO")
+    private String motivo;
+
+    @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Oficialia oficialia;
+
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Juzgado juzgado;
+
+    @Column(name = "N_TIPO")
+    private Integer tipo;
+
+    @Column(name = "S_UUID")
+    private UUID uuid;
+
+
+
+}
