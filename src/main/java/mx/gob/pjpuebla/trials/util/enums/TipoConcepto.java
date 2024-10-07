@@ -4,7 +4,7 @@ package mx.gob.pjpuebla.trials.util.enums;
 import lombok.Getter;
 
 @Getter
-public enum Lista {
+public enum TipoConcepto {
     GENERAL,
     MATERIA
 }

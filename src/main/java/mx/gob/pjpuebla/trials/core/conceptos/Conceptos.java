@@ -12,7 +12,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.Lista;
+import mx.gob.pjpuebla.trials.util.enums.TipoConcepto;
 
 import java.io.Serializable;
 
@@ -32,7 +32,7 @@ public class Conceptos implements Serializable, Auditable {
     @Version
     @Column(name = "N_VERSION")
     private Integer version;
-    
+
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_NOMBRE")
@@ -46,7 +46,7 @@ public class Conceptos implements Serializable, Auditable {
     @NotNull
     @Enumerated
     @Column(name = "N_TIPO_CONCEPTO", nullable = false)
-    private Lista tipoConcepto;
+    private TipoConcepto tipoConcepto;
 
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
