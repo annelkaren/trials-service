@@ -34,13 +34,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -76,17 +70,17 @@ import static org.mockito.Mockito.lenient;
 class DocumentoServiceTest {
 
     @Mock
-    DocumentoRepository documentoRepository;
+    private DocumentoRepository documentoRepository;
     @Mock
-    TipoJuicioRepository tipoJuicioRepository;
+    private TipoJuicioRepository tipoJuicioRepository;
     @Mock
-    AnexoRepository anexoRepository;
+    private AnexoRepository anexoRepository;
     @InjectMocks
-    DocumentoService documentoService;
+    private DocumentoService documentoService;
     @Mock
-    PersonaDocumentoRepository personaDocumentoRepository;
+    private PersonaDocumentoRepository personaDocumentoRepository;
     @Mock
-    TipoPartesRepository tipoPartesRepository;
+    private TipoPartesRepository tipoPartesRepository;
     @Mock
     private JuzgadoRepository juzgadoRepository;
     @Mock
@@ -112,16 +106,20 @@ class DocumentoServiceTest {
     private TipoPartes demandado;
     private DocumentoSaveRecord recordRequest;
     private JuzgadoFolios juzgadoFolios;
+    private Materia materia;
 
 
     @BeforeEach
     public void setUp() {
-        Materia materia = materiaRepository.save(MateriaSetUp.createMateria());
+        materia = MateriaSetUp.createMateria();
+
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
+        
         tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
-        tipoJuicioRepository.save(tipoJuicio);
+       
+        
         actor = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio);
         tipoPartesRepository.save(actor);
         demandado = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio).setNombre("Demandado");
@@ -141,15 +139,17 @@ class DocumentoServiceTest {
 
         juzgadoRepository.save(juzgado);
         recordRequest = DocumentoSetUp.createDocumentoSaveRecord(tipoJuicio.getId());
+
     }
 
     @Test
     void create_demanda() {
+
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-
-        given(tipoJuicioRepository.findById(any())).willReturn(Optional.of(tipoJuicio));
+        
+        given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);

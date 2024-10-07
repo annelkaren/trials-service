@@ -1,8 +1,14 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
+import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRecord;
+import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
@@ -12,7 +18,7 @@ import java.time.LocalTime;
 public class SalaSetUp {
 
     private SalaSetUp() {
-
+       
     }
 
     public static Sala createSala() {
@@ -59,5 +65,21 @@ public class SalaSetUp {
                 "Juzgado Primero",
                 new BloqueRecord(1, LocalTime.now(), LocalTime.now()),
                 Estado.ACTIVE);
+    }
+
+    public static SalaAudienciaRecord salaAudienciaRecord() {
+        Persona juez = PersonaSetUp.createPersona(); 
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        Bloque bloque = BloqueSetUp.createBloque();
+        Long juezId = juez.getId();
+        
+        return new SalaAudienciaRecord(
+                1, 
+                "nombre prueba",
+                juezId, 
+                juez.getNombre(), 
+                juzgado.getNombre(),
+                bloque.getId(),
+                LocalDateTime.now());
     }
 }
