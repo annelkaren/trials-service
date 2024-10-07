@@ -78,10 +78,10 @@ public class OficialiaService {
             oficialia.setJuzgado(null);
         }
 
-        if (oficialia.getMaterias() != null) {
-            List<Integer> mIds = oficialia.getMaterias().stream()
-                    .map(Materia::getId)
-                    .toList();
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
+                        .map(Materia::getId)
+                        .toList();
 
             List<Materia> materias = materiaRepository.findAllById(mIds);
             oficialia.setMaterias(materias);
