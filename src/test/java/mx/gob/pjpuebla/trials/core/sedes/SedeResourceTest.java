@@ -47,6 +47,7 @@ class SedeResourceTest {
     private SedeRecordResponse sedeRecordResponse;
     private SedeDomiciliosRecord sedeDomiciliosRecord;
     private SedeRecord sedeRecord;
+    private SedeDomicilioRecordResponse sedeDomicilioRecordResponse;
 
     @BeforeEach
     void setUp() {
@@ -55,12 +56,13 @@ class SedeResourceTest {
         Sede sede = SedeSetUp.createSede();
         sedeRecord = SedeSetUp.sedeRecord();
         sedeDomiciliosRecord = SedeSetUp.createSedeDomiciliosRecord(sede, domicilio);
+        sedeDomicilioRecordResponse = SedeSetUp.createSedeDomicilioRecordResponse();
     }
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
         given(mockSedeService.getAll(any(Sede.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(sedeRecordResponse)));
+                .willReturn(new PageImpl<>(Collections.singletonList(sedeDomicilioRecordResponse)));
 
         mockMvc.perform(
                 get("/api/core/sedes")
