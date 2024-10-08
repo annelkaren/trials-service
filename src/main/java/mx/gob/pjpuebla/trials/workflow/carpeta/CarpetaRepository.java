@@ -40,7 +40,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord(
-            a.id, a.nombre, 0)
+            a.id, a.nombre, a.recibido)
         FROM Anexo a
         JOIN a.documento d
         WHERE d.id = :documentoId
