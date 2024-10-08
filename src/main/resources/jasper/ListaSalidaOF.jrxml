@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ListaSalidaOF" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="71deff9a-c0d0-4a88-b48c-a45ceab0d670">
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="80" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="49" splitType="Stretch">
+			<staticText>
+				<reportElement x="180" y="10" width="200" height="30" uuid="28fc1a87-a3a6-47e7-ada5-5e552898dd66"/>
+				<textElement textAlignment="Center">
+					<font size="19" isBold="true"/>
+				</textElement>
+				<text><![CDATA[REPORTE DE SALIDA]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="75" splitType="Stretch">
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="230" y="40" width="100" height="30" uuid="429a91cd-5bd2-4284-bc6b-d8b8536e4e74"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="0" width="400" height="30" uuid="7bd18f7b-c019-4e63-8767-5b954bdbd346"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["JUZGADO"]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch">
+			<textField>
+				<reportElement x="180" y="10" width="100" height="30" uuid="750d0b1f-4ebd-4ed2-bac3-4c0dc686d67d"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="280" y="10" width="100" height="30" uuid="be3acd79-da09-4409-b4b8-181a40fb2aa0"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
