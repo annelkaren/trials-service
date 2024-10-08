@@ -76,7 +76,7 @@ class CarpetaResourceTest {
     void obtenerBandejaRecepcionSuccess() throws Exception {
 
         String folio = "1";
-        BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(folio, "Expediente 1", TipoCarpeta.DEMANDA,
+        BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(1, folio, "Expediente 1", TipoCarpeta.DEMANDA,
                 "ruta/digitalizacion", List.of());
 
         when(mockCarpetaService.getBandejaRecepcionByFolio(folio)).thenReturn(expectedRecord);
@@ -90,23 +90,6 @@ class CarpetaResourceTest {
                 .andExpect(jsonPath("$.expediente").value("Expediente 1"));
     }
 
-    @Test
-    void obtenerBandejaRecepcionFail() throws Exception {
-
-        String folio = "A";
-        BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(folio, "Expediente 1", TipoCarpeta.DEMANDA,
-                "ruta/digitalizacion", List.of());
-
-        when(mockCarpetaService.getBandejaRecepcionByFolio(folio)).thenReturn(expectedRecord);
-
-        // Realizar la llamada al endpoint y verificar el resultado
-        mockMvc.perform(get("/api/workflow/carpeta/recepcion")
-                .param("folio", folio)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.folio").value(folio))
-                .andExpect(jsonPath("$.expediente").value("Expediente 1"));
-    }
 
     @Test
     void obtenerBandejaRecepcionNotFound() throws Exception {

@@ -23,6 +23,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
@@ -159,9 +160,12 @@ class CarpetaServiceTest {
         String folio = "1"; 
 
         BandejaRecepcionRecord bandejaRecepcion = DocumentoSetUp.createBandejaRecepcion();
+        List<AnexoBandejaRecepcionRecord> anexosRecepcion = DocumentoSetUp.createAnexosDocumento();
 
         given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
                 .willReturn(bandejaRecepcion);
+        given(carpetaRepository.findAnexosByDocumentoId(bandejaRecepcion.documentoId()))
+            .willReturn(anexosRecepcion);
     
         BandejaRecepcionRecord result = target.getBandejaRecepcionByFolio(folio); 
     
@@ -175,6 +179,7 @@ class CarpetaServiceTest {
         String folio = "999"; 
         given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
             .willReturn(null); 
+        
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
                 target.getBandejaRecepcionByFolio(folio); 

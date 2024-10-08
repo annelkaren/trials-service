@@ -1,9 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
-
 import java.util.List;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 
 public record BandejaRecepcionRecord(
     Integer documentoId,
@@ -11,5 +10,5 @@ public record BandejaRecepcionRecord(
     String expediente,
     TipoCarpeta tipo,
     String rutaDigitalizacion,
-    List<Anexo> anexos
+    List<AnexoBandejaRecepcionRecord> anexos
 ) {}

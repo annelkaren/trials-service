@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,23 +60,41 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     @Test
     void findByExpedienteAndJuzgadoId() {
         Optional<Carpeta> entity = carpetaRepository.findByExpedienteAndJuzgadoId("000001/2024", 51);
-
         assertThat(entity).isPresent();
         assertThat(entity.get().getId()).isEqualTo(1);
     }
 
     @Test
-void findByFolioAndJuzgado_Name_ReturnsBandejaRecepcionRecord_WhenExists() {
-    String folio = "000002/2024";
-    String nombreJuzgado = "Oficialía Común de Partes"; 
+    void findByFolioAndJuzgadoNameSuccess() {
+        String folio = "000002/2024";
+        String nombreJuzgado = "Oficialía Común de Partes"; 
+        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
 
-    BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
+        assertThat(result).isNotNull(); 
+        assertThat(result.folio()).isEqualTo(folio); 
+    }
 
+    @Test
+    void findByFolioAndJuzgadoNameFail() {
+        String folio = "000002/2025";
+        String nombreJuzgado = "Oficialía Común de Partes"; 
+        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
 
-    assertThat(result).isNotNull(); 
-    assertThat(result.folio()).isEqualTo(folio); 
-   // assertThat(result. nombreJuzgado()).isEqualTo(nombreJuzgado); 
-   
-}
+        assertThat(result).isNull(); 
+    }
+
+    @Test
+    void findAnexoByDocumentoIdSuccess(){
+        Integer documentoId = 1;
+        List<AnexoBandejaRecepcionRecord> result = carpetaRepository.findAnexosByDocumentoId(documentoId);
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void findAnexoByDocumentoIdFail(){
+        Integer documentoId = 2;
+        List<AnexoBandejaRecepcionRecord> result = carpetaRepository.findAnexosByDocumentoId(documentoId);
+        assertThat(result).isNullOrEmpty();
+    }
 
 }

@@ -54,7 +54,6 @@ public class CarpetaService {
        
         List<AnexoBandejaRecepcionRecord> anexos = carpetaRepository.findAnexosByDocumentoId(bandeja.documentoId());
 
-        // Retorna el objeto BandejaRecepcionRecord con la lista de anexos
         return new BandejaRecepcionRecord(
             bandeja.documentoId(),
             bandeja.folio(),
