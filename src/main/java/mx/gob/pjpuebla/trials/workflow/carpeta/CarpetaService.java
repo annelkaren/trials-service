@@ -3,7 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -41,5 +43,25 @@ public class CarpetaService {
     @Transactional(readOnly = true)
     public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(Integer carpetaId) {
         return personaDocumentoRepository.findPersonaDocumentoByCarpetaId(carpetaId);
+    }
+
+    public BandejaRecepcionRecord getBandejaRecepcionByFolio(String folio){
+        BandejaRecepcionRecord bandeja = carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes");
+        
+        if (bandeja == null) {
+            throw new NotFoundException("No se encontró la carpeta con el folio: " + folio, folio);
+        }
+       
+        List<AnexoBandejaRecepcionRecord> anexos = carpetaRepository.findAnexosByDocumentoId(bandeja.documentoId());
+
+        // Retorna el objeto BandejaRecepcionRecord con la lista de anexos
+        return new BandejaRecepcionRecord(
+            bandeja.documentoId(),
+            bandeja.folio(),
+            bandeja.expediente(),
+            bandeja.tipo(),
+            bandeja.rutaDigitalizacion(),
+            anexos
+        );
     }
 }

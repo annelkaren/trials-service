@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -54,5 +56,19 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         assertThat(entity).isPresent();
         assertThat(entity.get().getId()).isEqualTo(1);
     }
+
+    @Test
+void findByFolioAndJuzgado_Name_ReturnsBandejaRecepcionRecord_WhenExists() {
+    String folio = "000002/2024";
+    String nombreJuzgado = "Oficialía Común de Partes"; 
+
+    BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
+
+
+    assertThat(result).isNotNull(); 
+    assertThat(result.folio()).isEqualTo(folio); 
+   // assertThat(result. nombreJuzgado()).isEqualTo(nombreJuzgado); 
+   
+}
 
 }

@@ -24,7 +24,9 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -150,5 +152,34 @@ class CarpetaServiceTest {
         assertThat(actualResponse)
                 .usingRecursiveComparison()
                 .isEqualTo(apelacionRecordResponse);
+    }
+
+    @Test
+    void getBandejaRecepcionByFolio_ReturnsBandejaRecepcion() {
+        String folio = "1"; 
+
+        BandejaRecepcionRecord bandejaRecepcion = DocumentoSetUp.createBandejaRecepcion();
+
+        given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
+                .willReturn(bandejaRecepcion);
+    
+        BandejaRecepcionRecord result = target.getBandejaRecepcionByFolio(folio); 
+    
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(bandejaRecepcion);
+    }
+
+    @Test
+    void getBandejaRecepcionByFolio_ThrowsNotFoundException() {
+
+        String folio = "999"; 
+        given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
+            .willReturn(null); 
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+                target.getBandejaRecepcionByFolio(folio); 
+        });
+
+        assertThat(exception.getMessage()).contains("No se encontró la carpeta con el folio: " + folio);
     }
 }
