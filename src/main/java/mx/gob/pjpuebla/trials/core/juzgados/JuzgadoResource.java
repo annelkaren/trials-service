@@ -23,8 +23,8 @@ public class JuzgadoResource {
     @GetMapping
     public Page<JuzgadoRecordItem> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.juzgadoService.getAll(new Juzgado().setNombre(nombre), pageable);
+            @RequestParam(value = "key", required = false) String key) {
+        return this.juzgadoService.getAll(key, pageable);
     }
 
     @GetMapping("/{id}")

@@ -66,7 +66,7 @@ class JuzgadoResourceTest {
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockJuzgadoService.getAll(any(Juzgado.class), any(Pageable.class)))
+        given(mockJuzgadoService.getAll(any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
 
         mockMvc.perform(
