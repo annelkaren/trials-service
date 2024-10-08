@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -82,4 +83,17 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             WHERE pd.carpeta.id = :carpetaId
             """)
     List<ApelacionRecordResponse> findPersonaDocumentoByCarpetaId(Integer carpetaId);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord(c.expediente, j.nombre, tj.nombre)
+        FROM PersonaDocumento pd
+        JOIN pd.carpeta c
+        JOIN c.juzgado j
+        JOIN c.tipoJuicio tj
+        WHERE lower(pd.nombre) = lower(:nombreA)
+        AND lower(pd.apellidoPaterno) = lower(:apellidoP)
+        AND lower(pd.apellidoMaterno) = lower(:apellidoM)
+        """)
+    List<RelacionExpedientesRecord> getAllExpedienteRelacionadosByPersonaId(@Param("nombreA") String nombreA, @Param("apellidoM") String apellidoM, @Param("apellidoP") String apellidoP);
+
 }
