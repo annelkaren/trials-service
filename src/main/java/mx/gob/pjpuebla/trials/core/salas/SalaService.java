@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueCitaItem;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
@@ -17,7 +18,7 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.util.DiaHabil;
+
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
@@ -46,6 +47,7 @@ public class SalaService {
     private final AudienciaRepository audienciaRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final EventoService eventoService;
     private static final Integer TIEMPO_ESPERA_AUDIENCIA =  3;
 
     @Transactional(readOnly = true)
@@ -139,8 +141,8 @@ public class SalaService {
 
         while(intentos <= max){
 
-            if (DiaHabil.esInhabil(fecha)==Boolean.TRUE){
-                fecha = DiaHabil.proximoDiaHabil(fecha);
+            if (eventoService.esDiaHabil(fecha, juzgado, null)==Boolean.TRUE){
+                fecha = eventoService.siguienteDiaHabil(fecha, juzgado, null);
             }
 
             for (Bloque bloque: bloques){
@@ -228,13 +230,13 @@ public class SalaService {
         if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){
             fecha = ultimaFechaAudiencia.toLocalDate();
         }
-
+ 
         List<BloqueCitaItem> citas = bloque.getData().getCitas();
 
         while(intentos<=max){
 
-            if (DiaHabil.esInhabil(fecha)==Boolean.TRUE){
-                fecha = DiaHabil.proximoDiaHabil(fecha);
+            if (eventoService.esDiaHabil(fecha, sala.getJuzgado(), null)==Boolean.TRUE){
+                fecha = eventoService.siguienteDiaHabil(fecha, sala.getJuzgado(), null);
             }
 
             for (BloqueCitaItem cita: citas){

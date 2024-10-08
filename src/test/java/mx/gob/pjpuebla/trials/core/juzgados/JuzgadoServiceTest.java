@@ -13,7 +13,6 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -26,17 +25,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static mx.gob.pjpuebla.trials.util.Messages.OPTIMISTIC_LOCKING_ERROR;
@@ -45,25 +41,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class JuzgadoServiceTest {
 
     @InjectMocks
     JuzgadoService juzgadoService;
-
     @Mock
     JuzgadoRepository juzgadoRepository;
-    @Mock
-    TipoJuicioRepository tipojuicioRepository;
     @Mock
     SedeRepository sedeRepository;
     @Mock
     TipoJuicioRepository tipoJuicioRepository;
     @Mock
     MateriaRepository materiaRepository;
-    @Mock
-    TipoSistemaRepository tipoSistemaRepository;
     @Mock
     JuzgadoFoliosRepository juzgadoFoliosRepository;
 
@@ -89,9 +82,9 @@ class JuzgadoServiceTest {
     @Test
     void getAll_return_page() {
         List<Juzgado> listPage = Collections.singletonList(juzgado);
-        given(juzgadoRepository.findAll(any(Example.class), any(PageRequest.class)))
+        given(juzgadoRepository.findAll(any(), any(), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<JuzgadoRecordItem> page = juzgadoService.getAll(juzgado, PageRequest.of(1, listPage.size()));
+        Page<JuzgadoRecordItem> page = juzgadoService.getAll("", PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -284,5 +277,46 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("value", juzgadoFolios.getValue())
                 .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
         assertThat(response.getValue()).isEqualTo(2);
+    }
+
+    @Test
+    void actualizar_carga() {
+        Mockito.doNothing().when(juzgadoRepository).actualizarContadorAsignaciones(any());
+        given(juzgadoRepository.sumContadorAsignacionesByMateria(any())).willReturn(10);
+        given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any())).willReturn(10);
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any())).willReturn(new ArrayList<>());
+        Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignaciones(any());
+
+        juzgadoService.actualizarCarga(juzgado);
+
+        verify(juzgadoRepository, times(1)).sumContadorAsignacionesByMateria(any());
+        verify(juzgadoRepository, times(1)).sumMaxAsignacionesRondaByMateria(any());
+        verify(juzgadoRepository, times(1)).findJuzgadosMenosAsignaciones(any());
+        verify(juzgadoRepository, times(1)).reiniciarContadorAsignaciones(any());
+    }
+
+    @Test
+    void get_juzgado_exception() {
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any())).willReturn(new ArrayList<>());
+        given(juzgadoRepository.sumContadorAsignacionesByMateria(any())).willReturn(10);
+        given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any())).willReturn(10);
+
+        TipoJuicio tipoJuicio = juzgado.getTipoJuicios().get(0);
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> juzgadoService.getJuzgado(tipoJuicio)
+        );
+
+        assertThat(assertThrows.getMessage()).contains("No se puede asignar un Juzgado");
+    }
+
+    @Test
+    void get_juzgado_aleatorio() {
+        List<Juzgado> list = Collections.singletonList(juzgado);
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any())).willReturn(list);
+
+        Juzgado result = juzgadoService.getJuzgado(juzgado.getTipoJuicios().get(0));
+
+        assertThat(result).isEqualTo(juzgado);
     }
 }

@@ -49,11 +49,10 @@ public class JuzgadoService {
     private static final Random RANDOM = new Random();
 
     @Transactional(readOnly = true)
-    public Page<JuzgadoRecordItem> getAll(Juzgado example, Pageable pageable) {
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-
-        Page<Juzgado> page = juzgadoRepository.findAll(Example.of(example, exampleMatcher), pageable);
+    public Page<JuzgadoRecordItem> getAll(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        List<Estado> status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+        Page<Juzgado> page = juzgadoRepository.findAll(key, status, pageable);
 
         List<JuzgadoRecordItem> list = page.getContent().stream()
                 .map(juzgado -> new JuzgadoRecordItem(
@@ -202,7 +201,6 @@ public class JuzgadoService {
         int rand = RANDOM.nextInt(juzgados.size());
 
         return juzgados.get(rand);
-
     }
 
     public void actualizarCarga(Juzgado juzgado) {

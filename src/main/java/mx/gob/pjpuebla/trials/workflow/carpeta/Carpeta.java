@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -16,6 +17,7 @@ import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @Entity
@@ -62,6 +64,13 @@ public class Carpeta implements Serializable, Auditable {
     @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoJuicio tipoJuicio;
+
+    @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona persona;
+
+    @Column(name = "T_FECHA_ASIGNACION")
+    private Date fechaAsignacion;
 
     @Accessors(chain = false)
     @Embedded

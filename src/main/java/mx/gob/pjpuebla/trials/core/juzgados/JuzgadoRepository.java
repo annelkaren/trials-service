@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,12 @@ import java.util.Optional;
 
 @Repository
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
+
+    @Query(value = "SELECT j FROM Juzgado j "
+            + "JOIN FETCH j.materia m "
+            + "WHERE j.estado IN (:#{#status.![name()]}) "
+            + "AND lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key% ")
+    Page<Juzgado> findAll(String key, @Param("status") List<Estado> status, Pageable pageable);
 
     Optional<Juzgado> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 

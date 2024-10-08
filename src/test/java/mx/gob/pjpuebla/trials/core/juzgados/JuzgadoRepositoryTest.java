@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Arrays;
@@ -43,6 +45,14 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
 
     @Autowired
     private JuzgadoRepository juzgadoRepository;
+
+    @Test
+    void findAll() {
+        String key = "mer";
+        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+        Page<Juzgado> page = juzgadoRepository.findAll(key, estados, PageRequest.of(0, 20));
+        assertThat(page.get()).hasSize(1);
+    }
 
     @Test
     void findByIdAndEstadoActive() {
