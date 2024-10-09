@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.sedes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -25,14 +26,15 @@ public class SedeService {
     private final DomicilioService domicilioService;
 
     @Transactional(readOnly = true)
-    public Page<SedeRecordResponse> getAll(Sede example, Pageable pageable) {
+    public Page<SedeDomicilioRecordResponse> getAll(Sede example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Sede> page = sedeRepository.findAll(Example.of(example, exampleMatcher), pageable);
 
-        List<SedeRecordResponse> list = page.getContent().stream()
-                .map(sede -> new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado()))
+        List<SedeDomicilioRecordResponse> list = page.getContent().stream()
+                .map(sede -> new SedeDomicilioRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado(),
+                        new DomicilioRecord(sede.getDomicilio().getId(), sede.getDomicilio().getCalle(), sede.getDomicilio().getExterior(), sede.getDomicilio().getInterior(), sede.getDomicilio().getEstadoRepublica(), sede.getDomicilio().getMunicipio(), sede.getDomicilio().getLocalidad(), sede.getDomicilio().getColonia(), sede.getDomicilio().getCodigoPostal(), sede.getDomicilio().getReferencia())))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }

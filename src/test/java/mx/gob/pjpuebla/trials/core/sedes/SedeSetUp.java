@@ -36,6 +36,18 @@ public class SedeSetUp {
         return sede;
     }
 
+    public static Sede createSede(Domicilio domicilio) {
+        Sede sede = new Sede()
+                .setId(1)
+                .setVersion(0)
+                .setNombre("Sede")
+                .setTipo(Tipo.EXTERNO)
+                .setEstado(Estado.ACTIVE)
+                .setDomicilio(domicilio);
+        sede.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return sede;
+    }
+
     public static SedeRecordResponse sedeRecordResponse() {
         return new SedeRecordResponse(1, "Sede", Estado.ACTIVE);
     }
@@ -51,5 +63,10 @@ public class SedeSetUp {
 
     public  static SedeDomiciliosRecord createSedeDomiciliosRecord(Sede sede, Domicilio domicilio){
         return new SedeDomiciliosRecord(sede.getId(), sede.getNombre(), domicilio.getCalle(), domicilio.getInterior(), domicilio.getExterior(), domicilio.getColonia(), domicilio.getCodigoPostal(), domicilio.getMunicipio(), domicilio.getEstadoRepublica(), domicilio.getReferencia(), domicilio.getLocalidad());
+    }
+
+    public static SedeDomicilioRecordResponse createSedeDomicilioRecordResponse (){
+        return new SedeDomicilioRecordResponse(1, "Juzgado XII", Estado.ACTIVE,
+        new DomicilioRecord(1L, "Juarez", "12", "", "Puebla", "Amozoc", "", "", "", ""));
     }
 }

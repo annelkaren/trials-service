@@ -17,7 +17,7 @@ public class SedeResource {
     private final SedeService sedeService;
 
     @GetMapping
-    public Page<SedeRecordResponse> getAll(
+    public Page<SedeDomicilioRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.sedeService.getAll(new Sede().setNombre(nombre), pageable);

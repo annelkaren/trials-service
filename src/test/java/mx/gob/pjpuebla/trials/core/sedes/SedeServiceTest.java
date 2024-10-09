@@ -48,6 +48,7 @@ class SedeServiceTest {
     DomicilioService domicilioService;
 
     private Sede sede;
+    private Sede sedeDomicilio;
     private SedeRecord sedeRecord;
     private Distrito distrito;
     private Domicilio domicilio;
@@ -59,18 +60,32 @@ class SedeServiceTest {
         sedeRecord = SedeSetUp.sedeRecord();
         distrito = DistritoSetUp.createDistrito();
         domicilio = DomicilioSetUp.createDomicilio();
+        sedeDomicilio = SedeSetUp.createSede(domicilio);
     }
 
     @Test
     void getAll_return_page() {
-        List<Sede> listPage = Collections.singletonList(sede);
+        List<Sede> listPage = Collections.singletonList(sedeDomicilio);
         given(mockSedeRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<SedeRecordResponse> page = sedeService.getAll(sede, PageRequest.of(1, listPage.size()));
+        Page<SedeDomicilioRecordResponse> page = sedeService.getAll(sedeDomicilio, PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
-                .first().hasFieldOrPropertyWithValue("id", sede.getId())
-                .hasFieldOrPropertyWithValue("nombre", sede.getNombre());
+                .first().hasFieldOrPropertyWithValue("id", sedeDomicilio.getId())
+                .hasFieldOrPropertyWithValue("nombre", sedeDomicilio.getNombre())
+                .hasFieldOrPropertyWithValue("estado", sedeDomicilio.getEstado());
+
+        assertThat(sedeDomicilio.getDomicilio())
+                .hasFieldOrPropertyWithValue("id", sedeDomicilio.getDomicilio().getId())
+                .hasFieldOrPropertyWithValue("calle", sedeDomicilio.getDomicilio().getCalle())
+                .hasFieldOrPropertyWithValue("exterior", sedeDomicilio.getDomicilio().getExterior())
+                .hasFieldOrPropertyWithValue("interior", sedeDomicilio.getDomicilio().getInterior())
+                .hasFieldOrPropertyWithValue("estadoRepublica", sedeDomicilio.getDomicilio().getEstadoRepublica())
+                .hasFieldOrPropertyWithValue("municipio", sedeDomicilio.getDomicilio().getMunicipio())
+                .hasFieldOrPropertyWithValue("localidad", sedeDomicilio.getDomicilio().getLocalidad())
+                .hasFieldOrPropertyWithValue("colonia", sedeDomicilio.getDomicilio().getColonia())
+                .hasFieldOrPropertyWithValue("codigoPostal", sedeDomicilio.getDomicilio().getCodigoPostal())
+                .hasFieldOrPropertyWithValue("referencia", sedeDomicilio.getDomicilio().getReferencia());
     }
 
     @Test
