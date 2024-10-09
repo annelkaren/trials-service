@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.EstadoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
@@ -61,6 +62,9 @@ public class Documento implements Serializable, Auditable {
 
     @Column(name = "T_FECHA_ASIGNACION")
     private Date fechaAsignacion;
+
+    @Column(name = "N_ESTADO")
+    private EstadoDocumento estatus;
 
     @Accessors(chain = false)
     @Embedded

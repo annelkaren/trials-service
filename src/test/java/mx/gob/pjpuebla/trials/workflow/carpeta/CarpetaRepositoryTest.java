@@ -68,7 +68,7 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     void findByBandejaRecepcionByDocumentoIdSuccess() {
         Integer documentoId =  2;
 
-        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(documentoId);
+        BandejaRecepcionRecord result = carpetaRepository.findByDocumentoId(documentoId);
 
         assertThat(result).isNotNull(); 
         assertThat(result.documentoId()).isEqualTo(documentoId); 
@@ -77,7 +77,7 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     @Test
     void findByBandejaRecepcionByDocumentoIdFail() {
         Integer documentoId = 17;
-        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(documentoId);
+        BandejaRecepcionRecord result = carpetaRepository.findByDocumentoId(documentoId);
 
         assertThat(result).isNull(); 
     }

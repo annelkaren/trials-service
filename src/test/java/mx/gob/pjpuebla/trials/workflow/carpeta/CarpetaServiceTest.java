@@ -187,7 +187,7 @@ class CarpetaServiceTest {
                 .willReturn(Optional.of(persona));
         given(documentoRepository.findById(documentoId))
                 .willReturn(Optional.of(documento));
-        given(carpetaRepository.findByFolioAndJuzgado_Name(documento.getId()))
+        given(carpetaRepository.findByDocumentoId(documento.getId()))
                 .willReturn(bandejaRecepcion);
         given(carpetaRepository.findAnexosByDocumentoId(bandejaRecepcion.documentoId()))
                 .willReturn(anexosRecepcion);
@@ -265,7 +265,7 @@ class CarpetaServiceTest {
 
         given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
-        given(carpetaRepository.findByFolioAndJuzgado_Name(documento.getId())).willReturn(null);
+        given(carpetaRepository.findByDocumentoId(documento.getId())).willReturn(null);
 
         assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
             .isInstanceOf(NotFoundException.class)

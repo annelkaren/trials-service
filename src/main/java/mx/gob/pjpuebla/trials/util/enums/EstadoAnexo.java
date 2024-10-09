@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum EstadoAnexo {
+    ASIGNADO,
     NORECIBIDO,
     RECIBIDO,
-    ASIGNADO
+    
 }

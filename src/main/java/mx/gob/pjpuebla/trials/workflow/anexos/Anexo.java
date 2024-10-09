@@ -35,8 +35,8 @@ public class Anexo implements Serializable, Auditable {
     private Documento documento;
 
     @Enumerated
-    @Column(name = "N_RECIBIDO")
-    private EstadoAnexo recibido;
+    @Column(name = "N_ESTADO")
+    private EstadoAnexo estado;
 
     @Accessors(chain = false)
     @Embedded
