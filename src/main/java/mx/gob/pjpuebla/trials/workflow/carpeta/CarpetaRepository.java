@@ -22,8 +22,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Optional<Carpeta> findByExpedienteAndJuzgadoId(String expediente, Integer juzgadoId);
 
     @Query("""
-            SELECT 
-                new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
                     d.id,
                     c.folio, 
                     c.expediente,
