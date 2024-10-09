@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
@@ -54,6 +55,10 @@ public class Documento implements Serializable, Auditable {
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
+
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private EstadoCarpeta estatus;
 
     @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

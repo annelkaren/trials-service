@@ -37,6 +37,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -99,6 +100,8 @@ class DocumentoServiceTest {
     private CarpetaRepository carpetaRepository;
     @Mock
     private JuzgadoFoliosRepository juzgadoFoliosRepository;
+    @Mock
+    private MovimientoService movimientoService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;

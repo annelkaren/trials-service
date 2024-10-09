@@ -15,7 +15,7 @@ CREATE TABLE TRIALS.TBL_MOVIMIENTOS
     FN_OFICIALIA         INT         NOT NULL,
     FN_JUZGADO           INT         NOT NULL,
     N_TIPO               INT         NOT NULL,
-    S_UUID                uuid        NOT NULL,
+    S_UUID               uuid        NOT NULL,
     CONSTRAINT "fk_carpetas" FOREIGN KEY (FN_CARPETA) references TRIALS.TBL_CARPETAS (PN_ID),
     CONSTRAINT "fk_documentos" FOREIGN KEY (FN_DOCUMENTO) references TRIALS.TBL_DOCUMENTOS (PN_ID),
     CONSTRAINT "fk_personas" FOREIGN KEY (FN_PERSONA) references TRIALS.TBL_DOCUMENTOS (PN_ID),

@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -11,6 +10,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -25,7 +25,6 @@ public class Movimiento implements Serializable {
     @Column(name =  "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
@@ -35,7 +34,7 @@ public class Movimiento implements Serializable {
     private Documento documento;
 
     @Column(name = "T_FECHA_ASIGNACION")
-    private Date fechaAsignacion;
+    private LocalDateTime fechaAsignacion;
 
     @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,7 +56,4 @@ public class Movimiento implements Serializable {
 
     @Column(name = "S_UUID")
     private UUID uuid;
-
-
-
 }
