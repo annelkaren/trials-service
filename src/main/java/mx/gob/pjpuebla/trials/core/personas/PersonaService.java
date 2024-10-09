@@ -21,6 +21,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ import java.util.Optional;
 @Transactional
 public class PersonaService {
 
+    private final AuditorAware<Jwt> auditorAware;
     private final PersonaRepository personaRepository;
     private final DomicilioService domicilioService;
     private final EscolaridadRepository escolaridadRepository;
@@ -177,5 +179,11 @@ public class PersonaService {
         }
 
         return centrosTrabajo;
+    }
+
+    @Transactional(readOnly = true)
+    public Persona getAuditor(){
+        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
+        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuaerio: " + jwt.getSubject()));
     }
 }
