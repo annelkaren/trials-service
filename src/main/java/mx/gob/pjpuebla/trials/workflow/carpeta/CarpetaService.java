@@ -19,6 +19,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -86,7 +87,7 @@ public class CarpetaService {
                 anexos);
     }
 
-    public ResponseEntity<String> actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos, Long personaId,
+    public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos, Long personaId,
             Integer documentoId) {
                 Documento documento = validacionBandejaRecepcion(personaId, documentoId);
                 
@@ -99,7 +100,7 @@ public class CarpetaService {
 
                 //actualizamos el estatus en carpeta o documento dependiendo de si es demanda, exhorto o promoción.
                 if(documento.getTipoDocumento() == TipoDocumento.PROMOCION){    
-                    documento.setEstatus(EstadoDocumento.ASIGNADO);
+                    documento.setEstatus(EstadoCarpeta.ASIGNADO);
                 }
 
                 if(documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO) ){
@@ -108,7 +109,7 @@ public class CarpetaService {
 
                 documentoRepository.save(documento);
 
-        return ResponseEntity.ok("Información actualizada correctamente");
+        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
     public Documento validacionBandejaRecepcion(Long personaId, Integer documentoId) {
