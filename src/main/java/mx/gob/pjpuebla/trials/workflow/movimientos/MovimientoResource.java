@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.tools.ant.taskdefs.email.Message;
 import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -35,8 +36,6 @@ public class MovimientoResource {
 
         HttpHeaders headers = new HttpHeaders();
 
-
-
         if (movimientos.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND_404).body(null);
         }
@@ -49,9 +48,9 @@ public class MovimientoResource {
 
             return ResponseEntity.ok().headers(headers).body(reporte);
         }catch (IOException | JRException e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR_500).body(null);
+            var message = new Message(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR_500).body(message);
         }
-
         
     }
     
