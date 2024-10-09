@@ -26,6 +26,7 @@ public class MovimientoService {
                 .setPersona(persona)
                 .setOficialia(persona.getOficialia())
                 .setJuzgado(persona.getJuzgado());
-        return this.movimientoRepository.save(movimiento);
+        movimiento = this.movimientoRepository.save(movimiento);
+        return movimiento;
     }
 }

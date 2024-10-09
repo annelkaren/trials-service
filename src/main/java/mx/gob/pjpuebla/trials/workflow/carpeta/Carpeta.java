@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -70,7 +71,7 @@ public class Carpeta implements Serializable, Auditable {
     private Persona persona;
 
     @Column(name = "T_FECHA_ASIGNACION")
-    private Date fechaAsignacion;
+    private LocalDateTime fechaAsignacion;
 
     @Accessors(chain = false)
     @Embedded

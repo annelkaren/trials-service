@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -65,7 +66,7 @@ public class Documento implements Serializable, Auditable {
     private Persona persona;
 
     @Column(name = "T_FECHA_ASIGNACION")
-    private Date fechaAsignacion;
+    private LocalDateTime fechaAsignacion;
 
     @Accessors(chain = false)
     @Embedded

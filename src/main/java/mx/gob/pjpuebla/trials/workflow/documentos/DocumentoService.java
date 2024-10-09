@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -28,9 +30,11 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Transactional
@@ -49,6 +53,7 @@ public class DocumentoService {
     private final SalaService salaService;
     private final AudienciaService audienciaService;
     private final MovimientoService movimientoService;
+    private final PersonaService personaService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -97,6 +102,8 @@ public class DocumentoService {
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta.setFechaAsignacion(LocalDateTime.now());
+        carpeta.setPersona(personaService.getAuditor());
         carpeta = carpetaRepository.save(carpeta);
         movimientoService.createMovimento(carpeta, null, carpeta.getPersona());
 
@@ -104,6 +111,8 @@ public class DocumentoService {
         //SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
 
         documento.setData(documentoRecord.general());
+        documento.setFechaAsignacion(LocalDateTime.now());
+        documento.setPersona(personaService.getAuditor());
         documento = documentoRepository.save(documento);
 
         createPersonaDocumento(documentoRecord.actor(), carpeta);
@@ -392,5 +401,6 @@ public class DocumentoService {
         }
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
+
 }
 
