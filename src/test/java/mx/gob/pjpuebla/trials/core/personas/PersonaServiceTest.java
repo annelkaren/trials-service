@@ -23,6 +23,8 @@ import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -34,10 +36,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.data.domain.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
 
@@ -49,7 +51,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class PersonaServiceTest {
+@MockitoSettings(strictness = Strictness.LENIENT)
+class PersonaServiceTest extends SetupServiceTest {
 
     @Mock
     PersonaRepository mockPersonaRepository;
@@ -291,5 +294,12 @@ class PersonaServiceTest {
                 .hasSize(2)
                 .anyMatch(centro -> centro.tipo().equals(TipoCentroTrabajo.JUZGADO))
                 .anyMatch(centro -> centro.tipo().equals(TipoCentroTrabajo.OFICIALIA_COMUN));
+    }
+
+    @Test
+    void getAuditor(){
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        Persona result = personaService.getAuditor();
+        assertThat(result).isNotNull();
     }
 }

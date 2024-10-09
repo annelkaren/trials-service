@@ -307,6 +307,7 @@ public class DocumentoService {
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
 
         documento.setData(documentoData);
+        documento.setFechaAsignacion(LocalDateTime.now());
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
         documento = documentoRepository.save(documento);
@@ -330,6 +331,7 @@ public class DocumentoService {
         carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio));
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta.setFechaAsignacion(LocalDateTime.now());
         carpeta = carpetaRepository.save(carpeta);
 
         DocumentoData data = new DocumentoData();
@@ -337,6 +339,7 @@ public class DocumentoService {
         data.setExhortoProcedencia(documentoExhortoRecord.procedencia());
         documento.setData(data);
         documento.setCarpeta(carpeta);
+        documento.setFechaAsignacion(LocalDateTime.now());
         documento = documentoRepository.save(documento);
 
         addAnexos(documentoExhortoRecord.anexos(), documento);
@@ -367,6 +370,7 @@ public class DocumentoService {
         carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta.setFechaAsignacion(LocalDateTime.now());
         carpeta = carpetaRepository.save(carpeta);
 
         documento.setCarpeta(carpeta);
@@ -375,6 +379,7 @@ public class DocumentoService {
         data.setApelacionOtroDemandadoNombre(apelacionRecord.otroNombreDemandado());
         data.setApelacionAntecedenteCarpeta(apelacionRecord.carpetaId().toString());
         documento.setData(data);
+        documento.setFechaAsignacion(LocalDateTime.now());
         documento = documentoRepository.save(documento);
 
         for (Anexo anexo : apelacionRecord.anexos()) {
