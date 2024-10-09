@@ -10,13 +10,14 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -55,12 +56,16 @@ public class Documento implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
 
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private EstadoCarpeta estatus;
+
     @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Persona persona;
 
     @Column(name = "T_FECHA_ASIGNACION")
-    private Date fechaAsignacion;
+    private LocalDateTime fechaAsignacion;
 
     @Accessors(chain = false)
     @Embedded
