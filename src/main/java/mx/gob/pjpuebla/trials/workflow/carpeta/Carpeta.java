@@ -18,7 +18,6 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 @Entity

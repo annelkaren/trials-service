@@ -18,7 +18,6 @@ import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @EntityListeners(AuditListener.class)
