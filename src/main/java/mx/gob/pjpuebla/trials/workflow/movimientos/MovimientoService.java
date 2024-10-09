@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,8 @@ public class MovimientoService {
     private final MovimientoRepository movimientoRepository;
 
     public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid){
-        return movimientoRepository.salidas(uuid);
+
+        UUID uuidMov = UUID.fromString(uuid);
+        return movimientoRepository.salidas(uuidMov);
     }
 }
