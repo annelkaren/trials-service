@@ -8,9 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RequiredArgsConstructor
 @RestController
@@ -37,8 +34,8 @@ public class CarpetaResource {
     }
 
     @GetMapping(value = "/recepcion")
-    public BandejaRecepcionRecord obtenerBandejaRecepcion(@RequestParam String folio) {
-        return this.carpetaService.getBandejaRecepcionByFolio(folio);
+    public BandejaRecepcionRecord obtenerBandejaRecepcion(@RequestParam Long personaId, @RequestParam Integer documentoId) {
+        return this.carpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId);
     }
     
 }

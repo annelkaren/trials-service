@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -52,14 +53,14 @@ public class DocumentoSetUp {
 
     public static BandejaRecepcionRecord createBandejaRecepcion() {
         List<AnexoBandejaRecepcionRecord> anexos = new ArrayList<>(Arrays.asList(
-                new AnexoBandejaRecepcionRecord(1, "INE", 0),
-                new AnexoBandejaRecepcionRecord(2, "CURP", 0)));
+                new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.NORECIBIDO),
+                new AnexoBandejaRecepcionRecord(2, "CURP", EstadoAnexo.NORECIBIDO)));
         return new BandejaRecepcionRecord(1, "1", "00001", TipoCarpeta.DEMANDA, "ruta/carpeta", anexos);
     }
 
     public static List<AnexoBandejaRecepcionRecord> createAnexosDocumento() {
         return new ArrayList<>(Arrays.asList(
-            new AnexoBandejaRecepcionRecord(1, "INE", 0),
-            new AnexoBandejaRecepcionRecord(2, "CURP", 0)));
+            new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.NORECIBIDO),
+            new AnexoBandejaRecepcionRecord(2, "CURP", EstadoAnexo.NORECIBIDO)));
     }
 }

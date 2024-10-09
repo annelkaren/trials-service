@@ -34,9 +34,9 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             FROM Documento d
             JOIN d.carpeta c
             JOIN c.juzgado j
-            WHERE c.folio = :folio AND j.nombre = :nombre
+            WHERE d.id = :documentoId
         """)
-    BandejaRecepcionRecord findByFolioAndJuzgado_Name(String folio, String nombre);
+    BandejaRecepcionRecord findByFolioAndJuzgado_Name(Integer documentoId);
 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord(

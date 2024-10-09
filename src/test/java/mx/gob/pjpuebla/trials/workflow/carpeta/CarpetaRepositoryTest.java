@@ -65,20 +65,19 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findByFolioAndJuzgadoNameSuccess() {
-        String folio = "000002/2024";
-        String nombreJuzgado = "Oficialía Común de Partes"; 
-        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
+    void findByBandejaRecepcionByDocumentoIdSuccess() {
+        Integer documentoId =  2;
+
+        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(documentoId);
 
         assertThat(result).isNotNull(); 
-        assertThat(result.folio()).isEqualTo(folio); 
+        assertThat(result.documentoId()).isEqualTo(documentoId); 
     }
 
     @Test
-    void findByFolioAndJuzgadoNameFail() {
-        String folio = "000002/2025";
-        String nombreJuzgado = "Oficialía Común de Partes"; 
-        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(folio, nombreJuzgado);
+    void findByBandejaRecepcionByDocumentoIdFail() {
+        Integer documentoId = 17;
+        BandejaRecepcionRecord result = carpetaRepository.findByFolioAndJuzgado_Name(documentoId);
 
         assertThat(result).isNull(); 
     }

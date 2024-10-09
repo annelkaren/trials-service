@@ -75,31 +75,34 @@ class CarpetaResourceTest {
     @Test
     void obtenerBandejaRecepcionSuccess() throws Exception {
 
-        String folio = "1";
-        BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(1, folio, "Expediente 1", TipoCarpeta.DEMANDA,
+        Integer documentoId = 1;
+        Long personaId = (long) 1;
+        BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(1, "1", "Expediente 1", TipoCarpeta.DEMANDA,
                 "ruta/digitalizacion", List.of());
 
-        when(mockCarpetaService.getBandejaRecepcionByFolio(folio)).thenReturn(expectedRecord);
-
-        // Realizar la llamada al endpoint y verificar el resultado
+        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId)).thenReturn(expectedRecord);
+        
         mockMvc.perform(get("/api/workflow/carpeta/recepcion")
-                .param("folio", folio)
+                .param("personaId", "1")
+                .param("documentoId", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.folio").value(folio))
+                .andExpect(jsonPath("$.folio").value("1"))
                 .andExpect(jsonPath("$.expediente").value("Expediente 1"));
     }
 
 
     @Test
     void obtenerBandejaRecepcionNotFound() throws Exception {
-        String folio = "999";
+        Integer documentoId = 110;
+        Long personaId = (long) 104;
 
-        when(mockCarpetaService.getBandejaRecepcionByFolio(folio))
-                .thenThrow(new NotFoundException("No se encontró la carpeta con el folio: " + folio, folio));
+        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+                .thenThrow(new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId, "documentoId"));
 
         mockMvc.perform(get("/api/workflow/carpeta/recepcion")
-                .param("folio", folio)
+                .param("personaId", "104")
+                .param("documentoId", "110")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

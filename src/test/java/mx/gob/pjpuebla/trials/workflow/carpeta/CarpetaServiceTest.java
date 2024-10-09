@@ -11,6 +11,9 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -27,6 +30,8 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -37,13 +42,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -69,6 +76,12 @@ class CarpetaServiceTest {
     private DomicilioRepository domicilioRepository;
     @Mock
     private SedeRepository sedeRepository;
+
+    @Mock
+    private PersonaRepository personaRepository;
+
+    @Mock
+    private DocumentoRepository documentoRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -135,8 +148,7 @@ class CarpetaServiceTest {
                 NotFoundException.class,
                 () -> {
                     target.getCarpetaResponseByNumExpYearJuzgado("1", 1);
-                }
-        );
+                });
         assertThat(assertThrows.getMessage()).contains("Carpeta no encontrada");
     }
 
@@ -157,34 +169,107 @@ class CarpetaServiceTest {
 
     @Test
     void getBandejaRecepcionByFolio_ReturnsBandejaRecepcion() {
-        String folio = "1"; 
+        Integer documentoId = 1;
+        Long personaId = (long) 1;
 
+        // Setup de datos de prueba
         BandejaRecepcionRecord bandejaRecepcion = DocumentoSetUp.createBandejaRecepcion();
         List<AnexoBandejaRecepcionRecord> anexosRecepcion = DocumentoSetUp.createAnexosDocumento();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Persona persona = PersonaSetUp.createPersona();
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
 
-        given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
+        // Relacionando juzgado de persona y documento
+        persona.setJuzgado(juzgado);
+        documento.getCarpeta().setJuzgado(juzgado);
+
+        given(personaRepository.findById(personaId))
+                .willReturn(Optional.of(persona));
+        given(documentoRepository.findById(documentoId))
+                .willReturn(Optional.of(documento));
+        given(carpetaRepository.findByFolioAndJuzgado_Name(documento.getId()))
                 .willReturn(bandejaRecepcion);
         given(carpetaRepository.findAnexosByDocumentoId(bandejaRecepcion.documentoId()))
-            .willReturn(anexosRecepcion);
-    
-        BandejaRecepcionRecord result = target.getBandejaRecepcionByFolio(folio); 
-    
+                .willReturn(anexosRecepcion);
+
+        // Ejecución del método
+        BandejaRecepcionRecord result = target.getBandejaRecepcionByDocumentoId(personaId, documentoId);
+
+        // Validaciones
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(bandejaRecepcion);
+        assertThat(result.documentoId()).isEqualTo(bandejaRecepcion.documentoId());
+        assertThat(result.folio()).isEqualTo(bandejaRecepcion.folio());
+        assertThat(result.expediente()).isEqualTo(bandejaRecepcion.expediente());
+        assertThat(result.tipo()).isEqualTo(bandejaRecepcion.tipo());
+        assertThat(result.rutaDigitalizacion()).isEqualTo(bandejaRecepcion.rutaDigitalizacion());
+        assertThat(result.anexos()).isEqualTo(anexosRecepcion);
     }
 
     @Test
-    void getBandejaRecepcionByFolio_ThrowsNotFoundException() {
+    void getBandejaRecepcionByFolio_PersonaNotFound_ThrowsNotFoundException() {
+        Long personaId = 1L;
+        Integer documentoId = 1;
 
-        String folio = "999"; 
-        given(carpetaRepository.findByFolioAndJuzgado_Name(folio, "Oficialía Común de Partes"))
-            .willReturn(null); 
-        
+        given(personaRepository.findById(personaId)).willReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-                target.getBandejaRecepcionByFolio(folio); 
-        });
-
-        assertThat(exception.getMessage()).contains("No se encontró la carpeta con el folio: " + folio);
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("No se encontró la persona asociada al personaId");
     }
+
+    @Test
+    void getBandejaRecepcionByFolio_DocumentoNotFound_ThrowsNotFoundException() {
+        Long personaId = 1L;
+        Integer documentoId = 1;
+
+        Persona persona = PersonaSetUp.createPersona();
+        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("No se encontró el documento asociado al documentoId");
+    }
+
+    @Test
+    void getBandejaRecepcionByFolio_UnauthorizedAccess_ThrowsResponseStatusException() {
+        Long personaId = 1L;
+        Integer documentoId = 1;
+
+        Persona persona = PersonaSetUp.createPersona();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+
+        persona.setJuzgado(JuzgadoSetUp.createJuzgado());
+        documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado().setId(13));
+
+        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining(HttpStatus.UNAUTHORIZED.toString())
+                .hasMessageContaining("No tiene permiso para visualizar esta información");
+    }
+
+    @Test
+    void getBandejaRecepcionByFolio_BandejaNotFound_ThrowsNotFoundException() {
+        Long personaId = 1L;
+        Integer documentoId = 1;
+
+        Persona persona = PersonaSetUp.createPersona();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+
+        persona.setJuzgado(juzgado);
+        documento.getCarpeta().setJuzgado(juzgado);
+
+        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(carpetaRepository.findByFolioAndJuzgado_Name(documento.getId())).willReturn(null);
+
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessageContaining("No se encontró la carpeta con el documentoId");
+    }
+
 }

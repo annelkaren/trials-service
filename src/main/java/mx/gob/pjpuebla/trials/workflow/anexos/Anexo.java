@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
@@ -32,6 +33,10 @@ public class Anexo implements Serializable, Auditable {
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento documento;
+
+    @Enumerated
+    @Column(name = "N_RECIBIDO")
+    private EstadoAnexo recibido;
 
     @Accessors(chain = false)
     @Embedded
