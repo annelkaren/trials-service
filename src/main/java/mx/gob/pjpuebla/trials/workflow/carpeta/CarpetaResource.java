@@ -2,11 +2,13 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,4 +34,18 @@ public class CarpetaResource {
     public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {
         return this.carpetaService.getPersonasDocumentoByCarpetaId(carpetaId);
     }
+
+    @GetMapping(value = "/recepcion")
+    public BandejaRecepcionRecord obtenerBandejaRecepcion(@RequestParam Integer documentoId) {
+        return this.carpetaService.getBandejaRecepcionByDocumentoId(documentoId);
+    }
+
+    @PostMapping(value = "/recepcion")
+    public DocumentoRecord recepcionAnexos(
+            @RequestBody List<AnexoBandejaRecepcionRecord> anexos,
+            @RequestParam Integer documentoId) {
+        
+        return this.carpetaService.actualizarInformacionAnexos(anexos, documentoId);
+    }
+    
 }
