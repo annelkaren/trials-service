@@ -2,14 +2,18 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +34,8 @@ public class DocumentoSetUp {
                 .setId(1)
                 .setVersion(1)
                 .setCarpeta(carpeta);
-        documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return documento;
     }
 
@@ -44,5 +49,18 @@ public class DocumentoSetUp {
                 anexos,
                 tipoJuicio,
                 docData);
+    }
+
+    public static BandejaRecepcionRecord createBandejaRecepcion() {
+        List<AnexoBandejaRecepcionRecord> anexos = new ArrayList<>(Arrays.asList(
+                new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.NORECIBIDO),
+                new AnexoBandejaRecepcionRecord(2, "CURP", EstadoAnexo.NORECIBIDO)));
+        return new BandejaRecepcionRecord(1, "1", "00001", TipoCarpeta.DEMANDA, "ruta/carpeta", anexos);
+    }
+
+    public static List<AnexoBandejaRecepcionRecord> createAnexosDocumento() {
+        return new ArrayList<>(Arrays.asList(
+            new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.NORECIBIDO),
+            new AnexoBandejaRecepcionRecord(2, "CURP", EstadoAnexo.NORECIBIDO)));
     }
 }
