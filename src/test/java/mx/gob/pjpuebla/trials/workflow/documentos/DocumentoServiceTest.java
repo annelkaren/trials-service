@@ -179,7 +179,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         given(documentoRepository.findById(any())).willReturn(Optional.of(demanda));
-        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.SALIDA));
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.TURNADO));
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), demanda.getCarpeta().getTipoCarpeta());
 
@@ -411,7 +411,7 @@ class DocumentoServiceTest {
         Documento documento2 = DocumentoSetUp.create(tipoJuicio);
         documento2.getCarpeta().setFolio("Folio2");
         documento2.getCarpeta().setExpediente("Expediente2");
-        documento2.getCarpeta().setEstatus(EstadoCarpeta.SALIDA);
+        documento2.getCarpeta().setEstatus(EstadoCarpeta.TURNADO);
 
 
         Juzgado juzgado2 = new Juzgado();
@@ -445,7 +445,7 @@ class DocumentoServiceTest {
         assertThat(result.getContent().get(1))
                 .hasFieldOrPropertyWithValue("folio", "Folio2")
                 .hasFieldOrPropertyWithValue("expediente", "Expediente2")
-                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.SALIDA);
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.TURNADO);
 
 
         assertThat(result.getTotalElements()).isEqualTo(2);
