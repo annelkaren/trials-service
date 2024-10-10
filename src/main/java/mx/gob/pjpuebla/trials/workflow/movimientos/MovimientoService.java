@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.stereotype.Service;
@@ -17,12 +16,12 @@ public class MovimientoService {
 
     private final MovimientoRepository movimientoRepository;
 
-    public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona) {
+    public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo) {
         Movimiento movimiento = new Movimiento()
                 .setCarpeta(carpeta)
                 .setDocumento(documento)
                 .setFechaAsignacion(LocalDateTime.now())
-                .setMotivo(EstadoCarpeta.CAPTURA.name())
+                .setMotivo(motivo)
                 .setPersona(persona)
                 .setOficialia(persona.getOficialia())
                 .setJuzgado(persona.getJuzgado());
