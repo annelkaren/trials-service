@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/workflow")
-//@SecurityRequirement(name = "Keycloak")
+@RequestMapping("/api/workflow/movimientos")
+@SecurityRequirement(name = "Keycloak")
 public class MovimientoResource {
 
     private final MovimientoService movimientoService;
     private final MovimientoReporteGenerator generator;
 
-    @GetMapping("/movimientos/{uuid}")
+    @GetMapping("/{uuid}")
     public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid") String uuid) {
         List<MovimientoSalidaRecord> movimientos = movimientoService.getMovimientosSalida(uuid);
 
