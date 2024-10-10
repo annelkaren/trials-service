@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -72,6 +73,8 @@ class CarpetaServiceTest {
     PersonaDocumentoRepository personaDocumentoRepository;
     @InjectMocks
     CarpetaService target;
+    @Mock
+    PersonaService personaService;
     @Mock
     TipoPartesRepository tipoPartesRepository;
     @Mock
@@ -182,7 +185,6 @@ class CarpetaServiceTest {
     @Test
     void getBandejaRecepcionByDocumentoId_ReturnsBandejaRecepcion() {
         Integer documentoId = 1;
-        Long personaId = (long) 1;
 
         // Setup de datos de prueba
         BandejaRecepcionRecord bandejaRecepcion = DocumentoSetUp.createBandejaRecepcion();
@@ -195,8 +197,8 @@ class CarpetaServiceTest {
         persona.setJuzgado(juzgado);
         documento.getCarpeta().setJuzgado(juzgado);
 
-        given(personaRepository.findById(personaId))
-                .willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+                .willReturn(persona);
         given(documentoRepository.findById(documentoId))
                 .willReturn(Optional.of(documento));
         given(carpetaRepository.findByDocumentoId(documento.getId()))
@@ -205,7 +207,7 @@ class CarpetaServiceTest {
                 .willReturn(anexosRecepcion);
 
         // Ejecución del método
-        BandejaRecepcionRecord result = target.getBandejaRecepcionByDocumentoId(personaId, documentoId);
+        BandejaRecepcionRecord result = target.getBandejaRecepcionByDocumentoId(documentoId);
 
         // Validaciones
         assertThat(result).isNotNull();
@@ -217,35 +219,23 @@ class CarpetaServiceTest {
         assertThat(result.anexos()).isEqualTo(anexosRecepcion);
     }
 
-    @Test
-    void getBandejaRecepcionByDocumentoId_PersonaNotFound_ThrowsNotFoundException() {
-        Long personaId = 1L;
-        Integer documentoId = 1;
-
-        given(personaRepository.findById(personaId)).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessageContaining("No se encontró la persona asociada al personaId");
-    }
 
     @Test
     void getBandejaRecepcionByDocumentoId_DocumentoNotFound_ThrowsNotFoundException() {
-        Long personaId = 1L;
         Integer documentoId = 1;
 
         Persona persona = PersonaSetUp.createPersona();
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId( documentoId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("No se encontró el documento asociado al documentoId");
     }
 
     @Test
     void getBandejaRecepcionByDocumentoId_UnauthorizedAccess_ThrowsResponseStatusException() {
-        Long personaId = 1L;
         Integer documentoId = 1;
 
         Persona persona = PersonaSetUp.createPersona();
@@ -254,10 +244,11 @@ class CarpetaServiceTest {
         persona.setJuzgado(JuzgadoSetUp.createJuzgado());
         documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado().setId(13));
 
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
 
-        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining(HttpStatus.UNAUTHORIZED.toString())
                 .hasMessageContaining("No tiene permiso para visualizar esta información");
@@ -265,7 +256,6 @@ class CarpetaServiceTest {
 
     @Test
     void getBandejaRecepcionByDocumentoId_BandejaNotFound_ThrowsNotFoundException() {
-        Long personaId = 1L;
         Integer documentoId = 1;
 
         Persona persona = PersonaSetUp.createPersona();
@@ -275,18 +265,18 @@ class CarpetaServiceTest {
         persona.setJuzgado(juzgado);
         documento.getCarpeta().setJuzgado(juzgado);
 
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
         given(carpetaRepository.findByDocumentoId(documento.getId())).willReturn(null);
 
-        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("No se encontró la carpeta con el documentoId");
     }
 
     @Test
     void actualizarInformacionAnexos_Success() {
-        Long personaId = 1L;
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -298,11 +288,12 @@ class CarpetaServiceTest {
         persona.setJuzgado(juzgado);
         documento.getCarpeta().setJuzgado(juzgado);
 
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(anexoRepository.findById(1)).willReturn(Optional.of(anexo)); 
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
                                                                                          
-        DocumentoRecord response = target.actualizarInformacionAnexos(anexos, personaId, documentoId);
+        DocumentoRecord response = target.actualizarInformacionAnexos(anexos, documentoId);
 
         assertThat(response).isNotNull();
 
@@ -310,30 +301,9 @@ class CarpetaServiceTest {
         verify(documentoRepository, times(1)).save(documento);
     }
 
-    @Test
-    void actualizarInformacionAnexos_PersonaNoEncontrada() {
-        Long personaId = 1L;
-        Integer documentoId = 123;
-        List<AnexoBandejaRecepcionRecord> anexos = List
-                .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-
-        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        documento.getCarpeta().setJuzgado(juzgado);
-
-        given(personaRepository.findById(personaId)).willReturn(Optional.empty());
-
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            target.actualizarInformacionAnexos(anexos, personaId, documentoId);
-        });
-
-        assertThat(exception.getMessage())
-                .isEqualTo("404 NOT_FOUND \"No se encontró la persona asociada al personaId: " + personaId + "\"");
-    }
 
     @Test
     void actualizarInformacionAnexos_AnexoNoEncontrado() {
-        Long personaId = 1L;
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -345,12 +315,13 @@ class CarpetaServiceTest {
         documento.getCarpeta().setJuzgado(juzgado);
 
       
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona)); 
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(anexoRepository.findById(1)).willReturn(Optional.empty()); 
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento)); 
                                                                                            
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            target.actualizarInformacionAnexos(anexos, personaId, documentoId);
+            target.actualizarInformacionAnexos(anexos, documentoId);
         });
 
 
@@ -359,7 +330,6 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_DocumentoNoEncontrado() {
-        Long personaId = 1L;
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -370,12 +340,13 @@ class CarpetaServiceTest {
         persona.setJuzgado(juzgado);
 
      
-        given(personaRepository.findById(personaId)).willReturn(Optional.of(persona));
+        given(personaService.getAuditor())
+        .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty()); 
                                                                                       
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            target.actualizarInformacionAnexos(anexos, personaId, documentoId);
+            target.actualizarInformacionAnexos(anexos, documentoId);
         });
 
     

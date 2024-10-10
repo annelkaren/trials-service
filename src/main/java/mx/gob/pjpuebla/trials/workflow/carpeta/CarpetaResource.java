@@ -36,17 +36,16 @@ public class CarpetaResource {
     }
 
     @GetMapping(value = "/recepcion")
-    public BandejaRecepcionRecord obtenerBandejaRecepcion(@RequestParam Long personaId, @RequestParam Integer documentoId) {
-        return this.carpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId);
+    public BandejaRecepcionRecord obtenerBandejaRecepcion(@RequestParam Integer documentoId) {
+        return this.carpetaService.getBandejaRecepcionByDocumentoId(documentoId);
     }
 
     @PostMapping(value = "/recepcion")
     public DocumentoRecord recepcionAnexos(
             @RequestBody List<AnexoBandejaRecepcionRecord> anexos,
-            @RequestParam Long personaId,
             @RequestParam Integer documentoId) {
         
-        return this.carpetaService.actualizarInformacionAnexos(anexos, personaId, documentoId);
+        return this.carpetaService.actualizarInformacionAnexos(anexos, documentoId);
     }
     
 }

@@ -60,15 +60,12 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoCarpeta estatus;
 
-
     @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Persona persona;
 
     @Column(name = "T_FECHA_ASIGNACION")
     private LocalDateTime fechaAsignacion;
-
-
 
     @Accessors(chain = false)
     @Embedded

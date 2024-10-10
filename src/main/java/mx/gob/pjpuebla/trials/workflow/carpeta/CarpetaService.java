@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
@@ -35,9 +35,9 @@ public class CarpetaService {
 
     private final CarpetaRepository carpetaRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
-    private final PersonaRepository personaRepository;
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
+    private final PersonaService personaService;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, juzgadoId)
@@ -63,11 +63,11 @@ public class CarpetaService {
         return personaDocumentoRepository.findPersonaDocumentoByCarpetaId(carpetaId);
     }
 
-    public BandejaRecepcionRecord getBandejaRecepcionByDocumentoId(Long personaId, Integer documentoId) {
+    public BandejaRecepcionRecord getBandejaRecepcionByDocumentoId(Integer documentoId) {
 
-        Documento documento = validacionBandejaRecepcion(personaId, documentoId);
+        Documento documento = validacionBandejaRecepcion(documentoId);
 
-        // Buscar la bandeja de recepción por folio
+        // Buscar la bandeja de recepción por id del documento
         BandejaRecepcionRecord bandeja = carpetaRepository.findByDocumentoId(documento.getId());
         if (bandeja == null) {
             throw new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId, "documentoId");
@@ -84,9 +84,9 @@ public class CarpetaService {
                 anexos);
     }
 
-    public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos, Long personaId,
+    public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
             Integer documentoId) {
-                Documento documento = validacionBandejaRecepcion(personaId, documentoId);
+                Documento documento = validacionBandejaRecepcion(documentoId);
                 
                 //actualizamos los anexos.
                 for (AnexoBandejaRecepcionRecord anexo : anexos) {
@@ -109,11 +109,10 @@ public class CarpetaService {
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-    public Documento validacionBandejaRecepcion(Long personaId, Integer documentoId) {
+    public Documento validacionBandejaRecepcion(Integer documentoId) {
+
         // Buscar y validar la existencia de la persona y el documento
-        Persona persona = personaRepository.findById(personaId)
-                .orElseThrow(() -> new NotFoundException(
-                        "No se encontró la persona asociada al personaId: " + personaId, "personaId"));
+        Persona persona = personaService.getAuditor();
 
         Documento documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new NotFoundException(

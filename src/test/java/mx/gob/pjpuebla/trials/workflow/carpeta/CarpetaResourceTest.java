@@ -82,14 +82,13 @@ class CarpetaResourceTest {
     void obtenerBandejaRecepcionSuccess() throws Exception {
 
         Integer documentoId = 1;
-        Long personaId = (long) 1;
+
         BandejaRecepcionRecord expectedRecord = new BandejaRecepcionRecord(1, "1", "Expediente 1", TipoCarpeta.DEMANDA,
                 "ruta/digitalizacion", List.of());
 
-        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId)).thenReturn(expectedRecord);
+        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(documentoId)).thenReturn(expectedRecord);
         
         mockMvc.perform(get("/api/workflow/carpeta/recepcion")
-                .param("personaId", "1")
                 .param("documentoId", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -100,13 +99,11 @@ class CarpetaResourceTest {
     @Test
     void obtenerBandejaRecepcionNotFound() throws Exception {
         Integer documentoId = 110;
-        Long personaId = (long) 104;
 
-        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(personaId, documentoId))
+        when(mockCarpetaService.getBandejaRecepcionByDocumentoId(documentoId))
                 .thenThrow(new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId, "documentoId"));
 
         mockMvc.perform(get("/api/workflow/carpeta/recepcion")
-                .param("personaId", "104")
                 .param("documentoId", "110")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -114,18 +111,16 @@ class CarpetaResourceTest {
 
     @Test
     void testRecepcionAnexos_Success() throws Exception {
-        Long personaId = 1L;
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List.of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         DocumentoRecord responseRecord = new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA);
 
         // Configurar comportamiento del servicio mock
-        when(mockCarpetaService.actualizarInformacionAnexos(anexos, personaId, documentoId))
+        when(mockCarpetaService.actualizarInformacionAnexos(anexos,  documentoId))
                 .thenReturn(responseRecord);
     
         // Ejecutar la solicitud y verificar el resultado
         mockMvc.perform(post("/api/workflow/carpeta/recepcion")
-                .param("personaId", personaId.toString())
                 .param("documentoId", documentoId.toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
