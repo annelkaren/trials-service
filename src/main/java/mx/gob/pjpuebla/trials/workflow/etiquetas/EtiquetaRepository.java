@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

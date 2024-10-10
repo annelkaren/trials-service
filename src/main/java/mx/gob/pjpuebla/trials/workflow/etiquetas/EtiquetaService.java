@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -28,7 +28,7 @@ public class EtiquetaService {
             return documento.getCarpeta().getTipoCarpeta().name();
         } else {
             return this.etiquetaRepository.findByTipoJuicioIdAndNombre(
-                    documento.getCarpeta().getTipoJuicio().getId(), nombre).getValue().toUpperCase();
+                    100, nombre).getValue().toUpperCase();
         }
     }
 }

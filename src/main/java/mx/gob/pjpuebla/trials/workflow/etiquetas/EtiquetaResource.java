@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;

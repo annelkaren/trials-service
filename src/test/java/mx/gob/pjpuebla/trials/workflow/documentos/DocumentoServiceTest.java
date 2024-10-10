@@ -13,6 +13,8 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -42,6 +44,7 @@ import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +52,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Arrays;
@@ -105,6 +109,10 @@ class DocumentoServiceTest {
     private AuditorAware<Jwt> auditorAware;
     @Mock
     private PersonaService personaService;
+    @Mock
+    private PersonaRepository personaRepository;
+    @Mock
+    private EtiquetaService etiquetaService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -534,5 +542,39 @@ class DocumentoServiceTest {
         verify(documentoRepository).save(any(Documento.class));
         verify(anexoRepository).save(any(Anexo.class));
         verify(personaDocumentoRepository, times(apelacionRecord.apelacionPersonaRecords().size())).save(any(PersonaDocumento.class));
+    }
+
+    @Test
+    void getAllBandejaRecepcion_return_page() {
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setJuzgado(juzgado);
+        List<Documento> listPage = Collections.singletonList(demanda);
+        Persona persona = new Persona().setJuzgado(juzgado);
+        given(personaService.getAuditor()).willReturn(persona);
+        given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
+                .willReturn("Expediente");
+
+        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
+                .hasFieldOrPropertyWithValue("tipoEntrada", "Expediente")
+                .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
+    }
+
+    @Test
+    void getAllBandejaRecepcion_accessDeniedException() {
+        Persona persona = new Persona();
+        given(personaService.getAuditor()).willReturn(persona);
+
+        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
+                documentoService.getAllBandejaRecepcion(PageRequest.of(1, 1)));
+
+        assertThat(exception.getMessage()).contains("No tiene permiso para visualizar esta información");
     }
 }

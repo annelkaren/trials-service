@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

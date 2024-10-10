@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;

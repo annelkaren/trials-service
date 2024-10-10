@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.*;

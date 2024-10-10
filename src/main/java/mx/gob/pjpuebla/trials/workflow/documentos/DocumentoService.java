@@ -28,7 +28,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.EtiquetaService;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
