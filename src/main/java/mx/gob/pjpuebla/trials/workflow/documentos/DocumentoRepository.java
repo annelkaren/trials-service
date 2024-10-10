@@ -22,17 +22,25 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
-            d.nombre,
-            j.nombre
-        )
-        FROM Documento doc
-        JOIN doc.carpeta c
-        JOIN c.juzgado j
-        JOIN j.sede s
-        JOIN s.distrito d
-        WHERE doc.id = :documentoId
-        """)
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
+                d.nombre,
+                j.nombre
+            )
+            FROM Documento doc
+            JOIN doc.carpeta c
+            JOIN c.juzgado j
+            JOIN j.sede s
+            JOIN s.distrito d
+            WHERE doc.id = :documentoId
+            """)
     DocumentoJuzgadoRecord findDistritoJuzgadoByDocumentoId(
             @Param("documentoId") Integer documentoId);
+
+    @Query(value = "SELECT doc FROM Documento doc "
+            + "JOIN FETCH doc.carpeta c "
+            + "JOIN FETCH c.juzgado j "
+            + "WHERE (c.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO "
+            + "OR doc.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO) "
+            + "AND j.id = :juzgadoId ")
+    Page<Documento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId);
 }

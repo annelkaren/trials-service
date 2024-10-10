@@ -5,13 +5,13 @@ import mx.gob.pjpuebla.trials.util.Audit;
 
 import java.time.LocalDateTime;
 
-public class TipoJuicioEtiquetaSetUp {
+public class EtiquetaSetUp {
 
-    private TipoJuicioEtiquetaSetUp() {
+    private EtiquetaSetUp() {
     }
 
-    public static TipoJuicioEtiqueta createTipoJuicioEtiqueta(Integer tipoJuicioId) {
-        TipoJuicioEtiqueta etiqueta = new TipoJuicioEtiqueta()
+    public static Etiqueta createEtiqueta(Integer tipoJuicioId) {
+        Etiqueta etiqueta = new Etiqueta()
                 .setId(1)
                 .setNombre("documento")
                 .setValue("Demanda")

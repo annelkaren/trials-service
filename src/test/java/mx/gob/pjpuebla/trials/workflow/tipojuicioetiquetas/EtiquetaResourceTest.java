@@ -19,23 +19,23 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(TipoJuicioEtiquetaResource.class)
+@WebMvcTest(EtiquetaResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class TipoJuicioEtiquetaResourceTest {
+class EtiquetaResourceTest {
 
     @Autowired
     public MockMvc mockMvc;
 
     @MockBean
-    TipoJuicioEtiquetaService tipoJuicioEtiquetaService;
+    EtiquetaService etiquetaService;
 
     @Test
     void getAllByTipoJuicioId() throws Exception {
-        TipoJuicioEtiqueta item = TipoJuicioEtiquetaSetUp.createTipoJuicioEtiqueta(100);
-        TipoJuicioEtiquetaItem record = new TipoJuicioEtiquetaItem(item.getNombre(), item.getValue());
-        List<TipoJuicioEtiquetaItem> list = Arrays.asList(record);
-        given(tipoJuicioEtiquetaService.getAllByTipoJuicioId(any())).willReturn(list);
+        Etiqueta item = EtiquetaSetUp.createEtiqueta(100);
+        EtiquetaRecordItem record = new EtiquetaRecordItem(item.getNombre(), item.getValue());
+        List<EtiquetaRecordItem> list = Arrays.asList(record);
+        given(etiquetaService.getAllByTipoJuicioId(any())).willReturn(list);
 
         mockMvc.perform(
                 get("/api/workflow/etiquetas/100")

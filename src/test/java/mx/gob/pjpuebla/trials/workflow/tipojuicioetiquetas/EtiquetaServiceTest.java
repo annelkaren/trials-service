@@ -13,24 +13,22 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-class TipoJuicioEtiquetaServiceTest {
+class EtiquetaServiceTest {
 
     @Mock
-    public TipoJuicioEtiquetaRepository tipoJuicioEtiquetaRepository;
+    public EtiquetaRepository etiquetaRepository;
 
     @InjectMocks
-    public TipoJuicioEtiquetaService tipoJuicioEtiquetaService;
-
-    private TipoJuicioEtiqueta tipoJuicioEtiqueta;
+    public EtiquetaService etiquetaService;
 
     @Test
     void getAllByTipoJuicioId() {
-        TipoJuicioEtiqueta item = TipoJuicioEtiquetaSetUp.createTipoJuicioEtiqueta(100);
-        List<TipoJuicioEtiqueta> list = Arrays.asList(item);
-        given(tipoJuicioEtiquetaRepository.findByTipoJuicioId(anyInt())).willReturn(list);
+        Etiqueta item = EtiquetaSetUp.createEtiqueta(100);
+        List<Etiqueta> list = Arrays.asList(item);
+        given(etiquetaRepository.findByTipoJuicioId(anyInt())).willReturn(list);
 
-        TipoJuicioEtiquetaItem record = new TipoJuicioEtiquetaItem(item.getNombre(), item.getValue());
-        List<TipoJuicioEtiquetaItem> results = tipoJuicioEtiquetaService.getAllByTipoJuicioId(100);
+        EtiquetaRecordItem record = new EtiquetaRecordItem(item.getNombre(), item.getValue());
+        List<EtiquetaRecordItem> results = etiquetaService.getAllByTipoJuicioId(100);
 
         assertThat(results).isNotNull();
         assertThat(results.size()).isPositive();

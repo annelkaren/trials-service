@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Builder
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_TIPOJUICIO_ETIQUETAS")
-public class TipoJuicioEtiqueta implements Serializable, Auditable {
+public class Etiqueta implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipojuicioEtiquetas")

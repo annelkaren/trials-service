@@ -6,7 +6,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TipoJuicioEtiquetaRepository extends JpaRepository<TipoJuicioEtiqueta, Integer> {
+public interface EtiquetaRepository extends JpaRepository<Etiqueta, Integer> {
 
-    List<TipoJuicioEtiqueta> findByTipoJuicioId(Integer id);
+    List<Etiqueta> findByTipoJuicioId(Integer id);
+
+    Etiqueta findByTipoJuicioIdAndNombre(Integer tipoJuicioId, String nombre);
 }

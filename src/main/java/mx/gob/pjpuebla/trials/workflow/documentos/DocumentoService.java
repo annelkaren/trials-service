@@ -28,8 +28,10 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.EtiquetaService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,7 @@ public class DocumentoService {
     private final AudienciaService audienciaService;
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
+    private final EtiquetaService etiquetaService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -423,6 +426,25 @@ public class DocumentoService {
         }
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
+    }
+
+    public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(Pageable pageable) {
+        Persona currentUser = personaService.getAuditor();
+        if (currentUser.getJuzgado() == null) {
+            throw new AccessDeniedException("No tiene permiso para visualizar esta información");
+        }
+        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(pageable, currentUser.getJuzgado().getId());
+        List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
+                .map(doc -> new DocumentoBandejaRecepcionRecord(
+                        doc.getId(),
+                        (doc.getTipoDocumento() != null) ? doc.getData().getPromocionFolio() : doc.getCarpeta().getFolio(),
+                        doc.getCarpeta().getExpediente(),
+                        etiquetaService.renderEtiquetaRecepcion("nuevoNombre", doc),
+                        doc.getCarpeta().getJuzgado().getNombre(),
+                        "",
+                        doc.getFechaAsignacion()))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 }
 

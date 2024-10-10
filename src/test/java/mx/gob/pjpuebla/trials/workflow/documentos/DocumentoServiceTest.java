@@ -179,7 +179,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         given(documentoRepository.findById(any())).willReturn(Optional.of(demanda));
-        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.TURNADO));
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.SALIDA));
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), demanda.getCarpeta().getTipoCarpeta());
 

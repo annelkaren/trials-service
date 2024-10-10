@@ -94,7 +94,7 @@ public class DocumentoResource {
         return this.documentoService.updateStatus(id, status);
     }
 
-    @GetMapping(value =  "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "folio", required = false) String folio,
@@ -138,5 +138,10 @@ public class DocumentoResource {
     @PostMapping("/apelacion")
     public DocumentoRecord create(@RequestBody @Valid ApelacionRecord apelacionRecord) {
         return this.documentoService.createApelacion(apelacionRecord);
+    }
+
+    @GetMapping("/bandeja/recepcion")
+    public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(@PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllBandejaRecepcion(pageable);
     }
 }

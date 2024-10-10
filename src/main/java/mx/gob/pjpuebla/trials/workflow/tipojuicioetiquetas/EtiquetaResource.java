@@ -12,13 +12,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/workflow/etiquetas")
 @SecurityRequirement(name = "Keycloak")
-public class TipoJuicioEtiquetaResource {
+public class EtiquetaResource {
 
-    private final TipoJuicioEtiquetaService tipoJuicioEtiquetaService;
+    private final EtiquetaService etiquetaService;
 
     @GetMapping(value = "/{tipoJuicioId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Cacheable(value = "etiquetas", key = "#tipoJuicioId")
-    public List<TipoJuicioEtiquetaItem> getAllByTipoJuicioId(@PathVariable Integer tipoJuicioId) {
-        return this.tipoJuicioEtiquetaService.getAllByTipoJuicioId(tipoJuicioId);
+    public List<EtiquetaRecordItem> getAllByTipoJuicioId(@PathVariable Integer tipoJuicioId) {
+        return this.etiquetaService.getAllByTipoJuicioId(tipoJuicioId);
     }
 }
