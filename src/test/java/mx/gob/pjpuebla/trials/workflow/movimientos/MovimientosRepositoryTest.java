@@ -9,8 +9,6 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,16 +64,13 @@ class MovimientosRepositoryTest extends AuditConfigTest {
     @Autowired 
     MovimientoRepository movimientoRepository;
 
-    Carpeta carpeta;
-    Documento documento;
-
     @Test
     void getMovimientosSalidaTest(){
 
         String uuidMov = "d8945bc4-af8e-4eb0-b742-7ee13beb43e0";
         UUID uuid = UUID.fromString(uuidMov);
 
-        List<MovimientoSalidaRecord> movimientos = movimientoRepository.salidas(uuid, EstadoCarpeta.SALIDA);
+        List<MovimientoSalidaRecord> movimientos = movimientoRepository.getSalidas(uuid, EstadoCarpeta.TURNADO);
 
         assertThat(movimientos)
             .isNotEmpty()

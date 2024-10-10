@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -12,29 +12,27 @@ public class MovimientoSalidaDTO {
     private String tipoDocumento;
     private String folio;
     private String expediente;
-    private Date fecha;
+    private LocalDateTime fecha;
     private String juzgado;
     private String observaciones;
 
-    public MovimientoSalidaDTO(){}
-
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento){
-        String observacionesExhorto = "";
-        DocumentoData data = null;
+        String folioTmp = recordMovimiento.folio();
+        String observacionesTmp = "";
 
-        if (recordMovimiento.data()!=null){
+        DocumentoData data = (DocumentoData) recordMovimiento.data();
 
-            data = (DocumentoData) recordMovimiento.data();
-
-            observacionesExhorto = data.getExhortoObservaciones();
+        if (data!=null){
+            folioTmp = data.getPromocionFolio().isEmpty()?recordMovimiento.folio():data.getPromocionFolio();
+            observacionesTmp = data.getExhortoObservaciones().isEmpty()?"":data.getExhortoObservaciones();
         }
         
         this.setUuid(recordMovimiento.uuid());
         this.setTipoDocumento(recordMovimiento.tipoDocumento().name());
-        this.setFolio(recordMovimiento.folio());
+        this.setFolio(folioTmp);
         this.setExpediente(recordMovimiento.expediente());
         this.setFecha(recordMovimiento.fecha());
         this.setJuzgado(recordMovimiento.juzgado());
-        this.setObservaciones(observacionesExhorto);
+        this.setObservaciones(observacionesTmp);
     }
 }

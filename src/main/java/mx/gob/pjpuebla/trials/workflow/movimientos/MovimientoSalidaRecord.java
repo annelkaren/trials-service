@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record MovimientoSalidaRecord(
@@ -11,7 +11,7 @@ public record MovimientoSalidaRecord(
     TipoCarpeta tipoDocumento,
     String folio,
     String expediente,
-    Date fecha,
+    LocalDateTime fecha,
     String juzgado,
     Object data
 
