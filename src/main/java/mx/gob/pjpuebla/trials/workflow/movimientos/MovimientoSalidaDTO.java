@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,13 +18,23 @@ public class MovimientoSalidaDTO {
 
     public MovimientoSalidaDTO(){}
 
-    public MovimientoSalidaDTO(MovimientoSalidaRecord record){
-        this.setUuid(record.uuid());
-        this.setTipoDocumento(record.tipoDocumento().name());
-        this.setFolio(record.folio());
-        this.setExpediente(record.expediente());
-        this.setFecha(record.fecha());
-        this.setJuzgado(record.juzgado());
-        this.setObservaciones(record.observaciones());
+    public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento){
+        String observacionesExhorto = "";
+        DocumentoData data = null;
+
+        if (recordMovimiento.data()!=null){
+
+            data = (DocumentoData) recordMovimiento.data();
+
+            observacionesExhorto = data.getExhortoObservaciones();
+        }
+        
+        this.setUuid(recordMovimiento.uuid());
+        this.setTipoDocumento(recordMovimiento.tipoDocumento().name());
+        this.setFolio(recordMovimiento.folio());
+        this.setExpediente(recordMovimiento.expediente());
+        this.setFecha(recordMovimiento.fecha());
+        this.setJuzgado(recordMovimiento.juzgado());
+        this.setObservaciones(observacionesExhorto);
     }
 }

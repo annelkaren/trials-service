@@ -13,7 +13,7 @@ public record MovimientoSalidaRecord(
     String expediente,
     Date fecha,
     String juzgado,
-    String observaciones
+    Object data
 
 ) implements Serializable {
 

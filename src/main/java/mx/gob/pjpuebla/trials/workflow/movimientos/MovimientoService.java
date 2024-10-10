@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +19,6 @@ public class MovimientoService {
     public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid){
 
         UUID uuidMov = UUID.fromString(uuid);
-        return movimientoRepository.salidas(uuidMov);
+        return movimientoRepository.salidas(uuidMov, EstadoCarpeta.SALIDA);
     }
 }
