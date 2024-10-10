@@ -221,15 +221,15 @@ public class SelloGenerator {
                         carpeta.getExpediente(),
                         inicialesTipoJuicios
                 );
-                isPromocionOralidadExhorto = (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad"));
+                isPromocionOralidadExhorto = true;
                 isOralidadFamiliar = true;
                 carpeta.setExpediente(expenienteOralFamiliar);
             }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
                 carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
-                isPromocionOralidadExhorto = true;
+                isPromocionOralidadExhorto = false;
             }else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)){
                 carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
-                isPromocionOralidadExhorto = true;
+                isPromocionOralidadExhorto = false;
             }
             documento.setCarpeta(carpeta);
         } else {
@@ -241,6 +241,10 @@ public class SelloGenerator {
     public PersonaDocumentoRecord getInfoPersona(Integer id, String parte){
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord personaDocumentoRecord = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+
+        if (personaDocumentoRecord == null) {
+            return new PersonaDocumentoRecord("", "", "", "", "", "", "", "", "",parte, null, id);
+        }
 
         String nombre = personaDocumentoRecord.nombre() != null ? personaDocumentoRecord.nombre() : "";
         String apellidoPaterno = personaDocumentoRecord.apellidoPaterno() != null ? personaDocumentoRecord.apellidoPaterno() : "";
