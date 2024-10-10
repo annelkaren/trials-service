@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -37,6 +38,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -46,10 +48,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,6 +99,12 @@ class DocumentoServiceTest {
     private CarpetaRepository carpetaRepository;
     @Mock
     private JuzgadoFoliosRepository juzgadoFoliosRepository;
+    @Mock
+    private MovimientoService movimientoService;
+    @Mock
+    private AuditorAware<Jwt> auditorAware;
+    @Mock
+    private PersonaService personaService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -173,7 +179,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         given(documentoRepository.findById(any())).willReturn(Optional.of(demanda));
-        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.SALIDA));
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta().setEstatus(EstadoCarpeta.TURNADO));
 
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), demanda.getCarpeta().getTipoCarpeta());
 
@@ -405,7 +411,7 @@ class DocumentoServiceTest {
         Documento documento2 = DocumentoSetUp.create(tipoJuicio);
         documento2.getCarpeta().setFolio("Folio2");
         documento2.getCarpeta().setExpediente("Expediente2");
-        documento2.getCarpeta().setEstatus(EstadoCarpeta.SALIDA);
+        documento2.getCarpeta().setEstatus(EstadoCarpeta.TURNADO);
 
 
         Juzgado juzgado2 = new Juzgado();
@@ -439,7 +445,7 @@ class DocumentoServiceTest {
         assertThat(result.getContent().get(1))
                 .hasFieldOrPropertyWithValue("folio", "Folio2")
                 .hasFieldOrPropertyWithValue("expediente", "Expediente2")
-                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.SALIDA);
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.TURNADO);
 
 
         assertThat(result.getTotalElements()).isEqualTo(2);
