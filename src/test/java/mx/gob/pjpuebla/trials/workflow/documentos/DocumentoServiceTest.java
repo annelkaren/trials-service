@@ -231,19 +231,20 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
-        given(juzgadoService.getJuzgado(any())).willReturn(juzgado);
 
-        juzgado = juzgadoService.getJuzgado(demanda.getCarpeta().getTipoJuicio());
+        TipoCarpeta tipoCarpeta = demanda.getCarpeta().getTipoCarpeta();
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+        juzgado = juzgadoService.getJuzgado(demanda.getCarpeta().getTipoJuicio(),demanda.getCarpeta().getTipoCarpeta());
         assertThat(juzgado).isNotNull();
 
         for (int i = 0; i < invocaciones; i++) {
-            juzgadoService.actualizarCarga(juzgado);
+            juzgadoService.actualizarCarga(juzgado, tipoCarpeta);
         }
 
-        juzgadoService.revisarCargaJuzgados(tipoJuicio.getMateria());
+        juzgadoService.revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
 
-        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado);
-        verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getCarpeta().getTipoJuicio().getMateria());
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, tipoCarpeta);
+        verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getCarpeta().getTipoJuicio().getMateria(), tipoCarpeta);
     }
 
     @Test
@@ -483,7 +484,8 @@ class DocumentoServiceTest {
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
 
         given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getJuzgado(any())).willReturn(juzgado);
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         given(documentoRepository.save(any())).willReturn(exhorto);

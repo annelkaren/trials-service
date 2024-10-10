@@ -99,13 +99,13 @@ public class DocumentoService {
 
         carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
         carpeta.setFolio(getFolio("D"));
+        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
 
         if (carpeta.getJuzgado() == null) {
-            carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio()));
+            carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta()));
         }
 
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
-        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
@@ -125,7 +125,7 @@ public class DocumentoService {
         createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
         addAnexos(documentoRecord.anexos(), documento);
-        juzgadoService.actualizarCarga(carpeta.getJuzgado());
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
 
         //flujo para demanda de oralidad:
         if (tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")) {
@@ -340,7 +340,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado con nombre: Exhorto", "EXHORTO"));
         carpeta.setTipoJuicio(tipoJuicio);
 
-        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio));
+        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio,  carpeta.getTipoCarpeta()));
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
@@ -357,6 +357,7 @@ public class DocumentoService {
         documento = documentoRepository.save(documento);
 
         addAnexos(documentoExhortoRecord.anexos(), documento);
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -381,10 +382,10 @@ public class DocumentoService {
         carpeta.setTipoJuicio(tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId())));
 
-        carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio())); // TODO.ASIGNAR JUZGADO CORRECTAMENTE
+        carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
+        carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta())); // TODO.ASIGNAR JUZGADO CORRECTAMENTE
         carpeta.setFolio("1"); //TODO. ASIGNAR FOLIO CORRECTAMENTE
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
-        carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setPersona(auditor);
@@ -421,6 +422,7 @@ public class DocumentoService {
             entity.setCarpeta(carpeta);
             personaDocumentoRepository.save(entity);
         }
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }

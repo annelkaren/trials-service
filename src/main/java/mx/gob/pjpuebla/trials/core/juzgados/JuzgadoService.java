@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -186,35 +186,53 @@ public class JuzgadoService {
         return null;
     }
 
-    public Juzgado getJuzgado(TipoJuicio tipoJuicio) {
-        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
+    public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta) {
+
+        InstanciaJuzgado instanciaJuzgado;
+
+        if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
+            instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
+        } else {
+            instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
+
+        }
+        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
         if (juzgados.isEmpty()) {
-            revisarCargaJuzgados(tipoJuicio.getMateria());
-
-            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria());
+            revisarCargaJuzgados(tipoJuicio.getMateria() , tipoCarpeta);
+            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
             if (juzgados.isEmpty())
                 throw (new NotFoundException("No se puede asignar un Juzgado", tipoJuicio.getNombre()));
         }
 
         int rand = RANDOM.nextInt(juzgados.size());
-
         return juzgados.get(rand);
+
     }
 
-    public void actualizarCarga(Juzgado juzgado) {
+    public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
-        revisarCargaJuzgados(juzgado.getMateria());
+        revisarCargaJuzgados(juzgado.getMateria(),tipoCarpeta );
     }
 
-    public void revisarCargaJuzgados(Materia materia) {
-        int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia);
-        int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia);
-        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia).size();
+    public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta) {
+
+        InstanciaJuzgado instanciaJuzgado;
+        if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
+            instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
+
+        } else {
+            instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
+
+        }
+
+        int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
+        int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
+        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia,  instanciaJuzgado).size();
 
         if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
-            juzgadoRepository.reiniciarContadorAsignaciones(materia);
+            juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
         }
     }
 
