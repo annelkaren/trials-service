@@ -78,7 +78,7 @@ class DocumentoResourceTest {
         Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1));
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, null, demanda.getCarpeta().getFolio(),
+        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, demanda.getCarpeta().getFolio(),
                 demanda.getCarpeta().getExpediente(),
                 "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO, EstadoCarpeta.CAPTURA,
                 true);
@@ -196,7 +196,7 @@ class DocumentoResourceTest {
         String materiaNombre = "MERCANTIL";
 
 
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, null, folio, expediente,
+        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
                 materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true);
 
 

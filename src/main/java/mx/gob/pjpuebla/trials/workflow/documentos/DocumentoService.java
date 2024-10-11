@@ -63,7 +63,6 @@ public class DocumentoService {
         List<DocumentoGridRecord> list = page.getContent().stream()
                 .map(documento ->
                         new DocumentoGridRecord(documento.getId(),
-                                documento.getTipoDocumento(),
                                 documento.getCarpeta().getFolio(),
                                 documento.getCarpeta().getExpediente(),
                                 documento.getCarpeta().getJuzgado().getMateria().getNombre(),
@@ -292,7 +291,6 @@ public class DocumentoService {
         List<DocumentoGridRecord> listaDocumentoRecords = paginaDocumentos.getContent().stream()
                 .map(doc -> new DocumentoGridRecord(
                         doc.getId(),
-                        doc.getTipoDocumento(),
                         doc.getCarpeta().getFolio(),
                         doc.getCarpeta().getExpediente(),
                         doc.getCarpeta().getJuzgado().getMateria().getNombre(),
