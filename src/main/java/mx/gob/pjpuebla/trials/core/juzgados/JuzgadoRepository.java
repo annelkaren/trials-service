@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,10 +38,11 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
     @Query("""
             SELECT j FROM Juzgado j
             WHERE j.contadorAsignaciones < j.maxAsignacionesRonda
+            AND j.instanciaJuzgado = :instanciaJuzgado
             AND j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             AND j.contadorAsignaciones = (SELECT MIN(t.contadorAsignaciones) from Juzgado t WHERE t.materia = j.materia and j.estado = t.estado)
             """)
-    List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia);
+    List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
 
     @Modifying(flushAutomatically = true)
     @Query("UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones + 1 WHERE j.id = :juzgadoId")
