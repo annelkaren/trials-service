@@ -433,7 +433,7 @@ public class DocumentoService {
         if (currentUser.getJuzgado() == null) {
             throw new AccessDeniedException("No tiene permiso para visualizar esta información");
         }
-        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(pageable, currentUser.getJuzgado().getId());
+        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(pageable, currentUser.getJuzgado().getId(), EstadoCarpeta.TURNADO);
         List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                 .map(doc -> new DocumentoBandejaRecepcionRecord(
                         doc.getId(),

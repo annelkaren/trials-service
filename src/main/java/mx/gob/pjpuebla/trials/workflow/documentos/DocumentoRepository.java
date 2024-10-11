@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
@@ -39,8 +40,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query(value = "SELECT doc FROM Documento doc "
             + "JOIN FETCH doc.carpeta c "
             + "JOIN FETCH c.juzgado j "
-            + "WHERE (c.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO "
-            + "OR doc.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO) "
+            + "WHERE (c.estatus = :estado "
+            + "OR doc.estatus = :estado) "
             + "AND j.id = :juzgadoId ")
-    Page<Documento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId);
+    Page<Documento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado);
 }

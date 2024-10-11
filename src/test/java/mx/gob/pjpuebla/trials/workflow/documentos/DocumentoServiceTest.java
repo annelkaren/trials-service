@@ -555,7 +555,7 @@ class DocumentoServiceTest {
         given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
                 .willReturn("Expediente");
 
-        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class)))
+        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class), any(EstadoCarpeta.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
         Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())

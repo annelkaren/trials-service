@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ class DocumentoRepositoryTest extends AuditConfigTest {
 
     @Test
     void getAllBandejaRecepcion(){
-        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(PageRequest.of(0, 20), 51);
+        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(PageRequest.of(0, 20), 51, EstadoCarpeta.TURNADO);
         assertThat(page.get()).hasSize(1);
     }
 }
