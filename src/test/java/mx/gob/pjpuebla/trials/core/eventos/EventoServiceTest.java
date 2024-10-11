@@ -73,7 +73,7 @@ class EventoServiceTest {
 
         given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaInhabil, null, null)).willReturn(Boolean.TRUE);
 
-        Boolean esDiaInhabil = eventoService.esDiaHabil(diaInhabil, null, null);
+        Boolean esDiaInhabil = eventoService.esDiaInHabil(diaInhabil, null, null);
 
         assertThat(esDiaInhabil).isTrue();
     }
@@ -84,7 +84,7 @@ class EventoServiceTest {
 
         given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaInhabil, juzgado, null)).willReturn(Boolean.TRUE);
 
-        Boolean esDiaInhabil = eventoService.esDiaHabil(diaInhabil, juzgado, null);
+        Boolean esDiaInhabil = eventoService.esDiaInHabil(diaInhabil, juzgado, null);
 
         assertThat(esDiaInhabil).isTrue();
     }
@@ -94,7 +94,7 @@ class EventoServiceTest {
         LocalDate diaHabil = LocalDate.parse("2024-10-31");
         given(eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaHabil, null, null)).willReturn(Boolean.FALSE);
 
-        Boolean esDiaHabil = eventoService.esDiaHabil(diaHabil, null, null);
+        Boolean esDiaHabil = eventoService.esDiaInHabil(diaHabil, null, null);
 
         assertThat(esDiaHabil).isFalse();
     }

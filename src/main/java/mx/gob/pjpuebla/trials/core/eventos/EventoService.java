@@ -52,15 +52,19 @@ public class EventoService {
         eventoRepository.delete(evento);
     }
 
-    public Boolean esDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia) {
+    public Boolean esDiaInHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia) {
 
-        return eventoRepository.existsEventoEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
+        return FinSemana.esInhabil(fecha) || eventoRepository.existsEventoEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
     }
 
     public LocalDate siguienteDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia){
         Optional<Evento> evento = eventoRepository.findEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
 
-        LocalDate siguienteDia = evento.orElseThrow().getDiaFin();
+        LocalDate siguienteDia = fecha;
+
+        if(evento.isPresent()){
+            siguienteDia = evento.get().getDiaFin();
+        }
 
         if (FinSemana.esInhabil(siguienteDia)==Boolean.TRUE) {
             siguienteDia = FinSemana.proximoDiaHabil(siguienteDia);
