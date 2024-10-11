@@ -207,7 +207,6 @@ class SalaServiceTest {
         List<Bloque> bloques = Arrays.asList(bloque);
 
         given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
-        given(eventoService.siguienteDiaHabil(any(), any(), any())).willReturn(fechaAudiencia.toLocalDate());
         given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
         given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
 
@@ -274,7 +273,6 @@ class SalaServiceTest {
        sala.setBloque(bloque);
 
        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
-       given(eventoService.siguienteDiaHabil(any(), any(), any())).willReturn(fechaAudiencia.toLocalDate());
        given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));
 
        SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
