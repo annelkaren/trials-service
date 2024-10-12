@@ -115,7 +115,10 @@ public class JuzgadoService {
         juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
         juzgado.setJuzgadoFolios(juzgadoFolios);
 
-        juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
+        juzgado.setInstanciaJuzgado(TipoCarpeta.EXHORTO.name().equalsIgnoreCase(materia.getNombre())
+                ? InstanciaJuzgado.NO_APLICA
+                : juzgado.getInstanciaJuzgado());
+
         juzgado = juzgadoRepository.save(juzgado);
         return new JuzgadoRecordItem(
                 juzgado.getId(),
@@ -192,9 +195,10 @@ public class JuzgadoService {
 
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
-        } else {
+        } else if(TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+            instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+        }else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
-
         }
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
@@ -222,9 +226,10 @@ public class JuzgadoService {
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
 
-        } else {
+        }  else if(TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+            instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+        }else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
-
         }
 
         int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);

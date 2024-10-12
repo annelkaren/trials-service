@@ -304,24 +304,55 @@ class JuzgadoServiceTest {
         given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
 
         TipoJuicio tipoJuicio = juzgado.getTipoJuicios().get(0);
-        TipoCarpeta tipoCarpeta = TipoCarpeta.DEMANDA;
-        NotFoundException assertThrows = assertThrows(
-                NotFoundException.class,
-                () -> juzgadoService.getJuzgado(tipoJuicio, tipoCarpeta)
-        );
 
-        assertThat(assertThrows.getMessage()).contains("No se puede asignar un Juzgado");
+        TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
+        NotFoundException exceptionDemanda = assertThrows(
+                NotFoundException.class,
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoDemanda)
+        );
+        assertThat(exceptionDemanda.getMessage()).contains("No se puede asignar un Juzgado");
+
+        TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
+        NotFoundException exceptionApelacion = assertThrows(
+                NotFoundException.class,
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoApelacion)
+        );
+        assertThat(exceptionApelacion.getMessage()).contains("No se puede asignar un Juzgado");
+
+        TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
+        NotFoundException exceptionExhorto = assertThrows(
+                NotFoundException.class,
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoExhorto)
+        );
+        assertThat(exceptionExhorto.getMessage()).contains("No se puede asignar un Juzgado");
     }
 
     @Test
     void get_juzgado_aleatorio() {
-        List<Juzgado> list = Collections.singletonList(juzgado);
-        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(list);
 
         TipoJuicio tipoJuicio = juzgado.getTipoJuicios().get(0);
-        TipoCarpeta tipoCarpeta = TipoCarpeta.APELACION;
 
-        Juzgado result = juzgadoService.getJuzgado(tipoJuicio, tipoCarpeta);
-        assertThat(result).isEqualTo(juzgado);
+        List<Juzgado> juzgadoDemanda = Collections.singletonList(juzgado);
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoDemanda);
+        TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
+        Juzgado resultJuzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, tipoDemanda);
+
+        assertThat(resultJuzgadoDemanda).isEqualTo(juzgado);
+
+        List<Juzgado> juzgadoApelacion = Collections.singletonList(juzgado);
+        Juzgado juzgadoSegundaInstancia = juzgado.setInstanciaJuzgado(InstanciaJuzgado.SEGUNDA_INSTANCIA);
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoApelacion);
+        TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
+        Juzgado resultJuzgadoApelacion = juzgadoService.getJuzgado(tipoJuicio, tipoApelacion);
+
+        assertThat(resultJuzgadoApelacion).isEqualTo(juzgadoSegundaInstancia);
+
+        List<Juzgado> juzgadoExhorto = Collections.singletonList(juzgado);
+        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.NO_APLICA);
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoExhorto);
+        TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
+        Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto);
+
+        assertThat(resultJuzgadoExhorto).isEqualTo(juzgadoNoAplica);
     }
 }

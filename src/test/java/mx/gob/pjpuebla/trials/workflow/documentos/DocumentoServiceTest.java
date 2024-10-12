@@ -122,10 +122,10 @@ class DocumentoServiceTest {
         Distrito distrito = distritoRepository.save(DistritoSetUp.createDistrito());
         Domicilio domicilio = domicilioRepository.save(DomicilioSetUp.createDomicilio());
         TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
-        
+
         tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
-       
-        
+
+
         actor = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio);
         tipoPartesRepository.save(actor);
         demandado = TipoPartesSetUp.createTipoPartes().setTipoJuicio(tipoJuicio).setNombre("Demandado");
@@ -154,7 +154,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        
+
         given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
@@ -228,23 +228,47 @@ class DocumentoServiceTest {
     @Test
     void asignaJuzgado() {
         int invocaciones = 2;
+
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1");
 
-        TipoCarpeta tipoCarpeta = demanda.getCarpeta().getTipoCarpeta();
-        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
-        juzgado = juzgadoService.getJuzgado(demanda.getCarpeta().getTipoJuicio(),demanda.getCarpeta().getTipoCarpeta());
-        assertThat(juzgado).isNotNull();
+        Documento apelacion = DocumentoSetUp.create(tipoJuicio);
+        apelacion.getCarpeta().setTipoCarpeta(TipoCarpeta.APELACION);
+        apelacion.getCarpeta().setFolio("2");
 
-        for (int i = 0; i < invocaciones; i++) {
-            juzgadoService.actualizarCarga(juzgado, tipoCarpeta);
+        Documento exhorto = DocumentoSetUp.create(tipoJuicio);
+        exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+        exhorto.getCarpeta().setFolio("3");
+
+        Documento[] documentos = {demanda, apelacion, exhorto};
+
+        for (Documento documento : documentos) {
+            TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
+
+            given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+
+
+            juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta);
+            assertThat(juzgado).isNotNull();
+
+            for (int i = 0; i < invocaciones; i++) {
+                juzgadoService.actualizarCarga(juzgado, tipoCarpeta);
+            }
+
+            juzgadoService.revisarCargaJuzgados(documento.getCarpeta().getTipoJuicio().getMateria(), tipoCarpeta);
         }
 
-        juzgadoService.revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
 
-        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, tipoCarpeta);
-        verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getCarpeta().getTipoJuicio().getMateria(), tipoCarpeta);
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.DEMANDA);
+        verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getCarpeta().getTipoJuicio().getMateria(), TipoCarpeta.DEMANDA);
+
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.APELACION);
+        verify(juzgadoService, times(1)).revisarCargaJuzgados(apelacion.getCarpeta().getTipoJuicio().getMateria(), TipoCarpeta.APELACION);
+
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.EXHORTO);
+        verify(juzgadoService, times(1)).revisarCargaJuzgados(exhorto.getCarpeta().getTipoJuicio().getMateria(), TipoCarpeta.EXHORTO);
+
     }
 
     @Test
