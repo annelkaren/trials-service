@@ -555,9 +555,9 @@ class DocumentoServiceTest {
         given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
                 .willReturn("Expediente");
 
-        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class), any(EstadoCarpeta.class)))
+        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class), any(EstadoCarpeta.class), any(String.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(PageRequest.of(1, listPage.size()));
+        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -573,7 +573,7 @@ class DocumentoServiceTest {
         given(personaService.getAuditor()).willReturn(persona);
 
         AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
-                documentoService.getAllBandejaRecepcion(PageRequest.of(1, 1)));
+                documentoService.getAllBandejaRecepcion("", PageRequest.of(1, 1)));
 
         assertThat(exception.getMessage()).contains("No tiene permiso para visualizar esta información");
     }

@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum EstadoCarpeta {
     CAPTURA,
     SALIDA,
+    RECEPCION,
     TURNADO,
     ASIGNADO
 }

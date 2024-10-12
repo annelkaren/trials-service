@@ -66,7 +66,7 @@ class DocumentoRepositoryTest extends AuditConfigTest {
 
     @Test
     void getAllBandejaRecepcion(){
-        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(PageRequest.of(0, 20), 51, EstadoCarpeta.TURNADO);
+        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(PageRequest.of(0, 20), 51, EstadoCarpeta.TURNADO, "");
         assertThat(page.get()).hasSize(1);
     }
 }
