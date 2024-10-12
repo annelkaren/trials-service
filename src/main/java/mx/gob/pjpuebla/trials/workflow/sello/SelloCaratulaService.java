@@ -59,6 +59,10 @@ public class SelloCaratulaService {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
 
+        if (persona == null) {
+            return "";
+        }
+
         String nombre = persona.nombre() != null ? persona.nombre() : "";
         String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
         String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";

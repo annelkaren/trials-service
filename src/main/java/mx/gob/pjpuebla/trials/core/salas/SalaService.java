@@ -141,7 +141,7 @@ public class SalaService {
 
         while(intentos <= max){
 
-            if (eventoService.esDiaHabil(fecha, juzgado, null)==Boolean.TRUE){
+            if (eventoService.esDiaInHabil(fecha, juzgado, null)==Boolean.TRUE){
                 fecha = eventoService.siguienteDiaHabil(fecha, juzgado, null);
             }
 
@@ -235,7 +235,7 @@ public class SalaService {
 
         while(intentos<=max){
 
-            if (eventoService.esDiaHabil(fecha, sala.getJuzgado(), null)==Boolean.TRUE){
+            if (eventoService.esDiaInHabil(fecha, sala.getJuzgado(), null)==Boolean.TRUE){
                 fecha = eventoService.siguienteDiaHabil(fecha, sala.getJuzgado(), null);
             }
 
