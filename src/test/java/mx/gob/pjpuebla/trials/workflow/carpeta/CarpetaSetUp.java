@@ -38,6 +38,16 @@ public class CarpetaSetUp {
                 .setJuzgado(juzgado)
                 .setSelloEstatus(SelloEstatus.VALIDO);
     }
+    public static Carpeta createOralidadFamiliar() {
+        return new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(TipoJuicioSetUp.createTipoJuicioOralFamiliar())
+                .setSelloEstatus(SelloEstatus.VALIDO);
+    }
 
     public static CarpetaResponseRecord createCarpetaResponseRecord(){
         return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2");

@@ -249,17 +249,6 @@
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$P{relacionExpediente}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="70" y="435" width="93" height="19" uuid="611b0b8e-b46b-470e-aff8-72462cf0960f">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<text><![CDATA[Domicilio familiar:]]></text>
-			</staticText>
 			<textField>
 				<reportElement stretchType="ContainerBottom" x="379" y="353" width="148" height="18" uuid="fe1e1a1d-8e15-493f-b29d-28e5c35e4087">
 					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
@@ -268,15 +257,6 @@
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{demandado}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="163" y="435" width="400" height="19" uuid="f3b315b0-07ba-4e37-b5f5-dd4eeeefa013">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{domiciliofamiliar}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="374" y="305" width="171" height="18" uuid="997c3f7e-ccf6-483b-98ff-534f75dcabbd">
@@ -486,6 +466,13 @@
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Fecha y hora de recepción:"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="ContainerHeight" x="70" y="430" width="410" height="20" uuid="62389025-999a-4a1b-b6b3-b9437d7a4c22">
+					<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html"/>
+				<textFieldExpression><![CDATA[$P{domiciliofamiliar}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

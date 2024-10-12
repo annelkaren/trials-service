@@ -39,4 +39,10 @@ class TipoJuicioEtiquetaRepositoryTest extends AuditConfigTest {
                 .isNotNull()
                 .hasSize(2);
     }
+    @Test
+    void getEtiquetaByNombreAndTipoJuicio(){
+        String etiqueta = tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(100, "documento");
+        assertThat(etiqueta).isEqualTo("Demanda");
+    }
+
 }

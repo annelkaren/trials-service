@@ -3,12 +3,14 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import java.util.Optional;
 import java.time.LocalDateTime;
 
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import org.springframework.data.repository.query.Param;
 
 public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
@@ -25,5 +27,17 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     """)
     LocalDateTime getFechaUltimaAudiencia(Juzgado juzgado, TipoAudiencia tipoAudiencia);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord(
+                jue.nombre, s.nombre, tj.nombre, a.fechaAudiencia)
+            FROM Audiencia a
+            JOIN a.carpeta c
+            JOIN c.tipoJuicio tj
+            JOIN a.sala s
+            JOIN s.juez jue
+            WHERE c.id = :carpetaId
+            """)
+    AudienciaOralidadFamiliarRecord getJuzAndSalaAndAudienciaByIdcarpeta(@Param("carpetaId") Integer carpetaId);
 
 }
