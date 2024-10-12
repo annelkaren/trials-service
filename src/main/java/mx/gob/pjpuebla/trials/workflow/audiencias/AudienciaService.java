@@ -50,53 +50,23 @@ public class AudienciaService {
     }
 
     public ExtraAudienciaSelloRecord getAudienciaAndSalaAndDomicilio(Documento documento) {
-        String tipoOralidadFamiliar = "";
-        String fechaFormateada;
-        String etiqueta;
         AudienciaOralidadFamiliarRecord audienciaOralidadFamiliarRcord =
                 audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(documento.getCarpeta().getId());
 
+        String fechaFormateada = (audienciaOralidadFamiliarRcord != null) ?
+                audienciaOralidadFamiliarRcord.fechaAudiencia().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+
         if (audienciaOralidadFamiliarRcord == null) {
             audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("", "", "", LocalDateTime.MIN);
-            fechaFormateada = "";
-        }else{
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            fechaFormateada = audienciaOralidadFamiliarRcord.fechaAudiencia().format(formatter);
         }
 
-        //Domicilio Familiar Sello
-        if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("alimentos")){
-            tipoOralidadFamiliar = "eOralidadFamiliarA";
-        }else if(documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("divorcio") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("incausado") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("unilateral"))
-        {
-            tipoOralidadFamiliar = "eOralidadFamiliarDIU";
-        }else if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("divorcio") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("incausado") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("bilateral"))
-        {
-            tipoOralidadFamiliar = "eOralidadFamiliarDIB";
-        } else if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("guardia") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("custodia"))
-        {
-            tipoOralidadFamiliar = "eOralidadFamiliarGC";
-        } else if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("visita ") &&
-                documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("convivencia"))
-        {
-            tipoOralidadFamiliar = "eOralidadFamiliarVC";
-        }else{
-            tipoOralidadFamiliar = "XX";
-        }
+        String tipoJuicioNombre = documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase();
+        String tipoOralidadFamiliar = determinarTipoOralidadFamiliar(tipoJuicioNombre);
 
         String calle = documento.getData().getDomicilio();
-        etiqueta = tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(documento.getCarpeta().getTipoJuicio().getId(), tipoOralidadFamiliar);
-
-        if(etiqueta == null){
-            etiqueta = "";
-        }else{
-            etiqueta = etiqueta + ":<b> " + calle + "</b>";
-        }
+        String etiqueta = tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(
+                documento.getCarpeta().getTipoJuicio().getId(), tipoOralidadFamiliar);
+        etiqueta = (etiqueta != null) ? etiqueta + ":<b> " + calle + "</b>" : "";
 
         return new ExtraAudienciaSelloRecord(
                 audienciaOralidadFamiliarRcord.nombreJuez(),
@@ -105,6 +75,20 @@ public class AudienciaService {
                 fechaFormateada,
                 etiqueta
         );
+    }
+
+    private String determinarTipoOralidadFamiliar(String tipoJuicioNombre) {
+        if (tipoJuicioNombre.contains("alimentos")) {
+            return "eOralidadFamiliarA";
+        } else if (tipoJuicioNombre.contains("divorcio") && tipoJuicioNombre.contains("incausado")) {
+            return tipoJuicioNombre.contains("unilateral") ? "eOralidadFamiliarDIU" : "eOralidadFamiliarDIB";
+        } else if (tipoJuicioNombre.contains("guardia") && tipoJuicioNombre.contains("custodia")) {
+            return "eOralidadFamiliarGC";
+        } else if (tipoJuicioNombre.contains("visita") && tipoJuicioNombre.contains("convivencia")) {
+            return "eOralidadFamiliarVC";
+        } else {
+            return "XX";
+        }
     }
 
 
