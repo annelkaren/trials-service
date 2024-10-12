@@ -125,7 +125,7 @@ public class DocumentoService {
         createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
         addAnexos(documentoRecord.anexos(), documento);
-        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
 
         //flujo para demanda de oralidad:
         if (tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")) {
@@ -339,8 +339,7 @@ public class DocumentoService {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase("EXHORTO")
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado con nombre: Exhorto", "EXHORTO"));
         carpeta.setTipoJuicio(tipoJuicio);
-
-        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio,  carpeta.getTipoCarpeta()));
+        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio, carpeta.getTipoCarpeta()));
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
@@ -357,7 +356,7 @@ public class DocumentoService {
         documento = documentoRepository.save(documento);
 
         addAnexos(documentoExhortoRecord.anexos(), documento);
-        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -422,7 +421,7 @@ public class DocumentoService {
             entity.setCarpeta(carpeta);
             personaDocumentoRepository.save(entity);
         }
-        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta() );
+        juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -195,15 +196,15 @@ public class JuzgadoService {
 
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
-        } else if(TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+        } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
-        }else {
+        } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
         if (juzgados.isEmpty()) {
-            revisarCargaJuzgados(tipoJuicio.getMateria() , tipoCarpeta);
+            revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
             if (juzgados.isEmpty())
@@ -217,7 +218,7 @@ public class JuzgadoService {
 
     public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
-        revisarCargaJuzgados(juzgado.getMateria(),tipoCarpeta );
+        revisarCargaJuzgados(juzgado.getMateria(), tipoCarpeta);
     }
 
     public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta) {
@@ -226,15 +227,15 @@ public class JuzgadoService {
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
 
-        }  else if(TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+        } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
-        }else {
+        } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
 
         int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
         int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
-        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia,  instanciaJuzgado).size();
+        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia, instanciaJuzgado).size();
 
         if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
             juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
