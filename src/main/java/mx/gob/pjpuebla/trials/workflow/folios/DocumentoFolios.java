@@ -6,10 +6,12 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
+import java.io.Serializable;
+
 @Data
 @Entity
 @Table(name="TBL_DOCUMENTOS_FOLIOS")
-public class DocumentoFolios {
+public class DocumentoFolios implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocumentoFolios")
     @SequenceGenerator(name = "idDocumentoFolios", sequenceName = "SEQ_DOCUMENTOS_FOLIOS_ID", allocationSize = 1)

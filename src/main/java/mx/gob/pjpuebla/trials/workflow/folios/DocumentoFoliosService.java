@@ -25,20 +25,11 @@ public class DocumentoFoliosService {
         CentroTrabajoRecord centroTrabajo = getCentroTrabajoRecord(juzgado, oficialia);
 
         Optional<DocumentoFolios> documentoFolio = documentoFolioRepository
-                .findByCentroTrabajoAndTipoDocumento(centroTrabajo, tipoDocumento);
+                .findByCentroTrabajoAndTipoDocumento(centroTrabajo.id(), centroTrabajo.tipo(), tipoDocumento);
 
-        documentoFolio.map((f)->{
-            Integer folio = f.getFolio()+1;
-            documentoFolioRepository.updateFolio(f.getId(), folio);
+        return documentoFolio.map(this::folioActualizado)
+        .orElse(create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio());
 
-            return folio;
-        }).orElseGet(()->{
-            DocumentoFolios nuevo = create(getDocumentoFolios(tipoDocumento, centroTrabajo));
-
-            return nuevo.getFolio();
-        });
-
-        throw new NotFoundException("Folio","No se puede generar un número de Folio");
     }
 
     private static CentroTrabajoRecord getCentroTrabajoRecord(Juzgado juzgado, Oficialia oficialia) {
@@ -71,4 +62,30 @@ public class DocumentoFoliosService {
         return documentoFolioRepository.save(documentoFolios);
     }
 
+    public DocumentoFolios save(DocumentoFolios documentoFolios){
+        if(documentoFolios.getTipoCentroTrabajo()==TipoCentroTrabajo.JUZGADO &&
+            juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())){
+                return  documentoFolioRepository.save(documentoFolios);
+            }
+        
+
+        if (documentoFolios.getTipoCentroTrabajo()==TipoCentroTrabajo.OFICIALIA_COMUN && 
+            oficialiaRepository.existsById(documentoFolios.getId())){
+                return  documentoFolioRepository.save(documentoFolios);
+            }
+        
+        throw new NotFoundException("Centro de Trabajo", "No se puede generar el número de folio");
+    }
+
+    public void delete(DocumentoFolios documentoFolio){
+        documentoFolioRepository.deleteById(documentoFolio.getId());
+    }
+
+    private Integer folioActualizado(DocumentoFolios documentoFolios){
+        Integer folio = documentoFolios.getFolio()+1;
+
+        documentoFolioRepository.updateFolio(documentoFolios.getId(), folio);
+
+        return folio;
+    }
 }
