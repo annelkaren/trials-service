@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import java.util.List;
 import java.util.UUID;
 
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
