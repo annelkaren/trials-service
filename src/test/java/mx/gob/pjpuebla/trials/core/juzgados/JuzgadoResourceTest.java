@@ -175,4 +175,16 @@ class JuzgadoResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void getAllByEstadoAuto_success() throws Exception {
+        given(mockJuzgadoService.findAllByEstadoAutocomplete(any(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
+
+        mockMvc.perform(
+                get("/api/core/juzgados/autocomplete")
+                        .param("key", "J")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 }

@@ -263,5 +263,10 @@ public class JuzgadoService {
         return juzgadoFolios;
     }
 
+    @Transactional(readOnly = true)
+    public Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
+    }
 
 }
