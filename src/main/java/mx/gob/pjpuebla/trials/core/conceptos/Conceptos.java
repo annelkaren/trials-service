@@ -39,7 +39,6 @@ public class Conceptos implements Serializable, Auditable {
     private String nombre;
 
     @Max(Integer.MAX_VALUE)
-    @Version
     @Column(name = "N_DIAS")
     private Integer dias;
 

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.conceptos.Conceptos;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -70,6 +71,10 @@ public class Documento implements Serializable, Auditable {
 
     @Column(name = "T_FECHA_ASIGNACION")
     private LocalDateTime fechaAsignacion;
+
+    @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Conceptos concepto;
 
     @Accessors(chain = false)
     @Embedded
