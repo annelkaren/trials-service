@@ -153,6 +153,8 @@ class JuzgadoServiceTest {
                 .willReturn(Optional.ofNullable(juzgado.getSede()));
         given(juzgadoRepository.save(juzgado))
                 .willReturn(juzgado);
+        given(juzgadoRepository.findById(juzgado.getId()))
+                .willReturn(Optional.of(juzgado.setContadorAsignaciones(0)));
 
         JuzgadoRecordItem response = juzgadoService.update(juzgado);
 
@@ -191,6 +193,8 @@ class JuzgadoServiceTest {
                 .willReturn(Optional.ofNullable(juzgado.getMateria()));
         given(sedeRepository.findById(juzgado.getSede().getId()))
                 .willReturn(Optional.ofNullable(juzgado.getSede()));
+        given(juzgadoRepository.findById(juzgado.getId()))
+                .willReturn(Optional.of(juzgado.setContadorAsignaciones(0)));
         given(juzgadoRepository.save(juzgado))
                 .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
