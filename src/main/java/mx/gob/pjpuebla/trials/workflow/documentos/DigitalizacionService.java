@@ -109,10 +109,20 @@ public class DigitalizacionService {
         String expediente = expedienteArray[0].trim(); // Número del expediente
         String year = expedienteArray[1].trim(); // Año del expediente
         String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", ""); // Nombre del juzgado
+        String nombreCarpeta;
+        Path rootPath;
 
         // Creación de la ruta donde se espera encontrar el archivo
-        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado, expediente);
+        Path basePath = Paths.get(rootFolder, "digitalizacion", year, juzgado);
 
+        if(TipoCarpeta.EXHORTO.equals(doc.getCarpeta().getTipoCarpeta())) {
+            nombreCarpeta = expediente;
+            rootPath = basePath.resolve(Paths.get("entrada", nombreCarpeta));
+        }else {
+            nombreCarpeta = String.format("%06d", Integer.parseInt(expediente));
+            rootPath = basePath.resolve(nombreCarpeta);
+
+        }
         Path filePath = rootPath.resolve(doc.getRuta()); // Ruta completa del archivo
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes

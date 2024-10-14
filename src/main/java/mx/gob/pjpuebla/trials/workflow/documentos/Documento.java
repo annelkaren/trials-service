@@ -60,6 +60,10 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoCarpeta estatus;
 
+    @Size(max = 15)
+    @Column(name = "S_FOLIO")
+    private String folio;
+
     @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Persona persona;

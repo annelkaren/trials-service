@@ -13,7 +13,8 @@ public record MovimientoSalidaRecord(
     String expediente,
     LocalDateTime fecha,
     String juzgado,
-    Object data
+    Object data,
+    String documentoFolio
 
 ) implements Serializable {
 

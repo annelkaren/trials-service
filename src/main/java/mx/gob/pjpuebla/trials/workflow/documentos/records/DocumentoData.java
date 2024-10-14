@@ -16,7 +16,6 @@ public class DocumentoData implements Serializable {
     private String cedulaAbogado;
     private String correoAbogado;
     private String domicilio;
-    private String promocionFolio;
     private TipoPromocion tipoPromocion;
     private String exhortoObservaciones;
     private String exhortoProcedencia;

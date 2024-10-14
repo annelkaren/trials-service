@@ -16,17 +16,16 @@ public class MovimientoSalidaDTO {
     private String juzgado;
     private String observaciones;
 
-    public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento){
-        String folioTmp = recordMovimiento.folio();
+    public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
+        String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
         String observacionesTmp = "";
 
         DocumentoData data = (DocumentoData) recordMovimiento.data();
 
-        if (data!=null){
-            folioTmp = data.getPromocionFolio().isEmpty()?recordMovimiento.folio():data.getPromocionFolio();
-            observacionesTmp = data.getExhortoObservaciones().isEmpty()?"":data.getExhortoObservaciones();
+        if (data != null) {
+            observacionesTmp = data.getExhortoObservaciones().isEmpty() ? "" : data.getExhortoObservaciones();
         }
-        
+
         this.setUuid(recordMovimiento.uuid());
         this.setTipoDocumento(recordMovimiento.tipoDocumento().name());
         this.setFolio(folioTmp);
