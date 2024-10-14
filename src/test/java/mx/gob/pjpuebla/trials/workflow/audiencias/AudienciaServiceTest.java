@@ -20,9 +20,9 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
-import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.TipoJuicioEtiqueta;
-import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.TipoJuicioEtiquetaRepository;
-import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.TipoJuicioEtiquetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +50,7 @@ class AudienciaServiceTest {
     private BloqueRepository bloqueRepository;
 
     @Mock
-    private TipoJuicioEtiquetaRepository tipoJuicioEtiquetaRepository;
+    private EtiquetaRepository etiquetaRepository;
 
     @InjectMocks
     private AudienciaService audienciaService;
@@ -63,7 +63,7 @@ class AudienciaServiceTest {
     private Documento documento;
     private Persona persona;
     private TipoJuicio tipoJuicio;
-    private TipoJuicioEtiqueta tipoJuicioEtiqueta;
+    private Etiqueta tipoJuicioEtiqueta;
 
     @BeforeEach
     public void setUp() {
@@ -75,7 +75,7 @@ class AudienciaServiceTest {
         tipoJuicio = TipoJuicioSetUp.createTipoJuicioOralFamiliar();
         persona = PersonaSetUp.createPersona();
         documento = DocumentoSetUp.create_data(tipoJuicio);
-        tipoJuicioEtiqueta = TipoJuicioEtiquetaSetUp.createTipoJuicioEtiqueta(tipoJuicio.getId());
+        tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
 
     }
 
@@ -110,7 +110,6 @@ class AudienciaServiceTest {
 
     @Test
     void DomicilioByaudiencias() {
-        String tipoOralidadFamiliar = "eOralidadFamiliarA";
         AudienciaOralidadFamiliarRecord audiencia = new AudienciaOralidadFamiliarRecord(
                 persona.getNombre(),
                 sala.getNombre(),
@@ -119,7 +118,7 @@ class AudienciaServiceTest {
         );
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
-        when(tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(tipoJuicio.getId(),tipoOralidadFamiliar)).thenReturn(tipoJuicioEtiqueta.getValue());
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(),"eOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -134,9 +133,8 @@ class AudienciaServiceTest {
 
     @Test
     void DomicilioByaudiencias_isEmpty() {
-        String tipoOralidadFamiliar = "eOralidadFamiliarA";
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(null);
-        when(tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(tipoJuicio.getId(), tipoOralidadFamiliar)).thenReturn(null);
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "eOralidadFamiliar")).thenReturn(null);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
         assertThat(entity).isNotNull();

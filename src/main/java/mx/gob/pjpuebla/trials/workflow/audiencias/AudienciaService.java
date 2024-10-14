@@ -3,7 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas.TipoJuicioEtiquetaRepository;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -29,7 +30,7 @@ public class AudienciaService {
     private final AudienciaRepository audienciaRepository;
     private final SalaRepository salaRepository;
     private final BloqueRepository bloqueRepository;
-    private final TipoJuicioEtiquetaRepository tipoJuicioEtiquetaRepository;
+    private final EtiquetaRepository etiquetaRepository;
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -60,37 +61,17 @@ public class AudienciaService {
             audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("", "", "", LocalDateTime.MIN);
         }
 
-        String tipoJuicioNombre = documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase();
-        String tipoOralidadFamiliar = determinarTipoOralidadFamiliar(tipoJuicioNombre);
-
         String calle = documento.getData().getDomicilio();
-        String etiqueta = tipoJuicioEtiquetaRepository.getEtiquetaByNombreAndTipoJuicio(
-                documento.getCarpeta().getTipoJuicio().getId(), tipoOralidadFamiliar);
-        etiqueta = (etiqueta != null) ? etiqueta + ":<b> " + calle + "</b>" : "";
+        Etiqueta etiqueta = etiquetaRepository.findByTipoJuicioIdAndNombre(
+                documento.getCarpeta().getTipoJuicio().getId(), "eOralidadFamiliar");
+        String label = (etiqueta != null) ? etiqueta.getValue() + ":<b> " + calle + "</b>" : "";
 
         return new ExtraAudienciaSelloRecord(
                 audienciaOralidadFamiliarRcord.nombreJuez(),
                 audienciaOralidadFamiliarRcord.nombreSala(),
                 audienciaOralidadFamiliarRcord.nombreTipoJuicio(),
                 fechaFormateada,
-                etiqueta
+                label
         );
     }
-
-    private String determinarTipoOralidadFamiliar(String tipoJuicioNombre) {
-        if (tipoJuicioNombre.contains("alimentos")) {
-            return "eOralidadFamiliarA";
-        } else if (tipoJuicioNombre.contains("divorcio") && tipoJuicioNombre.contains("incausado")) {
-            return tipoJuicioNombre.contains("unilateral") ? "eOralidadFamiliarDIU" : "eOralidadFamiliarDIB";
-        } else if (tipoJuicioNombre.contains("guardia") && tipoJuicioNombre.contains("custodia")) {
-            return "eOralidadFamiliarGC";
-        } else if (tipoJuicioNombre.contains("visita") && tipoJuicioNombre.contains("convivencia")) {
-            return "eOralidadFamiliarVC";
-        } else {
-            return "XX";
-        }
-    }
-
-
-
 }
