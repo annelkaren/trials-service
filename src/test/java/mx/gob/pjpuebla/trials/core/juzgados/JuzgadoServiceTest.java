@@ -63,6 +63,7 @@ class JuzgadoServiceTest {
 
     private Juzgado juzgado;
     private JuzgadoFolios juzgadoFolios;
+    private JuzgadoRecordItem juzgadoRecordItem;
 
     @BeforeEach
     public void setUp() {
@@ -78,6 +79,7 @@ class JuzgadoServiceTest {
                 .setTipoJuicios(List.of(tipoJuicio));
         juzgadoFolios = createJuzgadoFolios();
         juzgadoFolios.setJuzgado(juzgado);
+        juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
     }
 
     @Test
@@ -354,5 +356,20 @@ class JuzgadoServiceTest {
         Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto);
 
         assertThat(resultJuzgadoExhorto).isEqualTo(juzgadoNoAplica);
+    }
+
+    @Test
+    void getAllByEstadoAutocomplete_return_page() {
+        List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
+        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        Page<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("", PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", juzgado.getId())
+                .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
+                .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
+                .hasFieldOrPropertyWithValue("materia", juzgado.getMateria().getNombre());
     }
 }
