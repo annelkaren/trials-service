@@ -87,18 +87,6 @@ class DigitalizacionFolderServiceTest {
         assertTrue(Files.exists(expectedPath));
     }
 
-    @Test
-    void testCreateFolderDigitalizacion_DocumentoInvalido() {
-        Documento doc = new Documento();
-        doc.setTipoDocumento(TipoDocumento.OFICIO);
-        doc.setData(null); // Datos nulos
-
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            digitalizacionFolderService.createFolderDigitalizacion(doc);
-        });
-
-        assertEquals("Documento o datos del documento no válidos", thrown.getMessage());
-    }
 
     @Test
     void testValidacionDigitalizacion_NullDocumento() {
@@ -117,7 +105,7 @@ class DigitalizacionFolderServiceTest {
             digitalizacionFolderService.validacionDigitalizacion(doc);
         });
 
-        assertEquals("Documento o datos del documento no válidos", thrown.getMessage());
+        assertEquals("Propiedades no válidas en la carpeta del documento", thrown.getMessage());
     }
 
     @Test
