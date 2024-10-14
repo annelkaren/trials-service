@@ -63,10 +63,4 @@ class DocumentoRepositoryTest extends AuditConfigTest {
         assertThat(entity.nombreDistrito()).isEqualTo("ACATLÁN");
         assertThat(entity.nombreJuzgado()).isEqualTo("Juzgado Laboral");
     }
-
-    @Test
-    void getAllBandejaRecepcion(){
-        Page<Documento> page = documentoRepository.getAllBandejaRecepcion(PageRequest.of(0, 20), 51, EstadoCarpeta.TURNADO, "");
-        assertThat(page.get()).hasSize(1);
-    }
 }

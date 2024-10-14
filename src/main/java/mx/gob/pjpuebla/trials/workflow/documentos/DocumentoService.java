@@ -43,6 +43,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Transactional
 @RequiredArgsConstructor
@@ -62,7 +63,6 @@ public class DocumentoService {
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
     private final EtiquetaService etiquetaService;
-    private final MovimientoRepository movimientoRepository;
     private final RoleService roleService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
@@ -320,9 +320,9 @@ public class DocumentoService {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId()).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
+        documento.setFolio(getFolio("P"));
 
         DocumentoData documentoData = new DocumentoData();
-        documentoData.setPromocionFolio(getFolio("P"));
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
 
         documento.setData(documentoData);
@@ -334,7 +334,7 @@ public class DocumentoService {
         addAnexos(documentoPromocionRecord.anexos(), documento);
         movimientoService.createMovimento(null, documento, documento.getPersona(), EstadoCarpeta.CAPTURA.name());
 
-        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
+        return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
     @Transactional
@@ -439,14 +439,14 @@ public class DocumentoService {
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        if(roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")){
+        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
-        Page<Movimiento> page = movimientoRepository.getAllBandejaRecepcion(
+        Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                 pageable, currentUser.getJuzgado().getId(),
                 Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION), key,
                 Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
@@ -455,7 +455,7 @@ public class DocumentoService {
             Carpeta carpeta = movimiento.getCarpeta();
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() :
                     documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
-            String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getData().getPromocionFolio();
+            String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
             String origen = getOrigen(movimiento, currentUser);
             String concepto = "";//TODO agregar concepto
@@ -467,16 +467,16 @@ public class DocumentoService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    private String getOrigen(Movimiento movimiento, Persona persona) {
+    protected String getOrigen(Movimiento movimiento, Persona persona) {
         if (persona.getJuzgado() != null) {
-            if (movimiento.getJuzgado() != null && movimiento.getJuzgado().getId() == persona.getJuzgado().getId()) {
+            if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
                 return persona.getNombre() + " " + persona.getApellidoPaterno();
             } else {
                 return persona.getJuzgado().getNombre();
             }
         }
         if (persona.getOficialia() != null) {
-            if (movimiento.getOficialia() != null && movimiento.getOficialia().getId() == persona.getOficialia().getId()) {
+            if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
                 return persona.getNombre() + " " + persona.getApellidoPaterno();
             } else {
                 return persona.getOficialia().getNombre();

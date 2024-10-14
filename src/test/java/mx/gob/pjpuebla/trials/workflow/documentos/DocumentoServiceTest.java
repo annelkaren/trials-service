@@ -13,9 +13,11 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -39,7 +41,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
-import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -52,7 +54,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Arrays;
@@ -102,8 +103,6 @@ class DocumentoServiceTest {
     @Mock
     private CarpetaRepository carpetaRepository;
     @Mock
-    private JuzgadoFoliosRepository juzgadoFoliosRepository;
-    @Mock
     private MovimientoService movimientoService;
     @Mock
     private AuditorAware<Jwt> auditorAware;
@@ -113,6 +112,8 @@ class DocumentoServiceTest {
     private PersonaRepository personaRepository;
     @Mock
     private EtiquetaService etiquetaService;
+    @Mock
+    private RoleService roleService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -462,9 +463,10 @@ class DocumentoServiceTest {
     @Test
     void createPromocion() {
         Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
-        DocumentoData documentoData = new DocumentoData().setPromocionFolio("1").setTipoPromocion(TipoPromocion.OFICIO);
+        DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.OFICIO);
         Documento promocion = DocumentoSetUp.create(tipoJuicio);
         promocion.setData(documentoData);
+        promocion.setFolio("");
         promocion.setTipoDocumento(TipoDocumento.PROMOCION);
 
         given(carpetaRepository.findById(any())).willReturn(Optional.of((carpeta)));
@@ -479,7 +481,7 @@ class DocumentoServiceTest {
         assertThat(documentoResponse)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("id", promocion.getId())
-                .hasFieldOrPropertyWithValue("folio", documentoData.getPromocionFolio())
+                .hasFieldOrPropertyWithValue("folio", promocion.getFolio())
                 .hasFieldOrPropertyWithValue("tipoDocumento", promocion.getTipoDocumento());
     }
 
@@ -549,15 +551,21 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
-        List<Documento> listPage = Collections.singletonList(demanda);
-        Persona persona = new Persona().setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
+        List<Movimiento> listPage = Collections.singletonList(movimiento);
+        Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
         given(personaService.getAuditor()).willReturn(persona);
+        given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
         given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
                 .willReturn("Expediente");
 
-        given(documentoRepository.getAllBandejaRecepcion(any(PageRequest.class), any(Integer.class), any(EstadoCarpeta.class), any(String.class)))
+        List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
+        List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
+        given(movimientoService.getAllBandejaRecepcion(
+                PageRequest.of(0, listPage.size()),
+                juzgado.getId(), list, "", motivos))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(1, listPage.size()));
+        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(0, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -568,13 +576,47 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void getAllBandejaRecepcion_accessDeniedException() {
-        Persona persona = new Persona();
+    void getAllBandejaRecepcion_accessDenied() {
+        Persona persona = new Persona().setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
         given(personaService.getAuditor()).willReturn(persona);
+        given(roleService.hasRole(any(String.class), any(String.class))).willReturn(false);
 
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
-                documentoService.getAllBandejaRecepcion("", PageRequest.of(1, 1)));
+        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(1, 20));
+        assertThat(page.getContent().size()).isEqualTo(0);
+    }
 
-        assertThat(exception.getMessage()).contains("No tiene permiso para visualizar esta información");
+    @Test
+    void getOrigen_juzgado() {
+        //Mismo juzgado
+        Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
+        Persona persona = new Persona().setJuzgado(juzgado).setNombre("Juan");
+        String origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen).contains(persona.getNombre());
+        //diferente juzgado
+        persona = new Persona().setJuzgado(new Juzgado()).setNombre("Juzgado 2").setId(100L);
+        origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen).isEqualTo(persona.getJuzgado().getNombre());
+    }
+
+    @Test
+    void getOrigen_oficialia() {
+        //Misma oficialia
+        Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
+        Movimiento movimiento = new Movimiento().setOficialia(oficialia);
+        Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
+        String origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen).contains(persona.getNombre());
+        //diferente oficialia
+        persona = new Persona().setOficialia(new Oficialia().setNombre("Oficialia 2").setId(3));
+        origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen).isEqualTo(persona.getOficialia().getNombre());
+    }
+
+    @Test
+    void getOrigen_invalid() {
+        Movimiento movimiento = new Movimiento();
+        Persona persona = new Persona();
+        String origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen).isEqualTo("");
     }
 }

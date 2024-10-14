@@ -18,7 +18,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     @Query
             ("""
                     SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord(
-                    m.uuid, c.tipoCarpeta, c.folio, c.expediente, m.fechaAsignacion, j.nombre, d.data
+                    m.uuid, c.tipoCarpeta, c.folio, c.expediente, m.fechaAsignacion, j.nombre, d.data, d.folio
                     )
                     FROM Movimiento m
                     LEFT JOIN Carpeta c on c = m.carpeta and c.estatus = :estadoCarpeta
@@ -42,6 +42,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             + "OR mov.documento.id = d.id) AND mov.motivo IN (:motivos)) "
             + "AND (jc.id = :juzgadoId OR jcd.id = :juzgadoId) "
             + "AND (LOWER(c.folio) LIKE %:key% OR LOWER(c.expediente) LIKE %:key% "
+            + "OR LOWER(d.folio) LIKE %:key% "
             + "OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key% "
             + "OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key% "
             + "OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%) "

@@ -9,6 +9,8 @@ import java.util.UUID;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,12 @@ public class MovimientoService {
 
     private final MovimientoRepository movimientoRepository;
 
-    public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid){
+    public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid) {
 
         UUID uuidMov = UUID.fromString(uuid);
         return movimientoRepository.getSalidas(uuidMov, EstadoCarpeta.TURNADO);
     }
-    
+
     public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo) {
         Movimiento movimiento = new Movimiento()
                 .setCarpeta(carpeta)
@@ -38,5 +40,9 @@ public class MovimientoService {
                 .setJuzgado(persona.getJuzgado());
         movimiento = this.movimientoRepository.save(movimiento);
         return movimiento;
+    }
+
+    public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos) {
+        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos);
     }
 }
