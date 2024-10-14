@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -23,18 +24,23 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Transactional
 @RequiredArgsConstructor
@@ -53,6 +59,8 @@ public class DocumentoService {
     private final AudienciaService audienciaService;
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
+    private final EtiquetaService etiquetaService;
+    private final RoleService roleService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -309,9 +317,9 @@ public class DocumentoService {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId()).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
+        documento.setFolio(getFolio("P"));
 
         DocumentoData documentoData = new DocumentoData();
-        documentoData.setPromocionFolio(getFolio("P"));
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
 
         documento.setData(documentoData);
@@ -323,7 +331,7 @@ public class DocumentoService {
         addAnexos(documentoPromocionRecord.anexos(), documento);
         movimientoService.createMovimento(null, documento, documento.getPersona(), EstadoCarpeta.CAPTURA.name());
 
-        return new DocumentoPromocionResponseRecord(documento.getId(), documentoData.getPromocionFolio(), documento.getTipoDocumento());
+        return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
     @Transactional
@@ -424,5 +432,55 @@ public class DocumentoService {
         movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
+
+    public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona currentUser = personaService.getAuditor();
+        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
+            return renderOficialMayorData(key, pageable, currentUser);
+        }
+        return new PageImpl<>(new ArrayList<>(), pageable, 0);
+    }
+
+    private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
+        Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
+                pageable, currentUser.getJuzgado().getId(),
+                Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION), key,
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+        List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();
+        for (Movimiento movimiento : page.getContent()) {
+            Carpeta carpeta = movimiento.getCarpeta();
+            Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() :
+                    documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+            String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
+            String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
+            String origen = getOrigen(movimiento, currentUser);
+            String concepto = "";//TODO agregar concepto
+            DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
+                    documento.getId(), folio, documento.getCarpeta().getExpediente(), tipoEntrada, origen,
+                    concepto, movimiento.getFechaAsignacion());
+            list.add(record);
+        }
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    protected String getOrigen(Movimiento movimiento, Persona persona) {
+        if (persona.getJuzgado() != null) {
+            if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
+                return persona.getNombre() + " " + persona.getApellidoPaterno();
+            } else {
+                return persona.getJuzgado().getNombre();
+            }
+        }
+        if (persona.getOficialia() != null) {
+            if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
+                return persona.getNombre() + " " + persona.getApellidoPaterno();
+            } else {
+                return persona.getOficialia().getNombre();
+            }
+        }
+        return "";
+    }
 }
+
 

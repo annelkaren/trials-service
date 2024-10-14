@@ -1,7 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +15,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,5 +79,15 @@ class MovimientosRepositoryTest extends AuditConfigTest {
         assertThat(movimientos)
             .isNotEmpty()
             .anyMatch(movimiento -> movimiento.uuid().equals(uuid));
+    }
+
+    @Test
+    void getAllBandejaRecepcion(){
+        Page<Movimiento> page = movimientoRepository.getAllBandejaRecepcion(
+                PageRequest.of(0, 20),
+                51, Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
+                "",
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+        assertThat(page.get()).hasSize(1);
     }
 }

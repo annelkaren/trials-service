@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.tipojuicioetiquetas;
+package mx.gob.pjpuebla.trials.workflow.etiquetas;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.*;
@@ -26,14 +26,14 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/DELETE_TIPO_SISTEMAS.sql",
         "/scripts/DELETE_MATERIAS.sql"
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-class TipoJuicioEtiquetaRepositoryTest extends AuditConfigTest {
+class EtiquetaRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private TipoJuicioEtiquetaRepository tipoJuicioEtiquetaRepository;
+    private EtiquetaRepository etiquetaRepository;
 
     @Test
     void getAllByTipoJuicioId() {
-        List<TipoJuicioEtiqueta> list = tipoJuicioEtiquetaRepository.findByTipoJuicioId(100);
+        List<Etiqueta> list = etiquetaRepository.findByTipoJuicioId(100);
 
         assertThat(list)
                 .isNotNull()
