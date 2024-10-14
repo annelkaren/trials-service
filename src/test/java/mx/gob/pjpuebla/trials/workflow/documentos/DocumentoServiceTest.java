@@ -38,15 +38,15 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +56,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,9 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentoServiceTest {
@@ -571,6 +570,41 @@ class DocumentoServiceTest {
         verify(anexoRepository).save(any(Anexo.class));
         verify(personaDocumentoRepository, times(apelacionRecord.apelacionPersonaRecords().size())).save(any(PersonaDocumento.class));
     }
+
+    @Test
+    void getAll_bandeja_salida_success() {
+        DocumentoSalidaRecord documentoRecord = new DocumentoSalidaRecord(
+                1,
+                1,
+                "1",
+                "000001/2024",
+                1,
+                "Juzgado Primero",
+                "LABORAL",
+                TipoCarpeta.DEMANDA,
+                null,
+                LocalDateTime.now(),
+                SelloEstatus.VALIDO,
+                EstadoCarpeta.TURNADO);
+        List<DocumentoSalidaRecord> listPage = Collections.singletonList(documentoRecord);
+
+        given(documentoRepository.findByEstatusSalida(any(), any(), any(), any()))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(personaService.getAuditor())
+                .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
+
+
+        Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("", PageRequest.of(1, listPage.size()));
+        System.out.println(page.getContent());
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("movid", documentoRecord.movid())
+                .hasFieldOrPropertyWithValue("id", documentoRecord.id())
+                .hasFieldOrPropertyWithValue("expediente", documentoRecord.expediente())
+                .hasFieldOrPropertyWithValue("materia", documentoRecord.materia());
+    }
+
 
     @Test
     void getAllBandejaRecepcion_return_page() {

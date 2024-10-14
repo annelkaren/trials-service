@@ -12,6 +12,8 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord;
@@ -51,6 +53,7 @@ public class SelloGenerator {
     private final CarpetaRepository carpetaRepository;
     private final OficialiaRepository oficialiaRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final AudienciaService audienciaService;
 
     @Value("classpath:jasper/selloReport.jasper")
     private Resource sello;
@@ -76,6 +79,7 @@ public class SelloGenerator {
 
         PersonaDocumentoRecord actor = getInfoPersona(documento.getCarpeta().getId(), "Actor");
         PersonaDocumentoRecord demandado = getInfoPersona(documento.getCarpeta().getId(), "Demandado");
+        ExtraAudienciaSelloRecord audiencia = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         documento = updateExpedientePorTipoJuicio(documento);
         expedientesByDemandadoActor(demandado.nombre(), actor.nombre());
@@ -95,8 +99,8 @@ public class SelloGenerator {
         parameters.put("marcaAgua", "jasper/escudo.png");
         parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("isOralProExh", isPromocionOralidadExhorto); //es - Promocion - Oralidad - Exhorto
-        parameters.put("sala", "Pendiente sala");
-        parameters.put("fechaHoraAudiencia", "Pendiente fechaHoraAudiencia");
+        parameters.put("sala", audiencia.nombreSala());
+        parameters.put("fechaHoraAudiencia", audiencia.fechaAudiencia());
         parameters.put("tipoJuicio", documento.getCarpeta().getTipoJuicio().getNombre());
         parameters.put("actor", actor.nombre());
         parameters.put("curpActor", actor.curp());
@@ -105,9 +109,9 @@ public class SelloGenerator {
         parameters.put("demandado", demandado.nombre());
         parameters.put("curpDemandado", demandado.curp());
         parameters.put("domicilioDemandado", demandado.domicilio());
-        parameters.put("domiciliofamiliar", "Pendiente_Domicilio_familiar");
+        parameters.put("domiciliofamiliar", audiencia.domicilio());
         parameters.put("relacionExpediente", relacionExpediente);
-        parameters.put("juez", "Pendiente");
+        parameters.put("juez", audiencia.nombreJuez());
         parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
 
         isPromocionOralidadExhorto = false;

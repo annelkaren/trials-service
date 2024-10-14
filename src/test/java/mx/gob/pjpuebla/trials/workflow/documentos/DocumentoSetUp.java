@@ -63,4 +63,24 @@ public class DocumentoSetUp {
             new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.NORECIBIDO),
             new AnexoBandejaRecepcionRecord(2, "CURP", EstadoAnexo.NORECIBIDO)));
     }
+
+    public static Documento create_data(TipoJuicio tipoJuicio) {
+        DocumentoData data = new DocumentoData().setDomicilio("Example Domicilio");
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO);
+        Documento documento = new Documento()
+                .setId(1)
+                .setVersion(1)
+                .setData(data)
+                .setCarpeta(carpeta);
+        documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return documento;
+    }
 }

@@ -6,14 +6,14 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
-import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -23,6 +23,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -30,7 +31,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -79,6 +79,33 @@ public class DocumentoService {
                                 documento.getCarpeta().getSelloEstatus(),
                                 documento.getCarpeta().getEstatus(),
                                 (documento.getRuta() != null)))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona persona = personaService.getAuditor();
+        Page<DocumentoSalidaRecord> page = documentoRepository.findByEstatusSalida(
+                key,
+                (persona.getOficialia() != null) ? persona.getOficialia().getId() : null,
+                (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null,
+                pageable);
+        List<DocumentoSalidaResponseRecord> list = page.getContent().stream()
+                .map(item ->
+                        new DocumentoSalidaResponseRecord(item.movid(),
+                                item.id(),
+                                item.folio(),
+                                item.expediente(),
+                                item.juzgadoId(),
+                                item.juzgado(),
+                                item.materia(),
+                                ((item.tipoCarpeta() != null) ? item.tipoCarpeta().name() : ((item.tipoDocumento() != null) ? item.tipoDocumento().name() : null)),
+                                item.fechaRegistro(),
+                                item.selloEstatus(),
+                                item.estatus()
+                        ))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -483,5 +510,4 @@ public class DocumentoService {
         return "";
     }
 }
-
 

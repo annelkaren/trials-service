@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import org.junit.jupiter.api.Test;
@@ -80,5 +81,11 @@ class AudienciaRepositoryTest extends AuditConfigTest {
 
         LocalDateTime fechaUltimaAudiencia = audienciaRepository.getFechaUltimaAudiencia(juzgado, tipoAudiencia);
         assertThat(fechaUltimaAudiencia).isNotNull();
+    }
+
+    @Test
+    void getJuzAndSalaAndAudienciaByIdcarpeta_ReturnRecord(){
+        AudienciaOralidadFamiliarRecord entity = audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(1);
+        assertThat(entity).isNotNull();
     }
 }

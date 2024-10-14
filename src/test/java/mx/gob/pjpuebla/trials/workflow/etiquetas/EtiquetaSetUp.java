@@ -19,4 +19,5 @@ public class EtiquetaSetUp {
         etiqueta.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return etiqueta;
     }
+
 }

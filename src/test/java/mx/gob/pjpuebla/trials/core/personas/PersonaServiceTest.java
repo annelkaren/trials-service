@@ -23,7 +23,6 @@ import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
-import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -38,8 +37,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.data.domain.*;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -200,7 +201,7 @@ class PersonaServiceTest extends SetupServiceTest {
 
         assertThat(validPersona).hasFieldOrPropertyWithValue("oficialia", oficialia)
                 .hasFieldOrPropertyWithValue("juzgado", null);
-                
+
     }
 
     @Test
@@ -216,7 +217,7 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
-        
+
 
         PersonaRecordResponse response = personaService.update(validPersona, rolesRecord);
 
@@ -224,7 +225,7 @@ class PersonaServiceTest extends SetupServiceTest {
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre())
                 .hasFieldOrPropertyWithValue("email", validPersona.getCorreoElectronico());
-        
+
         assertThat(validPersona).hasFieldOrPropertyWithValue("juzgado", juzgado)
                 .hasFieldOrPropertyWithValue("oficialia", null);
 
@@ -260,7 +261,7 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void getAll_jueces_return_empty_list() {
         Sala sala = SalaSetUp.createSala(Estado.ACTIVE);
-        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(usuarioService.findAllByRoles(any())).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
         given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
         given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(List.of(sala));
 
@@ -270,7 +271,7 @@ class PersonaServiceTest extends SetupServiceTest {
 
     @Test
     void getAll_jueces_return_list() {
-        given(usuarioService.findAllByRolJuezAndSecretario()).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(usuarioService.findAllByRoles(any())).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
         given(mockPersonaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(any(), any(), any())).willReturn(Optional.of(validPersona));
         given(salaRepository.findAllByJuezId(validPersona.getId())).willReturn(new ArrayList<>());
 
@@ -284,7 +285,7 @@ class PersonaServiceTest extends SetupServiceTest {
     }
 
     @Test
-    void getAll_CentrosTrabajo(){
+    void getAll_CentrosTrabajo() {
         given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
 
@@ -297,9 +298,23 @@ class PersonaServiceTest extends SetupServiceTest {
     }
 
     @Test
-    void getAuditor(){
+    void getAuditor() {
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
         Persona result = personaService.getAuditor();
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    void getAll_encargados_carrito() {
+        given(usuarioService.findAllByRoles(any())).willReturn(List.of("6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+
+        List<EncargadoCarritoRecord> encargadoCarritoRecordList = personaService.findAllEncargadosCarrito();
+        String name = validPersona.getNombre() + " " + validPersona.getApellidoPaterno();
+        name += ((validPersona.getApellidoMaterno() != null) ? " " + validPersona.getApellidoMaterno() : "");
+        assertThat(encargadoCarritoRecordList)
+                .hasSize(1)
+                .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
+                .hasFieldOrPropertyWithValue("nombreCompleto", name);
     }
 }
