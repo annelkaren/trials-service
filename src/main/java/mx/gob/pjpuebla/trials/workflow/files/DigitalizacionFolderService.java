@@ -35,7 +35,7 @@ public class DigitalizacionFolderService {
         validacionDigitalizacion(doc);
 
         String year = obtenerYear(doc);
-        String juzgado = personaService.getAuditor().getJuzgado().getNombre();
+        String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
         Path rootPath = (TipoDocumento.OFICIO.equals(doc.getTipoDocumento()))
                 ? construirRutaOficio(doc, year, juzgado)
                 : construirRutaConCarpeta(doc, year, juzgado);
