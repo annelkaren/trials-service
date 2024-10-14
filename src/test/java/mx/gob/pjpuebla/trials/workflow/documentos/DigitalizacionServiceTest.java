@@ -100,29 +100,29 @@ class DigitalizacionServiceTest {
                 .willReturn(rootFolder + "/digitalizacion/2024/Juzgado/000001");
     }
 
-@AfterEach
-void tearDown() throws IOException {
+    @AfterEach
+    void tearDown() throws IOException {
 
-    Path folderPath1 = Paths.get(rootFolder + "/digitalizacion/2024/Juzgado");
-    Path folderPath2 = Paths.get(rootFolder + "/digitalizacion/2024/juzgadoPrueba");
+        Path folderPath1 = Paths.get(rootFolder + "/digitalizacion/2024/Juzgado");
+        Path folderPath2 = Paths.get(rootFolder + "/digitalizacion/2024/juzgadoPrueba");
 
-    List<Path> pathsToDelete = List.of(folderPath1, folderPath2);
+        List<Path> pathsToDelete = List.of(folderPath1, folderPath2);
 
 
-    for (Path folderPath : pathsToDelete) {
-        if (Files.exists(folderPath)) {
-            Files.walk(folderPath)
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            System.err.println("No se pudo eliminar: " + path + " - " + e.getMessage());
-                        }
-                    });
+        for (Path folderPath : pathsToDelete) {
+            if (Files.exists(folderPath)) {
+                Files.walk(folderPath)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                System.err.println("No se pudo eliminar: " + path + " - " + e.getMessage());
+                            }
+                        });
+            }
         }
     }
-}
 
 
     @Test
@@ -203,29 +203,35 @@ void tearDown() throws IOException {
         // Procesar el archivo para obtener el DigitalizacionRecord
         DigitalizacionRecord result = digitalizacionService.procesarArchivo(fileMock, documento.getId());
 
-        // Definir la ruta completa del archivo
-        Path pathArchivo = Paths.get(result.rutaArchivo());
+        // Definir las dos rutas completas del archivo
+        Path pathArchivoNormal = Paths.get(result.rutaArchivo());
+        Path pathArchivoExhorto = Paths.get(rootFolder, "digitalizacion", "2024", "juzgadoPrueba", "entrada", "E000006");
 
         // Simular la búsqueda del documento en la base de datos
         given(documentoRepository.findById(1)).willReturn(Optional.of(documento));
 
         // Simular métodos estáticos usando `mockStatic`
         try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
-            // Simular que el archivo existe
-            mockedFiles.when(() -> Files.exists(pathArchivo)).thenReturn(true);
+            // Simular que ambos archivos existen
+            mockedFiles.when(() -> Files.exists(pathArchivoNormal)).thenReturn(true);
+            mockedFiles.when(() -> Files.exists(pathArchivoExhorto)).thenReturn(true);
 
-            // Simular la lectura del archivo como un arreglo de bytes
-            mockedFiles.when(() -> Files.readAllBytes(pathArchivo)).thenReturn(fileContent);
+            // Simular la lectura de ambos archivos como un arreglo de bytes
+            mockedFiles.when(() -> Files.readAllBytes(pathArchivoNormal)).thenReturn(fileContent);
+            mockedFiles.when(() -> Files.readAllBytes(pathArchivoExhorto)).thenReturn(fileContent);
 
             // Llamar al método que descarga el archivo
-            byte[] fileBytes = digitalizacionService.getDocumento(1);
+            byte[] fileBytesNormal = digitalizacionService.getDocumento(1);
+            byte[] fileBytesExhorto = digitalizacionService.getDocumento(1); // Simulación del segundo archivo
 
             // Verificar que el contenido del archivo descargado es correcto
-            assertArrayEquals(fileContent, fileBytes);
+            assertArrayEquals(fileContent, fileBytesNormal);
+            assertArrayEquals(fileContent, fileBytesExhorto);
         }
 
-        // Limpiar el archivo después de la prueba para evitar residuos (opcional)
-        Files.deleteIfExists(pathArchivo);
+        // Limpiar los archivos después de la prueba para evitar residuos (opcional)
+        Files.deleteIfExists(pathArchivoNormal);
+        Files.deleteIfExists(pathArchivoExhorto);
     }
 
     @Test

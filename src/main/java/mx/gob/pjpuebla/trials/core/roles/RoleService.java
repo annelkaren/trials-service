@@ -68,6 +68,11 @@ public class RoleService {
         return roles;
     }
 
+    public boolean hasRole(String userId, String role) {
+        List<RoleRecord> roles = getRolesByUserId(userId);
+        return roles.stream().anyMatch(current -> current.name().equalsIgnoreCase(role));
+    }
+
     public List<RoleRecord> getAllAvailablesByUserId(String userId) {
         List<RoleRepresentation> roles = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();

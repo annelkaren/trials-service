@@ -24,11 +24,11 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
                     d.id,
-                    c.folio, 
+                    c.folio,
                     c.expediente,
                     c.tipoCarpeta,
                     d.ruta,
-                   null 
+                   null
                 )
             FROM Documento d
             JOIN d.carpeta c
