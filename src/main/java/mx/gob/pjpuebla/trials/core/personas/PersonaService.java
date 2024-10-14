@@ -18,7 +18,6 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
-
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -81,20 +80,20 @@ public class PersonaService {
                 .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
         persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
 
-        if (persona.getJuzgado()!=null && persona.getJuzgado().getId()!=null){
+        if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
-            .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
-        }else{
+                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+        } else {
             persona.setJuzgado(null);
         }
 
-        if (persona.getOficialia()!=null && persona.getOficialia().getId()!=null){
+        if (persona.getOficialia() != null && persona.getOficialia().getId() != null) {
             persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
-            .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
-        }else{
+                    .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
+        } else {
             persona.setOficialia(null);
         }
-        
+
         persona = personaRepository.save(persona);
         return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
     }
@@ -107,20 +106,20 @@ public class PersonaService {
                     .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
 
-            if (persona.getJuzgado()!=null && persona.getJuzgado().getId()!=null){
+            if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
                 persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
-                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
-            }else{
+                        .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
+            } else {
                 persona.setJuzgado(null);
             }
-    
-            if (persona.getOficialia()!=null &&persona.getOficialia().getId()!=null){
+
+            if (persona.getOficialia() != null && persona.getOficialia().getId() != null) {
                 persona.setOficialia(oficialiaRepository.findById(persona.getOficialia().getId())
-                .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
-            }else{
+                        .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId")));
+            } else {
                 persona.setOficialia(null);
             }
-            
+
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), getNames(roles));
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
@@ -147,7 +146,8 @@ public class PersonaService {
     public List<JuezRecord> findAllJueces(Integer juzgadoId) {
         List<Sala> salas;
         List<JuezRecord> jueces = new ArrayList<>();
-        List<String> ids = usuarioService.findAllByRolJuezAndSecretario();
+        List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
+        List<String> ids = usuarioService.findAllByRoles(roles);
         for (String id : ids) {
             Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, List.of(Estado.ACTIVE));
             if (juez.isPresent()) {
@@ -164,17 +164,33 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public List<CentroTrabajoRecord> findAllCentroTrabajo(){
+    public List<EncargadoCarritoRecord> findAllEncargadosCarrito() {
+        List<EncargadoCarritoRecord> encargadoCarritoList = new ArrayList<>();
+        List<String> ids = usuarioService.findAllByRoles(List.of("ENCARGADO_CARRITO"));
+        for (String id : ids) {
+            Optional<Persona> persona = personaRepository.findByUsuario(id);
+            if (persona.isPresent()) {
+                String name = persona.get().getNombre() + " " + persona.get().getApellidoPaterno();
+                name += ((persona.get().getApellidoMaterno() != null) ? " " + persona.get().getApellidoMaterno() : "");
+                EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(persona.get().getId(), name);
+                encargadoCarritoList.add(encargadoCarritoRecord);
+            }
+        }
+        return encargadoCarritoList;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CentroTrabajoRecord> findAllCentroTrabajo() {
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
         List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));
         List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
 
-        for (JuzgadoRecordItem juzgado: juzgados){
+        for (JuzgadoRecordItem juzgado : juzgados) {
             centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
         }
 
-        for(Oficialia oficialia: oficialias){
+        for (Oficialia oficialia : oficialias) {
             centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
         }
 
@@ -182,7 +198,7 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public Persona getAuditor(){
+    public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuaerio: " + jwt.getSubject()));
     }

@@ -133,11 +133,12 @@ public class JuzgadoService {
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
+            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId()).orElseThrow(()-> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
 
             List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
             List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
             juzgado.setTipoJuicios(tipojuicios);
-
+            juzgado.setContadorAsignaciones(juzgadoAsignaciones.getContadorAsignaciones());
             juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordItem(

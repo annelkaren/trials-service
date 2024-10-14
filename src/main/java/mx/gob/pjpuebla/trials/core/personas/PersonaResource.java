@@ -37,6 +37,11 @@ public class PersonaResource {
         return this.personaService.findAllJueces(juzgadoId);
     }
 
+    @GetMapping("/encargadocarrito")
+    public List<EncargadoCarritoRecord> getEncargadosCarrito() {
+        return this.personaService.findAllEncargadosCarrito();
+    }
+
     @PostMapping
     public PersonaRecordResponse create(@RequestBody @Valid PersonaDTO persona) {
         return this.personaService.create(persona.getPersona(), persona.getRoles());
