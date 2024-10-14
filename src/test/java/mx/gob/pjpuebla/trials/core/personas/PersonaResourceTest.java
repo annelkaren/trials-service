@@ -159,10 +159,22 @@ class PersonaResourceTest {
     }
 
     @Test
-    void getAll_CentrosTrabajo() throws Exception{
+    void getAll_CentrosTrabajo() throws Exception {
         given(mockPersonaService.findAllCentroTrabajo()).willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
         mockMvc.perform(
                 get("/api/core/personas/centrostrabajo")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAll_encargados_carrito() throws Exception {
+        EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(1L, "Juan Perez");
+        given(mockPersonaService.findAllEncargadosCarrito())
+                .willReturn(List.of(encargadoCarritoRecord));
+
+        mockMvc.perform(
+                get("/api/core/personas/encargadocarrito")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

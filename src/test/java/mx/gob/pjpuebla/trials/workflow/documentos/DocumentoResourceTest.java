@@ -5,12 +5,8 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoExhortoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
@@ -21,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -225,6 +222,30 @@ class DocumentoResourceTest {
         mockMvc.perform(
                 post("/api/workflow/apelacion")
                         .content(ResourceUtilTest.asJsonString(documentoRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAll_bandeja_salida_success() throws Exception {
+        DocumentoSalidaResponseRecord documentoRecord = new DocumentoSalidaResponseRecord(
+                1,
+                1,
+                "1",
+                "000001/2024",
+                1,
+                "Juzgado Primero",
+                "LABORAL",
+                "DEMANDA",
+                LocalDateTime.now(),
+                SelloEstatus.VALIDO,
+                EstadoCarpeta.TURNADO);
+
+        given(documentoService.getAllBandejaSalida(any(String.class), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
+        mockMvc.perform(
+                get("/api/workflow/bandeja/salida")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
