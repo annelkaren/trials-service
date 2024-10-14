@@ -63,7 +63,7 @@ public class AudienciaService {
 
         String calle = documento.getData().getDomicilio();
         Etiqueta etiqueta = etiquetaRepository.findByTipoJuicioIdAndNombre(
-                documento.getCarpeta().getTipoJuicio().getId(), "eOralidadFamiliar");
+                documento.getCarpeta().getTipoJuicio().getId(), "domicilioOralidadFamiliar");
         String label = (etiqueta != null) ? etiqueta.getValue() + ":<b> " + calle + "</b>" : "";
 
         return new ExtraAudienciaSelloRecord(

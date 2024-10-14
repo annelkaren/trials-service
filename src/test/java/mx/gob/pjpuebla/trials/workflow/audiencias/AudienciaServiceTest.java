@@ -118,7 +118,7 @@ class AudienciaServiceTest {
         );
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
-        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(),"eOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(),"domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -134,7 +134,7 @@ class AudienciaServiceTest {
     @Test
     void DomicilioByaudiencias_isEmpty() {
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(null);
-        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "eOralidadFamiliar")).thenReturn(null);
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(null);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
         assertThat(entity).isNotNull();
