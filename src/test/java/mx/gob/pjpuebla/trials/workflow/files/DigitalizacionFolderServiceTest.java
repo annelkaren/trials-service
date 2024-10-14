@@ -4,9 +4,11 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,11 +37,11 @@ class DigitalizacionFolderServiceTest {
     @Mock
     private PersonaService personaService;
 
-    private final String rootFolder = "/opt/pjp/files/"; // Asumiendo una ruta de prueba
+    private final String rootFolder = "/opt/pjp/files/";
 
     @BeforeEach
     void setUp() {
-        // Usamos ReflectionTestUtils para establecer la variable rootFolder
+
         ReflectionTestUtils.setField(digitalizacionFolderService, "rootFolder", rootFolder);
     }
 
@@ -69,17 +71,15 @@ class DigitalizacionFolderServiceTest {
 
     @Test
     void testCreateFolderDigitalizacion_ValidDocumentoConCarpeta() throws IOException {
-        Carpeta carpeta = new Carpeta();
+        Carpeta carpeta = CarpetaSetUp.create(TipoJuicioSetUp.createTipoJuicio(), JuzgadoSetUp.createJuzgado());
         carpeta.setExpediente("000123/2024");
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
 
         Documento doc = new Documento();
         doc.setCarpeta(carpeta);
 
-        Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
-        when(personaService.getAuditor()).thenReturn(persona);
 
-        Path expectedPath = Paths.get(rootFolder, "digitalizacion", "2024", persona.getJuzgado().getNombre(), "000123");
+        Path expectedPath = Paths.get(rootFolder, "digitalizacion", "2024", carpeta.getJuzgado().getNombre(), "000123");
 
         String result = digitalizacionFolderService.createFolderDigitalizacion(doc);
 
