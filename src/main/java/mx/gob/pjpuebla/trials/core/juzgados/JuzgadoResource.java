@@ -58,7 +58,7 @@ public class JuzgadoResource {
 
     @GetMapping("/autocomplete")
     public Page<JuzgadoRecordItem> findAllByEstadoActiveAutocomplete(
-            @PageableDefault(size = 10) Pageable pageable,
+            @PageableDefault Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {
         return this.juzgadoService.findAllByEstadoAutocomplete(key, pageable);
     }

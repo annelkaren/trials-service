@@ -177,7 +177,7 @@ class JuzgadoResourceTest {
     }
 
     @Test
-    void getAllByEstadoAutp_success() throws Exception {
+    void getAllByEstadoAuto_success() throws Exception {
         given(mockJuzgadoService.findAllByEstadoAutocomplete(any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
 
