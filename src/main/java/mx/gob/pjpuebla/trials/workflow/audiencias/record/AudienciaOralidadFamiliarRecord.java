@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 public record AudienciaOralidadFamiliarRecord(
         String nombreJuez,
+        String apellidoPaterno,
+        String apellidoMaterno,
         String nombreSala,
         String nombreTipoJuicio,
         LocalDateTime fechaAudiencia

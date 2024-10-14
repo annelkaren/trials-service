@@ -30,7 +30,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord(
-                jue.nombre, s.nombre, tj.nombre, a.fechaAudiencia)
+                jue.nombre, jue.apellidoPaterno, jue.apellidoMaterno, s.nombre, tj.nombre, a.fechaAudiencia)
             FROM Audiencia a
             JOIN a.carpeta c
             JOIN c.tipoJuicio tj

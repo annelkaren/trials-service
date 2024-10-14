@@ -112,6 +112,8 @@ class AudienciaServiceTest {
     void DomicilioByaudiencias() {
         AudienciaOralidadFamiliarRecord audiencia = new AudienciaOralidadFamiliarRecord(
                 persona.getNombre(),
+                persona.getApellidoPaterno(),
+                persona.getApellidoMaterno(),
                 sala.getNombre(),
                 carpeta.getTipoJuicio().getNombre(),
                 LocalDateTime.now()
@@ -123,7 +125,7 @@ class AudienciaServiceTest {
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         assertThat(entity).isNotNull();
-        assertThat(entity.nombreJuez()).isEqualTo("Juan");
+        assertThat(entity.nombreJuez()).isEqualTo("Juan Perez ");
         assertThat(entity.nombreSala()).isEqualTo("1");
         assertThat(entity.nombreTipoJuicio()).isEqualTo("Familiar Oralidad (Alimentos)");
         assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Example Domicilio</b>");
