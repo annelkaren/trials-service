@@ -20,7 +20,7 @@ import java.io.Serializable;
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_CONCEPTOS")
-public class Conceptos implements Serializable, Auditable {
+public class Concepto implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idConcepto")
