@@ -197,4 +197,37 @@ class InstitucionServiceTest {
                 .hasMessageContaining("Invalid ID");
     }
 
+    @Test
+    void getAllByEstadoAutocomplete_return_page() {
+        institucion.setDistrito(distrito);
+        institucion.setDomicilio(domicilio);
+        institucion.setEstado(Estado.ACTIVE);
+
+        List<Institucion> listPage = Collections.singletonList(institucion);
+
+        given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        Page<InstitucionRecord> page = mockInstitucionService.getAllByEstadoAutocomplete(institucion, PageRequest.of(0, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1);
+        assertThat(page.getContent().get(0))
+                .extracting("id", "nombre", "domicilio", "telefono")
+                .containsExactly(
+                        institucion.getId(),
+                        institucion.getNombre(),
+                        String.join(" ",
+                                domicilio.getCalle(),
+                                domicilio.getColonia(),
+                                domicilio.getExterior(),
+                                (domicilio.getInterior() != null && !domicilio.getInterior().isEmpty()) ? "Int. " + domicilio.getInterior() : "",
+                                domicilio.getEstadoRepublica(),
+                                domicilio.getMunicipio(),
+                                domicilio.getLocalidad(),
+                                domicilio.getCodigoPostal(),
+                                (domicilio.getReferencia() != null && !domicilio.getReferencia().isEmpty()) ? "Ref: " + domicilio.getReferencia() : ""
+                        ).trim(),
+                        institucion.getTelefono()
+                );
+    }
+
 }
