@@ -79,4 +79,22 @@ class DocumentoFoliosRepositoryTest extends AuditConfigTest {
 
         assertThat(documentoFolios).isPresent();
     }
+
+    @Test
+    void updateFolioTest(){
+        int i = 1;
+        juzgado = juzgadoRepository.findAll().stream().findFirst().orElseThrow();
+        DocumentoFolios documentoFolios = documentoFolioRepository
+                .findByCentroTrabajoAndTipoDocumento(juzgado.getId(), TipoCentroTrabajo.JUZGADO, TipoDocumento.OFICIO).orElseThrow();
+
+        for(; i<5; i++){
+                documentoFolioRepository.updateFolio(documentoFolios.getId(), i);
+        }
+
+        DocumentoFolios documentoFolioNew = documentoFolioRepository
+        .findByCentroTrabajoAndTipoDocumento(juzgado.getId(), TipoCentroTrabajo.JUZGADO, TipoDocumento.OFICIO).orElseThrow();
+
+        assertThat(documentoFolioNew).hasFieldOrPropertyWithValue("folio", i);
+
+    }
 }
