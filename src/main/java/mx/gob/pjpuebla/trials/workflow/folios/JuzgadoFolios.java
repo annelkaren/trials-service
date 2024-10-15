@@ -1,5 +1,4 @@
 package mx.gob.pjpuebla.trials.workflow.folios;
-
 import jakarta.persistence.*;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -42,4 +41,28 @@ public class JuzgadoFolios implements Serializable {
         }
     }
 
+    // Custom toString method to avoid circular reference
+    @Override
+    public String toString() {
+        return "JuzgadoFolios{" +
+               "id=" + id +
+               ", juzgado=" + (juzgado == null ? "null" : "Juzgado(id=" + juzgado.getId() + ")") +
+               ", tipoCarpeta='" + tipoCarpeta + '\'' +
+               '}';
+    }
+
+    // Equals and hashCode methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JuzgadoFolios that = (JuzgadoFolios) o;
+        return java.util.Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id);
+    }
 }
+

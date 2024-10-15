@@ -54,10 +54,6 @@ public class Oficialia implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY)
     private Sede sede;
 
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Juzgado juzgado;
-
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
@@ -75,4 +71,17 @@ public class Oficialia implements Serializable, Auditable {
     @OrderBy("id")
     private List<Materia> materias;
 
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @JoinTable(name = "TBL_OFICIALIAS_JUZGADOS",
+            joinColumns = {
+                    @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
+            }, inverseJoinColumns = {
+            @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    }, uniqueConstraints = @UniqueConstraint(columnNames = {
+            "FN_OFICIALIA",
+            "FN_JUZGADO"
+    }))
+    @OrderBy("id")
+    private List<Juzgado> juzgados;
 }
+
