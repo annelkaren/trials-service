@@ -509,5 +509,9 @@ public class DocumentoService {
         }
         return "";
     }
+
+    public IndicadoresRecord getIndicadores(Integer indicador1, Integer indicador2, Integer indicador3, Integer indicador4) {
+        return new IndicadoresRecord(indicador1, indicador2, indicador3, indicador4);
+    }
 }
 

@@ -151,4 +151,13 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
+
+    @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IndicadoresRecord getIndicadores(
+            @RequestParam Integer indicador1,
+            @RequestParam Integer indicador2,
+            @RequestParam Integer indicador3,
+            @RequestParam Integer indicador4) {
+        return this.documentoService.getIndicadores(indicador1, indicador2, indicador3, indicador4);
+    }
 }

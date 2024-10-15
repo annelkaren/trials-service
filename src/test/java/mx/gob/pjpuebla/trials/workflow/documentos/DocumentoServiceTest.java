@@ -679,4 +679,17 @@ class DocumentoServiceTest {
         String origen = documentoService.getOrigen(movimiento, persona);
         assertThat(origen).isEqualTo("");
     }
+
+    @Test
+    void getIndicadores_success() {
+        Integer indicador1 = 2;
+        Integer indicador2 = 7;
+        Integer indicador3 = 9;
+        Integer indicador4 = 5;
+
+        IndicadoresRecord result = documentoService.getIndicadores(indicador1, indicador2, indicador3, indicador4);
+
+        assertThat(result).extracting("indicador1", "indicador2", "indicador3", "indicador4")
+                .containsExactly(indicador1, indicador2, indicador3, indicador4);
+    }
 }
