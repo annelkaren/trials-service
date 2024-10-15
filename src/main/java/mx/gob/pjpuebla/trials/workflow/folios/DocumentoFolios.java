@@ -10,11 +10,11 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name="TBL_DOCUMENTOS_FOLIOS")
+@Table(name="TBL_DOCUMENTO_FOLIO")
 public class DocumentoFolios implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocumentoFolios")
-    @SequenceGenerator(name = "idDocumentoFolios", sequenceName = "SEQ_DOCUMENTOS_FOLIOS_ID", allocationSize = 1)
+    @SequenceGenerator(name = "idDocumentoFolios", sequenceName = "SEQ_DOCUMENTO_FOLIO_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

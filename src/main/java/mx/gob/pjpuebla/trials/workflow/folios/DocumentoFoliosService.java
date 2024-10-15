@@ -39,11 +39,11 @@ public class DocumentoFoliosService {
         if (juzgado != null) {
             centroTrabajoId = juzgado.getId();
             tipoCentroTrabajo = TipoCentroTrabajo.JUZGADO;
-        } else if (oficialia != null && oficialia.getTipoOficialia().getNombre().equals("COMÚN")) {
+        } else if (oficialia != null && oficialia.getTipoOficialia().getNombre().equals("Común")) {
             centroTrabajoId = oficialia.getId();
             tipoCentroTrabajo = TipoCentroTrabajo.OFICIALIA_COMUN;
         } else {
-            throw new NotFoundException("Centro de Trabajo", "No se puede generar el número de folio");
+            throw new NotFoundException("Centro de Trabajo NO compatible", "tipoCentroTrabajo");
         }
 
         return new CentroTrabajoRecord(centroTrabajoId, "", tipoCentroTrabajo);
