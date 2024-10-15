@@ -74,7 +74,7 @@ class OficialiaResourceTest {
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
-        oficialia.setJuzgado(juzgado);
+        oficialia.setJuzgados(Collections.singletonList(juzgado));  // Usa una lista que contiene el juzgado
         validOficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(),sede.getNombre(),sede.getEstado()));
         oficialiaMateriaRecordResponse = OficialiaSetUp.CreateOficialiaMateriaRecord(oficialia, materia, sede, tipoOficialia, juzgado);
         oficialiaRecordResponse =  OficialiaSetUp.createOficialiaRecordResponse(oficialia);

@@ -53,5 +53,12 @@ public class InstitucionResource {
     public void delete(@PathVariable Integer id) {
         this.institucionService.delete(id);
     }
-    
+
+    @GetMapping("/autocomplete")
+    public Page<InstitucionRecord> getAllByEstadoAutocomplete(
+            @PageableDefault Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre) {
+
+        return this.institucionService.getAllByEstadoAutocomplete(new Institucion().setNombre(nombre), pageable);
+    }
 }

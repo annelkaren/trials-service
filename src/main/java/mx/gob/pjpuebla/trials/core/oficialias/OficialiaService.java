@@ -45,7 +45,8 @@ public class OficialiaService {
         List<OficialiaRecord> list = page.getContent().stream()
                 .map(m -> new OficialiaRecord(m.getId(), m.getVersion(), m.getNombre(), m.getResponsable(), m.getEstado(),
                         new TipoOficialiaRecord(m.getTipoOficialia().getId(), m.getTipoOficialia().getNombre()),
-                        new SedeRecordResponse(m.getSede().getId(), m.getSede().getNombre(), m.getSede().getEstado())))
+                        new SedeRecordResponse(m.getSede().getId(), m.getSede().getNombre(), m.getSede().getEstado())//juzgados
+                ))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -56,8 +57,21 @@ public class OficialiaService {
                 .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId: " + id));
     }
 
-    public OficialiaRecordResponse create(Oficialia oficialia) {
+    public void validateJuzgadosByTipoOficialia(Oficialia oficialia, TipoOficialia tipoOficialia) {
+        List<Juzgado> juzgados = oficialia.getJuzgados();
 
+        if (tipoOficialia.getNombre().equalsIgnoreCase("Común")) {
+            if (juzgados == null || juzgados.size() < 2) {
+                throw new IllegalArgumentException("Las oficialías de tipo Común deben tener al menos dos juzgados.");
+            }
+        } else if (tipoOficialia.getNombre().equalsIgnoreCase("Mayor")) {
+            if (juzgados == null || juzgados.size() != 1) {
+                throw new IllegalArgumentException("Las oficialías de tipo Mayor deben tener exactamente un juzgado.");
+            }
+        }
+    }
+
+    public OficialiaRecordResponse create(Oficialia oficialia) {
         if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
             Sede sede = sedeRepository.findById(oficialia.getSede().getId())
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
@@ -70,18 +84,23 @@ public class OficialiaService {
             oficialia.setTipoOficialia(tipoOficialia);
         }
 
-        if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
-            Juzgado juzgado = juzgadoRepository.findById(oficialia.getJuzgado().getId())
-                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
-            oficialia.setJuzgado(juzgado);
+        if (oficialia.getTipoOficialia() != null) {
+            validateJuzgadosByTipoOficialia(oficialia, oficialia.getTipoOficialia());
         } else {
-            oficialia.setJuzgado(null);
+            throw new IllegalArgumentException("El tipo de oficialía no puede ser nulo.");
         }
 
-            if (oficialia.getMaterias() != null) {
-                List<Integer> mIds = oficialia.getMaterias().stream()
-                        .map(Materia::getId)
-                        .toList();
+        if (oficialia.getJuzgados() != null && !oficialia.getJuzgados().isEmpty()) {
+            List<Juzgado> juzgados = juzgadoRepository.findAllById(
+                    oficialia.getJuzgados().stream().map(Juzgado::getId).toList()
+            );
+            oficialia.setJuzgados(juzgados);
+        }
+
+        if (oficialia.getMaterias() != null) {
+            List<Integer> mIds = oficialia.getMaterias().stream()
+                    .map(Materia::getId)
+                    .toList();
 
             List<Materia> materias = materiaRepository.findAllById(mIds);
             oficialia.setMaterias(materias);
@@ -94,11 +113,9 @@ public class OficialiaService {
     public OficialiaRecordResponse update(Oficialia oficialia) {
         try {
             Oficialia existingOficialia = oficialiaRepository.findById(oficialia.getId())
-
                     .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId"));
             existingOficialia.setNombre(oficialia.getNombre());
             existingOficialia.setEstado(oficialia.getEstado());
-
 
             existingOficialia.setSede(sedeRepository.findById(oficialia.getSede().getId())
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
@@ -106,13 +123,26 @@ public class OficialiaService {
             existingOficialia.setTipoOficialia(tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
                     .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId")));
 
-            if (oficialia.getJuzgado() != null && oficialia.getJuzgado().getId() != null) {
-                existingOficialia.setJuzgado(juzgadoRepository.findById(oficialia.getJuzgado().getId())
-                        .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
-            } else {
-                existingOficialia.setJuzgado(null);
-            }
+            // Validación y actualización de juzgados
+            if (oficialia.getJuzgados() != null && !oficialia.getJuzgados().isEmpty()) {
+                List<Juzgado> juzgados = juzgadoRepository.findAllById(
+                        oficialia.getJuzgados().stream().map(Juzgado::getId).toList()
+                );
 
+                if (existingOficialia.getTipoOficialia().getNombre().equalsIgnoreCase("Mayor")) {
+                    if (juzgados.size() != 1) {
+                        throw new InvalidVersionException("Una oficialía de tipo Mayor debe tener exactamente 1 juzgado.");
+                    }
+                } else if (existingOficialia.getTipoOficialia().getNombre().equalsIgnoreCase("Común")) {
+                    if (juzgados.size() < 2) {
+                        throw new InvalidVersionException("Una oficialía de tipo Común debe tener al menos 2 juzgados.");
+                    }
+                }
+
+                existingOficialia.setJuzgados(juzgados);
+            } else {
+                existingOficialia.setJuzgados(existingOficialia.getJuzgados());
+            }
 
             if (oficialia.getMaterias() != null) {
                 List<Integer> mIds = oficialia.getMaterias().stream()

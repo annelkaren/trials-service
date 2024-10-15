@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -63,6 +64,14 @@ public class JuzgadoService {
                         juzgado.getMateria().getNombre()
                 )).toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OficialiaJuzgadoRecord> findByOficialiaId(Integer id) {
+        List<Estado> estados = List.of(Estado.ACTIVE);
+        List<Juzgado> juzgados = juzgadoRepository.findByOficialiaIdAndEstadoIn(id, estados);
+        
+       return juzgados.stream().map(j -> new OficialiaJuzgadoRecord(j.getId(), j.getNombre())).toList();
     }
 
     @Transactional(readOnly = true)

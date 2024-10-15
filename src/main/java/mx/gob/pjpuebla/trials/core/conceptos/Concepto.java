@@ -20,7 +20,7 @@ import java.io.Serializable;
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_CONCEPTOS")
-public class Conceptos implements Serializable, Auditable {
+public class Concepto implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idConcepto")
@@ -39,7 +39,6 @@ public class Conceptos implements Serializable, Auditable {
     private String nombre;
 
     @Max(Integer.MAX_VALUE)
-    @Version
     @Column(name = "N_DIAS")
     private Integer dias;
 

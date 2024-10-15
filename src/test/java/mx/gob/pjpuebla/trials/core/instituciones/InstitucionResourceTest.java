@@ -121,6 +121,18 @@ class InstitucionResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void getAllByEstadoAutocompleteSuccess() throws Exception {
+        given(mockInstitucionService.getAllByEstadoAutocomplete(any(Institucion.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(institucionRecord)));
+
+        mockMvc.perform(
+                        get("/api/core/instituciones/autocomplete")
+                                .param("nombre", "I")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
     private static String asJsonString(final Object obj) {
         try {
             final ObjectMapper mapper = new ObjectMapper();
