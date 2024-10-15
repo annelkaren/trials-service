@@ -15,6 +15,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -87,14 +88,14 @@ class DocumentoFoliosRepositoryTest extends AuditConfigTest {
         DocumentoFolios documentoFolios = documentoFolioRepository
                 .findByCentroTrabajoAndTipoDocumento(juzgado.getId(), TipoCentroTrabajo.JUZGADO, TipoDocumento.OFICIO).orElseThrow();
 
-        for(; i<5; i++){
+        for(; i<=5; i++){
                 documentoFolioRepository.updateFolio(documentoFolios.getId(), i);
         }
 
         DocumentoFolios documentoFolioNew = documentoFolioRepository
         .findByCentroTrabajoAndTipoDocumento(juzgado.getId(), TipoCentroTrabajo.JUZGADO, TipoDocumento.OFICIO).orElseThrow();
 
-        assertThat(documentoFolioNew).hasFieldOrPropertyWithValue("folio", i);
+        assertThat(documentoFolioNew).hasFieldOrPropertyWithValue("folio", i-1);
 
     }
 }

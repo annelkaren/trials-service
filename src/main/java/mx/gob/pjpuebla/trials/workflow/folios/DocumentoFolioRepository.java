@@ -20,7 +20,7 @@ public interface DocumentoFolioRepository extends JpaRepository<DocumentoFolios,
     Optional<DocumentoFolios> findByCentroTrabajoAndTipoDocumento(
             Integer centroTrabajoId, TipoCentroTrabajo centroTrabajoTipo, TipoDocumento tipoDocumento);
 
-    @Modifying(flushAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE DocumentoFolios df SET df.folio=:folio WHERE df.id=:documentoFolioId")
     void updateFolio(Integer documentoFolioId, Integer folio);
 }
