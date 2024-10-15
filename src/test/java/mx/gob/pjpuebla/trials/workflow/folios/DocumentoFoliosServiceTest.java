@@ -18,7 +18,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento; 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

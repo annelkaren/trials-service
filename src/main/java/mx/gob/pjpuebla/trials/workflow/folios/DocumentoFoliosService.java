@@ -84,7 +84,8 @@ public class DocumentoFoliosService {
     private Integer folioActualizado(DocumentoFolios documentoFolios){
         Integer folio = documentoFolios.getFolio()+1;
 
-        documentoFolioRepository.updateFolio(documentoFolios.getId(), folio);
+        documentoFolios.setFolio(folio);
+        documentoFolioRepository.save(documentoFolios);
 
         return folio;
     }
