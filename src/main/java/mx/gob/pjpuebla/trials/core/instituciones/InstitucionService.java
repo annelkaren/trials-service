@@ -95,4 +95,34 @@ public class InstitucionService {
         institucionRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public Page<InstitucionRecord> getAllByEstadoAutocomplete(Institucion example, Pageable pageable) {
+
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        example.setEstado(Estado.ACTIVE);
+
+        Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
+
+        List<InstitucionRecord> list = page.getContent().stream()
+                .map(institucion -> new InstitucionRecord(
+                        institucion.getId(),
+                        institucion.getNombre(),
+                        String.join(" ",
+                                institucion.getDomicilio().getCalle(),
+                                institucion.getDomicilio().getColonia(),
+                                institucion.getDomicilio().getExterior(),
+                                (institucion.getDomicilio().getInterior() != null && !institucion.getDomicilio().getInterior().isEmpty()) ? "Int. " + institucion.getDomicilio().getInterior() : "",
+                                institucion.getDomicilio().getEstadoRepublica(),
+                                institucion.getDomicilio().getMunicipio(),
+                                institucion.getDomicilio().getLocalidad(),
+                                institucion.getDomicilio().getCodigoPostal(),
+                                (institucion.getDomicilio().getReferencia() != null && !institucion.getDomicilio().getReferencia().isEmpty()) ? "Ref: " + institucion.getDomicilio().getReferencia() : ""
+                        ).trim(),
+                        institucion.getTelefono()))
+                .toList();
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
 }
