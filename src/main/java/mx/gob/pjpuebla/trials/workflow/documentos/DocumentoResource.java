@@ -89,6 +89,11 @@ public class DocumentoResource {
         return this.documentoService.getAll(key, pageable);
     }
 
+    @GetMapping("/bandeja/salida")
+    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "key", required = false) String key) {
+        return this.documentoService.getAllBandejaSalida(key, pageable);
+    }
+
     @PatchMapping("/bandeja/{id}/status/{status}")
     public DocumentoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.documentoService.updateStatus(id, status);

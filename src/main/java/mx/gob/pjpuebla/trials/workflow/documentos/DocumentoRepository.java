@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,49 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             + "AND (lower(m.nombre) LIKE %:key% OR lower(c.folio) LIKE %:key% OR lower(c.expediente) LIKE %:key%) "
             + "ORDER BY doc.audit.fechaAlta ASC")
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
+
+    @Query("""
+             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord(
+                m.id,
+                COALESCE(c.id, doc_carpeta.id),
+                COALESCE(c.folio, doc_carpeta.folio),
+                COALESCE(c.expediente, doc_carpeta.expediente),
+                COALESCE(jc.id, jd.id),
+                COALESCE(jc.nombre, jd.nombre),
+                COALESCE(matc.nombre, matd.nombre),
+                c.tipoCarpeta,
+                doc.tipoDocumento,
+                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta),
+                COALESCE(c.selloEstatus, doc_carpeta.selloEstatus),
+                COALESCE(c.estatus, doc_carpeta.estatus)
+            )
+            FROM Movimiento m
+            LEFT JOIN m.carpeta c
+            LEFT JOIN c.juzgado jc
+            LEFT JOIN jc.materia matc
+            LEFT JOIN m.documento doc
+            LEFT JOIN doc.carpeta doc_carpeta
+            LEFT JOIN doc_carpeta.juzgado jd
+            LEFT JOIN jd.materia matd
+            WHERE m.fechaAsignacion = (
+                SELECT MAX(m2.fechaAsignacion)
+                FROM Movimiento m2
+                WHERE m2.motivo = 'TURNADO'
+                AND (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
+                )
+            )
+            AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
+            AND (lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
+                  OR lower(COALESCE(c.folio, doc_carpeta.folio)) LIKE %:key%
+                  OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%)
+            ORDER BY
+                COALESCE(jc.nombre, jd.nombre) ASC,
+                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta) DESC,
+                COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
+            """)
+    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(

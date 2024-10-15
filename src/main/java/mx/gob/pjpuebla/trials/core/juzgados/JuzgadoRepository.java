@@ -84,4 +84,17 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
     List<JuzgadoTipoJuiciosRecord> findTipoJuiciosByJuzgadoId(
             @Param("juzgadoId") Integer juzgadoId);
 
+    @Query("""
+        SELECT
+        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+        FROM Juzgado f
+        LEFT JOIN f.materia m
+        WHERE f.estado = :estado
+        AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
+        """)
+    Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(
+            @Param("estado") Estado estado,
+            @Param("key") String key,
+            Pageable pageable
+    );
 }

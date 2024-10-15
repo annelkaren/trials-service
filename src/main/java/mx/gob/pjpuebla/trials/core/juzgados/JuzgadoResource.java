@@ -55,4 +55,11 @@ public class JuzgadoResource {
         dataBinder.validate();
         dataBinder.close();
     }
+
+    @GetMapping("/autocomplete")
+    public Page<JuzgadoRecordItem> findAllByEstadoActiveAutocomplete(
+            @PageableDefault Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return this.juzgadoService.findAllByEstadoAutocomplete(key, pageable);
+    }
 }

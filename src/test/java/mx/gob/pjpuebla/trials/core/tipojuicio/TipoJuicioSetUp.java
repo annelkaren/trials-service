@@ -53,6 +53,43 @@ public class TipoJuicioSetUp {
         return tipoJuicio;
     }
 
+    public static TipoJuicio createTipoJuicioOralidadFamiliar(TipoSistema tipoSistema, Materia materia) {
+        TipoJuicio tipoJuicio = new TipoJuicio()
+                .setId(1)
+                .setNombre("Familiar Oralidad (Alimentos)")
+                .setEstado(Estado.ACTIVE)
+                .setVersion(0)
+                .setTipoSistema(tipoSistema)
+                .setMateria(materia);
+        tipoJuicio.setAudit(
+                new Audit(
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                        "6b13785f-d213-4585-a76b-437ffe57c9c7")
+        );
+        return tipoJuicio;
+    }
+
+    public static TipoJuicio createTipoJuicioOralFamiliar() {
+        TipoJuicio tipoJuicio = new TipoJuicio()
+                .setId(1)
+                .setNombre("Familiar Oralidad (Alimentos)")
+                .setEstado(Estado.ACTIVE)
+                .setVersion(0)
+                .setTipoSistema(TipoSistemaSetUp.createTipoSistema())
+                .setMateria(MateriaSetUp.createMateria());
+        tipoJuicio.setAudit(
+                new Audit(
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                        "6b13785f-d213-4585-a76b-437ffe57c9c7")
+        );
+        return tipoJuicio;
+    }
+
+
 
     public static TipoJuicioRecord createTipoJuicioRecord() {
         return new TipoJuicioRecord(1, "Laboral", createTipoSistemaRecord(), createMateriaRecord());
@@ -65,6 +102,5 @@ public class TipoJuicioSetUp {
     public static MateriaRecord createMateriaRecord() {
         return new MateriaRecord(1, "PENAL");
     }
-
 
 }
