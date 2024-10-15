@@ -49,9 +49,15 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
         FROM Oficialia o
         LEFT JOIN o.materias m
         JOIN o.sede s
-        LEFT JOIN o.juzgado j
+        LEFT JOIN o.juzgados j
         JOIN o.tipoOficialia t
         WHERE o.estado IN :estados
         """)
     Page<OficialiaMateriaRecord> findOficialiaDetails(@Param("estados") List<Estado> estados, Pageable pageable);
+
+    @Query("SELECT new mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord(" +
+           "j.id, j.nombre) " +
+           "FROM Oficialia o JOIN o.juzgados j " +
+           "WHERE j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE")  
+    List<OficialiaJuzgadoRecord> findAllOficialiasWithActiveJuzgados();
 }

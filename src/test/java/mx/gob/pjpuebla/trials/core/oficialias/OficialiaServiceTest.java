@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -69,7 +70,7 @@ class OficialiaServiceTest {
     private OficialiaRecord oficialiaRecord;
     private TipoOficialia tipoOficialia;
     private Sede sede;
-    private Juzgado juzgado;
+    private List<Juzgado> juzgados;
     private Materia materia;
 
     @BeforeEach
@@ -77,7 +78,7 @@ class OficialiaServiceTest {
         tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
         Distrito distrito = DistritoSetUp.createDistrito();
         Domicilio domicilio = DomicilioSetUp.createDomicilio();
-        juzgado = JuzgadoSetUp.createJuzgado();
+        juzgados = Arrays.asList(JuzgadoSetUp.createJuzgado(), JuzgadoSetUp.createJuzgado());
         sede = SedeSetUp.createSede();
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
@@ -85,7 +86,7 @@ class OficialiaServiceTest {
 
         oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede)
                 .setMaterias(List.of(materia));
-        oficialia.setJuzgado(juzgado);
+        oficialia.setJuzgados(juzgados);
         oficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado()));
     }
 
@@ -148,7 +149,7 @@ class OficialiaServiceTest {
                 .willReturn(Optional.ofNullable(oficialia.getSede()));
         given(tipoOficialiaRepository.findById(tipoOficialia.getId()))
                 .willReturn(Optional.of(tipoOficialia));
-        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.of(juzgado));
+        given(juzgadoRepository.findAllById(anyList())).willReturn(juzgados);
 
         given(oficialiaRepository.save(oficialia))
                 .willReturn(oficialia);
@@ -170,8 +171,7 @@ class OficialiaServiceTest {
                 .willReturn(Optional.ofNullable(oficialia.getSede()));
         given(tipoOficialiaRepository.findById(tipoOficialia.getId()))
                 .willReturn(Optional.of(tipoOficialia));
-        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.of(oficialia.getJuzgado()));
-
+        given(juzgadoRepository.findAllById(anyList())).willReturn(juzgados);
         given(oficialiaRepository.save(oficialia))
                 .willReturn(oficialia);
 
@@ -193,7 +193,7 @@ class OficialiaServiceTest {
                 .willReturn(Optional.of(tipoOficialia));
         given(oficialiaRepository.save(oficialia))
                 .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
-        given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.of(oficialia.getJuzgado()));
+        given(juzgadoRepository.findAllById(anyList())).willReturn(juzgados);
 
 
         InvalidVersionException assertThrows = assertThrows(
@@ -210,13 +210,13 @@ class OficialiaServiceTest {
                 oficialia.getId(),
                 oficialia.getNombre(),
                 oficialia.getEstado(),
-                String.join(", ", oficialia.getMaterias().stream().map(Materia::getNombre).toArray(String[]::new)), // Concatenar nombres de materias
+                String.join(", ", oficialia.getMaterias().stream().map(Materia::getNombre).toArray(String[]::new)),
                 materia.getId(),
                 sede.getId(),
                 tipoOficialia.getNombre(),
                 tipoOficialia.getId(),
-                juzgado.getNombre(),
-                juzgado.getId()
+                juzgados.get(0).getNombre(),
+                juzgados.get(0).getId()
         );
 
         List<OficialiaMateriaRecord> listPage = Collections.singletonList(oficialiaMateriaRecordResponse);
@@ -246,8 +246,56 @@ class OficialiaServiceTest {
                 .hasFieldOrPropertyWithValue("id", oficialia.getTipoOficialia().getId())
                 .hasFieldOrPropertyWithValue("nombre", oficialia.getTipoOficialia().getNombre());
 
-        assertThat(oficialia.getJuzgado())
-                .hasFieldOrPropertyWithValue("id", oficialia.getJuzgado().getId())
-                .hasFieldOrPropertyWithValue("nombre", oficialia.getJuzgado().getNombre());
+        for (Juzgado juzgadoItem : oficialia.getJuzgados()) {
+            assertThat(juzgadoItem)
+                    .hasFieldOrPropertyWithValue("id", juzgadoItem.getId())
+                    .hasFieldOrPropertyWithValue("nombre", juzgadoItem.getNombre());
+        }
+    }
+
+    @Test
+    void validateJuzgadosByTipoOficialia_comun_withTwoJuzgados_shouldNotThrow() {
+        TipoOficialia tipoComun = new TipoOficialia().setNombre("Común");
+        Oficialia oficialia = new Oficialia().setJuzgados(Arrays.asList(new Juzgado(), new Juzgado()));
+
+        assertDoesNotThrow(() -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoComun));
+    }
+
+    @Test
+    void validateJuzgadosByTipoOficialia_comun_withLessThanTwoJuzgados_shouldThrow() {
+        TipoOficialia tipoComun = new TipoOficialia().setNombre("Común");
+        Oficialia oficialia = new Oficialia().setJuzgados(Collections.singletonList(new Juzgado()));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoComun));
+        assertThat(exception.getMessage()).isEqualTo("Las oficialías de tipo Común deben tener al menos dos juzgados.");
+    }
+
+    @Test
+    void validateJuzgadosByTipoOficialia_mayor_withOneJuzgado_shouldNotThrow() {
+        TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
+        Oficialia oficialia = new Oficialia().setJuzgados(Collections.singletonList(new Juzgado()));
+
+        assertDoesNotThrow(() -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
+    }
+
+    @Test
+    void validateJuzgadosByTipoOficialia_mayor_withMoreThanOneJuzgado_shouldThrow() {
+        TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
+        Oficialia oficialia = new Oficialia().setJuzgados(Arrays.asList(new Juzgado(), new Juzgado()));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
+        assertThat(exception.getMessage()).isEqualTo("Las oficialías de tipo Mayor deben tener exactamente un juzgado.");
+    }
+
+    @Test
+    void validateJuzgadosByTipoOficialia_mayor_withNoJuzgados_shouldThrow() {
+        TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
+        Oficialia oficialia = new Oficialia().setJuzgados(Collections.emptyList());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
+        assertThat(exception.getMessage()).isEqualTo("Las oficialías de tipo Mayor deben tener exactamente un juzgado.");
     }
 }

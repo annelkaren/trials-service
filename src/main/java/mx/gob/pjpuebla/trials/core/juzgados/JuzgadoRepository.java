@@ -83,6 +83,9 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         """)
     List<JuzgadoTipoJuiciosRecord> findTipoJuiciosByJuzgadoId(
             @Param("juzgadoId") Integer juzgadoId);
+    
+    @Query("SELECT j FROM OficialiaJuzgado oj JOIN Juzgado j ON oj.juzgadoId = j.id WHERE oj.oficialiaId = :oficialiaId AND j.estado IN :estados")
+    List<Juzgado> findByOficialiaIdAndEstadoIn(@Param("oficialiaId") Integer oficialiaId, @Param("estados") List<Estado> estados);
 
     @Query("""
         SELECT
