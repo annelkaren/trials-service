@@ -27,11 +27,11 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
@@ -52,6 +52,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -280,55 +281,67 @@ class CarpetaServiceTest {
     @Test
     void actualizarInformacionAnexos_Success() {
         Integer documentoId = 123;
-        List<AnexoBandejaRecepcionRecord> anexos = List
-                .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
+        List<AnexoBandejaRecepcionRecord> anexos = List.of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
 
-        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()); 
-        Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO); 
-        Persona persona = PersonaSetUp.createPersona(); 
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        Anexo anexo = new Anexo();
+        anexo.setId(1);
+        anexo.setNombre("INE");
+        anexo.setEstado(EstadoAnexo.RECIBIDO);
+        anexo.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
+                "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+
+        Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
         documento.getCarpeta().setJuzgado(juzgado1);
+        List<Anexo> anexoList = List.of(anexo);
 
-        given(personaService.getAuditor())
-        .willReturn(persona);
-        given(anexoRepository.findById(1)).willReturn(Optional.of(anexo)); 
+        given(personaService.getAuditor()).willReturn(persona);
+        given(anexoRepository.findAllByDocumentoId(documentoId)).willReturn(anexoList);
+        given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
-                                                                                         
+
         DocumentoRecord response = target.actualizarInformacionAnexos(anexos, documentoId);
 
         assertThat(response).isNotNull();
-
-        verify(anexoRepository, times(1)).save(anexo);
+        verify(anexoRepository, times(1)).save(anexo); // Asegúrate de que el anexo sea el correcto
         verify(documentoRepository, times(1)).save(documento);
     }
-
 
     @Test
     void actualizarInformacionAnexos_AnexoNoEncontrado() {
         Integer documentoId = 123;
-        List<AnexoBandejaRecepcionRecord> anexos = List
-                .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
+
+        List<AnexoBandejaRecepcionRecord> anexos = List.of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
-        Persona persona = PersonaSetUp.createPersona(); 
+        Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
         documento.getCarpeta().setJuzgado(juzgado1);
 
-      
-        given(personaService.getAuditor())
-        .willReturn(persona);
-        given(anexoRepository.findById(1)).willReturn(Optional.empty()); 
-        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento)); 
-                                                                                           
+        Anexo anexo = new Anexo();
+        anexo.setId(1);
+        anexo.setNombre("INE");
+        anexo.setEstado(EstadoAnexo.RECIBIDO);
+        anexo.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
+                "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(anexoRepository.findAllByDocumentoId(documentoId)).willReturn(List.of(anexo));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             target.actualizarInformacionAnexos(anexos, documentoId);
         });
 
-
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el anexo con id: " + 1 + "\"");
     }
+
+
 
     @Test
     void actualizarInformacionAnexos_DocumentoNoEncontrado() {

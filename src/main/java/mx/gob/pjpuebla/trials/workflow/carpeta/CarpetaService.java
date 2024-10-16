@@ -29,7 +29,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -97,30 +96,26 @@ public class CarpetaService {
                 List<Anexo> allAnexosOfDocumento = anexoRepository.findAllByDocumentoId(documentoId);
                 List<String> anexosFaltantes = new ArrayList<>();
 
-                Map<Integer, String> anexoIdNombreMap = allAnexosOfDocumento.stream()
-                    .collect(Collectors.toMap(Anexo::getId, Anexo::getNombre));
-
                 Set<Integer> anexosPresentes = anexos.stream()
                     .map(AnexoBandejaRecepcionRecord::id)
                     .collect(Collectors.toSet());
 
-                for (Map.Entry<Integer, String> entry : anexoIdNombreMap.entrySet()) {
-                    Integer anexoId = entry.getKey();
-                    String nombreAnexo = entry.getValue();
+                for (Anexo anexoTemp : allAnexosOfDocumento) {
+                    Integer anexoId = anexoTemp.getId();
+                    String nombreAnexo = anexoTemp.getNombre();
 
                     if (!anexosPresentes.contains(anexoId)) {
                         anexosFaltantes.add(nombreAnexo);
+                    } else {
+                        // Actualizamos el estado del anexo presente
+                        Anexo anexo = anexoRepository.findById(anexoId)
+                                .orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexoId, "anexoId"));
+                        anexoTemp.setEstado(anexo.getEstado());
+                        anexoRepository.save(anexoTemp);
                     }
                 }
 
                 observacionAnexos(documento, anexosFaltantes);
-
-                //actualizamos los anexos.
-                for (AnexoBandejaRecepcionRecord anexo : anexos) {
-                    Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
-                    anexoTemp.setEstado(anexo.estado());
-                    anexoRepository.save(anexoTemp);
-                }
 
                 //actualizamos el estatus en carpeta o documento dependiendo de si es demanda, exhorto o promoción.
                 if(documento.getTipoDocumento() == TipoDocumento.PROMOCION){    
@@ -160,7 +155,6 @@ public class CarpetaService {
         if (anexos.isEmpty()) {
             return;
         }
-        //String Anexos
         String concatenatedAnexos = String.join(", ", anexos);
         String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
 
