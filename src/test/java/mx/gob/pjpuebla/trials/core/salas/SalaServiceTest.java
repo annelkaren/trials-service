@@ -190,7 +190,7 @@ class SalaServiceTest {
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
     }
 
-   /* @Test
+    @Test
     void testAsignarSalaAudiencia(){
         BloqueCitaItem cita = new BloqueCitaItem();
         LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
@@ -213,15 +213,15 @@ class SalaServiceTest {
         SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
 
         assertThat(salaAudienciaRecord)
-            .isNotNull()
-            .hasFieldOrPropertyWithValue("id", sala.getId())
-            .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
-            .hasFieldOrPropertyWithValue("juezId", juez.getId())
-            .hasFieldOrPropertyWithValue("juez", juez.getNombre())
-            .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
-            .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", sala.getId())
+                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
+                .hasFieldOrPropertyWithValue("juezId", juez.getId())
+                .hasFieldOrPropertyWithValue("juez", juez.getNombre())
+                .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
+                .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
     }
-*/
+
     @Test
     void testSalaDisponible(){
         BloqueCitaItem cita = new BloqueCitaItem();
@@ -240,15 +240,15 @@ class SalaServiceTest {
         given(mockSalaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)).willReturn(salas);
 
         Sala salaDisponible = salaService.findSalaDisponible(fechaAudiencia, bloque, juzgado);
-    
+
         assertThat(salaDisponible)
-            .isNotNull()
-            .hasFieldOrPropertyWithValue("bloque", sala.getBloque());
-        
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("bloque", sala.getBloque());
+
         List<BloqueCitaItem> citas = salaDisponible.getBloque().getData().getCitas();
 
         assertThat(citas).hasSize(1)
-        .anyMatch(c -> c.getHoraCitas() == cita.getHoraCitas());
+                .anyMatch(c -> c.getHoraCitas() == cita.getHoraCitas());
     }
 
     @Test
@@ -260,16 +260,16 @@ class SalaServiceTest {
     }
 
     @Test
-    void testAsignarAudiencia() {
+    void testAsignarAudiencia(){
         BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 0));
+        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
         TipoAudiencia tipoAudiencia = new TipoAudiencia();
         tipoAudiencia.setNombre("INICIAL");
 
         cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8, 30, 0));
+        cita.setHoraCitas(LocalTime.of(8,30,00));
 
-        bloque.setData(new BloqueData().setCitas(List.of(cita)));
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         sala.setBloque(bloque);
 
         given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
@@ -280,5 +280,6 @@ class SalaServiceTest {
         assertThat(salaAudiencia).isNotNull()
                 .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
     }
+
 
 }
