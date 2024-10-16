@@ -160,6 +160,7 @@ public class CarpetaService {
         if (anexos.isEmpty()) {
             return;
         }
+        //String Anexos
         String concatenatedAnexos = String.join(", ", anexos);
         String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
 
