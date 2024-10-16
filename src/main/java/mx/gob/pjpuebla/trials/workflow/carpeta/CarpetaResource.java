@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
@@ -18,13 +20,22 @@ import java.util.List;
 public class CarpetaResource {
 
     private final CarpetaService carpetaService;
+    private final PersonaService personaService;
 
     @GetMapping
     public ResponseEntity<CarpetaResponseRecord> getCarpetaByExpedienteAndJuzgadoId(
             @RequestParam String numExpediente,
             @RequestParam Integer year,
-            @RequestParam Integer idJuzgado
-    ) {
+            @RequestParam(required = false) Integer idJuzgado) {
+
+                // Agregar validación para manejar el caso de idJuzgado null
+                if (idJuzgado == null) {
+                    Persona auditor = personaService.getAuditor();
+                    if (auditor == null || auditor.getJuzgado() == null) {
+                        throw new IllegalArgumentException("No se puede determinar el juzgado.");
+                    }
+                    idJuzgado = auditor.getJuzgado().getId();
+                }
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
                 numExpediente + "/" + year, idJuzgado);
         return ResponseEntity.ok(carpetaResponseRecord);
