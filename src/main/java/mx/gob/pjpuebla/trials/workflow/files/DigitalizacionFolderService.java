@@ -2,16 +2,18 @@ package mx.gob.pjpuebla.trials.workflow.files;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -20,49 +22,99 @@ public class DigitalizacionFolderService {
 
     @Value("${app.root-folder}")
     private String rootFolder;
+    
+    private static final String DIGITALIZACION_FOLDER = "digitalizacion";
+    private static final String ENTRADA_FOLDER = "entrada";
+    private static final String OFICIOS_FOLDER = "oficios";
+    private static final String OFICIO_ADMINISTRATIVO = "administrativo";
+    private static final String OFICIO_JURISDICCIONAL = "jurisdiccional";
+    
+    private final PersonaService personaService;
 
     public String createFolderDigitalizacion(Documento doc) {
-        if (doc == null) {
-            throw new IllegalArgumentException("El documento no puede ser nulo");
+        validacionDigitalizacion(doc);
+
+        String year = obtenerYear(doc);
+        String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
+        Path rootPath = (TipoDocumento.OFICIO.equals(doc.getTipoDocumento()))
+                ? construirRutaOficio(doc, year, juzgado)
+                : construirRutaConCarpeta(doc, year, juzgado);
+
+        return crearDirectorios(rootPath);
+    }
+
+    protected void validacionDigitalizacion(Documento doc) {
+        if (doc == null ) {
+            throw new IllegalArgumentException("Documento o datos del documento no válidos");
         }
 
-        Carpeta carpeta = doc.getCarpeta();
-        if (carpeta == null) {
-            throw new IllegalArgumentException("La carpeta no puede ser nula");
+        if (!TipoDocumento.OFICIO.equals(doc.getTipoDocumento())) {
+            Carpeta carpeta = doc.getCarpeta();
+            if (carpeta == null || carpeta.getExpediente() == null) {
+                throw new IllegalArgumentException("Propiedades no válidas en la carpeta del documento");
+            }
         }
+    }
 
-        if (carpeta.getExpediente() == null || carpeta.getJuzgado() == null || carpeta.getTipoCarpeta() == null) {
-            throw new IllegalArgumentException("Algunas propiedades de la carpeta no pueden ser nulas");
-        }
+    private String obtenerYear(Documento doc) {
+        return doc.getCarpeta() != null
+                ? obtenerDatosExpediente(doc.getCarpeta().getExpediente())[1].trim()
+                : String.valueOf(LocalDate.now().getYear());
+    }
 
-        String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
+    private Path obtenerBasePath(String year, String juzgado) {
+        return Paths.get(rootFolder, DIGITALIZACION_FOLDER, year, juzgado);
+    }
 
+    protected String[] obtenerDatosExpediente(String expediente) {
+        String[] expedienteArray = expediente.split("/");
         if (expedienteArray.length < 2) {
             throw new IllegalArgumentException("El expediente no tiene el formato esperado");
         }
+        return expedienteArray;
+    }
 
-        String expediente = expedienteArray[0].trim();
-        String year = expedienteArray[1].trim();
-        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", "");
+    private String obtenerNombreCarpeta(Carpeta carpeta) {
+        String expediente = obtenerDatosExpediente(carpeta.getExpediente())[0].trim();
+        return TipoCarpeta.EXHORTO.equals(carpeta.getTipoCarpeta())
+                ? expediente
+                : String.format("%06d", Integer.parseInt(expediente));
+    }
 
-        String nombreCarpeta;
-        Path rootPath;
-        if (juzgado.isEmpty()) {
-            throw new IllegalArgumentException("El juzgado no puede ser nulo o vacío");
+    private Path construirRutaConCarpeta(Documento doc, String year, String juzgado) {
+        Carpeta carpeta = doc.getCarpeta();
+        String expediente = obtenerDatosExpediente(carpeta.getExpediente())[0].trim();
+        String nombreCarpeta = obtenerNombreCarpeta(carpeta);
+        Path basePath = obtenerBasePath(year, juzgado);
+
+        switch (carpeta.getTipoCarpeta()) {
+            case DEMANDA:
+                return basePath.resolve(nombreCarpeta);
+            case EXHORTO:
+                return basePath.resolve(ENTRADA_FOLDER).resolve(nombreCarpeta);
+            default:
+                log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
+                throw new IllegalArgumentException("Tipo de carpeta no soportado");
         }
+    }
 
-        Path basePath = Paths.get(rootFolder, "digitalizacion", year, juzgado);
-
-        if (TipoCarpeta.EXHORTO.equals(doc.getCarpeta().getTipoCarpeta())) {
-            nombreCarpeta = expediente;
-            rootPath = basePath.resolve(Paths.get("entrada", nombreCarpeta));
+    private Path construirRutaOficio(Documento doc, String year, String juzgado) {
+        Path basePath = obtenerBasePath(year, juzgado);
+        String nombreOficio = doc.getData().getTipoOficio();
+        
+        if (OFICIO_ADMINISTRATIVO.equalsIgnoreCase(nombreOficio)) {
+            return basePath.resolve(OFICIOS_FOLDER).resolve(String.valueOf(doc.getId()));
+        } else if (OFICIO_JURISDICCIONAL.equalsIgnoreCase(nombreOficio)) {
+            return basePath.resolve(doc.getCarpeta().getExpediente()).resolve(OFICIOS_FOLDER).resolve(String.valueOf(doc.getId()));
         } else {
-            nombreCarpeta = String.format("%06d", Integer.parseInt(expediente));
-            rootPath = basePath.resolve(nombreCarpeta);
+            log.warn("Tipo de oficio desconocido: {}", nombreOficio);
+            throw new IllegalArgumentException("Tipo de oficio no soportado");
         }
+    }
 
+    private String crearDirectorios(Path rootPath) {
         try {
-            Files.createDirectories(rootPath); // Crear las carpetas si no existen
+            Files.createDirectories(rootPath);
             log.info("Carpeta creada exitosamente en: {}", rootPath);
             return rootPath.toString();
         } catch (IOException e) {
