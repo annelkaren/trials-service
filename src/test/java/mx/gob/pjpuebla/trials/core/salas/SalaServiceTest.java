@@ -55,6 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class SalaServiceTest {
@@ -209,6 +210,8 @@ class SalaServiceTest {
         given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
         given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
         given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
+        lenient().when(eventoService.siguienteDiaHabil(any(), any(), any())).thenReturn(fechaAudiencia.toLocalDate());
+
 
         SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
 
@@ -272,8 +275,9 @@ class SalaServiceTest {
        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
        sala.setBloque(bloque);
 
-       given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
+       given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(Boolean.TRUE);
        given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));
+       lenient().when(eventoService.siguienteDiaHabil(any(), any(), any())).thenReturn(fechaAudiencia.toLocalDate());
 
        SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
 
