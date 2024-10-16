@@ -28,6 +28,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -255,15 +256,10 @@ class DocumentoResourceTest {
     void getIndicadores_success() throws Exception {
         IndicadoresRecord indicadoresRecord = DocumentoSetUp.createIndicadoresRecord();
 
-        given(documentoService.getIndicadores(2,7,9,5))
-                .willReturn(indicadoresRecord);
+        when(documentoService.getIndicadores()).thenReturn(indicadoresRecord);
         mockMvc.perform(
-                get("/api/workflow/documentos/indicadores")
-                        .param("indicador1", String.valueOf(2))
-                        .param("indicador2", String.valueOf(7))
-                        .param("indicador3", String.valueOf(9))
-                        .param("indicador4", String.valueOf(5))
-                        .accept(MediaType.APPLICATION_JSON))
+                get("/api/workflow/documentos/indicadores?isRecepcion=true")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
