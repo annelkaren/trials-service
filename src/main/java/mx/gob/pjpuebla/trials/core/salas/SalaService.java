@@ -141,6 +141,11 @@ public class SalaService {
 
         while(intentos <= max){
 
+            // Verifica que la fecha no sea nula antes de continuar
+            if (fecha == null) {
+                throw new IllegalStateException("La fecha no puede ser nula.");
+            }
+
             if (eventoService.esDiaInHabil(fecha, juzgado, null)==Boolean.TRUE){
                 fecha = eventoService.siguienteDiaHabil(fecha, juzgado, null);
             }
@@ -149,6 +154,11 @@ public class SalaService {
                 List<BloqueCitaItem> citas = bloque.getData().getCitas();
     
                 for (BloqueCitaItem cita: citas){
+
+                    if (cita.getHoraCitas() == null) {
+                        throw new IllegalStateException("La hora de la cita no puede ser nula.");
+                    }
+
                     LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
 
                     Sala salaDisponible = this.findSalaDisponible(fechaHoraAudiencia, bloque, juzgado);
