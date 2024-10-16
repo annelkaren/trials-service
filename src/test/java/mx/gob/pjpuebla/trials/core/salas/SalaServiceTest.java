@@ -191,38 +191,6 @@ class SalaServiceTest {
     }
 
     @Test
-    void testAsignarSalaAudiencia(){
-        BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        TipoAudiencia tipoAudiencia = new TipoAudiencia();
-        tipoAudiencia.setNombre("INICIAL");
-
-        cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
-
-        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
-        sala.setBloque(bloque);
-
-        List<Sala> salas = Arrays.asList(sala);
-        List<Bloque> bloques = Arrays.asList(bloque);
-
-        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
-        given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
-        given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
-
-        SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
-
-        assertThat(salaAudienciaRecord)
-                .isNotNull()
-                .hasFieldOrPropertyWithValue("id", sala.getId())
-                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
-                .hasFieldOrPropertyWithValue("juezId", juez.getId())
-                .hasFieldOrPropertyWithValue("juez", juez.getNombre())
-                .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
-                .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
-    }
-
-    @Test
     void testSalaDisponible(){
         BloqueCitaItem cita = new BloqueCitaItem();
         LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
@@ -258,25 +226,66 @@ class SalaServiceTest {
 
         assertThat(salaService.checkHoraDisponible(fechaAudiencia, sala)).isTrue();
     }
-
+    
     @Test
-    void testAsignarAudiencia(){
+    void testAsignarSalaAudiencia() {
+        // Configuración de la cita
         BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        TipoAudiencia tipoAudiencia = new TipoAudiencia();
-        tipoAudiencia.setNombre("INICIAL");
-
         cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+        cita.setHoraCitas(LocalTime.of(8, 30, 0));
 
+        // Configuración del bloque y sala
         bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         sala.setBloque(bloque);
 
-        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
+        // Configuración de la audiencia
+        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 0));
+        TipoAudiencia tipoAudiencia = new TipoAudiencia();
+        tipoAudiencia.setNombre("INICIAL");
+
+        // Configuración de los mocks
+        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(false);
+        given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(Arrays.asList(bloque));
+        given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(Arrays.asList(sala));
+
+        // Llamada al método
+        SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
+
+        // Verificaciones
+        assertThat(salaAudienciaRecord)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", sala.getId())
+                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
+                .hasFieldOrPropertyWithValue("juezId", juez.getId())
+                .hasFieldOrPropertyWithValue("juez", juez.getNombre())
+                .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
+                .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
+    }
+
+    @Test
+    void testAsignarAudiencia() {
+        // Configuración de la cita
+        BloqueCitaItem cita = new BloqueCitaItem();
+        cita.setNumCitas(1);
+        cita.setHoraCitas(LocalTime.of(8, 30, 0));
+
+        // Configuración del bloque y sala
+        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+        sala.setBloque(bloque);
+
+        // Configuración de la audiencia
+        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 0));
+        TipoAudiencia tipoAudiencia = new TipoAudiencia();
+        tipoAudiencia.setNombre("INICIAL");
+
+        // Configuración de los mocks
+        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(false);
         given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));
 
+        // Llamada al método
         SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
 
+        // Verificaciones
         assertThat(salaAudiencia).isNotNull()
                 .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
     }
