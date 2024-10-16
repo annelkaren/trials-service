@@ -18,6 +18,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -26,7 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -38,6 +43,7 @@ public class CarpetaService {
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
+    private final MovimientoService movimientoService;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, juzgadoId)
@@ -87,7 +93,28 @@ public class CarpetaService {
     public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
             Integer documentoId) {
                 Documento documento = validacionBandejaRecepcion(documentoId);
-                
+
+                List<Anexo> allAnexosOfDocumento = anexoRepository.findAllByDocumentoId(documentoId);
+                List<String> anexosFaltantes = new ArrayList<>();
+
+                Map<Integer, String> anexoIdNombreMap = allAnexosOfDocumento.stream()
+                    .collect(Collectors.toMap(Anexo::getId, Anexo::getNombre));
+
+                Set<Integer> anexosPresentes = anexos.stream()
+                    .map(AnexoBandejaRecepcionRecord::id)
+                    .collect(Collectors.toSet());
+
+                for (Map.Entry<Integer, String> entry : anexoIdNombreMap.entrySet()) {
+                    Integer anexoId = entry.getKey();
+                    String nombreAnexo = entry.getValue();
+
+                    if (!anexosPresentes.contains(anexoId)) {
+                        anexosFaltantes.add(nombreAnexo);
+                    }
+                }
+
+                observacionAnexos(documento, anexosFaltantes);
+
                 //actualizamos los anexos.
                 for (AnexoBandejaRecepcionRecord anexo : anexos) {
                     Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
@@ -128,5 +155,16 @@ public class CarpetaService {
         return documento;
 
     }
+
+    public void observacionAnexos(Documento documento, List<String> anexos) {
+        if (anexos.isEmpty()) {
+            return;
+        }
+        String concatenatedAnexos = String.join(", ", anexos);
+        String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
+
+        movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
+    }
+
 
 }

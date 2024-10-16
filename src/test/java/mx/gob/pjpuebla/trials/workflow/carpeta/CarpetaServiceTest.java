@@ -40,6 +40,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,8 +62,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CarpetaServiceTest {
@@ -87,6 +87,10 @@ class CarpetaServiceTest {
     private DomicilioRepository domicilioRepository;
     @Mock
     private SedeRepository sedeRepository;
+    @Mock
+    private CarpetaService carpetaService;
+    @Mock
+    private MovimientoService movimientoService;
 
     @Mock
     private PersonaRepository personaRepository;
@@ -191,11 +195,11 @@ class CarpetaServiceTest {
         List<AnexoBandejaRecepcionRecord> anexosRecepcion = DocumentoSetUp.createAnexosDocumento();
         Documento documento = DocumentoSetUp.create(tipoJuicio);
         Persona persona = PersonaSetUp.createPersona();
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
 
         // Relacionando juzgado de persona y documento
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        persona.setJuzgado(juzgado1);
+        documento.getCarpeta().setJuzgado(juzgado1);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -206,10 +210,8 @@ class CarpetaServiceTest {
         given(carpetaRepository.findAnexosByDocumentoId(bandejaRecepcion.documentoId()))
                 .willReturn(anexosRecepcion);
 
-        // Ejecución del método
         BandejaRecepcionRecord result = target.getBandejaRecepcionByDocumentoId(documentoId);
 
-        // Validaciones
         assertThat(result).isNotNull();
         assertThat(result.documentoId()).isEqualTo(bandejaRecepcion.documentoId());
         assertThat(result.folio()).isEqualTo(bandejaRecepcion.folio());
@@ -260,10 +262,10 @@ class CarpetaServiceTest {
 
         Persona persona = PersonaSetUp.createPersona();
         Documento documento = DocumentoSetUp.create(tipoJuicio);
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
 
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        persona.setJuzgado(juzgado1);
+        documento.getCarpeta().setJuzgado(juzgado1);
 
         given(personaService.getAuditor())
         .willReturn(persona);
@@ -284,9 +286,9 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()); 
         Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO); 
         Persona persona = PersonaSetUp.createPersona(); 
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado1);
+        documento.getCarpeta().setJuzgado(juzgado1);
 
         given(personaService.getAuditor())
         .willReturn(persona);
@@ -310,9 +312,9 @@ class CarpetaServiceTest {
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Persona persona = PersonaSetUp.createPersona(); 
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado1);
+        documento.getCarpeta().setJuzgado(juzgado1);
 
       
         given(personaService.getAuditor())
@@ -336,8 +338,8 @@ class CarpetaServiceTest {
 
       
         Persona persona = PersonaSetUp.createPersona(); 
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        persona.setJuzgado(juzgado);
+        Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado1);
 
      
         given(personaService.getAuditor())
@@ -352,5 +354,36 @@ class CarpetaServiceTest {
     
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el documento asociado al documentoId: " + documentoId + "\"");
     }
+
+    @Test
+    void observacionAnexos_whenAnexosIsNull_doesNotCreateMovimiento() {
+        Documento documento = new Documento();
+        documento.setCarpeta(new Carpeta());
+
+        List<String> anexos = null;
+        carpetaService.observacionAnexos(documento, anexos);
+
+        verify(movimientoService, never()).createMovimento(any(), any(), any(), any());
+    }
+
+    @Test
+    void observacionAnexos_createsMovimiento() {
+        TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio1);
+        List<String> anexos = List.of("Anexo 1", "Anexo 2");
+        Persona persona = PersonaSetUp.createPersona();
+
+        when(personaService.getAuditor()).thenReturn(persona);
+
+        target.observacionAnexos(documento, anexos);
+
+        verify(movimientoService).createMovimento(
+                eq(documento.getCarpeta()),
+                eq(documento),
+                eq(persona),
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+        );
+    }
+
 
 }

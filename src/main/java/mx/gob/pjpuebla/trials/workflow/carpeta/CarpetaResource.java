@@ -40,11 +40,10 @@ public class CarpetaResource {
         return this.carpetaService.getBandejaRecepcionByDocumentoId(documentoId);
     }
 
-    @PostMapping(value = "/recepcion")
+    @PostMapping(value = "/recepcion/{documentoId}")
     public DocumentoRecord recepcionAnexos(
             @RequestBody List<AnexoBandejaRecepcionRecord> anexos,
-            @RequestParam Integer documentoId) {
-        
+            @PathVariable Integer documentoId) {
         return this.carpetaService.actualizarInformacionAnexos(anexos, documentoId);
     }
     
