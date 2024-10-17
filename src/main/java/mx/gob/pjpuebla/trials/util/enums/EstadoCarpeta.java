@@ -8,5 +8,6 @@ public enum EstadoCarpeta {
     SALIDA,
     RECEPCION,
     TURNADO,
-    ASIGNADO
+    ASIGNADO,
+    CREADO
 }
