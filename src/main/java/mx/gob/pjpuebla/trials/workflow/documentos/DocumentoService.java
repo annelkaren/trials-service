@@ -36,6 +36,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
+import java.util.Optional;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -521,7 +522,9 @@ public class DocumentoService {
         
         //Obtenemos folio
         Persona persona = personaService.getAuditor();
+        System.out.println("el nombre del juzgado es: " + persona.getJuzgado().getNombre());
         Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
+       
         
         //Obtenemos la institución y seteamos información para la Data del documento
         Institucion institucion = institucionRepository.findById(institucionId)
@@ -530,9 +533,10 @@ public class DocumentoService {
             .setTipoOficio(carpetaId == null ? "Administrativo" : "Jurisdiccional")
             .setFechaEmision(fechaEmision);
 
+         Optional<Carpeta> carpeta = carpetaId == null ? Optional.empty() : carpetaRepository.findById(carpetaId);
         //Creamos y guardamos el documento con la información obtenida.
         Documento doc = new Documento()
-        .setCarpeta(carpetaRepository.findById(carpetaId).orElse(null))
+        .setCarpeta(carpeta.orElse(null))
         .setFolio(String.valueOf(folio))
         .setTipoDocumento(TipoDocumento.OFICIO)
         .setData(docData)
