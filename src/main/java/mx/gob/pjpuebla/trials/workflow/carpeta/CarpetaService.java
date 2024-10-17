@@ -5,10 +5,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -93,29 +90,19 @@ public class CarpetaService {
             Integer documentoId) {
                 Documento documento = validacionBandejaRecepcion(documentoId);
 
-                List<Anexo> allAnexosOfDocumento = anexoRepository.findAllByDocumentoId(documentoId);
-                List<String> anexosFaltantes = new ArrayList<>();
+                List<String> anexosFaltantes = anexos.stream()
+                    .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
+                    .map(AnexoBandejaRecepcionRecord::nombre)
+                    .collect(Collectors.toList());
 
-                Set<Integer> anexosPresentes = anexos.stream()
-                    .map(AnexoBandejaRecepcionRecord::id)
-                    .collect(Collectors.toSet());
-
-                for (Anexo anexoTemp : allAnexosOfDocumento) {
-                    Integer anexoId = anexoTemp.getId();
-                    String nombreAnexo = anexoTemp.getNombre();
-
-                    if (!anexosPresentes.contains(anexoId)) {
-                        anexosFaltantes.add(nombreAnexo);
-                    } else {
-                        // Actualizamos el estado del anexo presente
-                        Anexo anexo = anexoRepository.findById(anexoId)
-                                .orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexoId, "anexoId"));
-                        anexoTemp.setEstado(anexo.getEstado());
-                        anexoRepository.save(anexoTemp);
-                    }
+                //actualizamos los anexos.
+                for (AnexoBandejaRecepcionRecord anexo : anexos) {
+                    Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
+                    anexoTemp.setEstado(anexo.estado());
+                    anexoRepository.save(anexoTemp);
                 }
 
-                observacionAnexos(documento, anexosFaltantes);
+                setObservacionesAnexos(documento, anexosFaltantes);
 
                 //actualizamos el estatus en carpeta o documento dependiendo de si es demanda, exhorto o promoción.
                 if(documento.getTipoDocumento() == TipoDocumento.PROMOCION){    
@@ -130,6 +117,7 @@ public class CarpetaService {
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
+
 
     public Documento validacionBandejaRecepcion(Integer documentoId) {
 
@@ -151,7 +139,7 @@ public class CarpetaService {
 
     }
 
-    public void observacionAnexos(Documento documento, List<String> anexos) {
+    public void setObservacionesAnexos(Documento documento, List<String> anexos) {
         if (anexos.isEmpty()) {
             return;
         }
