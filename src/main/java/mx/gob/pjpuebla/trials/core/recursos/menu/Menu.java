@@ -8,7 +8,7 @@ import java.util.*;
 public class Menu {
 
     public static Node parseToMenu(Set<String> uris) {
-        String parent = Arrays.stream(uris.stream().findFirst().get().split("/")).filter(x -> !x.isEmpty()).findFirst().get();
+        String parent = Arrays.stream(uris.stream().findFirst().orElse("").split("/")).filter(x -> !x.isEmpty()).findFirst().orElse("");
 
         Node root = new Node(parent);
         for (String uri : uris) {

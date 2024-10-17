@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class EstadosResource {
         RestTemplate restTemplate = new RestTemplate();
         EstadosDTO response = restTemplate.getForObject(
                 INEGI_PATH + STATES_PATH, EstadosDTO.class, new HashMap<>());
-        return response.getDatos();
+        return (response != null) ? response.getDatos() : new ArrayList<>();
     }
 
     @GetMapping(value = "/{id}/municipios")
@@ -37,6 +38,6 @@ public class EstadosResource {
         RestTemplate restTemplate = new RestTemplate();
         MunicipiosDTO response = restTemplate.getForObject(
                 INEGI_PATH + MUN_PATH + id, MunicipiosDTO.class, new HashMap<>());
-        return response.getDatos();
+        return (response != null) ? response.getDatos() : new ArrayList<>();
     }
 }
