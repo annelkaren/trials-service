@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -43,6 +44,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -103,6 +105,8 @@ class DocumentoServiceTest {
     private CarpetaRepository carpetaRepository;
     @Mock
     private MovimientoService movimientoService;
+    @Mock
+    private MovimientoRepository movimientoRepository;
     @Mock
     private AuditorAware<Jwt> auditorAware;
     @Mock
@@ -763,5 +767,60 @@ class DocumentoServiceTest {
         assertThrows(IllegalArgumentException.class, () -> documentoService.getQR(emptyQR), "Cadena vacía");
 
 
+    }
+
+    @Test
+    void send_to_bandeja_recepcion_success() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setFolio("1");
+        documento.getCarpeta().setJuzgado(juzgado);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento).setMotivo("SALIDA");
+        Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
+        Movimiento movimiento2 = new Movimiento().setCarpeta(carpeta).setMotivo("SALIDA");
+        List<Movimiento> movimientoList = Arrays.asList(movimiento1, movimiento2);
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        given(movimientoRepository.findAllById(anyList())).willReturn(movimientoList);
+        given(personaRepository.findById(any(Long.class))).willReturn(Optional.of(persona));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+        given(carpetaRepository.save(any(Carpeta.class))).willReturn(carpeta);
+
+        List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
+        Integer personaCarrito = Math.toIntExact(persona.getId());
+
+        documentoService.sendToBandejaRecepcion(idList, personaCarrito);
+        verify(movimientoRepository).findAllById(idList);
+        verify(personaRepository).findById(Long.valueOf(personaCarrito));
+        verify(personaService).getAuditor();
+        verify(documentoRepository).save(documento);
+        verify(carpetaRepository).save(carpeta);
+        verify(movimientoRepository, times(2)).save(any(Movimiento.class));
+    }
+
+    @Test
+    void send_to_bandeja_recepcion_persona_not_found() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setFolio("1");
+        documento.getCarpeta().setJuzgado(juzgado);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento).setMotivo("SALIDA");
+        Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
+        Movimiento movimiento2 = new Movimiento().setCarpeta(carpeta).setMotivo("SALIDA");
+        List<Movimiento> movimientoList = Arrays.asList(movimiento1, movimiento2);
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        given(movimientoRepository.findAllById(anyList())).willReturn(movimientoList);
+
+        List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
+        Integer personaCarrito = Math.toIntExact(persona.getId());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    documentoService.sendToBandejaRecepcion(idList, personaCarrito);
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
 }

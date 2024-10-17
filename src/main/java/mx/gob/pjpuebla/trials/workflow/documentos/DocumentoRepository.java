@@ -50,12 +50,13 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             WHERE m.fechaAsignacion = (
                 SELECT MAX(m2.fechaAsignacion)
                 FROM Movimiento m2
-                WHERE m2.motivo = 'SALIDA'
-                AND (
+                WHERE
+                (
                     (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
                 )
             )
+            AND m.motivo = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
              AND (
                   ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
