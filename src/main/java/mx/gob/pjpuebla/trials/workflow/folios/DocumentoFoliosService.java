@@ -27,11 +27,8 @@ public class DocumentoFoliosService {
         Optional<DocumentoFolios> documentoFolio = documentoFolioRepository
                 .findByCentroTrabajoAndTipoDocumento(centroTrabajo.id(), centroTrabajo.tipo(), tipoDocumento);
 
-        if(documentoFolio.isPresent()){
-            return folioActualizado(documentoFolio.get());
-        }
-
-        return create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio();
+        return documentoFolio.map(this::folioActualizado)
+        .orElse(create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio());
 
     }
 

@@ -9,6 +9,7 @@ public class Menu {
 
     public static Node parseToMenu(Set<String> uris) {
         String parent = Arrays.stream(uris.stream().findFirst().get().split("/")).filter(x -> !x.isEmpty()).findFirst().get();
+
         Node root = new Node(parent);
         for (String uri : uris) {
             String formattedUri = formatUri(uri,parent);
