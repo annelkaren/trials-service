@@ -709,6 +709,34 @@ class DocumentoServiceTest {
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);
+    }
 
+    @Test
+    void crearOficioJurisdiccionalTest() {
+        Integer institucionId = 1;
+        LocalDate fechaEmision = LocalDate.now();
+        String asunto = "Prueba asunto";
+        Integer carpetaId = null;
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
+        System.out.println(persona.getJuzgado().getNombre());
+        
+        Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
+        Integer folio = 1;
+
+        given(personaService.getAuditor())
+                .willReturn(persona);
+
+        given(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null))
+                .willReturn(1);
+
+        given(institucionRepository.findById(institucionId))
+                .willReturn(Optional.of(institucion));
+
+        given(carpetaRepository.findById(carpetaId))
+                .willReturn(Optional.of(CarpetaSetUp.create()));
+                
+        Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
+
+        assertThat(resultado).isEqualTo(folio);
     }
 }

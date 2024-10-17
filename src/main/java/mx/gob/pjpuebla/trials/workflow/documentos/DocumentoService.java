@@ -66,8 +66,8 @@ public class DocumentoService {
     private final PersonaService personaService;
     private final EtiquetaService etiquetaService;
     private final RoleService roleService;
-    private DocumentoFoliosService documentoFoliosService;
-    private InstitucionRepository institucionRepository;
+    private final DocumentoFoliosService documentoFoliosService;
+    private final InstitucionRepository institucionRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
