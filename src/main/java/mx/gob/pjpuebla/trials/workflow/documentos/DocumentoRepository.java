@@ -26,7 +26,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
              SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord(
                 m.id,
                 COALESCE(c.id, doc_carpeta.id),
-                COALESCE(c.folio, doc_carpeta.folio),
+                COALESCE(c.folio, doc.folio),
                 COALESCE(c.expediente, doc_carpeta.expediente),
                 COALESCE(jc.id, jd.id),
                 COALESCE(jc.nombre, jd.nombre),
@@ -48,15 +48,16 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             WHERE m.fechaAsignacion = (
                 SELECT MAX(m2.fechaAsignacion)
                 FROM Movimiento m2
-                WHERE m2.motivo = 'TURNADO'
-                AND (
+                WHERE
+                (
                     (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
                 )
             )
+            AND m.motivo = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
             AND (lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
-                  OR lower(COALESCE(c.folio, doc_carpeta.folio)) LIKE %:key%
+                  OR lower(COALESCE(c.folio, doc.folio)) LIKE %:key%
                   OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%)
             ORDER BY
                 COALESCE(jc.nombre, jd.nombre) ASC,

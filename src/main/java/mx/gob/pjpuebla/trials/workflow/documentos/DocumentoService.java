@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
@@ -26,6 +27,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
@@ -37,10 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Transactional
 @RequiredArgsConstructor
@@ -58,7 +57,9 @@ public class DocumentoService {
     private final SalaService salaService;
     private final AudienciaService audienciaService;
     private final MovimientoService movimientoService;
+    private final MovimientoRepository movimientoRepository;
     private final PersonaService personaService;
+    private final PersonaRepository personaRepository;
     private final EtiquetaService etiquetaService;
     private final RoleService roleService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
@@ -508,6 +509,42 @@ public class DocumentoService {
             }
         }
         return "";
+    }
+
+    protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
+        UUID uuid = UUID.randomUUID();
+
+        List<Movimiento> movimientoList = movimientoRepository.findAllById(idList);
+        Persona persona = personaRepository.findById(Long.valueOf(personaCarrito)).orElseThrow(() -> new NotFoundException("Persona no encontrada", "PersonaId: " + personaCarrito));
+        Persona personaAuditor = personaService.getAuditor();
+
+        for (Movimiento mov : movimientoList) {
+            Movimiento movimiento = new Movimiento()
+                    .setFechaAsignacion(LocalDateTime.now())
+                    .setMotivo(EstadoCarpeta.TURNADO.name())
+                    .setPersona(personaAuditor)
+                    .setOficialia(persona.getOficialia())
+                    .setJuzgado(persona.getJuzgado())
+                    .setUuid(uuid);
+
+            if (mov.getDocumento() != null) {
+                Documento documento = mov.getDocumento();
+                documento.setFechaAsignacion(LocalDateTime.now())
+                        .setPersona(persona)
+                        .setEstatus(EstadoCarpeta.TURNADO);
+                documento = documentoRepository.save(documento);
+                movimiento.setDocumento(documento);
+            } else {
+                Carpeta carpeta = mov.getCarpeta();
+                carpeta.setFechaAsignacion(LocalDateTime.now())
+                        .setPersona(persona)
+                        .setEstatus(EstadoCarpeta.TURNADO);
+                carpeta = carpetaRepository.save(carpeta);
+                movimiento.setCarpeta(carpeta);
+            }
+            this.movimientoRepository.save(movimiento);
+        }
+        return uuid.toString();
     }
 }
 

@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -153,6 +154,12 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
+
+    @PostMapping("/bandeja/salida")
+    public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
+        return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
+    }
+
 
     @GetMapping(value = "/documentos/oficio/{formanto}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formanto) throws JRException, IOException {
