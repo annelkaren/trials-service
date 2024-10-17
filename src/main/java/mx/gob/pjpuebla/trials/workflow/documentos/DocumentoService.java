@@ -559,7 +559,7 @@ public class DocumentoService {
                     tipoDocumentoNombre = TipoDocumento.PROMOCION;
                     break;
                 default:
-                    throw new IllegalArgumentException("El tipo de carpeta es desconocido.");
+                    throw new IllegalArgumentException("El tipo de carpeta es desconocido");
             }
         }
 
