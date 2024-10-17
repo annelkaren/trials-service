@@ -1,6 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -24,6 +27,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
+import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -36,6 +40,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +66,8 @@ public class DocumentoService {
     private final PersonaService personaService;
     private final EtiquetaService etiquetaService;
     private final RoleService roleService;
+    private DocumentoFoliosService documentoFoliosService;
+    private InstitucionRepository institucionRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -508,6 +515,24 @@ public class DocumentoService {
             }
         }
         return "";
+    }
+
+    public Integer createOficio(Integer institucionId, LocalDate fechaEmision, String asunto, Integer carpetaId) {
+        Persona persona = personaService.getAuditor();
+        String folio = String.valueOf(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null));
+        Institucion institucion = institucionRepository.findById(institucionId).orElseThrow(() -> new NotFoundException("Institución no encontrada", "institucionId: " + institucionId));
+        DocumentoData docData = new DocumentoData()
+            .setTipoOficio(carpetaId == null ? "Administrativo" : "jurisdiccional")
+            .setFechaEmision(fechaEmision);
+
+        Documento doc = new Documento()
+        .setCarpeta(carpetaRepository.findById(carpetaId).orElse(null))
+        .setFolio(folio)
+        .setTipoDocumento(TipoDocumento.OFICIO)
+        .setData(docData)
+        .setInstitucion(institucion);
+
+        return 1;
     }
 }
 

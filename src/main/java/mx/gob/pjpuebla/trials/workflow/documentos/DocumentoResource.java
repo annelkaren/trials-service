@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @RestController
@@ -151,4 +152,14 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
+
+     @PostMapping("/oficio")
+    public Integer generarOficio(
+        @RequestBody Integer institucionId,
+        @RequestBody LocalDate fechaEmision,
+        @RequestBody String asunto,
+        @RequestBody(required = false) Integer carpetaId){
+        
+        return 1;
+    } 
 }
