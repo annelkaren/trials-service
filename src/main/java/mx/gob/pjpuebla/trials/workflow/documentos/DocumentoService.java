@@ -540,11 +540,13 @@ public class DocumentoService {
         documentoRepository.save(doc);
 
         //Cambiamos estatus de carpeta y guardamo, evaluando si no es nula, asumiendo que si es nulo es un folio es administrativo.
+        /*  Pendiente de confirmar.
         if(carpetaId != null){
             Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId: " + carpetaId));
             carpeta.setEstatus(EstadoCarpeta.CREADO);
             carpetaRepository.save(carpeta);
         }
+        */
 
         return folio;
     }
