@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;

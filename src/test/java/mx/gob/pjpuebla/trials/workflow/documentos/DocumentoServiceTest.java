@@ -21,7 +21,6 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
-import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -876,9 +875,6 @@ class DocumentoServiceTest {
 
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
-
-        given(carpetaRepository.findById(carpetaId))
-                .willReturn(Optional.of(CarpetaSetUp.create()));
                 
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
