@@ -1,0 +1,51 @@
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 7.0.0  -->
+<jasperReport name="Oficios" language="java" columnCount="1" pageWidth="612" pageHeight="1008" orientation="Landscape" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="718fdc6e-81e3-47d1-af56-459f61b56e44">
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="hederLogo" class="java.lang.String"/>
+	<parameter name="noFolio" class="java.lang.String"/>
+	<parameter name="noCodigo" class="java.lang.String"/>
+	<parameter name="noQR" class="java.lang.String"/>
+	<parameter name="textHtml" class="java.lang.String"/>
+	<query language="sql"><![CDATA[]]></query>
+	<background height="680" splitType="Stretch">
+		<element kind="staticText" uuid="e373a13f-0105-4ff2-b0a4-1d92ced14590" x="10" y="40" width="30" height="559" forecolor="rgba(3, 3, 3, 0.1764706)" rotation="Left" fontSize="16.0" bold="true" hTextAlign="Left" vTextAlign="Middle">
+			<text><![CDATA[SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL]]></text>
+		</element>
+		<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+	</background>
+	<title height="80" splitType="Stretch">
+		<element kind="image" uuid="d7206d2b-bed7-4fcc-ad31-89f87f67f64f" x="0" y="3" width="280" height="76" hImageAlign="Center" vImageAlign="Middle">
+			<expression><![CDATA[$P{hederLogo}]]></expression>
+		</element>
+		<element kind="component" uuid="c440d86c-8bab-4984-819e-de3231621e49" x="482" y="3" width="68" height="68">
+			<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
+				<codeExpression><![CDATA[$P{noQR}]]></codeExpression>
+			</component>
+		</element>
+		<element kind="textField" uuid="cb6ac0e4-1fd7-4534-bab2-eb9847d4e106" stretchType="ContainerHeight" x="327" y="31" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+			<expression><![CDATA[$P{noCodigo}]]></expression>
+		</element>
+		<element kind="textField" uuid="b44a9325-0acc-4c1a-a59d-b4e59bd10b1b" stretchType="ContainerHeight" x="327" y="54" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+			<expression><![CDATA[$P{noFolio}]]></expression>
+		</element>
+	</title>
+	<pageHeader height="35" splitType="Stretch"/>
+	<detail>
+		<band height="517" splitType="Stretch">
+			<element kind="textField" uuid="c3be8b43-b12c-4aae-8946-21b688304ac5" stretchType="ContainerHeight" x="60" y="3" width="488" height="39" markup="html" textAdjust="StretchHeight">
+				<expression><![CDATA[$P{textHtml}]]></expression>
+			</element>
+		</band>
+	</detail>
+	<columnFooter height="45" splitType="Stretch"/>
+	<pageFooter height="54" splitType="Stretch"/>
+	<summary height="42" splitType="Stretch"/>
+</jasperReport>
