@@ -31,11 +31,12 @@ public class UsuarioService {
     public String create(Persona persona) {
         UserRepresentation userRepresentation = mapUser(persona);
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
-        Response response = keycloak.realm(realm).users().create(userRepresentation);
-        if (response.getStatus() == HttpStatus.CREATED.value()) {
-            return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-        } else {
-            throw new UserAlreadyExistException("Usuario existente", persona.getCorreoElectronico());
+        try (Response response = keycloak.realm(realm).users().create(userRepresentation)) {
+            if (response.getStatus() == HttpStatus.CREATED.value()) {
+                return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+            } else {
+                throw new UserAlreadyExistException("Usuario existente", persona.getCorreoElectronico());
+            }
         }
     }
 
