@@ -151,4 +151,11 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
+
+    @GetMapping("/bandeja/asignados")
+    public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllAsignado(key, pageable);
+    }
 }

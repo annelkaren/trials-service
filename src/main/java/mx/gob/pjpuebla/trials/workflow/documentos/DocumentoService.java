@@ -509,5 +509,29 @@ public class DocumentoService {
         }
         return "";
     }
+
+    public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable){
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona persona = personaService.getAuditor();
+        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable); 
+        boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR");
+
+        List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
+                .map(item ->
+                        new DocumentoAsignadoResponseRecord(
+                            item.id(),
+                            item.expediente(),
+                            esOficialMayor?item.folioDocumento():item.folioCarpeta(),
+                            esOficialMayor?item.tipoCarpeta().name():item.tipoDocumento().name(),
+                            item.concepto().getNombre(),
+                            item.fechaTurnado(),
+                            item.fechaTurnado().plusDays(item.concepto().getDias()),
+                            item.estatus().name(),
+                            item.observaciones()
+                        ))
+                .toList();
+                
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
 }
 
