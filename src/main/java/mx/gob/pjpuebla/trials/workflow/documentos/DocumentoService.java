@@ -524,7 +524,8 @@ public class DocumentoService {
         Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
         
         //Obtenemos la institución y seteamos información para la Data del documento
-        Institucion institucion = institucionRepository.findById(institucionId).orElseThrow(() -> new NotFoundException("Institución no encontrada", "institucionId: " + institucionId));
+        Institucion institucion = institucionRepository.findById(institucionId)
+            .orElseThrow(() -> new NotFoundException("Institución no encontrada", "institucionId: " + institucionId));
         DocumentoData docData = new DocumentoData()
             .setTipoOficio(carpetaId == null ? "Administrativo" : "Jurisdiccional")
             .setFechaEmision(fechaEmision);
@@ -536,17 +537,7 @@ public class DocumentoService {
         .setTipoDocumento(TipoDocumento.OFICIO)
         .setData(docData)
         .setInstitucion(institucion);
-
         documentoRepository.save(doc);
-
-        //Cambiamos estatus de carpeta y guardamo, evaluando si no es nula, asumiendo que si es nulo es un folio es administrativo.
-        /*  Pendiente de confirmar.
-        if(carpetaId != null){
-            Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId: " + carpetaId));
-            carpeta.setEstatus(EstadoCarpeta.CREADO);
-            carpetaRepository.save(carpeta);
-        }
-        */
 
         return folio;
     }

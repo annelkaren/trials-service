@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -154,12 +154,8 @@ public class DocumentoResource {
     }
 
      @PostMapping("/oficio")
-    public Integer generarOficio(
-        @RequestBody Integer institucionId,
-        @RequestBody LocalDate fechaEmision,
-        @RequestBody String asunto,
-        @RequestBody(required = false) Integer carpetaId){
+    public Integer generarOficio(DocumentoOficioRecord oficio){
         
-        return 1;
+        return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(), oficio.carpetaId());
     } 
 }
