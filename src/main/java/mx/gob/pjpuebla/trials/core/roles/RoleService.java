@@ -73,6 +73,12 @@ public class RoleService {
         return roles.stream().anyMatch(current -> current.name().equalsIgnoreCase(role));
     }
 
+    public List<RoleRecord> getAll(){
+        Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+        List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
+        return mapRoles(roles);
+    }
+
     public List<RoleRecord> getAllAvailablesByUserId(String userId) {
         List<RoleRepresentation> roles = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();

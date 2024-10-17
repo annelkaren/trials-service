@@ -26,52 +26,31 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 @RequiredArgsConstructor
 @Service
 public class InstitucionService {
-    
+
     private final InstitucionRepository institucionRepository;
     private final DomicilioRepository domicilioRepository;
     private final DistritoRepository distritoRepository;
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
-        
+
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
-    
-        List<InstitucionRecord> list = page.getContent().stream()
-                .map(institucion -> new InstitucionRecord(
-                        institucion.getId(),
-                        institucion.getNombre(),
-                        String.join(" ",
-                        institucion.getDomicilio().getCalle(),
-                        institucion.getDomicilio().getColonia(),
-                        institucion.getDomicilio().getExterior(),
-                        (institucion.getDomicilio().getInterior() != null && !institucion.getDomicilio().getInterior().isEmpty())
-                            ? "Int. " + institucion.getDomicilio().getInterior() : "",
-                        institucion.getDomicilio().getEstadoRepublica(),
-                        institucion.getDomicilio().getMunicipio(),
-                        institucion.getDomicilio().getLocalidad(),
-                        institucion.getDomicilio().getCodigoPostal(),
-                        (institucion.getDomicilio().getReferencia() != null && !institucion.getDomicilio().getReferencia().isEmpty())
-                            ? "Ref: " + institucion.getDomicilio().getReferencia() : ""
-                    ).trim(),
-                        institucion.getTelefono() ))
-                .toList();
-    
-        return new PageImpl<>(list, pageable, page.getTotalElements());
+        return getPageInstitucion(page, pageable);
     }
-    
+
 
     @Transactional(readOnly = true)
-    public InstitucionRecordResponse findById(Integer id){
+    public InstitucionRecordResponse findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
 
         return institucionRepository.findByIdAndEstadoIn(id, estados)
                 .orElseThrow(() -> new NotFoundException("Institución no encontrada", "institucionId"));
     }
 
-    public Integer create(Institucion institucion){
+    public Integer create(Institucion institucion) {
         institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
         institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
         institucion = institucionRepository.save(institucion);
@@ -87,11 +66,11 @@ public class InstitucionService {
             return institucion.getId();
 
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
-          throw new InvalidVersionException(Sede.class.getSimpleName());
+            throw new InvalidVersionException(Sede.class.getSimpleName());
         }
     }
 
-    public void delete(Integer id){
+    public void delete(Integer id) {
         institucionRepository.deleteById(id);
     }
 
@@ -103,7 +82,10 @@ public class InstitucionService {
         example.setEstado(Estado.ACTIVE);
 
         Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
+        return getPageInstitucion(page, pageable);
+    }
 
+    private Page<InstitucionRecord> getPageInstitucion(Page<Institucion> page, Pageable pageable) {
         List<InstitucionRecord> list = page.getContent().stream()
                 .map(institucion -> new InstitucionRecord(
                         institucion.getId(),

@@ -27,12 +27,8 @@ public class DocumentoFoliosService {
         Optional<DocumentoFolios> documentoFolio = documentoFolioRepository
                 .findByCentroTrabajoAndTipoDocumento(centroTrabajo.id(), centroTrabajo.tipo(), tipoDocumento);
 
-        if(documentoFolio.isPresent()){
-            return folioActualizado(documentoFolio.get());
-        }
-
-        return create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio();
-
+        return documentoFolio.isPresent() ? folioActualizado(documentoFolio.get())
+                : create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio();
     }
 
     private static CentroTrabajoRecord getCentroTrabajoRecord(Juzgado juzgado, Oficialia oficialia) {
@@ -52,7 +48,7 @@ public class DocumentoFoliosService {
         return new CentroTrabajoRecord(centroTrabajoId, "", tipoCentroTrabajo);
     }
 
-    private static DocumentoFolios getDocumentoFolios(TipoDocumento tipoDocumento, CentroTrabajoRecord centroTrabajo){
+    private static DocumentoFolios getDocumentoFolios(TipoDocumento tipoDocumento, CentroTrabajoRecord centroTrabajo) {
         return new DocumentoFolios()
                 .setFolio(1)
                 .setTipoDocumento(tipoDocumento)
@@ -61,31 +57,31 @@ public class DocumentoFoliosService {
                 .setYear(LocalDate.now().getYear());
     }
 
-    public DocumentoFolios create(DocumentoFolios documentoFolios){
+    public DocumentoFolios create(DocumentoFolios documentoFolios) {
         return documentoFolioRepository.save(documentoFolios);
     }
 
-    public DocumentoFolios save(DocumentoFolios documentoFolios){
-        if(documentoFolios.getTipoCentroTrabajo()==TipoCentroTrabajo.JUZGADO &&
-            juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())){
-                return  documentoFolioRepository.save(documentoFolios);
-            }
-        
+    public DocumentoFolios save(DocumentoFolios documentoFolios) {
+        if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.JUZGADO &&
+                juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())) {
+            return documentoFolioRepository.save(documentoFolios);
+        }
 
-        if (documentoFolios.getTipoCentroTrabajo()==TipoCentroTrabajo.OFICIALIA_COMUN && 
-            oficialiaRepository.existsById(documentoFolios.getId())){
-                return  documentoFolioRepository.save(documentoFolios);
-            }
-        
+
+        if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.OFICIALIA_COMUN &&
+                oficialiaRepository.existsById(documentoFolios.getId())) {
+            return documentoFolioRepository.save(documentoFolios);
+        }
+
         throw new NotFoundException("Centro de Trabajo", "No se puede generar el número de folio");
     }
 
-    public void delete(DocumentoFolios documentoFolio){
+    public void delete(DocumentoFolios documentoFolio) {
         documentoFolioRepository.deleteById(documentoFolio.getId());
     }
 
-    private Integer folioActualizado(DocumentoFolios documentoFolios){
-        Integer folio = documentoFolios.getFolio()+1;
+    private Integer folioActualizado(DocumentoFolios documentoFolios) {
+        Integer folio = documentoFolios.getFolio() + 1;
 
         documentoFolios.setFolio(folio);
         documentoFolioRepository.save(documentoFolios);
