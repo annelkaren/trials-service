@@ -25,19 +25,19 @@ public class EstadosResource {
 
     @GetMapping
     @Cacheable("estados")
-    public List<EstadoDTO> getStates() {
+    public List<Estado> getStates() {
         RestTemplate restTemplate = new RestTemplate();
-        EstadosDTO response = restTemplate.getForObject(
-                INEGI_PATH + STATES_PATH, EstadosDTO.class, new HashMap<>());
-        return (response != null) ? response.getDatos() : new ArrayList<>();
+        EstadoRecord response = restTemplate.getForObject(
+                INEGI_PATH + STATES_PATH, EstadoRecord.class, new HashMap<>());
+        return (response != null) ? response.datos() : new ArrayList<>();
     }
 
     @GetMapping(value = "/{id}/municipios")
     @Cacheable(value = "municipios", key = "#id")
-    public List<MunicipioDTO> getMunByState(@PathVariable String id) {
+    public List<Municipio> getMunByState(@PathVariable String id) {
         RestTemplate restTemplate = new RestTemplate();
-        MunicipiosDTO response = restTemplate.getForObject(
-                INEGI_PATH + MUN_PATH + id, MunicipiosDTO.class, new HashMap<>());
-        return (response != null) ? response.getDatos() : new ArrayList<>();
+        MunicipioRecord response = restTemplate.getForObject(
+                INEGI_PATH + MUN_PATH + id, MunicipioRecord.class, new HashMap<>());
+        return (response != null) ? response.datos() : new ArrayList<>();
     }
 }
