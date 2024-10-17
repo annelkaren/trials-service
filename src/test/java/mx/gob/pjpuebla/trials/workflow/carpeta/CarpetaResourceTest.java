@@ -3,7 +3,10 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
@@ -44,6 +47,8 @@ class CarpetaResourceTest {
 
     private CarpetaResponseRecord carpetaResponseRecord;
     private ApelacionRecordResponse apelacionRecordResponse;
+    private AnexoRepository anexoRepository;
+    private Anexo anexos;
 
     @BeforeEach
     void setUp() {
@@ -115,16 +120,12 @@ class CarpetaResourceTest {
         List<AnexoBandejaRecepcionRecord> anexos = List.of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         DocumentoRecord responseRecord = new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA);
 
-        // Configurar comportamiento del servicio mock
-        when(mockCarpetaService.actualizarInformacionAnexos(anexos,  documentoId))
+        when(mockCarpetaService.actualizarInformacionAnexos(anexos, documentoId))
                 .thenReturn(responseRecord);
-    
-        // Ejecutar la solicitud y verificar el resultado
-        mockMvc.perform(post("/api/workflow/carpeta/recepcion")
-                .param("documentoId", documentoId.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
+
+        mockMvc.perform(post("/api/workflow/carpeta/recepcion/" + documentoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
                 .andExpect(status().isOk());
     }
-    
 }

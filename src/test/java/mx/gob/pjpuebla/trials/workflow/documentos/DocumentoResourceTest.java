@@ -253,13 +253,24 @@ class DocumentoResourceTest {
     }
 
     @Test
+    void send_to_bandeja_recepcion_success() throws Exception {
+        SalidaSentToRecepcionRecord docInputRecord = new SalidaSentToRecepcionRecord( List.of(1,2,3), 1 );
+        mockMvc.perform(
+                post("/api/workflow/bandeja/salida")
+                        .content(ResourceUtilTest.asJsonString(docInputRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
     void getIndicadores_success() throws Exception {
         IndicadoresRecord indicadoresRecord = DocumentoSetUp.createIndicadoresRecord();
 
         when(documentoService.getIndicadores()).thenReturn(indicadoresRecord);
         mockMvc.perform(
-                get("/api/workflow/documentos/indicadores?isRecepcion=true")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        get("/api/workflow/documentos/indicadores?isRecepcion=true")
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

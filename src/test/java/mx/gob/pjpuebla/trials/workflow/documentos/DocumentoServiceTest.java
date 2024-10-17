@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
@@ -43,6 +44,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -64,7 +66,7 @@ import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -103,6 +105,8 @@ class DocumentoServiceTest {
     private CarpetaRepository carpetaRepository;
     @Mock
     private MovimientoService movimientoService;
+    @Mock
+    private MovimientoRepository movimientoRepository;
     @Mock
     private AuditorAware<Jwt> auditorAware;
     @Mock
@@ -588,14 +592,13 @@ class DocumentoServiceTest {
                 EstadoCarpeta.TURNADO);
         List<DocumentoSalidaRecord> listPage = Collections.singletonList(documentoRecord);
 
-        given(documentoRepository.findByEstatusSalida(any(), any(), any(), any()))
+        given(documentoRepository.findByEstatusSalida(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
         given(personaService.getAuditor())
                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
 
 
         Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("", PageRequest.of(1, listPage.size()));
-        System.out.println(page.getContent());
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -678,6 +681,147 @@ class DocumentoServiceTest {
         Persona persona = new Persona();
         String origen = documentoService.getOrigen(movimiento, persona);
         assertThat(origen).isEqualTo("");
+    }
+
+
+    @Test
+    void testProcesarTipoCarpeta() {
+
+        Object[] resultDemanda = documentoService.procesarTipoCarpeta("D-1");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.DEMANDA, resultDemanda[0], "TipoCarpeta debe ser DEMANDA"),
+                () -> assertNull(resultDemanda[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(1, resultDemanda[2], "Folio debe ser 1")
+        );
+
+        Object[] resultPromocion = documentoService.procesarTipoCarpeta("P-5");
+        assertAll(
+                () -> assertNull(resultPromocion[0], "TipoCarpeta debe ser null"),
+                () -> assertEquals(TipoDocumento.PROMOCION, resultPromocion[1], "TipoDocumento debe ser PROMOCION"),
+                () -> assertEquals(5, resultPromocion[2], "Folio debe ser 5")
+        );
+
+        Object[] resultExhorto = documentoService.procesarTipoCarpeta("E-100");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.EXHORTO, resultExhorto[0], "TipoCarpeta debe ser EXHORTO"),
+                () -> assertNull(resultExhorto[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(100, resultExhorto[2], "Folio debe ser 100")
+        );
+
+        Object[] resultApelacion = documentoService.procesarTipoCarpeta("A-12");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.APELACION, resultApelacion[0], "TipoCarpeta debe ser APELACION"),
+                () -> assertNull(resultApelacion[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(12, resultApelacion[2], "Folio debe ser 12")
+        );
+
+        String keyInvalida = "X-9";
+        IllegalArgumentException exceptionTipoDesconocido = assertThrows(IllegalArgumentException.class, () -> {
+            documentoService.procesarTipoCarpeta(keyInvalida);
+        });
+        assertEquals("El tipo de carpeta es desconocido", exceptionTipoDesconocido.getMessage(), "Carpeta es desconocida");
+
+
+        String keyFormatoInvalido = "D12";
+        Object[] resultFormatoInvalido = documentoService.procesarTipoCarpeta(keyFormatoInvalido);
+        assertAll(
+                () -> assertNull(resultFormatoInvalido[0], "TipoCarpeta debe ser null para formato inválido"),
+                () -> assertNull(resultFormatoInvalido[1], "TipoDocumento debe ser null para formato inválido"),
+                () -> assertNull(resultFormatoInvalido[2], "Folio debe ser null para formato inválido")
+        );
+
+    }
+
+
+    @Test
+    void procersar_getQR() {
+
+        Object[] apelacion = documentoService.getQR("A-1");
+        assertAll(
+                () -> assertEquals("A", apelacion[0], "El prefijo no es correcto"),
+                () -> assertEquals(1, apelacion[1], "El folio no es correcto")
+        );
+
+        Object[] exhorto = documentoService.getQR("E-9");
+        assertAll(
+                () -> assertEquals("E", exhorto[0], "El prefijo no es correcto"),
+                () -> assertEquals(9, exhorto[1], "El folio no es correcto")
+        );
+
+        Object[] promocion = documentoService.getQR("P-1");
+        assertAll(
+                () -> assertEquals("P", promocion[0], "El prefijo no es correcto"),
+                () -> assertEquals(1, promocion[1], "El folio no es correcto")
+        );
+
+
+        String invalidQR = "D123";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            documentoService.getQR(invalidQR);
+        });
+        assertEquals("El código QR tiene un formato inválido.", exception.getMessage(), "Código QR con formato inválido");
+        String invalidQR2 = "D-abc";
+        assertThrows(NumberFormatException.class, () -> documentoService.getQR(invalidQR2), "Folio no numérico");
+
+        String emptyQR = "";
+        assertThrows(IllegalArgumentException.class, () -> documentoService.getQR(emptyQR), "Cadena vacía");
+
+
+    }
+
+    @Test
+    void send_to_bandeja_recepcion_success() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setFolio("1");
+        documento.getCarpeta().setJuzgado(juzgado);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento).setMotivo("SALIDA");
+        Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
+        Movimiento movimiento2 = new Movimiento().setCarpeta(carpeta).setMotivo("SALIDA");
+        List<Movimiento> movimientoList = Arrays.asList(movimiento1, movimiento2);
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        given(movimientoRepository.findAllById(anyList())).willReturn(movimientoList);
+        given(personaRepository.findById(any(Long.class))).willReturn(Optional.of(persona));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+        given(carpetaRepository.save(any(Carpeta.class))).willReturn(carpeta);
+
+        List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
+        Integer personaCarrito = Math.toIntExact(persona.getId());
+
+        documentoService.sendToBandejaRecepcion(idList, personaCarrito);
+        verify(movimientoRepository).findAllById(idList);
+        verify(personaRepository).findById(Long.valueOf(personaCarrito));
+        verify(personaService).getAuditor();
+        verify(documentoRepository).save(documento);
+        verify(carpetaRepository).save(carpeta);
+        verify(movimientoRepository, times(2)).save(any(Movimiento.class));
+    }
+
+    @Test
+    void send_to_bandeja_recepcion_persona_not_found() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setFolio("1");
+        documento.getCarpeta().setJuzgado(juzgado);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento).setMotivo("SALIDA");
+        Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
+        Movimiento movimiento2 = new Movimiento().setCarpeta(carpeta).setMotivo("SALIDA");
+        List<Movimiento> movimientoList = Arrays.asList(movimiento1, movimiento2);
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        given(movimientoRepository.findAllById(anyList())).willReturn(movimientoList);
+
+        List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
+        Integer personaCarrito = Math.toIntExact(persona.getId());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> {
+                    documentoService.sendToBandejaRecepcion(idList, personaCarrito);
+                }
+        );
+
+        assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
 
     @Test

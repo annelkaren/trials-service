@@ -152,6 +152,11 @@ public class DocumentoResource {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
 
+    @PostMapping("/bandeja/salida")
+    public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
+        return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
+    }
+
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
         return this.documentoService.getIndicadores();
