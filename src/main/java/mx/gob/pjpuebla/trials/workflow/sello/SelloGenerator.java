@@ -176,8 +176,26 @@ public class SelloGenerator {
     }
 
     private String tipoDocumentoFolio(Documento documento) {
-        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
-        return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
+
+        String tipoCarpetaDocumento;
+        String result;
+        String prefijo;
+
+        if (documento.getTipoDocumento() != null) {
+            tipoCarpetaDocumento = documento.getTipoDocumento().name();
+            prefijo = tipoCarpetaDocumento.equals("PROMOCION") ? "P" : "";
+        } else {
+            tipoCarpetaDocumento = documento.getCarpeta().getTipoCarpeta().name();
+            prefijo = switch (tipoCarpetaDocumento) {
+                case "DEMANDA" -> "D";
+                case "APELACION" -> "A";
+                case "EXHORTO" -> "E";
+                default -> "";
+            };
+
+        }
+        result = prefijo + "-" + documento.getCarpeta().getFolio();
+        return result;
     }
 
     private String getCentroTrabajoCapturista() {
@@ -192,8 +210,7 @@ public class SelloGenerator {
             } else {
                 throw new NotFoundException("Juzgado no encontrado", "juzgadoId");
             }
-        }
-        else if (persona.getOficialia() != null) {
+        } else if (persona.getOficialia() != null) {
             Optional<Oficialia> oficialiaOptional = oficialiaRepository.findById(persona.getOficialia().getId());
             if (oficialiaOptional.isPresent()) {
                 nombreCapturista = oficialiaOptional.get().getNombre();
@@ -203,17 +220,18 @@ public class SelloGenerator {
         } else {
             nombreCapturista = "";
         }
-        return  nombreCapturista;
+        return nombreCapturista;
     }
-    public Documento updateExpedientePorTipoJuicio(Documento documento){
+
+    public Documento updateExpedientePorTipoJuicio(Documento documento) {
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
         DocumentoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
 
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
-            if(documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
+            if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
                     && documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("familiar")
-            ){
+            ) {
                 List<JuzgadoTipoJuiciosRecord> listTipoJuicios = juzgadoRepository.findTipoJuiciosByJuzgadoId(documento.getCarpeta().getJuzgado().getId());
                 List<String> listInicialesTipoJuicio = obtenerIniciales(listTipoJuicios);
                 String inicialesTipoJuicios = String.join("-", listInicialesTipoJuicio);
@@ -228,10 +246,10 @@ public class SelloGenerator {
                 isPromocionOralidadExhorto = true;
                 isOralidadFamiliar = true;
                 carpeta.setExpediente(expenienteOralFamiliar);
-            }else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
+            } else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
                 carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
                 isPromocionOralidadExhorto = false;
-            }else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)){
+            } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
                 carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
                 isPromocionOralidadExhorto = false;
             }
@@ -242,12 +260,12 @@ public class SelloGenerator {
         return documento;
     }
 
-    public PersonaDocumentoRecord getInfoPersona(Integer id, String parte){
+    public PersonaDocumentoRecord getInfoPersona(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord personaDocumentoRecord = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
 
         if (personaDocumentoRecord == null) {
-            return new PersonaDocumentoRecord("", "", "", "", "", "", "", "", "",parte, null, id);
+            return new PersonaDocumentoRecord("", "", "", "", "", "", "", "", "", parte, null, id);
         }
 
         String nombre = personaDocumentoRecord.nombre() != null ? personaDocumentoRecord.nombre() : "";
@@ -256,7 +274,7 @@ public class SelloGenerator {
         String celular = formatCelular(personaDocumentoRecord.celular());
         String nombreCompleto = String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
         String curp = personaDocumentoRecord.curp() != null ? personaDocumentoRecord.curp() : "";
-        String domicilio  = personaDocumentoRecord.domicilio() != null ? personaDocumentoRecord.domicilio() : "";
+        String domicilio = personaDocumentoRecord.domicilio() != null ? personaDocumentoRecord.domicilio() : "";
         String correoElectronico = personaDocumentoRecord.correoElectronico() != null ? personaDocumentoRecord.correoElectronico() : "";
 
         return new PersonaDocumentoRecord(
@@ -275,7 +293,7 @@ public class SelloGenerator {
         );
     }
 
-    public  List<RelacionExpedientesRecord>  getAllExpedientesRelacionados(String nombre, String apellidoP, String apellidoM){
+    public List<RelacionExpedientesRecord> getAllExpedientesRelacionados(String nombre, String apellidoP, String apellidoM) {
         return personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre, apellidoM, apellidoP);
     }
 

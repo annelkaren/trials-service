@@ -64,7 +64,7 @@ import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -588,14 +588,13 @@ class DocumentoServiceTest {
                 EstadoCarpeta.TURNADO);
         List<DocumentoSalidaRecord> listPage = Collections.singletonList(documentoRecord);
 
-        given(documentoRepository.findByEstatusSalida(any(), any(), any(), any()))
+        given(documentoRepository.findByEstatusSalida(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
         given(personaService.getAuditor())
                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
 
 
         Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("", PageRequest.of(1, listPage.size()));
-        System.out.println(page.getContent());
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -678,5 +677,91 @@ class DocumentoServiceTest {
         Persona persona = new Persona();
         String origen = documentoService.getOrigen(movimiento, persona);
         assertThat(origen).isEqualTo("");
+    }
+
+
+    @Test
+    void testProcesarTipoCarpeta() {
+
+        Object[] resultDemanda = documentoService.procesarTipoCarpeta("D-1");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.DEMANDA, resultDemanda[0], "TipoCarpeta debe ser DEMANDA"),
+                () -> assertNull(resultDemanda[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(1, resultDemanda[2], "Folio debe ser 1")
+        );
+
+        Object[] resultPromocion = documentoService.procesarTipoCarpeta("P-5");
+        assertAll(
+                () -> assertNull(resultPromocion[0], "TipoCarpeta debe ser null"),
+                () -> assertEquals(TipoDocumento.PROMOCION, resultPromocion[1], "TipoDocumento debe ser PROMOCION"),
+                () -> assertEquals(5, resultPromocion[2], "Folio debe ser 5")
+        );
+
+        Object[] resultExhorto = documentoService.procesarTipoCarpeta("E-100");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.EXHORTO, resultExhorto[0], "TipoCarpeta debe ser EXHORTO"),
+                () -> assertNull(resultExhorto[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(100, resultExhorto[2], "Folio debe ser 100")
+        );
+
+        Object[] resultApelacion = documentoService.procesarTipoCarpeta("A-12");
+        assertAll(
+                () -> assertEquals(TipoCarpeta.APELACION, resultApelacion[0], "TipoCarpeta debe ser APELACION"),
+                () -> assertNull(resultApelacion[1], "TipoDocumento debe ser null"),
+                () -> assertEquals(12, resultApelacion[2], "Folio debe ser 12")
+        );
+
+        String keyInvalida = "X-9";
+        IllegalArgumentException exceptionTipoDesconocido = assertThrows(IllegalArgumentException.class, () -> {
+            documentoService.procesarTipoCarpeta(keyInvalida);
+        });
+        assertEquals("El tipo de carpeta es desconocido", exceptionTipoDesconocido.getMessage(), "Carpeta es desconocida");
+
+
+        String keyFormatoInvalido = "D12";
+        Object[] resultFormatoInvalido = documentoService.procesarTipoCarpeta(keyFormatoInvalido);
+        assertAll(
+                () -> assertNull(resultFormatoInvalido[0], "TipoCarpeta debe ser null para formato inválido"),
+                () -> assertNull(resultFormatoInvalido[1], "TipoDocumento debe ser null para formato inválido"),
+                () -> assertNull(resultFormatoInvalido[2], "Folio debe ser null para formato inválido")
+        );
+
+    }
+
+
+    @Test
+    void procersar_getQR() {
+
+        Object[] apelacion = documentoService.getQR("A-1");
+        assertAll(
+                () -> assertEquals("A", apelacion[0], "El prefijo no es correcto"),
+                () -> assertEquals(1, apelacion[1], "El folio no es correcto")
+        );
+
+        Object[] exhorto = documentoService.getQR("E-9");
+        assertAll(
+                () -> assertEquals("E", exhorto[0], "El prefijo no es correcto"),
+                () -> assertEquals(9, exhorto[1], "El folio no es correcto")
+        );
+
+        Object[] promocion = documentoService.getQR("P-1");
+        assertAll(
+                () -> assertEquals("P", promocion[0], "El prefijo no es correcto"),
+                () -> assertEquals(1, promocion[1], "El folio no es correcto")
+        );
+
+
+        String invalidQR = "D123";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            documentoService.getQR(invalidQR);
+        });
+        assertEquals("El código QR tiene un formato inválido.", exception.getMessage(), "Código QR con formato inválido");
+        String invalidQR2 = "D-abc";
+        assertThrows(NumberFormatException.class, () -> documentoService.getQR(invalidQR2), "Folio no numérico");
+
+        String emptyQR = "";
+        assertThrows(IllegalArgumentException.class, () -> documentoService.getQR(emptyQR), "Cadena vacía");
+
+
     }
 }

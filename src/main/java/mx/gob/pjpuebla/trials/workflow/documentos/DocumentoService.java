@@ -86,11 +86,18 @@ public class DocumentoService {
     @Transactional(readOnly = true)
     public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
+        Object[] resultado = procesarTipoCarpeta(key);
+        TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
+        TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
+        Integer folio = (Integer) resultado[2];
         Persona persona = personaService.getAuditor();
         Page<DocumentoSalidaRecord> page = documentoRepository.findByEstatusSalida(
                 key,
                 (persona.getOficialia() != null) ? persona.getOficialia().getId() : null,
                 (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null,
+                folio,
+                tipoCarpetaNombre,
+                tipoDocumentoNombre,
                 pageable);
         List<DocumentoSalidaResponseRecord> list = page.getContent().stream()
                 .map(item ->
@@ -509,5 +516,55 @@ public class DocumentoService {
         }
         return "";
     }
+
+
+    public Object[] getQR(String folioDocumentoQR) {
+        String[] parte = folioDocumentoQR.split("-");
+        if (parte.length != 2) {
+            throw new IllegalArgumentException("El código QR tiene un formato inválido.");
+        }
+
+        String prefijo = parte[0].trim();
+        Integer folio = Integer.parseInt(parte[1].trim());
+
+        return new Object[]{prefijo, folio};
+    }
+
+
+    public Object[] procesarTipoCarpeta(String key) {
+        String tipoCarpeta = null;
+        Integer folio = null;
+
+        if (key.matches("[a-zA-Z]-\\d+")) {
+            Object[] qrValues = getQR(key);
+            tipoCarpeta = (String) qrValues[0];
+            folio = (Integer) qrValues[1];
+        }
+
+        TipoCarpeta tipoCarpetaNombre = null;
+        TipoDocumento tipoDocumentoNombre = null;
+
+        if (tipoCarpeta != null) {
+            switch (tipoCarpeta.toUpperCase()) {
+                case "E":
+                    tipoCarpetaNombre = TipoCarpeta.EXHORTO;
+                    break;
+                case "D":
+                    tipoCarpetaNombre = TipoCarpeta.DEMANDA;
+                    break;
+                case "A":
+                    tipoCarpetaNombre = TipoCarpeta.APELACION;
+                    break;
+                case "P":
+                    tipoDocumentoNombre = TipoDocumento.PROMOCION;
+                    break;
+                default:
+                    throw new IllegalArgumentException("El tipo de carpeta es desconocido.");
+            }
+        }
+
+        return new Object[]{tipoCarpetaNombre, tipoDocumentoNombre, folio};
+    }
+
 }
 
