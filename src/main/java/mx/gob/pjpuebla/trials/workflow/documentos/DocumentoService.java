@@ -568,10 +568,10 @@ public class DocumentoService {
             throw new IllegalArgumentException("El código QR tiene un formato inválido.");
         }
 
-        String prefijo = parte[0].trim();
-        Integer folio = Integer.parseInt(parte[1].trim());
+        String prefix = parte[0].trim();
+        int folio = Integer.parseInt(parte[1].trim());
 
-        return new Object[]{prefijo, folio};
+        return new Object[]{prefix, folio};
     }
 
 
