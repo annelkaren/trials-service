@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
@@ -56,15 +58,19 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )
             AND m.motivo = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
-            AND (lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
-                  OR lower(COALESCE(c.folio, doc.folio)) LIKE %:key%
-                  OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%)
+             AND (
+                  ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND doc.tipoDocumento = :tipoDocumento))
+                   OR lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
+                   OR lower(COALESCE(c.folio, doc.folio)) = lower(:key)
+                   OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%
+               )
             ORDER BY
                 COALESCE(jc.nombre, jd.nombre) ASC,
                 COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta) DESC,
                 COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
             """)
-    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Pageable pageable);
+    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio, TipoCarpeta  tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(

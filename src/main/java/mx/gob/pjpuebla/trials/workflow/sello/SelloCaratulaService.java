@@ -70,8 +70,25 @@ public class SelloCaratulaService {
         return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
     }
 
-    private String tipoDocumentoFolio(Documento documento){
-        int tipoDocumentoOrdinal = documento.getCarpeta().getTipoCarpeta().ordinal();
-        return tipoDocumentoOrdinal + "-" + documento.getCarpeta().getFolio();
+    private String tipoDocumentoFolio(Documento documento) {
+        String tipoCarpetaDocumento;
+        String result;
+        String prefijo;
+
+        if (documento.getTipoDocumento() != null) {
+            tipoCarpetaDocumento = documento.getTipoDocumento().name();
+            prefijo = tipoCarpetaDocumento.equals("PROMOCION") ? "P" : "";
+        } else {
+            tipoCarpetaDocumento = documento.getCarpeta().getTipoCarpeta().name();
+            prefijo = switch (tipoCarpetaDocumento) {
+                case "DEMANDA" -> "D";
+                case "APELACION" -> "A";
+                case "EXHORTO" -> "E";
+                default -> "";
+            };
+
+        }
+        result = prefijo + "-" + documento.getCarpeta().getFolio();
+        return result;
     }
 }
