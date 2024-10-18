@@ -19,6 +19,7 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -37,7 +38,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
-import java.util.Optional;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -480,6 +480,7 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
+            System.out.println("SOY OFICIAL MAYOR");
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
@@ -637,6 +638,17 @@ public class DocumentoService {
         documentoRepository.save(doc);
 
         return folio;
+    }
+
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id){
+        System.out.println("EL ID ES EL SIGUIENTE: " + id);
+        
+        Documento doc = documentoRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + id));
+        
+        List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+        
+        return new DocumentoRecepcionRecord(doc.getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
     }
 }
 

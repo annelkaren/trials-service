@@ -18,4 +18,12 @@ public interface AnexoRepository extends JpaRepository<Anexo, Integer> {
                 WHERE a.documento.id = :documentoId
             """)
     List<String> findNombresAnexosByDocumentoId(@Param("documentoId") Integer documentoId);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord(a.id, a.estado, a.nombre)
+            FROM Anexo a
+            WHERE a.documento.id = :documentoId
+            """)
+    List<AnexoRecepcionRecord> findAnexosByDocumentoId(@Param("documentoId") Integer documentoId);
+
 }

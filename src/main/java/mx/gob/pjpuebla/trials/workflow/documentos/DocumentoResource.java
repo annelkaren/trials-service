@@ -164,4 +164,9 @@ public class DocumentoResource {
         return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(),
                 oficio.carpetaId());
     }
+
+    @GetMapping("/bandeja/recepcion/anexos/{id}")
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer id) {
+        return documentoService.getDataDocumentoRecepcion(id);
+    }   
 }
