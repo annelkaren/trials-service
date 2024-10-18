@@ -60,7 +60,7 @@
 				<text><![CDATA[Demandado]]></text>
 			</element>
 			<element kind="component" uuid="15f4ba98-eefe-4597-8f61-f08a1bd94c14" x="170" y="360" width="219" height="168">
-				<component kind="barcode4j:QRCode">
+				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
 					<codeExpression><![CDATA[$P{documentoFolio}]]></codeExpression>
 				</component>
 			</element>
