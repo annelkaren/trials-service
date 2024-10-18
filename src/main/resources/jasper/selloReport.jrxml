@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.20.6  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sello_Letter" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a47b9675-f53c-44d7-9145-f1a7e3807287">
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 7.0.0-b478feaa9aab4375eba71de77b4ca138ad2f62aa  -->
+<jasperReport name="sello_Letter" language="java" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a47b9675-f53c-44d7-9145-f1a7e3807287">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<parameter name="nombreEntidad" class="java.lang.String"/>
 	<parameter name="nombreJuzgado" class="java.lang.String"/>
@@ -29,486 +28,247 @@
 	<parameter name="relacionExpediente" class="java.lang.String"/>
 	<parameter name="juez" class="java.lang.String"/>
 	<parameter name="isOralidad" class="java.lang.Boolean"/>
-	<queryString>
-		<![CDATA[]]>
-	</queryString>
-	<background>
-		<band height="500" splitType="Stretch">
+	<query language="sql"><![CDATA[]]></query>
+	<background height="500" splitType="Stretch">
+		<element kind="image" uuid="5d9f174e-9dde-4549-b5b1-8e8da474daeb" x="220" y="210" width="240" height="220" hImageAlign="Left">
+			<expression><![CDATA[$P{marcaAgua}]]></expression>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<image hAlign="Left">
-				<reportElement x="220" y="210" width="240" height="220" uuid="5d9f174e-9dde-4549-b5b1-8e8da474daeb">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<imageExpression><![CDATA[$P{marcaAgua}]]></imageExpression>
-			</image>
-		</band>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			<property name="com.jaspersoft.studio.unit.y" value="px"/>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
 	</background>
-	<title>
-		<band height="21" splitType="Stretch"/>
-	</title>
-	<pageHeader>
-		<band height="30" splitType="Stretch"/>
-	</pageHeader>
+	<title height="21" splitType="Stretch"/>
+	<pageHeader height="30" splitType="Stretch"/>
 	<detail>
 		<band height="596" splitType="Stretch">
-			<textField>
-				<reportElement x="98" y="304" width="100" height="30" uuid="1d3c0112-47d0-4372-820f-29da6989f162"/>
-				<textElement textAlignment="Center">
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
-			</textField>
-			<componentElement>
-				<reportElement x="70" y="163" width="166" height="136" uuid="84bf5437-b068-4221-b018-7e8955089def">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
-				</jr:QRCode>
-			</componentElement>
-			<textField>
-				<reportElement x="240" y="163" width="344" height="30" uuid="0f784329-457e-41cc-96be-06f813acee12"/>
-				<textElement textAlignment="Left">
-					<font size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{nombreJuzgado}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="60" y="103" width="460" height="30" uuid="3f6a9504-135a-43d5-a428-2e258edc9f26"/>
-				<textElement textAlignment="Center">
-					<font size="16" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{nombreEntidad}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="198" y="143" width="160" height="20" uuid="8e1e6a02-5d0d-44b2-9e64-ec4f5703a25b"/>
-				<textElement textAlignment="Center" verticalAlignment="Justified"/>
-				<textFieldExpression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></textFieldExpression>
-			</textField>
-			<image hAlign="Center" vAlign="Middle">
-				<reportElement x="0" y="3" width="539" height="100" uuid="1bc98323-843c-4e97-95f0-890477a57be2"/>
-				<imageExpression><![CDATA[$P{logotipoHeder}]]></imageExpression>
-			</image>
-			<textField>
-				<reportElement x="70" y="356" width="30" height="18" uuid="78868e1e-0144-482c-9c2d-5938b59567f4">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Actor:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="100" y="356" width="159" height="18" uuid="06f9c0b3-c0b6-4c16-a5d0-bdd53e66c917">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{actor}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="70" y="374" width="47" height="18" uuid="3c795207-fea6-421e-a30c-0793e92ffd90">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="70" y="392" width="49" height="18" uuid="6c7a1728-a952-4aca-ac11-e5002109dcd3">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["- Celular:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="70" y="410" width="48" height="18" uuid="01411372-bea5-47e2-bc21-e7075d7abfa6">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["- Correo:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="118" y="374" width="147" height="18" uuid="e799b9e3-0cb8-45d0-85e5-74bf06c66b3c">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{curpActor}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="120" y="392" width="147" height="18" uuid="ffcdc70d-ede2-4aaa-a065-b02f3babcd9e">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{celularActor}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="119" y="410" width="148" height="18" uuid="84372873-37bc-4039-90d0-2d3eca2acf1e">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{correoActor}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="317" y="353" width="62" height="18" uuid="99313161-e402-48cc-8e81-85ad4910c895">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Demandado:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="317" y="371" width="46" height="18" uuid="26cb276f-73ed-4135-bc52-8e162d97e8b9">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="317" y="389" width="59" height="18" uuid="248f1fb4-9198-4556-b425-3844f6f872b7">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["- Domicilio:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="364" y="371" width="160" height="18" uuid="5bdad6d7-54f7-4a95-a9fd-e0285a22f946">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{curpDemandado}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ElementGroupHeight" x="377" y="389" width="147" height="36" uuid="7b7373e1-7a20-4456-954a-8934e65369b0">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{domicilioDemandado}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="70" y="458" width="50" height="19" uuid="5c662646-779d-4cfa-bcc3-d6cfcfee9a26">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
+			<element kind="textField" uuid="1d3c0112-47d0-4372-820f-29da6989f162" x="98" y="304" width="100" height="30" bold="true" hTextAlign="Center">
+				<expression><![CDATA[$P{capturista}]]></expression>
+			</element>
+			<element kind="component" uuid="84bf5437-b068-4221-b018-7e8955089def" x="70" y="163" width="166" height="136">
+				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
+					<codeExpression><![CDATA[$P{documentoFolio}]]></codeExpression>
+				</component>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			</element>
+			<element kind="textField" uuid="0f784329-457e-41cc-96be-06f813acee12" x="240" y="163" width="344" height="30" fontSize="12.0" bold="true" hTextAlign="Left">
+				<expression><![CDATA[$P{nombreJuzgado}]]></expression>
+			</element>
+			<element kind="textField" uuid="3f6a9504-135a-43d5-a428-2e258edc9f26" x="60" y="103" width="460" height="30" fontSize="16.0" bold="true" hTextAlign="Center">
+				<expression><![CDATA[$P{nombreEntidad}]]></expression>
+			</element>
+			<element kind="textField" uuid="8e1e6a02-5d0d-44b2-9e64-ec4f5703a25b" x="198" y="143" width="160" height="20" hTextAlign="Center" vTextAlign="Justified">
+				<expression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></expression>
+			</element>
+			<element kind="image" uuid="1bc98323-843c-4e97-95f0-890477a57be2" x="0" y="3" width="539" height="100" hImageAlign="Center" vImageAlign="Middle">
+				<expression><![CDATA[$P{logotipoHeder}]]></expression>
+			</element>
+			<element kind="textField" uuid="78868e1e-0144-482c-9c2d-5938b59567f4" x="70" y="356" width="30" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Actor:"]]></expression>
+			</element>
+			<element kind="textField" uuid="06f9c0b3-c0b6-4c16-a5d0-bdd53e66c917" stretchType="ContainerBottom" x="100" y="356" width="159" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{actor}]]></expression>
+			</element>
+			<element kind="textField" uuid="3c795207-fea6-421e-a30c-0793e92ffd90" x="70" y="374" width="47" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["- CURP:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="6c7a1728-a952-4aca-ac11-e5002109dcd3" x="70" y="392" width="49" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["- Celular:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="01411372-bea5-47e2-bc21-e7075d7abfa6" x="70" y="410" width="48" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["- Correo:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="e799b9e3-0cb8-45d0-85e5-74bf06c66b3c" stretchType="ContainerBottom" x="118" y="374" width="147" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{curpActor}]]></expression>
+			</element>
+			<element kind="textField" uuid="ffcdc70d-ede2-4aaa-a065-b02f3babcd9e" stretchType="ContainerBottom" x="120" y="392" width="147" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{celularActor}]]></expression>
+			</element>
+			<element kind="textField" uuid="84372873-37bc-4039-90d0-2d3eca2acf1e" stretchType="ContainerBottom" x="119" y="410" width="148" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{correoActor}]]></expression>
+			</element>
+			<element kind="textField" uuid="99313161-e402-48cc-8e81-85ad4910c895" x="317" y="353" width="62" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Demandado:"]]></expression>
+			</element>
+			<element kind="textField" uuid="26cb276f-73ed-4135-bc52-8e162d97e8b9" x="317" y="371" width="46" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["- CURP:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="248f1fb4-9198-4556-b425-3844f6f872b7" x="317" y="389" width="59" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["- Domicilio:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="5bdad6d7-54f7-4a95-a9fd-e0285a22f946" stretchType="ContainerBottom" x="364" y="371" width="160" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{curpDemandado}]]></expression>
+			</element>
+			<element kind="textField" uuid="7b7373e1-7a20-4456-954a-8934e65369b0" stretchType="ElementGroupHeight" x="377" y="389" width="147" height="36" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{domicilioDemandado}]]></expression>
+			</element>
+			<element kind="staticText" uuid="5c662646-779d-4cfa-bcc3-d6cfcfee9a26" x="70" y="458" width="50" height="19" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Anexos:]]></text>
-			</staticText>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="70" y="478" width="410" height="39" uuid="868258b1-a459-441a-bb46-5b7b27250c03">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="70" y="518" width="140" height="19" uuid="bfd68438-a701-4a2d-8045-21cf1518ed84">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="868258b1-a459-441a-bb46-5b7b27250c03" stretchType="ContainerHeight" x="70" y="478" width="410" height="39" markup="html" textAdjust="StretchHeight">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{anexos}]]></expression>
+			</element>
+			<element kind="staticText" uuid="bfd68438-a701-4a2d-8045-21cf1518ed84" x="70" y="518" width="140" height="19" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Relación de Expedientes:]]></text>
-			</staticText>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="70" y="538" width="410" height="50" uuid="e26186a7-3cca-4852-9454-d53515a8420a">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$P{relacionExpediente}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="379" y="353" width="148" height="18" uuid="fe1e1a1d-8e15-493f-b29d-28e5c35e4087">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{demandado}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="374" y="305" width="171" height="18" uuid="997c3f7e-ccf6-483b-98ff-534f75dcabbd">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fechaHoraAudiencia}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="219" width="29" height="18" uuid="01655116-a23f-4b8a-be49-774aabb41bff">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Juez:"]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="241" y="254" width="28" height="19" uuid="f7eddd96-6571-48bc-a2f5-ed82dc9420d0">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="false"/>
-				</textElement>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="e26186a7-3cca-4852-9454-d53515a8420a" stretchType="ContainerHeight" x="70" y="538" width="410" height="50" markup="html" textAdjust="StretchHeight">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{relacionExpediente}]]></expression>
+			</element>
+			<element kind="textField" uuid="fe1e1a1d-8e15-493f-b29d-28e5c35e4087" stretchType="ContainerBottom" x="379" y="353" width="148" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{demandado}]]></expression>
+			</element>
+			<element kind="textField" uuid="997c3f7e-ccf6-483b-98ff-534f75dcabbd" x="374" y="305" width="171" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{fechaHoraAudiencia}]]></expression>
+			</element>
+			<element kind="textField" uuid="01655116-a23f-4b8a-be49-774aabb41bff" x="241" y="219" width="29" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Juez:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			</element>
+			<element kind="staticText" uuid="f7eddd96-6571-48bc-a2f5-ed82dc9420d0" x="241" y="254" width="28" height="19" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Folio: ]]></text>
-			</staticText>
-			<textField>
-				<reportElement stretchType="ContainerBottom" x="269" y="219" width="270" height="18" uuid="08f8c08a-9985-47e9-a43d-21ae2bcfbc57">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{juez}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="269" y="255" width="278" height="18" uuid="1155a561-9f4e-410d-bff1-928e7680313f">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="323" width="74" height="18" uuid="54acb65e-2928-4b0e-aa5d-42d9076e13a1">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Tipo de Juicio:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="305" width="132" height="18" uuid="81cfb4bf-9ae9-48b2-b722-79637ec1717c">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Fecha y hora de Audiencia:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="297" y="200" width="250" height="19" uuid="dd7356dd-7205-46bd-a86a-e3bfa681e831">
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="268" y="287" width="279" height="18" uuid="47bbd482-bc0d-4017-bc05-dd91029300ff">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{sala}]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="315" y="195" width="250" height="19" uuid="468f98a5-b289-4504-8be1-c8a776141a6a">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="374" y="218" width="170" height="19" uuid="1f6a8e0c-17a4-4046-8c3c-d243d345e748">
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fechaHoraRecepcion}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="242" y="280" width="50" height="19" uuid="4274e0fc-1ccf-4763-85cf-d39e2b7a0444">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="08f8c08a-9985-47e9-a43d-21ae2bcfbc57" stretchType="ContainerBottom" x="269" y="219" width="270" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{juez}]]></expression>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			</element>
+			<element kind="textField" uuid="1155a561-9f4e-410d-bff1-928e7680313f" x="269" y="255" width="278" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{folio}]]></expression>
+			</element>
+			<element kind="textField" uuid="54acb65e-2928-4b0e-aa5d-42d9076e13a1" x="241" y="323" width="74" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Tipo de Juicio:"]]></expression>
+			</element>
+			<element kind="textField" uuid="81cfb4bf-9ae9-48b2-b722-79637ec1717c" x="241" y="305" width="132" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Fecha y hora de Audiencia:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="dd7356dd-7205-46bd-a86a-e3bfa681e831" stretchType="ContainerHeight" x="297" y="200" width="250" height="19" textAdjust="StretchHeight" bold="true">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{expediente}]]></expression>
+			</element>
+			<element kind="textField" uuid="47bbd482-bc0d-4017-bc05-dd91029300ff" x="268" y="287" width="279" height="18" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{sala}]]></expression>
+			</element>
+			<element kind="textField" uuid="468f98a5-b289-4504-8be1-c8a776141a6a" stretchType="ContainerHeight" x="315" y="195" width="250" height="19" textAdjust="StretchHeight" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{expediente}]]></expression>
+			</element>
+			<element kind="textField" uuid="1f6a8e0c-17a4-4046-8c3c-d243d345e748" x="374" y="218" width="170" height="19" bold="true">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{fechaHoraRecepcion}]]></expression>
+			</element>
+			<element kind="staticText" uuid="4274e0fc-1ccf-4763-85cf-d39e2b7a0444" x="242" y="280" width="50" height="19" bold="true">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Anexos:]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="241" y="195" width="78" height="18" uuid="9ed1d794-b166-49b0-9634-009b084575ec">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Carpeta Digital:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="200" width="58" height="18" uuid="3764d1f7-0964-4b5f-beb6-523b58f598f6">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Expediente:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="315" y="323" width="246" height="30" uuid="5ac2d673-0b55-479b-966e-8a208b308e76">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{tipoJuicio}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="241" y="237" width="30" height="19" uuid="5d145077-9cfd-4565-8787-0c9c0d70c36e">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="false"/>
-				</textElement>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="9ed1d794-b166-49b0-9634-009b084575ec" x="241" y="195" width="78" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Carpeta Digital:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="3764d1f7-0964-4b5f-beb6-523b58f598f6" x="241" y="200" width="58" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Expediente:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="5ac2d673-0b55-479b-966e-8a208b308e76" x="315" y="323" width="246" height="30" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{tipoJuicio}]]></expression>
+			</element>
+			<element kind="staticText" uuid="5d145077-9cfd-4565-8787-0c9c0d70c36e" x="241" y="237" width="30" height="19" bold="false">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Folio: ]]></text>
-			</staticText>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="251" y="299" width="296" height="36" uuid="449da861-3ce4-45ec-bef7-cfb99649297f">
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="374" y="237" width="170" height="19" uuid="d5a98b87-985b-4021-bfb4-e77331f284d4">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{fechaHoraRecepcion}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="270" y="237" width="212" height="19" uuid="5aa67186-1bab-464f-8de3-e678b25a740e">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="287" width="28" height="18" uuid="d74f36e0-9d79-4261-87d0-75e7fe767a42">
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Sala:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="237" width="132" height="18" uuid="b8fe442b-a998-4830-9fd4-85914416bc1a">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Fecha y hora de recepción:"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="241" y="218" width="132" height="18" uuid="b441db58-6bc0-4073-b907-f5bcd3046f6a">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Fecha y hora de recepción:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement stretchType="ContainerHeight" x="70" y="430" width="410" height="20" uuid="62389025-999a-4a1b-b6b3-b9437d7a4c22">
-					<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$P{domiciliofamiliar}]]></textFieldExpression>
-			</textField>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="449da861-3ce4-45ec-bef7-cfb99649297f" stretchType="ContainerHeight" x="251" y="299" width="296" height="36" markup="html" textAdjust="StretchHeight">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{anexos}]]></expression>
+			</element>
+			<element kind="textField" uuid="d5a98b87-985b-4021-bfb4-e77331f284d4" x="374" y="237" width="170" height="19" bold="true">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{fechaHoraRecepcion}]]></expression>
+			</element>
+			<element kind="textField" uuid="5aa67186-1bab-464f-8de3-e678b25a740e" x="270" y="237" width="212" height="19" bold="true">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA[$P{folio}]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="textField" uuid="d74f36e0-9d79-4261-87d0-75e7fe767a42" x="241" y="287" width="28" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Sala:"]]></expression>
+			</element>
+			<element kind="textField" uuid="b8fe442b-a998-4830-9fd4-85914416bc1a" x="241" y="237" width="132" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Fecha y hora de recepción:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="b441db58-6bc0-4073-b907-f5bcd3046f6a" x="241" y="218" width="132" height="18" markup="html" bold="false">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<expression><![CDATA["Fecha y hora de recepción:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="62389025-999a-4a1b-b6b3-b9437d7a4c22" stretchType="ContainerHeight" x="70" y="430" width="410" height="20" markup="html" textAdjust="StretchHeight">
+				<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
+				<expression><![CDATA[$P{domiciliofamiliar}]]></expression>
+			</element>
 		</band>
 	</detail>
-	<columnFooter>
-		<band height="88" splitType="Stretch">
-			<textField>
-				<reportElement x="30" y="21" width="510" height="30" uuid="f12ddf7a-9f21-4e9a-b0f9-f25130bf5376"/>
-				<textFieldExpression><![CDATA[$P{cadenaVerificacion}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="30" y="1" width="150" height="19" uuid="10d2ff66-ba17-467b-b60f-907d93976785">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<text><![CDATA[CADENA DE VERIFICACION]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="30" y="53" width="510" height="35" uuid="5c087831-4f03-4e3c-bca3-95543854f2cc">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Por cuestión de orden, deberá presentarse en el Juzgado de Oralidad Familiar 20 minutos antes de la hora señalada para el desahogo de su audiencia.]]></text>
-			</staticText>
-		</band>
+	<columnFooter height="88" splitType="Stretch">
+		<element kind="textField" uuid="f12ddf7a-9f21-4e9a-b0f9-f25130bf5376" x="30" y="21" width="510" height="30">
+			<expression><![CDATA[$P{cadenaVerificacion}]]></expression>
+		</element>
+		<element kind="staticText" uuid="10d2ff66-ba17-467b-b60f-907d93976785" x="30" y="1" width="150" height="19" bold="true">
+			<text><![CDATA[CADENA DE VERIFICACION]]></text>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+		</element>
+		<element kind="staticText" uuid="5c087831-4f03-4e3c-bca3-95543854f2cc" x="30" y="53" width="510" height="35" fontSize="10.0" bold="true">
+			<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
+			<text><![CDATA[Por cuestión de orden, deberá presentarse en el Juzgado de Oralidad Familiar 20 minutos antes de la hora señalada para el desahogo de su audiencia.]]></text>
+			<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
 	</columnFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
+	<summary splitType="Stretch"/>
 </jasperReport>
