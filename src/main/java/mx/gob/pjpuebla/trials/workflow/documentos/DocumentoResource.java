@@ -160,11 +160,11 @@ public class DocumentoResource {
     }
 
 
-    @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formanto,@PathVariable Integer oficioId ) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("oficio", formanto + "_documento.pdf");
+        headers.setContentDispositionFormData("oficio", formanto + "_" +oficioId + "_documento.pdf");
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formanto, oficioId));
     }
 }

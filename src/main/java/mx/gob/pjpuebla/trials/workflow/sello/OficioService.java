@@ -27,7 +27,7 @@ public class OficioService {
     }
 
 
-    private JasperPrint getReport(Resource resource, Integer oficioId) throws IOException, JRException {
+    public JasperPrint getReport(Resource resource, Integer oficioId) throws IOException, JRException {
         List<String> heder = setHeder(2134323, oficioId);
 
         Map<String, Object> parameters = new HashMap<>();
@@ -51,7 +51,8 @@ public class OficioService {
     }
 
     public String bodyText(){
-        return  """
+        return  """ 
+                //TODO. Obtener cuerpo del oficio de base de datos
                 <h1>El agujero aplastante</h1>
                 <p style="line-height: 1.5;" >Por Chris Mills</p>
                 <h2>Capítulo 1: La oscura noche</h2>
