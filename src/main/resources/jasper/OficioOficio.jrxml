@@ -28,22 +28,22 @@
 				<codeExpression><![CDATA[$P{noQR}]]></codeExpression>
 			</component>
 		</element>
-		<element kind="textField" uuid="cb6ac0e4-1fd7-4534-bab2-eb9847d4e106" stretchType="ContainerHeight" x="327" y="31" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+		<element kind="textField" uuid="cb6ac0e4-1fd7-4534-bab2-eb9847d4e106" stretchType="ContainerHeight" x="327" y="29" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
 			<expression><![CDATA[$P{noCodigo}]]></expression>
 		</element>
-		<element kind="textField" uuid="b44a9325-0acc-4c1a-a59d-b4e59bd10b1b" stretchType="ContainerHeight" x="327" y="54" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+		<element kind="textField" uuid="b44a9325-0acc-4c1a-a59d-b4e59bd10b1b" stretchType="ContainerHeight" x="327" y="47" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right" vTextAlign="Bottom">
 			<expression><![CDATA[$P{noFolio}]]></expression>
 		</element>
 	</title>
 	<pageHeader height="35" splitType="Stretch"/>
 	<detail>
 		<band height="517" splitType="Stretch">
-			<element kind="textField" uuid="c3be8b43-b12c-4aae-8946-21b688304ac5" stretchType="ContainerHeight" x="60" y="3" width="488" height="366" markup="html" textAdjust="StretchHeight">
+			<element kind="textField" uuid="c3be8b43-b12c-4aae-8946-21b688304ac5" stretchType="ContainerHeight" x="60" y="3" width="488" height="196" markup="html" textAdjust="StretchHeight">
 				<expression><![CDATA[$P{textHtml}]]></expression>
 			</element>
 		</band>
 	</detail>
-	<columnFooter height="45" splitType="Stretch"/>
-	<pageFooter height="54" splitType="Stretch"/>
-	<summary height="42" splitType="Stretch"/>
+	<columnFooter height="4" splitType="Stretch"/>
+	<pageFooter height="11" splitType="Stretch"/>
+	<summary height="5" splitType="Stretch"/>
 </jasperReport>

@@ -23,10 +23,10 @@
 				<codeExpression><![CDATA[$P{noQR}]]></codeExpression>
 			</component>
 		</element>
-		<element kind="textField" uuid="cb6ac0e4-1fd7-4534-bab2-eb9847d4e106" stretchType="ContainerHeight" x="327" y="31" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+		<element kind="textField" uuid="cb6ac0e4-1fd7-4534-bab2-eb9847d4e106" stretchType="ContainerHeight" x="327" y="29" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
 			<expression><![CDATA[$P{noCodigo}]]></expression>
 		</element>
-		<element kind="textField" uuid="b44a9325-0acc-4c1a-a59d-b4e59bd10b1b" stretchType="ContainerHeight" x="327" y="54" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right">
+		<element kind="textField" uuid="b44a9325-0acc-4c1a-a59d-b4e59bd10b1b" stretchType="ContainerHeight" x="327" y="47" width="150" height="16" markup="html" textAdjust="StretchHeight" hTextAlign="Right" vTextAlign="Bottom">
 			<expression><![CDATA[$P{noFolio}]]></expression>
 		</element>
 	</title>
