@@ -7,15 +7,18 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,9 +31,14 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @WebMvcTest(DocumentoResource.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -49,8 +57,15 @@ class DocumentoResourceTest {
     @MockBean
     private DigitalizacionService digitalizacionService;
 
+    @MockBean
+    private OficioService oficioService;
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Value("classpath:jasper/OficioCarta.jasper")
+    private Resource oficioCarta;
+
 
     @Test
     void create_demanda() throws Exception {
@@ -273,5 +288,22 @@ class DocumentoResourceTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void get_oficio_pdf() throws Exception {
+        boolean formato = true;
+        Integer oficioId = 89734;
+        byte[] mockPdf = new byte[]{1, 2, 3};
+
+        given(oficioService.getOficio(formato, oficioId)).willReturn(mockPdf);
+
+        mockMvc.perform(get("/api/workflow/documentos/oficio/{formanto}/{oficioId}", formato, oficioId)
+                        .accept(APPLICATION_PDF))
+                .andExpect(status().isOk())
+                .andExpect(header().string(CONTENT_TYPE, APPLICATION_PDF_VALUE))
+                .andExpect(header().string(CONTENT_DISPOSITION, "form-data; name=\"oficio\"; filename=\"" + formato + "_"+ oficioId + "_documento.pdf\""))
+                .andExpect(content().bytes(mockPdf));
+    }
+
 
 }

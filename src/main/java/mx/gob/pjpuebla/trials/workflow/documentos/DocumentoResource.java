@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -35,6 +36,7 @@ public class DocumentoResource {
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
+    private final OficioService oficioService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
@@ -160,5 +162,13 @@ public class DocumentoResource {
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
         return this.documentoService.getIndicadores();
+    }
+
+    @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formanto,@PathVariable Integer oficioId ) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("oficio", formanto + "_" +oficioId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formanto, oficioId));
     }
 }
