@@ -5,10 +5,10 @@ linter: jetbrains/qodana-jvm:2024.2
 projectJDK: "17"
 failureConditions:
   severityThresholds:
-    any: 10
+    any: 8
   testCoverageThresholds:
-    fresh: 63
-    total: 63
+    fresh: 80
+    total: 80
 coverage:
   reportProblems: false
 include:

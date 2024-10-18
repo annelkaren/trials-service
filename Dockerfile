@@ -3,10 +3,11 @@ FROM eclipse-temurin:21-alpine
 EXPOSE 8888
 
 RUN apk update && \
-    apk --no-cache add fontconfig \
-    ttf-dejavu \
+    apk --no-cache add  \
+    fontconfig \
     freetype \
     freetype-dev \
+    ttf-dejavu \
     tzdata && \
     cp /usr/share/zoneinfo/America/Mexico_City /etc/localtime && \
     echo "America/Mexico_City" >  /etc/timezone
