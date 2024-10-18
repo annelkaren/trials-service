@@ -3,11 +3,14 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,8 +23,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,13 +37,20 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.List;
-
-
+import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 class MovimientosServiceTest {
 
     @Mock
     MovimientoRepository movimientoRepository;
+    
+    @Mock
+    PersonaService personaService;
+    @Mock
+    DocumentoRepository documentoRepository;
+
+    @Mock
+    CarpetaRepository carpetaRepository;
 
     @InjectMocks
     MovimientoService movimientoService;
@@ -107,4 +120,37 @@ class MovimientosServiceTest {
         assertThat(result.getSize()).isPositive();
     }
 
+    @Test
+    void testCreateMotivoWithPromocion() {
+        MotivoRecord motivoRecord = new MotivoRecord("Piezas Innecesarias", 2);
+        Persona currentUser = new Persona();
+        Documento documento = new Documento();
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+
+        given(personaService.getAuditor()).willReturn(currentUser);
+        given(documentoRepository.findById(motivoRecord.documentoId())).willReturn(Optional.of(documento));
+
+        movimientoService.createMotivo(motivoRecord);
+
+        verify(movimientoRepository, times(1)).save(any(Movimiento.class));
+        verify(documentoRepository, times(1)).actualizarEstatus(documento.getId(), EstadoCarpeta.DEVUELTO);
+    }
+
+    @Test
+    void testCreateMotivoWithoutPromocion() {
+        MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3);
+        Persona currentUser = new Persona();
+        Carpeta carpeta = new Carpeta();
+        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
+        Documento documento = new Documento();  
+        documento.setCarpeta(carpeta);  
+
+        given(personaService.getAuditor()).willReturn(currentUser);
+        given(documentoRepository.findById(motivoRecord.documentoId())).willReturn(Optional.of(documento));
+
+        movimientoService.createMotivo(motivoRecord);
+
+        verify(movimientoRepository, times(1)).save(any(Movimiento.class));
+        verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+    }
 }

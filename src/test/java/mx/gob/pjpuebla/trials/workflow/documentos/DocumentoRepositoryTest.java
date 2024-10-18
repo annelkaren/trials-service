@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
@@ -9,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,5 +59,14 @@ class DocumentoRepositoryTest extends AuditConfigTest {
         assertThat(entity).isNotNull();
         assertThat(entity.nombreDistrito()).isEqualTo("ACATLÁN");
         assertThat(entity.nombreJuzgado()).isEqualTo("Juzgado Laboral");
+    }
+
+    @Test
+    void actualizarEstatus() {
+        Integer documentoId = 1;
+        documentoRepository.actualizarEstatus(documentoId, EstadoCarpeta.DEVUELTO);
+        Documento documento = documentoRepository.findById(documentoId).orElse(null);
+        assertThat(documento).isNotNull();
+        assertThat(documento.getEstatus()).isEqualTo(EstadoCarpeta.DEVUELTO);
     }
 }
