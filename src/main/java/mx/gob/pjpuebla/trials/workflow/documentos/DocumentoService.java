@@ -603,5 +603,8 @@ public class DocumentoService {
         return new Object[]{tipoCarpetaNombre, tipoDocumentoNombre, folio};
     }
 
+    public IndicadoresRecord getIndicadores() {
+        return new IndicadoresRecord(2,7,9,5);
+    }
 }
 

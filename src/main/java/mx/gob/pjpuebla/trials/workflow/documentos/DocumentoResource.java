@@ -159,6 +159,10 @@ public class DocumentoResource {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
     }
 
+    @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
+        return this.documentoService.getIndicadores();
+    }
 
     @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formanto,@PathVariable Integer oficioId ) throws JRException, IOException {
