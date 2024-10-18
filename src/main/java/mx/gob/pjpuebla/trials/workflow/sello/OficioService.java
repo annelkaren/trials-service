@@ -21,21 +21,20 @@ public class OficioService {
     @Value("classpath:jasper/OficioOficio.jasper")
     private Resource oficioOficio;
 
-    public byte[] getOficio(boolean formato) throws JRException, IOException {
-        System.out.println("Está entrando en getOficio. Formato: " + formato);
+    public byte[] getOficio(boolean formato, Integer oficioId) throws JRException, IOException {
         Resource oficio = formato ? oficioOficio : oficioCarta;
-        return JasperExportManager.exportReportToPdf(getReport(oficio));
+        return JasperExportManager.exportReportToPdf(getReport(oficio, oficioId));
     }
 
 
-    private JasperPrint getReport(Resource resource) throws IOException, JRException {
-        List<String> heder = setHeder(2134323, 21354254);
+    private JasperPrint getReport(Resource resource, Integer oficioId) throws IOException, JRException {
+        List<String> heder = setHeder(2134323, oficioId);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("hederLogo", "jasper/header.jpg");
         parameters.put("noFolio", heder.get(1));
         parameters.put("noCodigo", heder.get(0));
-        parameters.put("noQR", "mlkmlkm");
+        parameters.put("noQR", "34729");
         parameters.put("textHtml", bodyText());
 
         return JasperFillManager.fillReport(
@@ -52,24 +51,21 @@ public class OficioService {
     }
 
     public String bodyText(){
-
-        return
-                "    <h1>Oficio No. 123/2024</h1>\n" +
-                "    <p><b>Fecha:</b> 17 de octubre de 2024</p>\n" +
-                "    <p><b>De:</b> Dirección General</p>\n" +
-                "    <p><b>Para:</b> Nombre del Destinatario</p>\n" +
-                "    <p><b>Asunto:</b> Solicitud de Información</p>\n" +
-                "\n" +
-                "    <p>Estimado/a <b>Nombre del Destinatario:</b></p>\n" +
-                "\n" +
-                "    <p>Por medio de la presente, me permito solicitar la información necesaria sobre el estado actual de los proyectos en curso, a fin de poder realizar un seguimiento adecuado de los mismos.</p>\n" +
-                "\n" +
-                "    <p>Agradezco de antemano su atención a esta solicitud y quedo a la espera de su pronta respuesta.</p>\n" +
-                "\n" +
-                "    <p>Atentamente,</p>\n" +
-                "    <p><b>Nombre del Remitente</b><br>\n" +
-                "    Cargo<br>\n" +
-                "    Dirección General</p>\n";
+        return  """
+                <h1>El agujero aplastante</h1>
+                <p style="line-height: 1.5;" >Por Chris Mills</p>
+                <h2>Capítulo 1: La oscura noche</h2>
+                <p>
+                  Era una noche oscura. En algún lugar, un búho ululó. La lluvia azotó el ...
+                </p>
+                <h2>Capítulo 2: El silencio eterno</h2>
+                <p>Nuestro protagonista ni susurrar pudo al ver esa sombría figura ...</p>
+                <h3>El espectro habla</h3>
+                <p>
+                  Habían pasado varias horas más, cuando de repente el espectro se incorporó y
+                  exclamó: "¡Por favor, ten piedad de mi alma!"
+                </p>
+                """;
     }
 
 }
