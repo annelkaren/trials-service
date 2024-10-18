@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -160,9 +161,15 @@ class PersonaResourceTest {
 
     @Test
     void getAll_CentrosTrabajo() throws Exception {
-        given(mockPersonaService.findAllCentroTrabajo()).willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
+        given(mockPersonaService.findAllCentroTrabajo(any(Pageable.class), any(String.class)))
+                .willReturn(new PageImpl<>(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)),
+                        PageRequest.of(0, 10), 1));
+
         mockMvc.perform(
                 get("/api/core/personas/centrostrabajo")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("nombre", "")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
