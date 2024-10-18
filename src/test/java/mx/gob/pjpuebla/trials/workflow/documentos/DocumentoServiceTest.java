@@ -827,6 +827,15 @@ class DocumentoServiceTest {
     }
 
     @Test
+    void getIndicadores_success() {
+        IndicadoresRecord expected = new IndicadoresRecord(2, 7, 9, 5);
+
+        IndicadoresRecord result = documentoService.getIndicadores();
+
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
     void crearOficioAdministrativoTest() {
         Integer institucionId = 1;
         LocalDate fechaEmision = LocalDate.now();

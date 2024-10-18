@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.IndicadoresRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,5 +83,9 @@ public class DocumentoSetUp {
         documento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7",
                 "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return documento;
+    }
+
+    public static IndicadoresRecord createIndicadoresRecord(){
+        return new IndicadoresRecord(2,7,9,5);
     }
 }
