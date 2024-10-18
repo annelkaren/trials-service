@@ -1,8 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,13 +16,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.springframework.http.MediaType;
+
+import mx.gob.pjpuebla.trials.util.enums.DevolucionMotivo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import static org.mockito.BDDMockito.willThrow;
+
 
 @WebMvcTest(MovimientoResource.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -34,6 +44,9 @@ public class MovimientosResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper; 
 
     MovimientoSalidaRecord movimiento;
     UUID uuid;
@@ -63,4 +76,36 @@ public class MovimientosResourceTest {
         .andExpect(status().isOk());
     }
 
+    @Test
+    void listaMotivosTest() throws Exception {
+        List<MotivoDevolucionRecord> motivos = Arrays.stream(DevolucionMotivo.values())
+            .map(motivo -> new MotivoDevolucionRecord(motivo.getId(), motivo.getNombre()))
+            .collect(Collectors.toList());
+    
+        mockMvc.perform(get("/api/workflow/movimientos")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+  
+    @Test
+    void crearMotivoExitosoTest() throws Exception {
+        MotivoRecord motivoRecord = new MotivoRecord("Error en en el numero de expediente", 1);
+
+        mockMvc.perform(post("/api/workflow/movimientos/turnado")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(motivoRecord)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void crearMotivoErrorTest() throws Exception {
+        MotivoRecord motivoRecord = new MotivoRecord("Error en el número de expediente", 1);
+
+        willThrow(new RuntimeException("Error al crear el motivo")).given(movimientoService).createMotivo(motivoRecord);
+
+        mockMvc.perform(post("/api/workflow/movimientos/turnado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(motivoRecord)))
+                .andExpect(status().isInternalServerError());
+    }
 }

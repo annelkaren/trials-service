@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
@@ -96,4 +97,12 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         assertThat(result).isNullOrEmpty();
     }
 
+    @Test
+    void actualizarEstatus() {
+        Integer carpetaId = 1;
+        carpetaRepository.actualizarEstatus(carpetaId, EstadoCarpeta.DEVUELTO);
+        Carpeta carpeta = carpetaRepository.findById(carpetaId).orElse(null);
+        assertThat(carpeta).isNotNull();
+        assertThat(carpeta.getEstatus()).isEqualTo(EstadoCarpeta.DEVUELTO);
+    }
 }

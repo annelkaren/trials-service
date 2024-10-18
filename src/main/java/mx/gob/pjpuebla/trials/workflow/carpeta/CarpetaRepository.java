@@ -1,9 +1,13 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
@@ -45,4 +49,8 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     """)
     List<AnexoBandejaRecepcionRecord> findAnexosByDocumentoId(Integer documentoId);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Carpeta c SET c.estatus = :estado WHERE c.id = :carpetaId")
+    void actualizarEstatus(@Param("carpetaId") Integer carpetaId, @Param("estado") EstadoCarpeta estado);
 }
