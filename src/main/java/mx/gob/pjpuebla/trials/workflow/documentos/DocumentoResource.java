@@ -9,8 +9,8 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -158,4 +158,9 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllAsignado(key, pageable);
     }
+    @PostMapping("/bandeja/salida")
+    public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
+        return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
+    }
+
 }

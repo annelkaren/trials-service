@@ -1,19 +1,8 @@
 package mx.gob.pjpuebla.trials.core.estados;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.Data;
 
-import java.util.List;
-
-@Data
-public class EstadosDTO {
-
-    private List<EstadoDTO> datos;
-
-}
-
-class EstadoDTO {
-
+public class Estado {
     private String id;
     private String name;
     private String abbreviation;

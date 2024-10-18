@@ -1,17 +1,8 @@
 package mx.gob.pjpuebla.trials.core.estados;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.Data;
 
-import java.util.List;
-
-@Data
-public class MunicipiosDTO {
-
-    private List<MunicipioDTO> datos;
-}
-
-class MunicipioDTO {
+public class Municipio {
 
     private String id;
     private String stateId;
@@ -31,4 +22,5 @@ class MunicipioDTO {
     public String getName() {
         return name;
     }
+
 }

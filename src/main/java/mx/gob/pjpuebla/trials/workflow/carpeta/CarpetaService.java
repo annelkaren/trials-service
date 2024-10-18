@@ -5,10 +5,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Rol;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -18,6 +15,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -27,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -38,6 +37,7 @@ public class CarpetaService {
     private final DocumentoRepository documentoRepository;
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
+    private final MovimientoService movimientoService;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, juzgadoId)
@@ -87,13 +87,20 @@ public class CarpetaService {
     public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
             Integer documentoId) {
                 Documento documento = validacionBandejaRecepcion(documentoId);
-                
+
+                List<String> anexosFaltantes = anexos.stream()
+                    .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
+                    .map(AnexoBandejaRecepcionRecord::nombre)
+                    .collect(Collectors.toList());
+
                 //actualizamos los anexos.
                 for (AnexoBandejaRecepcionRecord anexo : anexos) {
                     Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
                     anexoTemp.setEstado(anexo.estado());
                     anexoRepository.save(anexoTemp);
                 }
+
+                setObservacionesAnexos(documento, anexosFaltantes);
 
                 //actualizamos el estatus en carpeta o documento dependiendo de si es demanda, exhorto o promoción.
                 if(documento.getTipoDocumento() == TipoDocumento.PROMOCION){    
@@ -108,6 +115,7 @@ public class CarpetaService {
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
+
 
     public Documento validacionBandejaRecepcion(Integer documentoId) {
 
@@ -128,5 +136,16 @@ public class CarpetaService {
         return documento;
 
     }
+
+    public void setObservacionesAnexos(Documento documento, List<String> anexos) {
+        if (anexos.isEmpty()) {
+            return;
+        }
+        String concatenatedAnexos = String.join(", ", anexos);
+        String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
+
+        movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
+    }
+
 
 }
