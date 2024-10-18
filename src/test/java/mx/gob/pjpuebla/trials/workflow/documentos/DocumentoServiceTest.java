@@ -823,4 +823,13 @@ class DocumentoServiceTest {
 
         assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
+
+    @Test
+    void getIndicadores_success() {
+        IndicadoresRecord expected = new IndicadoresRecord(2, 7, 9, 5);
+
+        IndicadoresRecord result = documentoService.getIndicadores();
+
+        assertThat(result).isEqualTo(expected);
+    }
 }
