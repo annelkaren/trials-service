@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -117,6 +118,8 @@ class DocumentoServiceTest {
     private EtiquetaService etiquetaService;
     @Mock
     private RoleService roleService;
+    @Mock
+    private ConceptoRepository conceptoRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -785,6 +788,7 @@ class DocumentoServiceTest {
         given(personaService.getAuditor()).willReturn(persona);
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(carpetaRepository.save(any(Carpeta.class))).willReturn(carpeta);
+        given(documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(any(Integer.class))).willReturn(documento);
 
         List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
         Integer personaCarrito = Math.toIntExact(persona.getId());
@@ -793,7 +797,7 @@ class DocumentoServiceTest {
         verify(movimientoRepository).findAllById(idList);
         verify(personaRepository).findById(Long.valueOf(personaCarrito));
         verify(personaService).getAuditor();
-        verify(documentoRepository).save(documento);
+        verify(documentoRepository, times(2)).save(documento);
         verify(carpetaRepository).save(carpeta);
         verify(movimientoRepository, times(2)).save(any(Movimiento.class));
     }
@@ -832,4 +836,5 @@ class DocumentoServiceTest {
 
         assertThat(result).isEqualTo(expected);
     }
+
 }
