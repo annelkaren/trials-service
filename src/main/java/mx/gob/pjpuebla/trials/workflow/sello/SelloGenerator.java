@@ -82,7 +82,7 @@ public class SelloGenerator {
         ExtraAudienciaSelloRecord audiencia = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         documento = updateExpedientePorTipoJuicio(documento);
-        expedientesByDemandadoActor(demandado.nombre(), actor.nombre());
+        expedientesByDemandadoActor(demandado.nombre(), actor.nombre(), documento.getCarpeta().getTipoJuicio().getMateria().getId());
         String relacionExpediente = (expedienteRelacionados != null && !expedienteRelacionados.isEmpty()) ? expedienteRelacionados : "";
 
         Map<String, Object> parameters = new HashMap<>();
@@ -294,10 +294,10 @@ public class SelloGenerator {
     }
 
     public List<RelacionExpedientesRecord> getAllExpedientesRelacionados(String nombre, String apellidoP, String apellidoM) {
-        return personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre, apellidoM, apellidoP);
+        return personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre, apellidoM, apellidoP, 1);
     }
 
-    private void expedientesByDemandadoActor(String persona1, String persona2) {
+    private void expedientesByDemandadoActor(String persona1, String persona2, Integer materiaId) {
         String[] partesPersona1 = persona1.split(" ");
         String nombre1 = partesPersona1[0];
         String apellidoP1 = partesPersona1.length > 1 ? partesPersona1[1] : "";
@@ -308,8 +308,8 @@ public class SelloGenerator {
         String apellidoP2 = partesPersona2.length > 1 ? partesPersona2[1] : "";
         String apellidoM2 = partesPersona2.length > 2 ? partesPersona2[2] : "";
 
-        List<RelacionExpedientesRecord> listDemandado = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre1, apellidoM1, apellidoP1);
-        List<RelacionExpedientesRecord> listActor = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre2, apellidoM2, apellidoP2);
+        List<RelacionExpedientesRecord> listDemandado = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre1, apellidoM1, apellidoP1, materiaId);
+        List<RelacionExpedientesRecord> listActor = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre2, apellidoM2, apellidoP2, materiaId);
 
         Set<String> expedientesActor = listActor.stream()
                 .map(RelacionExpedientesRecord::expediente)

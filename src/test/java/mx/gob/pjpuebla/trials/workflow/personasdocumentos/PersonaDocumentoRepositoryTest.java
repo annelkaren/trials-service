@@ -81,7 +81,7 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
 
     @Test
     void  getExpedienteRelacionados(){
-        List<RelacionExpedientesRecord> entity = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId("MARIA", "", "RAMOS" );
+        List<RelacionExpedientesRecord> entity = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId("MARIA", "", "RAMOS", 150 );
         assertThat(entity).isNotEmpty();
     }
 }
