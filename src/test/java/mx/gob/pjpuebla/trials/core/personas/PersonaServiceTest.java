@@ -37,10 +37,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 
 import java.util.*;
 
@@ -289,7 +286,8 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
 
-        List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo(pageable, "");
 
         assertThat(centrosTrabajo)
                 .hasSize(2)
