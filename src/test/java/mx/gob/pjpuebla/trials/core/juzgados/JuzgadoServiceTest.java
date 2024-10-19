@@ -14,8 +14,10 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -28,6 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -375,5 +378,15 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
                 .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
                 .hasFieldOrPropertyWithValue("materia", juzgado.getMateria().getNombre());
+    }
+
+    @Test
+    void delete() {
+        Mockito.doThrow(DataIntegrityViolationException.class).when(juzgadoRepository).deleteById(any());
+        ConstraintViolationException exception = assertThrows(
+                ConstraintViolationException.class,
+                () -> juzgadoService.delete(1)
+        );
+        assertThat(exception.getMessage()).contains(Messages.CONSTRAINT_ERROR);
     }
 }
