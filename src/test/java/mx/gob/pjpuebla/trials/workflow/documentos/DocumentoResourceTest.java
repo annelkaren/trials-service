@@ -286,7 +286,6 @@ class DocumentoResourceTest {
         data.put("fechaEmision", fechaEmision.toString());
         data.put("asunto", asunto);
         data.put("carpetaId", carpetaId);
-        String jsonContent = ResourceUtilTest.asJsonString(data);
         given(documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId))
                 .willReturn(folio);
 

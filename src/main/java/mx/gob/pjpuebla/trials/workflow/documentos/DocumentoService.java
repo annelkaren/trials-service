@@ -41,8 +41,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

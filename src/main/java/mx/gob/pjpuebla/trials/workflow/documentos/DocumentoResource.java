@@ -11,7 +11,6 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -177,11 +176,11 @@ public class DocumentoResource {
         return documentoService.getDataDocumentoRecepcion(id);
     }
 
-    @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formanto, @PathVariable Integer oficioId) throws JRException, IOException {
+    @GetMapping(value = "/documentos/oficio/{formato}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formato, @PathVariable Integer oficioId) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("oficio", formanto + "_" + oficioId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formanto, oficioId));
+        headers.setContentDispositionFormData("oficio", formato + "_" + oficioId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
     }
 }
