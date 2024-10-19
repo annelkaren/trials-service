@@ -40,8 +40,22 @@ public class CarpetaService {
     private final MovimientoService movimientoService;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
-        Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, juzgadoId)
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + juzgadoId));
+        // Usar una variable auxiliar para la modificación de juzgadoId
+        final Integer finalJuzgadoId;
+
+        // Validar juzgadoId
+        if (juzgadoId == null) {
+            Persona auditor = personaService.getAuditor();
+            if (auditor == null || auditor.getJuzgado() == null) {
+                throw new IllegalArgumentException("No se puede determinar el juzgado.");
+            }
+            finalJuzgadoId = auditor.getJuzgado().getId();
+        } else {
+            finalJuzgadoId = juzgadoId;
+        }
+
+        Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), "Actor");
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), "Demandado");
         return new CarpetaResponseRecord(carpeta.getId(), actor, demandado);
@@ -86,36 +100,39 @@ public class CarpetaService {
 
     public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
             Integer documentoId) {
-                Documento documento = validacionBandejaRecepcion(documentoId);
+        Documento documento = validacionBandejaRecepcion(documentoId);
 
-                List<String> anexosFaltantes = anexos.stream()
-                    .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
-                    .map(AnexoBandejaRecepcionRecord::nombre)
-                    .collect(Collectors.toList());
+        List<String> anexosFaltantes = anexos.stream()
+                .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
+                .map(AnexoBandejaRecepcionRecord::nombre)
+                .collect(Collectors.toList());
 
-                //actualizamos los anexos.
-                for (AnexoBandejaRecepcionRecord anexo : anexos) {
-                    Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(() -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
-                    anexoTemp.setEstado(anexo.estado());
-                    anexoRepository.save(anexoTemp);
-                }
+        // actualizamos los anexos.
+        for (AnexoBandejaRecepcionRecord anexo : anexos) {
+            Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(
+                    () -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
+            anexoTemp.setEstado(anexo.estado());
+            anexoRepository.save(anexoTemp);
+        }
 
-                setObservacionesAnexos(documento, anexosFaltantes);
+        setObservacionesAnexos(documento, anexosFaltantes);
 
-                //actualizamos el estatus en carpeta o documento dependiendo de si es demanda, exhorto o promoción.
-                if(documento.getTipoDocumento() == TipoDocumento.PROMOCION){    
-                    documento.setEstatus(EstadoCarpeta.ASIGNADO);
-                }
+        // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
+        // exhorto o promoción.
+        if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
+        }
 
-                if(documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO) ){
-                    documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-                }
+        if (documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
+                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
+            documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
+        }
 
-                documentoRepository.save(documento);
+        documentoRepository.save(documento);
 
-        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
+        return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
+                documento.getCarpeta().getTipoCarpeta());
     }
-
 
     public Documento validacionBandejaRecepcion(Integer documentoId) {
 
@@ -146,6 +163,5 @@ public class CarpetaService {
 
         movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
     }
-
 
 }
