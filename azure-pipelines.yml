@@ -131,6 +131,17 @@ stages:
               steps:
                 - checkout: self
 
+                - task: DownloadSecureFile@1
+                  name: secrets
+                  displayName: 'Download k8s Secrets'
+                  inputs:
+                    secureFile: 'beta-trials-secrets-241018.properties'
+
+                - script: |
+                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/beta/trials-secrets.properties
+                  displayName: 'Installing k8s Secrets'
+
                 - task: KubernetesManifest@1
                   name: bake
                   displayName: Kustomize
