@@ -98,8 +98,8 @@ stages:
                     secureFile: 'alpha-trials-secrets-241018.properties'
 
                 - script: |
-                    echo Installing $(alpha-trials-secrets-241018.properties.secureFilePath) to the kustomize directory...
-                    sudo cp $(alpha-trials-secrets-241018.properties.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/alpha/trials-secrets.properties
+                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/alpha/trials-secrets.properties
                   displayName: 'Installing k8s Secrets'
 
                 - task: KubernetesManifest@1
