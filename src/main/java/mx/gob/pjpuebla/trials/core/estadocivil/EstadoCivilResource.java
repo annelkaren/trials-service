@@ -1,0 +1,27 @@
+package mx.gob.pjpuebla.trials.core.estadocivil;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/core/estadocivil")
+@SecurityRequirement(name = "Keycloak")
+public class EstadoCivilResource {
+
+    private final EstadoCivilService estadoCivilService;
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<EstadoCivilRecord> getAll(
+            @PageableDefault Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre) {
+        EstadoCivil example = new EstadoCivil().setNombre(nombre);
+        return estadoCivilService.getAll(pageable, example);
+    }
+}

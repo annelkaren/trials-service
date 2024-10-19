@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: trials
+  name: trials-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      serviceAccountName: build-robot
+      containers:
+        - name: trials-api
+          image: pjpuebla.azurecr.io/trialsservice:20240918.7
+          envFrom:
+            - configMapRef:
+                name: trials-config
+            - secretRef:
+                name: trials-secret
+          ports:
+            - name: http
+              containerPort: 8888
+          readinessProbe:
+            httpGet:
+              path: /rest/actuator/health
+              port: 8888

@@ -1,0 +1,1 @@
+DELETE FROM tbl_tipo_audiencia;

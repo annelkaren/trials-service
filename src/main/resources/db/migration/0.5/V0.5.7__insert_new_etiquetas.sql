@@ -1,0 +1,20 @@
+
+INSERT INTO TRIALS.TBL_TIPOJUICIO_ETIQUETAS (PN_ID, S_NOMBRE, S_VALUE, FN_TIPO_JUICIO)
+SELECT nextval('TRIALS.SEQ_TIPOJUICIO_ETIQUETAS_ID'), 'domicilioOralidadFamiliar', 'Ultimo domicilio Familiar', TJ.PN_ID
+FROM TRIALS.TBL_TIPO_JUICIO AS TJ WHERE TJ.S_NOMBRE = 'Familiar Oralidad (Alimentos)';
+
+INSERT INTO TRIALS.TBL_TIPOJUICIO_ETIQUETAS (PN_ID, S_NOMBRE, S_VALUE, FN_TIPO_JUICIO)
+SELECT nextval('TRIALS.SEQ_TIPOJUICIO_ETIQUETAS_ID'), 'domicilioOralidadFamiliar', 'Domicilio Familiar', TJ.PN_ID
+FROM TRIALS.TBL_TIPO_JUICIO AS TJ WHERE TJ.S_NOMBRE = 'Familiar Oralidad (Divorcio Incausado Unilateral)';
+
+INSERT INTO TRIALS.TBL_TIPOJUICIO_ETIQUETAS (PN_ID, S_NOMBRE, S_VALUE, FN_TIPO_JUICIO)
+SELECT nextval('TRIALS.SEQ_TIPOJUICIO_ETIQUETAS_ID'), 'domicilioOralidadFamiliar', 'Domicilio Familiar', TJ.PN_ID
+FROM TRIALS.TBL_TIPO_JUICIO AS TJ WHERE TJ.S_NOMBRE = 'Familiar Oralidad (Divorcio Incausado Bilateral)';
+
+INSERT INTO TRIALS.TBL_TIPOJUICIO_ETIQUETAS (PN_ID, S_NOMBRE, S_VALUE, FN_TIPO_JUICIO)
+SELECT nextval('TRIALS.SEQ_TIPOJUICIO_ETIQUETAS_ID'), 'domicilioOralidadFamiliar', 'Domicilio del niño, niña o adolescente', TJ.PN_ID
+FROM TRIALS.TBL_TIPO_JUICIO AS TJ WHERE TJ.S_NOMBRE = 'Familiar Oralidad (Guardia y Custodia)';
+
+INSERT INTO TRIALS.TBL_TIPOJUICIO_ETIQUETAS (PN_ID, S_NOMBRE, S_VALUE, FN_TIPO_JUICIO)
+SELECT nextval('TRIALS.SEQ_TIPOJUICIO_ETIQUETAS_ID'), 'domicilioOralidadFamiliar', 'Domicilio del niño, niña o adolescente', TJ.PN_ID
+FROM TRIALS.TBL_TIPO_JUICIO AS TJ WHERE TJ.S_NOMBRE = 'Familiar Oralidad (Visita y Convivencia)';

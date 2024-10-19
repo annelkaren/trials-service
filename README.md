@@ -1,20 +1,28 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# trials-service
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Requisitos
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+- JDK21
+- PostgreSQL 16
+- Keycloak 25
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+### Running as Developer using a dockerized PostgreSQL Database and Keycloak
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+```shell
+mvn clean package -Dmaven.test.skip
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.flyway.enabled=true
+
+```
+
+### Nomenclatura de Bases de datos
+tbl = table -> TBL_NAME
+seq = sequence -> SEQ_NAME
+i = index -> iNOMBRE
+pk = primary key -> p|TIPO|NOMBRE -> psid
+fk = foreign key -> f|TIPO|NOMBRE -> fsdomicilio
+
+#### Tipos De Datos -> Columnas
+s = string -> uuid, varchar, char
+t = temporal -> timestamp, date, time
+n = numeric -> int, bigint
+b = boolean -> no usar, reemplazar por char(1) A=Active, I=Inactive, D=Deleted

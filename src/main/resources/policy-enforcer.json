@@ -1,0 +1,26 @@
+{
+  "realm": "trials-realm",
+  "resource": "trials-service",
+  "credentials": {
+    "secret": "2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj"
+  },
+  "http-method-as-scope": true,
+  "paths": [
+    {
+      "path": "/error",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/swagger-ui/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/v3/api-docs/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/actuator/*",
+      "enforcement-mode": "DISABLED"
+    }
+  ]
+}

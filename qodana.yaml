@@ -1,0 +1,34 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+linter: jetbrains/qodana-jvm:2024.2
+projectJDK: "17"
+failureConditions:
+  severityThresholds:
+    any: 8
+  testCoverageThresholds:
+    fresh: 80
+    total: 80
+coverage:
+  reportProblems: false
+include:
+  - name: UnnecessaryModifier
+  - name: UNUSED_IMPORT
+  - name: ArraysAsListWithZeroOrOneArgument
+  - name: DefaultAnnotationParam
+  - name: DuplicatedCode
+  - name: RedundantUnmodifiable
+  - name: NullableProblems
+  - name: JavadocDeclaration
+exclude:
+  - name: JvmCoverageInspection
+    paths:
+      - src/main/java/mx/gob/pjpuebla/trials/TrialsApplication.java
+      - src/main/java/mx/gob/pjpuebla/trials/config
+      - src/main/java/mx/gob/pjpuebla/trials/core/recursos
+      - src/main/java/mx/gob/pjpuebla/trials/core/estados
+      - src/main/java/mx/gob/pjpuebla/trials/core/usuarios
+      - src/main/java/mx/gob/pjpuebla/trials/core/roles
+      - src/main/java/mx/gob/pjpuebla/trials/workflow/sello
+      - src/main/java/mx/gob/pjpuebla/trials/workflow/folios/SecuenciaRepositoryCustomImpl.java
+  - name: CheckDependencyLicenses

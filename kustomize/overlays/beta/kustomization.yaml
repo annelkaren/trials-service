@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: trials
+
+configMapGenerator:
+  - envs:
+      - trials.properties
+    name: trials-config
+
+secretGenerator:
+  - envs:
+      - trials-secrets.properties
+    name: trials-secret
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app: trials-api
+
+namePrefix: pjp-
+
+images:
+  - name: pjpuebla.azurecr.io/trialsservice
+    newTag: "0.0.1"
+
+patches:
+  - path: ingress.yaml
