@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -122,6 +123,8 @@ class DocumentoServiceTest {
     private EtiquetaService etiquetaService;
     @Mock
     private RoleService roleService;
+    @Mock
+    private ConceptoRepository conceptoRepository;
     @Mock
     private InstitucionRepository institucionRepository;
     @Mock
@@ -320,6 +323,7 @@ class DocumentoServiceTest {
         assertThat(demanda.getMotivoEdita()).isEqualTo(motivoEdita);
         assertThat(demanda.getCarpeta().getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
     }
+
 
     @Test
     void getDemandaById_notFoundException() {
@@ -787,6 +791,7 @@ class DocumentoServiceTest {
         given(personaService.getAuditor()).willReturn(persona);
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(carpetaRepository.save(any(Carpeta.class))).willReturn(carpeta);
+        given(documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(any(Integer.class))).willReturn(documento);
 
         List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
         Integer personaCarrito = Math.toIntExact(persona.getId());
@@ -795,7 +800,7 @@ class DocumentoServiceTest {
         verify(movimientoRepository).findAllById(idList);
         verify(personaRepository).findById(Long.valueOf(personaCarrito));
         verify(personaService).getAuditor();
-        verify(documentoRepository).save(documento);
+        verify(documentoRepository, times(2)).save(documento);
         verify(carpetaRepository).save(carpeta);
         verify(movimientoRepository, times(2)).save(any(Movimiento.class));
     }
@@ -827,6 +832,16 @@ class DocumentoServiceTest {
     }
 
     @Test
+    void getIndicadores_success() {
+        IndicadoresRecord expected = new IndicadoresRecord(2, 7, 9, 5);
+
+        IndicadoresRecord result = documentoService.getIndicadores();
+
+        assertThat(result).isEqualTo(expected);
+    }
+
+
+    @Test
     void crearOficioAdministrativoTest() {
         Integer institucionId = 1;
         LocalDate fechaEmision = LocalDate.now();
@@ -834,7 +849,7 @@ class DocumentoServiceTest {
         Integer carpetaId = 1;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
         System.out.println(persona.getJuzgado().getNombre());
-        
+
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
@@ -849,7 +864,7 @@ class DocumentoServiceTest {
 
         given(carpetaRepository.findById(carpetaId))
                 .willReturn(Optional.of(CarpetaSetUp.create()));
-                
+
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);
@@ -863,7 +878,7 @@ class DocumentoServiceTest {
         Integer carpetaId = null;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
         System.out.println(persona.getJuzgado().getNombre());
-        
+
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
@@ -875,7 +890,7 @@ class DocumentoServiceTest {
 
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
-                
+
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);

@@ -36,6 +36,7 @@ public class DigitalizacionFolderService {
 
         String year = obtenerYear(doc);
         String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
+        juzgado = juzgado.replaceAll(" ", "");
         Path rootPath = (TipoDocumento.OFICIO.equals(doc.getTipoDocumento()))
                 ? construirRutaOficio(doc, year, juzgado)
                 : construirRutaConCarpeta(doc, year, juzgado);

@@ -109,6 +109,6 @@ stages:
                 displayName: Deploy
                 inputs:
                   action: deploy
-                  kubernetesServiceConnection: 'digitaloceancnx'
+                  kubernetesServiceConnection: 'alpha-latest-trials-1726267947420'
                   namespace: 'trials'
                   manifests: $(bake.manifestsBundle)

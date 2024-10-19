@@ -85,6 +85,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         ));
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
+        return Objects.requireNonNull(handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))
+                ),
+                new HttpHeaders(),
+                HttpStatus.CONFLICT,
+                request
+        ));
+    }
+
     @ExceptionHandler(UserAlreadyExistException.class)
     protected ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistException ex, WebRequest request) {
         return Objects.requireNonNull(handleExceptionInternal(ex,
