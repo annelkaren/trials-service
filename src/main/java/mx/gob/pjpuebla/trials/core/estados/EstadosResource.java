@@ -38,6 +38,6 @@ public class EstadosResource {
         RestTemplate restTemplate = new RestTemplate();
         MunicipioRecord response = restTemplate.getForObject(
                 INEGI_PATH + MUN_PATH + id, MunicipioRecord.class, new HashMap<>());
-        return (response != null) ? response.datos() : new ArrayList<>();
+        return (response != null && response.datos() != null) ? response.datos() : new ArrayList<>();
     }
 }
