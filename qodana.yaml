@@ -25,8 +25,8 @@ exclude:
     paths:
       - src/main/java/mx/gob/pjpuebla/trials/TrialsApplication.java
       - src/main/java/mx/gob/pjpuebla/trials/config
-#      - src/main/java/mx/gob/pjpuebla/trials/core/recursos
-#      - src/main/java/mx/gob/pjpuebla/trials/core/estados
+      - src/main/java/mx/gob/pjpuebla/trials/core/recursos
+      - src/main/java/mx/gob/pjpuebla/trials/core/estados
 #      - src/main/java/mx/gob/pjpuebla/trials/core/usuarios
 #      - src/main/java/mx/gob/pjpuebla/trials/core/roles
       - src/main/java/mx/gob/pjpuebla/trials/workflow/sello
