@@ -124,11 +124,11 @@ class DocumentoServiceTest {
     @Mock
     private RoleService roleService;
     @Mock
-    private ConceptoRepository conceptoRepository;
-    @Mock
     private InstitucionRepository institucionRepository;
     @Mock
     private DocumentoFoliosService documentoFoliosService;
+    @Mock
+    private ConceptoRepository conceptoRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -265,7 +265,7 @@ class DocumentoServiceTest {
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
         exhorto.getCarpeta().setFolio("3");
 
-        Documento[] documentos = { demanda, apelacion, exhorto };
+        Documento[] documentos = {demanda, apelacion, exhorto};
 
         for (Documento documento : documentos) {
             TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
@@ -323,7 +323,6 @@ class DocumentoServiceTest {
         assertThat(demanda.getMotivoEdita()).isEqualTo(motivoEdita);
         assertThat(demanda.getCarpeta().getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
     }
-
 
     @Test
     void getDemandaById_notFoundException() {
@@ -839,7 +838,6 @@ class DocumentoServiceTest {
 
         assertThat(result).isEqualTo(expected);
     }
-
 
     @Test
     void crearOficioAdministrativoTest() {

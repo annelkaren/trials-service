@@ -1,10 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -21,6 +21,7 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -71,9 +72,9 @@ public class DocumentoService {
     private final PersonaRepository personaRepository;
     private final EtiquetaService etiquetaService;
     private final RoleService roleService;
-    private final ConceptoRepository conceptoRepository;
     private final DocumentoFoliosService documentoFoliosService;
     private final InstitucionRepository institucionRepository;
+    private final ConceptoRepository conceptoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -487,6 +488,7 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
+            System.out.println("SOY OFICIAL MAYOR");
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
@@ -674,6 +676,17 @@ public class DocumentoService {
         documentoRepository.save(doc);
 
         return folio;
+    }
+
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
+        System.out.println("EL ID ES EL SIGUIENTE: " + id);
+
+        Documento doc = documentoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + id));
+
+        List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+
+        return new DocumentoRecepcionRecord(doc.getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
     }
 }
 

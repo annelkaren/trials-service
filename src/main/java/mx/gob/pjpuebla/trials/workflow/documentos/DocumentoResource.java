@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
@@ -162,7 +163,6 @@ public class DocumentoResource {
 
     @PostMapping("/oficio")
     public Integer generarOficio(@RequestBody DocumentoOficioRecord oficio) {
-
         return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(),
                 oficio.carpetaId());
     }
@@ -170,6 +170,11 @@ public class DocumentoResource {
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
         return this.documentoService.getIndicadores();
+    }
+
+    @GetMapping("/bandeja/recepcion/anexos/{id}")
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer id) {
+        return documentoService.getDataDocumentoRecepcion(id);
     }
 
     @GetMapping(value = "/documentos/oficio/{formanto}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
