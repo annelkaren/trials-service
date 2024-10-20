@@ -535,7 +535,7 @@ public class DocumentoService {
                             item.fechaTurnado(),
                             item.fechaTurnado().plusDays(item.concepto().getDias()),
                             item.estatus().name(),
-                            item.observaciones()
+                            "Observación de Prueba " //item.observaciones()
                         ))
                 .toList();
                 
