@@ -9,5 +9,6 @@ public enum EstadoCarpeta {
     RECEPCION,
     TURNADO,
     ASIGNADO,
-    RECHAZADO
+    DEVUELTO,
+    CREADO
 }

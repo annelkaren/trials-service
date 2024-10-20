@@ -180,11 +180,20 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public List<CentroTrabajoRecord> findAllCentroTrabajo() {
+    public Page<CentroTrabajoRecord> findAllCentroTrabajo(Pageable pageable, String nombre) {
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
         List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));
         List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
+
+        if (nombre != null && !nombre.isEmpty()) {
+            juzgados = juzgados.stream()
+                    .filter(juzgado -> juzgado.nombre().toLowerCase().contains(nombre.toLowerCase()))
+                    .toList();
+            oficialias = oficialias.stream()
+                    .filter(oficialia -> oficialia.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+                    .toList();
+        }
 
         for (JuzgadoRecordItem juzgado : juzgados) {
             centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
@@ -194,7 +203,12 @@ public class PersonaService {
             centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
         }
 
-        return centrosTrabajo;
+        int totalElements = centrosTrabajo.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), totalElements);
+        List<CentroTrabajoRecord> paginatedList = centrosTrabajo.subList(start, end);
+
+        return new PageImpl<>(paginatedList, pageable, totalElements);
     }
 
     @Transactional(readOnly = true)

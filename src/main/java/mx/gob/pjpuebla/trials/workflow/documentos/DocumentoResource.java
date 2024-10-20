@@ -9,8 +9,9 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
@@ -35,6 +36,7 @@ public class DocumentoResource {
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
+    private final OficioService oficioService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
@@ -75,7 +77,6 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
     }
 
-
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
@@ -85,12 +86,14 @@ public class DocumentoResource {
     }
 
     @GetMapping("/bandeja/entrada")
-    public Page<DocumentoGridRecord> getAll(@PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "key", required = false) String key) {
+    public Page<DocumentoGridRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
+                                            @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAll(key, pageable);
     }
 
     @GetMapping("/bandeja/salida")
-    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "key", required = false) String key) {
+    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
+                                                                   @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAllBandejaSalida(key, pageable);
     }
 
@@ -106,8 +109,7 @@ public class DocumentoResource {
             @RequestParam(value = "expediente", required = false) String expediente,
             @RequestParam(value = "estatus", required = false) EstadoCarpeta estatus,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
-            @RequestParam(value = "materiaNombre", required = false) String materiaNombre
-    ) {
+            @RequestParam(value = "materiaNombre", required = false) String materiaNombre) {
 
         Carpeta carpeta = new Carpeta()
                 .setFolio(folio)
@@ -126,12 +128,12 @@ public class DocumentoResource {
             carpeta.setJuzgado(juzgado);
         }
         return documentoService.getAllHistorial(pageable,
-                new Documento().setCarpeta(carpeta)
-        );
+                new Documento().setCarpeta(carpeta));
     }
 
     @PostMapping("/documento/promocion")
-    public DocumentoPromocionResponseRecord createPromocion(@RequestBody DocumentoPromocionRecord documentoPromocionRecord) {
+    public DocumentoPromocionResponseRecord createPromocion(
+            @RequestBody DocumentoPromocionRecord documentoPromocionRecord) {
         return this.documentoService.createPromocion(documentoPromocionRecord);
     }
 
@@ -163,4 +165,28 @@ public class DocumentoResource {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
     }
 
+
+    @PostMapping("/oficio")
+    public Integer generarOficio(@RequestBody DocumentoOficioRecord oficio) {
+        return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(),
+                oficio.carpetaId());
+    }
+
+    @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
+    public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
+        return this.documentoService.getIndicadores();
+    }
+
+    @GetMapping("/bandeja/recepcion/anexos/{id}")
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer id) {
+        return documentoService.getDataDocumentoRecepcion(id);
+    }
+
+    @GetMapping(value = "/documentos/oficio/{formato}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formato, @PathVariable Integer oficioId) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("oficio", formato + "_" + oficioId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
+    }
 }

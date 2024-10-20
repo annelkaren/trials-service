@@ -12,8 +12,10 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -23,6 +25,7 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -70,8 +73,8 @@ public class JuzgadoService {
     public List<OficialiaJuzgadoRecord> findByOficialiaId(Integer id) {
         List<Estado> estados = List.of(Estado.ACTIVE);
         List<Juzgado> juzgados = juzgadoRepository.findByOficialiaIdAndEstadoIn(id, estados);
-        
-       return juzgados.stream().map(j -> new OficialiaJuzgadoRecord(j.getId(), j.getNombre())).toList();
+
+        return juzgados.stream().map(j -> new OficialiaJuzgadoRecord(j.getId(), j.getNombre())).toList();
     }
 
     @Transactional(readOnly = true)
@@ -142,7 +145,7 @@ public class JuzgadoService {
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId()).orElseThrow(()-> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
 
             List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
             List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
@@ -162,7 +165,12 @@ public class JuzgadoService {
     }
 
     public void delete(Integer id) {
-        juzgadoRepository.deleteById(id);
+        try {
+            juzgadoRepository.deleteById(id);
+            juzgadoRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "juzgadoId " + id);
+        }
     }
 
     public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado, TipoJuicio tipoJuicio) {

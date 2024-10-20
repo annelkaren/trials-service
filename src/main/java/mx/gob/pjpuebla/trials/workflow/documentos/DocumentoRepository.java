@@ -4,12 +4,15 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import jakarta.transaction.Transactional;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -111,4 +114,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             AND c.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO
         """)
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
+    @Transactional
+    @Modifying
+    @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
+    void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 }

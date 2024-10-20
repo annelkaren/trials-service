@@ -31,7 +31,6 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 

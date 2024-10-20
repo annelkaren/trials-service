@@ -3,11 +3,11 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- main
-- develop
+  - main
+  - develop
 
 resources:
-- repo: self
+  - repo: self
 
 variables:
   # Container registry service connection established during pipeline creation
@@ -18,97 +18,143 @@ variables:
   tag: '$(Build.BuildNumber)'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build
-  displayName: Build and push stage
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: Cache@2
-      inputs:
-        key: 'maven | "$(Agent.OS)" | **/pom.xml'
-        restoreKeys: |
-          maven | "$(Agent.OS)"
-          maven
-        path: $(MAVEN_CACHE_FOLDER)
-      displayName: Cache Maven local repo
+  - stage: Build
+    displayName: Build and push stage
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | **/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Cache Maven local repo
 
-    - task: Maven@4
-      inputs:
-        mavenPomFile: 'pom.xml'
-        mavenOptions: '-Xmx3072m $(MAVEN_OPTS)'
-        publishJUnitResults: true
-        testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
-        testRunTitle: 'JUnitRun'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.17'
+          - task: Maven@4
+            inputs:
+              mavenPomFile: 'pom.xml'
+              mavenOptions: '-Xmx3072m $(MAVEN_OPTS)'
+              publishJUnitResults: true
+              testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
+              testRunTitle: 'JUnitRun'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.17'
 
-    - task: Cache@2
-      displayName: Qodana Cache
-      inputs:
-        key: '"$(Build.Repository.Name)" | "$(Build.SourceBranchName)" | "$(Build.SourceVersion)"'
-        path: '$(Agent.TempDirectory)/qodana/cache'
-        restoreKeys: |
-          "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
-          "$(Build.Repository.Name)"
+          - task: Cache@2
+            displayName: Qodana Cache
+            inputs:
+              key: '"$(Build.Repository.Name)" | "$(Build.SourceBranchName)" | "$(Build.SourceVersion)"'
+              path: '$(Agent.TempDirectory)/qodana/cache'
+              restoreKeys: |
+                "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
+                "$(Build.Repository.Name)"
 
-    - task: QodanaScan@2024
-      inputs:
-        args: "--baseline,qodana.sarif.json"
-      env:
-        QODANA_TOKEN: $(QODANA_TOKEN)
-        QODANA_ENDPOINT: 'https://qodana.cloud'
+          - task: QodanaScan@2024
+            inputs:
+              args: "--baseline,qodana.sarif.json"
+            env:
+              QODANA_TOKEN: $(QODANA_TOKEN)
+              QODANA_ENDPOINT: 'https://qodana.cloud'
 
-    - task: Docker@2
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+          - task: Docker@2
+            condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/develop', 'refs/heads/main'))
+            displayName: Build and push an image to container registry
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(tag)
 
-- stage: Deploy
-  dependsOn: Build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-  jobs:
-    - deployment: Deploy_Alpha
-      pool:
-        vmImage: $(vmImageName)
-      environment: alpha-latest
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - script: |
-                  echo $(Build.SourcesDirectory)
-                  ls -al $(Build.SourcesDirectory)
-                displayName: 'List directory contents'
+  - stage: Deploy
+    dependsOn: Build
+    jobs:
+      - deployment: Deploy_Alpha
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+        pool:
+          vmImage: $(vmImageName)
+        environment: alpha-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
 
-              - task: KubernetesManifest@1
-                name: bake
-                displayName: Kustomize
-                inputs:
-                  action: bake
-                  renderType: kustomize
-                  containers: '$(containerRegistry)/$(imageRepository):$(tag)'
-                  kustomizationPath: '$(Build.SourcesDirectory)/kustomize/base'
-                  namespace: 'trials'
+                - task: DownloadSecureFile@1
+                  name: secrets
+                  displayName: 'Download k8s Secrets'
+                  inputs:
+                    secureFile: 'alpha-trials-secrets-241018.properties'
 
-              - task: KubernetesManifest@1
-                displayName: Deploy
-                inputs:
-                  action: deploy
-                  kubernetesServiceConnection: 'digitaloceancnx'
-                  namespace: 'trials'
-                  manifests: $(bake.manifestsBundle)
+                - script: |
+                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/alpha/trials-secrets.properties
+                  displayName: 'Installing k8s Secrets'
+
+                - task: KubernetesManifest@1
+                  name: bake
+                  displayName: Kustomize
+                  inputs:
+                    action: bake
+                    renderType: kustomize
+                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/alpha'
+                    namespace: 'trials'
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy
+                  inputs:
+                    action: deploy
+                    kubernetesServiceConnection: 'alpha-latest-trials-1726267947420'
+                    namespace: 'trials'
+                    manifests: $(bake.manifestsBundle)
+
+      - deployment: Deploy_Beta
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+        pool:
+          vmImage: $(vmImageName)
+        environment: beta-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: DownloadSecureFile@1
+                  name: secrets
+                  displayName: 'Download k8s Secrets'
+                  inputs:
+                    secureFile: 'beta-trials-secrets-241018.properties'
+
+                - script: |
+                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/beta/trials-secrets.properties
+                  displayName: 'Installing k8s Secrets'
+
+                - task: KubernetesManifest@1
+                  name: bake
+                  displayName: Kustomize
+                  inputs:
+                    action: bake
+                    renderType: kustomize
+                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/beta'
+                    namespace: 'trials'
+
+                - task: KubernetesManifest@1
+                  displayName: Deploy
+                  inputs:
+                    action: deploy
+                    kubernetesServiceConnection: 'beta-test-trials-1729214160171'
+                    namespace: 'trials'
+                    manifests: $(bake.manifestsBundle)

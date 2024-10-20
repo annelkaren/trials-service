@@ -3,10 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
@@ -32,7 +29,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(CarpetaResource.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -47,8 +43,6 @@ class CarpetaResourceTest {
 
     private CarpetaResponseRecord carpetaResponseRecord;
     private ApelacionRecordResponse apelacionRecordResponse;
-    private AnexoRepository anexoRepository;
-    private Anexo anexos;
 
     @BeforeEach
     void setUp() {

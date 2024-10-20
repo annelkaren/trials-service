@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -23,5 +24,6 @@ public class DocumentoData implements Serializable {
     private String apelacionOtroDemandadoNombre;
     private String apelacionAntecedenteCarpeta;
     private String tipoOficio;
+    private LocalDate fechaEmision;
 }
 
