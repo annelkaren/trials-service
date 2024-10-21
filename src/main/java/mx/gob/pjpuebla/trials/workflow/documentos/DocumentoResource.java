@@ -154,6 +154,12 @@ public class DocumentoResource {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
 
+    @GetMapping("/bandeja/asignados")
+    public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllAsignado(key, pageable);
+    }
     @PostMapping("/bandeja/salida")
     public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
@@ -892,5 +893,36 @@ class DocumentoServiceTest {
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);
+    }
+
+    @Test
+    void getAllBandejaAsignados() {
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
+                1, 
+                "000001/2024", 
+                "1", 
+                "1", 
+                TipoCarpeta.DEMANDA, TipoDocumento.PROMOCION, concepto, LocalDateTime.now(), EstadoCarpeta.ASIGNADO, "");
+
+        List<DocumentoAsignadoRecord> listPage = Collections.singletonList(documentoAsignadoRecord);
+
+        given(documentoRepository.findByPersonaAsignada(anyString(), any(), any()))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(personaService.getAuditor())
+                .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
+
+        Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",
+                PageRequest.of(1, listPage.size()));
+        System.out.println(page.getContent());
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", documentoAsignadoRecord.id())
+                .hasFieldOrPropertyWithValue("expediente", documentoAsignadoRecord.expediente())
+                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoCarpeta().name())
+                .hasFieldOrPropertyWithValue("concepto", documentoAsignadoRecord.concepto().getNombre())
+                .hasFieldOrPropertyWithValue("fechaTurnado", documentoAsignadoRecord.fechaTurnado())
+                .hasFieldOrPropertyWithValue("fechaTermino", documentoAsignadoRecord.fechaTurnado().plusDays(concepto.getDias()));
     }
 }
