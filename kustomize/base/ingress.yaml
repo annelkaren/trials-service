@@ -7,18 +7,5 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
     cert-manager.io/cluster-issuer: letsencrypt-issuer
 spec:
-  rules:
-    - host: example.com
-      http:
-        paths:
-          - path: /custompath
-            pathType: Prefix
-            backend:
-              service:
-                name: trials-service
-                port:
-                  number: 80
-  tls:
-    - secretName: trials-service-cert
-      hosts:
-        - example.com
+  rules: [ ]
+  tls: [ ]
