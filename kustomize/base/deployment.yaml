@@ -5,12 +5,13 @@ metadata:
   name: trials-service
 spec:
   replicas: 1
+  selector: { }
   template:
     spec:
       serviceAccountName: build-robot
       containers:
         - name: trials-api
-          image: pjpuebla.azurecr.io/trialsservice:20240918.7
+          image: pjpuebla.azurecr.io/trialsservice:0.0.1
           envFrom:
             - configMapRef:
                 name: trials-config
