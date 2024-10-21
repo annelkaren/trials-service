@@ -111,9 +111,12 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         where case when :key is null then 1
             when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
             else 0 end = 1
-            AND c.estatus = mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO
+            AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
         """)
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
+
     @Transactional
     @Modifying
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")

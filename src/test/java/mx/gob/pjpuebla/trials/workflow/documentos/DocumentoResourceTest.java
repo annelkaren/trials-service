@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
@@ -361,5 +362,23 @@ class DocumentoResourceTest {
                 .andExpect(content().bytes(mockPdf));
     }
 
+    @Test
+    void getAllAsignados() throws Exception {
+
+        String folio = "1";
+        String expediente = "000001/2024";
+
+        DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente);
+
+        given(documentoService.getAllAsignado(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
+
+        mockMvc.perform(
+                        get("/api/workflow/bandeja/asignados")
+                                .accept(MediaType.APPLICATION_JSON))
+
+                .andExpect(status().isOk());
+
+    }
 
 }

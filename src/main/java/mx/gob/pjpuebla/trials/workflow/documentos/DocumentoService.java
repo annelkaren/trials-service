@@ -552,7 +552,7 @@ public class DocumentoService {
                             item.id(),
                             item.expediente(),
                             esOficialMayor?item.folioDocumento():item.folioCarpeta(),
-                            esOficialMayor?item.tipoCarpeta().name():item.tipoDocumento().name(),
+                            esOficialMayor?item.tipoDocumento().name():item.tipoCarpeta().name(),
                             item.concepto().getNombre(),
                             item.fechaTurnado(),
                             item.fechaTurnado().plusDays(item.concepto().getDias()),
