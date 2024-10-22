@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
-import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
