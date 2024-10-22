@@ -38,6 +38,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -64,6 +65,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,6 +76,7 @@ import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -892,5 +895,28 @@ class DocumentoServiceTest {
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);
+    }
+
+    @Test
+    void getDataDocumentoRecepcion(){
+        Integer documentoId = 1;
+        List<AnexoRecepcionRecord> anexos = new ArrayList<>();
+
+        // Agregar instancias de AnexoRecepcionRecord a la lista
+        anexos.add(new AnexoRecepcionRecord(1, EstadoAnexo.ASIGNADO, "Anexo 1"));
+        anexos.add(new AnexoRecepcionRecord(2, EstadoAnexo.ASIGNADO, "Anexo 2"));
+        anexos.add(new AnexoRecepcionRecord(3, EstadoAnexo.ASIGNADO, "Anexo 3"));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
+
+        given(anexoRepository.findAnexosByDocumentoId(documentoId))
+                .willReturn(anexos);
+
+        DocumentoRecepcionRecord doc = documentoService.getDataDocumentoRecepcion(documentoId);
+
+        assertNotNull(doc, "El DocumentoRecepcionRecord no debe ser nulo");
+        assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
+        assertEquals(, doc.expediente(), "El expediente del documento no es el esperado");
+        assertEquals(, doc.getTipoDocumento(), "El tipo de documento no es el esperado");
+        assertEquals(, doc.getRuta(), "La ruta del documento no es la esperada");
     }
 }

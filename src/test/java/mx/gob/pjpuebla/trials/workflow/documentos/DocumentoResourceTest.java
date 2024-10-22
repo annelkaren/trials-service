@@ -361,5 +361,16 @@ class DocumentoResourceTest {
                 .andExpect(content().bytes(mockPdf));
     }
 
+    @Test
+    void getDataDocumentoRecepcion() throws Exception {
+        given(documentoService.getDataDocumentoRecepcion(1))
+                .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", null));
+
+        mockMvc.perform(
+                get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 
 }
