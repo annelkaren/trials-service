@@ -938,7 +938,8 @@ class DocumentoServiceTest {
         anexos.add(new AnexoRecepcionRecord(1, EstadoAnexo.ASIGNADO, "Anexo 1"));
         anexos.add(new AnexoRecepcionRecord(2, EstadoAnexo.ASIGNADO, "Anexo 2"));
         anexos.add(new AnexoRecepcionRecord(3, EstadoAnexo.ASIGNADO, "Anexo 3"));
-        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
+        given(documentoRepository.findById(documentoId))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
 
         given(anexoRepository.findAnexosByDocumentoId(documentoId))
                 .willReturn(anexos);
