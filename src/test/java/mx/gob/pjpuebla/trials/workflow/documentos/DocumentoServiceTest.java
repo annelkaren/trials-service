@@ -915,8 +915,7 @@ class DocumentoServiceTest {
 
         assertNotNull(doc, "El DocumentoRecepcionRecord no debe ser nulo");
         assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
-        assertEquals(, doc.expediente(), "El expediente del documento no es el esperado");
-        assertEquals(, doc.getTipoDocumento(), "El tipo de documento no es el esperado");
-        assertEquals(, doc.getRuta(), "La ruta del documento no es la esperada");
+        assertEquals("000001/2024", doc.expediente(), "El expediente del documento no es el esperado");
+        assertEquals(TipoDocumento.PROMOCION.name(), doc.tipoEntrada(), "El tipo de documento no es el esperado");
     }
 }
