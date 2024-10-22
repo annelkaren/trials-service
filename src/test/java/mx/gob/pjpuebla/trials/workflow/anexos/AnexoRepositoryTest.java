@@ -59,4 +59,11 @@ class AnexoRepositoryTest extends AuditConfigTest {
         assertThat(list).isNotEmpty();
     }
 
+    @Test
+    void findAnexosByDocumentoId(){
+        List<AnexoRecepcionRecord>  anexos = anexoRepository.findAnexosByDocumentoId(1);
+        assertThat(anexos).isNotEmpty();
+    }
+
+    
 }

@@ -700,14 +700,13 @@ public class DocumentoService {
     }
 
     public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
-        System.out.println("EL ID ES EL SIGUIENTE: " + id);
 
         Documento doc = documentoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + id));
 
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
 
-        return new DocumentoRecepcionRecord(doc.getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
+        return new DocumentoRecepcionRecord(doc.getCarpeta().getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
     }
 }
 
