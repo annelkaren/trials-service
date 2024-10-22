@@ -31,6 +31,7 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
@@ -116,7 +117,20 @@ class InstitucionServiceTest {
     }
 
     @Test
+    void create_throws_conflict_exception_when_nombre_already_exists() {
+        given(mockInstitucionRepository.findByNombre(institucion.getNombre())).willReturn(Optional.of(institucion));
+        ConflictException thrown = assertThrows(
+            ConflictException.class,
+            () -> mockInstitucionService.create(institucion));
+    
+        assertThat(thrown.getMessage()).contains("No pueden existir 2 instituciones con el mismo nombre");
+    }
+    
+
+    @Test
     void create() {
+        given(mockInstitucionRepository.findByNombre(institucion.getNombre()))
+                .willReturn(Optional.empty());
         institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
 

@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
@@ -47,6 +48,10 @@ public class SedeService {
     }
 
     public SedeRecordResponse create(Sede sede) {
+        if(sedeRepository.findByNombre(sede.getNombre()).isPresent()){
+            throw new ConflictException("No pueden existir 2 sedes con el mismo nombre");
+        }
+
         sede.setDistrito(distritoRepository.findById(sede.getDistrito().getId()).orElse(null));
         sede.setDomicilio(domicilioService.save(sede.getDomicilio()));
         sede = sedeRepository.save(sede);

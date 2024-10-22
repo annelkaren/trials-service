@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Repository
@@ -68,5 +69,7 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
             WHERE i.estado IN :estados
             """)
     Page<InstitucionRecord> findAllEstadoIn(@Param("estados") List<Estado> estados, Pageable pageable);
+
+    Optional<Institucion> findByNombre(String nombre);
 
 }

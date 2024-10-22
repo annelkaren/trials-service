@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -71,44 +72,48 @@ public class OficialiaService {
         }
     }
 
-    public OficialiaRecordResponse create(Oficialia oficialia) {
-        if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
-            Sede sede = sedeRepository.findById(oficialia.getSede().getId())
-                    .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
-            oficialia.setSede(sede);
+        public OficialiaRecordResponse create(Oficialia oficialia) {
+            if(oficialiaRepository.findByNombre(oficialia.getNombre()).isPresent()){
+                throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
+            }
+            
+            if (oficialia.getSede() != null && oficialia.getSede().getId() != null) {
+                Sede sede = sedeRepository.findById(oficialia.getSede().getId())
+                        .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
+                oficialia.setSede(sede);
+            }
+
+            if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
+                TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
+                        .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
+                oficialia.setTipoOficialia(tipoOficialia);
+            }
+
+            if (oficialia.getTipoOficialia() != null) {
+                validateJuzgadosByTipoOficialia(oficialia, oficialia.getTipoOficialia());
+            } else {
+                throw new IllegalArgumentException("El tipo de oficialía no puede ser nulo.");
+            }
+
+            if (oficialia.getJuzgados() != null && !oficialia.getJuzgados().isEmpty()) {
+                List<Juzgado> juzgados = juzgadoRepository.findAllById(
+                        oficialia.getJuzgados().stream().map(Juzgado::getId).toList()
+                );
+                oficialia.setJuzgados(juzgados);
+            }
+
+            if (oficialia.getMaterias() != null) {
+                List<Integer> mIds = oficialia.getMaterias().stream()
+                        .map(Materia::getId)
+                        .toList();
+
+                List<Materia> materias = materiaRepository.findAllById(mIds);
+                oficialia.setMaterias(materias);
+            }
+
+            oficialia = oficialiaRepository.save(oficialia);
+            return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
         }
-
-        if (oficialia.getTipoOficialia() != null && oficialia.getTipoOficialia().getId() != null) {
-            TipoOficialia tipoOficialia = tipoOficialiaRepository.findById(oficialia.getTipoOficialia().getId())
-                    .orElseThrow(() -> new NotFoundException("Tipo Oficialia no encontrada", "tipoOficialiaId"));
-            oficialia.setTipoOficialia(tipoOficialia);
-        }
-
-        if (oficialia.getTipoOficialia() != null) {
-            validateJuzgadosByTipoOficialia(oficialia, oficialia.getTipoOficialia());
-        } else {
-            throw new IllegalArgumentException("El tipo de oficialía no puede ser nulo.");
-        }
-
-        if (oficialia.getJuzgados() != null && !oficialia.getJuzgados().isEmpty()) {
-            List<Juzgado> juzgados = juzgadoRepository.findAllById(
-                    oficialia.getJuzgados().stream().map(Juzgado::getId).toList()
-            );
-            oficialia.setJuzgados(juzgados);
-        }
-
-        if (oficialia.getMaterias() != null) {
-            List<Integer> mIds = oficialia.getMaterias().stream()
-                    .map(Materia::getId)
-                    .toList();
-
-            List<Materia> materias = materiaRepository.findAllById(mIds);
-            oficialia.setMaterias(materias);
-        }
-
-        oficialia = oficialiaRepository.save(oficialia);
-        return new OficialiaRecordResponse(oficialia.getId(), oficialia.getNombre());
-    }
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
         try {

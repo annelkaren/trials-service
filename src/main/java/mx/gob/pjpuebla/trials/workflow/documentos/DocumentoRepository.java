@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
@@ -90,6 +92,30 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     DocumentoJuzgadoRecord findDistritoJuzgadoByDocumentoId(@Param("documentoId") Integer documentoId);
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
+            d.id,
+            c.expediente,
+            c.folio,
+            d.folio,
+            c.tipoCarpeta,
+            d.tipoDocumento,
+            d.concepto,
+            c.fechaAsignacion,
+            c.estatus,
+            ''
+        )
+        FROM Documento d
+        JOIN d.carpeta c on c.persona=:personaAsignada 
+        where case when :key is null then 1
+            when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
+            else 0 end = 1
+            AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+        """)
+    Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
     @Transactional
     @Modifying

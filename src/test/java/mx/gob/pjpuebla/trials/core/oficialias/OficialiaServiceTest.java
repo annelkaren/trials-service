@@ -18,6 +18,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -144,7 +145,26 @@ class OficialiaServiceTest {
     }
 
     @Test
+    void create_throws_conflict_exception_when_oficialia_name_already_exists() {
+        String existingName = "Existing Oficialia";
+        Oficialia newOficialia = new Oficialia();
+        newOficialia.setNombre(existingName);
+
+        given(oficialiaRepository.findByNombre(existingName))
+                .willReturn(Optional.of(new Oficialia()));
+
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> oficialiaService.create(newOficialia)
+        );
+
+        assertThat(exception.getMessage()).contains("No pueden existir 2 oficialias con el mismo nombre");
+    }
+
+    @Test
     void create() {
+        given(oficialiaRepository.findByNombre(oficialia.getNombre()))
+                .willReturn(Optional.empty());
         given(sedeRepository.findById(oficialia.getSede().getId()))
                 .willReturn(Optional.ofNullable(oficialia.getSede()));
         given(tipoOficialiaRepository.findById(tipoOficialia.getId()))
