@@ -41,4 +41,12 @@ class SedeRepositoryTest extends AuditConfigTest {
         assertThat(entity).isPresent();
         assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
     }
+
+    @Test
+    void findByNombre() {
+        String nombreSede = "Sede Uno";
+        Optional<Sede> sede = sedeRepository.findByNombre(nombreSede);
+        assertThat(sede).isPresent();
+        assertThat(sede.get().getNombre()).isEqualTo(nombreSede);
+    }
 }
