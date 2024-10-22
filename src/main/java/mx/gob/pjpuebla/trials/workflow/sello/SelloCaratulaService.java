@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.sello;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -26,6 +27,7 @@ public class SelloCaratulaService {
     private final JuzgadoRepository juzgadoRepository;
     @Value("classpath:jasper/CaratulaReport.jasper")
     private Resource caratula;
+    private Boolean isExhorto;
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
@@ -33,9 +35,11 @@ public class SelloCaratulaService {
     }
 
     private JasperPrint getReport(Documento documento) throws IOException, JRException {
+
         String[] expendienteYear = documento.getCarpeta().getExpediente().split("/");
         String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
         String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        String procedencia = getExhortoPromocion(documento);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
@@ -47,6 +51,10 @@ public class SelloCaratulaService {
         parameters.put("codigoQR", expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte
         parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
+        parameters.put("isExhorto", isExhorto); // es un Exhorto
+        parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
+
+        isExhorto = false;
 
         return JasperFillManager.fillReport(
                 caratula.getInputStream(),
@@ -91,4 +99,10 @@ public class SelloCaratulaService {
         result = prefijo + "-" + documento.getCarpeta().getFolio();
         return result;
     }
+
+    public String getExhortoPromocion(Documento documento) {
+        isExhorto = documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO;
+        return Boolean.TRUE.equals(isExhorto) ? documento.getData().getExhortoProcedencia() : "";
+    }
+
 }

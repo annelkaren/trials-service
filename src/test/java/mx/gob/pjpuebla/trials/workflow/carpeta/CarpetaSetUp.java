@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 
@@ -44,6 +45,18 @@ public class CarpetaSetUp {
                 .setVersion(1)
                 .setFolio("1")
                 .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(TipoJuicioSetUp.createTipoJuicioOralFamiliar())
+                .setSelloEstatus(SelloEstatus.VALIDO);
+    }
+
+    public static Carpeta createCarpetaExhorto() {
+        return new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setTipoCarpeta(TipoCarpeta.EXHORTO)
                 .setEstatus(EstadoCarpeta.CAPTURA)
                 .setTipoJuicio(TipoJuicioSetUp.createTipoJuicioOralFamiliar())
                 .setSelloEstatus(SelloEstatus.VALIDO);
