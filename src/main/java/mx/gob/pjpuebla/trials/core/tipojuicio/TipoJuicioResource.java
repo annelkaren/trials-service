@@ -33,6 +33,8 @@ public class TipoJuicioResource {
             @RequestParam(value = "tipoSistemaNombre", required = false) String tipoSistemaNombre,
             @RequestParam(value = "materiaNombre", required = false) String materiaNombre
     ) {
+
+        
         return tipoJuicioService.getAllActive(pageable, new TipoJuicio()
                 .setNombre(tipoJuicioNombre)
                 .setTipoSistema(new TipoSistema().setNombre(tipoSistemaNombre))

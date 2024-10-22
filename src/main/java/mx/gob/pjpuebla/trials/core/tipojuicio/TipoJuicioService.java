@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -20,6 +22,7 @@ import java.util.List;
 public class TipoJuicioService {
 
     private final TipoJuicioRepository tipoJuicioRepository;
+    private final PersonaService personaService;
 
     @Transactional(readOnly = true)
     public Page<TipoJuicioRecord> getAllActive(Pageable pageable, TipoJuicio example) {
@@ -29,10 +32,19 @@ public class TipoJuicioService {
                 .withMatcher("tipoSistema.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
-        Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
+        Persona usuario =  personaService.getAuditor();
+
+        Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
+
+        if (centroTrabajoId==null){
+            throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
+        }
+
+        Page<TipoJuicio> page = tipoJuicioRepository.findByOficialia(centroTrabajoId, pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();
+        
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 

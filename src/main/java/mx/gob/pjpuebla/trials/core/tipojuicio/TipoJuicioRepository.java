@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +24,16 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
     Optional<TipoJuicio> findByIdAndEstado(Integer integer, Estado estado);
 
     Optional<TipoJuicio> findByNombreIgnoreCase(String name);
+
+    @Query("""
+            SELECT tj FROM TipoJuicio tj
+            WHERE  tj.estado = Estado.ACTIVE
+            AND EXISTS(
+                SELECT o FROM Oficialia o where o.id = :oficialiaId
+                AND EXISTS (
+                    SELECT j FROM Juzgado j where j.id in (select tmpo.id from o.juzgados tmpo ) and tj.id in (select tmpj.id from j.tipoJuicios tmpj)
+                )
+            )
+            """)
+    Page<TipoJuicio> findByOficialia(Integer oficialiaId, Pageable pageable);
 }
