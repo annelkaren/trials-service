@@ -52,4 +52,12 @@ class OficialiaRepositoryTest extends AuditConfigTest {
 
         assertThat(oficialiasComunes).isNotEmpty().anyMatch(ofi -> ofi.getTipoOficialia().getNombre().contains("Común"));
     }
+
+    @Test
+    void findByNombre() {
+        String nombreOficialia = "OFICIALIA";
+        Optional<Oficialia> oficialia = oficialiaRepository.findByNombre(nombreOficialia);
+        assertThat(oficialia).isPresent();
+        assertThat(oficialia.get().getNombre()).isEqualTo(nombreOficialia);
+    }
 }

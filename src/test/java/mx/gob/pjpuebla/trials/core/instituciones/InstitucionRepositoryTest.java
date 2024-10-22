@@ -58,5 +58,12 @@ class InstitucionRepositoryTest extends AuditConfigTest {
         assertThat(result.getContent().get(0).telefono()).isEqualTo("2221234567");
     }
 
+    @Test
+    void findByNombre() {
+        String nombreInstitucion = "INSTITUCION 1";
+        Optional<Institucion> institucion = institucionRepository.findByNombre(nombreInstitucion);
+        assertThat(institucion).isPresent();
+        assertThat(institucion.get().getNombre()).isEqualTo(nombreInstitucion);
+    }
 
 }

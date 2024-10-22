@@ -18,6 +18,7 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
@@ -51,6 +52,10 @@ public class InstitucionService {
     }
 
     public Integer create(Institucion institucion) {
+        if(institucionRepository.findByNombre(institucion.getNombre()).isPresent()){
+            throw new ConflictException("No pueden existir 2 instituciones con el mismo nombre");
+        }
+
         institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
         institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
         institucion = institucionRepository.save(institucion);
