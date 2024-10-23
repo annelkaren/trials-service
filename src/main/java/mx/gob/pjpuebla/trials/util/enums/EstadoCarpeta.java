@@ -10,5 +10,6 @@ public enum EstadoCarpeta {
     TURNADO,
     ASIGNADO,
     DEVUELTO,
-    CREADO
+    CREADO,
+    CANCELADO
 }

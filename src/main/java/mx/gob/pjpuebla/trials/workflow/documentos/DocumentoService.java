@@ -708,5 +708,47 @@ public class DocumentoService {
 
         return new DocumentoRecepcionRecord(doc.getCarpeta().getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
     }
+
+
+    public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId){
+
+        Documento doc = documentoRepository.findById(documentoId)
+        .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+
+        String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : ""; 
+        //TODO: actualizar fecha de emisión y asunto con los datos correctos, se coloca vacio ya que la tabla aun no existe
+
+        LocalDate fechaEmision= null;
+        LocalDate fechaEntrega = null;
+        String asunto = ""; 
+
+        return new DocumentoOficioDigitalizacionRecord(doc.getFolio(), expediente, fechaEmision, doc.getId(), doc.getInstitucion().getId(), fechaEntrega, doc.getEstatus(), asunto);
+
+    }
+
+    public Integer cancelarOficio(Integer documentoId){
+        Documento doc = documentoRepository.findById(documentoId)
+        .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+
+        doc.setEstatus(EstadoCarpeta.CANCELADO);
+        documentoRepository.save(doc);
+
+        return 1;
+    }
+
+    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(DocumentoOficioDigitalizacionRecord oficio){
+        Documento doc = documentoRepository.findById(oficio.idOficio())
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
+
+        Institucion institucion = institucionRepository.findById(oficio.dependencia())
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia() ));
+        
+        doc.setInstitucion(institucion);
+        documentoRepository.save(doc);
+
+        //TODO: Actualizar asunto cuando se tenga la tabla en donde se guardara.
+
+        return oficio;
+    }
 }
 

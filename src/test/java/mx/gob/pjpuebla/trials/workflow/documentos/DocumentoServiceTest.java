@@ -77,7 +77,9 @@ import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -950,5 +952,50 @@ class DocumentoServiceTest {
         assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
         assertEquals("000001/2024", doc.expediente(), "El expediente del documento no es el esperado");
         assertEquals(TipoDocumento.PROMOCION.name(), doc.tipoEntrada(), "El tipo de documento no es el esperado");
+    }
+
+    @Test
+    void getDataDocumentoDigitalizacion() {
+
+        given(documentoRepository.findById(anyInt()))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
+
+
+        DocumentoOficioDigitalizacionRecord doc = documentoService.getDataDocumentoDigitalizacion(anyInt());
+
+        assertNotNull(doc, "El DocumentoOficioDigitalizacionRecord no debe ser nulo");
+        
+    }
+
+    @Test
+    void cancelarOficio() {
+
+        given(documentoRepository.findById(anyInt()))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
+
+        Integer result = documentoService.cancelarOficio(anyInt());
+
+        assertEquals(1, result);
+    }
+
+    @Test
+    void updateDocumentoOficioDigitalizacion() {
+        given(documentoRepository.findById(anyInt()))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
+
+        given(institucionRepository.findById(anyInt()))
+                .willReturn(Optional.of(InstitucionSetUp.createInstitucion(Estado.ACTIVE)));
+
+        DocumentoOficioDigitalizacionRecord oficio = documentoService.updateDocumentoOficioDigitalizacion(DocumentoSetUp.documentoOficioDigitalizacionRecordSetUp());
+
+        assertNotNull(oficio, "El record no deberia ser nulo");
+        assertEquals("2", oficio.numeroFolio());
+        assertEquals("00000/2024", oficio.expediente());
+        assertEquals(LocalDate.now(), oficio.fechaEmision());
+        assertEquals(1, oficio.idOficio());
+        assertEquals(LocalDate.now(), oficio.fechaEntrega());
+        assertEquals(EstadoCarpeta.ASIGNADO, oficio.estatus());
+        assertEquals("asunto prueba", oficio.asunto());
+
     }
 }
