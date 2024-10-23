@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
