@@ -1,0 +1,1 @@
+INSERT INTO TBL_OFICIALIAS_JUZGADOS(fn_oficialia, fn_juzgado) VALUES (51, 51);
