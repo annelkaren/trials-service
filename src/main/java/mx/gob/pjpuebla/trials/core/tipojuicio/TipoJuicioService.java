@@ -8,6 +8,8 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +59,7 @@ public class TipoJuicioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TipoJuicioRecord> getAllActiveByOficialia(Pageable pageable) {
+    public Page<TipoJuicioRecord> getAllActiveByCentroTrabajo(Pageable pageable) {
         Persona usuario =  personaService.getAuditor();
 
         Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
@@ -66,7 +68,9 @@ public class TipoJuicioService {
             throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
         }
 
-        Page<TipoJuicio> page = tipoJuicioRepository.findByOficialia(centroTrabajoId, pageable);
+        Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(
+            usuario.getOficialia()!=null?usuario.getOficialia().getId():null, 
+            usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null, pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();

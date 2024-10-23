@@ -141,9 +141,9 @@ class TipoJuicioServiceTest {
         persona.setOficialia(oficialia);
 
         given(personaService.getAuditor()).willReturn(persona);
-        given(mockTipoJuicioRepository.findByOficialia(any(), any())).willReturn(page);
+        given(mockTipoJuicioRepository.findByCentroTrabajo(any(),  any(), any())).willReturn(page);
 
-        Page<TipoJuicioRecord> results = target.getAllActiveByOficialia(PageRequest.of(0, 20));
+        Page<TipoJuicioRecord> results = target.getAllActiveByCentroTrabajo(PageRequest.of(0, 20));
 
         assertThat(results).isNotEmpty().anyMatch(p -> p.nombre().equals(validTipoJuicio.getNombre()));
     }

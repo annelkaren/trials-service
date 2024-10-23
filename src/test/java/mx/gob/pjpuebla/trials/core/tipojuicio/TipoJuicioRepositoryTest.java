@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -76,10 +78,10 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findByOficialia(){
+    void findByCentroTrabajo(){
         Integer oficialiaId = 51;
 
-        Page<TipoJuicio> page = tipoJuicioRepository.findByOficialia(oficialiaId, PageRequest.of(0, 20));
+        Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(oficialiaId, null, PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty()
                 .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"));

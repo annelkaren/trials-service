@@ -34,7 +34,7 @@ public class TipoJuicioResource {
             @RequestParam(value = "materiaNombre", required = false) String materiaNombre
     ) {
 
-        return tipoJuicioService.getAllActiveByOficialia(pageable);
+        return tipoJuicioService.getAllActiveByCentroTrabajo(pageable);
 
     }
 
