@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
@@ -19,6 +20,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
@@ -120,6 +123,29 @@ class CarpetaResourceTest {
         mockMvc.perform(post("/api/workflow/carpeta/recepcion/" + documentoId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+     void testGetListCatalogo() throws Exception {
+        CarpetaCatalogoRecord catalago = new CarpetaCatalogoRecord(1, "Ejemplo");
+        when(mockCarpetaService.getCatalogoList("catalogoCondicionMigratoria"))
+                .thenReturn(List.of(catalago));
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoCondicionMigratoria")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].clave").value(1))
+                .andExpect(jsonPath("$[0].valor").value("Ejemplo"));
+    }
+
+    @Test
+    void testGetListCatalogo_NotFound() throws Exception {
+        when(mockCarpetaService.getCatalogoList("catalagoErroneo"))
+                .thenReturn(null);
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalagoErroneo")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }

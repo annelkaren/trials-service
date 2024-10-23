@@ -28,12 +28,15 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.catalogos.CatalogoCondicionMigratoria;
+import mx.gob.pjpuebla.trials.util.enums.catalogos.CatalogoDiscapacidades;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -52,6 +55,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +63,7 @@ import java.util.Optional;
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -386,5 +390,30 @@ class CarpetaServiceTest {
         );
     }
 
+    @Test
+     void testGetCatalogoList_ValidCatalogo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDiscapacidades.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(16, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_AnotherValidCatalogo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoCondicionMigratoria");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(12, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_InvalidCatalogo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoInvalido");
+        assertThat(result).isEmpty();
+    }
 
 }

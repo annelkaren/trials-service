@@ -6,12 +6,11 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.catalogos.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -163,5 +162,29 @@ public class CarpetaService {
 
         movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
     }
+
+    public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {
+        Map<String, Enum<?>[]> catalogoMap = new HashMap<>();
+        catalogoMap.put("catalogoCondicionMigratoria", CatalogoCondicionMigratoria.values());
+        catalogoMap.put("catalogoDeterminacionJurisdiccional", CatalogoDeterminacionJurisdiccional.values());
+        catalogoMap.put("catalogoTiposDomicilio", CatalogoTiposDomicilio.values());
+        catalogoMap.put("catalogoGrupoVulnerable", CatalogoGrupoVulnerable.values());
+        catalogoMap.put("catalogoProfesionOficio", CatalogoProfesionOficio.values());
+        catalogoMap.put("catalogoFrecuenciaIngreso", CatalogoFrecuenciaIngreso.values());
+        catalogoMap.put("catalogoTipoDefensor", CatalogoTipoDefensor.values());
+        catalogoMap.put("catalogoIngresoMensualNeto", CatalogoIngresoMensualNeto.values());
+        catalogoMap.put("catalogoEstadoCivil", CatalogoEstadoCivil.values());
+        catalogoMap.put("catalogoDiscapacidades", CatalogoDiscapacidades.values());
+
+        Enum<?>[] values = catalogoMap.get(catalogo);
+        if (values != null) {
+            return Arrays.stream(values)
+                    .map(data -> new CarpetaCatalogoRecord(((CatalogoEnum)data).getClave(), ((CatalogoEnum)data).getValor())).toList();
+        }
+        return Collections.emptyList();
+    }
+
+
+
 
 }
