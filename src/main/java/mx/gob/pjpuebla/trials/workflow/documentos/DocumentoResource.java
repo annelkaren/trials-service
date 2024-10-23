@@ -200,8 +200,8 @@ public class DocumentoResource {
         return documentoService.cancelarOficio(documentoId);
     }
 
-    @PutMapping(value = "/oficio/digitalizacion/{documentoId}")
-    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(DocumentoOficioDigitalizacionRecord documento){
+    @PutMapping(value = "/oficio/digitalizacion")
+    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(@RequestBody DocumentoOficioDigitalizacionRecord documento){
         return documentoService.updateDocumentoOficioDigitalizacion(documento);
     }
 }
