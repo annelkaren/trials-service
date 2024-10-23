@@ -107,7 +107,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             ''
         )
         FROM Documento d
-        JOIN d.carpeta c on c.persona=:personaAsignada 
+        JOIN d.carpeta c on c.persona=:personaAsignada
         where case when :key is null then 1
             when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
             else 0 end = 1
