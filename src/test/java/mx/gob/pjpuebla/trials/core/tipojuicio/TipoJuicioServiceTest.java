@@ -1,6 +1,20 @@
 package mx.gob.pjpuebla.trials.core.tipojuicio;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Tipo;
+
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +48,9 @@ class TipoJuicioServiceTest {
 
     @Mock
     TipoJuicioRepository mockTipoJuicioRepository;
+
+    @Mock
+    PersonaService personaService;
 
     @InjectMocks
     TipoJuicioService target;
@@ -109,6 +126,30 @@ class TipoJuicioServiceTest {
 
        
         assertEquals("No se encontraron tipos de juicio para Oral y FAMILIAR", exception.getReason());
+    }
+
+    @Test
+    void getAllTipoJuiciosByOficialia(){
+        List<TipoJuicio> tipoJuicios = List.of(validTipoJuicio);
+        Page<TipoJuicio> page = new PageImpl<>(tipoJuicios);
+
+        Persona persona = PersonaSetUp.createPersona();
+        TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
+        Sede sede = SedeSetUp.createSede();
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado(validTipoJuicio.getMateria(), sede);
+        juzgado.setTipoJuicios(tipoJuicios);
+
+        Oficialia oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+        oficialia.setJuzgados(List.of(juzgado));
+
+        persona.setOficialia(oficialia);
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(mockTipoJuicioRepository.findByOficialia(any(), any())).willReturn(page);
+
+        Page<TipoJuicioRecord> results = target.getAllActiveByOficialia(PageRequest.of(0, 20));
+
+        assertThat(results).isNotEmpty().anyMatch(p -> p.nombre().equals(validTipoJuicio.getNombre()));
     }
 
 }

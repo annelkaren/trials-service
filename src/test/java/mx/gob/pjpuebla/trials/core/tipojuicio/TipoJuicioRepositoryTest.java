@@ -42,6 +42,9 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/DELETE_TIPO_JUICIOS.sql",
         "/scripts/DELETE_TIPO_SISTEMAS.sql",
         "/scripts/DELETE_MATERIAS.sql",
+        "/scripts/DELETE_SEDES.sql",
+        "/scripts/DELETE_DOMICILIOS.sql",
+        "/scripts/DELETE_DISTRITOS.sql"
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class TipoJuicioRepositoryTest extends AuditConfigTest {
 
