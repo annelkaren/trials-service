@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
@@ -128,15 +129,17 @@ class CarpetaResourceTest {
 
     @Test
      void testGetListCatalogo() throws Exception {
-        CarpetaCatalogoRecord catalago = new CarpetaCatalogoRecord(1, "Ejemplo");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
+                .toList();
         when(mockCarpetaService.getCatalogoList("catalogoCondicionMigratoria"))
-                .thenReturn(List.of(catalago));
+                .thenReturn(items);
 
         mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoCondicionMigratoria")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].clave").value(1))
-                .andExpect(jsonPath("$[0].valor").value("Ejemplo"));
+                .andExpect(jsonPath("$[0].clave").value(0))
+                .andExpect(jsonPath("$[0].valor").value("Visitante sin permiso para realizar actividades remuneradas"))
+                .andExpect(jsonPath("$.length()").value(CatalogoCondicionMigratoria.values().length));
     }
 
     @Test

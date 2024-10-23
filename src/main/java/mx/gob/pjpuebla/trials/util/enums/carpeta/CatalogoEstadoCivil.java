@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.util.enums.catalogos;
+package mx.gob.pjpuebla.trials.util.enums.carpeta;
 
 import lombok.Getter;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CatalogoEnum;

@@ -28,8 +28,8 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
-import mx.gob.pjpuebla.trials.util.enums.catalogos.CatalogoCondicionMigratoria;
-import mx.gob.pjpuebla.trials.util.enums.catalogos.CatalogoDiscapacidades;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDiscapacidades;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -396,7 +396,7 @@ class CarpetaServiceTest {
         List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDiscapacidades.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
                 .toList();
         assertNotNull(result);
-        assertEquals(16, result.size());
+        assertEquals(CatalogoDiscapacidades.values().length, result.size());
         assertThat(result).isEqualTo(items);
     }
 
@@ -406,7 +406,7 @@ class CarpetaServiceTest {
         List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
                 .toList();
         assertNotNull(result);
-        assertEquals(12, result.size());
+        assertEquals(CatalogoCondicionMigratoria.values().length, result.size());
         assertThat(result).isEqualTo(items);
     }
 
