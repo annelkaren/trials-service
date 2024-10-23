@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -23,11 +25,28 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_MATERIAS.sql",
         "/scripts/INSERT_TIPO_SISTEMAS.sql",
         "/scripts/INSERT_TIPO_JUICIOS.sql",
+        "/scripts/INSERT_DISTRITOS.sql",
+        "/scripts/INSERT_DOMICILIOS.sql",
+        "/scripts/INSERT_SEDES.sql",
+        "/scripts/INSERT_TIPO_OFICIALIAS.sql",
+        "/scripts/INSERT_JUZGADOS.sql",
+        "/scripts/INSERT_JUZGADO_TIPOJUICIO.sql",
+        "/scripts/INSERT_OFICIALIAS.sql",
+        "/scripts/INSERT_OFICIALIAS_JUZGADO.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
+        "/scripts/DELETE_OFICIALIAS_JUZGADOS.sql",
+        "/scripts/DELETE_OFICIALIAS.sql",
+        "/scripts/DELETE_JUZGADO_TIPOJUICIO.sql",
+        "/scripts/DELETE_JUZGADOS.sql",
+        "/scripts/DELETE_TIPO_OFICIALIAS.sql",
+        "/scripts/DELETE_SEDES.sql",
         "/scripts/DELETE_TIPO_JUICIOS.sql",
         "/scripts/DELETE_TIPO_SISTEMAS.sql",
         "/scripts/DELETE_MATERIAS.sql",
+        "/scripts/DELETE_SEDES.sql",
+        "/scripts/DELETE_DOMICILIOS.sql",
+        "/scripts/DELETE_DISTRITOS.sql"
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class TipoJuicioRepositoryTest extends AuditConfigTest {
 
@@ -56,5 +75,15 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
     void findByNombreIgnoreCase() {
         Optional<TipoJuicio> result = tipoJuicioRepository.findByNombreIgnoreCase("Laboral (Tradicional)");
         assertThat(result).isPresent();
+    }
+
+    @Test
+    void findByCentroTrabajo(){
+        Integer oficialiaId = 51;
+
+        Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(oficialiaId, null, PageRequest.of(0, 20));
+
+        assertThat(page).isNotEmpty()
+                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"));
     }
 }
