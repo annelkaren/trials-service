@@ -34,12 +34,7 @@ public class TipoJuicioResource {
             @RequestParam(value = "materiaNombre", required = false) String materiaNombre
     ) {
 
-        
-        return tipoJuicioService.getAllActive(pageable, new TipoJuicio()
-                .setNombre(tipoJuicioNombre)
-                .setTipoSistema(new TipoSistema().setNombre(tipoSistemaNombre))
-                .setMateria(new Materia().setNombre(materiaNombre))
-        );
+        return tipoJuicioService.getAllActiveByOficialia(pageable);
 
     }
 

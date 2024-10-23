@@ -32,15 +32,7 @@ public class TipoJuicioService {
                 .withMatcher("tipoSistema.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
-        Persona usuario =  personaService.getAuditor();
-
-        Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
-
-        if (centroTrabajoId==null){
-            throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
-        }
-
-        Page<TipoJuicio> page = tipoJuicioRepository.findByOficialia(centroTrabajoId, pageable);
+        Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();
@@ -62,6 +54,24 @@ public class TipoJuicioService {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findByIdAndEstado(id, Estado.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Tipo de Juicio no encontrado", "tipoJuicioId"));
         return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(), new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()), new MateriaRecord(tipoJuicio.getMateria().getId(), tipoJuicio.getMateria().getNombre()));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TipoJuicioRecord> getAllActiveByOficialia(Pageable pageable) {
+        Persona usuario =  personaService.getAuditor();
+
+        Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
+
+        if (centroTrabajoId==null){
+            throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
+        }
+
+        Page<TipoJuicio> page = tipoJuicioRepository.findByOficialia(centroTrabajoId, pageable);
+        List<TipoJuicioRecord> list = page.getContent().stream()
+                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
+                .toList();
+        
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
 }
