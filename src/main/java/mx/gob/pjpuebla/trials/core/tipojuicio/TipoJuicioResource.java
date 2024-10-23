@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 
 import java.util.List;
 
