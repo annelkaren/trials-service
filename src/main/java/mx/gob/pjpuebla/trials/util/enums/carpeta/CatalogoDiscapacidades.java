@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CatalogoDiscapacidades {
     DISC_VER("Discapacidades para ver"),
-    DISC_OIR("Discapacidades para oir"),
+    DISC_OIR("Discapacidades para oír"),
     DISC_HABLAR("Discapacidades para hablar (mudez)"),
     DISC_LENGUAJE("Discapacidades de la comunicación y comprensión del lenguaje"),
     IN_ESPEC_DISC_SENSORIALES("Insuficientemente especificadas del grupo de discapacidades sensoriales y de la comunicación"),

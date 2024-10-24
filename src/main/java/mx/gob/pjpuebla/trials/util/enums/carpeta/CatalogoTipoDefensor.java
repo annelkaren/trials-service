@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum CatalogoTipoDefensor {
-    DEFENSOR_PUBLICO("Defensor Publico"),
+    DEFENSOR_PUBLICO("Defensor Público"),
     DEFENSOR_PRIVADO("Defensor Privado");
 
     private final String etiqueta;

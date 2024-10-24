@@ -12,7 +12,7 @@ public enum CatalogoCondicionMigratoria {
     VIS_FINES_ADOPCION("Visitante con fines de adopción"),
     RES_TEMP("Residente temporal"),
     RES_TEMP_EST("Residente temporal estudiante"),
-    RES_PERMANETE("Residente permanente"),
+    RES_PERMANENTE("Residente permanente"),
     SIT_MIG_IRREGULAR("Situación migratoria irregular"),
     NO_ESPECIFICADO("No especificado"),
     NO_APLICA("No aplica");

@@ -11,7 +11,7 @@ public enum CatalogoEstadoCivil {
     CONCUBINATO("Concubinato"),
     VIUDO("Viudo/a"),
     CASADO("Casado/a"),
-    SOCIEDAD_CONVICENCIA("Sociedad de convivencia"),
+    SOCIEDAD_CONVIVENCIA("Sociedad de convivencia"),
     SEPARADO_EN_PROCESO_JUDICIAL("Separado/a en Proceso Judicial"),
     NO_IDENTIFICADO("No identificado");
 

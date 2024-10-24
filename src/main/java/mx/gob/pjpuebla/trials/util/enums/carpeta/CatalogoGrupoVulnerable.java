@@ -8,7 +8,7 @@ public enum CatalogoGrupoVulnerable {
     INDIGENAS("Indígenas"),
     GRUPO_LGTBBB("Grupo LGTBBB+"),
     PERSONAS_CON_DISCAPACIDAD("Personas con discapacidad"),
-    ADULTO_MAROR("Adulto mayor"),
+    ADULTO_MAYOR("Adulto mayor"),
     PERIODISTAS_DEFENSORES("Periodistas/Defensores de derechos humanos (Asociación civil)"),
     NO_APLICA("No Aplica");
 
