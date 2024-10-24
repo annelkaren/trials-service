@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
@@ -141,6 +142,22 @@ class CarpetaResourceTest {
                 .andExpect(jsonPath("$[0].clave").value("VIS_SIN_PER_ACT_REM"))
                 .andExpect(jsonPath("$[0].etiqueta").value("Visitante sin permiso para realizar actividades remuneradas"))
                 .andExpect(jsonPath("$.length()").value(CatalogoCondicionMigratoria.values().length));
+    }
+
+    @Test
+    void testGetList_anoterCatalagp() throws Exception {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDeterminacionJurisdiccional.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        when(mockCarpetaService.getCatalogoList("catalogoDeterminacionJurisdiccional"))
+                .thenReturn(items);
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoDeterminacionJurisdiccional")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].clave").value("PRESENTACION"))
+                .andExpect(jsonPath("$[0].etiqueta").value("Presentación"))
+                .andExpect(jsonPath("$.length()").value(CatalogoDeterminacionJurisdiccional.values().length));
     }
 
     @Test

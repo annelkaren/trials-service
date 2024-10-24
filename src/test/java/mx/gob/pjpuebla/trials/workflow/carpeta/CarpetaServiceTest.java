@@ -28,8 +28,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDiscapacidades;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -395,7 +394,7 @@ class CarpetaServiceTest {
     }
 
     @Test
-    void testGetCatalogoList_AnotherValidCatalogo() {
+    void testGetCatalogoList_CaseCatalogoCondicionMigratoria() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoCondicionMigratoria");
         List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values())
                 .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
@@ -405,6 +404,83 @@ class CarpetaServiceTest {
         assertThat(result).isEqualTo(items);
     }
 
+    @Test
+    void testGetCatalogoList_CaseCatalogoDeterminacionJurisdiccional() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDeterminacionJurisdiccional");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDeterminacionJurisdiccional.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoDeterminacionJurisdiccional.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoTiposDomicilio() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoTiposDomicilio");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoTiposDomicilio.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoTiposDomicilio.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoGrupoVulnerable() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoGrupoVulnerable");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoGrupoVulnerable.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoGrupoVulnerable.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoFrecuenciaIngreso() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoFrecuenciaIngreso");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoFrecuenciaIngreso.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoFrecuenciaIngreso.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoTipoDefensor() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoTipoDefensor");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoTipoDefensor.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoTipoDefensor.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoIngresoMensualNeto() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoIngresoMensualNeto");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoIngresoMensualNeto.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoIngresoMensualNeto.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoProfesionOficio() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoProfesionOficio");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoProfesionOficio.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoProfesionOficio.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
     @Test
     void testGetCatalogoList_InvalidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoInvalido");
