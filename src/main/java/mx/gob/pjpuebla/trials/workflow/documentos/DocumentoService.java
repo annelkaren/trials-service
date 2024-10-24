@@ -74,6 +74,7 @@ public class DocumentoService {
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
+    private boolean isInterno;
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -507,7 +508,8 @@ public class DocumentoService {
             String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
             String origen = getOrigen(movimiento, currentUser);
-            String concepto = "";//TODO agregar concepto
+            String concepto = documento.getConcepto().getNombre();
+            Boolean interno = getIsInterno();
             DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
@@ -515,7 +517,8 @@ public class DocumentoService {
                     tipoEntrada,
                     origen,
                     concepto,
-                    movimiento.getFechaAsignacion()
+                    movimiento.getFechaAsignacion(),
+                    interno
             );
             list.add(record);
         }
@@ -523,8 +526,11 @@ public class DocumentoService {
     }
 
     protected String getOrigen(Movimiento movimiento, Persona persona) {
+        isInterno = false;
+
         if (persona.getJuzgado() != null) {
             if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
+                isInterno = true;
                 return persona.getNombre() + " " + persona.getApellidoPaterno();
             } else {
                 return persona.getJuzgado().getNombre();
@@ -532,12 +538,17 @@ public class DocumentoService {
         }
         if (persona.getOficialia() != null) {
             if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
+                isInterno = true;
                 return persona.getNombre() + " " + persona.getApellidoPaterno();
             } else {
                 return persona.getOficialia().getNombre();
             }
         }
         return "";
+    }
+
+    public boolean getIsInterno() {
+        return isInterno;
     }
 
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable){

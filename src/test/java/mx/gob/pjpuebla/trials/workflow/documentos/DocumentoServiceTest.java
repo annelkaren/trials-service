@@ -624,6 +624,8 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        demanda.setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
