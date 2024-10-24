@@ -3,9 +3,12 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
@@ -19,6 +22,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
@@ -120,6 +125,48 @@ class CarpetaResourceTest {
         mockMvc.perform(post("/api/workflow/carpeta/recepcion/" + documentoId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetListCatalogo() throws Exception {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        when(mockCarpetaService.getCatalogoList("catalogoCondicionMigratoria"))
+                .thenReturn(items);
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoCondicionMigratoria")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].clave").value("VIS_SIN_PER_ACT_REM"))
+                .andExpect(jsonPath("$[0].etiqueta").value("Visitante sin permiso para realizar actividades remuneradas"))
+                .andExpect(jsonPath("$.length()").value(CatalogoCondicionMigratoria.values().length));
+    }
+
+    @Test
+    void testGetList_anoterCatalagp() throws Exception {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDeterminacionJurisdiccional.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        when(mockCarpetaService.getCatalogoList("catalogoDeterminacionJurisdiccional"))
+                .thenReturn(items);
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoDeterminacionJurisdiccional")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].clave").value("PRESENTACION"))
+                .andExpect(jsonPath("$[0].etiqueta").value("Presentación"))
+                .andExpect(jsonPath("$.length()").value(CatalogoDeterminacionJurisdiccional.values().length));
+    }
+
+    @Test
+    void testGetListCatalogo_NotFound() throws Exception {
+        when(mockCarpetaService.getCatalogoList("catalagoErroneo"))
+                .thenReturn(null);
+
+        mockMvc.perform(get("/api/workflow/carpeta/enums/catalagoErroneo")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }
