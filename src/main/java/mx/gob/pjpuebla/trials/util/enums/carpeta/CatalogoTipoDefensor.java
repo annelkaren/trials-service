@@ -1,18 +1,15 @@
 package mx.gob.pjpuebla.trials.util.enums.carpeta;
 
 import lombok.Getter;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CatalogoEnum;
 
 @Getter
-public enum CatalogoTipoDefensor implements CatalogoEnum {
-    DEFENSOR_PUBLICO(0, "Defensor Publico"),
-    DEFENSOR_PRIVADO(1, "Defensor Privado");
+public enum CatalogoTipoDefensor {
+    DEFENSOR_PUBLICO("Defensor Publico"),
+    DEFENSOR_PRIVADO("Defensor Privado");
 
-    private final int clave;
-    private final String valor;
+    private final String etiqueta;
 
-    CatalogoTipoDefensor(int clave, String valor) {
-        this.clave = clave;
-        this.valor = valor;
+    CatalogoTipoDefensor(String etiqueta) {
+        this.etiqueta = etiqueta;
     }
 }

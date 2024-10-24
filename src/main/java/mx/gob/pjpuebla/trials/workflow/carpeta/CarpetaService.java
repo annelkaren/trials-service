@@ -10,21 +10,24 @@ import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Transactional
 @RequiredArgsConstructor
@@ -98,13 +101,13 @@ public class CarpetaService {
     }
 
     public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
-            Integer documentoId) {
+                                                       Integer documentoId) {
         Documento documento = validacionBandejaRecepcion(documentoId);
 
         List<String> anexosFaltantes = anexos.stream()
                 .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
                 .map(AnexoBandejaRecepcionRecord::nombre)
-                .collect(Collectors.toList());
+                .toList();
 
         // actualizamos los anexos.
         for (AnexoBandejaRecepcionRecord anexo : anexos) {
@@ -123,7 +126,7 @@ public class CarpetaService {
         }
 
         if (documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
-                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
+                                               || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
         }
 
@@ -164,27 +167,40 @@ public class CarpetaService {
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {
-        Map<String, Enum<?>[]> catalogoMap = new HashMap<>();
-        catalogoMap.put("catalogoCondicionMigratoria", CatalogoCondicionMigratoria.values());
-        catalogoMap.put("catalogoDeterminacionJurisdiccional", CatalogoDeterminacionJurisdiccional.values());
-        catalogoMap.put("catalogoTiposDomicilio", CatalogoTiposDomicilio.values());
-        catalogoMap.put("catalogoGrupoVulnerable", CatalogoGrupoVulnerable.values());
-        catalogoMap.put("catalogoProfesionOficio", CatalogoProfesionOficio.values());
-        catalogoMap.put("catalogoFrecuenciaIngreso", CatalogoFrecuenciaIngreso.values());
-        catalogoMap.put("catalogoTipoDefensor", CatalogoTipoDefensor.values());
-        catalogoMap.put("catalogoIngresoMensualNeto", CatalogoIngresoMensualNeto.values());
-        catalogoMap.put("catalogoEstadoCivil", CatalogoEstadoCivil.values());
-        catalogoMap.put("catalogoDiscapacidades", CatalogoDiscapacidades.values());
-
-        Enum<?>[] values = catalogoMap.get(catalogo);
-        if (values != null) {
-            return Arrays.stream(values)
-                    .map(data -> new CarpetaCatalogoRecord(((CatalogoEnum)data).getClave(), ((CatalogoEnum)data).getValor())).toList();
-        }
-        return Collections.emptyList();
+        return switch (catalogo) {
+            case "catalogoCondicionMigratoria" -> Arrays.stream(CatalogoCondicionMigratoria.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoDeterminacionJurisdiccional" -> Arrays.stream(CatalogoDeterminacionJurisdiccional.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoTiposDomicilio" -> Arrays.stream(CatalogoTiposDomicilio.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoGrupoVulnerable" -> Arrays.stream(CatalogoGrupoVulnerable.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoProfesionOficio" -> Arrays.stream(CatalogoProfesionOficio.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoFrecuenciaIngreso" -> Arrays.stream(CatalogoFrecuenciaIngreso.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoTipoDefensor" -> Arrays.stream(CatalogoTipoDefensor.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoIngresoMensualNeto" -> Arrays.stream(CatalogoIngresoMensualNeto.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoEstadoCivil" -> Arrays.stream(CatalogoEstadoCivil.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoDiscapacidades" -> Arrays.stream(CatalogoDiscapacidades.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            default -> Collections.emptyList();
+        };
     }
-
-
 
 
 }

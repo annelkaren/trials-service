@@ -1,28 +1,25 @@
 package mx.gob.pjpuebla.trials.util.enums.carpeta;
 
 import lombok.Getter;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CatalogoEnum;
 
 @Getter
-public enum CatalogoCondicionMigratoria implements CatalogoEnum {
-    VISITANTE_SIN_PERMISO_ACTIVIDADES_REMUNERADAS(0, "Visitante sin permiso para realizar actividades remuneradas"),
-    VISITANTE_CON_PERMISO_ACTIVIDADES_REMUNERADAS(1, "Visitante con permiso para realizar actividades remuneradas"),
-    VISITANTE_REGIONAL(2,"Visitante regional"),
-    VISITANTE_TRABAJADOR_FRONTERIZO(3, "Visitante trabajador fronterizo"),
-    VISITENTE_RAZONES_HUMANITARIAS(4, "Visitante por razones humanitarias"),
-    VISITENTE_FINES_ADOPCION(5, "Visitante con fines de adopción"),
-    RESIDENTE_TEMPORAL(6, "Residente temporal"),
-    RESIDENTE_TEMPORAL_ESTUDIANTE(7, "Residente temporal estudiante"),
-    RESIDENTE_PERMANETE(8, "Residente permanente"),
-    SITUACION_MIGRATORIA_IRREGULAR(9, "Situación migratoria irregular"),
-    NO_ESPECIFICADO(10, "No especificado"),
-    NO_APLICA(11,"No aplica");
+public enum CatalogoCondicionMigratoria {
+    VIS_SIN_PER_ACT_REM("Visitante sin permiso para realizar actividades remuneradas"),
+    VIS_CON_PER_ACT_REM("Visitante con permiso para realizar actividades remuneradas"),
+    VIS_REGIONAL("Visitante regional"),
+    VIS_TRAB_FRONTERIZO("Visitante trabajador fronterizo"),
+    VIS_HUMANITARIAS("Visitante por razones humanitarias"),
+    VIS_FINES_ADOPCION("Visitante con fines de adopción"),
+    RES_TEMP("Residente temporal"),
+    RES_TEMP_EST("Residente temporal estudiante"),
+    RES_PERMANETE("Residente permanente"),
+    SIT_MIG_IRREGULAR("Situación migratoria irregular"),
+    NO_ESPECIFICADO("No especificado"),
+    NO_APLICA("No aplica");
 
-    private final int clave;
-    private final String valor;
+    private final String etiqueta;
 
-    CatalogoCondicionMigratoria(int clave, String valor) {
-        this.clave = clave;
-        this.valor = valor;
+    CatalogoCondicionMigratoria(String etiqueta) {
+        this.etiqueta = etiqueta;
     }
 }

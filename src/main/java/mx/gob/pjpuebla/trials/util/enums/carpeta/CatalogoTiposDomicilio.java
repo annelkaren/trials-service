@@ -1,19 +1,16 @@
 package mx.gob.pjpuebla.trials.util.enums.carpeta;
 
 import lombok.Getter;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CatalogoEnum;
 
 @Getter
-public enum CatalogoTiposDomicilio implements CatalogoEnum {
-    PARTICULAR(0, "Particular"),
-    PROCESAL(1, "Procesal"),
-    TRABAJO(2, "Trabajo");
+public enum CatalogoTiposDomicilio {
+    PARTICULAR("Particular"),
+    PROCESAL("Procesal"),
+    TRABAJO("Trabajo");
 
-    private final int clave;
-    private final String valor;
+    private final String etiqueta;
 
-    CatalogoTiposDomicilio(int clave, String valor) {
-        this.clave = clave;
-        this.valor = valor;
+    CatalogoTiposDomicilio(String etiqueta) {
+        this.etiqueta = etiqueta;
     }
 }

@@ -128,8 +128,9 @@ class CarpetaResourceTest {
     }
 
     @Test
-     void testGetListCatalogo() throws Exception {
-        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values()).map(data -> new CarpetaCatalogoRecord(data.getClave(), data.getValor()))
+    void testGetListCatalogo() throws Exception {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
                 .toList();
         when(mockCarpetaService.getCatalogoList("catalogoCondicionMigratoria"))
                 .thenReturn(items);
@@ -137,8 +138,8 @@ class CarpetaResourceTest {
         mockMvc.perform(get("/api/workflow/carpeta/enums/catalogoCondicionMigratoria")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].clave").value(0))
-                .andExpect(jsonPath("$[0].valor").value("Visitante sin permiso para realizar actividades remuneradas"))
+                .andExpect(jsonPath("$[0].clave").value("VIS_SIN_PER_ACT_REM"))
+                .andExpect(jsonPath("$[0].etiqueta").value("Visitante sin permiso para realizar actividades remuneradas"))
                 .andExpect(jsonPath("$.length()").value(CatalogoCondicionMigratoria.values().length));
     }
 

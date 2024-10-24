@@ -1,20 +1,17 @@
 package mx.gob.pjpuebla.trials.util.enums.carpeta;
 
 import lombok.Getter;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CatalogoEnum;
 
 @Getter
-public enum CatalogoDeterminacionJurisdiccional implements CatalogoEnum {
-    PRESENTACION(0, "Presentación"),
-    ADMITIDA(1,"Admitida"),
-    ADMITIDA_CON_PREVENCION(2, "Admitida con prevención"),
-    DESECHADA(3, "Desechada");
+public enum CatalogoDeterminacionJurisdiccional {
+    PRESENTACION("Presentación"),
+    ADMITIDA("Admitida"),
+    ADMITIDA_CON_PREVENCION("Admitida con prevención"),
+    DESECHADA("Desechada");
 
-    private final int clave;
-    private final String valor;
+    private final String etiqueta;
 
-    CatalogoDeterminacionJurisdiccional(int clave, String valor) {
-        this.clave = clave;
-        this.valor = valor;
+    CatalogoDeterminacionJurisdiccional(String valor) {
+        this.etiqueta = valor;
     }
 }
