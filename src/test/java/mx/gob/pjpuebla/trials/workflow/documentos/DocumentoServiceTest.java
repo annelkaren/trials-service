@@ -66,11 +66,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.time.LocalDate;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
@@ -624,6 +620,8 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        demanda.setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
@@ -664,12 +662,14 @@ class DocumentoServiceTest {
         // Mismo juzgado
         Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
         Persona persona = new Persona().setJuzgado(juzgado).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).contains(persona.getNombre());
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
         // diferente juzgado
-        persona = new Persona().setJuzgado(new Juzgado()).setNombre("Juzgado 2").setId(100L);
+        persona = new Persona().setJuzgado(new Juzgado().setNombre("Juzgado 2").setId(100));
         origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo(persona.getJuzgado().getNombre());
+        assertThat(origen.get("name").toString()).isEqualTo(persona.getJuzgado().getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
@@ -678,20 +678,23 @@ class DocumentoServiceTest {
         Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
         Movimiento movimiento = new Movimiento().setOficialia(oficialia);
         Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).contains(persona.getNombre());
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
         // diferente oficialia
         persona = new Persona().setOficialia(new Oficialia().setNombre("Oficialia 2").setId(3));
         origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo(persona.getOficialia().getNombre());
+        assertThat(origen.get("name").toString()).contains(persona.getOficialia().getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
     void getOrigen_invalid() {
         Movimiento movimiento = new Movimiento();
         Persona persona = new Persona();
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo("");
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.containsKey("name")).isFalse();
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
 
