@@ -74,7 +74,6 @@ public class DocumentoService {
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
-    private boolean isInterno;
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -494,6 +493,7 @@ public class DocumentoService {
     }
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
+        boolean isInterno = false;
         Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                 pageable,
                 currentUser.getJuzgado().getId(),
@@ -507,9 +507,8 @@ public class DocumentoService {
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
             String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
-            String origen = getOrigen(movimiento, currentUser);
+            String origen = getOrigen(movimiento, currentUser, isInterno);
             String concepto = documento.getConcepto().getNombre();
-            Boolean interno = getIsInterno();
             DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
@@ -518,15 +517,14 @@ public class DocumentoService {
                     origen,
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    interno
+                    isInterno
             );
             list.add(record);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    protected String getOrigen(Movimiento movimiento, Persona persona) {
-        isInterno = false;
+    protected String getOrigen(Movimiento movimiento, Persona persona, boolean isInterno) {
 
         if (persona.getJuzgado() != null) {
             if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
@@ -545,10 +543,6 @@ public class DocumentoService {
             }
         }
         return "";
-    }
-
-    public boolean getIsInterno() {
-        return isInterno;
     }
 
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable){

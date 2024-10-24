@@ -666,11 +666,11 @@ class DocumentoServiceTest {
         // Mismo juzgado
         Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
         Persona persona = new Persona().setJuzgado(juzgado).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
+        String origen = documentoService.getOrigen(movimiento, persona, false);
         assertThat(origen).contains(persona.getNombre());
         // diferente juzgado
         persona = new Persona().setJuzgado(new Juzgado()).setNombre("Juzgado 2").setId(100L);
-        origen = documentoService.getOrigen(movimiento, persona);
+        origen = documentoService.getOrigen(movimiento, persona, false);
         assertThat(origen).isEqualTo(persona.getJuzgado().getNombre());
     }
 
@@ -680,11 +680,11 @@ class DocumentoServiceTest {
         Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
         Movimiento movimiento = new Movimiento().setOficialia(oficialia);
         Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
+        String origen = documentoService.getOrigen(movimiento, persona, false);
         assertThat(origen).contains(persona.getNombre());
         // diferente oficialia
         persona = new Persona().setOficialia(new Oficialia().setNombre("Oficialia 2").setId(3));
-        origen = documentoService.getOrigen(movimiento, persona);
+        origen = documentoService.getOrigen(movimiento, persona, false);
         assertThat(origen).isEqualTo(persona.getOficialia().getNombre());
     }
 
@@ -692,7 +692,7 @@ class DocumentoServiceTest {
     void getOrigen_invalid() {
         Movimiento movimiento = new Movimiento();
         Persona persona = new Persona();
-        String origen = documentoService.getOrigen(movimiento, persona);
+        String origen = documentoService.getOrigen(movimiento, persona, false);
         assertThat(origen).isEqualTo("");
     }
 
