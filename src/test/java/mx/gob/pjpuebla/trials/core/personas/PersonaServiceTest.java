@@ -286,7 +286,7 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
 
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, Arrays.asList(oficialia).size());
         Page<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo(pageable, "");
 
         assertThat(centrosTrabajo)
