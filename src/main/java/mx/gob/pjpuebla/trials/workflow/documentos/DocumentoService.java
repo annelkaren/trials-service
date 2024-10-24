@@ -486,14 +486,12 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
-            System.out.println("SOY OFICIAL MAYOR");
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
-        boolean isInterno = false;
         Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                 pageable,
                 currentUser.getJuzgado().getId(),
@@ -507,67 +505,69 @@ public class DocumentoService {
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
             String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
-            String origen = getOrigen(movimiento, currentUser, isInterno);
+            Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = documento.getConcepto().getNombre();
             DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
                     documento.getCarpeta().getExpediente(),
                     tipoEntrada,
-                    origen,
+                    map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    isInterno
+                    (Boolean) map.get("isInterno")
             );
             list.add(record);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    protected String getOrigen(Movimiento movimiento, Persona persona, boolean isInterno) {
-
+    protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("isInterno", false);
         if (persona.getJuzgado() != null) {
             if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
-                isInterno = true;
-                return persona.getNombre() + " " + persona.getApellidoPaterno();
+                map.put("isInterno", true);
+                map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
-                return persona.getJuzgado().getNombre();
+                map.put("name", persona.getJuzgado().getNombre());
             }
         }
         if (persona.getOficialia() != null) {
             if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
-                isInterno = true;
-                return persona.getNombre() + " " + persona.getApellidoPaterno();
+                map.put("isInterno", true);
+                map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
-                return persona.getOficialia().getNombre();
+                map.put("name", persona.getOficialia().getNombre());
             }
         }
-        return "";
+        return map;
     }
 
-    public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable){
+    public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable); 
+        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR");
 
         List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
                 .map(item ->
                         new DocumentoAsignadoResponseRecord(
-                            item.id(),
-                            item.expediente(),
-                            esOficialMayor?item.folioDocumento():item.folioCarpeta(),
-                            esOficialMayor?item.tipoDocumento().name():item.tipoCarpeta().name(),
-                            item.concepto().getNombre(),
-                            item.fechaTurnado(),
-                            item.fechaTurnado().plusDays(item.concepto().getDias()),
-                            item.estatus().name(),
-                            "Observación de Prueba " //item.observaciones()
+                                item.id(),
+                                item.expediente(),
+                                esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
+                                esOficialMayor ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
+                                item.concepto().getNombre(),
+                                item.fechaTurnado(),
+                                item.fechaTurnado().plusDays(item.concepto().getDias()),
+                                item.estatus().name(),
+                                "Observación de Prueba " //item.observaciones()
                         ))
                 .toList();
-                
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
+
     protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
         UUID uuid = UUID.randomUUID();
 
@@ -715,25 +715,25 @@ public class DocumentoService {
     }
 
 
-    public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId){
+    public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId) {
 
         Documento doc = documentoRepository.findById(documentoId)
-        .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
 
-        String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : ""; 
+        String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
         //TODO: actualizar fecha de emisión y asunto con los datos correctos, se coloca vacio ya que la tabla aun no existe
 
-        LocalDate fechaEmision= null;
+        LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
-        String asunto = ""; 
+        String asunto = "";
 
         return new DocumentoOficioDigitalizacionRecord(doc.getFolio(), expediente, fechaEmision, doc.getId(), doc.getInstitucion().getId(), fechaEntrega, doc.getEstatus(), asunto);
 
     }
 
-    public Integer cancelarOficio(Integer documentoId){
+    public Integer cancelarOficio(Integer documentoId) {
         Documento doc = documentoRepository.findById(documentoId)
-        .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
 
         doc.setEstatus(EstadoCarpeta.CANCELADO);
         documentoRepository.save(doc);
@@ -741,13 +741,13 @@ public class DocumentoService {
         return 1;
     }
 
-    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(DocumentoOficioDigitalizacionRecord oficio){
+    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(DocumentoOficioDigitalizacionRecord oficio) {
         Documento doc = documentoRepository.findById(oficio.idOficio())
-            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
 
         Institucion institucion = institucionRepository.findById(oficio.dependencia())
-            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia() ));
-        
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
+
         doc.setInstitucion(institucion);
         documentoRepository.save(doc);
 
