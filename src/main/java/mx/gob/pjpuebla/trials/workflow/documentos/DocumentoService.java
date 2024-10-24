@@ -515,7 +515,9 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    (Boolean) map.get("isInterno")
+                    (Boolean) map.get("isInterno"),
+                    documento.getPrioridad(),
+                    documento.getHoras()
             );
             list.add(record);
         }
