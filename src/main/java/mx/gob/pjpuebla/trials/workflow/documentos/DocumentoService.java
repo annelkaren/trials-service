@@ -28,6 +28,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
@@ -73,6 +77,8 @@ public class DocumentoService {
     private final DocumentoFoliosService documentoFoliosService;
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final DocumentoContenidoRepository documentoContenidoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -330,7 +336,6 @@ public class DocumentoService {
         juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
         return numExpedienteExhorto;
     }
-
 
     public Page<DocumentoGridRecord> getAllHistorial(Pageable pageable, Documento example) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
@@ -680,7 +685,6 @@ public class DocumentoService {
 
         //Obtenemos folio
         Persona persona = personaService.getAuditor();
-        System.out.println("el nombre del juzgado es: " + persona.getJuzgado().getNombre());
         Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
 
 
@@ -707,7 +711,7 @@ public class DocumentoService {
     public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
 
         Documento doc = documentoRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + id));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " + id));
 
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
 
@@ -754,6 +758,62 @@ public class DocumentoService {
         //TODO: Actualizar asunto cuando se tenga la tabla en donde se guardara.
 
         return oficio;
+    }
+
+    public Page<OficioResponseRecord> getAllOficios(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+
+        Page<Documento> page = documentoRepository.findAllByTipoDocumento(key, TipoDocumento.OFICIO, pageable);
+        List<OficioResponseRecord> list = page.getContent().stream()
+                .map(item ->
+                        new OficioResponseRecord(
+                                item.getId(),
+                                item.getFolio(),
+                                item.getInstitucion().getNombre(),
+                                "Asunto del back", //TODO. Mapear asunto
+                                item.getEstatus(),
+                                item.getData().getFechaEmision(),
+                                null,        //TODO. Mapear fechaEntrega
+                                searchAcuseOficio(item.getId()),
+                                searchOficioDigitalizado(item.getId())
+                        ))
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    private boolean searchAcuseOficio(Integer docId){
+        //TODO revisar correcto funcionamiento despues de tabla TBL_DOCUMENTO_DETALLE finalizada
+        // y revisar tabla de documentos que tenga el status EstadoCarpeta.CON_ACUSE
+        List<DocumentoDetalle> documentoDetalleList = documentoDetalleRepository.findAllByDocumentoId(docId);
+        return !documentoDetalleList.isEmpty();
+    }
+
+    private boolean searchOficioDigitalizado(Integer docId){
+        //TODO revisar correcto funcionamiento despues de tabla TBL_DOCUMENTO_CONTENIDO finalizada
+        List<DocumentoContenido> documentoContenidoList = documentoContenidoRepository.findAllByDocumentoId(docId);
+        return !documentoContenidoList.isEmpty();
+    }
+
+    public String calcelOficio(Integer idDocumento) {
+        UUID uuid = UUID.randomUUID();
+        Persona personaAuditor = personaService.getAuditor();
+
+        Documento doc = documentoRepository.findById(idDocumento)
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " + idDocumento));
+
+        documentoRepository.actualizarEstatus(idDocumento, EstadoCarpeta.CANCELADO);
+
+        Movimiento movimiento = new Movimiento()
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo(EstadoCarpeta.CANCELADO.name())
+                .setPersona(personaAuditor)
+                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null )
+                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null )
+                .setDocumento(doc)
+                .setUuid(uuid);
+        movimientoRepository.save(movimiento);
+
+        return uuid.toString();
     }
 }
 
