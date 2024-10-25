@@ -211,6 +211,24 @@ public class PersonaService {
         return new PageImpl<>(paginatedList, pageable, totalElements);
     }
 
+    @Transactional
+    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, Pageable pageable) {
+        Persona usuario = getAuditor();
+
+        Page<Persona> page = personaRepository.findByCentroTrabajo(
+                usuario.getOficialia()!=null?usuario.getOficialia().getId():null,
+                usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null,
+                pageable
+        );
+
+        List<PersonaRecordResponse> list = page.stream()
+                .filter(p-> p.getNombre().contains(nombre==null?"":nombre))
+                .map(p -> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular()))
+                .toList();
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
     @Transactional(readOnly = true)
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
