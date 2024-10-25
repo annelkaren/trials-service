@@ -46,6 +46,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
@@ -131,6 +135,10 @@ class DocumentoServiceTest {
     private DocumentoFoliosService documentoFoliosService;
     @Mock
     private ConceptoRepository conceptoRepository;
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
+    @Mock
+    private DocumentoContenidoRepository documentoContenidoRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -605,7 +613,6 @@ class DocumentoServiceTest {
 
         Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("",
                 PageRequest.of(1, listPage.size()));
-        System.out.println(page.getContent());
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -967,7 +974,7 @@ class DocumentoServiceTest {
         DocumentoOficioDigitalizacionRecord doc = documentoService.getDataDocumentoDigitalizacion(anyInt());
 
         assertNotNull(doc, "El DocumentoOficioDigitalizacionRecord no debe ser nulo");
-        
+
     }
 
     @Test
@@ -1000,5 +1007,84 @@ class DocumentoServiceTest {
         assertEquals(EstadoCarpeta.ASIGNADO, oficio.estatus());
         assertEquals("asunto prueba", oficio.asunto());
 
+    }
+
+    @Test
+    void getAll_bandeja_oficios_success_without_detalle_contenido() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
+        List<Documento> listPage = Collections.singletonList(documento);
+        given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(documentoDetalleRepository.findAllByDocumentoId(any(Integer.class)))
+                .willReturn(new ArrayList<>());
+        given(documentoContenidoRepository.findAllByDocumentoId(any(Integer.class)))
+                .willReturn(new ArrayList<>());
+
+        Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
+                .hasFieldOrPropertyWithValue("dependencia", documento.getInstitucion().getNombre())
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CREADO)
+                .hasFieldOrPropertyWithValue("fechaEmision", documento.getData().getFechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", false)
+                .hasFieldOrPropertyWithValue("bandDigitalizado", false);
+    }
+
+    @Test
+    void getAll_bandeja_oficios_success_with_detalle_contenido() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
+        List<DocumentoDetalle> documentoDetalle = Collections.singletonList(new DocumentoDetalle().setId(1).setRuta("ruta/ejemplo").setDocumento(documento));
+        List<DocumentoContenido> documentoContenido = Collections.singletonList(new DocumentoContenido().setId(1).setTexto("Cualquier texto").setDocumento(documento));
+        List<Documento> listPage = Collections.singletonList(documento);
+
+        given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(documentoDetalleRepository.findAllByDocumentoId(any(Integer.class)))
+                .willReturn(documentoDetalle);
+        given(documentoContenidoRepository.findAllByDocumentoId(any(Integer.class)))
+                .willReturn(documentoContenido);
+
+        Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
+                .hasFieldOrPropertyWithValue("dependencia", documento.getInstitucion().getNombre())
+                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CREADO)
+                .hasFieldOrPropertyWithValue("fechaEmision", documento.getData().getFechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", true)
+                .hasFieldOrPropertyWithValue("bandDigitalizado", true);
+    }
+
+    @Test
+    void cancel_oficio_success() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        given(documentoRepository.findById(any(Integer.class)))
+                .willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
+
+        documentoService.calcelOficio(1);
+        verify(personaService).getAuditor();
+        verify(documentoRepository).findById(1);
+        verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
+        verify(movimientoRepository).save(any());
     }
 }
