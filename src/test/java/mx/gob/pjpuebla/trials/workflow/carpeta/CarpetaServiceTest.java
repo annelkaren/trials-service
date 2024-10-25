@@ -28,12 +28,14 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -49,9 +51,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +62,7 @@ import java.util.Optional;
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -165,9 +168,7 @@ class CarpetaServiceTest {
     void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> {
-                    target.getCarpetaResponseByNumExpYearJuzgado("1", 1);
-                });
+                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1));
         assertThat(assertThrows.getMessage()).contains("Carpeta no encontrada");
     }
 
@@ -228,10 +229,10 @@ class CarpetaServiceTest {
 
         Persona persona = PersonaSetUp.createPersona();
         given(personaService.getAuditor())
-        .willReturn(persona);
+                .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId( documentoId))
+        assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("No se encontró el documento asociado al documentoId");
     }
@@ -247,7 +248,7 @@ class CarpetaServiceTest {
         documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado().setId(13));
 
         given(personaService.getAuditor())
-        .willReturn(persona);
+                .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
 
         assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
@@ -268,7 +269,7 @@ class CarpetaServiceTest {
         documento.getCarpeta().setJuzgado(juzgado1);
 
         given(personaService.getAuditor())
-        .willReturn(persona);
+                .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
         given(carpetaRepository.findByDocumentoId(documento.getId())).willReturn(null);
 
@@ -286,9 +287,9 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
         Persona persona = PersonaSetUp.createPersona();
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado2);
+        documento.getCarpeta().setJuzgado(juzgado2);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -311,9 +312,9 @@ class CarpetaServiceTest {
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Persona persona = PersonaSetUp.createPersona();
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        persona.setJuzgado(juzgado);
-        documento.getCarpeta().setJuzgado(juzgado);
+        Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado2);
+        documento.getCarpeta().setJuzgado(juzgado2);
 
 
         given(personaService.getAuditor())
@@ -321,14 +322,11 @@ class CarpetaServiceTest {
         given(anexoRepository.findById(1)).willReturn(Optional.empty());
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            target.actualizarInformacionAnexos(anexos, documentoId);
-        });
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(anexos, documentoId));
 
 
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el anexo con id: " + 1 + "\"");
     }
-
 
 
     @Test
@@ -337,22 +335,20 @@ class CarpetaServiceTest {
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
 
-      
-        Persona persona = PersonaSetUp.createPersona(); 
+
+        Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
 
-     
+
         given(personaService.getAuditor())
-        .willReturn(persona);
-        given(documentoRepository.findById(documentoId)).willReturn(Optional.empty()); 
-                                                                                      
+                .willReturn(persona);
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            target.actualizarInformacionAnexos(anexos, documentoId);
-        });
 
-    
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(anexos, documentoId));
+
+
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el documento asociado al documentoId: " + documentoId + "\"");
     }
 
@@ -386,5 +382,109 @@ class CarpetaServiceTest {
         );
     }
 
+    @Test
+    void testGetCatalogoList_ValidCatalogo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDiscapacidades.values())
+                .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoDiscapacidades.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoCondicionMigratoria() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoCondicionMigratoria");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoCondicionMigratoria.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoCondicionMigratoria.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoDeterminacionJurisdiccional() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDeterminacionJurisdiccional");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoDeterminacionJurisdiccional.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoDeterminacionJurisdiccional.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoTiposDomicilio() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoTiposDomicilio");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoTiposDomicilio.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoTiposDomicilio.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoGrupoVulnerable() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoGrupoVulnerable");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoGrupoVulnerable.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoGrupoVulnerable.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoFrecuenciaIngreso() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoFrecuenciaIngreso");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoFrecuenciaIngreso.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoFrecuenciaIngreso.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoTipoDefensor() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoTipoDefensor");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoTipoDefensor.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoTipoDefensor.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoIngresoMensualNeto() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoIngresoMensualNeto");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoIngresoMensualNeto.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoIngresoMensualNeto.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoProfesionOficio() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoProfesionOficio");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoProfesionOficio.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoProfesionOficio.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+    @Test
+    void testGetCatalogoList_InvalidCatalogo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoInvalido");
+        assertThat(result).isEmpty();
+    }
 
 }

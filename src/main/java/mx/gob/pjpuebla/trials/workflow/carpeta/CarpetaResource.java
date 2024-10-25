@@ -46,5 +46,10 @@ public class CarpetaResource {
             @PathVariable Integer documentoId) {
         return this.carpetaService.actualizarInformacionAnexos(anexos, documentoId);
     }
-    
+
+
+    @GetMapping(value = "/enums/{catalago}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<CarpetaCatalogoRecord> getListCatalago(@PathVariable String catalago){
+        return this.carpetaService.getCatalogoList(catalago);
+    }
 }

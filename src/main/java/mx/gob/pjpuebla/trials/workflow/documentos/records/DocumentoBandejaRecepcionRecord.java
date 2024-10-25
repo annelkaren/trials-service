@@ -9,6 +9,7 @@ public record DocumentoBandejaRecepcionRecord(
         String tipoEntrada,
         String origen,
         String concepto,
-        LocalDateTime fechaHoraEnvio
+        LocalDateTime fechaHoraEnvio,
+        Boolean isInterno
 ) {
 }

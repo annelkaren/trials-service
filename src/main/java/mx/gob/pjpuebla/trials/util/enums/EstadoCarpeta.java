@@ -11,5 +11,6 @@ public enum EstadoCarpeta {
     ASIGNADO,
     DEVUELTO,
     CREADO,
-    CANCELADO
+    CON_ACUSE,
+    CANCELADO,
 }

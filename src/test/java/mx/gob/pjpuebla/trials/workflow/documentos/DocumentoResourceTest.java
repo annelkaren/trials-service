@@ -408,7 +408,7 @@ class DocumentoResourceTest {
         given(documentoService.cancelarOficio(anyInt()))
                 .willReturn(1);
 
-        
+
         mockMvc.perform(
                 patch("/api/workflow/oficio/digitalizacion/1")
                         .accept(MediaType.APPLICATION_JSON))
@@ -427,5 +427,37 @@ class DocumentoResourceTest {
                         .accept(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
     }
-    
+
+    @Test
+    void updateCancelOficio() throws Exception {
+        given(documentoService.calcelOficio(1))
+                .willReturn("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
+        mockMvc.perform(
+                        patch("/api/workflow/bandeja/oficio/1")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllOficios() throws Exception {
+        OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
+                1,
+                "1",
+                "institucion1",
+                "asunto1",
+                EstadoCarpeta.CREADO,
+                LocalDate.now(),
+                LocalDate.now(),
+                false,
+                false
+        );
+        given(documentoService.getAllOficios(any(), any()))
+                .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));
+
+        mockMvc.perform(
+                        get("/api/workflow/bandeja/oficios")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }

@@ -117,6 +117,18 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         """)
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
+    @Query("""
+        SELECT doc
+        FROM Documento doc
+        LEFT JOIN doc.institucion ins
+        WHERE doc.tipoDocumento = %:tipoDocumento%
+        AND (
+            lower(doc.folio) LIKE %:key% OR
+            lower(ins.nombre) LIKE %:key%
+        )
+        """)
+    Page<Documento> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
+
     @Transactional
     @Modifying
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
