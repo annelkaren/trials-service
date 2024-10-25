@@ -165,11 +165,22 @@ public class DocumentoResource {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
     }
 
+    @GetMapping("/bandeja/oficios")
+    public Page<OficioResponseRecord> getAllOficios(
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllOficios(key, pageable);
+    }
 
     @PostMapping("/oficio")
     public Integer generarOficio(@RequestBody DocumentoOficioRecord oficio) {
         return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(),
                 oficio.carpetaId());
+    }
+
+    @PatchMapping("/bandeja/oficio/{id}")
+    public String updateCancelOficio(@PathVariable Integer id) {
+        return this.documentoService.calcelOficio(id);
     }
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
