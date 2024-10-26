@@ -11,5 +11,10 @@ public record DocumentoOficioDigitalizacionRecord(
     Integer dependencia,
     LocalDate fechaEntrega,
     EstadoCarpeta estatus,
-    String asunto
+    String asunto,
+    String tamanioPapel, 
+    String oficioPublicado,
+    String nombreAcuse,
+    String comentario,
+    String textoEditor
 ) {}
