@@ -45,11 +45,12 @@ public class DocumentoContenidoService {
                 .orElse(null);
         String tamanioPapel = "";
         String textoEditor = "";
-        String existeOficio = documentoContenido.getOficioPublicado();
+        String existeOficio = ""; 
 
         if (documentoContenido != null) {
             tamanioPapel = documentoContenido.getTamanioPapel();
             textoEditor = documentoContenido.getTexto();
+            existeOficio = documentoContenido.getOficioPublicado();
         }
 
         return new DocumentoOficioDigitalizacionRecord(

@@ -16,7 +16,7 @@ public class DocumentoContenido implements Serializable {
     @Column(name = "S_TEXTO")
     private String texto;
 
-    @Column(name="S_TAMANIOPAPEL")
+    @Column(name="S_TAMANIO_PAPEL")
     private String tamanioPapel;
 
     @Column(name = "S_OFICIOPUBLICADO")
