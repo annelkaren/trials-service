@@ -206,18 +206,5 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
     }
 
-    @GetMapping(value = "/oficio/digitalizacion/{documentoId}")
-    public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(@PathVariable Integer documentoId){
-        return documentoService.getDataDocumentoDigitalizacion(documentoId);
-    }
-
-    @PatchMapping(value = "/oficio/digitalizacion/{documentoId}")
-    public Integer cancelarOficio(@PathVariable Integer documentoId){
-        return documentoService.cancelarOficio(documentoId);
-    }
-
-    @PutMapping(value = "/oficio/digitalizacion")
-    public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(@RequestBody DocumentoOficioDigitalizacionRecord documento){
-        return documentoService.updateDocumentoOficioDigitalizacion(documento);
-    }
+   
 }

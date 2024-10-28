@@ -12,6 +12,9 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.IndicadoresRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
@@ -99,7 +102,7 @@ public class DocumentoSetUp {
     }
 
     public static DocumentoOficioDigitalizacionRecord documentoOficioDigitalizacionRecordSetUp(){
-        return new DocumentoOficioDigitalizacionRecord("2", "00000/2024", LocalDate.now(), 1, 1, LocalDate.now(), EstadoCarpeta.ASIGNADO, "asunto prueba");
+        return new DocumentoOficioDigitalizacionRecord("2", "00000/2024", LocalDate.now(), 1, 1, LocalDate.now(), EstadoCarpeta.ASIGNADO, "asunto prueba", 'C', 'S', "Alexis", "N", "Doc");
     }
 
     public static MovimientoPersonalJuzgadoRecord createMovimientoPersonalJuzgadoRecord() {
