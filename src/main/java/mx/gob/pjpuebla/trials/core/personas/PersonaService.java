@@ -54,11 +54,23 @@ public class PersonaService {
         Page<Persona> page = personaRepository.findAll(Example.of(example, exampleMatcher), pageable);
 
         List<PersonaRecordResponse> list = page.getContent().stream()
-                .map(persona ->
-                        new PersonaRecordResponse(persona.getId(),
-                                persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno(),
-                                persona.getCorreoElectronico(),
-                                persona.getCelular()))
+                .map(persona -> {
+                    String centroTrabajo;
+                    if ((persona.getJuzgado() != null && persona.getJuzgado().getNombre() != null && !persona.getJuzgado().getNombre().isEmpty())) {
+                        centroTrabajo = persona.getJuzgado().getNombre();
+                    } else {
+                        if (persona.getOficialia() != null && persona.getOficialia().getNombre() != null && !persona.getOficialia().getNombre().isEmpty())
+                            centroTrabajo = persona.getOficialia().getNombre();
+                        else centroTrabajo = "";
+                    }
+                    return new PersonaRecordResponse(
+                            persona.getId(),
+                            persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno(),
+                            persona.getCorreoElectronico(),
+                            persona.getCelular(),
+                            centroTrabajo
+                    );
+                })
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -95,7 +107,7 @@ public class PersonaService {
         }
 
         persona = personaRepository.save(persona);
-        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
     }
 
     public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
@@ -122,7 +134,7 @@ public class PersonaService {
 
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), getNames(roles));
-            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
+            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Persona.class.getSimpleName());
         }
@@ -227,7 +239,7 @@ public class PersonaService {
                     p.getId(), 
                     p.getNombre() + " " +p.getApellidoPaterno() + (p.getApellidoMaterno() == null?"":" " + p.getApellidoMaterno()), 
                     p.getCorreoElectronico(), 
-                    p.getCelular()))
+                    p.getCelular() , ""))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
