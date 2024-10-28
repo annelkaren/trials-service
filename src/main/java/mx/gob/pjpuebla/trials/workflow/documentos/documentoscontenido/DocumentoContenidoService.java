@@ -103,8 +103,11 @@ public class DocumentoContenidoService {
         // Actualizamos asunto:
          //Obtenemos información detallada del documento
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
-        documentoDetalle.setAsunto(oficio.asunto());
-        documentoDetalleRepository.save(documentoDetalle);
+        if(documentoDetalle != null){
+            documentoDetalle.setAsunto(oficio.asunto());
+            documentoDetalleRepository.save(documentoDetalle);
+        }
+       
 
         // Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())
