@@ -25,6 +25,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +40,9 @@ class DocumentoContenidoServiceTest {
 
     @Mock
     private InstitucionRepository institucionRepository;
+
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
 
     @InjectMocks
     private DocumentoContenidoService documentoContenidoService;
@@ -81,6 +86,9 @@ class DocumentoContenidoServiceTest {
 
         given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
+
+        given(documentoDetalleRepository.findByDocumentoId(anyInt()))
+            .willReturn(Optional.of(new DocumentoDetalle()));
 
         DocumentoOficioDigitalizacionRecord oficio = documentoContenidoService
                 .updateDocumentoOficioDigitalizacion(DocumentoContenidoSetUp.documentoOficioDigitalizacionRecordSetUp());

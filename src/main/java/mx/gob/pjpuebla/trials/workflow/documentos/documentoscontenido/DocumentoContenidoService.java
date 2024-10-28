@@ -12,6 +12,8 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
 
 @Transactional
@@ -21,6 +23,7 @@ public class DocumentoContenidoService {
 
     private final DocumentoRepository documentoRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
     private final InstitucionRepository institucionRepository;
 
     public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId) {
@@ -28,13 +31,6 @@ public class DocumentoContenidoService {
         Documento doc = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
-
-        // TODO: actualizar fecha de emisión y asunto con los datos correctos, se coloca
-        // vacio ya que la tabla aun no existe
-
-        LocalDate fechaEmision = null;
-        LocalDate fechaEntrega = null;
-        String asunto = "";
 
         // TODO: asignar vaiores cuando se tengan disponibles
         String nombreAcuse = "";
@@ -45,6 +41,18 @@ public class DocumentoContenidoService {
         char tamanioPapel = ' ';
         String textoEditor = "";
         char existeOficio = ' '; 
+
+        //Obtenemos información detallada del documento
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);;
+        LocalDate fechaEmision = null;
+        LocalDate fechaEntrega = null;
+        String asunto = "";
+
+        if(documentoDetalle != null){
+            fechaEmision = documentoDetalle.getFechaEmision();
+            fechaEntrega = documentoDetalle.getFechaEntrega();
+            asunto = documentoDetalle.getAsunto();  
+        }
 
         if (documentoContenido != null) {
             tamanioPapel = documentoContenido.getTamanioPapel();
@@ -92,7 +100,11 @@ public class DocumentoContenidoService {
         doc.setInstitucion(institucion);
         documentoRepository.save(doc);
 
-        // TODO: Actualizar asunto cuando se tenga la tabla en donde se guardara.
+        // Actualizamos asunto:
+         //Obtenemos información detallada del documento
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio()).orElse(null);;
+        documentoDetalle.setAsunto(oficio.asunto());
+        documentoDetalleRepository.save(documentoDetalle);
 
         // Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())

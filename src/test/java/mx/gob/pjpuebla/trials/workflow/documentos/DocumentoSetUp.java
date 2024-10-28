@@ -13,12 +13,10 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.IndicadoresRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;

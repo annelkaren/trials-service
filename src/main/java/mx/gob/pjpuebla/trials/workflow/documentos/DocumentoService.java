@@ -28,7 +28,6 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -77,7 +76,6 @@ public class DocumentoService {
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DocumentoContenidoRepository documentoContenidoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
 
@@ -730,13 +728,24 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
 
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
-        //TODO: actualizar fecha de emisión y asunto con los datos correctos, se coloca vacio ya que la tabla aun no existe
+        
+        // Se obtiene asunto y fecha de emisión de la tabla documento detalle:
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
 
-        LocalDate fechaEmision = null;
-        LocalDate fechaEntrega = null;
-        String asunto = "";
-
-        return new DocumentoOficioDigitalizacionRecord(doc.getFolio(), expediente, fechaEmision, doc.getId(), doc.getInstitucion().getId(), fechaEntrega, doc.getEstatus(), asunto);
+        return new DocumentoOficioDigitalizacionRecord(
+            doc.getFolio(), 
+            expediente, 
+            documentoDetalle.getFechaEmision(), 
+            doc.getId(),
+            doc.getInstitucion().getId(),
+            documentoDetalle.getFechaEntrega(),
+            doc.getEstatus(), 
+            documentoDetalle.getAsunto(),
+            ' ',
+            ' ',
+            "",
+            "",
+            "");
 
     }
 
