@@ -75,6 +75,7 @@ public class DocumentoService {
     private final DocumentoFoliosService documentoFoliosService;
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
+    private final EmailService emailService;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
@@ -187,7 +188,7 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
 
         //flujo para demanda de oralidad:
-        if (tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")) {
+        if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
             crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
         }
 
@@ -232,6 +233,18 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
         }
+        Map<String, Object> model = new HashMap<>();
+        model.put("actor", "Pedro Bueno");
+        model.put("demandado", "Jorge Malo");
+        model.put("alias", "El pichicuaz");
+        emailService.sendMail(
+                List.of("jnsrjzgo@outlook.com"),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "El Subject",
+                "sample.ftl",
+                model
+        );
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
@@ -728,7 +741,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
 
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
-        
+
         // Se obtiene asunto y fecha de emisión de la tabla documento detalle:
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
         LocalDate fechaEmision = null;
@@ -737,19 +750,19 @@ public class DocumentoService {
 
         if(documentoDetalle != null){
             fechaEmision = documentoDetalle.getFechaEmision();
-            fechaEntrega = documentoDetalle.getFechaEntrega(); 
+            fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
         }
-       
+
 
         return new DocumentoOficioDigitalizacionRecord(
-            doc.getFolio(), 
-            expediente, 
-            fechaEmision, 
+            doc.getFolio(),
+            expediente,
+            fechaEmision,
             doc.getId(),
             doc.getInstitucion().getId(),
             fechaEntrega,
-            doc.getEstatus(), 
+            doc.getEstatus(),
             asunto,
             ' ',
             ' ',
