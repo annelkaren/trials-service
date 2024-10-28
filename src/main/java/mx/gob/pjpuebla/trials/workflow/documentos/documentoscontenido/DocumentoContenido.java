@@ -17,10 +17,10 @@ public class DocumentoContenido implements Serializable {
     private String texto;
 
     @Column(name="S_TAMANIO_PAPEL")
-    private String tamanioPapel;
+    private char tamanioPapel;
 
     @Column(name = "S_OFICIOPUBLICADO")
-    private String oficioPublicado;
+    private char oficioPublicado;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -41,11 +41,10 @@ public class DocumentoContenidoService {
         String comentario = "";
 
         // Obtenemos texto del editor:
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumento_Id(documentoId)
-                .orElse(null);
-        String tamanioPapel = "";
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
+        char tamanioPapel = ' ';
         String textoEditor = "";
-        String existeOficio = ""; 
+        char existeOficio = ' '; 
 
         if (documentoContenido != null) {
             tamanioPapel = documentoContenido.getTamanioPapel();
@@ -96,7 +95,7 @@ public class DocumentoContenidoService {
         // TODO: Actualizar asunto cuando se tenga la tabla en donde se guardara.
 
         // Actualizamos o creamos la parte de documento contenido
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumento_Id(oficio.idOficio())
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())
                 .orElse(null);
 
         if (documentoContenido == null) {
@@ -112,10 +111,10 @@ public class DocumentoContenidoService {
         return oficio;
     }
 
-    public Integer publicarCancelarOficio(Integer documentoId, String oficioPublicado){
+    public Integer publicarCancelarOficio(Integer documentoId, char oficioPublicado){
 
         //Actualizamos o creamos la parte de documento contenido
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumento_Id(documentoId).orElse(null);
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
 
         if(documentoContenido == null){
             documentoContenido = new DocumentoContenido();

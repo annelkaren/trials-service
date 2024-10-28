@@ -12,8 +12,8 @@ public record DocumentoOficioDigitalizacionRecord(
     LocalDate fechaEntrega,
     EstadoCarpeta estatus,
     String asunto,
-    String tamanioPapel, 
-    String oficioPublicado,
+    char tamanioPapel, 
+    char oficioPublicado,
     String nombreAcuse,
     String comentario,
     String textoEditor

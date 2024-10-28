@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface DocumentoContenidoRepository extends JpaRepository<DocumentoContenido, Integer> {
     List<DocumentoContenido> findAllByDocumentoId(Integer documentoId);
 
-    Optional<DocumentoContenido> findByDocumento_Id(Integer documentoId);
+    Optional<DocumentoContenido> findByDocumentoId(Integer documentoId);
 }

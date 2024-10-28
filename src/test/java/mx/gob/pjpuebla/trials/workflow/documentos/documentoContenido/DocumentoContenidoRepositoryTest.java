@@ -60,7 +60,7 @@ class DocumentoContenidoRepositoryTest  extends AuditConfigTest {
 
     @Test
     void findByDocumento_Id(){
-        Optional<DocumentoContenido> contenido = documentoContenidoRepository.findByDocumento_Id(1);
+        Optional<DocumentoContenido> contenido = documentoContenidoRepository.findByDocumentoId(1);
 
         assertThat(contenido).isNotNull();
     }

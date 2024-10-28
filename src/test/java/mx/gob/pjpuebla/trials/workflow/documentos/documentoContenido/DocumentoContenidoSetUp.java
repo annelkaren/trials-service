@@ -21,8 +21,8 @@ public class DocumentoContenidoSetUp {
                    LocalDate.now(), 
                    EstadoCarpeta.ASIGNADO,
                  "asunto prueba",
-                    "CARTA",
-                  "SI",
+                    'c',
+                  'S',
                     "acuse",
                     "comentarios...",
                     "<p>Hola mundo </p>");

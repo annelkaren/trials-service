@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoResource;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
@@ -24,45 +25,59 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigital
 @ExtendWith(MockitoExtension.class)
 class DocumentoContenidoResourceTest {
 
-    @MockBean
-    private DocumentoContenidoService documentoContenidoService;
+        @MockBean
+        private DocumentoContenidoService documentoContenidoService;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Test
-    void getDataDocumentoDigitalizacion() throws Exception {
-        given(documentoContenidoService.getDataDocumentoDigitalizacion(anyInt()))
-                .willReturn(DocumentoContenidoSetUp.documentoOficioDigitalizacionRecordSetUp());
+        @Test
+        void getDataDocumentoDigitalizacion() throws Exception {
+                given(documentoContenidoService.getDataDocumentoDigitalizacion(anyInt()))
+                                .willReturn(DocumentoContenidoSetUp.documentoOficioDigitalizacionRecordSetUp());
 
-        mockMvc.perform(
-                get("/api/workflow/documentoContenido/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/workflow/documentoContenido/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void cancelarOficio() throws Exception {
-        given(documentoContenidoService.cancelarOficio(anyInt()))
-                .willReturn(1);
+        @Test
+        void cancelarOficio() throws Exception {
+                given(documentoContenidoService.cancelarOficio(anyInt()))
+                                .willReturn(1);
 
-        mockMvc.perform(
-                patch("/api/workflow/documentoContenido/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                patch("/api/workflow/documentoContenido/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void updateDocumentoOficioDigitalizacion() throws Exception {
-        DocumentoOficioDigitalizacionRecord docRecord = DocumentoContenidoSetUp.documentoOficioDigitalizacionRecordSetUp();
+        @Test
+        void updateDocumentoOficioDigitalizacion() throws Exception {
+                DocumentoOficioDigitalizacionRecord docRecord = DocumentoContenidoSetUp
+                                .documentoOficioDigitalizacionRecordSetUp();
 
-        given(documentoContenidoService.updateDocumentoOficioDigitalizacion(docRecord))
-                .willReturn(docRecord);
+                given(documentoContenidoService.updateDocumentoOficioDigitalizacion(docRecord))
+                                .willReturn(docRecord);
 
-        mockMvc.perform(
-                patch("/api/workflow/documentoContenido/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/workflow/documentoContenido")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(ResourceUtilTest.asJsonString(docRecord)))
+                                .andExpect(status().isOk());
+        }
+
+        @Test
+        void publicarCancelarOficio() throws Exception {
+                given(documentoContenidoService.publicarCancelarOficio(1, 'N'))
+                                .willReturn(1);
+
+                mockMvc.perform(
+                                patch("/api/workflow/documentoContenido/1/status/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
 }

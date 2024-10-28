@@ -20,7 +20,7 @@ public class DocumentoContenidoResource {
 
     private final DocumentoContenidoService documentoContenidoService;
     
-     @GetMapping(value = "documentoContenido/{documentoId}")
+    @GetMapping(value = "documentoContenido/{documentoId}")
     public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(@PathVariable Integer documentoId){
         return documentoContenidoService.getDataDocumentoDigitalizacion(documentoId);
     }
@@ -35,8 +35,8 @@ public class DocumentoContenidoResource {
         return documentoContenidoService.updateDocumentoOficioDigitalizacion(documento);
     }
 
-    @PutMapping("/documentoContenido/{documentoId}/status/{status}")
-    public Integer publicarCancelarOficio(@PathVariable Integer documentoId, @PathVariable String status) {
+    @PatchMapping("/documentoContenido/{documentoId}/status/{status}")
+    public Integer publicarCancelarOficio(@PathVariable Integer documentoId, @PathVariable char status) {
                 
         return documentoContenidoService.publicarCancelarOficio(documentoId, status);
     }

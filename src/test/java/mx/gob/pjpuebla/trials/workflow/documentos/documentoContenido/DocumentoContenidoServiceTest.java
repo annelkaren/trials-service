@@ -49,7 +49,7 @@ class DocumentoContenidoServiceTest {
                 .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())
                         .setTipoDocumento(TipoDocumento.PROMOCION)));
 
-        given(documentoContenidoRepository.findByDocumento_Id(anyInt()))
+        given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
 
         DocumentoOficioDigitalizacionRecord doc = documentoContenidoService.getDataDocumentoDigitalizacion(1);
@@ -79,7 +79,7 @@ class DocumentoContenidoServiceTest {
         given(institucionRepository.findById(anyInt()))
                 .willReturn(Optional.of(InstitucionSetUp.createInstitucion(Estado.ACTIVE)));
 
-        given(documentoContenidoRepository.findByDocumento_Id(anyInt()))
+        given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
 
         DocumentoOficioDigitalizacionRecord oficio = documentoContenidoService
