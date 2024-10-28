@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.util.List;
 import java.util.Optional;
 
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
@@ -85,5 +86,16 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
         assertThat(page).isNotEmpty()
                 .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"));
+    }
+
+    @Test
+    void findByMateriaId_shouldReturnTipoJuiciosWithNullPadres() {
+    Integer materiaId = 150; 
+    List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
+
+    assertThat(tipoJuicios)
+            .isNotEmpty()
+            .allMatch(tj -> tj.getMateria().getId().equals(materiaId))
+            .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
     }
 }

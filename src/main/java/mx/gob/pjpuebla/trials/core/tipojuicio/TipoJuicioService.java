@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -77,4 +78,10 @@ public class TipoJuicioService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    public List<TipoJuicioMateriaRecord> findTipoJuiciosByMateria(Integer materiaId) {
+        List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
+        return tipoJuicios.stream()
+                .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId))
+                .collect(Collectors.toList());
+    }
 }

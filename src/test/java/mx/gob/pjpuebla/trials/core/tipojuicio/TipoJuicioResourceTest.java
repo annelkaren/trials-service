@@ -16,7 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
+ 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -149,4 +149,19 @@ class TipoJuicioResourceTest {
    
         }
 
+        @Test
+        void getTipoJuiciosByMateria_success() throws Exception {
+        Integer materiaId = 1;
+        List<TipoJuicioMateriaRecord> tipoJuicios = Arrays.asList(
+                new TipoJuicioMateriaRecord(1, "Laboral", materiaId),
+                new TipoJuicioMateriaRecord(2, "Familiar", materiaId)
+        );
+
+        given(mockTipoJuicioService.findTipoJuiciosByMateria(materiaId)).willReturn(tipoJuicios);
+
+        mockMvc.perform(
+                get("/api/core/tipojuicio/materias/{materiaId}/tipojuicio", materiaId)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+        }
 }
