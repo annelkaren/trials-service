@@ -239,7 +239,7 @@ public class PersonaService {
                     p.getId(), 
                     p.getNombre() + " " +p.getApellidoPaterno() + (p.getApellidoMaterno() == null?"":" " + p.getApellidoMaterno()), 
                     p.getCorreoElectronico(), 
-                    p.getCelular()))
+                    p.getCelular() , ""))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
