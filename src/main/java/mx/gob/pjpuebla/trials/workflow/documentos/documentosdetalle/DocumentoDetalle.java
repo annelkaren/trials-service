@@ -3,9 +3,11 @@ package mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -20,6 +22,23 @@ public class DocumentoDetalle implements Serializable {
     @Size(max = 50)
     @Column(name = "S_RUTA")
     private String ruta;
+
+    @Size(max = 50)
+    @Column(name = "S_ASUNTO")
+    private String asunto;
+
+    @Column(name = "T_FECHA_EMISION")
+    private LocalDate fechaEmision;
+
+    @Column(name = "T_FECHA_ENTREGA")
+    private LocalDate fechaEntrega;
+
+    @Column(name = "N_ESTADO")
+    private EstadoAcuse estado;
+
+    @Size(max = 150)
+    @Column(name = "S_COMENTARIO")
+    private String comentario;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

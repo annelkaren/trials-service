@@ -430,7 +430,7 @@ class DocumentoResourceTest {
 
     @Test
     void updateCancelOficio() throws Exception {
-        given(documentoService.calcelOficio(1))
+        given(documentoService.cancelOficio(1))
                 .willReturn("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
 
         mockMvc.perform(

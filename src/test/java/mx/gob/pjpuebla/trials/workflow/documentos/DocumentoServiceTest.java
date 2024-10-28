@@ -46,9 +46,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
@@ -704,7 +702,6 @@ class DocumentoServiceTest {
         assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
-
     @Test
     void testProcesarTipoCarpeta() {
 
@@ -752,7 +749,6 @@ class DocumentoServiceTest {
         );
 
     }
-
 
     @Test
     void procersar_getQR() {
@@ -862,22 +858,26 @@ class DocumentoServiceTest {
         String asunto = "Prueba asunto";
         Integer carpetaId = 1;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
-        System.out.println(persona.getJuzgado().getNombre());
 
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
         given(personaService.getAuditor())
                 .willReturn(persona);
-
         given(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null))
                 .willReturn(1);
-
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
-
         given(carpetaRepository.findById(carpetaId))
                 .willReturn(Optional.of(CarpetaSetUp.create()));
+        given(documentoRepository.save(any(Documento.class)))
+                .willReturn(documento);
 
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
@@ -891,17 +891,22 @@ class DocumentoServiceTest {
         String asunto = "Prueba asunto";
         Integer carpetaId = null;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
-        System.out.println(persona.getJuzgado().getNombre());
 
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
         given(personaService.getAuditor())
                 .willReturn(persona);
-
         given(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null))
                 .willReturn(1);
-
+        given(documentoRepository.save(any(Documento.class)))
+                .willReturn(documento);
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
 
@@ -1017,24 +1022,33 @@ class DocumentoServiceTest {
                 .setEstatus(EstadoCarpeta.CREADO)
                 .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
 
-        List<Documento> listPage = Collections.singletonList(documento);
+        OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
+                1,
+                "1",
+                "institucion 1",
+                "Asunto 1",
+                EstadoCarpeta.CREADO,
+                LocalDate.now(),
+                LocalDate.now(),
+                false,
+                false
+        );
+
+        List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
+
         given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        given(documentoDetalleRepository.findAllByDocumentoId(any(Integer.class)))
-                .willReturn(new ArrayList<>());
-        given(documentoContenidoRepository.findAllByDocumentoId(any(Integer.class)))
-                .willReturn(new ArrayList<>());
 
         Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
-                .hasFieldOrPropertyWithValue("dependencia", documento.getInstitucion().getNombre())
-                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CREADO)
-                .hasFieldOrPropertyWithValue("fechaEmision", documento.getData().getFechaEmision())
-                .hasFieldOrPropertyWithValue("bandAcuse", false)
-                .hasFieldOrPropertyWithValue("bandDigitalizado", false);
+                .hasFieldOrPropertyWithValue("folio", oficioResponseRecord.folio())
+                .hasFieldOrPropertyWithValue("dependencia", oficioResponseRecord.dependencia())
+                .hasFieldOrPropertyWithValue("estatus", oficioResponseRecord.estatus())
+                .hasFieldOrPropertyWithValue("fechaEmision", oficioResponseRecord.fechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", oficioResponseRecord.bandAcuse())
+                .hasFieldOrPropertyWithValue("bandDigitalizado", oficioResponseRecord.bandDigitalizado());
     }
 
     @Test
@@ -1045,27 +1059,33 @@ class DocumentoServiceTest {
                 .setEstatus(EstadoCarpeta.CREADO)
                 .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
 
-        List<DocumentoDetalle> documentoDetalle = Collections.singletonList(new DocumentoDetalle().setId(1).setRuta("ruta/ejemplo").setDocumento(documento));
-        List<DocumentoContenido> documentoContenido = Collections.singletonList(new DocumentoContenido().setId(1).setTexto("Cualquier texto").setDocumento(documento));
-        List<Documento> listPage = Collections.singletonList(documento);
+        OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
+                1,
+                "1",
+                "institucion 1",
+                "Asunto 1",
+                EstadoCarpeta.CREADO,
+                LocalDate.now(),
+                LocalDate.now(),
+                true,
+                true
+        );
+
+        List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 
         given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        given(documentoDetalleRepository.findAllByDocumentoId(any(Integer.class)))
-                .willReturn(documentoDetalle);
-        given(documentoContenidoRepository.findAllByDocumentoId(any(Integer.class)))
-                .willReturn(documentoContenido);
 
         Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
-                .hasFieldOrPropertyWithValue("dependencia", documento.getInstitucion().getNombre())
-                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CREADO)
-                .hasFieldOrPropertyWithValue("fechaEmision", documento.getData().getFechaEmision())
-                .hasFieldOrPropertyWithValue("bandAcuse", true)
-                .hasFieldOrPropertyWithValue("bandDigitalizado", true);
+                .hasFieldOrPropertyWithValue("folio", oficioResponseRecord.folio())
+                .hasFieldOrPropertyWithValue("dependencia", oficioResponseRecord.dependencia())
+                .hasFieldOrPropertyWithValue("estatus", oficioResponseRecord.estatus())
+                .hasFieldOrPropertyWithValue("fechaEmision", oficioResponseRecord.fechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", oficioResponseRecord.bandAcuse())
+                .hasFieldOrPropertyWithValue("bandDigitalizado", oficioResponseRecord.bandDigitalizado());
     }
 
     @Test
@@ -1076,15 +1096,17 @@ class DocumentoServiceTest {
                 .setEstatus(EstadoCarpeta.CREADO)
                 .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
         Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        Movimiento movimiento = new Movimiento().setDocumento(documento).setMotivo("CREADO").setId(1);
 
         given(documentoRepository.findById(any(Integer.class)))
                 .willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
+        given(movimientoService.createMovimento(any(), any(), any(), any())).willReturn(movimiento);
 
-        documentoService.calcelOficio(1);
+        documentoService.cancelOficio(1);
         verify(personaService).getAuditor();
         verify(documentoRepository).findById(1);
         verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
-        verify(movimientoRepository).save(any());
+        verify(movimientoService).createMovimento(any(), any(), any(), any());
     }
 }
