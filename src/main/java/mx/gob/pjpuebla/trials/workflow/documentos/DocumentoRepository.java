@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -118,16 +119,30 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
     @Query("""
-        SELECT doc
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
+            doc.id,
+            doc.folio,
+            ins.nombre,
+            dd.asunto,
+            doc.estatus,
+            dd.fechaEmision,
+            dd.fechaEntrega,
+            CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
+            CASE WHEN COUNT(dc) > 0 THEN true ELSE false END
+        )
         FROM Documento doc
         LEFT JOIN doc.institucion ins
+        LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+        LEFT JOIN DocumentoContenido dc ON dc.documento = doc
         WHERE doc.tipoDocumento = %:tipoDocumento%
         AND (
             lower(doc.folio) LIKE %:key% OR
-            lower(ins.nombre) LIKE %:key%
+            lower(ins.nombre) LIKE %:key% OR
+            lower(dd.asunto) LIKE %:key%
         )
+        GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta
         """)
-    Page<Documento> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
+    Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Transactional
     @Modifying
