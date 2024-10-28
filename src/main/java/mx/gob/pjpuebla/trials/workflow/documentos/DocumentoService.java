@@ -731,16 +731,26 @@ public class DocumentoService {
         
         // Se obtiene asunto y fecha de emisión de la tabla documento detalle:
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
+        LocalDate fechaEmision = null;
+        LocalDate fechaEntrega = null;
+        String asunto = "";
+
+        if(documentoDetalle != null){
+            fechaEmision = documentoDetalle.getFechaEmision();
+            fechaEntrega = documentoDetalle.getFechaEntrega(); 
+            asunto = documentoDetalle.getAsunto();
+        }
+       
 
         return new DocumentoOficioDigitalizacionRecord(
             doc.getFolio(), 
             expediente, 
-            documentoDetalle.getFechaEmision(), 
+            fechaEmision, 
             doc.getId(),
             doc.getInstitucion().getId(),
-            documentoDetalle.getFechaEntrega(),
+            fechaEntrega,
             doc.getEstatus(), 
-            documentoDetalle.getAsunto(),
+            asunto,
             ' ',
             ' ',
             "",
