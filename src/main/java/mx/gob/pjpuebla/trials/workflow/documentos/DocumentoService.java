@@ -1,10 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -19,6 +19,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -40,7 +41,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
-
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +73,7 @@ public class DocumentoService {
     private final DocumentoFoliosService documentoFoliosService;
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
+    private final EmailService emailService;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
 
     @Transactional(readOnly = true)
@@ -183,7 +184,7 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
 
         //flujo para demanda de oralidad:
-        if (tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")) {
+        if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
             crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
         }
 
@@ -228,6 +229,18 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
         }
+        Map<String, Object> model = new HashMap<>();
+        model.put("actor", "Pedro Bueno");
+        model.put("demandado", "Jorge Malo");
+        model.put("alias", "El pichicuaz");
+        emailService.sendMail(
+                List.of("jnsrjzgo@outlook.com"),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "El Subject",
+                "sample.ftl",
+                model
+        );
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
