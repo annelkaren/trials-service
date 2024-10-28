@@ -24,7 +24,6 @@ public class PersonaResource {
     public Page<PersonaRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
-        //return this.personaService.getAll(new Persona().setNombre(nombre), pageable);
         return this.personaService.findAllByCentroTrabajo(nombre, pageable);
     }
 
