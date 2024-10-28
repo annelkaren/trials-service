@@ -817,5 +817,31 @@ public class DocumentoService {
 
         return uuid.toString();
     }
+
+    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(PersonalJuzgadoRecord record) {
+        Concepto concepto = conceptoRepository.findById(record.idConcepto())
+                .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+
+        Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoRecepcion()));
+        documento.setConcepto(concepto);
+
+        Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
+        carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
+        carpetaRepository.save(carpeta);
+
+        Persona persona = personaService.getAuditor();
+
+        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name());
+
+        return new MovimientoPersonalJuzgadoRecord(
+                carpeta.getId(),
+                movimiento.getFechaAsignacion(),
+                persona.getNombre(),
+                movimiento.getMotivo(),
+                persona.getJuzgado().getNombre()
+        );
+    }
 }
 

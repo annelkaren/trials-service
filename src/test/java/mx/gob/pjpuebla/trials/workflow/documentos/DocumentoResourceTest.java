@@ -460,4 +460,18 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void movimientoPersonalJuzgado_success() throws Exception {
+        PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2);
+
+        given(documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord))
+                .willReturn(DocumentoSetUp.createMovimientoPersonalJuzgadoRecord());
+        mockMvc.perform(
+                        post("/api/workflow/bandeja/recepcion/movimiento")
+                                .content(ResourceUtilTest.asJsonString(personalJuzgadoRecord))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }
