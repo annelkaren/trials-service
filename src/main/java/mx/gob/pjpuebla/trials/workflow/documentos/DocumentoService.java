@@ -1,10 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -19,6 +19,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -28,6 +29,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
@@ -40,7 +45,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
-
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -790,14 +794,14 @@ public class DocumentoService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    private boolean searchAcuseOficio(Integer docId){
+    private boolean searchAcuseOficio(Integer docId) {
         //TODO revisar correcto funcionamiento despues de tabla TBL_DOCUMENTO_DETALLE finalizada
         // y revisar tabla de documentos que tenga el status EstadoCarpeta.CON_ACUSE
         List<DocumentoDetalle> documentoDetalleList = documentoDetalleRepository.findAllByDocumentoId(docId);
         return !documentoDetalleList.isEmpty();
     }
 
-    private boolean searchOficioDigitalizado(Integer docId){
+    private boolean searchOficioDigitalizado(Integer docId) {
         //TODO revisar correcto funcionamiento despues de tabla TBL_DOCUMENTO_CONTENIDO finalizada
         List<DocumentoContenido> documentoContenidoList = documentoContenidoRepository.findAllByDocumentoId(docId);
         return !documentoContenidoList.isEmpty();
@@ -816,8 +820,8 @@ public class DocumentoService {
                 .setFechaAsignacion(LocalDateTime.now())
                 .setMotivo(EstadoCarpeta.CANCELADO.name())
                 .setPersona(personaAuditor)
-                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null )
-                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null )
+                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null)
+                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null)
                 .setDocumento(doc)
                 .setUuid(uuid);
         movimientoRepository.save(movimiento);
