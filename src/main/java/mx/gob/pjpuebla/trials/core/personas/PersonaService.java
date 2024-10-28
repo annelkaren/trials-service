@@ -224,8 +224,30 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
+    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, Pageable pageable) {
+        Persona usuario = getAuditor();
+
+        Page<Persona> page = personaRepository.findByCentroTrabajo(
+                usuario.getOficialia()!=null?usuario.getOficialia().getId():null,
+                usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null,
+                pageable
+        );
+
+        List<PersonaRecordResponse> list = page.stream()
+                .filter(p-> p.getNombre().contains(nombre==null?"":nombre))
+                .map(p -> new PersonaRecordResponse(
+                    p.getId(), 
+                    p.getNombre() + " " +p.getApellidoPaterno() + (p.getApellidoMaterno() == null?"":" " + p.getApellidoMaterno()), 
+                    p.getCorreoElectronico(), 
+                    p.getCelular()))
+                .toList();
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
-        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuaerio: " + jwt.getSubject()));
+        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario: " + jwt.getSubject()));
     }
 }

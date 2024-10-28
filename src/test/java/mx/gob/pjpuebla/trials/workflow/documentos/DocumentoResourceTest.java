@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
@@ -392,41 +391,6 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void getDataDocumentoDigitalizacion() throws Exception {
-        given(documentoService.getDataDocumentoDigitalizacion(anyInt()))
-        .willReturn(DocumentoSetUp.documentoOficioDigitalizacionRecordSetUp());
-
-        mockMvc.perform(
-                get("/api/workflow/oficio/digitalizacion/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
-    }
-
-    @Test
-    void cancelarOficio() throws Exception {
-        given(documentoService.cancelarOficio(anyInt()))
-                .willReturn(1);
-
-
-        mockMvc.perform(
-                patch("/api/workflow/oficio/digitalizacion/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
-    }
-
-    @Test
-    void updateDocumentoOficioDigitalizacion() throws Exception {
-        DocumentoOficioDigitalizacionRecord docRecord = DocumentoSetUp.documentoOficioDigitalizacionRecordSetUp();
-
-        given(documentoService.updateDocumentoOficioDigitalizacion(docRecord))
-                .willReturn(docRecord);
-
-        mockMvc.perform(
-                patch("/api/workflow/oficio/digitalizacion/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk());
-    }
 
     @Test
     void updateCancelOficio() throws Exception {

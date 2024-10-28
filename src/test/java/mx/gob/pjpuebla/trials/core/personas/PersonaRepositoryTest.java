@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Arrays;
@@ -83,5 +85,15 @@ class PersonaRepositoryTest extends AuditConfigTest {
         assertThat(entity).isPresent();
         assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
         assertThat(entity.get().getUsuario()).isEqualTo(persona.getUsuario());
+    }
+
+    @Test
+    void findAllByCentroTrabajo(){
+        persona.setJuzgado(new Juzgado().setId(51));
+        persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
+
+        Page<Persona> page = personaRepository.findByCentroTrabajo(null, persona.getJuzgado().getId(), PageRequest.of(0, 20));
+
+        assertThat(page).isNotEmpty();
     }
 }

@@ -315,4 +315,19 @@ class PersonaServiceTest extends SetupServiceTest {
                 .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombreCompleto", name);
     }
+
+    @Test
+    void findAllByCentroTrabajo(){
+        
+        Page<Persona> page = new PageImpl<>(List.of(validPersona));
+        List<PersonaRecordResponse> list = page.stream().map(p-> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular())).toList();
+        Page<PersonaRecordResponse> response = new PageImpl<>(list);
+
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(mockPersonaRepository.findByCentroTrabajo(any(), any(), any())).willReturn(page);
+
+        response = personaService.findAllByCentroTrabajo(null, PageRequest.of(0, response.getSize()));
+
+        assertThat(response).isNotEmpty();
+    }
 }
