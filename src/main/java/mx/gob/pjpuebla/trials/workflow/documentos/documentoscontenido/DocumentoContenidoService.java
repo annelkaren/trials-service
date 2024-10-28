@@ -43,7 +43,7 @@ public class DocumentoContenidoService {
         char existeOficio = ' '; 
 
         //Obtenemos información detallada del documento
-        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);;
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
@@ -102,9 +102,12 @@ public class DocumentoContenidoService {
 
         // Actualizamos asunto:
          //Obtenemos información detallada del documento
-        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio()).orElse(null);;
-        documentoDetalle.setAsunto(oficio.asunto());
-        documentoDetalleRepository.save(documentoDetalle);
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
+        if(documentoDetalle != null){
+            documentoDetalle.setAsunto(oficio.asunto());
+            documentoDetalleRepository.save(documentoDetalle);
+        }
+       
 
         // Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())
