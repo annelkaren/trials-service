@@ -180,7 +180,7 @@ public class DocumentoResource {
 
     @PatchMapping("/bandeja/oficio/{id}")
     public String updateCancelOficio(@PathVariable Integer id) {
-        return this.documentoService.calcelOficio(id);
+        return this.documentoService.cancelOficio(id);
     }
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
