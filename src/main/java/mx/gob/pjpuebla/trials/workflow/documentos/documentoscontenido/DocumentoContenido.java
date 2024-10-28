@@ -16,10 +16,10 @@ public class DocumentoContenido implements Serializable {
     @Column(name = "S_TEXTO")
     private String texto;
 
-    @Column(name="S_TAMANIO_PAPEL")
+    @Column(name="C_TAMANIOPAPEL")
     private char tamanioPapel;
 
-    @Column(name = "S_OFICIOPUBLICADO")
+    @Column(name = "C_OFICIOPUBLICADO")
     private char oficioPublicado;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
