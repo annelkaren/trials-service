@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -18,6 +19,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Entity
@@ -71,6 +73,14 @@ public class Carpeta implements Serializable, Auditable {
 
     @Column(name = "T_FECHA_ASIGNACION")
     private LocalDateTime fechaAsignacion;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "TBL_CARPETAS_RUBROS",
+            joinColumns = @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID"),
+            inverseJoinColumns = @JoinColumn(name = "FN_RUBRO", referencedColumnName = "PN_ID")
+    )
+    private Set<Rubro> rubros;
 
     @Accessors(chain = false)
     @Embedded
