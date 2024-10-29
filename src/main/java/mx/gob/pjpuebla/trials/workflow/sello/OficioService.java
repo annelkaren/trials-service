@@ -15,10 +15,10 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OficioService {
 
-    @Value("classpath:jasper/OficioCarta.jasper")
+    @Value("classpath:jasper/oficioXD.jasper")
     private Resource oficioCarta;
 
-    @Value("classpath:jasper/OficioOficio.jasper")
+    @Value("classpath:jasper/oficioXD.jasper")
     private Resource oficioOficio;
 
     public byte[] getOficio(boolean formato, Integer oficioId) throws JRException, IOException {
@@ -31,11 +31,8 @@ public class OficioService {
         List<String> heder = setHeder(2134323, oficioId);
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("hederLogo", "jasper/header.jpg");
-        parameters.put("noFolio", heder.get(1));
-        parameters.put("noCodigo", heder.get(0));
-        parameters.put("noQR", "34729");
-        parameters.put("textHtml", bodyText());
+        parameters.put("htmlText", "<p>Hola Oficio Trabaja</p>");  // Parámetro para el reporte
+
 
         return JasperFillManager.fillReport(
                 resource.getInputStream(),
