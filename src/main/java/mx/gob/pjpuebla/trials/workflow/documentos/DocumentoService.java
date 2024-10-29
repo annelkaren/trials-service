@@ -5,6 +5,8 @@ import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -19,6 +21,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -56,6 +59,9 @@ import java.util.*;
 @Service
 public class DocumentoService {
 
+    public static final String ACTOR = "Actor";
+    public static final String DEMANDADO = "Demandado";
+    public static final String IS_INTERNO = "isInterno";
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
     private final TipoJuicioRepository tipoJuicioRepository;
@@ -75,6 +81,7 @@ public class DocumentoService {
     private final DocumentoFoliosService documentoFoliosService;
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
+    private final EmailService emailService;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
@@ -187,7 +194,7 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
 
         //flujo para demanda de oralidad:
-        if (tpoJuicio.getMateria().getNombre().equals("FAMILIAR") && tpoJuicio.getTipoSistema().getNombre().equals("Oral")) {
+        if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
             crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
         }
 
@@ -206,7 +213,7 @@ public class DocumentoService {
                 "",
                 "",
                 "",
-                "Actor",
+                ACTOR,
                 documentoRecord.actor().tipoParte(),
                 carpeta.getId());
 
@@ -220,7 +227,7 @@ public class DocumentoService {
                 "",
                 "",
                 "",
-                "Demandado",
+                DEMANDADO,
                 documentoRecord.demandado().tipoParte(),
                 carpeta.getId());
 
@@ -232,10 +239,22 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
         }
+        Map<String, Object> model = new HashMap<>();
+        model.put("actor", "Pedro Bueno");
+        model.put("demandado", "Jorge Malo");
+        model.put("alias", "El pichicuaz");
+        emailService.sendMail(
+                List.of("jnsrjzgo@outlook.com"),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "El Subject",
+                "sample.ftl",
+                model
+        );
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
-        String tipoParte = (persona.tipoParte().equals(1)) ? "Actor" : "Demandado";
+        String tipoParte = (persona.tipoParte().equals(1)) ? ACTOR : DEMANDADO;
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
@@ -293,9 +312,9 @@ public class DocumentoService {
         PersonaDocumentoRecord demandado = null;
 
         for (PersonaDocumentoRecord persona : personas) {
-            if ("Actor".equalsIgnoreCase(persona.tipoParte())) {
+            if (ACTOR.equalsIgnoreCase(persona.tipoParte())) {
                 actor = persona;
-            } else if ("Demandado".equalsIgnoreCase(persona.tipoParte())) {
+            } else if (DEMANDADO.equalsIgnoreCase(persona.tipoParte())) {
                 demandado = persona;
             }
         }
@@ -510,7 +529,7 @@ public class DocumentoService {
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = documento.getConcepto().getNombre();
-            DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
+            DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
                     documento.getCarpeta().getExpediente(),
@@ -518,21 +537,21 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    (Boolean) map.get("isInterno"),
+                    (Boolean) map.get(IS_INTERNO),
                     documento.getPrioridad(),
                     documento.getHoras()
             );
-            list.add(record);
+            list.add(drecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
         Map<String, Object> map = new HashMap<>();
-        map.put("isInterno", false);
+        map.put(IS_INTERNO, false);
         if (persona.getJuzgado() != null) {
             if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
-                map.put("isInterno", true);
+                map.put(IS_INTERNO, true);
                 map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
                 map.put("name", persona.getJuzgado().getNombre());
@@ -540,7 +559,7 @@ public class DocumentoService {
         }
         if (persona.getOficialia() != null) {
             if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
-                map.put("isInterno", true);
+                map.put(IS_INTERNO, true);
                 map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
                 map.put("name", persona.getOficialia().getNombre());
@@ -687,6 +706,7 @@ public class DocumentoService {
         Persona persona = personaService.getAuditor();
         Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
 
+
         //Obtenemos la institución y seteamos información para la Data del documento
         Institucion institucion = institucionRepository.findById(institucionId)
                 .orElseThrow(() -> new NotFoundException("Institución no encontrada", "institucionId: " + institucionId));
@@ -730,24 +750,34 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
 
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
-        
+
         // Se obtiene asunto y fecha de emisión de la tabla documento detalle:
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
+        LocalDate fechaEmision = null;
+        LocalDate fechaEntrega = null;
+        String asunto = "";
+
+        if (documentoDetalle != null) {
+            fechaEmision = documentoDetalle.getFechaEmision();
+            fechaEntrega = documentoDetalle.getFechaEntrega();
+            asunto = documentoDetalle.getAsunto();
+        }
+
 
         return new DocumentoOficioDigitalizacionRecord(
-            doc.getFolio(), 
-            expediente, 
-            documentoDetalle.getFechaEmision(), 
-            doc.getId(),
-            doc.getInstitucion().getId(),
-            documentoDetalle.getFechaEntrega(),
-            doc.getEstatus(), 
-            documentoDetalle.getAsunto(),
-            ' ',
-            ' ',
-            "",
-            "",
-            "");
+                doc.getFolio(),
+                expediente,
+                fechaEmision,
+                doc.getId(),
+                doc.getInstitucion().getId(),
+                fechaEntrega,
+                doc.getEstatus(),
+                asunto,
+                ' ',
+                ' ',
+                "",
+                "",
+                "");
 
     }
 
