@@ -29,10 +29,6 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -60,6 +56,9 @@ import java.util.*;
 @Service
 public class DocumentoService {
 
+    public static final String ACTOR = "Actor";
+    public static final String DEMANDADO = "Demandado";
+    public static final String IS_INTERNO = "isInterno";
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
     private final TipoJuicioRepository tipoJuicioRepository;
@@ -81,7 +80,6 @@ public class DocumentoService {
     private final ConceptoRepository conceptoRepository;
     private final EmailService emailService;
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DocumentoContenidoRepository documentoContenidoRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
 
@@ -212,7 +210,7 @@ public class DocumentoService {
                 "",
                 "",
                 "",
-                "Actor",
+                ACTOR,
                 documentoRecord.actor().tipoParte(),
                 carpeta.getId());
 
@@ -226,7 +224,7 @@ public class DocumentoService {
                 "",
                 "",
                 "",
-                "Demandado",
+                DEMANDADO,
                 documentoRecord.demandado().tipoParte(),
                 carpeta.getId());
 
@@ -253,7 +251,7 @@ public class DocumentoService {
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
-        String tipoParte = (persona.tipoParte().equals(1)) ? "Actor" : "Demandado";
+        String tipoParte = (persona.tipoParte().equals(1)) ? ACTOR : DEMANDADO;
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
@@ -311,9 +309,9 @@ public class DocumentoService {
         PersonaDocumentoRecord demandado = null;
 
         for (PersonaDocumentoRecord persona : personas) {
-            if ("Actor".equalsIgnoreCase(persona.tipoParte())) {
+            if (ACTOR.equalsIgnoreCase(persona.tipoParte())) {
                 actor = persona;
-            } else if ("Demandado".equalsIgnoreCase(persona.tipoParte())) {
+            } else if (DEMANDADO.equalsIgnoreCase(persona.tipoParte())) {
                 demandado = persona;
             }
         }
@@ -528,7 +526,7 @@ public class DocumentoService {
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = documento.getConcepto().getNombre();
-            DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
+            DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
                     documento.getCarpeta().getExpediente(),
@@ -536,19 +534,19 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    (Boolean) map.get("isInterno")
+                    (Boolean) map.get(IS_INTERNO)
             );
-            list.add(record);
+            list.add(drecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
         Map<String, Object> map = new HashMap<>();
-        map.put("isInterno", false);
+        map.put(IS_INTERNO, false);
         if (persona.getJuzgado() != null) {
             if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
-                map.put("isInterno", true);
+                map.put(IS_INTERNO, true);
                 map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
                 map.put("name", persona.getJuzgado().getNombre());
@@ -556,7 +554,7 @@ public class DocumentoService {
         }
         if (persona.getOficialia() != null) {
             if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
-                map.put("isInterno", true);
+                map.put(IS_INTERNO, true);
                 map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
             } else {
                 map.put("name", persona.getOficialia().getNombre());
@@ -754,7 +752,7 @@ public class DocumentoService {
         LocalDate fechaEntrega = null;
         String asunto = "";
 
-        if(documentoDetalle != null){
+        if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
@@ -762,19 +760,19 @@ public class DocumentoService {
 
 
         return new DocumentoOficioDigitalizacionRecord(
-            doc.getFolio(),
-            expediente,
-            fechaEmision,
-            doc.getId(),
-            doc.getInstitucion().getId(),
-            fechaEntrega,
-            doc.getEstatus(),
-            asunto,
-            ' ',
-            ' ',
-            "",
-            "",
-            "");
+                doc.getFolio(),
+                expediente,
+                fechaEmision,
+                doc.getId(),
+                doc.getInstitucion().getId(),
+                fechaEntrega,
+                doc.getEstatus(),
+                asunto,
+                ' ',
+                ' ',
+                "",
+                "",
+                "");
 
     }
 
@@ -835,7 +833,7 @@ public class DocumentoService {
         documentoRepository.actualizarEstatus(idDocumento, EstadoCarpeta.CANCELADO);
 
         Movimiento mov = movimientoService.createMovimento(
-                 null,
+                null,
                 doc,
                 personaAuditor,
                 EstadoCarpeta.CANCELADO.name()

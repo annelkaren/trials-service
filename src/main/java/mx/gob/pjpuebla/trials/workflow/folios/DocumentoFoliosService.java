@@ -63,13 +63,13 @@ public class DocumentoFoliosService {
 
     public DocumentoFolios save(DocumentoFolios documentoFolios) {
         if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.JUZGADO &&
-                juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())) {
+            juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())) {
             return documentoFolioRepository.save(documentoFolios);
         }
 
 
         if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.OFICIALIA_COMUN &&
-                oficialiaRepository.existsById(documentoFolios.getId())) {
+            oficialiaRepository.existsById(documentoFolios.getId())) {
             return documentoFolioRepository.save(documentoFolios);
         }
 

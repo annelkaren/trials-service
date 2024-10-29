@@ -45,6 +45,7 @@ public class PersonaService {
     private final UsuarioService usuarioService;
     private final RoleService roleService;
     private final SalaRepository salaRepository;
+    private static final String PERSON_NOT_FOUND = "Persona no encontrada";
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -78,7 +79,7 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
         PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
-                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "personaId"));
+                .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "personaId"));
         List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
         return persona.withRoles(roles);
     }
@@ -90,7 +91,7 @@ public class PersonaService {
         fillPersonaData(persona);
 
         persona = personaRepository.save(persona);
-        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular());
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
     }
 
     private void fillPersonaData(Persona persona) {
@@ -129,7 +130,7 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public PersonaRecord findByCurp(String curp) {
         PersonaRecord persona = personaRepository.findByCurp(curp)
-                .orElseThrow(() -> new NotFoundException("Persona no encontrada", "curp"));
+                .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "curp"));
         List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
         return persona.withRoles(roles);
     }
@@ -214,18 +215,18 @@ public class PersonaService {
         Persona usuario = getAuditor();
 
         Page<Persona> page = personaRepository.findByCentroTrabajo(
-                usuario.getOficialia()!=null?usuario.getOficialia().getId():null,
-                usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null,
+                usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
+                usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
                 pageable
         );
 
         List<PersonaRecordResponse> list = page.stream()
-                .filter(p-> p.getNombre().contains(nombre==null?"":nombre))
+                .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
                 .map(p -> new PersonaRecordResponse(
-                    p.getId(),
-                    p.getNombre() + " " +p.getApellidoPaterno() + (p.getApellidoMaterno() == null?"":" " + p.getApellidoMaterno()),
-                    p.getCorreoElectronico(),
-                    p.getCelular() , ""))
+                        p.getId(),
+                        p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
+                        p.getCorreoElectronico(),
+                        p.getCelular(), ""))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -234,6 +235,6 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
-        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario: " + jwt.getSubject()));
+        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 }
