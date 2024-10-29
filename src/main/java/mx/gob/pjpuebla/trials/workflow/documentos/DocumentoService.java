@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
@@ -43,6 +45,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -534,7 +537,9 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    (Boolean) map.get(IS_INTERNO)
+                    (Boolean) map.get(IS_INTERNO),
+                    documento.getPrioridad(),
+                    documento.getHoras()
             );
             list.add(drecord);
         }
@@ -840,6 +845,32 @@ public class DocumentoService {
         );
 
         return String.valueOf(mov.getId());
+    }
+
+    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(PersonalJuzgadoRecord record) {
+        Concepto concepto = conceptoRepository.findById(record.idConcepto())
+                .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+
+        Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoRecepcion()));
+        documento.setConcepto(concepto);
+
+        Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
+        carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
+        carpetaRepository.save(carpeta);
+
+        Persona persona = personaService.getAuditor();
+
+        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name());
+
+        return new MovimientoPersonalJuzgadoRecord(
+                carpeta.getId(),
+                movimiento.getFechaAsignacion(),
+                persona.getNombre(),
+                movimiento.getMotivo(),
+                persona.getJuzgado().getNombre()
+        );
     }
 }
 

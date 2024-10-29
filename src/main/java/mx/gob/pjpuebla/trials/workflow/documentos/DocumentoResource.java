@@ -154,6 +154,11 @@ public class DocumentoResource {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
 
+    @PostMapping("/bandeja/recepcion/movimiento")
+    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(@RequestBody PersonalJuzgadoRecord record) {
+        return this.documentoService.movimientoPersonalJuzgado(record);
+    }
+
     @GetMapping("/bandeja/asignados")
     public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
             @RequestParam(value = "key", required = false) String key,

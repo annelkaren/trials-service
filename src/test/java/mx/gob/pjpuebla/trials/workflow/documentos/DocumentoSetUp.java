@@ -15,8 +15,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.IndicadoresRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,5 +101,11 @@ public class DocumentoSetUp {
         return new IndicadoresRecord(2,7,9,5);
     }
 
+    public static DocumentoOficioDigitalizacionRecord documentoOficioDigitalizacionRecordSetUp(){
+        return new DocumentoOficioDigitalizacionRecord("2", "00000/2024", LocalDate.now(), 1, 1, LocalDate.now(), EstadoCarpeta.ASIGNADO, "asunto prueba", 'C', 'S', "Alexis", "N", "Doc");
+    }
 
+    public static MovimientoPersonalJuzgadoRecord createMovimientoPersonalJuzgadoRecord() {
+        return new MovimientoPersonalJuzgadoRecord(51, LocalDateTime.now(),"Anibal", "ASIGNADO", "JUZGADO XXI");
+    }
 }
