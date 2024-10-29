@@ -27,8 +27,8 @@ public class DocumentoFoliosService {
         Optional<DocumentoFolios> documentoFolio = documentoFolioRepository
                 .findByCentroTrabajoAndTipoDocumento(centroTrabajo.id(), centroTrabajo.tipo(), tipoDocumento);
 
-        return documentoFolio.isPresent() ? folioActualizado(documentoFolio.get())
-                : create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio();
+        return documentoFolio.map(this::folioActualizado)
+                .orElseGet(() -> create(getDocumentoFolios(tipoDocumento, centroTrabajo)).getFolio());
     }
 
     private static CentroTrabajoRecord getCentroTrabajoRecord(Juzgado juzgado, Oficialia oficialia) {
@@ -63,13 +63,13 @@ public class DocumentoFoliosService {
 
     public DocumentoFolios save(DocumentoFolios documentoFolios) {
         if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.JUZGADO &&
-                juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())) {
+            juzgadoRepository.existsById(documentoFolios.getCentroTrabajoId())) {
             return documentoFolioRepository.save(documentoFolios);
         }
 
 
         if (documentoFolios.getTipoCentroTrabajo() == TipoCentroTrabajo.OFICIALIA_COMUN &&
-                oficialiaRepository.existsById(documentoFolios.getId())) {
+            oficialiaRepository.existsById(documentoFolios.getId())) {
             return documentoFolioRepository.save(documentoFolios);
         }
 
