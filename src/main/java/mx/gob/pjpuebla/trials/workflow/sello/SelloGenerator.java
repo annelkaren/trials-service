@@ -172,7 +172,7 @@ public class SelloGenerator {
                 .map(Anexo::getNombre)
                 .map(nombre -> "- " + nombre + " <br/>")
                 .toList();
-        return String.join("", list);
+        return list.isEmpty() ? "- Sin anexos" : String.join("", list);
     }
 
     private String tipoDocumentoFolio(Documento documento) {
