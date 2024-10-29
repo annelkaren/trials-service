@@ -12,7 +12,7 @@ import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-
+ 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -147,5 +147,27 @@ class TipoJuicioServiceTest {
 
         assertThat(results).isNotEmpty().anyMatch(p -> p.nombre().equals(validTipoJuicio.getNombre()));
     }
+
+    @Test
+    void findTipoJuiciosByMateria_returnsTipoJuicioMateriaRecords() {
+        Integer materiaId = 150; 
+        TipoJuicio tipoJuicio = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicio.setId(10);
+        tipoJuicio.setNombre("Laboral (Tradicional)");
+
+        List<TipoJuicio> tipoJuicios = List.of(tipoJuicio);
+        given(mockTipoJuicioRepository.findByMateriaId(materiaId)).willReturn(tipoJuicios);
+
+        List<TipoJuicioMateriaRecord> results = target.findTipoJuiciosByMateria(materiaId);
+
+        assertThat(results)
+                .isNotEmpty()
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", tipoJuicio.getId())
+                .hasFieldOrPropertyWithValue("nombre", tipoJuicio.getNombre())
+                .hasFieldOrPropertyWithValue("materiaId", materiaId);
+    }
+
 
 }

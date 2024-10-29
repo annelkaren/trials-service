@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
@@ -291,5 +292,4 @@ public class JuzgadoService {
         key = (key != null) ? key.toLowerCase() : "";
         return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
     }
-
 }
