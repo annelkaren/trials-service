@@ -39,6 +39,8 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
                 ELSE
                     0
                 END > 0
+            AND tj.tipoJuicioPadreOral IS NULL AND
+            tj.tipoJuicioPadreTrad IS NULL
             """)
     Page<TipoJuicio> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
 }
