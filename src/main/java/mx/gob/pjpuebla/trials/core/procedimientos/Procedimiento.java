@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.tipojuicio;
+package mx.gob.pjpuebla.trials.core.procedimientos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -18,13 +17,13 @@ import java.io.Serializable;
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
-@Table(name = "TBL_TIPO_JUICIO")
-public class TipoJuicio implements Serializable, Auditable {
+@Table(name = "TBL_PROCEDIMIENTOS")
+public class Procedimiento implements Serializable, Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoJuicio")
-    @SequenceGenerator(name = "idTipoJuicio", sequenceName = "SEQ_TIPO_JUICIO_ID", allocationSize = 1)
-    @Column(name = "PN_ID", insertable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idProcedimiento")
+    @SequenceGenerator(name = "idProcedimiento", sequenceName = "SEQ_PROCEDIMIENTOS_ID", allocationSize = 1)
+    @Column(name = "PN_ID", nullable = false)
     private Integer id;
 
     @Max(Integer.MAX_VALUE)
@@ -41,22 +40,11 @@ public class TipoJuicio implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
-    @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-    private TipoSistema tipoSistema;
-
-    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Materia materia;
-
-    @Column(name = "FN_TIPO_JUICIO_PADRE_ORAL")
-    private Integer tipoJuicioPadreOral;
-
-    @Column(name = "FN_TIPO_JUICIO_PADRE_TRAD")
-    private Integer tipoJuicioPadreTrad;
+    private TipoJuicio tipoJuicio;
 
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
-
 }
