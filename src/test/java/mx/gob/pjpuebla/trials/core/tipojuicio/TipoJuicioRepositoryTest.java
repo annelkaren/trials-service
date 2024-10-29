@@ -84,6 +84,7 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
         Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(oficialiaId, null, PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty()
-                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"));
+                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"))
+                .allMatch(tj->tj.getTipoJuicioPadreOral()==null && tj.getTipoJuicioPadreTrad()==null);
     }
 }
