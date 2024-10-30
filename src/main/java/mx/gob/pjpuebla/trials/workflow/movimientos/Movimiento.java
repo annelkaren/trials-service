@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
@@ -53,4 +54,12 @@ public class Movimiento implements Serializable {
 
     @Column(name = "S_UUID")
     private UUID uuid;
+
+    @Size(max = 300)
+    @Column(name = "S_OBSERVACIONES")
+    private String observaciones;
+
+    @Size(max = 60)
+    @Column(name = "S_RECOMENDACIONES")
+    private String recomendaciones;
 }

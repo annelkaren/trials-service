@@ -5,8 +5,6 @@ import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -740,7 +738,13 @@ public class DocumentoService {
 
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
 
-        return new DocumentoRecepcionRecord(doc.getCarpeta().getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
+        return new DocumentoRecepcionRecord(
+                doc.getCarpeta().getFolio(),
+                doc.getCarpeta().getExpediente(),
+                (doc.getTipoDocumento() != null)? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
+                doc.getRuta(),
+                anexosActuales
+        );
     }
 
 
