@@ -5,8 +5,6 @@ import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -704,7 +702,7 @@ public class DocumentoService {
 
         //Obtenemos folio
         Persona persona = personaService.getAuditor();
-        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), persona.getOficialia());
 
 
         //Obtenemos la institución y seteamos información para la Data del documento

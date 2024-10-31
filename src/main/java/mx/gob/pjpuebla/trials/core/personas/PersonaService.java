@@ -204,7 +204,7 @@ public class PersonaService {
 
         int totalElements = centrosTrabajo.size();
         int start = (int) pageable.getOffset();
-        int end = Math.max(start + pageable.getPageSize(), totalElements);
+        int end = Math.min(start + pageable.getPageSize(), totalElements);
         List<CentroTrabajoRecord> paginatedList = centrosTrabajo.subList(start, end);
 
         return new PageImpl<>(paginatedList, pageable, totalElements);
