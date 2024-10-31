@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -152,5 +153,27 @@ class MovimientosServiceTest {
 
         verify(movimientoRepository, times(1)).save(any(Movimiento.class));
         verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+    }
+
+    @Test
+    void createMovimentoWithObservaciones(){
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado);
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Movimiento mov = new Movimiento()
+                .setCarpeta(null)
+                .setDocumento(documento)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("RECEPCION")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+        given(movimientoRepository.save(any(Movimiento.class))).willReturn(mov);
+
+        Movimiento result = movimientoService.createMovimento(null, documento, persona, "RECEPCION");
+        assertThat(result.getCarpeta()).isEqualTo(null);
+        assertThat(result.getDocumento()).isEqualTo(documento);
+        assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
     }
 }

@@ -16,7 +16,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -25,9 +28,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Transactional
 @RequiredArgsConstructor
@@ -40,6 +45,7 @@ public class CarpetaService {
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
+    private final MovimientoRepository movimientoRepository;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
@@ -100,17 +106,19 @@ public class CarpetaService {
                 anexos);
     }
 
-    public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
-                                                       Integer documentoId) {
+    public DocumentoRecord actualizarInformacionAnexos(
+            DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord,
+            Integer documentoId
+    ) {
         Documento documento = validacionBandejaRecepcion(documentoId);
 
-        List<String> anexosFaltantes = anexos.stream()
+        List<String> anexosFaltantes = docRecepcionMovimientosRecord.anexos().stream()
                 .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
                 .map(AnexoBandejaRecepcionRecord::nombre)
                 .toList();
 
         // actualizamos los anexos.
-        for (AnexoBandejaRecepcionRecord anexo : anexos) {
+        for (AnexoBandejaRecepcionRecord anexo : docRecepcionMovimientosRecord.anexos()) {
             Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(
                     () -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
             anexoTemp.setEstado(anexo.estado());
@@ -130,7 +138,16 @@ public class CarpetaService {
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
         }
 
-        documentoRepository.save(documento);
+        documento = documentoRepository.save(documento);
+
+        //Crear movimiento
+        movimientoService.createMovimentoWithObservaciones(
+                (documento.getTipoDocumento() == null) ? documento.getCarpeta() : null,
+                (documento.getTipoDocumento() == null) ? null : documento,
+                EstadoCarpeta.ASIGNADO.name(),
+                docRecepcionMovimientosRecord.observaciones(),
+                docRecepcionMovimientosRecord.recomendaciones()
+        );
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
                 documento.getCarpeta().getTipoCarpeta());
