@@ -65,7 +65,6 @@ public class UsuarioService {
         userRep.setEmailVerified(Boolean.TRUE);
         List<CredentialRepresentation> creds = new ArrayList<>();
         CredentialRepresentation cred = new CredentialRepresentation();
-        cred.setValue("");
         cred.setTemporary(Boolean.TRUE);
         creds.add(cred);
         userRep.setCredentials(creds);
