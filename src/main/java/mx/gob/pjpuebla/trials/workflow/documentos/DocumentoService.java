@@ -738,7 +738,13 @@ public class DocumentoService {
 
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
 
-        return new DocumentoRecepcionRecord(doc.getCarpeta().getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
+        return new DocumentoRecepcionRecord(
+                doc.getCarpeta().getFolio(),
+                doc.getCarpeta().getExpediente(),
+                (doc.getTipoDocumento() != null)? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
+                doc.getRuta(),
+                anexosActuales
+        );
     }
 
 
