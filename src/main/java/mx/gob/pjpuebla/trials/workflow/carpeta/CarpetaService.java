@@ -18,7 +18,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -28,11 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Transactional
 @RequiredArgsConstructor

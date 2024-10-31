@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.personas;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
@@ -18,13 +17,7 @@ import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.MovimientoPersonalJuzgadoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.PersonalJuzgadoRecord;
-import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -35,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
