@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -34,7 +35,7 @@ public class DocumentoContenidoService {
 
         // TODO: asignar vaiores cuando se tengan disponibles
         String nombreAcuse = "";
-        String comentario = "";
+        
 
         // Obtenemos texto del editor:
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
@@ -47,11 +48,15 @@ public class DocumentoContenidoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
+        String comentario = "";
+        EstadoAcuse estatusAcuse = null;
 
         if(documentoDetalle != null){
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();  
+            comentario = documentoDetalle.getComentario();
+            estatusAcuse = documentoDetalle.getEstado();
         }
 
         if (documentoContenido != null) {
@@ -68,6 +73,7 @@ public class DocumentoContenidoService {
                 doc.getInstitucion().getId(),
                 fechaEntrega,
                 doc.getEstatus(),
+                estatusAcuse,
                 asunto,
                 tamanioPapel,
                 existeOficio,
