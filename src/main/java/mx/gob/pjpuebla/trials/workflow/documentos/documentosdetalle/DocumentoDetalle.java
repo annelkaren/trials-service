@@ -23,7 +23,7 @@ public class DocumentoDetalle implements Serializable {
     @Column(name = "S_RUTA")
     private String ruta;
 
-    @Size(max = 50)
+    @Size(max = 150)
     @Column(name = "S_ASUNTO")
     private String asunto;
 

@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
@@ -10,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -117,14 +119,19 @@ class CarpetaResourceTest {
     void testRecepcionAnexos_Success() throws Exception {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List.of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
         DocumentoRecord responseRecord = new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA);
 
-        when(mockCarpetaService.actualizarInformacionAnexos(anexos, documentoId))
+        when(mockCarpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId))
                 .thenReturn(responseRecord);
 
         mockMvc.perform(post("/api/workflow/carpeta/recepcion/" + documentoId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[{\"id\":1, \"nombre\":\"INE\", \"estado\":\"ASIGNADO\"}]"))
+                        .content(ResourceUtilTest.asJsonString(docRecepcionMovimientosRecord)))
                 .andExpect(status().isOk());
     }
 
