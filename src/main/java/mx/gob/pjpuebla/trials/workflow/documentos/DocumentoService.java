@@ -702,7 +702,7 @@ public class DocumentoService {
 
         //Obtenemos folio
         Persona persona = personaService.getAuditor();
-        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), persona.getOficialia());
 
 
         //Obtenemos la institución y seteamos información para la Data del documento
