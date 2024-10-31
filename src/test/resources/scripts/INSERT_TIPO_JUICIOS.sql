@@ -43,17 +43,17 @@ INSERT INTO tbl_tipo_juicio (pn_id, n_version, s_nombre, n_estado, fn_tipo_siste
 VALUES (110, 0, 'Familiar Oralidad', 0, 101, 250,
         '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7');
 INSERT INTO tbl_tipo_juicio (pn_id, n_version, s_nombre, n_estado, fn_tipo_sistema, fn_materia,
-                             s_usuario_alta, s_usuario_edita)
+                             s_usuario_alta, s_usuario_edita, fn_tipo_juicio_padre_oral)
 VALUES (111, 0, 'Familiar Oralidad (Alimentos)', 0, 101, 250,
-        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7');
+        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7', 110);
 INSERT INTO tbl_tipo_juicio (pn_id, n_version, s_nombre, n_estado, fn_tipo_sistema, fn_materia,
-                             s_usuario_alta, s_usuario_edita)
+                             s_usuario_alta, s_usuario_edita, fn_tipo_juicio_padre_oral)
 VALUES (112, 0, 'Familiar Oralidad (Divorcio Incausado Unilateral)', 0, 101, 250,
-        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7');
+        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7',110);
 INSERT INTO tbl_tipo_juicio (pn_id, n_version, s_nombre, n_estado, fn_tipo_sistema, fn_materia,
-                             s_usuario_alta, s_usuario_edita)
+                             s_usuario_alta, s_usuario_edita, fn_tipo_juicio_padre_oral)
 VALUES (113, 0, 'Familiar Oralidad  (Divoricio Incausado Bilateral)', 0, 101, 250,
-        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7');
+        '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7',110);
 INSERT INTO tbl_tipo_juicio (pn_id, n_version, s_nombre, n_estado, fn_tipo_sistema, fn_materia,
                              s_usuario_alta, s_usuario_edita)
 VALUES (114, 0, 'Familiar Oralidad (Guardia y Custodia)', 0, 101, 250,

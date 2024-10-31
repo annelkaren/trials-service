@@ -99,4 +99,13 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
             .allMatch(tj -> tj.getMateria().getId().equals(materiaId))
             .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
     }
+
+    @Test
+    void findByTipoJuicioPadre(){
+        Optional<TipoJuicio> tipoJuicioPadre = tipoJuicioRepository.findByNombreIgnoreCase("Familiar Oralidad");
+
+        List<TipoJuicioDemandasRecord> tipoJuicioHijos = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadre.get().getId());
+
+        assertThat(tipoJuicioHijos).isNotEmpty();
+    }
 }

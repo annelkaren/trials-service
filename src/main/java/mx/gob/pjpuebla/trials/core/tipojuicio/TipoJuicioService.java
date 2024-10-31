@@ -84,4 +84,14 @@ public class TipoJuicioService {
                 .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId))
                 .collect(Collectors.toList());
     }
+
+    public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId){
+        List<TipoJuicioDemandasRecord> result = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
+
+        if (result.isEmpty()){
+            throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
+        }
+
+        return result;
+    }
 }

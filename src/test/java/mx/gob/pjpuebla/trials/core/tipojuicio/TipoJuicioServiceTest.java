@@ -169,5 +169,23 @@ class TipoJuicioServiceTest {
                 .hasFieldOrPropertyWithValue("materiaId", materiaId);
     }
 
+    @Test
+    void getAllTipoJuicioHijo(){
+        TipoJuicio tipoJuicioPadre = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicioPadre.setId(10);
+        tipoJuicioPadre.setNombre("Laboral (Tradicional)");
 
+        TipoJuicio tipoJuicioHijo = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicioHijo.setId(11);
+        tipoJuicioHijo.setNombre("Laboral Huelga");
+        tipoJuicioHijo.setTipoJuicioPadreTrad(tipoJuicioPadre.getId());
+
+        List<TipoJuicioDemandasRecord> hijos = List.of(new TipoJuicioDemandasRecord(tipoJuicioHijo.getId(), tipoJuicioHijo.getNombre()));
+
+        given(mockTipoJuicioRepository.findByTipoJuicioPadre(any())).willReturn(hijos);
+
+        hijos = target.getAllTipoJuicioHijo(tipoJuicioPadre.getId());
+
+        assertThat(hijos).isNotEmpty().anyMatch(t -> t.nombre().equals(tipoJuicioHijo.getNombre()));
+    }
 }
