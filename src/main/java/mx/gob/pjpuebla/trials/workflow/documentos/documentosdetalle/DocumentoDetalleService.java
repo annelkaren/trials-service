@@ -47,9 +47,6 @@ public class DocumentoDetalleService {
         juzgado = juzgado.replaceAll(" ", "");
 
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios");
-        System.out.println(rootFolder);
-
-        System.out.println(rootPath);
 
         try {
             Files.createDirectories(rootPath);
