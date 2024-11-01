@@ -63,4 +63,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             END = 1
             """)
     Page<Persona> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
+
+    Page<Persona> findByJuzgadoId(Integer juzgadoId, Pageable pageable);
 }
