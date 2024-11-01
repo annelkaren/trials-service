@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
@@ -37,7 +36,6 @@ public class DocumentoContenidoResource {
 
     @PatchMapping("/documentoContenido/{documentoId}/status/{status}")
     public Integer publicarCancelarOficio(@PathVariable Integer documentoId, @PathVariable char status) {
-                
         return documentoContenidoService.publicarCancelarOficio(documentoId, status);
     }
 

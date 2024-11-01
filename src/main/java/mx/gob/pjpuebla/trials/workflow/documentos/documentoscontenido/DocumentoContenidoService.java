@@ -1,9 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido;
 
 import java.time.LocalDate;
-
 import org.springframework.stereotype.Service;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
@@ -34,9 +32,7 @@ public class DocumentoContenidoService {
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
 
         // TODO: asignar vaiores cuando se tengan disponibles
-        String nombreAcuse = "";
         
-
         // Obtenemos texto del editor:
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
         char tamanioPapel = ' ';
@@ -65,7 +61,6 @@ public class DocumentoContenidoService {
             tamanioPapel = documentoContenido.getTamanioPapel();
             textoEditor = documentoContenido.getTexto();
             existeOficio = documentoContenido.getOficioPublicado();
-
         }
 
         return new DocumentoOficioDigitalizacionRecord(
@@ -80,16 +75,14 @@ public class DocumentoContenidoService {
                 asunto,
                 tamanioPapel,
                 existeOficio,
-                nombreAcuse,
+                "",
                 comentario,
                 textoEditor,
                 rutaAcuse);
-
     }
 
     public Integer cancelarOficio(Integer documentoId) {
-        Documento doc = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+        Documento doc = documentoRepository.findById(documentoId).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
 
         doc.setEstatus(EstadoCarpeta.CANCELADO);
         documentoRepository.save(doc);
@@ -99,13 +92,9 @@ public class DocumentoContenidoService {
 
     public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(
             DocumentoOficioDigitalizacionRecord oficio) {
-        Documento doc = documentoRepository.findById(oficio.idOficio())
-                .orElseThrow(
-                        () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
+        Documento doc = documentoRepository.findById(oficio.idOficio()).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
 
-        Institucion institucion = institucionRepository.findById(oficio.dependencia())
-                .orElseThrow(
-                        () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
+        Institucion institucion = institucionRepository.findById(oficio.dependencia()).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
 
         doc.setInstitucion(institucion);
         documentoRepository.save(doc);
@@ -118,21 +107,16 @@ public class DocumentoContenidoService {
             documentoDetalleRepository.save(documentoDetalle);
         }
        
-
         // Actualizamos o creamos la parte de documento contenido
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())
-                .orElse(null);
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
 
-        if (documentoContenido == null) {
-            documentoContenido = new DocumentoContenido();
-        }
+        if (documentoContenido == null) { documentoContenido = new DocumentoContenido(); }
 
         documentoContenido.setDocumento(doc);
         documentoContenido.setTamanioPapel(oficio.tamanioPapel());
         documentoContenido.setTexto(oficio.textoEditor());
-
         documentoContenidoRepository.save(documentoContenido);
-
+        
         return oficio;
     }
 
@@ -141,9 +125,7 @@ public class DocumentoContenidoService {
         //Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
 
-        if(documentoContenido == null){
-            documentoContenido = new DocumentoContenido();
-        }
+        if(documentoContenido == null){ documentoContenido = new DocumentoContenido(); }
 
         documentoContenido.setOficioPublicado(oficioPublicado);
         documentoContenidoRepository.save(documentoContenido);

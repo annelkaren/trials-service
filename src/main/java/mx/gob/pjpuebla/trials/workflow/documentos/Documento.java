@@ -1,5 +1,4 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
-
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -18,7 +17,6 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.hibernate.annotations.Type;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 

@@ -2,11 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-
 import java.nio.file.Path;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +35,7 @@ public class DocumentoDetalleService {
                 .orElse(null);
         Documento doc = documentoRepository.findById(documento.documentoId()).orElse(null);
 
-        // creamos ruta para guardar el documento
         // TODO: ACOPLARLO CON LA FUNCION DE DIGITALIZACIÓN Y SACAR LA LOGICA DE
-        // CREACION DE CARPETA DE AQUI.
         if (doc != null) {
             String year = obtenerYear(doc);
             String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
@@ -48,20 +44,12 @@ public class DocumentoDetalleService {
 
             Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios");
 
-            try {
-                Files.createDirectories(rootPath);
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
+            try { Files.createDirectories(rootPath);
+            } catch (IOException e) { log.error(e.getMessage(), e); }
 
             // Guardar el archivo y manejar posibles excepciones
-            try {
-                Files.write(rootPath.resolve(UUID.randomUUID() + "_acuse.pdf"), documento.file().getBytes());
-            } catch (IOException e) {
-
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error al guardar el archivo en el servidor", e);
-            }
+            try { Files.write(rootPath.resolve(UUID.randomUUID() + "_acuse.pdf"), documento.file().getBytes());
+            } catch (IOException e) {  throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar el archivo en el servidor", e); }
 
             if (docDetalle != null) {
                 docDetalle.setRuta(documento.file().getOriginalFilename());
@@ -72,10 +60,7 @@ public class DocumentoDetalleService {
             }
 
             return 0;
-        } else {
-            return 1;
-        }
-
+        } else { return 1; }
     }
 
     private String obtenerYear(Documento doc) {
@@ -91,12 +76,9 @@ public class DocumentoDetalleService {
 
         if(doc != null && docDetalle != null){
             String year = obtenerYear(doc);
-            String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
-                    : doc.getCarpeta().getJuzgado().getNombre();
+            String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
             juzgado = juzgado.replaceAll(" ", "");
-    
-            Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios")
-                    .resolve(docDetalle.getRuta());
+            Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios").resolve(docDetalle.getRuta());
     
             if (Files.exists(rootPath)) {
                 return Files.readAllBytes(rootPath); // Retorna el archivo como un arreglo de bytes
@@ -106,7 +88,5 @@ public class DocumentoDetalleService {
         }
        
         return new byte[1];
-
-
     }
 }
