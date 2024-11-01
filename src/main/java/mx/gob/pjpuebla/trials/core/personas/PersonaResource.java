@@ -64,4 +64,9 @@ public class PersonaResource {
         return this.personaService.findAllCentroTrabajo(pageable, nombre);
     }
 
+    @GetMapping("/turnado")
+    public Page<PersonaRecordResponse> getPersonalTurnado(@PageableDefault(size = 20) Pageable pageable) {
+        return this.personaService.getPersonalTurnado(pageable);
+    }
+
 }

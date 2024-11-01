@@ -102,7 +102,8 @@ public class DigitalizacionFolderService {
     private Path construirRutaOficio(Documento doc, String year, String juzgado) {
         Path basePath = obtenerBasePath(year, juzgado);
         String nombreOficio = doc.getData().getTipoOficio();
-        
+        // Definición de ruta:  
+      
         if (OFICIO_ADMINISTRATIVO.equalsIgnoreCase(nombreOficio)) {
             return basePath.resolve(OFICIOS_FOLDER).resolve(String.valueOf(doc.getId()));
         } else if (OFICIO_JURISDICCIONAL.equalsIgnoreCase(nombreOficio)) {

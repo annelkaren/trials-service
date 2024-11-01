@@ -1110,6 +1110,40 @@ class DocumentoServiceTest {
         assertEquals(persona.getJuzgado().getNombre(), resultado.juzgado());
     }
 
+    @Test
+    void turnadoPersonalJuzgado_success() {
+        AsignadoTurnadoRecord record1 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.NORMAL);
+        AsignadoTurnadoRecord record2 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.URGENTE);
+        List<AsignadoTurnadoRecord> records = Arrays.asList(record1, record2);
+
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona()
+                .setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento()
+                .setCarpeta(carpeta)
+                .setDocumento(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("ASIGNADO")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+
+        when(personaRepository.findById(record1.idPersonalJuzgado().longValue())).thenReturn(Optional.of(persona));
+        when(conceptoRepository.findById(record1.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+
+        List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
+
+        assertNotNull(resultados);
+        assertEquals(2, resultados.size());
+    }
+
+
 
     @Test
     void testSendEmailFamiliar() {

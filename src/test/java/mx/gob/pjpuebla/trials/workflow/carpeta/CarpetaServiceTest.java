@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -282,6 +283,38 @@ class CarpetaServiceTest {
     }
 
     @Test
+    void actualizarInformacionAnexos_promocion_Success() {
+        Integer documentoId = 123;
+        List<AnexoBandejaRecepcionRecord> anexos = List
+                .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
+        Persona persona = PersonaSetUp.createPersona();
+        Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado2);
+        documento.getCarpeta().setJuzgado(juzgado2);
+
+        given(personaService.getAuditor())
+                .willReturn(persona);
+        given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+
+        DocumentoRecord response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
+
+        assertThat(response).isNotNull();
+
+        verify(anexoRepository, times(1)).save(anexo);
+        verify(documentoRepository, times(1)).save(documento);
+    }
+
+    @Test
     void actualizarInformacionAnexos_Success() {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
@@ -374,11 +407,32 @@ class CarpetaServiceTest {
     }
 
     @Test
-    void observacionAnexos_createsMovimiento() {
+    void observacionAnexos_createsMovimiento_nullCarpeta() {
         TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
         Documento documento = DocumentoSetUp.create(tipoJuicio1);
         List<String> anexos = List.of("Anexo 1", "Anexo 2");
         Persona persona = PersonaSetUp.createPersona();
+        documento.setTipoDocumento(TipoDocumento.OFICIO);
+
+        when(personaService.getAuditor()).thenReturn(persona);
+
+        target.setObservacionesAnexos(documento, anexos);
+
+        verify(movimientoService).createMovimento(
+                eq(null),
+                eq(documento),
+                eq(persona),
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+        );
+    }
+
+    @Test
+    void observacionAnexos_createsMovimiento_nullDocumento() {
+        TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio1);
+        List<String> anexos = List.of("Anexo 1", "Anexo 2");
+        Persona persona = PersonaSetUp.createPersona();
+
 
         when(personaService.getAuditor()).thenReturn(persona);
 
@@ -386,12 +440,11 @@ class CarpetaServiceTest {
 
         verify(movimientoService).createMovimento(
                 eq(documento.getCarpeta()),
-                eq(documento),
+                eq(null),
                 eq(persona),
                 argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
         );
     }
-
     @Test
     void testGetCatalogoList_ValidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");

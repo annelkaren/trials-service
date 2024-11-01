@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.instituciones.InstitucionSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
@@ -102,7 +103,21 @@ public class DocumentoSetUp {
     }
 
     public static DocumentoOficioDigitalizacionRecord documentoOficioDigitalizacionRecordSetUp(){
-        return new DocumentoOficioDigitalizacionRecord("2", "00000/2024", LocalDate.now(), 1, 1, LocalDate.now(), EstadoCarpeta.ASIGNADO, "asunto prueba", 'C', 'S', "Alexis", "N", "Doc");
+        return new DocumentoOficioDigitalizacionRecord(
+            "2", 
+            "00000/2024",
+            LocalDate.now(),
+            1,
+            1,
+            LocalDate.now(),
+            EstadoCarpeta.ASIGNADO,
+            EstadoAcuse.CREADO,
+            "asunto prueba",
+            'C', 
+            'S', 
+            "Alexis",
+            "Ninguno",
+            "<p>hola mundo</p", "prueba.pdf");
     }
 
     public static MovimientoPersonalJuzgadoRecord createMovimientoPersonalJuzgadoRecord() {

@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.documentoContenido;
 
 import java.time.LocalDate;
 
+import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigitalizacionRecord;
 
@@ -20,11 +21,13 @@ public class DocumentoContenidoSetUp {
                   1,
                    LocalDate.now(), 
                    EstadoCarpeta.ASIGNADO,
+                   EstadoAcuse.CREADO,
                  "asunto prueba",
                     'c',
                   'S',
                     "acuse",
                     "comentarios...",
-                    "<p>Hola mundo </p>");
+                    "<p>Hola mundo </p>",
+                    "acuse.pdf");
     }
 }

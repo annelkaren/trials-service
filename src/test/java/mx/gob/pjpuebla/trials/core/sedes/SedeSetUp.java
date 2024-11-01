@@ -67,6 +67,7 @@ public class SedeSetUp {
 
     public static SedeDomicilioRecordResponse createSedeDomicilioRecordResponse (){
         return new SedeDomicilioRecordResponse(1, "Juzgado XII", Estado.ACTIVE,
-        new DomicilioRecord(1L, "Juarez", "12", "", "Puebla", "Amozoc", "", "", "", ""));
+        new DomicilioRecord(1L, "Juarez", "12", "", "Puebla", "Amozoc", "", "", "", ""),
+                "2222740005");
     }
 }

@@ -18,7 +18,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -28,11 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Transactional
 @RequiredArgsConstructor
@@ -129,14 +126,13 @@ public class CarpetaService {
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción.
-        if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
-            documento.setEstatus(EstadoCarpeta.ASIGNADO);
-        }
-
-        if (documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
-                                               || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
+        if (documento.getTipoDocumento() == null && documento.getCarpeta() != null && (
+                documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
+                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
+        )
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-        }
+        else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION))
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
 
         documento = documentoRepository.save(documento);
 
@@ -179,8 +175,7 @@ public class CarpetaService {
         }
         String concatenatedAnexos = String.join(", ", anexos);
         String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
-
-        movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
+        movimientoService.createMovimento((documento.getTipoDocumento() == null ? documento.getCarpeta() : null), (documento.getTipoDocumento() == null) ? null : documento, personaService.getAuditor(), motivo);
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {

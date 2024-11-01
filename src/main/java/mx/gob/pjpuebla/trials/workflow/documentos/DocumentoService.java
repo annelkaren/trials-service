@@ -769,11 +769,15 @@ public class DocumentoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
+        EstadoAcuse estadoAcuse = null;
+        String rutaAcuse = "";
 
         if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
+            estadoAcuse = documentoDetalle.getEstado();
+            rutaAcuse = documentoDetalle.getRuta();
         }
 
 
@@ -785,12 +789,14 @@ public class DocumentoService {
                 doc.getInstitucion().getId(),
                 fechaEntrega,
                 doc.getEstatus(),
+                estadoAcuse,
                 asunto,
                 ' ',
                 ' ',
                 "",
                 "",
-                "");
+                "",
+                rutaAcuse);
 
     }
 
@@ -947,5 +953,54 @@ public class DocumentoService {
         );
     }
 
+
+    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(List<AsignadoTurnadoRecord> records) {
+        List<MovimientoPersonalJuzgadoRecord> resultados = new ArrayList<>();
+
+        for (AsignadoTurnadoRecord record : records) {
+            Persona personalJuzgado = personaRepository.findById(record.idPersonalJuzgado().longValue())
+                    .orElseThrow(() -> new NotFoundException("Personal no encontrado", "personalJuzgadoId" + record.idPersonalJuzgado()));
+
+            Concepto concepto = conceptoRepository.findById(record.idConcepto())
+                    .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+
+            Documento documento = documentoRepository.findById(record.idDocumentoAsignado())
+                    .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoAsignado()));
+
+            Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
+                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
+
+            documento.setConcepto(concepto);
+            documento.setPrioridad(record.prioridad());
+            documento.setHoras(record.horas());
+            if (documento.getEstatus() == null) {
+                carpeta.setEstatus(EstadoCarpeta.TURNADO);
+            } else {
+                documento.setEstatus(EstadoCarpeta.TURNADO);
+            }
+            if (documento.getPersona() == null) {
+                carpeta.setPersona(personalJuzgado);
+            } else {
+                documento.setPersona(personalJuzgado);
+            }
+
+            documentoRepository.save(documento);
+            carpetaRepository.save(carpeta);
+
+            Persona persona = personaService.getAuditor();
+
+            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name());
+
+            MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
+                    carpeta.getId(),
+                    movimiento.getFechaAsignacion(),
+                    persona.getNombre(),
+                    movimiento.getMotivo(),
+                    persona.getJuzgado().getNombre()
+            );
+            resultados.add(resultado);
+        }
+        return resultados;
+    }
 }
 
