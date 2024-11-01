@@ -246,18 +246,6 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
         }
-        Map<String, Object> model = new HashMap<>();
-        model.put("actor", "Pedro Bueno");
-        model.put("demandado", "Jorge Malo");
-        model.put("alias", "El pichicuaz");
-        emailService.sendMail(
-                List.of("jnsrjzgo@outlook.com"),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                "El Subject",
-                "sample.ftl",
-                model
-        );
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
@@ -944,7 +932,7 @@ public class DocumentoService {
         sendEmail.put("anexos", anexosHtml.toString());
 
         emailService.sendMail(
-                List.of("eduardosalazartecuapacho@gmail.com"),
+                List.of("annelkaren@gmail.com"), //TODO
                 Collections.emptyList(),
                 Collections.emptyList(),
                 "Recepción de Asignación de Juicio",
