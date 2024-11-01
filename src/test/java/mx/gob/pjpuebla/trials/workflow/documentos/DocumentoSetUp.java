@@ -116,7 +116,7 @@ public class DocumentoSetUp {
             'C', 
             'S', 
             "Alexis",
-            "N",
+            "Ninguno",
             "<p>hola mundo</p", "prueba.pdf");
     }
 

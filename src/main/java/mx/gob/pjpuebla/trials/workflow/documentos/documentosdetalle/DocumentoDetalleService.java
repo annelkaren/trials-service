@@ -15,12 +15,10 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
-import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import java.time.LocalDate;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.io.IOException;
 import java.util.UUID;
 @Transactional
 @Slf4j
@@ -28,7 +26,6 @@ import java.util.UUID;
 @Service
 public class DocumentoDetalleService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DigitalizacionFolderService digitalizacionFolderService;
     private final DocumentoRepository documentoRepository;
     private final PersonaService personaService;
 
@@ -41,39 +38,43 @@ public class DocumentoDetalleService {
 
         //creamos ruta para guardar el documento
         // TODO: ACOPLARLO CON LA FUNCION DE DIGITALIZACIÓN Y SACAR LA LOGICA DE CREACION DE CARPETA DE AQUI.
-
-        String year = obtenerYear(doc);
-        String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
-        juzgado = juzgado.replaceAll(" ", "");
-
-        Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios");
-
-        try {
-            Files.createDirectories(rootPath);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
+        if(doc != null){
+            String year = obtenerYear(doc);
+            String juzgado = doc.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre() : doc.getCarpeta().getJuzgado().getNombre();
+            juzgado = juzgado.replaceAll(" ", "");
+    
+            Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios");
+    
+            try {
+                Files.createDirectories(rootPath);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+    
+              // Guardar el archivo y manejar posibles excepciones
+            try {
+                Files.write(rootPath.resolve(UUID.randomUUID() + "_acuse.pdf"), documento.file().getBytes());
+            } catch (IOException e) {
+    
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error al guardar el archivo en el servidor", e);
+            }
+    
+    
+            if(docDetalle != null) {
+                docDetalle.setRuta(documento.file().getOriginalFilename());
+                docDetalle.setEstado(documento.estado());
+                docDetalle.setComentario(documento.comentario());
+                docDetalle.setFechaEntrega(documento.fechaEntrega());
+                documentoDetalleRepository.save(docDetalle);
+            }
+    
+    
+            return 0;
+        }else{
+            return 1;
         }
 
-          // Guardar el archivo y manejar posibles excepciones
-        try {
-            Files.write(rootPath.resolve(UUID.randomUUID() + "_acuse.pdf"), documento.file().getBytes());
-        } catch (IOException e) {
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al guardar el archivo en el servidor", e);
-        }
-
-
-        if(docDetalle != null) {
-            docDetalle.setRuta(documento.file().getOriginalFilename());
-            docDetalle.setEstado(documento.estado());
-            docDetalle.setComentario(documento.comentario());
-            docDetalle.setFechaEntrega(documento.fechaEntrega());
-            documentoDetalleRepository.save(docDetalle);
-        }
-
-
-        return 1;
     }
 
     private String obtenerYear(Documento doc) {
@@ -93,7 +94,7 @@ public class DocumentoDetalleService {
         juzgado = juzgado.replaceAll(" ", "");
 
         Path rootPath = Paths.get(rootFolder, "digitalizacion", year, juzgado).resolve("oficios").resolve(docDetalle.getRuta());
-        System.out.println("RUTA DEL ARCHIVO: " + rootPath.toString());
+
 
         if (Files.exists(rootPath)) {
             return Files.readAllBytes(rootPath); // Retorna el archivo como un arreglo de bytes
