@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -374,11 +375,32 @@ class CarpetaServiceTest {
     }
 
     @Test
-    void observacionAnexos_createsMovimiento() {
+    void observacionAnexos_createsMovimiento_nullCarpeta() {
         TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
         Documento documento = DocumentoSetUp.create(tipoJuicio1);
         List<String> anexos = List.of("Anexo 1", "Anexo 2");
         Persona persona = PersonaSetUp.createPersona();
+        documento.setTipoDocumento(TipoDocumento.OFICIO);
+
+        when(personaService.getAuditor()).thenReturn(persona);
+
+        target.setObservacionesAnexos(documento, anexos);
+
+        verify(movimientoService).createMovimento(
+                eq(null),
+                eq(documento),
+                eq(persona),
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+        );
+    }
+
+    @Test
+    void observacionAnexos_createsMovimiento_nullDocumento() {
+        TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio1);
+        List<String> anexos = List.of("Anexo 1", "Anexo 2");
+        Persona persona = PersonaSetUp.createPersona();
+
 
         when(personaService.getAuditor()).thenReturn(persona);
 
@@ -386,12 +408,11 @@ class CarpetaServiceTest {
 
         verify(movimientoService).createMovimento(
                 eq(documento.getCarpeta()),
-                eq(documento),
+                eq(null),
                 eq(persona),
                 argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
         );
     }
-
     @Test
     void testGetCatalogoList_ValidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
