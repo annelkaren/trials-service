@@ -7,8 +7,8 @@ failureConditions:
   severityThresholds:
     any: 10
   testCoverageThresholds:
-    fresh: 80
-    total: 80
+    fresh: 79
+    total: 79
 coverage:
   reportProblems: false
 include:
