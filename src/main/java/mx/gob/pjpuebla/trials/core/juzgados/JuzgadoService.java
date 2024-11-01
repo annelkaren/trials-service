@@ -15,6 +15,7 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
 
 @Slf4j
 @Transactional
@@ -105,6 +107,10 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem create(Juzgado juzgado) {
+        if(juzgadoRepository.findByNombre(juzgado.getNombre()).isPresent()){
+            throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
+        }
+
         Materia materia = materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
         juzgado.setMateria(materia);
 
@@ -112,7 +118,9 @@ public class JuzgadoService {
         juzgado.setSede(sede);
 
         juzgado.setContadorAsignaciones(0);
-
+        if (juzgado.getMaxAsignacionesRonda() == null) {
+            juzgado.setMaxAsignacionesRonda(2);
+        }
         List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
         List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
         juzgado.setTipoJuicios(tipojuicios);
@@ -286,5 +294,4 @@ public class JuzgadoService {
         key = (key != null) ? key.toLowerCase() : "";
         return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
     }
-
 }

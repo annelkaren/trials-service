@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -36,14 +38,19 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
@@ -52,11 +59,14 @@ import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,16 +74,15 @@ import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.time.LocalDate;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -129,6 +138,16 @@ class DocumentoServiceTest {
     private DocumentoFoliosService documentoFoliosService;
     @Mock
     private ConceptoRepository conceptoRepository;
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
+    @Mock
+    private DocumentoContenidoRepository documentoContenidoRepository;
+    @Mock
+    private AudienciaRepository audienciaRepository;
+    @Mock
+    private SelloGenerator selloGenerator;
+    @Mock
+    private EmailService emailService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -603,7 +622,6 @@ class DocumentoServiceTest {
 
         Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("",
                 PageRequest.of(1, listPage.size()));
-        System.out.println(page.getContent());
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -618,6 +636,8 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        demanda.setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
@@ -658,12 +678,14 @@ class DocumentoServiceTest {
         // Mismo juzgado
         Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
         Persona persona = new Persona().setJuzgado(juzgado).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).contains(persona.getNombre());
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
         // diferente juzgado
-        persona = new Persona().setJuzgado(new Juzgado()).setNombre("Juzgado 2").setId(100L);
+        persona = new Persona().setJuzgado(new Juzgado().setNombre("Juzgado 2").setId(100));
         origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo(persona.getJuzgado().getNombre());
+        assertThat(origen.get("name").toString()).isEqualTo(persona.getJuzgado().getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
@@ -672,22 +694,24 @@ class DocumentoServiceTest {
         Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
         Movimiento movimiento = new Movimiento().setOficialia(oficialia);
         Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).contains(persona.getNombre());
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
         // diferente oficialia
         persona = new Persona().setOficialia(new Oficialia().setNombre("Oficialia 2").setId(3));
         origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo(persona.getOficialia().getNombre());
+        assertThat(origen.get("name").toString()).contains(persona.getOficialia().getNombre());
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
     void getOrigen_invalid() {
         Movimiento movimiento = new Movimiento();
         Persona persona = new Persona();
-        String origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen).isEqualTo("");
+        Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
+        assertThat(origen.containsKey("name")).isFalse();
+        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
-
 
     @Test
     void testProcesarTipoCarpeta() {
@@ -736,7 +760,6 @@ class DocumentoServiceTest {
         );
 
     }
-
 
     @Test
     void procersar_getQR() {
@@ -846,22 +869,26 @@ class DocumentoServiceTest {
         String asunto = "Prueba asunto";
         Integer carpetaId = 1;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
-        System.out.println(persona.getJuzgado().getNombre());
 
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
         given(personaService.getAuditor())
                 .willReturn(persona);
-
         given(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null))
                 .willReturn(1);
-
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
-
         given(carpetaRepository.findById(carpetaId))
                 .willReturn(Optional.of(CarpetaSetUp.create()));
+        given(documentoRepository.save(any(Documento.class)))
+                .willReturn(documento);
 
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
@@ -875,22 +902,368 @@ class DocumentoServiceTest {
         String asunto = "Prueba asunto";
         Integer carpetaId = null;
         Persona persona = PersonaSetUp.createPersona().setJuzgado(JuzgadoSetUp.createJuzgado());
-        System.out.println(persona.getJuzgado().getNombre());
 
         Institucion institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
         Integer folio = 1;
 
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
         given(personaService.getAuditor())
                 .willReturn(persona);
-
         given(documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null))
                 .willReturn(1);
-
+        given(documentoRepository.save(any(Documento.class)))
+                .willReturn(documento);
         given(institucionRepository.findById(institucionId))
                 .willReturn(Optional.of(institucion));
 
         Integer resultado = documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId);
 
         assertThat(resultado).isEqualTo(folio);
+    }
+
+    @Test
+    void getAllBandejaAsignados() {
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
+                1,
+                "000001/2024",
+                "1",
+                "1",
+                TipoCarpeta.DEMANDA, TipoDocumento.PROMOCION, concepto, LocalDateTime.now(), EstadoCarpeta.ASIGNADO, "");
+
+        List<DocumentoAsignadoRecord> listPage = Collections.singletonList(documentoAsignadoRecord);
+
+        given(documentoRepository.findByPersonaAsignada(anyString(), any(), any()))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(personaService.getAuditor())
+                .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
+
+        Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",
+                PageRequest.of(1, listPage.size()));
+        System.out.println(page.getContent());
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", documentoAsignadoRecord.id())
+                .hasFieldOrPropertyWithValue("expediente", documentoAsignadoRecord.expediente())
+                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoCarpeta().name())
+                .hasFieldOrPropertyWithValue("concepto", documentoAsignadoRecord.concepto().getNombre())
+                .hasFieldOrPropertyWithValue("fechaTurnado", documentoAsignadoRecord.fechaTurnado())
+                .hasFieldOrPropertyWithValue("fechaTermino", documentoAsignadoRecord.fechaTurnado().plusDays(concepto.getDias()));
+    }
+
+    @Test
+    void getDataDocumentoRecepcion() {
+        Integer documentoId = 1;
+        List<AnexoRecepcionRecord> anexos = new ArrayList<>();
+
+        // Agregar instancias de AnexoRecepcionRecord a la lista
+        anexos.add(new AnexoRecepcionRecord(1, EstadoAnexo.ASIGNADO, "Anexo 1"));
+        anexos.add(new AnexoRecepcionRecord(2, EstadoAnexo.ASIGNADO, "Anexo 2"));
+        anexos.add(new AnexoRecepcionRecord(3, EstadoAnexo.ASIGNADO, "Anexo 3"));
+        given(documentoRepository.findById(documentoId))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
+
+        given(anexoRepository.findAnexosByDocumentoId(documentoId))
+                .willReturn(anexos);
+
+        DocumentoRecepcionRecord doc = documentoService.getDataDocumentoRecepcion(documentoId);
+
+        assertNotNull(doc, "El DocumentoRecepcionRecord no debe ser nulo");
+        assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
+        assertEquals("000001/2024", doc.expediente(), "El expediente del documento no es el esperado");
+        assertEquals(TipoDocumento.PROMOCION.name(), doc.tipoEntrada(), "El tipo de documento no es el esperado");
+    }
+
+
+    @Test
+    void getAll_bandeja_oficios_success_without_detalle_contenido() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
+        OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
+                1,
+                "1",
+                "institucion 1",
+                "Asunto 1",
+                EstadoCarpeta.CREADO,
+                LocalDate.now(),
+                LocalDate.now(),
+                false,
+                false
+        );
+
+        List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
+
+        given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+
+        Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("folio", oficioResponseRecord.folio())
+                .hasFieldOrPropertyWithValue("dependencia", oficioResponseRecord.dependencia())
+                .hasFieldOrPropertyWithValue("estatus", oficioResponseRecord.estatus())
+                .hasFieldOrPropertyWithValue("fechaEmision", oficioResponseRecord.fechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", oficioResponseRecord.bandAcuse())
+                .hasFieldOrPropertyWithValue("bandDigitalizado", oficioResponseRecord.bandDigitalizado());
+    }
+
+    @Test
+    void getAll_bandeja_oficios_success_with_detalle_contenido() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
+        OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
+                1,
+                "1",
+                "institucion 1",
+                "Asunto 1",
+                EstadoCarpeta.CREADO,
+                LocalDate.now(),
+                LocalDate.now(),
+                true,
+                true
+        );
+
+        List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
+
+        given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class), any(Pageable.class)))
+                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+
+        Page<OficioResponseRecord> page = documentoService.getAllOficios("", PageRequest.of(1, listPage.size()));
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("folio", oficioResponseRecord.folio())
+                .hasFieldOrPropertyWithValue("dependencia", oficioResponseRecord.dependencia())
+                .hasFieldOrPropertyWithValue("estatus", oficioResponseRecord.estatus())
+                .hasFieldOrPropertyWithValue("fechaEmision", oficioResponseRecord.fechaEmision())
+                .hasFieldOrPropertyWithValue("bandAcuse", oficioResponseRecord.bandAcuse())
+                .hasFieldOrPropertyWithValue("bandDigitalizado", oficioResponseRecord.bandDigitalizado());
+    }
+
+    @Test
+    void cancel_oficio_success() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setFolio("1")
+                .setInstitucion(new Institucion().setNombre("institucion1"))
+                .setEstatus(EstadoCarpeta.CREADO)
+                .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+        Persona persona = PersonaSetUp.createPersona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        Movimiento movimiento = new Movimiento().setDocumento(documento).setMotivo("CREADO").setId(1);
+
+        given(documentoRepository.findById(any(Integer.class)))
+                .willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(movimientoService.createMovimento(any(), any(), any(), any())).willReturn(movimiento);
+
+        documentoService.cancelOficio(1);
+        verify(personaService).getAuditor();
+        verify(documentoRepository).findById(1);
+        verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
+        verify(movimientoService).createMovimento(any(), any(), any(), any());
+    }
+
+    @Test
+    void movimientoPersonalJuzgado_success() {
+        PersonalJuzgadoRecord record = new PersonalJuzgadoRecord(51, 2);
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona()
+                .setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento()
+                .setCarpeta(carpeta)
+                .setDocumento(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("ASIGNADO")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+
+        when(conceptoRepository.findById(record.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(record.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
+
+        MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(record);
+
+        assertNotNull(resultado);
+        assertEquals(carpeta.getId(), resultado.carpeta());
+        assertEquals(movimiento.getFechaAsignacion(), resultado.fechaAsignacion());
+        assertEquals(persona.getNombre(), resultado.persona());
+        assertEquals(movimiento.getMotivo(), resultado.movimiento());
+        assertEquals(persona.getJuzgado().getNombre(), resultado.juzgado());
+    }
+
+    @Test
+    void turnadoPersonalJuzgado_success() {
+        AsignadoTurnadoRecord record1 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.NORMAL);
+        AsignadoTurnadoRecord record2 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.URGENTE);
+        List<AsignadoTurnadoRecord> records = Arrays.asList(record1, record2);
+
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona()
+                .setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento()
+                .setCarpeta(carpeta)
+                .setDocumento(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("ASIGNADO")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+
+        when(personaRepository.findById(record1.idPersonalJuzgado().longValue())).thenReturn(Optional.of(persona));
+        when(conceptoRepository.findById(record1.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+
+        List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
+
+        assertNotNull(resultados);
+        assertEquals(2, resultados.size());
+    }
+
+
+
+    @Test
+    void testSendEmailFamiliar() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        PersonaDocumentoItemRecord actorRecord = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoRecord = new PersonaDocumentoItemRecord(
+                "María", "López", "Martínez", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+        List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
+        DocumentoData documentoData = new DocumentoData();
+
+        DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
+                actorRecord,
+                demandadoRecord,
+                anexos,
+                tipoJuicio.getId(),
+                documentoData
+        );
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO);
+        when(audienciaRepository.getSalaNombreByCarpetaId(any())).thenReturn("1");
+        when(selloGenerator.updateExpedientePorTipoJuicio(any())).thenReturn("J/T/000001/2024/FT-FO");
+
+
+        documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
+        ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(emailService).sendMail(
+                eq(List.of("annelkaren@gmail.com")),
+                eq(Collections.emptyList()),
+                eq(Collections.emptyList()),
+                eq("Recepción de Asignación de Juicio"),
+                eq("EmailDemandaFamiliar.ftl"),
+                sendEmailCaptor.capture()
+        );
+
+        Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
+
+        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("1", sendEmailData.get("sala"));
+        assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
+        assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
+        assertEquals("William Perez".trim(), sendEmailData.get("actor").toString().trim());
+        assertEquals("2461140011", sendEmailData.get("telefono"));
+        assertEquals("juan@gmail.com", sendEmailData.get("correo"));
+        assertEquals("María López Martínez".trim(), sendEmailData.get("demandado").toString().trim());
+        assertEquals("<ul><li>Acta de nacimiento</li><li>INE</li></ul>", sendEmailData.get("anexos"));
+    }
+
+
+    @Test
+    void testSendEmailFamiliarSinAnexos() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        PersonaDocumentoItemRecord actorRecord = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoRecord = new PersonaDocumentoItemRecord(
+                "María", "López", "", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+        List<String> anexos = null; // Anexos como null para probar el caso sin anexos
+        DocumentoData documentoData = new DocumentoData();
+
+        DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
+                actorRecord,
+                demandadoRecord,
+                anexos,
+                tipoJuicio.getId(),
+                documentoData
+        );
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO);
+        when(audienciaRepository.getSalaNombreByCarpetaId(any())).thenReturn("1");
+        when(selloGenerator.updateExpedientePorTipoJuicio(any())).thenReturn("J/T/000001/2024/FT-FO");
+
+        documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
+        ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(emailService).sendMail(
+                eq(List.of("annelkaren@gmail.com")),
+                eq(Collections.emptyList()),
+                eq(Collections.emptyList()),
+                eq("Recepción de Asignación de Juicio"),
+                eq("EmailDemandaFamiliar.ftl"),
+                sendEmailCaptor.capture()
+        );
+
+        Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
+
+        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("1", sendEmailData.get("sala"));
+        assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
+        assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
+        assertEquals("William Perez".trim(), sendEmailData.get("actor").toString().trim());
+        assertEquals("2461140011", sendEmailData.get("telefono"));
+        assertEquals("juan@gmail.com", sendEmailData.get("correo"));
+        assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
+        assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
     }
 }

@@ -81,12 +81,12 @@ public class SelloGenerator {
         PersonaDocumentoRecord demandado = getInfoPersona(documento.getCarpeta().getId(), "Demandado");
         ExtraAudienciaSelloRecord audiencia = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
-        documento = updateExpedientePorTipoJuicio(documento);
-        expedientesByDemandadoActor(demandado.nombre(), actor.nombre());
+        String expediente= updateExpedientePorTipoJuicio(documento);
+        expedientesByDemandadoActor(demandado.nombre(), actor.nombre(), documento.getCarpeta().getTipoJuicio().getMateria().getId());
         String relacionExpediente = (expedienteRelacionados != null && !expedienteRelacionados.isEmpty()) ? expedienteRelacionados : "";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("expediente", documento.getCarpeta().getExpediente());
+        parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
         parameters.put("folio", documento.getCarpeta().getFolio());
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
@@ -172,7 +172,7 @@ public class SelloGenerator {
                 .map(Anexo::getNombre)
                 .map(nombre -> "- " + nombre + " <br/>")
                 .toList();
-        return String.join("", list);
+        return list.isEmpty() ? "- Sin anexos" : String.join("", list);
     }
 
     private String tipoDocumentoFolio(Documento documento) {
@@ -223,10 +223,10 @@ public class SelloGenerator {
         return nombreCapturista;
     }
 
-    public Documento updateExpedientePorTipoJuicio(Documento documento) {
+    public String updateExpedientePorTipoJuicio(Documento documento) {
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
         DocumentoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
-
+        String expediente = "";
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
             if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
@@ -245,19 +245,20 @@ public class SelloGenerator {
                 );
                 isPromocionOralidadExhorto = true;
                 isOralidadFamiliar = true;
-                carpeta.setExpediente(expenienteOralFamiliar);
+              expediente = expenienteOralFamiliar;
             } else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
-                carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
+
+                expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
+
+                expediente = carpeta.getExpediente() + " - Promocion";
                 isPromocionOralidadExhorto = false;
             }
-            documento.setCarpeta(carpeta);
         } else {
             throw new NotFoundException("Carpeta no encontrada", "carpetaId");
         }
-        return documento;
+        return expediente;
     }
 
     public PersonaDocumentoRecord getInfoPersona(Integer id, String parte) {
@@ -294,10 +295,10 @@ public class SelloGenerator {
     }
 
     public List<RelacionExpedientesRecord> getAllExpedientesRelacionados(String nombre, String apellidoP, String apellidoM) {
-        return personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre, apellidoM, apellidoP);
+        return personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre, apellidoM, apellidoP, 1);
     }
 
-    private void expedientesByDemandadoActor(String persona1, String persona2) {
+    private void expedientesByDemandadoActor(String persona1, String persona2, Integer materiaId) {
         String[] partesPersona1 = persona1.split(" ");
         String nombre1 = partesPersona1[0];
         String apellidoP1 = partesPersona1.length > 1 ? partesPersona1[1] : "";
@@ -308,8 +309,8 @@ public class SelloGenerator {
         String apellidoP2 = partesPersona2.length > 1 ? partesPersona2[1] : "";
         String apellidoM2 = partesPersona2.length > 2 ? partesPersona2[2] : "";
 
-        List<RelacionExpedientesRecord> listDemandado = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre1, apellidoM1, apellidoP1);
-        List<RelacionExpedientesRecord> listActor = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre2, apellidoM2, apellidoP2);
+        List<RelacionExpedientesRecord> listDemandado = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre1, apellidoM1, apellidoP1, materiaId);
+        List<RelacionExpedientesRecord> listActor = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId(nombre2, apellidoM2, apellidoP2, materiaId);
 
         Set<String> expedientesActor = listActor.stream()
                 .map(RelacionExpedientesRecord::expediente)

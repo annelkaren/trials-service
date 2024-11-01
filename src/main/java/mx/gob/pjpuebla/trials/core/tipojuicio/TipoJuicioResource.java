@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 
 import java.util.List;
 
@@ -33,11 +31,8 @@ public class TipoJuicioResource {
             @RequestParam(value = "tipoSistemaNombre", required = false) String tipoSistemaNombre,
             @RequestParam(value = "materiaNombre", required = false) String materiaNombre
     ) {
-        return tipoJuicioService.getAllActive(pageable, new TipoJuicio()
-                .setNombre(tipoJuicioNombre)
-                .setTipoSistema(new TipoSistema().setNombre(tipoSistemaNombre))
-                .setMateria(new Materia().setNombre(materiaNombre))
-        );
+
+        return tipoJuicioService.getAllActiveByCentroTrabajo(pageable);
 
     }
 
@@ -52,4 +47,13 @@ public class TipoJuicioResource {
         return tipoJuicioService.findById(id);
     }
 
+    @GetMapping("/materias/{materiaId}/tipojuicio")
+    public List<TipoJuicioMateriaRecord> getTipoJuiciosByMateria(@PathVariable Integer materiaId) {
+     return this.tipoJuicioService.findTipoJuiciosByMateria(materiaId);
+    }
+
+    @GetMapping(value = "/{id}/juicios", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TipoJuicioDemandasRecord> getTiposJuiciosHijos(@PathVariable Integer id) {
+        return tipoJuicioService.getAllTipoJuicioHijo(id);
+    }
 }

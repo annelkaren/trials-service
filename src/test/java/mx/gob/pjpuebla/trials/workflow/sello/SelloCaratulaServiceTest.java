@@ -2,7 +2,14 @@ package mx.gob.pjpuebla.trials.workflow.sello;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
+
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,4 +71,54 @@ public class SelloCaratulaServiceTest {
 
         assertEquals("Empresa", resultado);
     }
+
+    @Test
+     void testGetExhortoPromocion_Exhorto() {
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.createCarpetaExhorto();
+        documento.setCarpeta(carpeta);
+
+        DocumentoData data = new DocumentoData();
+        data.setExhortoProcedencia("Procedencia Exhorto");
+        documento.setData(data);
+
+        String resultado = selloCaratulaService.getExhortoPromocion(documento);
+
+        assertEquals("Procedencia Exhorto", resultado);
+    }
+
+    @Test
+    void testGetExhortoPromocion_NoExhorto() {
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        documento.setCarpeta(carpeta);
+
+        DocumentoData data = new DocumentoData();
+        data.setExhortoProcedencia("Procedencia Otro Tipo");
+        documento.setData(data);
+
+        String resultado = selloCaratulaService.getExhortoPromocion(documento);
+
+        assertEquals("", resultado);
+    }
+
+    @Test
+     void testGetExhortoPromocion_NullData() {
+        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.createCarpetaExhorto();
+        documento.setCarpeta(carpeta);
+
+        DocumentoData data = new DocumentoData();
+        documento.setData(data);
+
+        String resultado = selloCaratulaService.getExhortoPromocion(documento);
+
+        assertNull(resultado);
+    }
+
+
+
 }

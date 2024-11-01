@@ -69,4 +69,6 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
             """)
     Page<InstitucionRecord> findAllEstadoIn(@Param("estados") List<Estado> estados, Pageable pageable);
 
+    Optional<Institucion> findByNombre(String nombre);
+
 }

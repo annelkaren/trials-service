@@ -17,15 +17,15 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
     Optional<Audiencia> findByCarpeta(Carpeta carpeta);
 
     @Query("""
-        SELECT max(a.fechaAudiencia) from Audiencia a
-        WHERE a.tipoAudiencia = :tipoAudiencia
-        and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
-        and EXISTS(
-            Select 1 FROM Sala s where a.sala = s and s.juzgado = :juzgado
-            and s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
-        )
+                SELECT max(a.fechaAudiencia) from Audiencia a
+                WHERE a.tipoAudiencia = :tipoAudiencia
+                and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+                and EXISTS(
+                    Select 1 FROM Sala s where a.sala = s and s.juzgado = :juzgado
+                    and s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+                )
 
-    """)
+            """)
     LocalDateTime getFechaUltimaAudiencia(Juzgado juzgado, TipoAudiencia tipoAudiencia);
 
     @Query("""
@@ -40,4 +40,11 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             """)
     AudienciaOralidadFamiliarRecord getJuzAndSalaAndAudienciaByIdcarpeta(@Param("carpetaId") Integer carpetaId);
 
+    @Query("""
+                SELECT s.nombre
+                FROM Audiencia a
+                JOIN a.sala s
+                WHERE a.carpeta.id = :carpetaId
+            """)
+    String getSalaNombreByCarpetaId(@Param("carpetaId") Integer carpetaId);
 }

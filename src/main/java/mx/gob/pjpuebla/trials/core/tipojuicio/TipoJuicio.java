@@ -49,6 +49,12 @@ public class TipoJuicio implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Materia materia;
 
+    @Column(name = "FN_TIPO_JUICIO_PADRE_ORAL")
+    private Integer tipoJuicioPadreOral;
+
+    @Column(name = "FN_TIPO_JUICIO_PADRE_TRAD")
+    private Integer tipoJuicioPadreTrad;
+
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

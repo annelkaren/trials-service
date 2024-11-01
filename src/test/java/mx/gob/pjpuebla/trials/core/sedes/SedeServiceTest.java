@@ -8,8 +8,8 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +116,20 @@ class SedeServiceTest {
     }
 
     @Test
+    void create_throws_conflict_exception_when_nombre_already_exists() {
+        given(mockSedeRepository.findByNombre(sede.getNombre())).willReturn(Optional.of(sede));
+        ConflictException assertThrows = assertThrows(
+        ConflictException.class,
+                () -> sedeService.create(sede)
+        );
+
+        assertThat(assertThrows.getMessage()).contains("No pueden existir 2 sedes con el mismo nombre");
+    }
+
+    @Test
     void create() {
+        given(mockSedeRepository.findByNombre(sede.getNombre()))
+                .willReturn(Optional.empty());
         sede.setDistrito(distrito);
         sede.setDomicilio(domicilio);
         given(mockDistritoRepository.findById(distrito.getId()))

@@ -90,10 +90,12 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
         JOIN pd.carpeta c
         JOIN c.juzgado j
         JOIN c.tipoJuicio tj
+        JOIN tj.materia m
         WHERE lower(pd.nombre) = lower(:nombreA)
         AND lower(pd.apellidoPaterno) = lower(:apellidoP)
         AND lower(pd.apellidoMaterno) = lower(:apellidoM)
+        AND m.id = :materiaId
         """)
-    List<RelacionExpedientesRecord> getAllExpedienteRelacionadosByPersonaId(@Param("nombreA") String nombreA, @Param("apellidoM") String apellidoM, @Param("apellidoP") String apellidoP);
+    List<RelacionExpedientesRecord> getAllExpedienteRelacionadosByPersonaId(@Param("nombreA") String nombreA, @Param("apellidoM") String apellidoM, @Param("apellidoP") String apellidoP, @Param("materiaId") Integer materiaId);
 
 }

@@ -15,6 +15,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Messages;
@@ -45,8 +46,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
 
 @ExtendWith(MockitoExtension.class)
 class JuzgadoServiceTest {
@@ -131,7 +134,22 @@ class JuzgadoServiceTest {
     }
 
     @Test
+    void create_throwsConflictException_whenJuzgadoWithSameNameExists() {
+        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+                .willReturn(Optional.of(juzgado));
+
+        assertThrows(ConflictException.class, () -> {
+                juzgadoService.create(juzgado);
+        });
+
+        verify(juzgadoRepository, never()).save(any(Juzgado.class));
+    }
+
+    @Test
     void create() {
+        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        .willReturn(Optional.empty());
+
         given(materiaRepository.findById(juzgado.getMateria().getId()))
                 .willReturn(Optional.ofNullable(juzgado.getMateria()));
         given(sedeRepository.findById(juzgado.getSede().getId()))

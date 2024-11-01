@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -50,4 +52,17 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<Persona> findByUsuario(String usuario);
 
     Optional<Persona> findByUsuarioAndJuzgadoIdAndEstadoIn(String usuario, Integer juzgadoId, List<Estado> estados);
+
+    @Query("""
+            SELECT p FROM Persona p
+            WHERE CASE
+                WHEN p.juzgado IS NULL AND p.oficialia IS NULL THEN 1
+                WHEN :oficialiaId IS NOT NULL AND p.oficialia.id = :oficialiaId THEN 1
+                WHEN :juzgadoId IS NOT NULL AND p.juzgado.id = :juzgadoId THEN 1
+                ELSE 0
+            END = 1
+            """)
+    Page<Persona> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
+
+    Page<Persona> findByJuzgadoId(Integer juzgadoId, Pageable pageable);
 }

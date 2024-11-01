@@ -1,0 +1,50 @@
+package mx.gob.pjpuebla.trials.core.procedimientos;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+
+import java.io.Serializable;
+
+@Data
+@Entity
+@EntityListeners(AuditListener.class)
+@Table(name = "TBL_PROCEDIMIENTOS")
+public class Procedimiento implements Serializable, Auditable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idProcedimiento")
+    @SequenceGenerator(name = "idProcedimiento", sequenceName = "SEQ_PROCEDIMIENTOS_ID", allocationSize = 1)
+    @Column(name = "PN_ID", nullable = false)
+    private Integer id;
+
+    @Max(Integer.MAX_VALUE)
+    @Version
+    @Column(name = "N_VERSION")
+    private Integer version;
+
+    @NotBlank
+    @Size(min = 3, max = 250)
+    @Column(name = "S_NOMBRE", nullable = false)
+    private String nombre;
+
+    @Enumerated
+    @Column(name = "N_ESTADO", nullable = false)
+    private Estado estado;
+
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TipoJuicio tipoJuicio;
+
+    @Accessors(chain = false)
+    @Embedded
+    private Audit audit;
+}

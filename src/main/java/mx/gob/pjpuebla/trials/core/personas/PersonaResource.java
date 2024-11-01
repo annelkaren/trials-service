@@ -24,7 +24,7 @@ public class PersonaResource {
     public Page<PersonaRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.personaService.getAll(new Persona().setNombre(nombre), pageable);
+        return this.personaService.findAllByCentroTrabajo(nombre, pageable);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -62,6 +62,11 @@ public class PersonaResource {
             @PageableDefault Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.personaService.findAllCentroTrabajo(pageable, nombre);
+    }
+
+    @GetMapping("/turnado")
+    public Page<PersonaRecordResponse> getPersonalTurnado(@PageableDefault(size = 20) Pageable pageable) {
+        return this.personaService.getPersonalTurnado(pageable);
     }
 
 }
