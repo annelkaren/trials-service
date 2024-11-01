@@ -47,4 +47,13 @@ public class TipoJuicioResource {
         return tipoJuicioService.findById(id);
     }
 
+    @GetMapping("/materias/{materiaId}/tipojuicio")
+    public List<TipoJuicioMateriaRecord> getTipoJuiciosByMateria(@PathVariable Integer materiaId) {
+     return this.tipoJuicioService.findTipoJuiciosByMateria(materiaId);
+    }
+
+    @GetMapping(value = "/{id}/juicios", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TipoJuicioDemandasRecord> getTiposJuiciosHijos(@PathVariable Integer id) {
+        return tipoJuicioService.getAllTipoJuicioHijo(id);
+    }
 }

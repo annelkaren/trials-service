@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -40,8 +41,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -94,6 +97,8 @@ class CarpetaServiceTest {
     private CarpetaService carpetaService;
     @Mock
     private MovimientoService movimientoService;
+    @Mock
+    private MovimientoRepository movimientoRepository;
 
     @Mock
     private PersonaRepository personaRepository;
@@ -222,7 +227,6 @@ class CarpetaServiceTest {
         assertThat(result.anexos()).isEqualTo(anexosRecepcion);
     }
 
-
     @Test
     void getBandejaRecepcionByDocumentoId_DocumentoNotFound_ThrowsNotFoundException() {
         Integer documentoId = 1;
@@ -283,7 +287,11 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
         Persona persona = PersonaSetUp.createPersona();
@@ -295,8 +303,9 @@ class CarpetaServiceTest {
                 .willReturn(persona);
         given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
 
-        DocumentoRecord response = target.actualizarInformacionAnexos(anexos, documentoId);
+        DocumentoRecord response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
 
         assertThat(response).isNotNull();
 
@@ -309,44 +318,46 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
 
-
         given(personaService.getAuditor())
                 .willReturn(persona);
         given(anexoRepository.findById(1)).willReturn(Optional.empty());
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(anexos, documentoId));
-
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId));
 
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el anexo con id: " + 1 + "\"");
     }
-
 
     @Test
     void actualizarInformacionAnexos_DocumentoNoEncontrado() {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-
-
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
         Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
-
 
         given(personaService.getAuditor())
                 .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
-
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(anexos, documentoId));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId));
 
 
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el documento asociado al documentoId: " + documentoId + "\"");
@@ -364,11 +375,32 @@ class CarpetaServiceTest {
     }
 
     @Test
-    void observacionAnexos_createsMovimiento() {
+    void observacionAnexos_createsMovimiento_nullCarpeta() {
         TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
         Documento documento = DocumentoSetUp.create(tipoJuicio1);
         List<String> anexos = List.of("Anexo 1", "Anexo 2");
         Persona persona = PersonaSetUp.createPersona();
+        documento.setTipoDocumento(TipoDocumento.OFICIO);
+
+        when(personaService.getAuditor()).thenReturn(persona);
+
+        target.setObservacionesAnexos(documento, anexos);
+
+        verify(movimientoService).createMovimento(
+                eq(null),
+                eq(documento),
+                eq(persona),
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+        );
+    }
+
+    @Test
+    void observacionAnexos_createsMovimiento_nullDocumento() {
+        TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
+        Documento documento = DocumentoSetUp.create(tipoJuicio1);
+        List<String> anexos = List.of("Anexo 1", "Anexo 2");
+        Persona persona = PersonaSetUp.createPersona();
+
 
         when(personaService.getAuditor()).thenReturn(persona);
 
@@ -376,12 +408,11 @@ class CarpetaServiceTest {
 
         verify(movimientoService).createMovimento(
                 eq(documento.getCarpeta()),
-                eq(documento),
+                eq(null),
                 eq(persona),
                 argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
         );
     }
-
     @Test
     void testGetCatalogoList_ValidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
@@ -448,7 +479,6 @@ class CarpetaServiceTest {
         assertThat(result).isEqualTo(items);
     }
 
-
     @Test
     void testGetCatalogoList_CaseCatalogoTipoDefensor() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoTipoDefensor");
@@ -481,6 +511,7 @@ class CarpetaServiceTest {
         assertEquals(CatalogoProfesionOficio.values().length, result.size());
         assertThat(result).isEqualTo(items);
     }
+
     @Test
     void testGetCatalogoList_InvalidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoInvalido");

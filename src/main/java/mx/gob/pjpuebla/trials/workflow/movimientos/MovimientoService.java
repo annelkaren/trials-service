@@ -49,6 +49,22 @@ public class MovimientoService {
         return movimiento;
     }
 
+    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estadoCarpeta, String observaciones, String recomendaciones) {
+        Persona personaAuditor = personaService.getAuditor();
+        Movimiento movimiento = new Movimiento()
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo(estadoCarpeta)
+                .setPersona(personaAuditor)
+                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null )
+                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null )
+                .setCarpeta(carpeta)
+                .setDocumento(documento)
+                .setObservaciones(observaciones)
+                .setRecomendaciones(recomendaciones);
+        movimiento = movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos) {
         return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos);
     }

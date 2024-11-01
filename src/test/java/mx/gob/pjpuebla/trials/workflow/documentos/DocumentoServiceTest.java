@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -1063,5 +1064,38 @@ class DocumentoServiceTest {
         verify(documentoRepository).findById(1);
         verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
         verify(movimientoService).createMovimento(any(), any(), any(), any());
+    }
+
+    @Test
+    void movimientoPersonalJuzgado_success() {
+        PersonalJuzgadoRecord record = new PersonalJuzgadoRecord(51, 2);
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona()
+                .setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento()
+                .setCarpeta(carpeta)
+                .setDocumento(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("ASIGNADO")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+
+        when(conceptoRepository.findById(record.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(record.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
+
+        MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(record);
+
+        assertNotNull(resultado);
+        assertEquals(carpeta.getId(), resultado.carpeta());
+        assertEquals(movimiento.getFechaAsignacion(), resultado.fechaAsignacion());
+        assertEquals(persona.getNombre(), resultado.persona());
+        assertEquals(movimiento.getMotivo(), resultado.movimiento());
+        assertEquals(persona.getJuzgado().getNombre(), resultado.juzgado());
     }
 }

@@ -2,8 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
 import org.springframework.http.MediaType;
@@ -42,11 +42,10 @@ public class CarpetaResource {
 
     @PostMapping(value = "/recepcion/{documentoId}")
     public DocumentoRecord recepcionAnexos(
-            @RequestBody List<AnexoBandejaRecepcionRecord> anexos,
+            @RequestBody DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord,
             @PathVariable Integer documentoId) {
-        return this.carpetaService.actualizarInformacionAnexos(anexos, documentoId);
+        return this.carpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
     }
-
 
     @GetMapping(value = "/enums/{catalago}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<CarpetaCatalogoRecord> getListCatalago(@PathVariable String catalago){
