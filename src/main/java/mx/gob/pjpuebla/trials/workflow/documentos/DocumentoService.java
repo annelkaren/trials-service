@@ -768,7 +768,7 @@ public class DocumentoService {
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
             estadoAcuse = documentoDetalle.getEstado();
-            rutaAcuse = documentoDetalle.getRuta()
+            rutaAcuse = documentoDetalle.getRuta();
         }
 
 
