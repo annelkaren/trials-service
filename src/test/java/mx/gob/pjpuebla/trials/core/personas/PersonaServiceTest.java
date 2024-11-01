@@ -76,6 +76,8 @@ class PersonaServiceTest extends SetupServiceTest {
     SalaRepository salaRepository;
     @Mock
     OficialiaRepository oficialiaRepository;
+    @Mock
+    AuditorAware<Jwt> mockAuditorAware;
 
     private Persona validPersona;
     private PersonaRecord validPersonaRecord;
@@ -329,6 +331,7 @@ class PersonaServiceTest extends SetupServiceTest {
         List<PersonaRecordResponse> list = page.stream().map(p-> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular(), "")).toList();
         Page<PersonaRecordResponse> response = new PageImpl<>(list);
 
+        given(mockAuditorAware.getCurrentAuditor()).willReturn(Optional.of(mockJwt));
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
         given(mockPersonaRepository.findByCentroTrabajo(any(), any(), any())).willReturn(page);
 
@@ -341,6 +344,8 @@ class PersonaServiceTest extends SetupServiceTest {
     void getPersonalTurnado_return_page_of_personaRecordResponse() {
         Jwt mockJwt = Mockito.mock(Jwt.class);
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
+
+        given(mockAuditorAware.getCurrentAuditor()).willReturn(Optional.of(mockJwt));
 
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
 
