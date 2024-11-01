@@ -36,4 +36,7 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
         """)
     Page<SedeDomiciliosRecord> findSedesDomiciliosByJuzgadoId(Pageable pageable);
 
+
+    Optional<Sede> findByNombre(String nombre);
+
 }

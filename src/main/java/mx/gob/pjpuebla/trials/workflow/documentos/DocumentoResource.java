@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -154,16 +155,44 @@ public class DocumentoResource {
         return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
 
+    @PostMapping("/bandeja/recepcion/movimiento")
+    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(@RequestBody PersonalJuzgadoRecord record) {
+        return this.documentoService.movimientoPersonalJuzgado(record);
+    }
+
+    @GetMapping("/bandeja/asignados")
+    public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllAsignado(key, pageable);
+    }
+
+    @PostMapping("/bandeja/asignados/movimiento")
+    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(@RequestBody @Valid List<AsignadoTurnadoRecord> records) {
+        return documentoService.turnadoPersonalJuzgado(records);
+    }
+
     @PostMapping("/bandeja/salida")
     public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
     }
 
+    @GetMapping("/bandeja/oficios")
+    public Page<OficioResponseRecord> getAllOficios(
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllOficios(key, pageable);
+    }
 
     @PostMapping("/oficio")
     public Integer generarOficio(@RequestBody DocumentoOficioRecord oficio) {
         return documentoService.createOficio(oficio.institucionId(), oficio.fechaEmision(), oficio.asunto(),
                 oficio.carpetaId());
+    }
+
+    @PatchMapping("/bandeja/oficio/{id}")
+    public String updateCancelOficio(@PathVariable Integer id) {
+        return this.documentoService.cancelOficio(id);
     }
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -183,4 +212,6 @@ public class DocumentoResource {
         headers.setContentDispositionFormData("oficio", formato + "_" + oficioId + "_documento.pdf");
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
     }
+
+   
 }

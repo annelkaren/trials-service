@@ -1,5 +1,4 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
-
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -13,11 +12,11 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import org.hibernate.annotations.Type;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -80,6 +79,13 @@ public class Documento implements Serializable, Auditable {
     @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Concepto concepto;
+
+    @Enumerated
+    @Column(name = "N_PRIORIDAD")
+    private Prioridad prioridad;
+
+    @Column(name = "N_HORAS")
+    private Integer horas;
 
     @Accessors(chain = false)
     @Embedded

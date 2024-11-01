@@ -3,15 +3,19 @@ package mx.gob.pjpuebla.trials.core.tipojuicio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -20,6 +24,7 @@ import java.util.List;
 public class TipoJuicioService {
 
     private final TipoJuicioRepository tipoJuicioRepository;
+    private final PersonaService personaService;
 
     @Transactional(readOnly = true)
     public Page<TipoJuicioRecord> getAllActive(Pageable pageable, TipoJuicio example) {
@@ -33,6 +38,7 @@ public class TipoJuicioService {
         List<TipoJuicioRecord> list = page.getContent().stream()
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();
+        
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -52,4 +58,40 @@ public class TipoJuicioService {
         return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(), new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()), new MateriaRecord(tipoJuicio.getMateria().getId(), tipoJuicio.getMateria().getNombre()));
     }
 
+    @Transactional(readOnly = true)
+    public Page<TipoJuicioRecord> getAllActiveByCentroTrabajo(Pageable pageable) {
+        Persona usuario =  personaService.getAuditor();
+
+        Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
+
+        if (centroTrabajoId==null){
+            throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
+        }
+
+        Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(
+            usuario.getOficialia()!=null?usuario.getOficialia().getId():null, 
+            usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null, pageable);
+        List<TipoJuicioRecord> list = page.getContent().stream()
+                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
+                .toList();
+        
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public List<TipoJuicioMateriaRecord> findTipoJuiciosByMateria(Integer materiaId) {
+        List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
+        return tipoJuicios.stream()
+                .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId))
+                .collect(Collectors.toList());
+    }
+
+    public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId){
+        List<TipoJuicioDemandasRecord> result = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
+
+        if (result.isEmpty()){
+            throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
+        }
+
+        return result;
+    }
 }

@@ -100,4 +100,6 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             @Param("key") String key,
             Pageable pageable
     );
+
+    Optional<Juzgado> findByNombre(String nombre);
 }

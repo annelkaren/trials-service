@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.*;
@@ -34,7 +35,17 @@ public class SedeService {
 
         List<SedeDomicilioRecordResponse> list = page.getContent().stream()
                 .map(sede -> new SedeDomicilioRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado(),
-                        new DomicilioRecord(sede.getDomicilio().getId(), sede.getDomicilio().getCalle(), sede.getDomicilio().getExterior(), sede.getDomicilio().getInterior(), sede.getDomicilio().getEstadoRepublica(), sede.getDomicilio().getMunicipio(), sede.getDomicilio().getLocalidad(), sede.getDomicilio().getColonia(), sede.getDomicilio().getCodigoPostal(), sede.getDomicilio().getReferencia())))
+                        new DomicilioRecord(sede.getDomicilio().getId(),
+                                sede.getDomicilio().getCalle(),
+                                sede.getDomicilio().getExterior(),
+                                sede.getDomicilio().getInterior(),
+                                sede.getDomicilio().getEstadoRepublica(),
+                                sede.getDomicilio().getMunicipio(),
+                                sede.getDomicilio().getLocalidad(),
+                                sede.getDomicilio().getColonia(),
+                                sede.getDomicilio().getCodigoPostal(),
+                                sede.getDomicilio().getReferencia()),
+                        sede.getTelefono()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -47,6 +58,10 @@ public class SedeService {
     }
 
     public SedeRecordResponse create(Sede sede) {
+        if(sedeRepository.findByNombre(sede.getNombre()).isPresent()){
+            throw new ConflictException("No pueden existir 2 sedes con el mismo nombre");
+        }
+
         sede.setDistrito(distritoRepository.findById(sede.getDistrito().getId()).orElse(null));
         sede.setDomicilio(domicilioService.save(sede.getDomicilio()));
         sede = sedeRepository.save(sede);

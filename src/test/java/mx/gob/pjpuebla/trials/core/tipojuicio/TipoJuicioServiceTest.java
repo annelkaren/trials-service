@@ -1,6 +1,18 @@
 package mx.gob.pjpuebla.trials.core.tipojuicio;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+ 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,14 +38,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class TipoJuicioServiceTest {
 
     @Mock
     TipoJuicioRepository mockTipoJuicioRepository;
+
+    @Mock
+    PersonaService personaService;
 
     @InjectMocks
     TipoJuicioService target;
@@ -111,4 +124,68 @@ class TipoJuicioServiceTest {
         assertEquals("No se encontraron tipos de juicio para Oral y FAMILIAR", exception.getReason());
     }
 
+    @Test
+    void getAllTipoJuiciosByOficialia(){
+        List<TipoJuicio> tipoJuicios = List.of(validTipoJuicio);
+        Page<TipoJuicio> page = new PageImpl<>(tipoJuicios);
+
+        Persona persona = PersonaSetUp.createPersona();
+        TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
+        Sede sede = SedeSetUp.createSede();
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado(validTipoJuicio.getMateria(), sede);
+        juzgado.setTipoJuicios(tipoJuicios);
+
+        Oficialia oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+        oficialia.setJuzgados(List.of(juzgado));
+
+        persona.setOficialia(oficialia);
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(mockTipoJuicioRepository.findByCentroTrabajo(any(),  any(), any())).willReturn(page);
+
+        Page<TipoJuicioRecord> results = target.getAllActiveByCentroTrabajo(PageRequest.of(0, 20));
+
+        assertThat(results).isNotEmpty().anyMatch(p -> p.nombre().equals(validTipoJuicio.getNombre()));
+    }
+
+    @Test
+    void findTipoJuiciosByMateria_returnsTipoJuicioMateriaRecords() {
+        Integer materiaId = 150; 
+        TipoJuicio tipoJuicio = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicio.setId(10);
+        tipoJuicio.setNombre("Laboral (Tradicional)");
+
+        List<TipoJuicio> tipoJuicios = List.of(tipoJuicio);
+        given(mockTipoJuicioRepository.findByMateriaId(materiaId)).willReturn(tipoJuicios);
+
+        List<TipoJuicioMateriaRecord> results = target.findTipoJuiciosByMateria(materiaId);
+
+        assertThat(results)
+                .isNotEmpty()
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("id", tipoJuicio.getId())
+                .hasFieldOrPropertyWithValue("nombre", tipoJuicio.getNombre())
+                .hasFieldOrPropertyWithValue("materiaId", materiaId);
+    }
+
+    @Test
+    void getAllTipoJuicioHijo(){
+        TipoJuicio tipoJuicioPadre = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicioPadre.setId(10);
+        tipoJuicioPadre.setNombre("Laboral (Tradicional)");
+
+        TipoJuicio tipoJuicioHijo = createTipoJuicio(createTipoSistema(), createMateria());
+        tipoJuicioHijo.setId(11);
+        tipoJuicioHijo.setNombre("Laboral Huelga");
+        tipoJuicioHijo.setTipoJuicioPadreTrad(tipoJuicioPadre.getId());
+
+        List<TipoJuicioDemandasRecord> hijos = List.of(new TipoJuicioDemandasRecord(tipoJuicioHijo.getId(), tipoJuicioHijo.getNombre()));
+
+        given(mockTipoJuicioRepository.findByTipoJuicioPadre(any())).willReturn(hijos);
+
+        hijos = target.getAllTipoJuicioHijo(tipoJuicioPadre.getId());
+
+        assertThat(hijos).isNotEmpty().anyMatch(t -> t.nombre().equals(tipoJuicioHijo.getNombre()));
+    }
 }

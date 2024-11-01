@@ -1,11 +1,14 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,6 +93,56 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     DocumentoJuzgadoRecord findDistritoJuzgadoByDocumentoId(@Param("documentoId") Integer documentoId);
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
+            d.id,
+            c.expediente,
+            c.folio,
+            d.folio,
+            c.tipoCarpeta,
+            d.tipoDocumento,
+            d.concepto,
+            c.fechaAsignacion,
+            c.estatus,
+            ''
+        )
+        FROM Documento d
+        JOIN d.carpeta c on c.persona=:personaAsignada
+        where case when :key is null then 1
+            when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
+            else 0 end = 1
+            AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+        """)
+    Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
+            doc.id,
+            doc.folio,
+            ins.nombre,
+            dd.asunto,
+            doc.estatus,
+            dd.fechaEmision,
+            dd.fechaEntrega,
+            CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
+            CASE WHEN COUNT(dc) > 0 THEN true ELSE false END
+        )
+        FROM Documento doc
+        LEFT JOIN doc.institucion ins
+        LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+        LEFT JOIN DocumentoContenido dc ON dc.documento = doc
+        WHERE doc.tipoDocumento = %:tipoDocumento%
+        AND (
+            lower(doc.folio) LIKE %:key% OR
+            lower(ins.nombre) LIKE %:key% OR
+            lower(dd.asunto) LIKE %:key%
+        )
+        GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta
+        """)
+    Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Transactional
     @Modifying
