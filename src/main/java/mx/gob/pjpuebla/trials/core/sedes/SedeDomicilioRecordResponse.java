@@ -9,6 +9,7 @@ public record SedeDomicilioRecordResponse(
         Integer id,
         String nombre,
         Estado estado,
-        DomicilioRecord domicilio
+        DomicilioRecord domicilio,
+        String telefono
 ) implements Serializable {
 }

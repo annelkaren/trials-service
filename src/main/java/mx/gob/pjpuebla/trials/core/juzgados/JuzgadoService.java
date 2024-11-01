@@ -118,7 +118,9 @@ public class JuzgadoService {
         juzgado.setSede(sede);
 
         juzgado.setContadorAsignaciones(0);
-
+        if (juzgado.getMaxAsignacionesRonda() == null) {
+            juzgado.setMaxAsignacionesRonda(2);
+        }
         List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
         List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
         juzgado.setTipoJuicios(tipojuicios);
