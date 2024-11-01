@@ -126,14 +126,13 @@ public class CarpetaService {
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción.
-        if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
-            documento.setEstatus(EstadoCarpeta.ASIGNADO);
-        }
-
-        if (documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
-                                               || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
+        if (documento.getTipoDocumento() == null && documento.getCarpeta() != null && (
+                documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
+                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
+        )
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-        }
+        else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION))
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
 
         documento = documentoRepository.save(documento);
 

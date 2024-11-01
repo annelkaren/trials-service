@@ -35,7 +35,17 @@ public class SedeService {
 
         List<SedeDomicilioRecordResponse> list = page.getContent().stream()
                 .map(sede -> new SedeDomicilioRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado(),
-                        new DomicilioRecord(sede.getDomicilio().getId(), sede.getDomicilio().getCalle(), sede.getDomicilio().getExterior(), sede.getDomicilio().getInterior(), sede.getDomicilio().getEstadoRepublica(), sede.getDomicilio().getMunicipio(), sede.getDomicilio().getLocalidad(), sede.getDomicilio().getColonia(), sede.getDomicilio().getCodigoPostal(), sede.getDomicilio().getReferencia())))
+                        new DomicilioRecord(sede.getDomicilio().getId(),
+                                sede.getDomicilio().getCalle(),
+                                sede.getDomicilio().getExterior(),
+                                sede.getDomicilio().getInterior(),
+                                sede.getDomicilio().getEstadoRepublica(),
+                                sede.getDomicilio().getMunicipio(),
+                                sede.getDomicilio().getLocalidad(),
+                                sede.getDomicilio().getColonia(),
+                                sede.getDomicilio().getCodigoPostal(),
+                                sede.getDomicilio().getReferencia()),
+                        sede.getTelefono()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
