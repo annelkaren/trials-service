@@ -283,6 +283,38 @@ class CarpetaServiceTest {
     }
 
     @Test
+    void actualizarInformacionAnexos_promocion_Success() {
+        Integer documentoId = 123;
+        List<AnexoBandejaRecepcionRecord> anexos = List
+                .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
+        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+                anexos,
+                "Observacion 1",
+                "recomendacion 1"
+        );
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
+        Persona persona = PersonaSetUp.createPersona();
+        Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado2);
+        documento.getCarpeta().setJuzgado(juzgado2);
+
+        given(personaService.getAuditor())
+                .willReturn(persona);
+        given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+
+        DocumentoRecord response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
+
+        assertThat(response).isNotNull();
+
+        verify(anexoRepository, times(1)).save(anexo);
+        verify(documentoRepository, times(1)).save(documento);
+    }
+
+    @Test
     void actualizarInformacionAnexos_Success() {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
