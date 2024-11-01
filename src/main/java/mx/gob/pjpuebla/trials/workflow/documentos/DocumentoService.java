@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -24,6 +25,7 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -42,6 +44,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.data.domain.*;
@@ -51,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -80,7 +84,9 @@ public class DocumentoService {
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
     private final EmailService emailService;
+    private final SelloGenerator selloGenerator;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final AudienciaRepository audienciaRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
 
@@ -194,6 +200,9 @@ public class DocumentoService {
         //flujo para demanda de oralidad:
         if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
             crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
+            if (documentoRecord.general().getTieneAbogado() == 0) {
+                sendEmailFamiliar(documentoRecord, documento, carpeta, tpoJuicio);
+            }
         }
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -876,5 +885,67 @@ public class DocumentoService {
                 persona.getJuzgado().getNombre()
         );
     }
+
+    public void sendEmailFamiliar(DocumentoSaveRecord documentoRecord, Documento documento, Carpeta carpeta, TipoJuicio tpoJuicio) {
+        Map<String, Object> sendEmail = new HashMap<>();
+
+        List<TipoJuicioDemandasRecord> tipoJuicioDemandasRecordList = List.of(
+                new TipoJuicioDemandasRecord(111, "Familiar Oralidad (Alimentos)"),
+                new TipoJuicioDemandasRecord(112, "Familiar Oralidad (Divorcio Incausado Unilateral)"),
+                new TipoJuicioDemandasRecord(114, "Familiar Oralidad (Guardia y Custodia)"),
+                new TipoJuicioDemandasRecord(115, "Familiar Oralidad (Visita y Convivencia)")
+        );
+        documento.setData(documentoRecord.general().setTiposJuicios(tipoJuicioDemandasRecordList));
+        String tiposJuicios = tipoJuicioDemandasRecordList.stream()
+                .map(TipoJuicioDemandasRecord::nombre)
+                .collect(Collectors.joining(", "));
+        sendEmail.put("juicio", tiposJuicios);
+
+        String salaAudiencia = audienciaRepository.getSalaNombreByCarpetaId(carpeta.getId());
+        sendEmail.put("sala", salaAudiencia);
+
+        sendEmail.put("carpetaDigital", selloGenerator.updateExpedientePorTipoJuicio(documento));
+        sendEmail.put("tipoJuicio", tpoJuicio.getNombre());
+
+
+        String apellidoMaternoActor = documentoRecord.actor().apellidoMaterno();
+        sendEmail.put("actor", String.join(" ",
+                documentoRecord.actor().nombre(),
+                documentoRecord.actor().apellidoPaterno(),
+                (apellidoMaternoActor != null && !apellidoMaternoActor.isEmpty() ? apellidoMaternoActor : "").trim()
+        ));
+        sendEmail.put("telefono", documentoRecord.actor().celular());
+        sendEmail.put("correo", documentoRecord.actor().correoElectronico());
+
+        String apellidoMaternoDemandado = documentoRecord.demandado().apellidoMaterno();
+        sendEmail.put("demandado", String.join(" ",
+                documentoRecord.demandado().nombre(),
+                documentoRecord.demandado().apellidoPaterno(),
+                (apellidoMaternoDemandado != null && !apellidoMaternoDemandado.isEmpty() ? apellidoMaternoDemandado : "").trim()
+        ));
+
+        StringBuilder anexosHtml = new StringBuilder("<ul>");
+
+        if (documentoRecord.anexos() == null || documentoRecord.anexos().isEmpty()) {
+            anexosHtml.append("<li>Sin anexo</li>");
+        } else {
+
+            for (String anexo : documentoRecord.anexos()) {
+                anexosHtml.append("<li>").append(anexo).append("</li>");
+            }
+        }
+        anexosHtml.append("</ul>");
+        sendEmail.put("anexos", anexosHtml.toString());
+
+        emailService.sendMail(
+                List.of("eduardosalazartecuapacho@gmail.com"),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "Recepción de Asignación de Juicio",
+                "EmailDemandaFamiliar.ftl",
+                sendEmail
+        );
+    }
+
 }
 
