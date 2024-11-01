@@ -751,11 +751,15 @@ public class DocumentoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
+        EstadoAcuse estadoAcuse = null;
+        String rutaAcuse = "";
 
         if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
+            estadoAcuse = documentoDetalle.getEstado();
+            rutaAcuse = documentoDetalle.getRuta()
         }
 
 
@@ -767,12 +771,14 @@ public class DocumentoService {
                 doc.getInstitucion().getId(),
                 fechaEntrega,
                 doc.getEstatus(),
+                estadoAcuse,
                 asunto,
                 ' ',
                 ' ',
                 "",
                 "",
-                "");
+                "",
+                rutaAcuse);
 
     }
 

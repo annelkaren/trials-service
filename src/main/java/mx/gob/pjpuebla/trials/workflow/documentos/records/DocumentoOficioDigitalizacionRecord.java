@@ -18,5 +18,6 @@ public record DocumentoOficioDigitalizacionRecord(
     char oficioPublicado,
     String nombreAcuse,
     String comentario,
-    String textoEditor
+    String textoEditor,
+    String rutaAcuse
 ) {}

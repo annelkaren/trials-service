@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum EstadoAcuse {
     CREADO,
     ENTREGADO,
-    NOENTREGADO
+    NOENTREGADO,
+    CANCELADO
 }

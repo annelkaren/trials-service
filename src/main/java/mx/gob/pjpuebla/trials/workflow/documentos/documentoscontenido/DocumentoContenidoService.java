@@ -50,6 +50,7 @@ public class DocumentoContenidoService {
         String asunto = "";
         String comentario = "";
         EstadoAcuse estatusAcuse = null;
+        String rutaAcuse = "";
 
         if(documentoDetalle != null){
             fechaEmision = documentoDetalle.getFechaEmision();
@@ -57,12 +58,14 @@ public class DocumentoContenidoService {
             asunto = documentoDetalle.getAsunto();  
             comentario = documentoDetalle.getComentario();
             estatusAcuse = documentoDetalle.getEstado();
+            rutaAcuse = documentoDetalle.getRuta();
         }
 
         if (documentoContenido != null) {
             tamanioPapel = documentoContenido.getTamanioPapel();
             textoEditor = documentoContenido.getTexto();
             existeOficio = documentoContenido.getOficioPublicado();
+
         }
 
         return new DocumentoOficioDigitalizacionRecord(
@@ -79,7 +82,8 @@ public class DocumentoContenidoService {
                 existeOficio,
                 nombreAcuse,
                 comentario,
-                textoEditor);
+                textoEditor,
+                rutaAcuse);
 
     }
 
