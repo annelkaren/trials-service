@@ -96,4 +96,10 @@ class PersonaRepositoryTest extends AuditConfigTest {
 
         assertThat(page).isNotEmpty();
     }
+
+    @Test
+    void findByJuzgadoId() {
+        Page<Persona> personas = personaRepository.findByJuzgadoId(51, PageRequest.of(0, 20));
+        assertThat(personas).isNotEmpty();
+    }
 }
