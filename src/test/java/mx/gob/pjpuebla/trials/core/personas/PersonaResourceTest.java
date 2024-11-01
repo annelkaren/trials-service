@@ -185,4 +185,15 @@ class PersonaResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void getPersonalTurnado_success() throws Exception {
+        given(mockPersonaService.getPersonalTurnado(any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
+
+        mockMvc.perform(
+                get("/api/core/personas/turnado")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 }
