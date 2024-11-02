@@ -120,7 +120,15 @@ public class Digitalizacion2Service {
 
 
     public byte[] getDocumento(Documento documento) throws IOException {
-        Path rutaArchivo = crearDirectorio(documento);
+        Path rutaArchivo = crearDirectorio(documento).resolve(documento.getRuta());
+
+        // Verifica si el archivo existe y lo retorna como arreglo de bytes
+
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo); // Retorna el archivo como un arreglo de bytes
+        } else {
+            throw new IOException("El archivo " + documento.getRuta() + " no existe en el directorio");
+        }
     }
 
     /**
