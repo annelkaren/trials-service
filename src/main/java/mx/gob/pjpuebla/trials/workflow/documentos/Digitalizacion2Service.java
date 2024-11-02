@@ -14,7 +14,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,7 +61,6 @@ public class Digitalizacion2Service {
     private String basePath; // Ruta base para la digitalización
 
     private final PersonaService personaService; // Servicio de persona
-    private final DigitalizacionFolderService digitalizacionFolderService;
     private final DocumentoRepository documentoRepository;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
@@ -79,7 +78,7 @@ public class Digitalizacion2Service {
     /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
      *
-     * @param documento El documento del cual se quiere crear el directorio.
+     * @param documentoId El id del documento el cual se quiere crear el directorio.
      * @return La ruta del directorio creado.
      */
     public Path crearDirectorio(Documento documento) {
@@ -97,7 +96,9 @@ public class Digitalizacion2Service {
         return manejarCarpeta(carpeta, year, juzgado);
     }
 
-    public DigitalizacionRecord guardarArchivo(MultipartFile file, Documento documento){
+    public DigitalizacionRecord guardarArchivo(MultipartFile file, Integer documentoId){
+        Documento documento = documentoRepository.findById(documentoId).orElse(null);
+        validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
         String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
@@ -120,7 +121,10 @@ public class Digitalizacion2Service {
     }
 
 
-    public byte[] getDocumento(Documento documento) throws IOException {
+    public byte[] getDocumento(Integer documentoId) throws IOException {
+        Documento documento = documentoRepository.findById(documentoId).orElse(null);
+        validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
+
         Path rutaArchivo = crearDirectorio(documento).resolve(documento.getRuta());
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes

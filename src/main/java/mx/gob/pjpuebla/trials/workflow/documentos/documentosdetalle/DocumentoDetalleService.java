@@ -26,31 +26,27 @@ public class DocumentoDetalleService {
 
     public DigitalizacionRecord digitalizacionAcuse(DocumentoDetalleRecord documento) {
         DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId()).orElse(null);
-        Documento doc = documentoRepository.findById(documento.documentoId()).orElse(null);
+        DigitalizacionRecord digitalizacion = digitalizacion2Service.guardarArchivo(documento.file(), documento.documentoId());
 
-        if (doc != null) {
-            
-            DigitalizacionRecord digitalizacion = digitalizacion2Service.guardarArchivo(documento.file(), doc);
+        if (docDetalle != null) {
+            docDetalle.setRuta(documento.file().getOriginalFilename());
+            docDetalle.setEstado(documento.estado());
+            docDetalle.setComentario(documento.comentario());
+            docDetalle.setFechaEntrega(documento.fechaEntrega());
+            documentoDetalleRepository.save(docDetalle);
+        }
 
-            if (docDetalle != null) {
-                docDetalle.setRuta(documento.file().getOriginalFilename());
-                docDetalle.setEstado(documento.estado());
-                docDetalle.setComentario(documento.comentario());
-                docDetalle.setFechaEntrega(documento.fechaEntrega());
-                documentoDetalleRepository.save(docDetalle);
-            }
+        return digitalizacion;
 
-            return digitalizacion;
-        } else { return null; }
     }
 
     public byte[] getAcuse(Integer documentoId) throws IOException {
+        byte[] archivo = digitalizacion2Service.getDocumento(documentoId);
 
-        Documento doc = documentoRepository.findById(documentoId).orElse(null);
-        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
+        if(archivo != null){
+            return archivo;
+        }
 
-        if(doc != null && docDetalle != null){ return digitalizacion2Service.getDocumento(doc); }
-       
-        return new byte[1];
+        return new byte[0];
     }
 }

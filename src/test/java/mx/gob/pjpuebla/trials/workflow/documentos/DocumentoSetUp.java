@@ -123,4 +123,8 @@ public class DocumentoSetUp {
     public static MovimientoPersonalJuzgadoRecord createMovimientoPersonalJuzgadoRecord() {
         return new MovimientoPersonalJuzgadoRecord(51, LocalDateTime.now(),"Anibal", "ASIGNADO", "JUZGADO XXI");
     }
+
+    public static DocumentoData createDocumentoData(String tipoOficio){
+        return new DocumentoData().setTipoOficio(tipoOficio);
+    }
 }

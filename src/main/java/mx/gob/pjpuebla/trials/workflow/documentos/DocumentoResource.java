@@ -36,7 +36,7 @@ public class DocumentoResource {
     private final SelloGenerator selloGenerator;
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
-    private final DigitalizacionService digitalizacionService;
+    private final Digitalizacion2Service digitalizacion2Service;
     private final OficioService oficioService;
 
     @PostMapping("/demanda")
@@ -67,7 +67,7 @@ public class DocumentoResource {
     public DigitalizacionRecord digitizationDocument(
             @RequestParam("file") MultipartFile file,
             @PathVariable("documentoId") Integer documentoId) {
-        return digitalizacionService.procesarArchivo(file, documentoId);
+        return digitalizacion2Service.guardarArchivo(file, documentoId);
     }
 
     @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +75,7 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getDocumento(documentoId));
     }
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -61,7 +61,7 @@ class DocumentoResourceTest {
     private SelloCaratulaService caratulaGenerator;
 
     @MockBean
-    private DigitalizacionService digitalizacionService;
+    private Digitalizacion2Service digitalizacion2Service;
 
     @MockBean
     private OficioService oficioService;
