@@ -100,13 +100,14 @@ public class Digitalizacion2Service {
     public DigitalizacionRecord guardarArchivo(MultipartFile file, Documento documento){
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) : "";
+        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
 
         // Guardar el archivo y manejar posibles excepciones
         try {
             Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
+            log.info("Archivo cargado en el servidor con nombre: " + nombreUnicoArchivo);
         } catch (IOException e) {
-
+            log.error("Error al guardar el archivo: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al guardar el archivo en el servidor", e);
         }
@@ -140,6 +141,9 @@ public class Digitalizacion2Service {
      * @return Un nombre único generado para el archivo PDF.
      */
     private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
+        if(tipoCarpeta == null){
+            return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+        }
         return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
