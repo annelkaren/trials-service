@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -95,6 +94,8 @@ public class Digitalizacion2Service {
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
         String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
+        System.out.println("La ruta del archivo es: " + rutaArchivo.toString() );
+        System.out.println("nombre del archivo es: " + nombreUnicoArchivo);
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -181,7 +182,7 @@ public class Digitalizacion2Service {
         if ("Administrativo".equals(tipoOficio)) {
             return crearDirectorios(Paths.get(basePath, year, juzgado, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
-            String expediente = documento.getCarpeta().getExpediente();
+            String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
             return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
         }
 
@@ -198,11 +199,14 @@ public class Digitalizacion2Service {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
+       
+        
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
+                String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
+                return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
-                return crearDirectorios(
-                        Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
+                return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado,carpeta.getExpediente())));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
