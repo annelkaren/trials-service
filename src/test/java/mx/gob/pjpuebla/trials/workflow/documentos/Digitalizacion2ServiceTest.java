@@ -4,6 +4,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Digitalizacion2Service;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -26,8 +27,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 class Digitalizacion2ServiceTest {
@@ -88,11 +91,44 @@ class Digitalizacion2ServiceTest {
         documento.setData(docData);
 
         // Llamar al método de prueba
-        Path result = digitalizacionService.crearDirectorio(documento);
+        createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         // Verificar los resultados
-        assertNotNull(result);
-        assertTrue(result.toString().contains("oficiosJurisdiccionales"));
+        assertNotNull(createdDirectory);
+        assertTrue(createdDirectory.toString().contains("oficiosJurisdiccionales"));
+    }
+
+    @Test
+    void testCreateDirectorio_Demanda(){
+        // Crear datos de documento
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+
+        // Llamar al método de prueba
+        createdDirectory = digitalizacionService.crearDirectorio(documento);
+        
+        // Verificar los resultados
+        assertNotNull(createdDirectory);
+        assertTrue(createdDirectory.toString().contains("JuzgadoTEST/000001/2024"));
+    }
+
+    @Test
+    void testCreateDirectorio_Exhorto(){
+        // Crear datos de documento
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
+        documento.getCarpeta().setExpediente("E000006");
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+
+        // Llamar al método de prueba
+        createdDirectory = digitalizacionService.crearDirectorio(documento);
+        System.out.println(createdDirectory.toString());
+        // Verificar los resultados
+        assertNotNull(createdDirectory);
+        assertTrue(createdDirectory.toString().contains("JuzgadoTEST/E000006"));
     }
 
     @AfterEach

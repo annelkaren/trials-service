@@ -228,7 +228,10 @@ public class Digitalizacion2Service {
      */
     private void validateDocumento(Documento documento) {
         validateNotNull(documento, "El documento no puede ser nulo");
-        validateNotNull(documento.getTipoDocumento(), "El tipo de documento no puede ser nulo");
+        if(documento.getCarpeta() == null){
+            validateNotNull(documento.getTipoDocumento(), "El tipo de documento no puede ser nulo");
+        }
+       
     }
 
     /**
@@ -250,7 +253,7 @@ public class Digitalizacion2Service {
      * @return El año relacionado con el documento.
      */
     private String obtenerYear(Documento doc) {
-        return doc.getCarpeta() != null
+        return doc.getCarpeta() != null && !doc.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.EXHORTO)
                 ? obtenerDatosExpediente(doc.getCarpeta().getExpediente())[1].trim()
                 : String.valueOf(LocalDate.now().getYear());
     }
