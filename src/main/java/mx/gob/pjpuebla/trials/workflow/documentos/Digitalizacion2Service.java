@@ -67,21 +67,13 @@ public class Digitalizacion2Service {
     private static final String EXTENSION_ARCHIVO = ".pdf";
 
     /**
-     * Método que se ejecuta después de la construcción del bean.
-     * Inicializa la ruta base para la digitalización.
-     */
-    @PostConstruct
-    public void init() {
-        this.basePath = this.rootFolder + "/digitalizacion/";
-    }
-
-    /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
      *
      * @param documentoId El id del documento el cual se quiere crear el directorio.
      * @return La ruta del directorio creado.
      */
     public Path crearDirectorio(Documento documento) {
+        this.basePath = this.rootFolder + "/digitalizacion/";
         validateDocumento(documento);
 
         String year = obtenerYear(documento);
@@ -97,6 +89,7 @@ public class Digitalizacion2Service {
     }
 
     public DigitalizacionRecord guardarArchivo(MultipartFile file, Integer documentoId){
+        this.basePath = this.rootFolder + "/digitalizacion/";
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
@@ -122,6 +115,7 @@ public class Digitalizacion2Service {
 
 
     public byte[] getDocumento(Integer documentoId) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/";
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
 
@@ -188,8 +182,7 @@ public class Digitalizacion2Service {
             return crearDirectorios(Paths.get(basePath, year, juzgado, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = documento.getCarpeta().getExpediente();
-            return crearDirectorios(
-                    Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
+            return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
         }
 
         throw new IllegalArgumentException("Tipo de oficio no soportado: " + tipoOficio);
@@ -225,7 +218,7 @@ public class Digitalizacion2Service {
      * @return La ruta del expediente construida.
      */
     private String construirRutaExpediente(String year, String juzgado, String expediente) {
-        return basePath + year + "/" + juzgado + "/" + expediente;
+        return   year + "/" + juzgado + "/" + expediente;
     }
 
     /**
