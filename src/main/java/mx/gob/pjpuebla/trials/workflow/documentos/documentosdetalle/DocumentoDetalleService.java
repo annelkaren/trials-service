@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.workflow.documentos.Digitalizacion2Service;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class DocumentoDetalleService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final DocumentoRepository documentoRepository;
-    private final Digitalizacion2Service digitalizacion2Service;
+    private final DigitalizacionService digitalizacion2Service;
 
     @Value("${app.root-folder}")
     private String rootFolder;

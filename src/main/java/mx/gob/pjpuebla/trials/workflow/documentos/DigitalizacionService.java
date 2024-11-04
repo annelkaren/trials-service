@@ -1,167 +1,151 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Servicio para la gestión de documentos, incluyendo la validación y el
- * almacenamiento de archivos PDF.
+ * Servicio encargado de la digitalización de documentos y la creación de rutas
+ * en el sistema de archivos según el tipo de documento y la carpeta asociada.
+ *
+ * <p>
+ * CREACION DE RUTAS SEGUN TIPO DE DOCUMENTO / CARPETA:
+ * </p>
+ * 
+ * <p>
+ * OFICIO:
+ * - ADMINISTRATIVO (No tiene relacion con una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/oficiosAdministrativos/{documentId}
+ * - JURISDICCIONAL (Debe tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/oficios/{documentId}
+ * 
+ * ACUSE (OFICIO ADMINISTRATIVO):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/oficiosAdministrativos/{documentId}
+ * ACUSE (OFICIO JURISDICCIONAL):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/oficiosJurisdiccionales/{documentId}
+ * 
+ * DEMANDA (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}
+ * 
+ * EXHORTO (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}
+ * </p>
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DigitalizacionService {
 
-    /**
-     * Ruta raíz donde se almacenan los archivos de digitalización.
-     * Este valor se obtiene del archivo de configuración.
-     */
     @Value("${app.root-folder}")
-    private String rootFolder;
+    private String rootFolder; // Ruta raíz de la digitalización
+    private String basePath; // Ruta base para la digitalización
 
-    private final DigitalizacionFolderService digitalizacionFolderService;
+    private final PersonaService personaService; // Servicio de persona
     private final DocumentoRepository documentoRepository;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final String EXTENSION_ARCHIVO = ".pdf";
 
     /**
-     * Procesa y almacena un archivo PDF en el servidor, asociado a un documento
-     * existente.
-     * Valida que el archivo y el documento cumplan con los requisitos, crea una
-     * ruta de almacenamiento, y actualiza la entidad del documento con la ruta
-     * del archivo. Devuelve un record con los detalles del archivo procesado.
+     * Crea un directorio basado en el tipo de documento y la carpeta asociada.
      *
-     * @param file        El archivo PDF a procesar.
-     * @param documentoId El ID del documento asociado al archivo.
-     * @return Un record que contiene el ID del documento, la ruta del archivo
-     * almacenado y el nombre único del archivo.
-     * archivos.
+     * @param documentoId El id del documento el cual se quiere crear el directorio.
+     * @return La ruta del directorio creado.
      */
-    public DigitalizacionRecord procesarArchivo(MultipartFile file, Integer documentoId) {
-        Documento doc = validarDocumento(file, documentoId);
+    public Path crearDirectorio(Documento documento) {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+        validateDocumento(documento);
 
-        // Crea la ruta donde se almacenará el archivo
-        String rutaArchivo = digitalizacionFolderService.createFolderDigitalizacion(doc);
+        String year = obtenerYear(documento);
+        String juzgado = obtenerJuzgado(documento);
+        Carpeta carpeta = documento.getCarpeta();
 
-        String nombreUnicoArchivo = generarNombreArchivo(doc.getCarpeta().getTipoCarpeta());
-        Path path = Paths.get(rutaArchivo);
-
-        // Crear directorios si no existen y guardar el archivo
-
-        try {
-            Files.createDirectories(path);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
+        // Manejo de tipos de documento
+        if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
+            return manejarOficio(documento, year, juzgado);
         }
+
+        return manejarCarpeta(carpeta, year, juzgado);
+    }
+
+    public DigitalizacionRecord guardarArchivo(MultipartFile file, Integer documentoId){
+        this.basePath = this.rootFolder + "/digitalizacion/";
+        Documento documento = documentoRepository.findById(documentoId).orElse(null);
+        validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
+        validarArchivo(file);
+        Path rutaArchivo = crearDirectorio(documento);
+        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
+        System.out.println("La ruta del archivo es: " + rutaArchivo.toString() );
+        System.out.println("nombre del archivo es: " + nombreUnicoArchivo);
 
         // Guardar el archivo y manejar posibles excepciones
         try {
-            Files.write(path.resolve(nombreUnicoArchivo), file.getBytes());
+            Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
+            log.info("Archivo cargado en el servidor con nombre: " + nombreUnicoArchivo);
         } catch (IOException e) {
-
+            log.error("Error al guardar el archivo: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al guardar el archivo en el servidor", e);
         }
 
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
-        doc.setRuta(nombreUnicoArchivo);
-        documentoRepository.save(doc);
+        documento.setRuta(nombreUnicoArchivo);
+        documentoRepository.save(documento);
 
-        // Devuelve los detalles del documento en un record
-        return new DigitalizacionRecord(doc.getId(), path.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+        return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
     }
 
-    /**
-     * Obtiene el documento digitalizado en forma de arreglo de bytes según el ID
-     * proporcionado.
-     *
-     * @param documentoId ID del documento que se desea obtener.
-     * @return Un arreglo de bytes que representa el contenido del archivo.
-     * @throws IOException       Si el archivo no se encuentra o si ocurre un error
-     *                           al leerlo.
-     * @throws NotFoundException Si no se encuentra el documento en la base de
-     *                           datos.
-     */
+
     public byte[] getDocumento(Integer documentoId) throws IOException {
-        // Busca el documento en la base de datos o lanza una excepción si no existe
-        Documento doc = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Archivo no encontrado", "documentoId"));
+        this.basePath = this.rootFolder + "/digitalizacion/";
+        Documento documento = documentoRepository.findById(documentoId).orElse(null);
+        validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
 
-        // Extrae el expediente y año a partir del formato "expediente/año"
-        String[] expedienteArray = doc.getCarpeta().getExpediente().split("/");
-        String expediente = expedienteArray[0].trim(); // Número del expediente
-        String year = expedienteArray[1].trim(); // Año del expediente
-        String juzgado = (doc.getCarpeta().getJuzgado().getNombre().trim()).replaceAll("\\s+", ""); // Nombre del juzgado
-        String nombreCarpeta;
-        Path rootPath;
-
-        // Creación de la ruta donde se espera encontrar el archivo
-        Path basePath = Paths.get(rootFolder, "digitalizacion", year, juzgado);
-
-        if(TipoCarpeta.EXHORTO.equals(doc.getCarpeta().getTipoCarpeta())) {
-            nombreCarpeta = expediente;
-            rootPath = basePath.resolve(Paths.get("entrada", nombreCarpeta));
-        }else {
-            nombreCarpeta = String.format("%06d", Integer.parseInt(expediente));
-            rootPath = basePath.resolve(nombreCarpeta);
-
-        }
-        Path filePath = rootPath.resolve(doc.getRuta()); // Ruta completa del archivo
+        Path rutaArchivo = crearDirectorio(documento).resolve(documento.getRuta());
 
         // Verifica si el archivo existe y lo retorna como arreglo de bytes
 
-        if (Files.exists(filePath)) {
-            return Files.readAllBytes(filePath); // Retorna el archivo como un arreglo de bytes
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo); // Retorna el archivo como un arreglo de bytes
         } else {
-            throw new IOException("El archivo " + doc.getRuta() + " no existe en el directorio");
+            throw new IOException("El archivo " + documento.getRuta() + " no existe en el directorio");
         }
     }
 
     /**
-     * Valida el archivo PDF y verifica que el documento asociado exista en la base
-     * de datos.
-     * Además, asegura que el archivo cumpla con los criterios (no esté vacío, sea
-     * un PDF, y esté dentro del tamaño permitido).
+     * Genera un nombre único para el archivo basado en el tipo de documento y un
+     * UUID.
      *
-     * @param file        El archivo a validar.
-     * @param documentoId El ID del documento asociado.
-     * @return El documento validado.
-     * @throws ResponseStatusException Si no se cumplen las validaciones del archivo
-     *                                 o el documento no existe.
+     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
+     *                    archivo.
+     * @return Un nombre único generado para el archivo PDF.
      */
-    private Documento validarDocumento(MultipartFile file, Integer documentoId) {
-        // Verifica que el documento exista
-        Documento doc = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El registro del documento no existe"));
-
-        // Valida las propiedades del archivo
-        validarArchivo(file);
-
-        // Verifica que el tipo de documento no sea nulo
-        if (doc.getCarpeta().getTipoCarpeta() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de carpeta es obligatorio.");
+    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
+        if(tipoCarpeta == null){
+            return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
         }
-
-        return doc;
+        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
+
 
     /**
      * Valida las propiedades del archivo: que no esté vacío, que sea un PDF, y que
@@ -185,14 +169,139 @@ public class DigitalizacionService {
     }
 
     /**
-     * Genera un nombre único para el archivo basado en el tipo de documento y un
-     * UUID.
+     * Maneja la creación de directorios para documentos de tipo oficio.
      *
-     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
-     *                    archivo.
-     * @return Un nombre único generado para el archivo PDF.
+     * @param documento El documento de tipo oficio.
+     * @param year      El año relacionado con el documento.
+     * @param juzgado   El juzgado relacionado con el documento.
+     * @return La ruta del directorio creado para el oficio.
      */
-    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
-        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    private Path manejarOficio(Documento documento, String year, String juzgado) {
+        String tipoOficio = documento.getData().getTipoOficio();
+
+        if ("Administrativo".equals(tipoOficio)) {
+            return crearDirectorios(Paths.get(basePath, year, juzgado, "oficiosAdministrativos"));
+        } else if ("Jurisdiccional".equals(tipoOficio)) {
+            String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
+            return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
+        }
+
+        throw new IllegalArgumentException("Tipo de oficio no soportado: " + tipoOficio);
+    }
+
+    /**
+     * Maneja la creación de directorios para documentos de tipo carpeta.
+     *
+     * @param carpeta La carpeta asociada al documento.
+     * @param year    El año relacionado con el documento.
+     * @param juzgado El juzgado relacionado con el documento.
+     * @return La ruta del directorio creado para la carpeta.
+     */
+    private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
+        validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
+       
+        
+        switch (carpeta.getTipoCarpeta()) {
+            case DEMANDA:
+                String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
+                return crearDirectorios(Paths.get(basePath, expediente));
+            case EXHORTO:
+                return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado,carpeta.getExpediente())));
+            default:
+                log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
+                throw new IllegalArgumentException("Tipo de carpeta no soportado");
+        }
+    }
+
+    /**
+     * Construye la ruta del expediente para el documento.
+     *
+     * @param year       El año relacionado con el documento.
+     * @param juzgado    El juzgado relacionado con el documento.
+     * @param expediente El número de expediente.
+     * @return La ruta del expediente construida.
+     */
+    private String construirRutaExpediente(String year, String juzgado, String expediente) {
+        return   year + "/" + juzgado + "/" + expediente;
+    }
+
+    /**
+     * Valida que el documento no sea nulo y que tenga un tipo de documento válido.
+     *
+     * @param documento El documento a validar.
+     */
+    private void validateDocumento(Documento documento) {
+        validateNotNull(documento, "El documento no puede ser nulo");
+        if(documento.getCarpeta() == null){
+            validateNotNull(documento.getTipoDocumento(), "El tipo de documento no puede ser nulo");
+        }
+       
+    }
+
+    /**
+     * Obtiene el nombre del juzgado asociado al documento.
+     *
+     * @param documento El documento del cual se quiere obtener el juzgado.
+     * @return El nombre del juzgado.
+     */
+    private String obtenerJuzgado(Documento documento) {
+        return (documento.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
+                : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
+    }
+
+    /**
+     * Obtiene el año relacionado con el documento. Si la carpeta es nula,
+     * se obtiene el año actual.
+     *
+     * @param doc El documento del cual se quiere obtener el año.
+     * @return El año relacionado con el documento.
+     */
+    private String obtenerYear(Documento doc) {
+        return doc.getCarpeta() != null && !doc.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.EXHORTO)
+                ? obtenerDatosExpediente(doc.getCarpeta().getExpediente())[1].trim()
+                : String.valueOf(LocalDate.now().getYear());
+    }
+
+    /**
+     * Obtiene los datos del expediente, separando su información por '/'.
+     *
+     * @param expediente El número de expediente a procesar.
+     * @return Un arreglo con los datos del expediente.
+     */
+    private String[] obtenerDatosExpediente(String expediente) {
+        String[] expedienteArray = expediente.split("/");
+        if (expedienteArray.length < 2) {
+            throw new IllegalArgumentException("El expediente no tiene el formato esperado");
+        }
+        return expedienteArray;
+    }
+
+    /**
+     * Crea los directorios especificados en la ruta dada.
+     *
+     * @param rootPath La ruta donde se desean crear los directorios.
+     * @return La ruta del directorio creado.
+     */
+    private Path crearDirectorios(Path rootPath) {
+        try {
+            Files.createDirectories(rootPath);
+            log.info("Carpeta creada exitosamente en: {}", rootPath);
+            return rootPath;
+        } catch (IOException e) {
+            log.error("Error al crear las carpetas de digitalización: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al crear las carpetas de digitalización", e);
+        }
+    }
+
+    /**
+     * Valida que un valor no sea nulo y lanza una excepción si es nulo.
+     *
+     * @param value   El valor a validar.
+     * @param message El mensaje de error si el valor es nulo.
+     */
+    private void validateNotNull(Object value, String message) {
+        if (value == null) {
+            throw new IllegalArgumentException(message);
+        }
     }
 }

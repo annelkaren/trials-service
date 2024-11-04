@@ -36,7 +36,7 @@ public class DocumentoResource {
     private final SelloGenerator selloGenerator;
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
-    private final Digitalizacion2Service digitalizacion2Service;
+    private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
 
     @PostMapping("/demanda")
