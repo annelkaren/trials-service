@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
-        "/scripts/INSERT_TIPO_PIEZA.sql",
+        "/scripts/INSERT_TIPO_PIEZAS.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
-        "/scripts/DELETE_TIPO_PIEZA.sql",
+        "/scripts/DELETE_TIPO_PIEZAS.sql",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class TipoPiezaRepositoryTest extends AuditConfigTest {
 

@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
-@Table(name = "TBL_TIPO_PIEZA")
+@Table(name = "TBL_TIPO_PIEZAS")
 public class TipoPieza implements Serializable, Auditable {
 
     @Id
