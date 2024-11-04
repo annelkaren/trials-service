@@ -98,12 +98,13 @@ public class DigitalizacionService {
         // Guardar el archivo y manejar posibles excepciones
         try {
             Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
-            log.info("Archivo cargado en el servidor con nombre: ", nombreUnicoArchivo);
+            log.info("Archivo cargado en el servidor con nombre: {}", nombreUnicoArchivo);
         } catch (IOException e) {
-            log.error("Error al guardar el archivo: ", e);
+            log.error("Error al guardar el archivo: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al guardar el archivo en el servidor", e);
         }
+        
 
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         documento.setRuta(nombreUnicoArchivo);
