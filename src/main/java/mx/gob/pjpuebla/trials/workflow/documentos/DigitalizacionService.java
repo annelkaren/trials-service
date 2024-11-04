@@ -68,7 +68,7 @@ public class DigitalizacionService {
     /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
      *
-     * @param documentoId El id del documento el cual se quiere crear el directorio.
+     * @param documento El  documento el cual se quiere crear el directorio.
      * @return La ruta del directorio creado.
      */
     public Path crearDirectorio(Documento documento) {
@@ -94,13 +94,11 @@ public class DigitalizacionService {
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
         String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
-        System.out.println("La ruta del archivo es: " + rutaArchivo.toString() );
-        System.out.println("nombre del archivo es: " + nombreUnicoArchivo);
-
+       
         // Guardar el archivo y manejar posibles excepciones
         try {
             Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
-            log.info("Archivo cargado en el servidor con nombre: " + nombreUnicoArchivo);
+            log.info("Archivo cargado en el servidor con nombre: ", nombreUnicoArchivo);
         } catch (IOException e) {
             log.error("Error al guardar el archivo: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,

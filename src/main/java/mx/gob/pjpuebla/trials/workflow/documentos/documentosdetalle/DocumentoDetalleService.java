@@ -6,8 +6,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import java.io.IOException;
@@ -18,7 +16,6 @@ import java.io.IOException;
 @Service
 public class DocumentoDetalleService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DocumentoRepository documentoRepository;
     private final DigitalizacionService digitalizacion2Service;
 
     @Value("${app.root-folder}")
