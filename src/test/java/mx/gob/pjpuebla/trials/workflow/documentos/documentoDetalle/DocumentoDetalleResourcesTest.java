@@ -20,7 +20,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.files.DigitalizacionFolderSetup;
 
 @WebMvcTest(DocumentoDetalleResources.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -36,7 +35,7 @@ class DocumentoDetalleResourcesTest {
     @Test
     void digitalizarAcuse() throws Exception {
         DocumentoDetalleRecord docDetalle = DocumentoDetalleSetUp.createDocumentoDetalleRecord();
-        DigitalizacionRecord digitalizacion = DigitalizacionFolderSetup.getDigitalizacion();
+        DigitalizacionRecord digitalizacion = new DigitalizacionRecord(1, "/opt/files/ejemplo.pdf", "ejemplo.pdf");
 
         given(documentoDetalleService.digitalizacionAcuse(docDetalle))
             .willReturn(digitalizacion);
