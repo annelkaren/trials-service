@@ -168,8 +168,21 @@ public class OficialiaService {
 
     @Transactional(readOnly = true)
     public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
-        List<Estado> estados = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
-        return oficialiaRepository.findOficialiaDetails(estados, pageable);
+        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(pageable);
+
+        return new PageImpl<>(oficialias.stream().map(o -> 
+            new OficialiaMateriaRecord(
+                o.getId(), 
+                o.getNombre(), 
+                o.getEstado(), 
+                String.join(", ", o.getMaterias().stream().map(m->m.getNombre()).toList()), 
+                null, 
+                o.getSede().getId(), 
+                o.getTipoOficialia().getNombre(), 
+                o.getTipoOficialia().getId(), 
+                String.join(", ", o.getJuzgados().stream().map(j->j.getNombre()).toList()), 
+                null)
+        ).toList(), pageable, oficialias.getTotalElements());
     }
 
     public void delete(Integer id) {
