@@ -40,6 +40,15 @@ public class DocumentoDetalle implements Serializable {
     @Column(name = "S_COMENTARIO")
     private String comentario;
 
+    @Column(name= "S_TIPO_ACUERDO")
+    private String tipoAcuerdo;
+
+    @Column(name="T_FECHA_RESOLUCION")
+    private LocalDate fechaResolucion;
+
+    @Column(name="S_ETAPA_PROCESAL")
+    private String etapaProcesal;
+
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento documento;
