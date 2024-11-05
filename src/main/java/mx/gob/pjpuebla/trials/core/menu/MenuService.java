@@ -41,7 +41,7 @@ public class MenuService {
         for (MenuNode item : newMenu) {//children
             item.setItems(new ArrayList<>());
             for (Menu menu : menus) {
-                if (menu.getParent() != null && menu.getParent() == item.getId()) {
+                if (menu.getParent() != null && menu.getParent().equals(item.getId())) {
                     item.getItems().add(new MenuNode(menu.getId(), menu.getNombre(), menu.getLink()));
                 }
             }
