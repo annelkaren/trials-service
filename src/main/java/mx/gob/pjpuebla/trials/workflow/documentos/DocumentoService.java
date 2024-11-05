@@ -383,6 +383,7 @@ public class DocumentoService {
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
         documento.setFolio(getFolio("P"));
+        documento.setEstatus(EstadoCarpeta.CAPTURA);
 
         DocumentoData documentoData = new DocumentoData();
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
