@@ -176,17 +176,26 @@ public class OficialiaService {
                 o.getNombre(), 
                 o.getEstado(), 
                 String.join(", ", o.getMaterias().stream().map(m->m.getNombre()).toList()), 
-                null, 
+                o.getMaterias().stream().map(m->m.getId()).toArray(), 
                 o.getSede().getId(), 
                 o.getTipoOficialia().getNombre(), 
                 o.getTipoOficialia().getId(), 
-                String.join(", ", o.getJuzgados().stream().map(j->j.getNombre()).toList()), 
+                listarJuzgados(o.getJuzgados()), 
                 null)
         ).toList(), pageable, oficialias.getTotalElements());
     }
 
     public void delete(Integer id) {
         oficialiaRepository.deleteById(id);
+    }
+
+    private String listarJuzgados(List<Juzgado> juzgados){
+        if (juzgados.isEmpty())
+            return "";
+
+        Integer num = juzgados.size();
+        String mensaje = num>1?String.format(" y %d más", num-1):"";
+        return juzgados.stream().findFirst().get().getNombre()+mensaje;
     }
 
 }
