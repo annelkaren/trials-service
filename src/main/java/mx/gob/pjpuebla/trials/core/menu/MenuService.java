@@ -29,7 +29,7 @@ public class MenuService {
         String roles = userRoles.stream()
                 .map(RoleRecord::name)
                 .collect(Collectors.joining("|"));
-        List<Menu> menus = menuRepository.findMenus("(" + roles + ")");
+        List<Menu> menus = menuRepository.findMenus("(TODOS|" + roles + ")");
         menus.sort(Comparator.comparing(Menu::getOrder));
         for (Menu menu : menus) {//parent
             MenuNode menuRecord;
