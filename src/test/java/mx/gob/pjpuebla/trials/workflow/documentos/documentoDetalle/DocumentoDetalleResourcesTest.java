@@ -14,15 +14,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-
 import org.springframework.test.web.servlet.MockMvc;
-
-
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleResources;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
 @WebMvcTest(DocumentoDetalleResources.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -38,9 +35,10 @@ class DocumentoDetalleResourcesTest {
     @Test
     void digitalizarAcuse() throws Exception {
         DocumentoDetalleRecord docDetalle = DocumentoDetalleSetUp.createDocumentoDetalleRecord();
+        DigitalizacionRecord digitalizacion = new DigitalizacionRecord(1, "/opt/files/ejemplo.pdf", "ejemplo.pdf");
 
         given(documentoDetalleService.digitalizacionAcuse(docDetalle))
-            .willReturn(1);
+            .willReturn(digitalizacion);
 
         mockMvc.perform(
             post("/api/workflow/documentoDetalle/digitalizar/acuse")

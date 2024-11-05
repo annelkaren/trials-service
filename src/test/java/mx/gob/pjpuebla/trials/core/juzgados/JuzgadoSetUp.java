@@ -22,7 +22,7 @@ public class JuzgadoSetUp {
         Juzgado juzgado = new Juzgado()
                 .setId(1)
                 .setVersion(0)
-                .setNombre("Juzgado")
+                .setNombre("JuzgadoTEST")
                 .setEstado(estado);
         juzgado.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
         return juzgado;
@@ -32,7 +32,7 @@ public class JuzgadoSetUp {
         Juzgado juzgado = new Juzgado()
                 .setId(1)
                 .setVersion(0)
-                .setNombre("Juzgado")
+                .setNombre("JuzgadoTEST")
                 .setEstado(Estado.ACTIVE)
                 .setMateria(MateriaSetUp.createMateria())
                 .setSede(SedeSetUp.createSede());
@@ -44,7 +44,7 @@ public class JuzgadoSetUp {
         Juzgado juzgado = new Juzgado()
                 .setId(1)
                 .setVersion(1)
-                .setNombre("Juzgado")
+                .setNombre("JuzgadoTEST")
                 .setEstado(Estado.ACTIVE)
                 .setMateria(materia)
                 .setSede(sede)
