@@ -1,0 +1,51 @@
+package mx.gob.pjpuebla.trials.core.menu;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class MenuService {
+
+    private final MenuRepository menuRepository;
+    private final PersonaService personaService;
+    private final RoleService roleService;
+
+    public List<MenuNode> getMenuByUser() {
+        List<MenuNode> newMenu = new ArrayList<>();
+        Persona persona = personaService.getAuditor();
+        List<RoleRecord> userRoles = roleService.getRolesByUserId(persona.getUsuario());
+        String roles = userRoles.stream()
+                .map(RoleRecord::name)
+                .collect(Collectors.joining("|"));
+        List<Menu> menus = menuRepository.findMenus("(" + roles + ")");
+        menus.sort(Comparator.comparing(Menu::getOrder));
+        for (Menu menu : menus) {//parent
+            MenuNode menuRecord;
+            if (menu.getParent() == null) {
+                menuRecord = new MenuNode(menu.getId(), menu.getNombre(), menu.getLink());
+                newMenu.add(menuRecord);
+            }
+        }
+        for (MenuNode item : newMenu) {//children
+            item.setItems(new ArrayList<>());
+            for (Menu menu : menus) {
+                if (menu.getParent() != null && menu.getParent() == item.getId()) {
+                    item.getItems().add(new MenuNode(menu.getId(), menu.getNombre(), menu.getLink()));
+                }
+            }
+        }
+        return newMenu;
+    }
+}

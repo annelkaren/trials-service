@@ -1,22 +1,25 @@
-package mx.gob.pjpuebla.trials.core.recursos;
+package mx.gob.pjpuebla.trials.core.menu;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.recursos.menu.Node;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+@Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core/recursos")
+@RequestMapping("/api/core/menu")
 @SecurityRequirement(name = "Keycloak")
-public class RecursoResource {
+public class MenuResource {
 
-    private final RecursoService recursoService;
+    private final MenuService menuService;
 
     @GetMapping
-    public Node getAll() {
-        return this.recursoService.getMenu();
+    public List<MenuNode> getMenuByUser() {
+        return menuService.getMenuByUser();
     }
 }
