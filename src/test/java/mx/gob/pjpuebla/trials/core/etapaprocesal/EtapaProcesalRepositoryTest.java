@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Sql(value = {
         "/scripts/INSERT_TIPO_SISTEMAS.sql",
         "/scripts/INSERT_MATERIAS.sql",
-        "/scripts/INSERT_ETAPAPROCESAL.sql"
+        "/scripts/INSERT_ETAPA_PROCESAL.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
-        "/scripts/DELETE_ETAPAPROCESAL.sql",
+        "/scripts/DELETE_ETAPA_PROCESAL.sql",
         "/scripts/DELETE_TIPO_SISTEMAS.sql",
         "/scripts/DELETE_MATERIAS.sql"
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
