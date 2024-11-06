@@ -108,4 +108,10 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
 
         assertThat(tipoJuicioHijos).isNotEmpty();
     }
+
+    @Test
+    void getByMateriaAndTipoSistema(){
+        Optional<TipoJuicio> entity = tipoJuicioRepository.getMateriaAndTipoSistemaById(100);
+        assertThat(entity).isNotEmpty();
+    }
 }
