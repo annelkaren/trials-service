@@ -1,54 +1,44 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.html.simpleparser.HTMLWorker;
+import com.lowagie.text.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
-import net.sf.jasperreports.engine.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.io.StringReader;
 
 @Service
 @Component
 @RequiredArgsConstructor
 public class OficioService {
 
-    @Value("classpath:jasper/oficioXD.jasper")
-    private Resource oficioCarta;
+//    @Value("classpath:jasper/oficioXD.jasper")
+//    private Resource oficioCarta;
+//
+//    @Value("classpath:jasper/oficioXD.jasper")
+//    private Resource oficioOficio;
 
-    @Value("classpath:jasper/oficioXD.jasper")
-    private Resource oficioOficio;
+    public byte[] getOficio(Integer oficioId) throws JRException, IOException {
 
-    public byte[] getOficio(boolean formato, Integer oficioId) throws JRException, IOException {
-        Resource oficio = formato ? oficioOficio : oficioCarta;
-        return JasperExportManager.exportReportToPdf(getReport(oficio, oficioId));
-    }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.LETTER);
+        PdfWriter pdf = PdfWriter.getInstance(document, baos);
+        document.open();
+        Image jpg = Image.getInstanceFromClasspath("jasper/header.jpg");
+        jpg.scalePercent(25f);//25%
+        document.add(jpg);
 
+        HTMLWorker htmlWorker = new HTMLWorker(document);
 
-    public JasperPrint getReport(Resource resource, Integer oficioId) throws IOException, JRException {
-        List<String> heder = setHeder(2134323, oficioId);
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("htmlText", "<p>Hola Oficio Trabaja</p>");  // Parámetro para el reporte
-
-
-        return JasperFillManager.fillReport(
-                resource.getInputStream(),
-                parameters,
-                new JREmptyDataSource());
-    }
-
-    public List<String> setHeder(Integer code, Integer noOficio) {
-        return Arrays.asList(
-                "<b>" + code + "</b>",
-                "<b>No. Oficio: " + noOficio + "</b>"
-        );
-    }
-
-    public String bodyText(){
-        return  """ 
+        String string = """ 
                 //TODO. Obtener cuerpo del oficio de base de datos
                 <h1>El agujero aplastante</h1>
                 <p style="line-height: 1.5;" >Por Chris Mills</p>
@@ -64,6 +54,13 @@ public class OficioService {
                   exclamó: "¡Por favor, ten piedad de mi alma!"
                 </p>
                 """;
+
+
+        htmlWorker.parse(new StringReader(string));
+        document.close();
+        return baos.toByteArray();
     }
+
+
 
 }
