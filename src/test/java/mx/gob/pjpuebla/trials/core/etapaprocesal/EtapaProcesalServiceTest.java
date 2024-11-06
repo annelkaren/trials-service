@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.etapaprocesal;
 
 import mx.gob.pjpuebla.trials.core.etapaprocesal.record.EtapaProcesalRecord;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.record.ListEtapaProcesalRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
@@ -34,31 +35,53 @@ class EtapaProcesalServiceTest {
         EtapaProcesalRecord etapaProcesalRecord = EtapaProcesalSetUp.createEtapaProcesalRecord();
         List<EtapaProcesalRecord> listRecord = Collections.singletonList(etapaProcesalRecord);
 
-        given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1, 1, null))
+        given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1, 10))
                 .willReturn(listRecord);
 
         TipoJuicio tipoJuicioSimulado = TipoJuicioSetUp.createTipoJuicio();
         given(tipoJuicioRepository.getMateriaAndTipoSistemaById(1))
                 .willReturn(java.util.Optional.of(tipoJuicioSimulado));
 
-        List<EtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 0);
-
+        List<ListEtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 10);
         assertNotNull(resultList);
-        assertEquals(1, resultList.size());
-        assertEquals(etapaProcesalRecord, resultList.get(0));
+        assertThat(resultList).hasSize(1);
     }
 
     @Test
-    void getEtapaProcesal_return_emply() {
-        given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1, 1, null))
-                .willReturn(null);
+    void getEtapaProcesal_return_list2() {
+        EtapaProcesalRecord etapaProcesalRecord = EtapaProcesalSetUp.createEtapaProcesalRecordCase2();
+        List<EtapaProcesalRecord> listRecord = Collections.singletonList(etapaProcesalRecord);
+        System.out.println(listRecord);
+
+        given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1,  null))
+                .willReturn(listRecord);
 
         TipoJuicio tipoJuicioSimulado = TipoJuicioSetUp.createTipoJuicio();
         given(tipoJuicioRepository.getMateriaAndTipoSistemaById(1))
                 .willReturn(java.util.Optional.of(tipoJuicioSimulado));
 
-        List<EtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 0);
-        assertThat(resultList).isNull();
+        List<ListEtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 0);
+        System.out.println(resultList);
+        assertNotNull(resultList);
+        assertEquals(1, resultList.size());
+    }
+
+    @Test
+    void getEtapaProcesal_return_empty() {
+        // Configurando el mock para devolver una lista vacía
+        given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1, null))
+                .willReturn(Collections.emptyList());
+
+        // Simulando un TipoJuicio
+        TipoJuicio tipoJuicioSimulado = TipoJuicioSetUp.createTipoJuicio();
+        given(tipoJuicioRepository.getMateriaAndTipoSistemaById(1))
+                .willReturn(java.util.Optional.of(tipoJuicioSimulado));
+
+        // Ejecución del método bajo prueba
+        List<ListEtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 0);
+
+        // Verificando que el resultado sea vacío
+        assertThat(resultList).isEmpty();
     }
 
     @Test

@@ -35,7 +35,7 @@ class EtapaProcesalRepositoryTest extends AuditConfigTest {
     @Test
     void getListEtapaProcesal(){
         List<EtapaProcesalRecord> list = etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(
-                150, 100, null
+                150,  null
         );
         assertThat(list).isNotEmpty()
                 .isNotNull();
@@ -44,7 +44,7 @@ class EtapaProcesalRepositoryTest extends AuditConfigTest {
     @Test
     void getListEtapaProcesal_isEmpty(){
         List<EtapaProcesalRecord> list = etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(
-                1150, 1100, null
+                1150,  null
         );
         assertThat(list).isEmpty();
     }

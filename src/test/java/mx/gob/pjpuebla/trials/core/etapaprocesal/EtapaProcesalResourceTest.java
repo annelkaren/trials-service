@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.etapaprocesal;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.record.EtapaProcesalRecord;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.record.ListEtapaProcesalRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,10 +31,10 @@ class EtapaProcesalResourceTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private EtapaProcesalRecord etapaProcesalRecord;
+    private ListEtapaProcesalRecord etapaProcesalRecord;
 
     @BeforeEach
-    void setUp(){etapaProcesalRecord = EtapaProcesalSetUp.createEtapaProcesalRecord();}
+    void setUp(){etapaProcesalRecord = EtapaProcesalSetUp.createListEtapaProcesalRecord();}
 
     @Test
     void getEtapaProcesal_success() throws Exception {

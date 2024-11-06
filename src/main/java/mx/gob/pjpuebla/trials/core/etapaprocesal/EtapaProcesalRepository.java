@@ -17,15 +17,14 @@ public interface EtapaProcesalRepository extends JpaRepository<EtapaProcesal, In
     )
     FROM EtapaProcesal ep
     JOIN ep.materia m
-    JOIN ep.tipoSistema ts
+    LEFT JOIN ep.tipoSistema ts
     LEFT JOIN ep.procedimiento p
     WHERE m.id = :idMateria
-    AND ts.id = :idTipoSistema
+    
     AND (:idprocedimiento IS NULL OR p.id = :idprocedimiento)
     """)
     List<EtapaProcesalRecord> getListEtapaProcesalByTipoJuicioAndProcedimiento(
             @Param("idMateria") Integer materiaId,
-            @Param("idTipoSistema") Integer tipoSistemaId,
             @Param("idprocedimiento") Integer procedimientoId
     );
 

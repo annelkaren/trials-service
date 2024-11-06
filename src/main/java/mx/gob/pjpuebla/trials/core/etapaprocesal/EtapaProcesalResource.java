@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.core.etapaprocesal;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.etapaprocesal.record.EtapaProcesalRecord;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.record.ListEtapaProcesalRecord;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +21,7 @@ public class EtapaProcesalResource {
     private final EtapaProcesalService etapaProcesalService ;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<EtapaProcesalRecord> getAll(
+    public List<ListEtapaProcesalRecord>  getAll(
             @RequestParam(value = "IdTipoJuicio", required = false) Integer idTipoJuicio,
              @RequestParam(value = "IdProcedimiento", required = false) Integer idProcedimiento
     ){

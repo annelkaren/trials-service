@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.etapaprocesal;
 
 import mx.gob.pjpuebla.trials.core.etapaprocesal.record.EtapaProcesalRecord;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.record.ListEtapaProcesalRecord;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
@@ -33,9 +34,26 @@ public class EtapaProcesalSetUp {
         return new EtapaProcesalRecord(
                 1,
                 "Apelación / Amparo directo",
+                10,
+                "",
                 null,
-                null,
-                100,
+                200
+        );
+    }
+
+    public static ListEtapaProcesalRecord createListEtapaProcesalRecord(){
+        return new ListEtapaProcesalRecord(
+                1,
+                "Apelación / Amparo directo"
+        );
+    }
+    public static EtapaProcesalRecord createEtapaProcesalRecordCase2(){
+        return new EtapaProcesalRecord(
+                1,
+                "Apelación / Amparo directo",
+                10,
+                "",
+                1,
                 200
         );
     }
