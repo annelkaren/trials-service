@@ -4,14 +4,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record AcuerdoRecord(
+    Integer acuerdoId,
     Integer carpetaId,
+    Integer documentoId,
     String tipoAcuerdo,
     LocalDate fechaResolucion,
     String etapaProcesal,
     List<String> rubros,
     List<Integer> promocionesRelacionadas,
-    String[] recomendaciones,
-    String tamanioPapel,
+    List<String> recomendaciones,
+    char tamanioPapel,
     String textoEditor,
     String acuedoPublicado
 ) {}
