@@ -17,9 +17,10 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
-@Transactional
+
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class AcuerdosService {
 
     private final CarpetaRepository carpetaRepository;
@@ -27,7 +28,8 @@ public class AcuerdosService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
 
-    public Integer save(AcuerdoRecord acuerdo) {
+    @Transactional
+    public Documento save(AcuerdoRecord acuerdo) {
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
@@ -42,7 +44,7 @@ public class AcuerdosService {
                 .setCarpeta(carpeta)
                 .setTipoDocumento(TipoDocumento.ACUERDO)
                 .setData(docData);
-        documentoRepository.save(doc);
+                documentoRepository.save(doc);
 
         // Creamos la información de documento detalle:
         DocumentoDetalle docDetalle = new DocumentoDetalle()
@@ -67,47 +69,6 @@ public class AcuerdosService {
             }
         }
 
-        return doc.getId();
-    }
-
-    public Integer update(AcuerdoRecord acuerdo) {
-
-        // Creamos información de los rubros en documentoData
-        DocumentoData docData = new DocumentoData()
-                .setRubros(acuerdo.rubros());
-
-        // actualizamos el documento (acuerdo)
-        Documento doc = documentoRepository.findById(acuerdo.acuerdoId())
-                .orElseThrow(() -> new NotFoundException("No existe un acuerdo con el id proporcionado", "documentoId"))
-                .setTipoDocumento(TipoDocumento.ACUERDO)
-                .setData(docData);
-        documentoRepository.save(doc);
-
-        // actualizamos la información de documento detalle:
-        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(doc.getId())
-                .orElseThrow(() -> new NotFoundException("No existe un documento detalle asociado al acuerdo",
-                        "documentoDetalleId"))
-                .setTipoAcuerdo(acuerdo.tipoAcuerdo())
-                .setFechaResolucion(acuerdo.fechaResolucion())
-                .setEtapaProcesal(acuerdo.etapaProcesal());
-        documentoDetalleRepository.save(docDetalle);
-
-        DocumentoContenido docContenido = documentoContenidoRepository.findByDocumentoId(doc.getId())
-                .orElseThrow(() -> new NotFoundException("No existe un documento contenido asociado al acuerdo",
-                        "documentoContenidoId"))
-                .setTamanioPapel(acuerdo.tamanioPapel())
-                .setTexto(acuerdo.textoEditor());
-        documentoContenidoRepository.save(docContenido);
-
-        // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
-        for (Integer promo : acuerdo.promocionesRelacionadas()) {
-            Documento promocion = documentoRepository.findById(promo).orElse(null);
-            if (promocion != null) {
-                promocion.setAcuerdo_respuesta(doc);
-                documentoRepository.save(promocion);
-            }
-        }
-
-        return doc.getId();
+        return doc;
     }
 }

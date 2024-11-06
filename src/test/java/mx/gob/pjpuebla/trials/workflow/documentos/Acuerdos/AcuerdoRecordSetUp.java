@@ -22,7 +22,7 @@ public class AcuerdoRecordSetUp {
         List<String> recomendaciones = new ArrayList<>();
         recomendaciones.add("recomendación 1");
 
-        return new AcuerdoRecord(1, 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
+        return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
                 recomendaciones, 'o', "<p>prueba</p>", "n");
     }
 }
