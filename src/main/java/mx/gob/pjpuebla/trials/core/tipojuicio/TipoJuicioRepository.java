@@ -54,4 +54,7 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
             WHERE t.estado = Estado.ACTIVE AND (t.tipoJuicioPadreOral = :tipoJuicioPadreId OR t.tipoJuicioPadreTrad = :tipoJuicioPadreId)
             """)
     List<TipoJuicioDemandasRecord> findByTipoJuicioPadre(Integer tipoJuicioPadreId);
+
+    @Query(" SELECT tj FROM TipoJuicio tj WHERE tj.id = :idTipoSistema")
+    Optional<TipoJuicio> getMateriaAndTipoSistemaById(@Param("idTipoSistema") Integer procedimientoId);
 }
