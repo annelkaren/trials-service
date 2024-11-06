@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,4 +33,9 @@ public class TipoPartesResource {
         return this.tipoPartesService.findByTipoJuicioId(tipojuicioId);
     }
 
+    @GetMapping("/{documentoId}/partes")
+    public ResponseEntity<List<TipoPartesRecord>> getTiposPartesByDocumentoId(@PathVariable Integer documentoId) {
+        List<TipoPartesRecord> tiposPartes = tipoPartesService.getTipoPartesByDocumentoId(documentoId);
+        return ResponseEntity.ok(tiposPartes);
+    }
 }
