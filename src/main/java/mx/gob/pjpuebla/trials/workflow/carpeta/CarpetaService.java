@@ -4,21 +4,21 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
-import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -27,9 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class CarpetaService {
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
-    private final MovimientoRepository movimientoRepository;
+    private final AudienciaService audienciaService;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
@@ -215,4 +215,53 @@ public class CarpetaService {
     }
 
 
+    public InfoExpedienteRecord getInfoExpediente(Integer docId) {
+        Documento documento = documentoRepository.findById(docId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", docId.toString()));
+
+        //Obtiene nombre de rubros
+        String rubros = documento.getCarpeta().getRubros().stream()
+                .map(Rubro::getNombre)
+                .sorted()
+                .collect(Collectors.joining(", "));
+
+        //Obtiene nombre de procedimientos dados los rubros
+        String tipoProcedimiento = documento.getCarpeta().getRubros().stream()
+                .map(Rubro::getProcedimiento)
+                .filter(Objects::nonNull)
+                .map(Procedimiento::getNombre)
+                .sorted()
+                .collect(Collectors.joining(", "));
+
+        //Obtiene los participantes del expediente
+        List<ApelacionRecordResponse> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoByCarpetaId(documento.getCarpeta().getId());
+
+        //Obtiene el nombre del juez
+        ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
+
+        return new InfoExpedienteRecord(
+                documento.getCarpeta().getExpediente(),
+                documento.getCarpeta().getTipoJuicio().getNombre(),
+                documento.getCarpeta().getTipoJuicio().getNombre(), //TODO añadir causa para expediente tipo PENAL
+                extraAudienciaSelloRecord.nombreJuez(),
+                LocalDateTime.now(), //TODO añadir fecha presentación
+                "Asunto de penal desde Backend", //TODO añadir asunto para expediente tipo PENAL
+                tipoProcedimiento,
+                rubros,
+                "Primera Etapa", //TODO añadir etapa procesal
+                getParticipantes(apelacionRecordResponseList),
+                null //TODO añadir razón de devolución
+        );
+    }
+
+    public static List<ParticipantesRecord> getParticipantes(List<ApelacionRecordResponse> participantes) {
+        Map<String, List<String>> agrupadoPorTipo = new HashMap<>();
+        for (ApelacionRecordResponse participante : participantes) {
+            String persona = participante.nombre() + " " + participante.apellidoPaterno() + " " + participante.apellidoMaterno();
+            agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
+        }
+        return agrupadoPorTipo.entrySet().stream()
+                .map(entry -> new ParticipantesRecord(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
 }
