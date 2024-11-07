@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionSetUp;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -39,7 +40,8 @@ public class DocumentoSetUp {
                 .setExpediente("000001/2024")
                 .setEstatus(EstadoCarpeta.CAPTURA)
                 .setTipoJuicio(tipoJuicio)
-                .setSelloEstatus(SelloEstatus.VALIDO);
+                .setSelloEstatus(SelloEstatus.VALIDO)
+                .setJuzgado(JuzgadoSetUp.createJuzgado());
 
         Documento documento = new Documento()
                 .setId(1)
@@ -122,5 +124,9 @@ public class DocumentoSetUp {
 
     public static MovimientoPersonalJuzgadoRecord createMovimientoPersonalJuzgadoRecord() {
         return new MovimientoPersonalJuzgadoRecord(51, LocalDateTime.now(),"Anibal", "ASIGNADO", "JUZGADO XXI");
+    }
+
+    public static DocumentoData createDocumentoData(String tipoOficio){
+        return new DocumentoData().setTipoOficio(tipoOficio);
     }
 }
