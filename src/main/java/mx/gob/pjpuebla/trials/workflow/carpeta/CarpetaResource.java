@@ -51,4 +51,9 @@ public class CarpetaResource {
     public List<CarpetaCatalogoRecord> getListCatalago(@PathVariable String catalago){
         return this.carpetaService.getCatalogoList(catalago);
     }
+
+    @GetMapping(value = "/recepcion/{docId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
+        return this.carpetaService.getInfoExpediente(docId);
+    }
 }
