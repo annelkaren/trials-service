@@ -32,12 +32,12 @@ public class DocumentoContenidoService {
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
 
         // TODO: asignar vaiores cuando se tengan disponibles
-        
+
         // Obtenemos texto del editor:
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
         char tamanioPapel = ' ';
         String textoEditor = "";
-        char existeOficio = ' '; 
+        char existeOficio = ' ';
 
         //Obtenemos información detallada del documento
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
@@ -51,7 +51,7 @@ public class DocumentoContenidoService {
         if(documentoDetalle != null){
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
-            asunto = documentoDetalle.getAsunto();  
+            asunto = documentoDetalle.getAsunto();
             comentario = documentoDetalle.getComentario();
             estatusAcuse = documentoDetalle.getEstado();
             rutaAcuse = documentoDetalle.getRuta();
@@ -106,18 +106,17 @@ public class DocumentoContenidoService {
             documentoDetalle.setAsunto(oficio.asunto());
             documentoDetalleRepository.save(documentoDetalle);
         }
-       
+
         // Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
 
         if (documentoContenido == null) { documentoContenido = new DocumentoContenido(); }
 
         documentoContenido.setDocumento(doc);
-        System.out.println("------> " + oficio.tamanioPapel());
         documentoContenido.setTamanioPapel(oficio.tamanioPapel());
         documentoContenido.setTexto(oficio.textoEditor());
         documentoContenidoRepository.save(documentoContenido);
-        
+
         return oficio;
     }
 
@@ -133,4 +132,9 @@ public class DocumentoContenidoService {
 
         return 1;
    }
+
+    public DocumentoContenido getContenidoByOficioId(Integer oficioId) {
+        return documentoContenidoRepository.findByDocumentoId(oficioId)
+                .orElseThrow(() -> new NotFoundException("Oficio no encontrado", oficioId.toString()));
+    }
 }
