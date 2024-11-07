@@ -254,6 +254,8 @@ public class SelloGenerator {
 
                 expediente = carpeta.getExpediente() + " - Promocion";
                 isPromocionOralidadExhorto = false;
+            } else {
+                expediente = documento.getCarpeta().getExpediente();
             }
         } else {
             throw new NotFoundException("Carpeta no encontrada", "carpetaId");
