@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 
 @RequiredArgsConstructor
@@ -22,5 +24,12 @@ public class AcuerdosResource {
     public Documento crearAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
         return acuerdosService.save(acuerdo);
     }
+
+    @PostMapping("/documentos/obtenerPromociones/{carpetaId}")
+    public AcuerdoPromocionesRecord obtenerPromociones(@PathVariable Integer carpetaId){
+        return acuerdosService.obtenerPromociones(carpetaId);
+    }
+
+
 
 }
