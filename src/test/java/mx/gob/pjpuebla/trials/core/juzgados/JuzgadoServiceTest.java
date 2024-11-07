@@ -337,21 +337,21 @@ class JuzgadoServiceTest {
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoDemanda)
         );
-        assertThat(exceptionDemanda.getMessage()).contains("No se puede asignar un Juzgado");
+        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
 
         TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
         NotFoundException exceptionApelacion = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoApelacion)
         );
-        assertThat(exceptionApelacion.getMessage()).contains("No se puede asignar un Juzgado");
+        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
 
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         NotFoundException exceptionExhorto = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoExhorto)
         );
-        assertThat(exceptionExhorto.getMessage()).contains("No se puede asignar un Juzgado");
+        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
     }
 
     @Test
