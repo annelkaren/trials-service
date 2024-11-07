@@ -234,7 +234,7 @@ public class JuzgadoService {
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
             if (juzgados.isEmpty())
-                throw (new NotFoundException("No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ", tipoJuicio.getNombre()));
+                throw (new NotFoundException("No se puede asignar un Juzgado", tipoJuicio.getNombre()));
         }
 
         int rand = RANDOM.nextInt(juzgados.size());
