@@ -113,6 +113,7 @@ public class DocumentoContenidoService {
         if (documentoContenido == null) { documentoContenido = new DocumentoContenido(); }
 
         documentoContenido.setDocumento(doc);
+        System.out.println("------> " + oficio.tamanioPapel());
         documentoContenido.setTamanioPapel(oficio.tamanioPapel());
         documentoContenido.setTexto(oficio.textoEditor());
         documentoContenidoRepository.save(documentoContenido);
