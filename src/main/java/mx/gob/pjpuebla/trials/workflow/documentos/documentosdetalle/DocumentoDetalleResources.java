@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,7 +25,7 @@ public class DocumentoDetalleResources {
     private final DocumentoDetalleService documentoDetalleService;
 
     @PostMapping("documentoDetalle/digitalizar/acuse")
-    public Integer digitalizarAcuse(@RequestBody DocumentoDetalleRecord documento) {
+    public DigitalizacionRecord digitalizarAcuse(@RequestBody DocumentoDetalleRecord documento) {
         return documentoDetalleService.digitalizacionAcuse(documento);
     }
 

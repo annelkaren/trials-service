@@ -7,7 +7,7 @@ public record OficialiaMateriaRecord(
         String  nombre,
         Estado  estado,
         String  materiaNombres,
-        Integer materiaId,
+        Object materiaId,
         Integer sedeId,
         String  tipoOficialiaNombre,
         Integer tipoId,

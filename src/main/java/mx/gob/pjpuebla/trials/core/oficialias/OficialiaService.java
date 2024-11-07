@@ -168,12 +168,34 @@ public class OficialiaService {
 
     @Transactional(readOnly = true)
     public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
-        List<Estado> estados = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
-        return oficialiaRepository.findOficialiaDetails(estados, pageable);
+        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(pageable);
+
+        return new PageImpl<>(oficialias.stream().map(o -> 
+            new OficialiaMateriaRecord(
+                o.getId(), 
+                o.getNombre(), 
+                o.getEstado(), 
+                String.join(", ", o.getMaterias().stream().map(m->m.getNombre()).toList()), 
+                o.getMaterias().stream().map(m->m.getId()).toArray(), 
+                o.getSede().getId(), 
+                o.getTipoOficialia().getNombre(), 
+                o.getTipoOficialia().getId(), 
+                listarJuzgados(o.getJuzgados()), 
+                null)
+        ).toList(), pageable, oficialias.getTotalElements());
     }
 
     public void delete(Integer id) {
         oficialiaRepository.deleteById(id);
+    }
+
+    private String listarJuzgados(List<Juzgado> juzgados){
+        if (juzgados.isEmpty())
+            return "";
+
+        Integer num = juzgados.size();
+        String mensaje = num>1?String.format(" y %d más", num-1):"";
+        return juzgados.stream().findFirst().get().getNombre()+mensaje;
     }
 
 }
