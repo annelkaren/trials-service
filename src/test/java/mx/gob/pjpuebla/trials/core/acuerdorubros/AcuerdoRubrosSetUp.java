@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.acuerdorubros;
 
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 
@@ -19,6 +18,6 @@ public class AcuerdoRubrosSetUp {
     }
 
     public static AcuerdoRubrosRecord createAcuerdoRubrosRecord() {
-        return new AcuerdoRubrosRecord(100, "ACEPTACION DE CARGO", new MateriaRecord(250, "FAMILIAR"), null);
+        return new AcuerdoRubrosRecord(100, "ACEPTACION DE CARGO");
     }
 }

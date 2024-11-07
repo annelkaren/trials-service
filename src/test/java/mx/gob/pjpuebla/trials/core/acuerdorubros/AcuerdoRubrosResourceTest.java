@@ -17,8 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,7 +86,7 @@ class AcuerdoRubrosResourceTest {
 
     @Test
     void findDocumentoById_success() throws Exception {
-        given(mockAcuerdoRubrosService.findRubrosByDocumentoId(51, PageRequest.of(0, 10)))
+        given(mockAcuerdoRubrosService.findRubrosByDocumentoId(51, PageRequest.of(0, 10), "any"))
                 .willReturn(new PageImpl<>(Collections.singletonList(acuerdoRubrosRecord)));
 
         mockMvc.perform(

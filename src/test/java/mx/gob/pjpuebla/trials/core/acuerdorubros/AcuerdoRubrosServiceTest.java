@@ -117,10 +117,10 @@ class AcuerdoRubrosServiceTest {
 
         given(mockDocumentoRepository.findById(51)).willReturn(Optional.of(documento));
 
-        given(mockAcuerdoRubrosRepository.findByMateriaAndTipoSistema(materia, tipoSistema, PageRequest.of(0, 10)))
+        given(mockAcuerdoRubrosRepository.findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(materia, tipoSistema, "any", PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(acuerdoRubrosList, PageRequest.of(0, 10), acuerdoRubrosList.size()));
 
-        Page<AcuerdoRubrosRecord> result = acuerdoRubrosService.findRubrosByDocumentoId(51, PageRequest.of(0, 10));
+        Page<AcuerdoRubrosRecord> result = acuerdoRubrosService.findRubrosByDocumentoId(51, PageRequest.of(0, 10), "any");
         assertThat(result.getContent())
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", acuerdoRubros.getId())

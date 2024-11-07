@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AcuerdoRubrosRepository extends JpaRepository<AcuerdoRubros, Integer> {
 
-    Page<AcuerdoRubros> findByMateria(Materia materia, Pageable pageable);
+    Page<AcuerdoRubros> findByMateriaAndNombreContainingIgnoreCase(Materia materia, String nombre, Pageable pageable);
 
-    Page<AcuerdoRubros> findByMateriaAndTipoSistema(Materia materia, TipoSistema tipoSistema, Pageable pageable);
+    Page<AcuerdoRubros> findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(Materia materia, TipoSistema tipoSistema, String nombre, Pageable pageable);
 }

@@ -3,9 +3,7 @@ package mx.gob.pjpuebla.trials.core.acuerdorubros;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
-import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -31,9 +29,7 @@ public class AcuerdoRubrosService {
         List<AcuerdoRubrosRecord> list = page.getContent().stream()
                 .map(acuerdoRubros -> new AcuerdoRubrosRecord(
                         acuerdoRubros.getId(),
-                        acuerdoRubros.getNombre(),
-                        new MateriaRecord(acuerdoRubros.getMateria().getId(), acuerdoRubros.getMateria().getNombre()),
-                        acuerdoRubros.getTipoSistema() != null ? new TipoSistemaRecord(acuerdoRubros.getTipoSistema().getId(), acuerdoRubros.getTipoSistema().getNombre()) : null
+                        acuerdoRubros.getNombre()
                 ))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -45,14 +41,12 @@ public class AcuerdoRubrosService {
                 .orElseThrow(() -> new NotFoundException("Acuerdo rubro no encontrado", "acuerdoRubroId" + id));
         return new AcuerdoRubrosRecord(
                 acuerdoRubros.getId(),
-                acuerdoRubros.getNombre(),
-                new MateriaRecord(acuerdoRubros.getMateria().getId(), acuerdoRubros.getMateria().getNombre()),
-                acuerdoRubros.getTipoSistema() != null ? new TipoSistemaRecord(acuerdoRubros.getTipoSistema().getId(), acuerdoRubros.getTipoSistema().getNombre()) : null
+                acuerdoRubros.getNombre()
         );
     }
 
     @Transactional(readOnly = true)
-    public Page<AcuerdoRubrosRecord> findRubrosByDocumentoId(Integer id, Pageable pageable) {
+    public Page<AcuerdoRubrosRecord> findRubrosByDocumentoId(Integer id, Pageable pageable, String nombre) {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
 
@@ -69,22 +63,21 @@ public class AcuerdoRubrosService {
         }
 
         Page<AcuerdoRubros> acuerdoRubrosList;
+        nombre = (nombre != null) ? nombre.toLowerCase() : "";
 
         if ("FAMILIAR".equalsIgnoreCase(materia.getNombre())) {
             if (tipoSistema != null) {
-                acuerdoRubrosList = acuerdoRubrosRepository.findByMateriaAndTipoSistema(materia, tipoSistema, pageable);
+                acuerdoRubrosList = acuerdoRubrosRepository.findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(materia, tipoSistema, nombre, pageable);
             } else {
-                acuerdoRubrosList = acuerdoRubrosRepository.findByMateria(materia, pageable);
+                acuerdoRubrosList = acuerdoRubrosRepository.findByMateriaAndNombreContainingIgnoreCase(materia, nombre, pageable);
             }
         } else {
-            acuerdoRubrosList = acuerdoRubrosRepository.findByMateria(materia, pageable);
+            acuerdoRubrosList = acuerdoRubrosRepository.findByMateriaAndNombreContainingIgnoreCase(materia, nombre, pageable);
         }
 
         return acuerdoRubrosList.map(acuerdoRubros -> new AcuerdoRubrosRecord(
                 acuerdoRubros.getId(),
-                acuerdoRubros.getNombre(),
-                new MateriaRecord(acuerdoRubros.getMateria().getId(), acuerdoRubros.getMateria().getNombre()),
-                acuerdoRubros.getTipoSistema() != null ? new TipoSistemaRecord(acuerdoRubros.getTipoSistema().getId(), acuerdoRubros.getTipoSistema().getNombre()) : null
+                acuerdoRubros.getNombre()
         ));
     }
 }
