@@ -16,7 +16,9 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -40,6 +42,7 @@ public class CarpetaService {
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
+    private final MovimientoRepository movimientoRepository;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
@@ -100,17 +103,19 @@ public class CarpetaService {
                 anexos);
     }
 
-    public DocumentoRecord actualizarInformacionAnexos(List<AnexoBandejaRecepcionRecord> anexos,
-                                                       Integer documentoId) {
+    public DocumentoRecord actualizarInformacionAnexos(
+            DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord,
+            Integer documentoId
+    ) {
         Documento documento = validacionBandejaRecepcion(documentoId);
 
-        List<String> anexosFaltantes = anexos.stream()
+        List<String> anexosFaltantes = docRecepcionMovimientosRecord.anexos().stream()
                 .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
                 .map(AnexoBandejaRecepcionRecord::nombre)
                 .toList();
 
         // actualizamos los anexos.
-        for (AnexoBandejaRecepcionRecord anexo : anexos) {
+        for (AnexoBandejaRecepcionRecord anexo : docRecepcionMovimientosRecord.anexos()) {
             Anexo anexoTemp = anexoRepository.findById(anexo.id()).orElseThrow(
                     () -> new NotFoundException("No se encontró el anexo con id: " + anexo.id(), "anexoId"));
             anexoTemp.setEstado(anexo.estado());
@@ -121,16 +126,24 @@ public class CarpetaService {
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción.
-        if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
-            documento.setEstatus(EstadoCarpeta.ASIGNADO);
-        }
-
-        if (documento.getCarpeta() != null && (documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
-                                               || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)) {
+        if (documento.getTipoDocumento() == null && documento.getCarpeta() != null && (
+                documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
+                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
+        )
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-        }
+        else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION))
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
 
-        documentoRepository.save(documento);
+        documento = documentoRepository.save(documento);
+
+        //Crear movimiento
+        movimientoService.createMovimentoWithObservaciones(
+                (documento.getTipoDocumento() == null) ? documento.getCarpeta() : null,
+                (documento.getTipoDocumento() == null) ? null : documento,
+                EstadoCarpeta.ASIGNADO.name(),
+                docRecepcionMovimientosRecord.observaciones(),
+                docRecepcionMovimientosRecord.recomendaciones()
+        );
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
                 documento.getCarpeta().getTipoCarpeta());
@@ -162,8 +175,7 @@ public class CarpetaService {
         }
         String concatenatedAnexos = String.join(", ", anexos);
         String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
-
-        movimientoService.createMovimento(documento.getCarpeta(), documento, personaService.getAuditor(), motivo);
+        movimientoService.createMovimento((documento.getTipoDocumento() == null ? documento.getCarpeta() : null), (documento.getTipoDocumento() == null) ? null : documento, personaService.getAuditor(), motivo);
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {

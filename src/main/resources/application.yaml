@@ -31,8 +31,8 @@ spring:
       connectiontimeout: 5000
       timeout: 5000
       writetimeout: 5000
-    username: alejandro.ramirez@pjpuebla.gob.mx
-    password: nrjxblvybvmwwsov
+    username: annelkaren@gmail.com
+    password: naaj eusw llhl rhti
 
   security:
     oauth2:

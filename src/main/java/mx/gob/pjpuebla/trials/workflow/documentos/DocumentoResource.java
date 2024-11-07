@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -35,7 +36,7 @@ public class DocumentoResource {
     private final SelloGenerator selloGenerator;
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
-    private final DigitalizacionService digitalizacionService;
+    private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
 
     @PostMapping("/demanda")
@@ -66,7 +67,7 @@ public class DocumentoResource {
     public DigitalizacionRecord digitizationDocument(
             @RequestParam("file") MultipartFile file,
             @PathVariable("documentoId") Integer documentoId) {
-        return digitalizacionService.procesarArchivo(file, documentoId);
+        return digitalizacion2Service.guardarArchivo(file, documentoId);
     }
 
     @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,7 +75,7 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getDocumento(documentoId));
     }
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -165,6 +166,12 @@ public class DocumentoResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.documentoService.getAllAsignado(key, pageable);
     }
+
+    @PostMapping("/bandeja/asignados/movimiento")
+    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(@RequestBody @Valid List<AsignadoTurnadoRecord> records) {
+        return documentoService.turnadoPersonalJuzgado(records);
+    }
+
     @PostMapping("/bandeja/salida")
     public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
         return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());

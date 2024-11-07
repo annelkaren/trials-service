@@ -239,9 +239,16 @@ class OficialiaServiceTest {
                 juzgados.get(0).getId()
         );
 
+        Oficialia tmp = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+        tmp.setMaterias(List.of(materia));
+        tmp.setJuzgados(List.of(juzgados.get(0)));
+        tmp.setTipoOficialia(tipoOficialia);
+
         List<OficialiaMateriaRecord> listPage = Collections.singletonList(oficialiaMateriaRecordResponse);
-        given(oficialiaRepository.findOficialiaDetails(anyList(), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        List<Oficialia> list = Collections.singletonList(tmp);
+
+        given(oficialiaRepository.findAllActive(any(PageRequest.class)))
+                .willReturn(new PageImpl<>(list, PageRequest.of(0, list.size()), list.size()));
 
         Page<OficialiaMateriaRecord> page = oficialiaService.getAllByOficialiaMateria(PageRequest.of(1, listPage.size()));
 

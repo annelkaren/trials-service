@@ -61,5 +61,11 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
            "WHERE j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE")  
     List<OficialiaJuzgadoRecord> findAllOficialiasWithActiveJuzgados();
 
+    @Query("""
+            Select o FROM Oficialia o
+            WHERE o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+    Page<Oficialia> findAllActive(Pageable pageable);
+
     Optional<Oficialia> findByNombre(String nombre);
 }

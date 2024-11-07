@@ -81,12 +81,12 @@ public class SelloGenerator {
         PersonaDocumentoRecord demandado = getInfoPersona(documento.getCarpeta().getId(), "Demandado");
         ExtraAudienciaSelloRecord audiencia = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
-        documento = updateExpedientePorTipoJuicio(documento);
+        String expediente= updateExpedientePorTipoJuicio(documento);
         expedientesByDemandadoActor(demandado.nombre(), actor.nombre(), documento.getCarpeta().getTipoJuicio().getMateria().getId());
         String relacionExpediente = (expedienteRelacionados != null && !expedienteRelacionados.isEmpty()) ? expedienteRelacionados : "";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("expediente", documento.getCarpeta().getExpediente());
+        parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
         parameters.put("folio", documento.getCarpeta().getFolio());
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
@@ -223,10 +223,10 @@ public class SelloGenerator {
         return nombreCapturista;
     }
 
-    public Documento updateExpedientePorTipoJuicio(Documento documento) {
+    public String updateExpedientePorTipoJuicio(Documento documento) {
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
         DocumentoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
-
+        String expediente = "";
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
             if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
@@ -245,19 +245,22 @@ public class SelloGenerator {
                 );
                 isPromocionOralidadExhorto = true;
                 isOralidadFamiliar = true;
-                carpeta.setExpediente(expenienteOralFamiliar);
+              expediente = expenienteOralFamiliar;
             } else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
-                carpeta.setExpediente(carpeta.getExpediente() + " - Exhorto");
+
+                expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                carpeta.setExpediente(carpeta.getExpediente() + " - Promocion");
+
+                expediente = carpeta.getExpediente() + " - Promocion";
                 isPromocionOralidadExhorto = false;
+            } else {
+                expediente = documento.getCarpeta().getExpediente();
             }
-            documento.setCarpeta(carpeta);
         } else {
             throw new NotFoundException("Carpeta no encontrada", "carpetaId");
         }
-        return documento;
+        return expediente;
     }
 
     public PersonaDocumentoRecord getInfoPersona(Integer id, String parte) {

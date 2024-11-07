@@ -7,6 +7,10 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +21,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-
+ 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +36,9 @@ class TipoPartesServiceTest {
 
     @Mock
     TipoPartesRepository mockTipoPartesRepository;
+
+    @Mock
+    DocumentoRepository mockDocumentoRepository;
 
     @InjectMocks
     TipoPartesService target;
@@ -96,5 +103,76 @@ class TipoPartesServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre())
                 .hasFieldOrPropertyWithValue("tipoJuicio", validTipoPartes.getTipoJuicio().getNombre());
     }
+
+
+    @Test
+        void getTipoPartesByDocumentoId_success() {
+                Documento documento = new Documento();
+                documento.setId(1); 
+                Carpeta carpeta = new Carpeta();
+                TipoJuicio tipoJuicio = new TipoJuicio();
+                tipoJuicio.setId(2); 
+                tipoJuicio.setNombre("Civil (Oral)"); 
+                carpeta.setTipoJuicio(tipoJuicio);
+                documento.setCarpeta(carpeta);
+
+                given(mockDocumentoRepository.findById(1)).willReturn(Optional.of(documento));
+
+                TipoPartes tipoPartes = new TipoPartes();
+                tipoPartes.setId(3);
+                tipoPartes.setNombre("Actor - Abogado litigante");
+
+                given(mockTipoPartesRepository.findByTipoJuicioId(2)).willReturn(Collections.singletonList(tipoPartes));
+
+                List<TipoPartesRecord> result = target.getTipoPartesByDocumentoId(1);
+
+                assertThat(result).hasSize(1);
+                assertThat(result.get(0)).hasFieldOrPropertyWithValue("id", 3)
+                                        .hasFieldOrPropertyWithValue("nombre", "Actor - Abogado litigante")
+                                        .hasFieldOrPropertyWithValue("tipoJuicio", "Civil (Oral)");
+        }
+
+        @Test
+        void getTipoPartesByDocumentoId_documentoNotFound() {
+                given(mockDocumentoRepository.findById(1)).willReturn(Optional.empty());
+
+                NotFoundException thrown = assertThrows(NotFoundException.class, () -> {
+                        target.getTipoPartesByDocumentoId(1);
+                });
+
+                assertThat(thrown.getMessage()).contains("Documento no encontrado");
+        }
+
+        @Test
+        void getTipoPartesByDocumentoId_carpetaNotFound() {
+                Documento documento = new Documento();
+                documento.setId(1); 
+                documento.setCarpeta(null);
+                
+                given(mockDocumentoRepository.findById(1)).willReturn(Optional.of(documento));
+                
+                NotFoundException thrown = assertThrows(NotFoundException.class, () -> {
+                    target.getTipoPartesByDocumentoId(1);
+                });
+                
+                assertThat(thrown.getMessage()).contains("Carpeta no encontrada");
+        }
+
+        @Test
+        void getTipoPartesByDocumentoId_tipoJuicioNotFound() {
+                Documento documento = new Documento();
+                documento.setId(1); 
+                Carpeta carpeta = new Carpeta();
+                carpeta.setTipoJuicio(null); 
+                documento.setCarpeta(carpeta);
+                
+                given(mockDocumentoRepository.findById(1)).willReturn(Optional.of(documento));
+                
+                NotFoundException thrown = assertThrows(NotFoundException.class, () -> {
+                    target.getTipoPartesByDocumentoId(1);
+                });
+                
+                assertThat(thrown.getMessage()).contains("Tipo de juicio no encontrado");
+            }
 
 }

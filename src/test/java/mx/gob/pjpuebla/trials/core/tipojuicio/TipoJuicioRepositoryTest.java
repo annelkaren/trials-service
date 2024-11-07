@@ -85,7 +85,8 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
         Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(oficialiaId, null, PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty()
-                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"));
+                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"))
+                .allMatch(tj->tj.getTipoJuicioPadreOral()==null && tj.getTipoJuicioPadreTrad()==null);
     }
 
     @Test
@@ -97,5 +98,20 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
             .isNotEmpty()
             .allMatch(tj -> tj.getMateria().getId().equals(materiaId))
             .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
+    }
+
+    @Test
+    void findByTipoJuicioPadre(){
+        Optional<TipoJuicio> tipoJuicioPadre = tipoJuicioRepository.findByNombreIgnoreCase("Familiar Oralidad");
+
+        List<TipoJuicioDemandasRecord> tipoJuicioHijos = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadre.get().getId());
+
+        assertThat(tipoJuicioHijos).isNotEmpty();
+    }
+
+    @Test
+    void getByMateriaAndTipoSistema(){
+        Optional<TipoJuicio> entity = tipoJuicioRepository.getMateriaAndTipoSistemaById(100);
+        assertThat(entity).isNotEmpty();
     }
 }

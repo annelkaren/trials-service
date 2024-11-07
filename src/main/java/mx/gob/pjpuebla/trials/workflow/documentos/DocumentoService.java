@@ -5,8 +5,6 @@ import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -18,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -26,6 +25,7 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -44,6 +44,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.data.domain.*;
@@ -53,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -82,7 +84,9 @@ public class DocumentoService {
     private final InstitucionRepository institucionRepository;
     private final ConceptoRepository conceptoRepository;
     private final EmailService emailService;
+    private final SelloGenerator selloGenerator;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final AudienciaRepository audienciaRepository;
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
 
@@ -196,6 +200,9 @@ public class DocumentoService {
         //flujo para demanda de oralidad:
         if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
             crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
+            if (documentoRecord.general().getTieneAbogado() == 0) {
+                sendEmailFamiliar(documentoRecord, documento, carpeta, tpoJuicio);
+            }
         }
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -239,18 +246,6 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
         }
-        Map<String, Object> model = new HashMap<>();
-        model.put("actor", "Pedro Bueno");
-        model.put("demandado", "Jorge Malo");
-        model.put("alias", "El pichicuaz");
-        emailService.sendMail(
-                List.of("jnsrjzgo@outlook.com"),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                "El Subject",
-                "sample.ftl",
-                model
-        );
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
@@ -388,6 +383,7 @@ public class DocumentoService {
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
         documento.setFolio(getFolio("P"));
+        documento.setEstatus(EstadoCarpeta.CAPTURA);
 
         DocumentoData documentoData = new DocumentoData();
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
@@ -704,7 +700,7 @@ public class DocumentoService {
 
         //Obtenemos folio
         Persona persona = personaService.getAuditor();
-        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), null);
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.OFICIO, persona.getJuzgado(), persona.getOficialia());
 
 
         //Obtenemos la institución y seteamos información para la Data del documento
@@ -740,7 +736,13 @@ public class DocumentoService {
 
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
 
-        return new DocumentoRecepcionRecord(doc.getCarpeta().getFolio(), doc.getCarpeta().getExpediente(), doc.getTipoDocumento().name(), doc.getRuta(), anexosActuales);
+        return new DocumentoRecepcionRecord(
+                doc.getCarpeta().getFolio(),
+                doc.getCarpeta().getExpediente(),
+                (doc.getTipoDocumento() != null)? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
+                doc.getRuta(),
+                anexosActuales
+        );
     }
 
 
@@ -756,11 +758,15 @@ public class DocumentoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
+        EstadoAcuse estadoAcuse = null;
+        String rutaAcuse = "";
 
         if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
+            estadoAcuse = documentoDetalle.getEstado();
+            rutaAcuse = documentoDetalle.getRuta();
         }
 
 
@@ -772,12 +778,14 @@ public class DocumentoService {
                 doc.getInstitucion().getId(),
                 fechaEntrega,
                 doc.getEstatus(),
+                estadoAcuse,
                 asunto,
                 ' ',
                 ' ',
                 "",
                 "",
-                "");
+                "",
+                rutaAcuse);
 
     }
 
@@ -871,6 +879,117 @@ public class DocumentoService {
                 movimiento.getMotivo(),
                 persona.getJuzgado().getNombre()
         );
+    }
+
+    public void sendEmailFamiliar(DocumentoSaveRecord documentoRecord, Documento documento, Carpeta carpeta, TipoJuicio tpoJuicio) {
+        Map<String, Object> sendEmail = new HashMap<>();
+
+        List<TipoJuicioDemandasRecord> tipoJuicioDemandasRecordList = List.of(
+                new TipoJuicioDemandasRecord(111, "Familiar Oralidad (Alimentos)"),
+                new TipoJuicioDemandasRecord(112, "Familiar Oralidad (Divorcio Incausado Unilateral)"),
+                new TipoJuicioDemandasRecord(114, "Familiar Oralidad (Guardia y Custodia)"),
+                new TipoJuicioDemandasRecord(115, "Familiar Oralidad (Visita y Convivencia)")
+        );
+        documento.setData(documentoRecord.general().setTiposJuicios(tipoJuicioDemandasRecordList));
+        String tiposJuicios = tipoJuicioDemandasRecordList.stream()
+                .map(TipoJuicioDemandasRecord::nombre)
+                .collect(Collectors.joining(", "));
+        sendEmail.put("juicio", tiposJuicios);
+
+        String salaAudiencia = audienciaRepository.getSalaNombreByCarpetaId(carpeta.getId());
+        sendEmail.put("sala", salaAudiencia);
+
+        sendEmail.put("carpetaDigital", selloGenerator.updateExpedientePorTipoJuicio(documento));
+        sendEmail.put("tipoJuicio", tpoJuicio.getNombre());
+
+
+        String apellidoMaternoActor = documentoRecord.actor().apellidoMaterno();
+        sendEmail.put("actor", String.join(" ",
+                documentoRecord.actor().nombre(),
+                documentoRecord.actor().apellidoPaterno(),
+                (apellidoMaternoActor != null && !apellidoMaternoActor.isEmpty() ? apellidoMaternoActor : "").trim()
+        ));
+        sendEmail.put("telefono", documentoRecord.actor().celular());
+        sendEmail.put("correo", documentoRecord.actor().correoElectronico());
+
+        String apellidoMaternoDemandado = documentoRecord.demandado().apellidoMaterno();
+        sendEmail.put("demandado", String.join(" ",
+                documentoRecord.demandado().nombre(),
+                documentoRecord.demandado().apellidoPaterno(),
+                (apellidoMaternoDemandado != null && !apellidoMaternoDemandado.isEmpty() ? apellidoMaternoDemandado : "").trim()
+        ));
+
+        StringBuilder anexosHtml = new StringBuilder("<ul>");
+
+        if (documentoRecord.anexos() == null || documentoRecord.anexos().isEmpty()) {
+            anexosHtml.append("<li>Sin anexo</li>");
+        } else {
+
+            for (String anexo : documentoRecord.anexos()) {
+                anexosHtml.append("<li>").append(anexo).append("</li>");
+            }
+        }
+        anexosHtml.append("</ul>");
+        sendEmail.put("anexos", anexosHtml.toString());
+
+        emailService.sendMail(
+                List.of("annelkaren@gmail.com"), //TODO. reemplazar por dircifame@htsjpuebla.gob.mx
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "Recepción de Asignación de Juicio",
+                "EmailDemandaFamiliar.ftl",
+                sendEmail
+        );
+    }
+
+
+    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(List<AsignadoTurnadoRecord> records) {
+        List<MovimientoPersonalJuzgadoRecord> resultados = new ArrayList<>();
+
+        for (AsignadoTurnadoRecord record : records) {
+            Persona personalJuzgado = personaRepository.findById(record.idPersonalJuzgado().longValue())
+                    .orElseThrow(() -> new NotFoundException("Personal no encontrado", "personalJuzgadoId" + record.idPersonalJuzgado()));
+
+            Concepto concepto = conceptoRepository.findById(record.idConcepto())
+                    .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+
+            Documento documento = documentoRepository.findById(record.idDocumentoAsignado())
+                    .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoAsignado()));
+
+            Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
+                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
+
+            documento.setConcepto(concepto);
+            documento.setPrioridad(record.prioridad());
+            documento.setHoras(record.horas());
+            if (documento.getEstatus() == null) {
+                carpeta.setEstatus(EstadoCarpeta.TURNADO);
+            } else {
+                documento.setEstatus(EstadoCarpeta.TURNADO);
+            }
+            if (documento.getPersona() == null) {
+                carpeta.setPersona(personalJuzgado);
+            } else {
+                documento.setPersona(personalJuzgado);
+            }
+
+            documentoRepository.save(documento);
+            carpetaRepository.save(carpeta);
+
+            Persona persona = personaService.getAuditor();
+
+            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name());
+
+            MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
+                    carpeta.getId(),
+                    movimiento.getFechaAsignacion(),
+                    persona.getNombre(),
+                    movimiento.getMotivo(),
+                    persona.getJuzgado().getNombre()
+            );
+            resultados.add(resultado);
+        }
+        return resultados;
     }
 }
 

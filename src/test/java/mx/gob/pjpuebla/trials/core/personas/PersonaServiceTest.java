@@ -37,7 +37,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
 
@@ -46,7 +48,9 @@ import static mx.gob.pjpuebla.trials.core.personas.PersonaSetUp.createPersonaRec
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -245,7 +249,7 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona))
-                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
+                .willThrow(OptimisticLockingFailureException.class);
 
         InvalidVersionException assertThrows = assertThrows(
                 InvalidVersionException.class,
@@ -286,7 +290,7 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
 
-        Pageable pageable = PageRequest.of(0, Arrays.asList(oficialia).size());
+        Pageable pageable = PageRequest.of(0, 10);
         Page<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo(pageable, "");
 
         assertThat(centrosTrabajo)
@@ -318,7 +322,9 @@ class PersonaServiceTest extends SetupServiceTest {
 
     @Test
     void findAllByCentroTrabajo(){
-        
+        Jwt mockJwt = Mockito.mock(Jwt.class);
+        when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
+
         Page<Persona> page = new PageImpl<>(List.of(validPersona));
         List<PersonaRecordResponse> list = page.stream().map(p-> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular(), "")).toList();
         Page<PersonaRecordResponse> response = new PageImpl<>(list);
@@ -329,5 +335,21 @@ class PersonaServiceTest extends SetupServiceTest {
         response = personaService.findAllByCentroTrabajo(null, PageRequest.of(0, response.getSize()));
 
         assertThat(response).isNotEmpty();
+    }
+
+    @Test
+    void getPersonalTurnado_return_page_of_personaRecordResponse() {
+        Jwt mockJwt = Mockito.mock(Jwt.class);
+        when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
+
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+
+        given(mockPersonaRepository.findByJuzgadoId(eq(juzgado.getId()), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(validPersona), PageRequest.of(0, 10), 1));
+
+        Page<PersonaRecordResponse> response = personaService.getPersonalTurnado(PageRequest.of(0, 10));
+
+        assertThat(response).isNotEmpty();
+        assertThat(response.getContent()).hasSize(1);
     }
 }

@@ -204,7 +204,7 @@ public class PersonaService {
 
         int totalElements = centrosTrabajo.size();
         int start = (int) pageable.getOffset();
-        int end = Math.max(start + pageable.getPageSize(), totalElements);
+        int end = Math.min(start + pageable.getPageSize(), totalElements);
         List<CentroTrabajoRecord> paginatedList = centrosTrabajo.subList(start, end);
 
         return new PageImpl<>(paginatedList, pageable, totalElements);
@@ -236,5 +236,21 @@ public class PersonaService {
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PersonaRecordResponse> getPersonalTurnado(Pageable pageable) {
+        Persona persona = getAuditor();
+        Integer juzgadoId = persona.getJuzgado() != null ? persona.getJuzgado().getId() : null;
+
+        Page<Persona> personasDelJuzgado = personaRepository.findByJuzgadoId(juzgadoId, pageable);
+
+        return personasDelJuzgado.map(p -> new PersonaRecordResponse(
+                p.getId(),
+                p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
+                p.getCorreoElectronico(),
+                p.getCelular(),
+                ""
+        ));
     }
 }

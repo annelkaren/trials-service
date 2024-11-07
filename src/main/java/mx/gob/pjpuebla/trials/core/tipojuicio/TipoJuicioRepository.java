@@ -40,9 +40,21 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
                 ELSE
                     0
                 END > 0
+            AND tj.tipoJuicioPadreOral IS NULL AND
+            tj.tipoJuicioPadreTrad IS NULL
             """)
     Page<TipoJuicio> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
 
     @Query("SELECT tj FROM TipoJuicio tj WHERE tj.materia.id = :materiaId AND tj.tipoJuicioPadreOral IS NULL AND tj.tipoJuicioPadreTrad IS NULL")
     List<TipoJuicio> findByMateriaId(@Param("materiaId") Integer materiaId);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord(t.id, t.nombre)
+            FROM TipoJuicio t
+            WHERE t.estado = Estado.ACTIVE AND (t.tipoJuicioPadreOral = :tipoJuicioPadreId OR t.tipoJuicioPadreTrad = :tipoJuicioPadreId)
+            """)
+    List<TipoJuicioDemandasRecord> findByTipoJuicioPadre(Integer tipoJuicioPadreId);
+
+    @Query(" SELECT tj FROM TipoJuicio tj WHERE tj.id = :idTipoSistema")
+    Optional<TipoJuicio> getMateriaAndTipoSistemaById(@Param("idTipoSistema") Integer procedimientoId);
 }

@@ -38,11 +38,13 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
@@ -57,11 +59,14 @@ import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -137,6 +142,12 @@ class DocumentoServiceTest {
     private DocumentoDetalleRepository documentoDetalleRepository;
     @Mock
     private DocumentoContenidoRepository documentoContenidoRepository;
+    @Mock
+    private AudienciaRepository audienciaRepository;
+    @Mock
+    private SelloGenerator selloGenerator;
+    @Mock
+    private EmailService emailService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -919,10 +930,10 @@ class DocumentoServiceTest {
     void getAllBandejaAsignados() {
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
         DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
-                1, 
-                "000001/2024", 
-                "1", 
-                "1", 
+                1,
+                "000001/2024",
+                "1",
+                "1",
                 TipoCarpeta.DEMANDA, TipoDocumento.PROMOCION, concepto, LocalDateTime.now(), EstadoCarpeta.ASIGNADO, "");
 
         List<DocumentoAsignadoRecord> listPage = Collections.singletonList(documentoAsignadoRecord);
@@ -947,7 +958,7 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void getDataDocumentoRecepcion(){
+    void getDataDocumentoRecepcion() {
         Integer documentoId = 1;
         List<AnexoRecepcionRecord> anexos = new ArrayList<>();
 
@@ -1097,5 +1108,162 @@ class DocumentoServiceTest {
         assertEquals(persona.getNombre(), resultado.persona());
         assertEquals(movimiento.getMotivo(), resultado.movimiento());
         assertEquals(persona.getJuzgado().getNombre(), resultado.juzgado());
+    }
+
+    @Test
+    void turnadoPersonalJuzgado_success() {
+        AsignadoTurnadoRecord record1 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.NORMAL);
+        AsignadoTurnadoRecord record2 = new AsignadoTurnadoRecord(51, 150, 1, 7, Prioridad.URGENTE);
+        List<AsignadoTurnadoRecord> records = Arrays.asList(record1, record2);
+
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona()
+                .setJuzgado(juzgado);
+        Movimiento movimiento = new Movimiento()
+                .setCarpeta(carpeta)
+                .setDocumento(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setMotivo("ASIGNADO")
+                .setPersona(persona)
+                .setOficialia(null)
+                .setJuzgado(juzgado);
+
+        when(personaRepository.findById(record1.idPersonalJuzgado().longValue())).thenReturn(Optional.of(persona));
+        when(conceptoRepository.findById(record1.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+
+        List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
+
+        assertNotNull(resultados);
+        assertEquals(2, resultados.size());
+    }
+
+
+
+    @Test
+    void testSendEmailFamiliar() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        PersonaDocumentoItemRecord actorRecord = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoRecord = new PersonaDocumentoItemRecord(
+                "María", "López", "Martínez", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+        List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
+        DocumentoData documentoData = new DocumentoData();
+
+        DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
+                actorRecord,
+                demandadoRecord,
+                anexos,
+                tipoJuicio.getId(),
+                documentoData
+        );
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO);
+        when(audienciaRepository.getSalaNombreByCarpetaId(any())).thenReturn("1");
+        when(selloGenerator.updateExpedientePorTipoJuicio(any())).thenReturn("J/T/000001/2024/FT-FO");
+
+
+        documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
+        ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(emailService).sendMail(
+                eq(List.of("annelkaren@gmail.com")),
+                eq(Collections.emptyList()),
+                eq(Collections.emptyList()),
+                eq("Recepción de Asignación de Juicio"),
+                eq("EmailDemandaFamiliar.ftl"),
+                sendEmailCaptor.capture()
+        );
+
+        Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
+
+        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("1", sendEmailData.get("sala"));
+        assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
+        assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
+        assertEquals("William Perez".trim(), sendEmailData.get("actor").toString().trim());
+        assertEquals("2461140011", sendEmailData.get("telefono"));
+        assertEquals("juan@gmail.com", sendEmailData.get("correo"));
+        assertEquals("María López Martínez".trim(), sendEmailData.get("demandado").toString().trim());
+        assertEquals("<ul><li>Acta de nacimiento</li><li>INE</li></ul>", sendEmailData.get("anexos"));
+    }
+
+
+    @Test
+    void testSendEmailFamiliarSinAnexos() {
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        PersonaDocumentoItemRecord actorRecord = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoRecord = new PersonaDocumentoItemRecord(
+                "María", "López", "", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+        List<String> anexos = null; // Anexos como null para probar el caso sin anexos
+        DocumentoData documentoData = new DocumentoData();
+
+        DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
+                actorRecord,
+                demandadoRecord,
+                anexos,
+                tipoJuicio.getId(),
+                documentoData
+        );
+        Carpeta carpeta = new Carpeta()
+                .setId(1)
+                .setVersion(1)
+                .setFolio("1")
+                .setExpediente("000001/2024")
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO);
+        when(audienciaRepository.getSalaNombreByCarpetaId(any())).thenReturn("1");
+        when(selloGenerator.updateExpedientePorTipoJuicio(any())).thenReturn("J/T/000001/2024/FT-FO");
+
+        documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
+        ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(emailService).sendMail(
+                eq(List.of("annelkaren@gmail.com")),
+                eq(Collections.emptyList()),
+                eq(Collections.emptyList()),
+                eq("Recepción de Asignación de Juicio"),
+                eq("EmailDemandaFamiliar.ftl"),
+                sendEmailCaptor.capture()
+        );
+
+        Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
+
+        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("1", sendEmailData.get("sala"));
+        assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
+        assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
+        assertEquals("William Perez".trim(), sendEmailData.get("actor").toString().trim());
+        assertEquals("2461140011", sendEmailData.get("telefono"));
+        assertEquals("juan@gmail.com", sendEmailData.get("correo"));
+        assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
+        assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
     }
 }

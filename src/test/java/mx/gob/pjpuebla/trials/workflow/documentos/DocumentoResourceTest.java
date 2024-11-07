@@ -61,7 +61,7 @@ class DocumentoResourceTest {
     private SelloCaratulaService caratulaGenerator;
 
     @MockBean
-    private DigitalizacionService digitalizacionService;
+    private DigitalizacionService digitalizacion2Service;
 
     @MockBean
     private OficioService oficioService;
@@ -434,6 +434,22 @@ class DocumentoResourceTest {
         mockMvc.perform(
                         post("/api/workflow/bandeja/recepcion/movimiento")
                                 .content(ResourceUtilTest.asJsonString(personalJuzgadoRecord))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void turnadoPersonalJuzgado_success() throws Exception {
+        AsignadoTurnadoRecord asignadoTurnadoRecord = new AsignadoTurnadoRecord(52, 150, 1, 7, Prioridad.NORMAL);
+        List<AsignadoTurnadoRecord> records = Collections.singletonList(asignadoTurnadoRecord);
+        List<MovimientoPersonalJuzgadoRecord> mockResponse = Collections.singletonList(DocumentoSetUp.createMovimientoPersonalJuzgadoRecord());
+
+        given(documentoService.turnadoPersonalJuzgado(Collections.singletonList(asignadoTurnadoRecord)))
+                .willReturn(mockResponse);
+        mockMvc.perform(
+                        post("/api/workflow/bandeja/asignados/movimiento")
+                                .content(ResourceUtilTest.asJsonString(records))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

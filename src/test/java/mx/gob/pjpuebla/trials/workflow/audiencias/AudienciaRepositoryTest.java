@@ -72,7 +72,7 @@ class AudienciaRepositoryTest extends AuditConfigTest {
     @Test
     void getFechaUltimaAudiencia_ReturnCorrectDate() {
         Juzgado juzgado = new Juzgado();
-        juzgado.setId(51); 
+        juzgado.setId(51);
         juzgado.setVersion(1);
 
         TipoAudiencia tipoAudiencia = new TipoAudiencia();
@@ -84,8 +84,14 @@ class AudienciaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void getJuzAndSalaAndAudienciaByIdcarpeta_ReturnRecord(){
+    void getJuzAndSalaAndAudienciaByIdcarpeta_ReturnRecord() {
         AudienciaOralidadFamiliarRecord entity = audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(1);
         assertThat(entity).isNotNull();
+    }
+
+    @Test
+    void getSalaNombreByCarpetaId_ReturnsSalaNombre() {
+        String salaNombre = audienciaRepository.getSalaNombreByCarpetaId(1);
+        assertThat(salaNombre).isNotNull().isEqualTo("1");
     }
 }
