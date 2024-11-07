@@ -13,13 +13,13 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core")
+@RequestMapping("/api/core/tipoacuerdo")
 @SecurityRequirement(name = "keycloak")
 public class TipoAcuerdoResource {
 
     private final TipoAcuerdoService tipoAcuerdoService;
 
-    @GetMapping(value = "/tipoacuerdo/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TipoAcuerdoRecord>> findByDocumentoId(@PathVariable Integer documentoId) {
         List<TipoAcuerdoRecord> tipoAcuerdo = tipoAcuerdoService.findByDocumentoId(documentoId);
         return ResponseEntity.ok(tipoAcuerdo);
