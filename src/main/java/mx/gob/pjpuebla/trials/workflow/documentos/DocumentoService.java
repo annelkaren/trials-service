@@ -693,7 +693,35 @@ public class DocumentoService {
     }
 
     public IndicadoresRecord getIndicadores() {
-        return new IndicadoresRecord(2, 7, 9, 5);
+        Persona persona = personaService.getAuditor();
+        Integer totalPendientes = 0;
+        Integer totalRecibidosHoy = 0;
+        Integer totalRecibidosAyer = 0;
+        Integer totalRecibidosOld = 0;
+
+        Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
+                null,
+                persona.getJuzgado().getId(),
+                Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
+                null,
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name())
+        );
+
+        totalPendientes = page.getSize();
+
+        for ( Movimiento movimiento : page.getContent()) {
+            LocalDate fechaAsignacion = movimiento.getFechaAsignacion().toLocalDate();
+
+            if (fechaAsignacion.equals(LocalDate.now())){
+                totalRecibidosHoy++;
+            } else if (fechaAsignacion.equals(LocalDate.now().minusDays(1))){
+                    totalRecibidosAyer++;
+                }else {
+                    totalRecibidosOld++;
+                }
+        }
+
+        return new IndicadoresRecord(totalPendientes, totalRecibidosHoy, totalRecibidosAyer, totalRecibidosOld);
     }
 
     public Integer createOficio(Integer institucionId, LocalDate fechaEmision, String asunto, Integer carpetaId) {
