@@ -353,13 +353,9 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         Page<Movimiento> page;
-        if (currentUser.getOficialia() == null && currentUser.getJuzgado() == null) {
-            page = movimientoRepository.findAll(pageable);
-        } else {
-            Integer juzgadoId = (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
-            Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
-            page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
-        }
+        Integer juzgadoId = (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
+        Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
+        page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
 
         List<DocumentoGridRecord> listaDocumentoRecords = new ArrayList<>();
         for (Movimiento movimiento : page.getContent()) {

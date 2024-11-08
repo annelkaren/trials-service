@@ -77,8 +77,10 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 LEFT JOIN jcd.materia matd
                 LEFT JOIN m.juzgado j
                 LEFT JOIN m.oficialia o
-                WHERE ((:oficialiaId IS NOT null AND o.id = :oficialiaId)
-                        OR (:juzgadoId IS NOT null AND j.id = :juzgadoId))
+                WHERE (
+                        (:oficialiaId IS null AND :juzgadoId IS null) OR
+                        (:oficialiaId IS NOT null AND o.id = :oficialiaId) OR
+                        (:juzgadoId IS NOT null AND j.id = :juzgadoId))
                 AND (
                     LOWER(c.folio) LIKE %:key% OR LOWER(c.expediente) LIKE %:key%
                     OR LOWER(d.folio) LIKE %:key%
