@@ -836,7 +836,20 @@ class DocumentoServiceTest {
 
     @Test
     void getIndicadores_success() {
-        IndicadoresRecord expected = new IndicadoresRecord(0, 0, 0, 0);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setJuzgado(juzgado);
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        demanda.setConcepto(concepto);
+        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now());
+        List<Movimiento> listPage = Collections.singletonList(movimiento);
+        Page<Movimiento> page = new PageImpl<>(listPage);
+
+        Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        given(personaService.getAuditor()).willReturn(persona);
+        given(movimientoService.getAllBandejaRecepcion(any(), any(), any(), any(), any())).willReturn(page);
+
+        IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
         IndicadoresRecord result = documentoService.getIndicadores();
 
