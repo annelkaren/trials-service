@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -73,7 +75,7 @@ public class AcuerdosService {
         return doc;
     }
 
-    public AcuerdoPromocionesRecord obtenerPromociones(Integer carpetaId){
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId){
         return documentoRepository.obtenerPromociones(carpetaId);
     }
 }

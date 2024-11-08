@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +28,8 @@ public class AcuerdosResource {
         return acuerdosService.save(acuerdo);
     }
 
-    @PostMapping("/documentos/obtenerPromociones/{carpetaId}")
-    public AcuerdoPromocionesRecord obtenerPromociones(@PathVariable Integer carpetaId){
+    @GetMapping("/documentos/obtenerPromociones/{carpetaId}")
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId){
         return acuerdosService.obtenerPromociones(carpetaId);
     }
 

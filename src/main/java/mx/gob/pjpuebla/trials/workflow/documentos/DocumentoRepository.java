@@ -11,6 +11,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -162,5 +165,5 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO 
             AND doc2.carpeta.id = carpeta.id
         )""")
-    AcuerdoPromocionesRecord obtenerPromociones(Integer carpetaId);
+    List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 }
