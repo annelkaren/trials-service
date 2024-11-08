@@ -505,9 +505,14 @@ public class DocumentoService {
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR") || roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-            return renderOficialMayorData(key, pageable, currentUser);
+        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO","SECRETARIO", "TECNICO");
+
+        for (String rol : roles) {
+            if (roleService.hasRole(currentUser.getUsuario(), rol) ) {
+                return renderOficialMayorData(key, pageable, currentUser);
+            }
         }
+        
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
