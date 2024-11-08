@@ -23,6 +23,7 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                     i.estado,
                     i.telefono,
                     i.extension,
+                    i.tipoInstitucion,
                     new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
                     new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
                         d.id,
@@ -61,7 +62,8 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                         d.codigoPostal,
                         CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
                     ),
-                    i.telefono
+                    i.telefono,
+                    i.tipoInstitucion
                 )
             FROM Institucion i
             JOIN i.domicilio d

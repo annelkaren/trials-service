@@ -9,6 +9,7 @@ public record InstitucionRecord(
         Integer id,
         String nombre,
         String domicilio,
-        String telefono
+        String telefono,
+        String tipoInstitucion
 ) implements Serializable {
 }
