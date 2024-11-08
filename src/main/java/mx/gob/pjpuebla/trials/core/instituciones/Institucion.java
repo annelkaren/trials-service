@@ -69,7 +69,7 @@ public class Institucion implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Distrito distrito;
 
-    @Size(max = 155)
+    @Size(max = 30)
     @Column(name = "S_TIPO_INSTITUCION")
     private String tipoInstitucion;
 
