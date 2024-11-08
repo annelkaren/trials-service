@@ -12,8 +12,6 @@ public record AcuerdoRecord(
     String etapaProcesal,
     List<String> rubros,
     List<Integer> promocionesRelacionadas,
-    List<String> recomendaciones,
     char tamanioPapel,
-    String textoEditor,
-    String acuedoPublicado
+    String textoEditor
 ) {}

@@ -19,10 +19,8 @@ public class AcuerdoRecordSetUp {
         List<Integer> promociones = new ArrayList<>();
         promociones.add(1);
 
-        List<String> recomendaciones = new ArrayList<>();
-        recomendaciones.add("recomendación 1");
 
         return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
-                recomendaciones, 'o', "<p>prueba</p>", "n");
+                 'o', "<p>prueba</p>");
     }
 }

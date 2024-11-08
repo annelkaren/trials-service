@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,6 +26,10 @@ public class AcuerdosResource {
 
     @PostMapping("/documentos/crearAcuerdo")
     public Documento crearAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
+        System.out.println("Entreee");
+        System.out.println("TEXTO EDITOE: " + acuerdo.textoEditor());
+        System.out.println("El tamaño de papel es: " + acuerdo.tamanioPapel());
+        
         return acuerdosService.save(acuerdo);
     }
 

@@ -20,7 +20,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
-
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -33,11 +32,12 @@ public class AcuerdosService {
 
     @Transactional
     public Documento save(AcuerdoRecord acuerdo) {
-
+        System.out.println(acuerdo.carpetaId());
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
 
+        System.out.println(carpeta.getId());
         // Creamos información de los rubros en documentoData
         DocumentoData docData = new DocumentoData()
                 .setRubros(acuerdo.rubros());
@@ -47,7 +47,7 @@ public class AcuerdosService {
                 .setCarpeta(carpeta)
                 .setTipoDocumento(TipoDocumento.ACUERDO)
                 .setData(docData);
-                documentoRepository.save(doc);
+        documentoRepository.save(doc);
 
         // Creamos la información de documento detalle:
         DocumentoDetalle docDetalle = new DocumentoDetalle()
@@ -57,25 +57,28 @@ public class AcuerdosService {
                 .setDocumento(doc);
         documentoDetalleRepository.save(docDetalle);
 
+        /*
         DocumentoContenido docContenido = new DocumentoContenido()
                 .setDocumento(doc)
                 .setTamanioPapel(acuerdo.tamanioPapel())
                 .setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(docContenido);
-
+*/
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
-        for (Integer promo : acuerdo.promocionesRelacionadas()) {
-            Documento promocion = documentoRepository.findById(promo).orElse(null);
-            if (promocion != null) {
-                promocion.setAcuerdo_respuesta(doc);
-                documentoRepository.save(promocion);
+        if (acuerdo.promocionesRelacionadas() != null) {
+            for (Integer promo : acuerdo.promocionesRelacionadas()) {
+                Documento promocion = documentoRepository.findById(promo).orElse(null);
+                if (promocion != null) {
+                    promocion.setAcuerdo_respuesta(doc);
+                    documentoRepository.save(promocion);
+                }
             }
         }
 
         return doc;
     }
 
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId){
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId) {
         return documentoRepository.obtenerPromociones(carpetaId);
     }
 }
