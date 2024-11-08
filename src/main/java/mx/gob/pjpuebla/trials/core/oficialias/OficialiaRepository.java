@@ -64,6 +64,7 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
     @Query("""
             Select o FROM Oficialia o
             WHERE o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            OR o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.INACTIVE
             """)
     Page<Oficialia> findAllActive(Pageable pageable);
 
