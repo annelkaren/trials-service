@@ -106,9 +106,10 @@ public class InstitucionService {
                                 institucion.getDomicilio().getCodigoPostal(),
                                 (institucion.getDomicilio().getReferencia() != null && !institucion.getDomicilio().getReferencia().isEmpty()) ? "Ref: " + institucion.getDomicilio().getReferencia() : ""
                         ).trim(),
-                        institucion.getTelefono()))
+                        institucion.getTelefono(),
+                        institucion.getTipoInstitucion()
+                        ))
                 .toList();
-
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
