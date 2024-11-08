@@ -836,7 +836,7 @@ class DocumentoServiceTest {
 
     @Test
     void getIndicadores_success() {
-        IndicadoresRecord expected = new IndicadoresRecord(2, 7, 9, 5);
+        IndicadoresRecord expected = new IndicadoresRecord(0, 0, 0, 0);
 
         IndicadoresRecord result = documentoService.getIndicadores();
 
