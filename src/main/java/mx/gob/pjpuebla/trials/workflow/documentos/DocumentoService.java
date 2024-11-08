@@ -349,31 +349,33 @@ public class DocumentoService {
         return numExpedienteExhorto;
     }
 
-    public Page<DocumentoGridRecord> getAllHistorial(Pageable pageable, Documento example) {
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("tipoEntrada", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+    public Page<DocumentoGridRecord> getAllHistorial(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona currentUser = personaService.getAuditor();
+        Page<Movimiento> page;
+        Integer juzgadoId = (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
+        Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
+        page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
 
-        Page<Documento> paginaDocumentos = documentoRepository.findAll(Example.of(example, exampleMatcher), pageable);
-
-
-        List<DocumentoGridRecord> listaDocumentoRecords = paginaDocumentos.getContent().stream()
-                .map(doc -> new DocumentoGridRecord(
-                        doc.getId(),
-                        doc.getCarpeta().getFolio(),
-                        doc.getCarpeta().getExpediente(),
-                        doc.getCarpeta().getJuzgado().getMateria().getNombre(),
-                        doc.getTipoDocumento() == null ? doc.getCarpeta().getTipoCarpeta().name() : doc.getTipoDocumento().name(),
-                        doc.getAudit().getFechaAlta(),
-                        doc.getCarpeta().getSelloEstatus(),
-                        doc.getCarpeta().getEstatus(),
-                        (doc.getRuta() != null)))
-                .toList();
-
-        return new PageImpl<>(listaDocumentoRecords, pageable, paginaDocumentos.getTotalElements());
+        List<DocumentoGridRecord> listaDocumentoRecords = new ArrayList<>();
+        for (Movimiento movimiento : page.getContent()) {
+            Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(movimiento.getCarpeta().getId());
+            Carpeta carpeta = documento.getCarpeta();
+            String folio = (documento.getTipoDocumento() == null) ? carpeta.getFolio() : documento.getFolio();
+            DocumentoGridRecord drecord = new DocumentoGridRecord(
+                    documento.getId(),
+                    folio,
+                    carpeta.getExpediente(),
+                    carpeta.getJuzgado().getMateria().getNombre(),
+                    (documento.getTipoDocumento() == null) ? carpeta.getTipoCarpeta().name() : documento.getTipoDocumento().name(),
+                    movimiento.getFechaAsignacion(),
+                    null,
+                    (documento.getTipoDocumento() == null) ? carpeta.getEstatus() : documento.getEstatus(),//TODO. este estado es el actual o el del LOG?
+                    false
+            );
+            listaDocumentoRecords.add(drecord);
+        }
+        return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
     }
 
     @Transactional

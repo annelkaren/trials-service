@@ -15,6 +15,8 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -34,10 +36,9 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
@@ -57,10 +58,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,15 +97,14 @@ class CarpetaServiceTest {
     private MovimientoService movimientoService;
     @Mock
     private MovimientoRepository movimientoRepository;
-
     @Mock
     private PersonaRepository personaRepository;
-
     @Mock
     private DocumentoRepository documentoRepository;
-
     @Mock
     private AnexoRepository anexoRepository;
+    @Mock
+    private AudienciaService audienciaService;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -550,4 +547,63 @@ class CarpetaServiceTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    void getInfoExpediente() {
+        Rubro rubro1 = new Rubro()
+                .setNombre("Rubro1")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento1"));
+        Rubro rubro2 = new Rubro()
+                .setNombre("Rubro2")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento2"));
+        validCarpeta.setRubros(Set.of(rubro1, rubro2));
+        Documento documento = DocumentoSetUp.create(tipoJuicio)
+                .setCarpeta(validCarpeta);
+
+        ApelacionRecordResponse participante1 = new ApelacionRecordResponse(
+                "Juan",
+                "Pérez",
+                "Gómez",
+                "",
+                "",
+                null,
+                1,
+                "TipoParte1",
+                1
+        );
+        ApelacionRecordResponse participante2 = new ApelacionRecordResponse(
+                "Maria",
+                "López",
+                "Sánchez",
+                "",
+                "",
+                null,
+                1,
+                "TipoParte2",
+                1
+        );
+        ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
+                "Juez Perez",
+                "",
+                "",
+                "",
+                ""
+        );
+
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(personaDocumentoRepository.findPersonaDocumentoByCarpetaId(any()))
+                .willReturn(List.of(participante1, participante2));
+        given(audienciaService.getAudienciaAndSalaAndDomicilio(any()))
+                .willReturn(extraAudienciaSelloRecord);
+
+        InfoExpedienteRecord result = target.getInfoExpediente(1);
+
+        assertThat(result).isNotNull();
+        assertThat(result.expediente()).isEqualTo(documento.getCarpeta().getExpediente());
+        assertThat(result.tipoJuicio()).isEqualTo(documento.getCarpeta().getTipoJuicio().getNombre());
+        assertThat(result.juezAsignado()).isEqualTo("Juez Perez");
+        assertThat(result.tipoProcedimiento()).isEqualTo("Procedimiento1, Procedimiento2");
+        assertThat(result.rubros()).isEqualTo("Rubro1, Rubro2");
+        assertThat(result.etapaProcesal()).isEqualTo("Primera Etapa");
+        assertThat(result.participantes()).hasSize(2);
+    }
 }

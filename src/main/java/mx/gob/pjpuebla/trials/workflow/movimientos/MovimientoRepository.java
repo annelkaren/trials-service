@@ -64,4 +64,29 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
         )
     """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN jc.materia mat
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN jcd.materia matd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                        (:oficialiaId IS null AND :juzgadoId IS null) OR
+                        (:oficialiaId IS NOT null AND o.id = :oficialiaId) OR
+                        (:juzgadoId IS NOT null AND j.id = :juzgadoId))
+                AND (
+                    LOWER(c.folio) LIKE %:key% OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(mat.nombre) LIKE %:key% OR LOWER(matd.nombre) LIKE %:key%
+                )
+            """)
+    Page<Movimiento> getAllBandejaHistorial(String key, Integer juzgadoId, Integer oficialiaId, Pageable pageable);
 }
