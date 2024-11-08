@@ -505,9 +505,14 @@ public class DocumentoService {
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-            return renderOficialMayorData(key, pageable, currentUser);
+        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO","SECRETARIO", "TECNICO");
+
+        for (String rol : roles) {
+            if (roleService.hasRole(currentUser.getUsuario(), rol) ) {
+                return renderOficialMayorData(key, pageable, currentUser);
+            }
         }
+        
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
@@ -695,7 +700,35 @@ public class DocumentoService {
     }
 
     public IndicadoresRecord getIndicadores() {
-        return new IndicadoresRecord(2, 7, 9, 5);
+        Persona persona = personaService.getAuditor();
+        Integer totalPendientes = 0;
+        Integer totalRecibidosHoy = 0;
+        Integer totalRecibidosAyer = 0;
+        Integer totalOldies = 0;
+
+        Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
+                Pageable.unpaged(),
+                persona.getJuzgado().getId(),
+                Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
+                "",
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name())
+        );
+
+        totalPendientes = page.getSize();
+
+        for ( Movimiento movimiento : page.getContent()) {
+            LocalDate fechaAsignacion = movimiento.getFechaAsignacion().toLocalDate();
+
+            if (fechaAsignacion.equals(LocalDate.now())){
+                totalRecibidosHoy++;
+            } else if (fechaAsignacion.equals(LocalDate.now().minusDays(1))){
+                    totalRecibidosAyer++;
+                }else {
+                    totalOldies++;
+                }
+        }
+
+        return new IndicadoresRecord(totalPendientes, totalRecibidosHoy, totalRecibidosAyer, totalOldies);
     }
 
     public Integer createOficio(Integer institucionId, LocalDate fechaEmision, String asunto, Integer carpetaId) {
@@ -992,6 +1025,30 @@ public class DocumentoService {
             resultados.add(resultado);
         }
         return resultados;
+    }
+
+    public IndicadoresRecord getIndicadoresAsignados(){
+        Integer totalAsignados = 0;
+        Integer terminoRebasado = 0;
+        Integer termino24horas = 0;
+        Integer termino3dias = 0;
+
+        Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", Pageable.unpaged());
+
+        totalAsignados = asignados.getSize();
+
+        for (DocumentoAsignadoResponseRecord asignado: asignados) {
+            if (asignado.fechaTermino().isAfter(LocalDateTime.now())){
+                terminoRebasado++;
+            }else if (asignado.fechaTermino().isAfter(LocalDateTime.now().plusDays(1))){
+                termino24horas++;
+            }else{
+                termino3dias++;
+            }
+            
+        }
+
+        return new IndicadoresRecord(totalAsignados, terminoRebasado, termino24horas, termino3dias);
     }
 }
 
