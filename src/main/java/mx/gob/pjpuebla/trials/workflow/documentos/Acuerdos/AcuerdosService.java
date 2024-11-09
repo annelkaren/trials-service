@@ -32,38 +32,38 @@ public class AcuerdosService {
 
     @Transactional
     public Documento save(AcuerdoRecord acuerdo) {
-        System.out.println(acuerdo.carpetaId());
+
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
+        // Carpeta carpeta = carpetaRepository.getReferenceById(acuerdo.carpetaId());
 
-        System.out.println(carpeta.getId());
         // Creamos información de los rubros en documentoData
-        DocumentoData docData = new DocumentoData()
-                .setRubros(acuerdo.rubros());
+        DocumentoData docData = new DocumentoData();
+        docData.setRubros(acuerdo.rubros());
 
         // Creamos el nuevo documento (acuerdo=
-        Documento doc = new Documento()
-                .setCarpeta(carpeta)
-                .setTipoDocumento(TipoDocumento.ACUERDO)
-                .setData(docData);
-        documentoRepository.save(doc);
-
+        Documento doc = new Documento();
+                doc.setCarpeta(carpeta);
+                doc.setTipoDocumento(TipoDocumento.ACUERDO);
+                doc.setData(docData);
+        doc = documentoRepository.save(doc);
+        /* 
         // Creamos la información de documento detalle:
-        DocumentoDetalle docDetalle = new DocumentoDetalle()
-                .setTipoAcuerdo(acuerdo.tipoAcuerdo())
-                .setFechaResolucion(acuerdo.fechaResolucion())
-                .setEtapaProcesal(acuerdo.etapaProcesal())
-                .setDocumento(doc);
+        DocumentoDetalle docDetalle = new DocumentoDetalle();
+            docDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
+            docDetalle.setFechaResolucion(acuerdo.fechaResolucion());
+            docDetalle.setEtapaProcesal(acuerdo.etapaProcesal());
+            docDetalle.setDocumento(doc);
         documentoDetalleRepository.save(docDetalle);
 
-        /*
-        DocumentoContenido docContenido = new DocumentoContenido()
-                .setDocumento(doc)
-                .setTamanioPapel(acuerdo.tamanioPapel())
-                .setTexto(acuerdo.textoEditor());
+
+        DocumentoContenido docContenido = new DocumentoContenido();
+                docContenido.setDocumento(doc);
+                docContenido.setTamanioPapel(acuerdo.tamanioPapel());
+                docContenido.setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(docContenido);
-*/
+        */
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
         if (acuerdo.promocionesRelacionadas() != null) {
             for (Integer promo : acuerdo.promocionesRelacionadas()) {
