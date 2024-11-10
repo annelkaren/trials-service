@@ -36,7 +36,22 @@ public class MovimientoService {
     }
 
     public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado) {
-        Movimiento movimiento = new Movimiento()
+        Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado);
+        movimiento = this.movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
+    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones) {
+        Persona personaAuditor = personaService.getAuditor();
+        Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, "", estado)
+                .setObservaciones(observaciones)
+                .setRecomendaciones(recomendaciones);
+        movimiento = movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
+    private Movimiento createMovimiento(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado) {
+        return new Movimiento()
                 .setCarpeta(carpeta)
                 .setDocumento(documento)
                 .setFechaAsignacion(LocalDateTime.now())
@@ -45,24 +60,6 @@ public class MovimientoService {
                 .setEstado(estado)
                 .setOficialia(persona.getOficialia())
                 .setJuzgado(persona.getJuzgado());
-        movimiento = this.movimientoRepository.save(movimiento);
-        return movimiento;
-    }
-
-    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estadoCarpeta, String observaciones, String recomendaciones) {
-        Persona personaAuditor = personaService.getAuditor();
-        Movimiento movimiento = new Movimiento()
-                .setFechaAsignacion(LocalDateTime.now())
-                .setMotivo(estadoCarpeta)
-                .setPersona(personaAuditor)
-                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null)
-                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null)
-                .setCarpeta(carpeta)
-                .setDocumento(documento)
-                .setObservaciones(observaciones)
-                .setRecomendaciones(recomendaciones);
-        movimiento = movimientoRepository.save(movimiento);
-        return movimiento;
     }
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos) {
