@@ -189,5 +189,10 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
     }
 
-   
+    @DeleteMapping("/bandeja/asignados/{id}")
+    public void delete(@PathVariable Integer id) {
+        this.documentoService.deleteAsignado(id);
+    }
+
+
 }

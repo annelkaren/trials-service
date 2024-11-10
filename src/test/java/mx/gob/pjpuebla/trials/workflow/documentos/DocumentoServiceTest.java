@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import jakarta.persistence.EntityNotFoundException;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
@@ -37,8 +38,10 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
+import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -70,6 +73,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -1138,7 +1142,6 @@ class DocumentoServiceTest {
     }
 
 
-
     @Test
     void testSendEmailFamiliar() {
         Documento documento = DocumentoSetUp.create(tipoJuicio);
@@ -1259,5 +1262,61 @@ class DocumentoServiceTest {
         assertEquals("juan@gmail.com", sendEmailData.get("correo"));
         assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
         assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
+    }
+
+    @Test
+    void deleteAsignado() {
+        Integer id = 1;
+        String nombreParticipante = "Juan Perez";
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(id);
+        personaDocumento.setNombre(nombreParticipante);
+        Carpeta carpeta = CarpetaSetUp.create();
+        personaDocumento.setCarpeta(carpeta);
+        Persona auditor = new Persona();
+        auditor.setNombre("Pedro");
+
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
+        when(personaService.getAuditor()).thenReturn(auditor);
+        documentoService.deleteAsignado(id);
+
+        verify(movimientoService).createMovimento(
+                eq(carpeta),
+                isNull(),
+                eq(auditor),
+                eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante)
+        );
+
+        verify(personaDocumentoRepository).deleteById(id);
+        verify(personaDocumentoRepository).flush();
+    }
+
+    @Test
+    void deleteAsignado_NotFound() {
+        Integer id = 1;
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.empty());
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> documentoService.deleteAsignado(id)
+        );
+
+        assertEquals("No se encontró la persona documento con ID: " + id, exception.getMessage());
+        verify(personaDocumentoRepository, never()).deleteById(id);
+        verify(personaDocumentoRepository, never()).flush();
+
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(id);
+        personaDocumento.setNombre("Juan Perez");
+
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
+        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros")).when(personaDocumentoRepository).deleteById(id);
+        ConstraintViolationException constraintViolationException = assertThrows(
+                ConstraintViolationException.class,
+                () -> documentoService.deleteAsignado(id)
+        );
+
+        assertTrue(constraintViolationException.getMessage().contains(Messages.CONSTRAINT_ERROR));
+        verify(personaDocumentoRepository).deleteById(id);
+        verify(personaDocumentoRepository, never()).flush();
     }
 }

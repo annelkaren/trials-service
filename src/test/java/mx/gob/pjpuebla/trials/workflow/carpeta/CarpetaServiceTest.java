@@ -442,6 +442,7 @@ class CarpetaServiceTest {
                 argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
         );
     }
+
     @Test
     void testGetCatalogoList_ValidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
@@ -559,27 +560,19 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(tipoJuicio)
                 .setCarpeta(validCarpeta);
 
-        ApelacionRecordResponse participante1 = new ApelacionRecordResponse(
+        PersonaDataRecord participante1 = new PersonaDataRecord(
+                1,
                 "Juan",
                 "Pérez",
                 "Gómez",
-                "",
-                "",
-                null,
-                1,
-                "TipoParte1",
-                1
+                "TipoParte1"
         );
-        ApelacionRecordResponse participante2 = new ApelacionRecordResponse(
+        PersonaDataRecord participante2 = new PersonaDataRecord(
+                2,
                 "Maria",
                 "López",
                 "Sánchez",
-                "",
-                "",
-                null,
-                1,
-                "TipoParte2",
-                1
+                "TipoParte2"
         );
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
                 "Juez Perez",
@@ -590,7 +583,7 @@ class CarpetaServiceTest {
         );
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
-        given(personaDocumentoRepository.findPersonaDocumentoByCarpetaId(any()))
+        given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))
                 .willReturn(List.of(participante1, participante2));
         given(audienciaService.getAudienciaAndSalaAndDomicilio(any()))
                 .willReturn(extraAudienciaSelloRecord);

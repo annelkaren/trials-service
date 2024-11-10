@@ -234,7 +234,7 @@ public class CarpetaService {
                 .collect(Collectors.joining(", "));
 
         //Obtiene los participantes del expediente
-        List<ApelacionRecordResponse> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoByCarpetaId(documento.getCarpeta().getId());
+        List<PersonaDataRecord> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(documento.getCarpeta().getId());
 
         //Obtiene el nombre del juez
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
@@ -254,10 +254,10 @@ public class CarpetaService {
         );
     }
 
-    public static List<ParticipantesRecord> getParticipantes(List<ApelacionRecordResponse> participantes) {
-        Map<String, List<String>> agrupadoPorTipo = new HashMap<>();
-        for (ApelacionRecordResponse participante : participantes) {
-            String persona = participante.nombre() + " " + participante.apellidoPaterno() + " " + participante.apellidoMaterno();
+    public static List<ParticipantesRecord> getParticipantes(List<PersonaDataRecord> participantes) {
+        Map<String, List<ParticipanteDataRecord>> agrupadoPorTipo = new HashMap<>();
+        for (PersonaDataRecord participante : participantes) {
+            ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), participante.nombre() + " " + participante.apellidoPaterno() + " " + participante.apellidoMaterno());
             agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
         }
         return agrupadoPorTipo.entrySet().stream()
