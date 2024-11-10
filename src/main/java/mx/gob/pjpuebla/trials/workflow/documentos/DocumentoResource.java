@@ -170,7 +170,10 @@ public class DocumentoResource {
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
-        return this.documentoService.getIndicadores();
+        if (isRecepcion==Boolean.TRUE)
+            return this.documentoService.getIndicadores();
+
+        return this.documentoService.getIndicadoresAsignados();
     }
 
     @GetMapping("/bandeja/recepcion/anexos/{id}")
