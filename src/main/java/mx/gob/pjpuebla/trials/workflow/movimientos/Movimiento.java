@@ -6,6 +6,7 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
@@ -49,8 +50,8 @@ public class Movimiento implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
-    @Column(name = "N_TIPO")
-    private Integer tipo;
+    @Column(name = "S_ESTADO")
+    private String estado;
 
     @Column(name = "S_UUID")
     private UUID uuid;

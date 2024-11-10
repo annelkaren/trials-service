@@ -31,18 +31,18 @@ public class MovimientoService {
     private final PersonaService personaService;
 
     public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid) {
-
         UUID uuidMov = UUID.fromString(uuid);
         return movimientoRepository.getSalidas(uuidMov, EstadoCarpeta.TURNADO);
     }
 
-    public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo) {
+    public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado) {
         Movimiento movimiento = new Movimiento()
                 .setCarpeta(carpeta)
                 .setDocumento(documento)
                 .setFechaAsignacion(LocalDateTime.now())
                 .setMotivo(motivo)
                 .setPersona(persona)
+                .setEstado(estado)
                 .setOficialia(persona.getOficialia())
                 .setJuzgado(persona.getJuzgado());
         movimiento = this.movimientoRepository.save(movimiento);
@@ -55,8 +55,8 @@ public class MovimientoService {
                 .setFechaAsignacion(LocalDateTime.now())
                 .setMotivo(estadoCarpeta)
                 .setPersona(personaAuditor)
-                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null )
-                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null )
+                .setOficialia((personaAuditor.getOficialia() != null) ? personaAuditor.getOficialia() : null)
+                .setJuzgado((personaAuditor.getJuzgado() != null) ? personaAuditor.getJuzgado() : null)
                 .setCarpeta(carpeta)
                 .setDocumento(documento)
                 .setObservaciones(observaciones)
@@ -76,12 +76,12 @@ public class MovimientoService {
 
         if (documento != null) {
             if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
-                createMovimento(null, documento, currentUser, "DEVUELTO - " + motivoRecord.motivo());
+                createMovimento(null, documento, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
                 documentoRepository.actualizarEstatus(documento.getId(), EstadoCarpeta.DEVUELTO);
             } else {
-                createMovimento(documento.getCarpeta(), null, currentUser, "DEVUELTO - " + motivoRecord.motivo());
+                createMovimento(documento.getCarpeta(), null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
                 carpetaRepository.actualizarEstatus(documento.getCarpeta().getId(), EstadoCarpeta.DEVUELTO);
             }
         }
-    } 
+    }
 }

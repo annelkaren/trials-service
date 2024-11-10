@@ -30,6 +30,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -400,7 +401,7 @@ class CarpetaServiceTest {
         List<String> anexos = null;
         carpetaService.setObservacionesAnexos(documento, anexos);
 
-        verify(movimientoService, never()).createMovimento(any(), any(), any(), any());
+        verify(movimientoService, never()).createMovimento(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -419,7 +420,8 @@ class CarpetaServiceTest {
                 eq(null),
                 eq(documento),
                 eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
+                eq(EstadoCarpeta.ASIGNADO.name())
         );
     }
 
@@ -439,7 +441,8 @@ class CarpetaServiceTest {
                 eq(documento.getCarpeta()),
                 eq(null),
                 eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
+                eq(EstadoCarpeta.ASIGNADO.name())
         );
     }
     @Test
