@@ -64,7 +64,7 @@ class AcuerdoServiceTest {
         given(documentoDetalleRepository.save(any(DocumentoDetalle.class))).willReturn(new DocumentoDetalle());
         given(documentoContenidoRepository.save(any(DocumentoContenido.class))).willReturn(new DocumentoContenido());
 
-        Documento result =  acuerdosService.save(acuerdoRecord);
+        Integer result =  acuerdosService.save(acuerdoRecord);
         
         assertNotNull(result);
     }

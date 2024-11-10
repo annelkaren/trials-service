@@ -31,7 +31,7 @@ public class AcuerdosService {
     private final DocumentoContenidoRepository documentoContenidoRepository;
 
     @Transactional
-    public Documento save(AcuerdoRecord acuerdo) {
+    public Integer save(AcuerdoRecord acuerdo) {
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
@@ -48,7 +48,7 @@ public class AcuerdosService {
                 doc.setTipoDocumento(TipoDocumento.ACUERDO);
                 doc.setData(docData);
         doc = documentoRepository.save(doc);
-        /* 
+       
         // Creamos la información de documento detalle:
         DocumentoDetalle docDetalle = new DocumentoDetalle();
             docDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
@@ -63,11 +63,11 @@ public class AcuerdosService {
                 docContenido.setTamanioPapel(acuerdo.tamanioPapel());
                 docContenido.setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(docContenido);
-        */
+      
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
         if (acuerdo.promocionesRelacionadas() != null) {
-            for (Integer promo : acuerdo.promocionesRelacionadas()) {
-                Documento promocion = documentoRepository.findById(promo).orElse(null);
+            for (AcuerdoPromocionesRecord promo : acuerdo.promocionesRelacionadas()) {
+                Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
                 if (promocion != null) {
                     promocion.setAcuerdo_respuesta(doc);
                     documentoRepository.save(promocion);
@@ -75,7 +75,7 @@ public class AcuerdosService {
             }
         }
 
-        return doc;
+        return 1;
     }
 
     public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId) {

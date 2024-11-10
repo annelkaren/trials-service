@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 
 public class AcuerdoRecordSetUp {
@@ -16,8 +17,8 @@ public class AcuerdoRecordSetUp {
         List<String> rubros = new ArrayList<>();
         rubros.add("rubro 1");
 
-        List<Integer> promociones = new ArrayList<>();
-        promociones.add(1);
+        List<AcuerdoPromocionesRecord> promociones = new ArrayList<>();
+        promociones.add(null);
 
 
         return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,

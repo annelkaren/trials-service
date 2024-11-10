@@ -33,7 +33,7 @@ class AcuerdoResourceTest {
     void crear_acuerdo() throws Exception {
         AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
 
-        given(acuerdosService.save(acuerdo)).willReturn(new Documento());
+        given(acuerdosService.save(acuerdo)).willReturn(1);
 
         mockMvc.perform(
             post("/api/workflow/documentos/crearAcuerdo")
