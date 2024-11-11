@@ -15,8 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 
 @WebMvcTest(AcuerdosResource.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -33,7 +34,7 @@ class AcuerdoResourceTest {
     void crear_acuerdo() throws Exception {
         AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
 
-        given(acuerdosService.save(acuerdo)).willReturn(1);
+        given(acuerdosService.save(acuerdo)).willReturn(new DocumentoGenericRecord(1, TipoDocumento.ACUERDO));
 
         mockMvc.perform(
             post("/api/workflow/documentos/crearAcuerdo")

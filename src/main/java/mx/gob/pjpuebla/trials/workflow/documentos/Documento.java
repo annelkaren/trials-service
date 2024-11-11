@@ -89,7 +89,7 @@ public class Documento implements Serializable, Auditable {
 
     @JoinColumn(name = "FN_ACUERDO_RESPUESTA", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-    private Documento acuerdo_respuesta;
+    private Documento acuerdoRespuesta;
 
     @Accessors(chain = false)
     @Embedded

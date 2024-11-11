@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -18,6 +19,10 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoC
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 @RequiredArgsConstructor
@@ -29,9 +34,11 @@ public class AcuerdosService {
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
-
+    private final MovimientoService movimientoService;
+    private final PersonaService personaService;
+    
     @Transactional
-    public Integer save(AcuerdoRecord acuerdo) {
+    public DocumentoGenericRecord save(AcuerdoRecord acuerdo) {
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
@@ -46,6 +53,7 @@ public class AcuerdosService {
         Documento doc = new Documento();
                 doc.setCarpeta(carpeta);
                 doc.setTipoDocumento(TipoDocumento.ACUERDO);
+                doc.setEstatus(EstadoCarpeta.CREADO);
                 doc.setData(docData);
         doc = documentoRepository.save(doc);
        
@@ -63,19 +71,24 @@ public class AcuerdosService {
                 docContenido.setTamanioPapel(acuerdo.tamanioPapel());
                 docContenido.setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(docContenido);
+
+
+        //insertar en movimientosService 
+        Persona persona = personaService.getAuditor();
+        movimientoService.createMovimento(null, doc, persona, null, EstadoCarpeta.CREADO.name());
       
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
         if (acuerdo.promocionesRelacionadas() != null) {
             for (AcuerdoPromocionesRecord promo : acuerdo.promocionesRelacionadas()) {
                 Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
                 if (promocion != null) {
-                    promocion.setAcuerdo_respuesta(doc);
+                    promocion.setAcuerdoRespuesta(doc);
                     documentoRepository.save(promocion);
                 }
             }
         }
 
-        return 1;
+        return new DocumentoGenericRecord(doc.getId(), TipoDocumento.ACUERDO);
     }
 
     public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId) {

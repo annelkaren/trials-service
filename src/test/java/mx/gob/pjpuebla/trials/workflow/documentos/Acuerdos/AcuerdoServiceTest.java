@@ -12,6 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -25,6 +29,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoC
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 
 @ExtendWith(MockitoExtension.class)
 class AcuerdoServiceTest {
@@ -44,10 +51,16 @@ class AcuerdoServiceTest {
     @Mock
     private CarpetaRepository carpetaRepository;
 
+    @Mock
+    private MovimientoService movimientoService;
+
+    @Mock 
+    private PersonaService personaService;
+
     @Test
     public void saveTest(){
         AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
-        
+        Persona persona = PersonaSetUp.createPersona();
         Carpeta carpeta = CarpetaSetUp.create();
         
         DocumentoData docData = new DocumentoData();
@@ -60,11 +73,13 @@ class AcuerdoServiceTest {
         doc.setData(docData);
 
         given(carpetaRepository.findById(acuerdoRecord.carpetaId())).willReturn(Optional.of(carpeta));
-        given(documentoRepository.save(doc)).willReturn(doc);
+        given(documentoRepository.save(any(Documento.class))).willReturn(doc);
         given(documentoDetalleRepository.save(any(DocumentoDetalle.class))).willReturn(new DocumentoDetalle());
         given(documentoContenidoRepository.save(any(DocumentoContenido.class))).willReturn(new DocumentoContenido());
+        given(movimientoService.createMovimento(null, doc, persona, "", EstadoCarpeta.CREADO.name())).willReturn(new Movimiento());
 
-        Integer result =  acuerdosService.save(acuerdoRecord);
+
+        DocumentoGenericRecord result =  acuerdosService.save(acuerdoRecord);
         
         assertNotNull(result);
     }
