@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
@@ -40,6 +41,4 @@ public class Materia implements Serializable, Auditable {
     @Size(max = 100)
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
-
-
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +25,10 @@ public class MateriaService {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
+        String hola = StringUtils.capitalize("HOLA".toLowerCase());
         Page<Materia> page = materiaRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<MateriaRecord> list = page.getContent().stream()
-                .map(m -> new MateriaRecord(m.getId(), m.getNombre()))
+                .map(m -> new MateriaRecord(m.getId(), StringUtils.capitalize(m.getNombre().toLowerCase())))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -35,7 +37,7 @@ public class MateriaService {
     public MateriaRecord findById(Integer id) {
         Materia materia = materiaRepository.findByIdAndEstado(id, Estado.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
-        return new MateriaRecord(materia.getId(), materia.getNombre());
+        return new MateriaRecord(materia.getId(), StringUtils.capitalize(materia.getNombre().toLowerCase()));
     }
 
 }

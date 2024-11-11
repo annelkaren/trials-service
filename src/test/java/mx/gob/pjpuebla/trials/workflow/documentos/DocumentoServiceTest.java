@@ -30,6 +30,7 @@ import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
@@ -1144,7 +1145,9 @@ class DocumentoServiceTest {
 
     @Test
     void testSendEmailFamiliar() {
+        TipoJuicioDemandasRecord tipoJuicioRecord = new TipoJuicioDemandasRecord(tipoJuicio.getId(), tipoJuicio.getNombre());
         Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setData(new DocumentoData().setTiposJuicios(Arrays.asList(tipoJuicioRecord)));
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setFolio("1");
 
@@ -1192,7 +1195,7 @@ class DocumentoServiceTest {
 
         Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
 
-        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("Laboral", sendEmailData.get("juicio"));
         assertEquals("1", sendEmailData.get("sala"));
         assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
         assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
@@ -1206,7 +1209,9 @@ class DocumentoServiceTest {
 
     @Test
     void testSendEmailFamiliarSinAnexos() {
+        TipoJuicioDemandasRecord tipoJuicioRecord = new TipoJuicioDemandasRecord(tipoJuicio.getId(), tipoJuicio.getNombre());
         Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setData(new DocumentoData().setTiposJuicios(Arrays.asList(tipoJuicioRecord)));
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setFolio("1");
 
@@ -1253,7 +1258,7 @@ class DocumentoServiceTest {
 
         Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
 
-        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("Laboral", sendEmailData.get("juicio"));
         assertEquals("1", sendEmailData.get("sala"));
         assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
         assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));

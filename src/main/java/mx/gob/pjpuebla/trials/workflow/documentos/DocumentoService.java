@@ -925,14 +925,7 @@ public class DocumentoService {
     public void sendEmailFamiliar(DocumentoSaveRecord documentoRecord, Documento documento, Carpeta carpeta, TipoJuicio tpoJuicio) {
         Map<String, Object> sendEmail = new HashMap<>();
 
-        List<TipoJuicioDemandasRecord> tipoJuicioDemandasRecordList = List.of(
-                new TipoJuicioDemandasRecord(111, "Familiar Oralidad (Alimentos)"),
-                new TipoJuicioDemandasRecord(112, "Familiar Oralidad (Divorcio Incausado Unilateral)"),
-                new TipoJuicioDemandasRecord(114, "Familiar Oralidad (Guardia y Custodia)"),
-                new TipoJuicioDemandasRecord(115, "Familiar Oralidad (Visita y Convivencia)")
-        );
-        documento.setData(documentoRecord.general().setTiposJuicios(tipoJuicioDemandasRecordList));
-        String tiposJuicios = tipoJuicioDemandasRecordList.stream()
+        String tiposJuicios = documento.getData().getTiposJuicios().stream()
                 .map(TipoJuicioDemandasRecord::nombre)
                 .collect(Collectors.joining(", "));
         sendEmail.put("juicio", tiposJuicios);
@@ -942,7 +935,6 @@ public class DocumentoService {
 
         sendEmail.put("carpetaDigital", selloGenerator.updateExpedientePorTipoJuicio(documento));
         sendEmail.put("tipoJuicio", tpoJuicio.getNombre());
-
 
         String apellidoMaternoActor = documentoRecord.actor().apellidoMaterno();
         sendEmail.put("actor", String.join(" ",
