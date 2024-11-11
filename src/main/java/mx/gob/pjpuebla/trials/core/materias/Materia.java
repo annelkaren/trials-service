@@ -9,7 +9,6 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
