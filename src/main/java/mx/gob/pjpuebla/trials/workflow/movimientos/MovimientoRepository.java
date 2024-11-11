@@ -49,7 +49,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
             (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
         )
-        AND m.motivo IN (:motivos)
+        AND m.estado IN (:motivos)
         AND (
             (c IS NOT NULL AND jc.id = :juzgadoId)
             OR (d IS NOT NULL AND jcd.id = :juzgadoId)

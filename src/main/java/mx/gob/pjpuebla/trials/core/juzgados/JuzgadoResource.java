@@ -70,4 +70,9 @@ public class JuzgadoResource {
             @RequestParam(value = "key", required = false) String key) {
         return this.juzgadoService.findAllByEstadoAutocomplete(key, pageable);
     }
+
+    @PatchMapping("/{id}/status/{status}")
+    public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
+        return this.juzgadoService.updateStatus(id, status);
+    }
 }

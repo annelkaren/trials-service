@@ -62,7 +62,7 @@ public class UsuarioService {
         userRep.setLastName(persona.getApellidoPaterno());
         userRep.setEmail(persona.getCorreoElectronico());
         userRep.setEnabled(Boolean.TRUE);
-        userRep.setEmailVerified(Boolean.TRUE);
+        userRep.setEmailVerified(Boolean.FALSE);
         List<CredentialRepresentation> creds = new ArrayList<>();
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setTemporary(Boolean.TRUE);

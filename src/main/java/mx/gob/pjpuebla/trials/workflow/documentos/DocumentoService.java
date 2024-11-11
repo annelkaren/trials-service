@@ -159,6 +159,7 @@ public class DocumentoService {
                 isPromocion ? null : documento.getCarpeta(),
                 isPromocion ? documento : null,
                 personaService.getAuditor(),
+                null,
                 EstadoCarpeta.values()[status].name());
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -185,7 +186,7 @@ public class DocumentoService {
         carpeta.setFechaAsignacion(LocalDateTime.now());
         carpeta.setPersona(persona);
         carpeta = carpetaRepository.save(carpeta);
-        movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
         documento.setCarpeta(carpeta);
         //SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
@@ -374,7 +375,7 @@ public class DocumentoService {
                     (documento.getTipoDocumento() == null) ? carpeta.getTipoCarpeta().name() : documento.getTipoDocumento().name(),
                     movimiento.getFechaAsignacion(),
                     null,
-                    (documento.getTipoDocumento() == null) ? carpeta.getEstatus() : documento.getEstatus(),//TODO. este estado es el actual o el del LOG?
+                    EstadoCarpeta.valueOf(movimiento.getEstado()),
                     false
             );
             listaDocumentoRecords.add(drecord);
@@ -401,7 +402,7 @@ public class DocumentoService {
 
         documento = documentoRepository.save(documento);
         addAnexos(documentoPromocionRecord.anexos(), documento);
-        movimientoService.createMovimento(null, documento, documento.getPersona(), EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(null, documento, documento.getPersona(), null, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
@@ -437,7 +438,7 @@ public class DocumentoService {
 
         addAnexos(documentoExhortoRecord.anexos(), documento);
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
-        movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -502,7 +503,7 @@ public class DocumentoService {
             personaDocumentoRepository.save(entity);
         }
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
-        movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
@@ -705,7 +706,7 @@ public class DocumentoService {
 
     public IndicadoresRecord getIndicadores() {
         Persona persona = personaService.getAuditor();
-        Integer totalPendientes = 0;
+        int totalPendientes;
         Integer totalRecibidosHoy = 0;
         Integer totalRecibidosAyer = 0;
         Integer totalOldies = 0;
@@ -888,6 +889,7 @@ public class DocumentoService {
                 null,
                 doc,
                 personaAuditor,
+                null,
                 EstadoCarpeta.CANCELADO.name()
         );
 
@@ -909,7 +911,7 @@ public class DocumentoService {
 
         Persona persona = personaService.getAuditor();
 
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
 
         return new MovimientoPersonalJuzgadoRecord(
                 carpeta.getId(),
@@ -1017,7 +1019,7 @@ public class DocumentoService {
 
             Persona persona = personaService.getAuditor();
 
-            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name());
+            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name());
 
             MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
                     carpeta.getId(),
@@ -1032,7 +1034,7 @@ public class DocumentoService {
     }
 
     public IndicadoresRecord getIndicadoresAsignados(){
-        Integer totalAsignados = 0;
+        int totalAsignados;
         Integer terminoRebasado = 0;
         Integer termino24horas = 0;
         Integer termino3dias = 0;

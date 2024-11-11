@@ -20,8 +20,12 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -135,7 +139,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create_throwsConflictException_whenJuzgadoWithSameNameExists() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
                 .willReturn(Optional.of(juzgado));
 
         assertThrows(ConflictException.class, () -> {
@@ -147,7 +151,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
         .willReturn(Optional.empty());
 
         given(materiaRepository.findById(juzgado.getMateria().getId()))
@@ -406,5 +410,17 @@ class JuzgadoServiceTest {
                 () -> juzgadoService.delete(1)
         );
         assertThat(exception.getMessage()).contains(Messages.CONSTRAINT_ERROR);
+    }
+
+    @Test
+    void update_status_success() {
+        given(juzgadoRepository.findById(any())).willReturn(Optional.of(juzgado));
+
+        JuzgadoRecordItem response = juzgadoService.updateStatus(juzgado.getId(), 1);
+        assertThat(response).isOfAnyClassIn(JuzgadoRecordItem.class)
+                .hasFieldOrPropertyWithValue("id", response.id())
+                .hasFieldOrPropertyWithValue("nombre", response.nombre())
+                .hasFieldOrPropertyWithValue("estado", response.estado());
+
     }
 }

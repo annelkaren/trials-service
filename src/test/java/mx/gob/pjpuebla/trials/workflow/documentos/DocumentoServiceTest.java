@@ -474,7 +474,7 @@ class DocumentoServiceTest {
         TipoCarpeta tipoCarpeta1 = TipoCarpeta.DEMANDA;
         documento1.getCarpeta().setTipoCarpeta(tipoCarpeta1);
 
-        Movimiento movimiento1 = new Movimiento().setDocumento(documento1);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento1).setEstado(EstadoCarpeta.CAPTURA.name());
         List<Movimiento> listPage = Arrays.asList(movimiento1);
         Page<Movimiento> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
 
@@ -1066,13 +1066,13 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(any(Integer.class)))
                 .willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
-        given(movimientoService.createMovimento(any(), any(), any(), any())).willReturn(movimiento);
+        given(movimientoService.createMovimento(any(), any(), any(), any(), any())).willReturn(movimiento);
 
         documentoService.cancelOficio(1);
         verify(personaService).getAuditor();
         verify(documentoRepository).findById(1);
         verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
-        verify(movimientoService).createMovimento(any(), any(), any(), any());
+        verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -1096,7 +1096,7 @@ class DocumentoServiceTest {
         when(documentoRepository.findById(personalJuzgadoRecord.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
         when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
-        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
+        when(movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
 
         MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
 
@@ -1133,7 +1133,7 @@ class DocumentoServiceTest {
         when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
         when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
-        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+        when(movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
 
         List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
 
