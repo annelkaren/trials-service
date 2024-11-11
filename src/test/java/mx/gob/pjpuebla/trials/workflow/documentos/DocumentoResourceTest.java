@@ -454,4 +454,13 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+
+    @Test
+    void delete_success() throws Exception {
+        mockMvc.perform(
+                delete("/api/workflow/bandeja/asignados/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
 }

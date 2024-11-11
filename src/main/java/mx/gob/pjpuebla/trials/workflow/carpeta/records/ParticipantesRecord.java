@@ -4,6 +4,6 @@ import java.util.List;
 
 public record ParticipantesRecord(
         String tipo,
-        List<String> data
+        List<ParticipanteDataRecord> data
 ) {
 }
