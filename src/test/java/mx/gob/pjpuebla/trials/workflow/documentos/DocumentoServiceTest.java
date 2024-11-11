@@ -925,6 +925,7 @@ class DocumentoServiceTest {
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
         DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
                 1,
+                1,
                 "000001/2024",
                 "1",
                 "1",

@@ -368,7 +368,7 @@ class DocumentoResourceTest {
         String folio = "1";
         String expediente = "000001/2024";
 
-        DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente);
+        DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, 1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente);
 
         given(documentoService.getAllAsignado(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));

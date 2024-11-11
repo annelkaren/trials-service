@@ -101,6 +101,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
             d.id,
+            c.id as carpetaId,
             c.expediente,
             c.folio,
             d.folio,
