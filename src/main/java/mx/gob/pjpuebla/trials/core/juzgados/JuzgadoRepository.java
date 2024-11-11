@@ -20,7 +20,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
     @Query(value = "SELECT j FROM Juzgado j "
             + "JOIN FETCH j.materia m "
             + "WHERE j.estado IN :estados "
-            + "AND lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key% ")
+            + "AND (lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)")
     Page<Juzgado> findAll(String key, List<Estado> estados, Pageable pageable);
 
     Optional<Juzgado> findByIdAndEstadoIn(Integer id, List<Estado> estados);

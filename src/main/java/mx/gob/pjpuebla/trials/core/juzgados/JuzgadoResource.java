@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -69,5 +70,10 @@ public class JuzgadoResource {
             @PageableDefault Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {
         return this.juzgadoService.findAllByEstadoAutocomplete(key, pageable);
+    }
+
+    @PatchMapping("/{id}/status/{status}")
+    public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
+        return this.juzgadoService.updateStatus(id, status);
     }
 }

@@ -56,17 +56,17 @@ public class PersonaService {
 
         List<PersonaRecordResponse> list = page.getContent().stream()
                 .map(persona -> {
-                    String centroTrabajo;
+                    String centroTrabajo = "-";
                     if ((persona.getJuzgado() != null && persona.getJuzgado().getNombre() != null && !persona.getJuzgado().getNombre().isEmpty())) {
                         centroTrabajo = persona.getJuzgado().getNombre();
                     } else {
                         if (persona.getOficialia() != null && persona.getOficialia().getNombre() != null && !persona.getOficialia().getNombre().isEmpty())
                             centroTrabajo = persona.getOficialia().getNombre();
-                        else centroTrabajo = "";
+                        else centroTrabajo = "-";
                     }
                     return new PersonaRecordResponse(
                             persona.getId(),
-                            persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno(),
+                            persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""),
                             persona.getCorreoElectronico(),
                             persona.getCelular(),
                             centroTrabajo
@@ -214,6 +214,10 @@ public class PersonaService {
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, Pageable pageable) {
         Persona usuario = getAuditor();
 
+        if (usuario.getJuzgado() == null && usuario.getOficialia() == null) { //Admin de sistema
+            return getAll(new Persona().setNombre(nombre), pageable);
+        }
+
         Page<Persona> page = personaRepository.findByCentroTrabajo(
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
@@ -222,11 +226,15 @@ public class PersonaService {
 
         List<PersonaRecordResponse> list = page.stream()
                 .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
-                .map(p -> new PersonaRecordResponse(
-                        p.getId(),
-                        p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
-                        p.getCorreoElectronico(),
-                        p.getCelular(), ""))
+                .map(p ->
+                        new PersonaRecordResponse(
+                                p.getId(),
+                                p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
+                                p.getCorreoElectronico(),
+                                p.getCelular(),
+                                (p.getJuzgado() != null) ? p.getJuzgado().getNombre() :
+                                        (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-"
+                        ))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
