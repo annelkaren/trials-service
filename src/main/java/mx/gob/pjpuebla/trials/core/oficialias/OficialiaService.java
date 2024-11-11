@@ -73,7 +73,7 @@ public class OficialiaService {
     }
 
         public OficialiaRecordResponse create(Oficialia oficialia) {
-            if(oficialiaRepository.findByNombre(oficialia.getNombre()).isPresent()){
+            if(oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre()).isPresent()){
                 throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
             }
             

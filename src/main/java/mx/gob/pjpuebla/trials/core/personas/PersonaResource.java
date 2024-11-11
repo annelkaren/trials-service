@@ -58,10 +58,10 @@ public class PersonaResource {
     }
 
     @GetMapping("/centrostrabajo")
-    public Page<CentroTrabajoRecord> getCentroTrabajo(
+    public List<CentroTrabajoRecord> getCentroTrabajo(
             @PageableDefault Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.personaService.findAllCentroTrabajo(pageable, nombre);
+        return this.personaService.findAllCentroTrabajo(nombre);
     }
 
     @GetMapping("/turnado")

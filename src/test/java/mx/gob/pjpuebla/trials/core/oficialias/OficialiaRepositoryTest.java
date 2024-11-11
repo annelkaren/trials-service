@@ -56,7 +56,7 @@ class OficialiaRepositoryTest extends AuditConfigTest {
     @Test
     void findByNombre() {
         String nombreOficialia = "OFICIALIA";
-        Optional<Oficialia> oficialia = oficialiaRepository.findByNombre(nombreOficialia);
+        Optional<Oficialia> oficialia = oficialiaRepository.findByNombreIgnoreCase(nombreOficialia);
         assertThat(oficialia).isPresent();
         assertThat(oficialia.get().getNombre()).isEqualTo(nombreOficialia);
     }

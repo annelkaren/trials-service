@@ -183,8 +183,8 @@ class JuzgadoResourceTest {
 
     @Test
     void getAllByEstadoAuto_success() throws Exception {
-        given(mockJuzgadoService.findAllByEstadoAutocomplete(any(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
+        given(mockJuzgadoService.findAllByEstadoAutocomplete(any()))
+                .willReturn(Collections.singletonList(juzgadoRecordItem));
 
         mockMvc.perform(
                 get("/api/core/juzgados/autocomplete")

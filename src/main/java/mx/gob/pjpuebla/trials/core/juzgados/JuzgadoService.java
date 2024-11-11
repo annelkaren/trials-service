@@ -293,9 +293,9 @@ public class JuzgadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key, Pageable pageable) {
+    public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key) {
         key = (key != null) ? key.toLowerCase() : "";
-        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key);
     }
 
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {
