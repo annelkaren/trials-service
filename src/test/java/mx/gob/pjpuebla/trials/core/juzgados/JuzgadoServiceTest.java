@@ -390,10 +390,10 @@ class JuzgadoServiceTest {
     @Test
     void getAllByEstadoAutocomplete_return_page() {
         List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
-        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("", PageRequest.of(1, listPage.size()));
-        assertThat(page.getContent())
+        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any()))
+                .willReturn(listPage);
+        List<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("");
+        assertThat(page)
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())

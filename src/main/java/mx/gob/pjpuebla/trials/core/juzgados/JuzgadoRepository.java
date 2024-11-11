@@ -95,10 +95,9 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         WHERE f.estado = :estado
         AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
         """)
-    Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(
+    List<JuzgadoRecordItem> findAllByEstadoAutocomplete(
             @Param("estado") Estado estado,
-            @Param("key") String key,
-            Pageable pageable
+            @Param("key") String key
     );
 
     Optional<Juzgado> findByNombreIgnoreCase(String nombre);

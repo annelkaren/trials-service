@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,5 +69,16 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             """)
     Page<Oficialia> findAllActive(Pageable pageable);
 
-    Optional<Oficialia> findByNombre(String nombre);
+    @Query("""
+        SELECT o
+        FROM Oficialia o
+        WHERE o.estado = :estado
+        AND (lower(o.nombre) LIKE %:key%)
+        """)
+    List<Oficialia> findAllByEstadoAutocomplete(
+            @Param("estado") Estado estado,
+            @Param("key") String key
+    );
+
+    Optional<Oficialia> findByNombreIgnoreCase(String nombre);
 }
