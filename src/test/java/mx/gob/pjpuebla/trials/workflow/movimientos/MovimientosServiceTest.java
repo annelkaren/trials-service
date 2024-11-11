@@ -98,7 +98,7 @@ class MovimientosServiceTest {
                 .setJuzgado(juzgado);
         given(movimientoRepository.save(any(Movimiento.class))).willReturn(mov);
 
-        Movimiento result = movimientoService.createMovimento(carpeta, null, persona, "CAPTURA");
+        Movimiento result = movimientoService.createMovimento(carpeta, null, persona, "", EstadoCarpeta.CAPTURA.name());
         assertThat(result.getCarpeta()).isEqualTo(carpeta);
         assertThat(result.getDocumento()).isEqualTo(null);
         assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
@@ -171,7 +171,7 @@ class MovimientosServiceTest {
                 .setJuzgado(juzgado);
         given(movimientoRepository.save(any(Movimiento.class))).willReturn(mov);
 
-        Movimiento result = movimientoService.createMovimento(null, documento, persona, "RECEPCION");
+        Movimiento result = movimientoService.createMovimento(null, documento, persona, "", EstadoCarpeta.RECEPCION.name());
         assertThat(result.getCarpeta()).isEqualTo(null);
         assertThat(result.getDocumento()).isEqualTo(documento);
         assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
