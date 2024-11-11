@@ -110,7 +110,7 @@ class PersonaServiceTest extends SetupServiceTest {
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre() + " "
-                        + validPersona.getApellidoPaterno() + " " + validPersona.getApellidoMaterno());
+                        + validPersona.getApellidoPaterno());
     }
 
     @Test

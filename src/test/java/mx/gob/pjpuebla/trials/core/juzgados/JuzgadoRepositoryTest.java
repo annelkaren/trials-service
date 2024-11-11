@@ -84,7 +84,7 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     @Test
     void findByNombre() {
         String nombreJuzgado = "Juzgado Mercantil";
-        Optional<Juzgado> juzgado = juzgadoRepository.findByNombre(nombreJuzgado);
+        Optional<Juzgado> juzgado = juzgadoRepository.findByNombreIgnoreCase(nombreJuzgado);
         assertThat(juzgado).isPresent();
         assertThat(juzgado.get().getNombre()).isEqualTo(nombreJuzgado);
     }

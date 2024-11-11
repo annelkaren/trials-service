@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ public class InstitucionService {
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
 
+        example.setNombre(StringUtils.stripAccents(example.getNombre()));
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 

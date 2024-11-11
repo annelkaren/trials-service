@@ -175,7 +175,12 @@ public class CarpetaService {
         }
         String concatenatedAnexos = String.join(", ", anexos);
         String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
-        movimientoService.createMovimento((documento.getTipoDocumento() == null ? documento.getCarpeta() : null), (documento.getTipoDocumento() == null) ? null : documento, personaService.getAuditor(), motivo);
+        movimientoService.createMovimento(
+                (documento.getTipoDocumento() == null ? documento.getCarpeta() : null),
+                (documento.getTipoDocumento() == null) ? null : documento,
+                personaService.getAuditor(),
+                motivo,
+                EstadoCarpeta.ASIGNADO.name());
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {
