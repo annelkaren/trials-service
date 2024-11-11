@@ -157,7 +157,9 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
             doc.id,
-            CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion, doc.ruta)
+            CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
+            doc.ruta,
+            (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion)
         FROM Documento doc
         JOIN doc.carpeta carpeta
         WHERE carpeta.id = :carpetaId

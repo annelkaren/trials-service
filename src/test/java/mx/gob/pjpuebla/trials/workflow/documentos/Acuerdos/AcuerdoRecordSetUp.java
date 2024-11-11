@@ -18,7 +18,7 @@ public class AcuerdoRecordSetUp {
         rubros.add("rubro 1");
 
         List<AcuerdoPromocionesRecord> promociones = new ArrayList<>();
-        promociones.add(new AcuerdoPromocionesRecord(1, "prueba", "archivoName"));
+        promociones.add(new AcuerdoPromocionesRecord(1, "prueba", "archivoName", "recomendacion 1"));
 
 
         return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
