@@ -56,7 +56,7 @@ public class PersonaService {
 
         List<PersonaRecordResponse> list = page.getContent().stream()
                 .map(persona -> {
-                    String centroTrabajo = "-";
+                    String centroTrabajo;
                     if ((persona.getJuzgado() != null && persona.getJuzgado().getNombre() != null && !persona.getJuzgado().getNombre().isEmpty())) {
                         centroTrabajo = persona.getJuzgado().getNombre();
                     } else {

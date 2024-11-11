@@ -5,7 +5,6 @@ import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
