@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
