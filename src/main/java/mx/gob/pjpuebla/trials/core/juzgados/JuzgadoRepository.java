@@ -101,5 +101,5 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             Pageable pageable
     );
 
-    Optional<Juzgado> findByNombre(String nombre);
+    Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 }

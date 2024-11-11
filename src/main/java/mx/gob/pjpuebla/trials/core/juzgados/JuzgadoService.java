@@ -112,7 +112,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem create(Juzgado juzgado) {
-        if (juzgadoRepository.findByNombre(juzgado.getNombre()).isPresent()) {
+        if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
 

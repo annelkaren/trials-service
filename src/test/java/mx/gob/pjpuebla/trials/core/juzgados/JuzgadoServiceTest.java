@@ -139,7 +139,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create_throwsConflictException_whenJuzgadoWithSameNameExists() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
                 .willReturn(Optional.of(juzgado));
 
         assertThrows(ConflictException.class, () -> {
@@ -151,7 +151,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
         .willReturn(Optional.empty());
 
         given(materiaRepository.findById(juzgado.getMateria().getId()))
