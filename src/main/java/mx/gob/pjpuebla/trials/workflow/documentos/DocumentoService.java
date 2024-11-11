@@ -702,7 +702,7 @@ public class DocumentoService {
 
     public IndicadoresRecord getIndicadores() {
         Persona persona = personaService.getAuditor();
-        Integer totalPendientes = 0;
+        int totalPendientes;
         Integer totalRecibidosHoy = 0;
         Integer totalRecibidosAyer = 0;
         Integer totalOldies = 0;
@@ -1030,7 +1030,7 @@ public class DocumentoService {
     }
 
     public IndicadoresRecord getIndicadoresAsignados(){
-        Integer totalAsignados = 0;
+        int totalAsignados;
         Integer terminoRebasado = 0;
         Integer termino24horas = 0;
         Integer termino3dias = 0;
