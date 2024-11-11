@@ -1072,7 +1072,7 @@ public class DocumentoService {
                 throw new EntityNotFoundException("No se encontró la persona documento con ID: " + id);
             }
         } catch (DataIntegrityViolationException ex) {
-            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "asigndo" + id);
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "actualizar a asignado" + id);
         }
     }
 
