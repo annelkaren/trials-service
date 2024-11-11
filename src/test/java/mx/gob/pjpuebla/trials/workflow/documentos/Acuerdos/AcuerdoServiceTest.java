@@ -2,7 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 
 import java.util.Optional;
 
@@ -73,10 +75,11 @@ class AcuerdoServiceTest {
         doc.setData(docData);
 
         given(carpetaRepository.findById(acuerdoRecord.carpetaId())).willReturn(Optional.of(carpeta));
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(new Documento()));
         given(documentoRepository.save(any(Documento.class))).willReturn(doc);
         given(documentoDetalleRepository.save(any(DocumentoDetalle.class))).willReturn(new DocumentoDetalle());
         given(documentoContenidoRepository.save(any(DocumentoContenido.class))).willReturn(new DocumentoContenido());
-        given(movimientoService.createMovimento(null, doc, persona, "", EstadoCarpeta.CREADO.name())).willReturn(new Movimiento());
+        lenient().when(movimientoService.createMovimento(null, doc, persona, "", EstadoCarpeta.CREADO.name())).thenReturn(new Movimiento());
 
 
         DocumentoGenericRecord result =  acuerdosService.save(acuerdoRecord);
