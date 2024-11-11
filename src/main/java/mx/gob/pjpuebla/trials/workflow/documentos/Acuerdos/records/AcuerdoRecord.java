@@ -11,7 +11,7 @@ public record AcuerdoRecord(
     LocalDate fechaResolucion,
     String etapaProcesal,
     List<String> rubros,
-    List<Integer> promocionesRelacionadas,
+    List<AcuerdoPromocionesRecord> promocionesRelacionadas,
     Character tamanioPapel,
     String textoEditor
 ) {}
