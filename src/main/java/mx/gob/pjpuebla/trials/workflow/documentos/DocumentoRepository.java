@@ -66,7 +66,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
                 )
             )
-            AND m.motivo = 'SALIDA'
+            AND m.estado = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
              AND (
                   ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)

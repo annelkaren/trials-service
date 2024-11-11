@@ -155,6 +155,7 @@ public class DocumentoService {
                 isPromocion ? null : documento.getCarpeta(),
                 isPromocion ? documento : null,
                 personaService.getAuditor(),
+                null,
                 EstadoCarpeta.values()[status].name());
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -181,7 +182,7 @@ public class DocumentoService {
         carpeta.setFechaAsignacion(LocalDateTime.now());
         carpeta.setPersona(persona);
         carpeta = carpetaRepository.save(carpeta);
-        movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
         documento.setCarpeta(carpeta);
         //SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
@@ -349,31 +350,33 @@ public class DocumentoService {
         return numExpedienteExhorto;
     }
 
-    public Page<DocumentoGridRecord> getAllHistorial(Pageable pageable, Documento example) {
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("folio", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("expediente", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("estatus", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("tipoEntrada", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withMatcher("materia.nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+    public Page<DocumentoGridRecord> getAllHistorial(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona currentUser = personaService.getAuditor();
+        Page<Movimiento> page;
+        Integer juzgadoId = (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
+        Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
+        page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
 
-        Page<Documento> paginaDocumentos = documentoRepository.findAll(Example.of(example, exampleMatcher), pageable);
-
-
-        List<DocumentoGridRecord> listaDocumentoRecords = paginaDocumentos.getContent().stream()
-                .map(doc -> new DocumentoGridRecord(
-                        doc.getId(),
-                        doc.getCarpeta().getFolio(),
-                        doc.getCarpeta().getExpediente(),
-                        doc.getCarpeta().getJuzgado().getMateria().getNombre(),
-                        doc.getTipoDocumento() == null ? doc.getCarpeta().getTipoCarpeta().name() : doc.getTipoDocumento().name(),
-                        doc.getAudit().getFechaAlta(),
-                        doc.getCarpeta().getSelloEstatus(),
-                        doc.getCarpeta().getEstatus(),
-                        (doc.getRuta() != null)))
-                .toList();
-
-        return new PageImpl<>(listaDocumentoRecords, pageable, paginaDocumentos.getTotalElements());
+        List<DocumentoGridRecord> listaDocumentoRecords = new ArrayList<>();
+        for (Movimiento movimiento : page.getContent()) {
+            Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(movimiento.getCarpeta().getId());
+            Carpeta carpeta = documento.getCarpeta();
+            String folio = (documento.getTipoDocumento() == null) ? carpeta.getFolio() : documento.getFolio();
+            DocumentoGridRecord drecord = new DocumentoGridRecord(
+                    documento.getId(),
+                    folio,
+                    carpeta.getExpediente(),
+                    carpeta.getJuzgado().getMateria().getNombre(),
+                    (documento.getTipoDocumento() == null) ? carpeta.getTipoCarpeta().name() : documento.getTipoDocumento().name(),
+                    movimiento.getFechaAsignacion(),
+                    null,
+                    EstadoCarpeta.valueOf(movimiento.getEstado()),
+                    false
+            );
+            listaDocumentoRecords.add(drecord);
+        }
+        return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
     }
 
     @Transactional
@@ -395,7 +398,7 @@ public class DocumentoService {
 
         documento = documentoRepository.save(documento);
         addAnexos(documentoPromocionRecord.anexos(), documento);
-        movimientoService.createMovimento(null, documento, documento.getPersona(), EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(null, documento, documento.getPersona(), null, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
@@ -431,7 +434,7 @@ public class DocumentoService {
 
         addAnexos(documentoExhortoRecord.anexos(), documento);
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
-        movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -496,16 +499,21 @@ public class DocumentoService {
             personaDocumentoRepository.save(entity);
         }
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
-        movimientoService.createMovimento(carpeta, null, auditor, EstadoCarpeta.CAPTURA.name());
+        movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR")) {
-            return renderOficialMayorData(key, pageable, currentUser);
+        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO","SECRETARIO", "TECNICO");
+
+        for (String rol : roles) {
+            if (roleService.hasRole(currentUser.getUsuario(), rol) ) {
+                return renderOficialMayorData(key, pageable, currentUser);
+            }
         }
+        
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
@@ -693,7 +701,35 @@ public class DocumentoService {
     }
 
     public IndicadoresRecord getIndicadores() {
-        return new IndicadoresRecord(2, 7, 9, 5);
+        Persona persona = personaService.getAuditor();
+        int totalPendientes;
+        Integer totalRecibidosHoy = 0;
+        Integer totalRecibidosAyer = 0;
+        Integer totalOldies = 0;
+
+        Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
+                Pageable.unpaged(),
+                persona.getJuzgado().getId(),
+                Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
+                "",
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name())
+        );
+
+        totalPendientes = page.getSize();
+
+        for ( Movimiento movimiento : page.getContent()) {
+            LocalDate fechaAsignacion = movimiento.getFechaAsignacion().toLocalDate();
+
+            if (fechaAsignacion.equals(LocalDate.now())){
+                totalRecibidosHoy++;
+            } else if (fechaAsignacion.equals(LocalDate.now().minusDays(1))){
+                    totalRecibidosAyer++;
+                }else {
+                    totalOldies++;
+                }
+        }
+
+        return new IndicadoresRecord(totalPendientes, totalRecibidosHoy, totalRecibidosAyer, totalOldies);
     }
 
     public Integer createOficio(Integer institucionId, LocalDate fechaEmision, String asunto, Integer carpetaId) {
@@ -849,6 +885,7 @@ public class DocumentoService {
                 null,
                 doc,
                 personaAuditor,
+                null,
                 EstadoCarpeta.CANCELADO.name()
         );
 
@@ -870,7 +907,7 @@ public class DocumentoService {
 
         Persona persona = personaService.getAuditor();
 
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
 
         return new MovimientoPersonalJuzgadoRecord(
                 carpeta.getId(),
@@ -978,7 +1015,7 @@ public class DocumentoService {
 
             Persona persona = personaService.getAuditor();
 
-            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name());
+            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name());
 
             MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
                     carpeta.getId(),
@@ -991,6 +1028,29 @@ public class DocumentoService {
         }
         return resultados;
     }
-    
+
+    public IndicadoresRecord getIndicadoresAsignados(){
+        int totalAsignados;
+        Integer terminoRebasado = 0;
+        Integer termino24horas = 0;
+        Integer termino3dias = 0;
+
+        Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", Pageable.unpaged());
+
+        totalAsignados = asignados.getSize();
+
+        for (DocumentoAsignadoResponseRecord asignado: asignados) {
+            if (asignado.fechaTermino().isAfter(LocalDateTime.now())){
+                terminoRebasado++;
+            }else if (asignado.fechaTermino().isAfter(LocalDateTime.now().plusDays(1))){
+                termino24horas++;
+            }else{
+                termino3dias++;
+            }
+            
+        }
+
+        return new IndicadoresRecord(totalAsignados, terminoRebasado, termino24horas, termino3dias);
+    }
 }
 
