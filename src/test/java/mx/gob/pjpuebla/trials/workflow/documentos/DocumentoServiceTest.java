@@ -1284,7 +1284,8 @@ class DocumentoServiceTest {
                 eq(carpeta),
                 isNull(),
                 eq(auditor),
-                eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante)
+                eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante),
+                isNull()
         );
 
         verify(personaDocumentoRepository).deleteById(id);

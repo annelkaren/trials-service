@@ -1066,7 +1066,8 @@ public class DocumentoService {
                         personaDocumento.get().getCarpeta(),
                         null,
                         persona,
-                        String.join(" ", "ELIMINADO DE PARTICIPANTE", personaDocumento.get().getNombre())
+                        String.join(" ", "ELIMINADO DE PARTICIPANTE", personaDocumento.get().getNombre()),
+                        null
                 );
                 personaDocumentoRepository.deleteById(id);
                 personaDocumentoRepository.flush();
