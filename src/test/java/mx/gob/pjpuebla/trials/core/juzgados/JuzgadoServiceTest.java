@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +105,7 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
                 .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
                 .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
-                .hasFieldOrPropertyWithValue("materia", juzgado.getMateria().getNombre());
+                .hasFieldOrPropertyWithValue("materia", StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase()));
     }
 
     @Test

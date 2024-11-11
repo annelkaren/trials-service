@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +73,11 @@ public class TipoJuicioService {
             usuario.getOficialia()!=null?usuario.getOficialia().getId():null, 
             usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null, pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
-                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
+                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(),
+                        new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()),
+                        new MateriaRecord(
+                                m.getMateria().getId(),
+                                StringUtils.capitalize(m.getMateria().getNombre().toLowerCase()))))
                 .toList();
         
         return new PageImpl<>(list, pageable, page.getTotalElements());

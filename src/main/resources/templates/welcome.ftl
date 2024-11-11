@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Recepción de Asignación de Juicio</title>
+    <title>¡Bienvenido a nuestro portal!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -66,25 +66,15 @@
 </head>
 <body>
     <div class="container">
-
-
         <div class="info-section">
-            <p>Se ha asignado un juicio: <strong>${juicio}</strong></p>
-
-            <p>Sala:<strong>${sala}</strong> </p>
-            <p>Número de carpeta digital: <strong>${carpetaDigital}</strong></p>
-            <p>Juzgado: <strong>${tipoJuicio}</strong></p>
-
+            <p>Hola <strong>${name}</strong> <br/><br/>
+                Le damos la bienvenida al Sistema Electrónico de Control y Gestión Judicial.
+                Se ha creado una nueva cuenta con las siguientes credenciales:
+            </p>
         </div>
 
-        <p><strong>Actor:</strong> ${actor}</p>
-        <p><strong>Teléfono:</strong> ${telefono}</p>
-        <p><strong>Correo:</strong> ${correo}</p>
-
-        <p><strong>Demandado:</strong> ${demandado}</p>
-
-        <p><strong>Anexos:</strong></p>
-        <p>${anexos}</p>
+        <p>Usuario: <strong>${username}</strong> </p>
+        <p>Contraseña: <strong>${password}</strong></p>
 
         <div class="footer">
             <p>Este correo electrónico, así como sus anexos, está destinado únicamente al destinatario(s) aquí nombrado(s) y puede contener información privilegiada y/o confidencial. Si usted no es su destinatario, se le notifica que cualquier divulgación, distribución o copia está estrictamente prohibida. Si ha recibido este correo electrónico por error, favor de notificar al emisor respondiendo a este mensaje y eliminar el presente permanentemente.</p>

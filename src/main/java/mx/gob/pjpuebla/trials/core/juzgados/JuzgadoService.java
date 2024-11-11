@@ -27,6 +27,7 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
@@ -69,7 +70,7 @@ public class JuzgadoService {
                         juzgado.getId(),
                         juzgado.getNombre(),
                         juzgado.getEstado(),
-                        juzgado.getMateria().getNombre()
+                        StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase())
                 )).toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
