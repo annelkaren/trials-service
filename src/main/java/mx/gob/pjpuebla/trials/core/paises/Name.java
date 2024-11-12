@@ -3,8 +3,8 @@ package mx.gob.pjpuebla.trials.core.paises;
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 public class Name {
-        private String common;
-        private String official;
+        private final String common;
+        private final String official;
 
     public  Name(String common, String official ){
         this.common = common;

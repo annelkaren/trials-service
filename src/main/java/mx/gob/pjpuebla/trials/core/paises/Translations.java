@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Translations {
-    private Spa spa;
+    private final Spa spa;
 
     @JsonCreator
     public Translations(Spa spa) {

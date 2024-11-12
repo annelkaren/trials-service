@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 
 public class Pais {
 
-    private Name name;
-    private String codeAlpha2;
-    private String codeNumeric;
-    private Translations translations;
+    private final Name name;
+    private final String codeAlpha2;
+    private final String codeNumeric;
+    private final Translations translations;
 
     public Pais(Name name, String codeAlpha2, String codeNumeric, Translations translations) {
         this.name = name;

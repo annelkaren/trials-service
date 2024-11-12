@@ -3,11 +3,11 @@ package mx.gob.pjpuebla.trials.core.paises;
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 public class Spa {
-    private String official;
-    private  String common;
+    private final String official;
+    private final String common;
 
-    public Spa(String brasil, String common) {
-        this.official = brasil;
+    public Spa(String official, String common) {
+        this.official = official;
         this.common = common;
     }
 
