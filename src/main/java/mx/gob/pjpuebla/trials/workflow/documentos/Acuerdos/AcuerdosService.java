@@ -37,14 +37,14 @@ public class AcuerdosService {
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
     
+    //TODO: Verificar si el flujo es el correcto.
     @Transactional
     public DocumentoGenericRecord save(AcuerdoRecord acuerdo) {
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
-        // Carpeta carpeta = carpetaRepository.getReferenceById(acuerdo.carpetaId());
-
+        
         // Creamos información de los rubros en documentoData
         DocumentoData docData = new DocumentoData();
         docData.setRubros(acuerdo.rubros());
