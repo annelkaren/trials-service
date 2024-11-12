@@ -68,5 +68,16 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             """)
     Page<Oficialia> findAllActive(Pageable pageable);
 
-    Optional<Oficialia> findByNombre(String nombre);
+    @Query("""
+        SELECT o
+        FROM Oficialia o
+        WHERE o.estado = :estado
+        AND (lower(o.nombre) LIKE %:key%)
+        """)
+    List<Oficialia> findAllByEstadoAutocomplete(
+            @Param("estado") Estado estado,
+            @Param("key") String key
+    );
+
+    Optional<Oficialia> findByNombreIgnoreCase(String nombre);
 }

@@ -30,6 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Transactional
 @RequiredArgsConstructor
@@ -128,7 +129,7 @@ public class CarpetaService {
         // exhorto o promoción.
         if (documento.getTipoDocumento() == null && documento.getCarpeta() != null && (
                 documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
-                || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
+                        || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
         )
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
         else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION))
@@ -239,7 +240,7 @@ public class CarpetaService {
                 .collect(Collectors.joining(", "));
 
         //Obtiene los participantes del expediente
-        List<ApelacionRecordResponse> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoByCarpetaId(documento.getCarpeta().getId());
+        List<PersonaDataRecord> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(documento.getCarpeta().getId());
 
         //Obtiene el nombre del juez
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
@@ -259,11 +260,16 @@ public class CarpetaService {
         );
     }
 
-    public static List<ParticipantesRecord> getParticipantes(List<ApelacionRecordResponse> participantes) {
-        Map<String, List<String>> agrupadoPorTipo = new HashMap<>();
-        for (ApelacionRecordResponse participante : participantes) {
-            String persona = participante.nombre() + " " + participante.apellidoPaterno() + " " + participante.apellidoMaterno();
-            agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
+    public static List<ParticipantesRecord> getParticipantes(List<PersonaDataRecord> participantes) {
+        Map<String, List<ParticipanteDataRecord>> agrupadoPorTipo = new HashMap<>();
+        for (PersonaDataRecord participante : participantes) {
+            String nombreCompleto = Stream.of(participante.nombre(), participante.apellidoPaterno(), participante.apellidoMaterno())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(" "));
+            if (!nombreCompleto.isEmpty()) {
+                ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto);
+                agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
+            }
         }
         return agrupadoPorTipo.entrySet().stream()
                 .map(entry -> new ParticipantesRecord(entry.getKey(), entry.getValue()))

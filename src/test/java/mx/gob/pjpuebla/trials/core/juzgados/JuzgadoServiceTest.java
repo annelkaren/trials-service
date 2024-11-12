@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +105,7 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
                 .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
                 .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
-                .hasFieldOrPropertyWithValue("materia", juzgado.getMateria().getNombre());
+                .hasFieldOrPropertyWithValue("materia", StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase()));
     }
 
     @Test
@@ -390,10 +391,10 @@ class JuzgadoServiceTest {
     @Test
     void getAllByEstadoAutocomplete_return_page() {
         List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
-        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("", PageRequest.of(1, listPage.size()));
-        assertThat(page.getContent())
+        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any()))
+                .willReturn(listPage);
+        List<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("");
+        assertThat(page)
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())

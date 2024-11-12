@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
@@ -19,8 +20,10 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
+import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -47,6 +50,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import org.apache.commons.lang3.StringUtils;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -513,7 +517,7 @@ public class DocumentoService {
                 return renderOficialMayorData(key, pageable, currentUser);
             }
         }
-        
+
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
@@ -776,7 +780,7 @@ public class DocumentoService {
         return new DocumentoRecepcionRecord(
                 doc.getCarpeta().getFolio(),
                 doc.getCarpeta().getExpediente(),
-                (doc.getTipoDocumento() != null)? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
+                (doc.getTipoDocumento() != null) ? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
                 doc.getRuta(),
                 anexosActuales
         );
@@ -922,14 +926,7 @@ public class DocumentoService {
     public void sendEmailFamiliar(DocumentoSaveRecord documentoRecord, Documento documento, Carpeta carpeta, TipoJuicio tpoJuicio) {
         Map<String, Object> sendEmail = new HashMap<>();
 
-        List<TipoJuicioDemandasRecord> tipoJuicioDemandasRecordList = List.of(
-                new TipoJuicioDemandasRecord(111, "Familiar Oralidad (Alimentos)"),
-                new TipoJuicioDemandasRecord(112, "Familiar Oralidad (Divorcio Incausado Unilateral)"),
-                new TipoJuicioDemandasRecord(114, "Familiar Oralidad (Guardia y Custodia)"),
-                new TipoJuicioDemandasRecord(115, "Familiar Oralidad (Visita y Convivencia)")
-        );
-        documento.setData(documentoRecord.general().setTiposJuicios(tipoJuicioDemandasRecordList));
-        String tiposJuicios = tipoJuicioDemandasRecordList.stream()
+        String tiposJuicios = documento.getData().getTiposJuicios().stream()
                 .map(TipoJuicioDemandasRecord::nombre)
                 .collect(Collectors.joining(", "));
         sendEmail.put("juicio", tiposJuicios);
@@ -939,7 +936,6 @@ public class DocumentoService {
 
         sendEmail.put("carpetaDigital", selloGenerator.updateExpedientePorTipoJuicio(documento));
         sendEmail.put("tipoJuicio", tpoJuicio.getNombre());
-
 
         String apellidoMaternoActor = documentoRecord.actor().apellidoMaterno();
         sendEmail.put("actor", String.join(" ",
@@ -1048,10 +1044,33 @@ public class DocumentoService {
             }else{
                 termino3dias++;
             }
-            
+
         }
 
         return new IndicadoresRecord(totalAsignados, terminoRebasado, termino24horas, termino3dias);
     }
+
+    public void deleteAsignado(Integer id) {
+        try {
+            Optional<PersonaDocumento> personaDocumento = personaDocumentoRepository.findById(id);
+            Persona persona = personaService.getAuditor();
+            if (personaDocumento.isPresent()) {
+                movimientoService.createMovimento(
+                        personaDocumento.get().getCarpeta(),
+                        null,
+                        persona,
+                        String.join(" ", "ELIMINADO DE PARTICIPANTE", personaDocumento.get().getNombre()),
+                        null
+                );
+                personaDocumentoRepository.deleteById(id);
+                personaDocumentoRepository.flush();
+            } else {
+                throw new EntityNotFoundException("No se encontró la persona documento con ID: " + id);
+            }
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "actualizar a asignado" + id);
+        }
+    }
+
 }
 

@@ -27,6 +27,7 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
@@ -69,7 +70,7 @@ public class JuzgadoService {
                         juzgado.getId(),
                         juzgado.getNombre(),
                         juzgado.getEstado(),
-                        juzgado.getMateria().getNombre()
+                        StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase())
                 )).toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -293,9 +294,9 @@ public class JuzgadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key, Pageable pageable) {
+    public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key) {
         key = (key != null) ? key.toLowerCase() : "";
-        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key);
     }
 
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {
