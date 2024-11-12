@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -11,6 +12,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -77,7 +81,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta) DESC,
                 COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
             """)
-    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio, TipoCarpeta  tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
+    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio,
+            TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
@@ -96,53 +101,54 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
-            d.id,
-            c.expediente,
-            c.folio,
-            d.folio,
-            c.tipoCarpeta,
-            d.tipoDocumento,
-            d.concepto,
-            c.fechaAsignacion,
-            c.estatus,
-            ''
-        )
-        FROM Documento d
-        JOIN d.carpeta c on c.persona=:personaAsignada
-        where case when :key is null then 1
-            when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
-            else 0 end = 1
-            AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
-            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-            mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
-        """)
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
+                d.id,
+                c.id as carpetaId,
+                c.expediente,
+                c.folio,
+                d.folio,
+                c.tipoCarpeta,
+                d.tipoDocumento,
+                d.concepto,
+                c.fechaAsignacion,
+                c.estatus,
+                ''
+            )
+            FROM Documento d
+            JOIN d.carpeta c on c.persona=:personaAsignada
+            where case when :key is null then 1
+                when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
+                else 0 end = 1
+                AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+            """)
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
-            doc.id,
-            doc.folio,
-            ins.nombre,
-            dd.asunto,
-            doc.estatus,
-            dd.fechaEmision,
-            dd.fechaEntrega,
-            CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
-            CASE WHEN COUNT(dc) > 0 THEN true ELSE false END
-        )
-        FROM Documento doc
-        LEFT JOIN doc.institucion ins
-        LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
-        LEFT JOIN DocumentoContenido dc ON dc.documento = doc
-        WHERE doc.tipoDocumento = %:tipoDocumento%
-        AND (
-            lower(doc.folio) LIKE %:key% OR
-            lower(ins.nombre) LIKE %:key% OR
-            lower(dd.asunto) LIKE %:key%
-        )
-        GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta
-        """)
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
+                doc.id,
+                doc.folio,
+                ins.nombre,
+                dd.asunto,
+                doc.estatus,
+                dd.fechaEmision,
+                dd.fechaEntrega,
+                CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
+                CASE WHEN COUNT(dc) > 0 THEN true ELSE false END
+            )
+            FROM Documento doc
+            LEFT JOIN doc.institucion ins
+            LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+            LEFT JOIN DocumentoContenido dc ON dc.documento = doc
+            WHERE doc.tipoDocumento = %:tipoDocumento%
+            AND (
+                lower(doc.folio) LIKE %:key% OR
+                lower(ins.nombre) LIKE %:key% OR
+                lower(dd.asunto) LIKE %:key%
+            )
+            GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta
+            """)
     Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Transactional
@@ -150,14 +156,31 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
-    //TODO: CORREGIR LA VALIDACION DE KEY:
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+                doc.id,
+                CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
+                doc.ruta,
+                (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion)
+            FROM Documento doc
+            JOIN doc.carpeta carpeta
+            WHERE carpeta.id = :carpetaId
+            AND NOT EXISTS (
+                SELECT 1
+                FROM Documento doc2
+                WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO
+                AND doc2.carpeta.id = carpeta.id
+            )""")
+    List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
+
+    // TODO: CORREGIR LA VALIDACION DE KEY:
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
             1,
             '',
             'RESUMEN',
             'ESTATUS')
-            FROM Documento doc 
+            FROM Documento doc
             WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta_id = :carpetaId
             AND CASE WHEN :key is null THEN 1
                      WHEN doc.id like %:key% THEN 1
