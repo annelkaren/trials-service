@@ -25,7 +25,6 @@ public class MateriaService {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        String hola = StringUtils.capitalize("HOLA".toLowerCase());
         Page<Materia> page = materiaRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<MateriaRecord> list = page.getContent().stream()
                 .map(m -> new MateriaRecord(m.getId(), StringUtils.capitalize(m.getNombre().toLowerCase())))
