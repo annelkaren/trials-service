@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.nacionalidades;
+package mx.gob.pjpuebla.trials.core.lenguasindigenas;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,17 +11,17 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NacionalidadService {
+public class LenguaIndigenaService {
 
-    private final NacionalidadRepository nacionalidadRepository;
+    private final LenguaIndigenaRepository lenguaIndigenaRepository;
 
     @Transactional(readOnly = true)
-    public List<NacionalidadRecord> getAll(String key) {
+    public List<LenguaIndigenaRecord> getAll(String key) {
         key = (key != null) ? key.toLowerCase() : "";
-        List<Nacionalidad> results = nacionalidadRepository.findAllFilterByName(key);
+        List<LenguaIndigena> results = lenguaIndigenaRepository.findAllFilterByName(key);
 
         return results.stream()
-                .map(n -> new NacionalidadRecord(
+                .map(n -> new LenguaIndigenaRecord(
                         n.getId(),
                         StringUtils.capitalize(n.getName().toLowerCase())
                 )).toList();
