@@ -1,16 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipoaudiencia;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,6 +9,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -50,6 +42,13 @@ public class TipoAudiencia implements  Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Materia materia;
+
+    @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TipoSistema tipoSistema;
 
     @Accessors(chain = false)
     @Embedded
