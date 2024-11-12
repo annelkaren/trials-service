@@ -24,10 +24,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(PaisesResource.class)
+@WebMvcTest(PaisResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class PaisesResourceTest {
+class PaisResourceTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -43,7 +43,7 @@ class PaisesResourceTest {
     }
 
     @Test
-    void testGetPaisesSuccess3() throws Exception {
+    void testGetPaisesSuccess() throws Exception {
 
         when(restTemplate.exchange(
                 anyString(), any(HttpMethod.class), any(), eq(new ParameterizedTypeReference<List<Pais>>() {}))

@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/core/paises")
 @SecurityRequirement(name = "Keycloak")
-public class PaisesResource {
+public class PaisResource {
 
     private static final String COUNTRIES_PATH = "https://restcountries.com/v3.1";
     private static final String ALL_PATH   = "/all?fields=translations,cca2,ccn3,name";
