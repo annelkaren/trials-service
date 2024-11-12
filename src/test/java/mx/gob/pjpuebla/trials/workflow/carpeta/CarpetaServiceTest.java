@@ -602,4 +602,27 @@ class CarpetaServiceTest {
         assertThat(result.etapaProcesal()).isEqualTo("Primera Etapa");
         assertThat(result.participantes()).hasSize(2);
     }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoSentidoAmparo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoSentidoAmparo");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoSentidoAmparo.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoSentidoAmparo.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoImpugnacionAmparo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoImpugnacionAmparo");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoImpugnacionAmparo.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoImpugnacionAmparo.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
 }
