@@ -35,9 +35,9 @@ public class DocumentoContenidoService {
         
         // Obtenemos texto del editor:
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
-        char tamanioPapel = ' ';
+        Character tamanioPapel = ' ';
         String textoEditor = "";
-        char existeOficio = ' '; 
+        Character existeOficio = ' '; 
 
         //Obtenemos información detallada del documento
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
@@ -120,7 +120,7 @@ public class DocumentoContenidoService {
         return oficio;
     }
 
-    public Integer publicarCancelarOficio(Integer documentoId, char oficioPublicado){
+    public Integer publicarCancelarOficio(Integer documentoId, Character oficioPublicado){
 
         //Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);

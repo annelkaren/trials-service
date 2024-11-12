@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 public record DocumentoAsignadoRecord(
     Integer id,
+    Integer carpetaId,
     String expediente,
     String folioCarpeta,
     String folioDocumento,

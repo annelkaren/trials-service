@@ -586,6 +586,7 @@ public class DocumentoService {
                 .map(item ->
                         new DocumentoAsignadoResponseRecord(
                                 item.id(),
+                                item.carpetaId(),
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
                                 esOficialMayor ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
