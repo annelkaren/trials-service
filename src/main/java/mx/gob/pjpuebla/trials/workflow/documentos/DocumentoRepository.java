@@ -173,19 +173,17 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )""")
     List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 
-    // TODO: CORREGIR LA VALIDACION DE KEY:
+    // TODO: CORREGIR resume, se deja como "" hasta que se determine que ira ahi
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
-            1,
-            '',
-            'RESUMEN',
-            'ESTATUS')
-            FROM Documento doc
-            WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta_id = :carpetaId
-            AND CASE WHEN :key is null THEN 1
-                     WHEN doc.id like %:key% THEN 1
-                END = 1
-
-            """)
-    Page<AcuerdosRecord> findAllAcuerdosByCarpeta(String key, Integer carpetaId, Pageable pageable);
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
+        doc.id,
+        dd.fechaResolucion,
+        null,
+        doc.estatus)
+        FROM DocumentoDetalle dd
+        JOIN dd.documento doc
+        WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta.id = :carpetaId
+        """)
+    Page<AcuerdosRecord> findAllAcuerdosByCarpeta(Integer carpetaId, Pageable pageable);
+    
 }
