@@ -24,9 +24,7 @@ class IdentificacionServiceTest {
     @Test
     void testGetAll() {
         List<Identificacion> identificacionesMock = IdentificacionSetUp.createIdentificaciones();
-
         when(identificacionRepository.findAll()).thenReturn(identificacionesMock);
-
         List<IdentificacionDocRecord> result = identificacionService.getAll();
 
         assertEquals(2, result.size(), "Debería devolver 2 registros");

@@ -7,8 +7,7 @@ import java.util.List;
 
 public class IdentificacionSetUp {
 
-    private IdentificacionSetUp(){
-    }
+    private IdentificacionSetUp(){}
 
     public static List<Identificacion> createIdentificaciones() {
         Identificacion identificacion1 = new Identificacion()

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IdentificacionRepository extends JpaRepository<Identificacion, Integer>, SecuenciaRepositoryCustom {
+
 }

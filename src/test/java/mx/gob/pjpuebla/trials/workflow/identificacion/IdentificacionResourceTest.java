@@ -34,8 +34,7 @@ class IdentificacionResourceTest {
 
     @Test
     void getEtapaProcesal_success() throws Exception {
-        given(mockIdentificacionService.getAll())
-                .willReturn(Collections.singletonList(identificacionDocRecord));
+        given(mockIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
 
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/api/workflow/identificacion"))

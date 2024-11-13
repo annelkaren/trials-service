@@ -34,6 +34,4 @@ class IdentificacionRepositoryTest extends AuditConfigTest {
                 .isNotNull()
                 .isNotEmpty();
     }
-
-
 }

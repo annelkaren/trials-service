@@ -21,5 +21,4 @@ public class IdentificacionService {
                 .map(identificacion -> new IdentificacionDocRecord(identificacion.getId(), identificacion.getName()))
                 .toList();
     }
-
 }

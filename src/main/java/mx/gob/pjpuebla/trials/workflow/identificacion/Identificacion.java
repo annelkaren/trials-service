@@ -33,5 +33,4 @@ public class Identificacion {
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
-
 }

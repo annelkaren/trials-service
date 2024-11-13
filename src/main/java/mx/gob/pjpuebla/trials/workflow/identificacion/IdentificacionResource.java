@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/workflow/identificacion")
 @SecurityRequirement(name = "Keycloak")
-public class IdentificacionResource {
+public class IdentificacionResource { 
 
     private final IdentificacionService identificacionService;
 
