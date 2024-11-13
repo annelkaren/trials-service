@@ -20,10 +20,15 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,7 +105,7 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
                 .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
                 .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
-                .hasFieldOrPropertyWithValue("materia", juzgado.getMateria().getNombre());
+                .hasFieldOrPropertyWithValue("materia", StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase()));
     }
 
     @Test
@@ -135,7 +140,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create_throwsConflictException_whenJuzgadoWithSameNameExists() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
                 .willReturn(Optional.of(juzgado));
 
         assertThrows(ConflictException.class, () -> {
@@ -147,7 +152,7 @@ class JuzgadoServiceTest {
 
     @Test
     void create() {
-        given(juzgadoRepository.findByNombre(juzgado.getNombre()))
+        given(juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()))
         .willReturn(Optional.empty());
 
         given(materiaRepository.findById(juzgado.getMateria().getId()))
@@ -386,10 +391,10 @@ class JuzgadoServiceTest {
     @Test
     void getAllByEstadoAutocomplete_return_page() {
         List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
-        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("", PageRequest.of(1, listPage.size()));
-        assertThat(page.getContent())
+        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any()))
+                .willReturn(listPage);
+        List<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("");
+        assertThat(page)
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
@@ -406,5 +411,17 @@ class JuzgadoServiceTest {
                 () -> juzgadoService.delete(1)
         );
         assertThat(exception.getMessage()).contains(Messages.CONSTRAINT_ERROR);
+    }
+
+    @Test
+    void update_status_success() {
+        given(juzgadoRepository.findById(any())).willReturn(Optional.of(juzgado));
+
+        JuzgadoRecordItem response = juzgadoService.updateStatus(juzgado.getId(), 1);
+        assertThat(response).isOfAnyClassIn(JuzgadoRecordItem.class)
+                .hasFieldOrPropertyWithValue("id", response.id())
+                .hasFieldOrPropertyWithValue("nombre", response.nombre())
+                .hasFieldOrPropertyWithValue("estado", response.estado());
+
     }
 }

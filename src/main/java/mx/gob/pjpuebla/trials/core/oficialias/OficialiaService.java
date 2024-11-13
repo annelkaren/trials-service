@@ -73,7 +73,7 @@ public class OficialiaService {
     }
 
         public OficialiaRecordResponse create(Oficialia oficialia) {
-            if(oficialiaRepository.findByNombre(oficialia.getNombre()).isPresent()){
+            if(oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre()).isPresent()){
                 throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
             }
             
@@ -193,7 +193,7 @@ public class OficialiaService {
         if (juzgados.isEmpty())
             return "";
 
-        Integer num = juzgados.size();
+        int num = juzgados.size();
         String mensaje = num>1?String.format(" y %d más", num-1):"";
         return juzgados.stream().findFirst().get().getNombre()+mensaje;
     }

@@ -3,12 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
@@ -106,30 +101,8 @@ public class DocumentoResource {
     @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "folio", required = false) String folio,
-            @RequestParam(value = "expediente", required = false) String expediente,
-            @RequestParam(value = "estatus", required = false) EstadoCarpeta estatus,
-            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
-            @RequestParam(value = "materiaNombre", required = false) String materiaNombre) {
-
-        Carpeta carpeta = new Carpeta()
-                .setFolio(folio)
-                .setExpediente(expediente)
-                .setEstatus(estatus);
-        if (tipoEntrada != null) {
-            carpeta.setTipoCarpeta(TipoCarpeta.valueOf(tipoEntrada));
-        }
-        if (materiaNombre != null) {
-            Materia materia = new Materia();
-            materia.setNombre(materiaNombre);
-
-            Juzgado juzgado = new Juzgado();
-            juzgado.setMateria(materia);
-
-            carpeta.setJuzgado(juzgado);
-        }
-        return documentoService.getAllHistorial(pageable,
-                new Documento().setCarpeta(carpeta));
+            @RequestParam(value = "key", required = false) String key) {
+        return documentoService.getAllHistorial(key, pageable);
     }
 
     @PostMapping("/documento/promocion")
@@ -197,7 +170,10 @@ public class DocumentoResource {
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
-        return this.documentoService.getIndicadores();
+        if (isRecepcion==Boolean.TRUE)
+            return this.documentoService.getIndicadores();
+
+        return this.documentoService.getIndicadoresAsignados();
     }
 
     @GetMapping("/bandeja/recepcion/anexos/{id}")
@@ -213,5 +189,10 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
     }
 
-   
+    @DeleteMapping("/bandeja/asignados/{id}")
+    public void delete(@PathVariable Integer id) {
+        this.documentoService.deleteAsignado(id);
+    }
+
+
 }

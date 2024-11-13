@@ -40,6 +40,4 @@ public class Materia implements Serializable, Auditable {
     @Size(max = 100)
     @Column(name = "S_NOMBRE", nullable = false)
     private String nombre;
-
-
 }

@@ -25,5 +25,6 @@ public class DocumentoData implements Serializable {
     private String apelacionAntecedenteCarpeta;
     private String tipoOficio;
     private LocalDate fechaEmision;
+    private List<String> rubros;
 }
 

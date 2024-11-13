@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.materias;
 
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +48,7 @@ class MateriaServiceTest {
         assertThat(page.getContent())
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", validMateria.getId())
-                .hasFieldOrPropertyWithValue("nombre", validMateria.getNombre());
+                .hasFieldOrPropertyWithValue("nombre", StringUtils.capitalize(validMateria.getNombre().toLowerCase()));
     }
 
     @Test
@@ -58,7 +59,7 @@ class MateriaServiceTest {
         MateriaRecord mr = target.findById(validMateria.getId());
         assertThat(mr).isOfAnyClassIn(MateriaRecord.class)
                 .hasFieldOrPropertyWithValue("id", validMateria.getId())
-                .hasFieldOrPropertyWithValue("nombre", validMateria.getNombre());
+                .hasFieldOrPropertyWithValue("nombre", StringUtils.capitalize(validMateria.getNombre().toLowerCase()));
     }
 
     @Test
