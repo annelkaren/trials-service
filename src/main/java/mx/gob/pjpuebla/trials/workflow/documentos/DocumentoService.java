@@ -918,7 +918,7 @@ public class DocumentoService {
         Movimiento movimiento = movimientoService.createMovimento(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name());
 
         return new MovimientoPersonalJuzgadoRecord(
-                carpeta.getId(),
+                record.idDocumentoRecepcion(),
                 movimiento.getFechaAsignacion(),
                 persona.getNombre(),
                 movimiento.getMotivo(),
