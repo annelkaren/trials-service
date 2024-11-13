@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.PageImpl;
@@ -40,47 +41,45 @@ public class AcuerdosService {
     private final DocumentoContenidoRepository documentoContenidoRepository;
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
-    
-    //TODO: Verificar si el flujo es el correcto.
+
+    // TODO: Verificar si el flujo es el correcto.
     @Transactional
     public DocumentoGenericRecord save(AcuerdoRecord acuerdo) {
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
-        
+
         // Creamos información de los rubros en documentoData
         DocumentoData docData = new DocumentoData();
         docData.setRubros(acuerdo.rubros());
 
         // Creamos el nuevo documento (acuerdo=
         Documento doc = new Documento();
-                doc.setCarpeta(carpeta);
-                doc.setTipoDocumento(TipoDocumento.ACUERDO);
-                doc.setEstatus(EstadoCarpeta.CREADO);
-                doc.setData(docData);
+        doc.setCarpeta(carpeta);
+        doc.setTipoDocumento(TipoDocumento.ACUERDO);
+        doc.setEstatus(EstadoCarpeta.CREADO);
+        doc.setData(docData);
         doc = documentoRepository.save(doc);
-       
+
         // Creamos la información de documento detalle:
         DocumentoDetalle docDetalle = new DocumentoDetalle();
-            docDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
-            docDetalle.setFechaResolucion(acuerdo.fechaResolucion());
-            docDetalle.setEtapaProcesal(acuerdo.etapaProcesal());
-            docDetalle.setDocumento(doc);
+        docDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
+        docDetalle.setFechaResolucion(acuerdo.fechaResolucion());
+        docDetalle.setEtapaProcesal(acuerdo.etapaProcesal());
+        docDetalle.setDocumento(doc);
         documentoDetalleRepository.save(docDetalle);
 
-
         DocumentoContenido docContenido = new DocumentoContenido();
-                docContenido.setDocumento(doc);
-                docContenido.setTamanioPapel(acuerdo.tamanioPapel());
-                docContenido.setTexto(acuerdo.textoEditor());
+        docContenido.setDocumento(doc);
+        docContenido.setTamanioPapel(acuerdo.tamanioPapel());
+        docContenido.setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(docContenido);
 
-
-        //insertar en movimientosService 
+        // insertar en movimientosService
         Persona persona = personaService.getAuditor();
         movimientoService.createMovimento(null, doc, persona, null, EstadoCarpeta.CREADO.name());
-      
+
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:
         if (acuerdo.promocionesRelacionadas() != null) {
             for (AcuerdoPromocionesRecord promo : acuerdo.promocionesRelacionadas()) {
@@ -99,18 +98,45 @@ public class AcuerdosService {
         return documentoRepository.obtenerPromociones(carpetaId);
     }
 
-    public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable){
+    public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable) {
         Page<AcuerdosRecord> page = documentoRepository.findAllAcuerdosByCarpeta(carpetaId, pageable);
 
         List<AcuerdosRecord> list = page.getContent().stream()
-            .map(acuerdo -> 
-                new AcuerdosRecord(
-                    acuerdo.numeroAcuerdo(),
-                    acuerdo.fechaPublicacion(),
-                    acuerdo.resumen(),
-                    acuerdo.estatus())).toList();
-                                   
+                .map(acuerdo -> new AcuerdosRecord(
+                        acuerdo.numeroAcuerdo(),
+                        acuerdo.fechaPublicacion(),
+                        acuerdo.resumen(),
+                        acuerdo.estatus()))
+                .toList();
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
-}
 
+    public AcuerdoRecord publicarAcuerdo(AcuerdoRecord acuerdo) {
+
+        Integer acuerdoId = acuerdo.acuerdoId() != null ? acuerdo.acuerdoId() : save(acuerdo).id();
+
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoId"));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoId"));
+
+        Documento documento = documentoRepository.findById(acuerdoId)
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+        
+        //Actualizamos el estatus de documento a publicado esperando definirlo:
+        documento.setEstatus(EstadoCarpeta.PUBLICADO);
+        documentoRepository.save(documento);
+
+        //Actualizamos fecha de publicación en documento detalle:
+        documentoDetalle.setFechaPublicacion(LocalDate.now());
+        documentoDetalleRepository.save(documentoDetalle);
+
+        //Actualizamos estatus de la bandera de documento contenido:
+        documentoContenido.setOficioPublicado('s');
+        documentoContenidoRepository.save(documentoContenido);
+
+        return acuerdo;
+    }
+}
