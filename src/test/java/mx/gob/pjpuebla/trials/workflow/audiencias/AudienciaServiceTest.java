@@ -166,7 +166,14 @@ class AudienciaServiceTest {
 
         Persona juez = new Persona();
         juez.setNombre("Juez 1");
+        juez.setApellidoPaterno("");
+        juez.setApellidoMaterno("");
         Sala sala = new Sala().setNombre("Sala 1").setJuez(juez);
+
+        String nombreCompletoJuez = juez.getNombre() + " " + juez.getApellidoPaterno();
+        if (juez.getApellidoMaterno() != null) {
+            nombreCompletoJuez += " " + juez.getApellidoMaterno();
+        }
 
         Carpeta carpeta = new Carpeta().setExpediente("000001/2024");
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(), sala, null, tipoAudiencia, carpeta);
@@ -182,7 +189,7 @@ class AudienciaServiceTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", audiencia.getId())
                 .hasFieldOrPropertyWithValue("tipoAudiencia", tipoAudiencia.getNombre())
-                .hasFieldOrPropertyWithValue("juez", juez.getNombre())
+                .hasFieldOrPropertyWithValue("juez", nombreCompletoJuez)
                 .hasFieldOrPropertyWithValue("lugar", sala.getNombre())
                 .hasFieldOrPropertyWithValue("numCarpeta", carpeta.getExpediente())
                 .hasFieldOrPropertyWithValue("fechaHora", audiencia.getFechaAudiencia())
