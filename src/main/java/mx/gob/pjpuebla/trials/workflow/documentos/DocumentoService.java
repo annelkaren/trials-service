@@ -577,7 +577,6 @@ public class DocumentoService {
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        System.out.println("------------> ");
         Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR");
 
