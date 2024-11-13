@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.time.LocalDateTime;
 
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -47,4 +49,18 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
                 WHERE a.carpeta.id = :carpetaId
             """)
     String getSalaNombreByCarpetaId(@Param("carpetaId") Integer carpetaId);
+
+    @Query("""
+            SELECT a FROM Audiencia a
+            JOIN a.carpeta c
+            JOIN a.sala s
+            WHERE s.juzgado = :juzgado
+            AND (
+                :key IS NULL
+                OR lower(c.expediente) LIKE %:key%
+                OR lower(a.tipoAudiencia.nombre) LIKE %:key%
+                OR lower(s.nombre) LIKE %:key%
+            )
+            """)
+    Page<Audiencia> findByJuzgado(@Param("juzgado") Juzgado juzgado, @Param("key") String key, Pageable pageable);
 }
