@@ -71,7 +71,7 @@
 		</band>
 		<band height="55">
 			<printWhenExpression><![CDATA[$P{isExhorto}]]></printWhenExpression>
-			<element kind="textField" uuid="1cf3f1c7-fd43-49b5-b274-ee37968989ff" stretchType="ContainerHeight" x="60" y="8" width="440" height="39" markup="styled" fontSize="14.0" textAdjust="StretchHeight" evaluationTime="Report">
+			<element kind="textField" uuid="1cf3f1c7-fd43-49b5-b274-ee37968989ff" stretchType="ContainerHeight" x="60" y="8" width="440" height="39" markup="styled" fontSize="14.0" textAdjust="StretchHeight" evaluationTime="Report" hTextAlign="Center">
 				<printWhenExpression><![CDATA[$P{isExhorto}]]></printWhenExpression>
 				<expression><![CDATA[$P{procedencia}]]></expression>
 			</element>

@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -10,6 +11,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -62,7 +66,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
                 )
             )
-            AND m.motivo = 'SALIDA'
+            AND m.estado = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
              AND (
                   ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
@@ -97,6 +101,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
             d.id,
+            c.id as carpetaId,
             c.expediente,
             c.folio,
             d.folio,
@@ -148,4 +153,21 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Modifying
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+            doc.id,
+            CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
+            doc.ruta,
+            (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion)
+        FROM Documento doc
+        JOIN doc.carpeta carpeta
+        WHERE carpeta.id = :carpetaId
+        AND NOT EXISTS (
+            SELECT 1
+            FROM Documento doc2
+            WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO
+            AND doc2.carpeta.id = carpeta.id
+        )""")
+    List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 }

@@ -161,9 +161,8 @@ class PersonaResourceTest {
 
     @Test
     void getAll_CentrosTrabajo() throws Exception {
-        given(mockPersonaService.findAllCentroTrabajo(any(Pageable.class), any(String.class)))
-                .willReturn(new PageImpl<>(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)),
-                        PageRequest.of(0, 10), 1));
+        given(mockPersonaService.findAllCentroTrabajo(any(String.class)))
+                .willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
 
         mockMvc.perform(
                 get("/api/core/personas/centrostrabajo")

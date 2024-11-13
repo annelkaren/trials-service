@@ -47,8 +47,13 @@ public class CarpetaResource {
         return this.carpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
     }
 
-    @GetMapping(value = "/enums/{catalago}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<CarpetaCatalogoRecord> getListCatalago(@PathVariable String catalago){
-        return this.carpetaService.getCatalogoList(catalago);
+    @GetMapping(value = "/enums/{catalogo}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<CarpetaCatalogoRecord> getListCatalogo(@PathVariable String catalogo){
+        return this.carpetaService.getCatalogoList(catalogo);
+    }
+
+    @GetMapping(value = "/recepcion/{docId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
+        return this.carpetaService.getInfoExpediente(docId);
     }
 }

@@ -7,10 +7,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
@@ -25,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -174,6 +172,29 @@ class CarpetaResourceTest {
 
         mockMvc.perform(get("/api/workflow/carpeta/enums/catalagoErroneo")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getInfoRecepcionExpediente() throws Exception {
+        InfoExpedienteRecord infoExpedienteRecord = new InfoExpedienteRecord(
+                "000001/2024",
+                "Oralidad Familiar",
+                "",
+                "Juez Perez",
+                LocalDateTime.now(),
+                "",
+                "Procedimiento1, Procedimiento2",
+                "Rubro1, Rubro2",
+                "Primera Etapa",
+                null,
+                ""
+        );
+
+        given(mockCarpetaService.getInfoExpediente(any()))
+                .willReturn(infoExpedienteRecord);
+
+        mockMvc.perform(get("/api/workflow/carpeta/recepcion/" + 1))
                 .andExpect(status().isOk());
     }
 }

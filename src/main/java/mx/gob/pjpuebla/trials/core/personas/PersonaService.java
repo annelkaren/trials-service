@@ -62,11 +62,11 @@ public class PersonaService {
                     } else {
                         if (persona.getOficialia() != null && persona.getOficialia().getNombre() != null && !persona.getOficialia().getNombre().isEmpty())
                             centroTrabajo = persona.getOficialia().getNombre();
-                        else centroTrabajo = "";
+                        else centroTrabajo = "-";
                     }
                     return new PersonaRecordResponse(
                             persona.getId(),
-                            persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno(),
+                            persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""),
                             persona.getCorreoElectronico(),
                             persona.getCelular(),
                             centroTrabajo
@@ -179,40 +179,37 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CentroTrabajoRecord> findAllCentroTrabajo(Pageable pageable, String nombre) {
+    public List<CentroTrabajoRecord> findAllCentroTrabajo(String nombre) {
+        Persona currentUser = getAuditor();
+
+        nombre = (nombre != null) ? nombre.toLowerCase() : "";
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
-        List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));
-        List<Oficialia> oficialias = oficialiaRepository.findOficialiaComun();
+        if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR")) {
+            List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
+            List<Oficialia> oficialias = oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
 
-        if (nombre != null && !nombre.isEmpty()) {
-            juzgados = juzgados.stream()
-                    .filter(juzgado -> juzgado.nombre().toLowerCase().contains(nombre.toLowerCase()))
-                    .toList();
-            oficialias = oficialias.stream()
-                    .filter(oficialia -> oficialia.getNombre().toLowerCase().contains(nombre.toLowerCase()))
-                    .toList();
+            for (JuzgadoRecordItem juzgado : juzgados) {
+                centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
+            }
+
+            for (Oficialia oficialia : oficialias) {
+                centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
+            }
+        } else {
+            centrosTrabajo.add(new CentroTrabajoRecord(currentUser.getJuzgado().getId(), currentUser.getJuzgado().getNombre(), TipoCentroTrabajo.JUZGADO));
         }
 
-        for (JuzgadoRecordItem juzgado : juzgados) {
-            centrosTrabajo.add(new CentroTrabajoRecord(juzgado.id(), juzgado.nombre(), TipoCentroTrabajo.JUZGADO));
-        }
-
-        for (Oficialia oficialia : oficialias) {
-            centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
-        }
-
-        int totalElements = centrosTrabajo.size();
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), totalElements);
-        List<CentroTrabajoRecord> paginatedList = centrosTrabajo.subList(start, end);
-
-        return new PageImpl<>(paginatedList, pageable, totalElements);
+        return centrosTrabajo;
     }
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, Pageable pageable) {
         Persona usuario = getAuditor();
+
+        if (usuario.getJuzgado() == null && usuario.getOficialia() == null) { //Admin de sistema
+            return getAll(new Persona().setNombre(nombre), pageable);
+        }
 
         Page<Persona> page = personaRepository.findByCentroTrabajo(
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
@@ -222,11 +219,15 @@ public class PersonaService {
 
         List<PersonaRecordResponse> list = page.stream()
                 .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
-                .map(p -> new PersonaRecordResponse(
-                        p.getId(),
-                        p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
-                        p.getCorreoElectronico(),
-                        p.getCelular(), ""))
+                .map(p ->
+                        new PersonaRecordResponse(
+                                p.getId(),
+                                p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
+                                p.getCorreoElectronico(),
+                                p.getCelular(),
+                                (p.getJuzgado() != null) ? p.getJuzgado().getNombre() :
+                                        (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-"
+                        ))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());

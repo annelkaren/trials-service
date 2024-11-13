@@ -226,7 +226,7 @@ public class SelloGenerator {
     public String updateExpedientePorTipoJuicio(Documento documento) {
         Optional<Carpeta> carpetaOptional = carpetaRepository.findById(documento.getCarpeta().getId());
         DocumentoJuzgadoRecord docJuzDis = documentoRepository.findDistritoJuzgadoByDocumentoId(documento.getId());
-        String expediente = "";
+        String expediente;
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
             if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
@@ -247,11 +247,9 @@ public class SelloGenerator {
                 isOralidadFamiliar = true;
               expediente = expenienteOralFamiliar;
             } else if (Objects.equals(documento.getCarpeta().getTipoCarpeta(), TipoCarpeta.EXHORTO)) {
-
                 expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-
                 expediente = carpeta.getExpediente() + " - Promocion";
                 isPromocionOralidadExhorto = false;
             } else {

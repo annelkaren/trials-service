@@ -51,6 +51,7 @@
             margin-top: 20px;
             border-top: 1px solid #ddd;
             padding-top: 10px;
+            text-align: justify;
         }
 
         .footer p {

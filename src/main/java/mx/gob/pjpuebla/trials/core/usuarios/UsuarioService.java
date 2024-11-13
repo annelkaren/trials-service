@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.error.UserAlreadyExistException;
+import mx.gob.pjpuebla.trials.util.EmailService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -24,6 +26,7 @@ import java.util.*;
 public class UsuarioService {
 
     private final KeycloakSecurityUtil keycloakSecurityUtil;
+    private final EmailService emailService;
 
     @Value("${keycloak.realm}")
     private String realm;
@@ -33,6 +36,9 @@ public class UsuarioService {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         try (Response response = keycloak.realm(realm).users().create(userRepresentation)) {
             if (response.getStatus() == HttpStatus.CREATED.value()) {
+                sendMail(userRepresentation.getEmail(),
+                        userRepresentation.getCredentials().get(0).getValue(),
+                        userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
                 return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             } else {
                 throw new UserAlreadyExistException("Usuario existente", persona.getCorreoElectronico());
@@ -57,7 +63,7 @@ public class UsuarioService {
 
     private UserRepresentation mapUser(Persona persona) {
         UserRepresentation userRep = new UserRepresentation();
-        userRep.setUsername(persona.getCorreoElectronico());
+        userRep.setUsername(persona.getCorreoElectronico().trim());
         userRep.setFirstName(persona.getNombre());
         userRep.setLastName(persona.getApellidoPaterno());
         userRep.setEmail(persona.getCorreoElectronico());
@@ -66,8 +72,27 @@ public class UsuarioService {
         List<CredentialRepresentation> creds = new ArrayList<>();
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setTemporary(Boolean.TRUE);
+        cred.setValue(RandomStringUtils.randomAlphanumeric(10));
         creds.add(cred);
         userRep.setCredentials(creds);
         return userRep;
+    }
+
+    public void sendMail(String email, String password, String name) {
+        Map<String, Object> sendEmail = new HashMap<>();
+
+        sendEmail.put("name", name);
+        sendEmail.put("username", email);
+        sendEmail.put("password", password);
+
+        emailService.sendMail(
+                List.of(email),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "¡Bienvenido(a) a nuestro portal!",
+                "welcome.ftl",
+                sendEmail
+        );
+
     }
 }
