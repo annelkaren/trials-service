@@ -49,6 +49,10 @@ public class DocumentoDetalle implements Serializable {
     @Column(name="S_ETAPA_PROCESAL")
     private String etapaProcesal;
 
+    @Size(max = 150)
+    @Column(name = "S_RESUMEN")
+    private String resumen;
+
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento documento;

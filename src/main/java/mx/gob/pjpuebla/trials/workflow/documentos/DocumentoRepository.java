@@ -173,12 +173,12 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )""")
     List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 
-    // TODO: CORREGIR resume, se deja como "" hasta que se determine que ira ahi
+
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
         doc.id,
         dd.fechaResolucion,
-        null,
+        dd.resumen,
         doc.estatus)
         FROM DocumentoDetalle dd
         JOIN dd.documento doc
