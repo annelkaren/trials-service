@@ -216,6 +216,12 @@ public class CarpetaService {
             case "catalogoDiscapacidades" -> Arrays.stream(CatalogoDiscapacidades.values())
                     .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
                     .toList();
+            case "catalogoSentidoAmparo" -> Arrays.stream(CatalogoSentidoAmparo.values())
+                    .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoImpugnacionAmparo" -> Arrays.stream(CatalogoImpugnacionAmparo.values())
+                    .map(e-> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
             default -> Collections.emptyList();
         };
     }
