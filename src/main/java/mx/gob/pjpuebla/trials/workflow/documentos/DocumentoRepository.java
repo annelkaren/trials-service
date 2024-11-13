@@ -164,9 +164,9 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         JOIN doc.carpeta carpeta
         WHERE carpeta.id = :carpetaId
         AND NOT EXISTS (
-            SELECT 1 
-            FROM Documento doc2 
-            WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO 
+            SELECT 1
+            FROM Documento doc2
+            WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO
             AND doc2.carpeta.id = carpeta.id
         )""")
     List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
