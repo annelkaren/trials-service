@@ -106,7 +106,7 @@ public class AcuerdosService {
             .map(acuerdo -> 
                 new AcuerdosRecord(
                     acuerdo.numeroAcuerdo(),
-                    acuerdo.fechaResolucion(),
+                    acuerdo.fechaPublicacion(),
                     acuerdo.resumen(),
                     acuerdo.estatus())).toList();
                                    

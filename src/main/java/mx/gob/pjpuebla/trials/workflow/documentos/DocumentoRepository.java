@@ -177,7 +177,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
         doc.id,
-        dd.fechaResolucion,
+        dd.fechaPublicacion,
         dd.resumen,
         doc.estatus)
         FROM DocumentoDetalle dd
