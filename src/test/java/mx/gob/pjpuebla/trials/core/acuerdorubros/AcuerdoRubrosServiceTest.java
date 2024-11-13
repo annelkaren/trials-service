@@ -44,7 +44,6 @@ class AcuerdoRubrosServiceTest {
     private AcuerdoRubrosService acuerdoRubrosService;
 
     private AcuerdoRubros acuerdoRubros;
-    private AcuerdoRubrosRecord acuerdoRubrosRecord;
     private Documento documento;
     private Materia materia;
     private TipoJuicio tipoJuicio;
@@ -54,7 +53,6 @@ class AcuerdoRubrosServiceTest {
     @BeforeEach
     public void setUp() {
         acuerdoRubros = AcuerdoRubrosSetUp.createAcuerdoRubro();
-        acuerdoRubrosRecord = AcuerdoRubrosSetUp.createAcuerdoRubrosRecord();
         materia = MateriaSetUp.createMateria();
         tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
         carpeta = CarpetaSetUp.create();
