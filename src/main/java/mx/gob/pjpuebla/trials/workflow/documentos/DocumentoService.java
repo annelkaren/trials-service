@@ -511,13 +511,11 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO","SECRETARIO", "TECNICO");
-
         for (String rol : roles) {
             if (roleService.hasRole(currentUser.getUsuario(), rol) ) {
                 return renderOficialMayorData(key, pageable, currentUser);
             }
         }
-
         return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
@@ -611,10 +609,8 @@ public class DocumentoService {
         for (Movimiento mov : movimientoList) {
             Movimiento movimiento = new Movimiento()
                     .setFechaAsignacion(LocalDateTime.now())
-                    .setMotivo(EstadoCarpeta.TURNADO.name())
+                    .setEstado(EstadoCarpeta.TURNADO.name())
                     .setPersona(personaAuditor)
-                    .setOficialia(persona.getOficialia())
-                    .setJuzgado(persona.getJuzgado())
                     .setUuid(uuid);
 
             if (mov.getDocumento() != null) {
@@ -625,6 +621,7 @@ public class DocumentoService {
                 documento.setConcepto(getConceptoByTipoCarpetaDocumento(documento.getTipoDocumento(), null));
                 documento = documentoRepository.save(documento);
                 movimiento.setDocumento(documento);
+                movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
             } else {
                 Carpeta carpeta = mov.getCarpeta();
                 carpeta.setFechaAsignacion(LocalDateTime.now())
@@ -637,6 +634,7 @@ public class DocumentoService {
 
                 carpeta = carpetaRepository.save(carpeta);
                 movimiento.setCarpeta(carpeta);
+                movimiento.setJuzgado(carpeta.getJuzgado());
             }
             this.movimientoRepository.save(movimiento);
         }
@@ -898,24 +896,29 @@ public class DocumentoService {
     }
 
     public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(PersonalJuzgadoRecord record) {
+        Carpeta carpeta = null;
         Concepto concepto = conceptoRepository.findById(record.idConcepto())
                 .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
-
         Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
                 .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoRecepcion()));
         documento.setConcepto(concepto);
-
-        Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
-        carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
-        carpetaRepository.save(carpeta);
-
         Persona persona = personaService.getAuditor();
+        if (documento.getTipoDocumento() != null) { //Documento
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
+            documento.setPersona(persona);
+        } else { //Carpeta
+            carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
+                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + record.idDocumentoRecepcion()));
+            carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
+            carpeta.setPersona(persona);
+            carpetaRepository.save(carpeta);
+            documento = null;
+        }
 
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimento(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name());
 
         return new MovimientoPersonalJuzgadoRecord(
-                carpeta.getId(),
+                record.idDocumentoRecepcion(),
                 movimiento.getFechaAsignacion(),
                 persona.getNombre(),
                 movimiento.getMotivo(),

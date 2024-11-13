@@ -1106,7 +1106,7 @@ class DocumentoServiceTest {
         MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
 
         assertNotNull(resultado);
-        assertEquals(carpeta.getId(), resultado.carpeta());
+        assertEquals(personalJuzgadoRecord.idDocumentoRecepcion(), resultado.carpeta());
         assertEquals(movimiento.getFechaAsignacion(), resultado.fechaAsignacion());
         assertEquals(persona.getNombre(), resultado.persona());
         assertEquals(movimiento.getMotivo(), resultado.movimiento());

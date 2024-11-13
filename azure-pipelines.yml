@@ -10,11 +10,8 @@ resources:
   - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '61927f2e-b580-4647-9b3a-6b59e0eb9f32'
   imageRepository: 'trialsservice'
   containerRegistry: 'pjpuebla.azurecr.io'
-  dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildNumber)'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -69,10 +66,10 @@ stages:
             condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/develop', 'refs/heads/main'))
             displayName: Build and push an image to container registry
             inputs:
-              command: buildAndPush
+              containerRegistry: 'pjpueblanov'
               repository: $(imageRepository)
-              dockerfile: $(dockerfilePath)
-              containerRegistry: $(dockerRegistryServiceConnection)
+              command: 'buildAndPush'
+              Dockerfile: '**/Dockerfile'
               tags: |
                 $(tag)
 
