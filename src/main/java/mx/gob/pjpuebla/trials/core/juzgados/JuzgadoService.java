@@ -232,9 +232,7 @@ public class JuzgadoService {
         } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
-        System.out.println("----------------------> ");
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
-        System.out.println("----------------------> ");
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
