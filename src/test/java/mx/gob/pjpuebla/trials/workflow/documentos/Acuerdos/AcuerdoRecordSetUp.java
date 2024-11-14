@@ -23,7 +23,7 @@ public class AcuerdoRecordSetUp {
         promociones.add(new AcuerdoPromocionesRecord(1, "prueba", "archivoName", "recomendacion 1"));
 
 
-        return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
+        return new AcuerdoRecord( 1, 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
                  'o', "<p>prueba</p>");
     }
 

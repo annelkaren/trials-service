@@ -50,7 +50,7 @@ public class AcuerdosResource {
             return acuerdosService.getAcuerdos(carpetaId, pageable);
     }
 
-    @PostMapping("/documento/publicarAcuerdo")
+    @PostMapping("/documentos/publicarAcuerdo")
     public AcuerdoRecord publicarAcuerdo(@RequestBody AcuerdoRecord acuerdo){
         return acuerdosService.publicarAcuerdo(acuerdo);
     }
