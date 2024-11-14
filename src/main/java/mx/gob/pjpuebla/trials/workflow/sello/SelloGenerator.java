@@ -199,7 +199,7 @@ public class SelloGenerator {
     }
 
     private String getCentroTrabajoCapturista() {
-        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
+        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();//No es el centro de trabajo del usuario es de donde se creo
         String user = jwt.getSubject();
         Persona persona = personaRepository.findByUsuario(user).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario"));
         String nombreCapturista;

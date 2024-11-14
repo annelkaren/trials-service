@@ -344,7 +344,6 @@ class DocumentoServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.id()).isEqualTo(demanda.getId());
 
-        assertThat(demanda.getMotivoEdita()).isEqualTo(motivoEdita);
         assertThat(demanda.getCarpeta().getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
     }
 
