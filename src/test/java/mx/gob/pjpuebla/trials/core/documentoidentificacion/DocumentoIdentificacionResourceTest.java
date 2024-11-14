@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +16,13 @@ import java.util.Collections;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(IdentificacionResource.class)
+@WebMvcTest(DocumentoIdentificacionResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class IdentificacionResourceTest {
+class DocumentoIdentificacionResourceTest {
 
     @MockBean
-    private IdentificacionService mockIdentificacionService;
+    private DocumentoIdentificacionService mockDocumentoIdentificacionService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -30,11 +30,11 @@ class IdentificacionResourceTest {
     private IdentificacionDocRecord identificacionDocRecord;
 
     @BeforeEach
-    void setUp(){identificacionDocRecord = IdentificacionSetUp.createIdentificacionDoc() ;}
+    void setUp(){identificacionDocRecord = DocumentoIdentificacionSetUp.createIdentificacionDoc() ;}
 
     @Test
     void getEtapaProcesal_success() throws Exception {
-        given(mockIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
+        given(mockDocumentoIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
 
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/api/workflow/identificacion"))

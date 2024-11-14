@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,19 +13,19 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
-class IdentificacionServiceTest {
+class DocumentoIdentificacionServiceTest {
 
     @InjectMocks
-    IdentificacionService identificacionService;
+    DocumentoIdentificacionService documentoIdentificacionService;
 
     @Mock
-    IdentificacionRepository identificacionRepository;
+    DocumentoIdentificacionRepository documentoIdentificacionRepository;
 
     @Test
     void testGetAll() {
-        List<Identificacion> identificacionesMock = IdentificacionSetUp.createIdentificaciones();
-        when(identificacionRepository.findAll()).thenReturn(identificacionesMock);
-        List<IdentificacionDocRecord> result = identificacionService.getAll();
+        List<DocumentoIdentificacion> identificacionesMock = DocumentoIdentificacionSetUp.createIdentificaciones();
+        when(documentoIdentificacionRepository.findAll()).thenReturn(identificacionesMock);
+        List<IdentificacionDocRecord> result = documentoIdentificacionService.getAll();
 
         assertEquals(2, result.size(), "Debería devolver 2 registros");
 

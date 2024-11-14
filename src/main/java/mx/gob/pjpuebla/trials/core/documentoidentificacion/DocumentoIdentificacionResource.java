@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +10,12 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/workflow/identificacion")
+@RequestMapping("/api/core/documentoidentificacion")
 @SecurityRequirement(name = "Keycloak")
-public class IdentificacionResource { 
+public class DocumentoIdentificacionResource {
 
-    private final IdentificacionService identificacionService;
+    private final DocumentoIdentificacionService documentoIdentificacionService;
 
     @GetMapping
-    public List<IdentificacionDocRecord> getAll(){return this.identificacionService.getAll();}
+    public List<IdentificacionDocRecord> getAll(){return this.documentoIdentificacionService.getAll();}
 }

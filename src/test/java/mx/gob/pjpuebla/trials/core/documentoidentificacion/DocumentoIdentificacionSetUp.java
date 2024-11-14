@@ -1,32 +1,32 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 import mx.gob.pjpuebla.trials.util.Audit;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class IdentificacionSetUp {
+public class DocumentoIdentificacionSetUp {
 
-    private IdentificacionSetUp(){}
+    private DocumentoIdentificacionSetUp(){}
 
-    public static List<Identificacion> createIdentificaciones() {
-        Identificacion identificacion1 = new Identificacion()
+    public static List<DocumentoIdentificacion> createIdentificaciones() {
+        DocumentoIdentificacion documentoIdentificacion1 = new DocumentoIdentificacion()
                 .setId(1)
                 .setName("Gafete Institucional defensoría pública")
                 .setVersion(0);
-        identificacion1.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
+        documentoIdentificacion1.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
                 "6b13785f-d213-4585-a76b-437ffe57c9c7",
                 "6b13785f-d213-4585-a76b-437ffe57c9c7"));
 
-        Identificacion identificacion2 = new Identificacion()
+        DocumentoIdentificacion documentoIdentificacion2 = new DocumentoIdentificacion()
                 .setId(2)
                 .setName("Gafete Institucional centro de meditación")
                 .setVersion(0);
-        identificacion2.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
+        documentoIdentificacion2.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
                 "7a23456f-d213-4585-a76b-437ffe57c9c8",
                 "7a23456f-d213-4585-a76b-437ffe57c9c8"));
 
-        return List.of(identificacion1, identificacion2);
+        return List.of(documentoIdentificacion1, documentoIdentificacion2);
     }
 
     public static IdentificacionDocRecord createIdentificacionDoc() {

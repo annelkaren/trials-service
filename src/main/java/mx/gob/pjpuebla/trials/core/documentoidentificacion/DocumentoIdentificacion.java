@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 
 import jakarta.persistence.*;
@@ -13,7 +13,7 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_DOCUMENTOS_IDENTIFICACION")
-public class Identificacion {
+public class DocumentoIdentificacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idIdentificacion")

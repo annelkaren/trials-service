@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.identificacion;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +11,13 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 @Service
-public class IdentificacionService {
+public class DocumentoIdentificacionService {
 
-    private final IdentificacionRepository identificacionRepository;
+    private final DocumentoIdentificacionRepository documentoIdentificacionRepository;
 
     @Transactional(readOnly = true)
     public List<IdentificacionDocRecord> getAll() {
-        return identificacionRepository.findAll().stream()
+        return documentoIdentificacionRepository.findAll().stream()
                 .map(identificacion -> new IdentificacionDocRecord(identificacion.getId(), identificacion.getName()))
                 .toList();
     }
