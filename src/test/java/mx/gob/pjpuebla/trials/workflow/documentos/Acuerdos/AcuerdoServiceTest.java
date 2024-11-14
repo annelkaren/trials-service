@@ -67,7 +67,7 @@ class AcuerdoServiceTest {
 
 
     @Test
-    public void saveTest(){
+    void saveTest(){
         AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
         Persona persona = PersonaSetUp.createPersona();
         Carpeta carpeta = CarpetaSetUp.create();
@@ -95,7 +95,7 @@ class AcuerdoServiceTest {
     }
 
     @Test
-    public void getAcuerdos() {
+    void getAcuerdos() {
         // Configuración de los datos de prueba
         Integer carpetaId = 1;
         List<AcuerdosRecord> acuerdo = AcuerdoRecordSetUp.createAcuerdoRecord();

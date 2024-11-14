@@ -13,5 +13,6 @@ public record AcuerdoRecord(
     List<String> rubros,
     List<AcuerdoPromocionesRecord> promocionesRelacionadas,
     Character tamanioPapel,
-    String textoEditor
+    String textoEditor,
+    String resumen
 ) {}

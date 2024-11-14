@@ -24,7 +24,7 @@ public class AcuerdoRecordSetUp {
 
 
         return new AcuerdoRecord( 1, 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
-                 'o', "<p>prueba</p>");
+                 'o', "<p>prueba</p>", "resumen");
     }
 
     public static List<AcuerdosRecord> createAcuerdoRecord(){

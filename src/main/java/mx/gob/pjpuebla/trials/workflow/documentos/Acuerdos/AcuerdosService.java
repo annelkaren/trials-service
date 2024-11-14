@@ -67,6 +67,7 @@ public class AcuerdosService {
         docDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
         docDetalle.setFechaResolucion(acuerdo.fechaResolucion());
         docDetalle.setEtapaProcesal(acuerdo.etapaProcesal());
+        docDetalle.setResumen(acuerdo.resumen());
         docDetalle.setDocumento(doc);
         documentoDetalleRepository.save(docDetalle);
 
