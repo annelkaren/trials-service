@@ -2,7 +2,10 @@ package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -94,4 +98,19 @@ public class AcuerdosService {
     public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId) {
         return documentoRepository.obtenerPromociones(carpetaId);
     }
+
+    public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable){
+        Page<AcuerdosRecord> page = documentoRepository.findAllAcuerdosByCarpeta(carpetaId, pageable);
+
+        List<AcuerdosRecord> list = page.getContent().stream()
+            .map(acuerdo -> 
+                new AcuerdosRecord(
+                    acuerdo.numeroAcuerdo(),
+                    acuerdo.fechaResolucion(),
+                    acuerdo.resumen(),
+                    acuerdo.estatus())).toList();
+                                   
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
 }
+

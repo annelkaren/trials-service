@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
