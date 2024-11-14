@@ -37,7 +37,7 @@ class DocumentoIdentificacionResourceTest {
         given(mockDocumentoIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/api/workflow/identificacion"))
+                        MockMvcRequestBuilders.get("/api/core/documentoidentificacion"))
                 .andExpect(status().isOk());
     }
 }
