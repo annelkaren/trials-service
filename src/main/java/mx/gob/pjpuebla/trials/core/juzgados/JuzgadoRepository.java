@@ -40,8 +40,6 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             WHERE j.contadorAsignaciones < j.maxAsignacionesRonda
             AND j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             AND j.instanciaJuzgado = :instanciaJuzgado
-            AND j.contadorAsignaciones = (SELECT MIN(t.contadorAsignaciones) from Juzgado t
-            WHERE t.materia = j.materia and t.instanciaJuzgado = :instanciaJuzgado and j.estado = t.estado)
             """)
     List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
 
