@@ -280,7 +280,6 @@ public class DocumentoService {
 
         Documento documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
-        documento.setMotivoEdita(motivoEdita);
         documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
 
         List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
@@ -299,6 +298,7 @@ public class DocumentoService {
         carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
+        movimientoService.createMovimento(documento.getCarpeta(), documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
