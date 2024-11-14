@@ -261,10 +261,13 @@ class DocumentoServiceTest {
         demanda.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
 
         List<Documento> listPage = Collections.singletonList(demanda);
+        
         given(documentoRepository.findByEstatusCaptura(any(String.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        
         Page<DocumentoGridRecord> page = documentoService.getAll(demanda.getCarpeta().getFolio(),
                 PageRequest.of(1, listPage.size()));
+                
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
