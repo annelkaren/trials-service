@@ -165,7 +165,7 @@ public class SalaService {
             intentos++;
         }
 
-        throw new NotFoundException("No hay Sala disponible", "Sala");
+        throw new NotFoundException("No existe una sala disponible", "Sala");
     }
 
     public Sala findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado){

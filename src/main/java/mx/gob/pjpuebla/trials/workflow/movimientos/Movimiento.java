@@ -49,8 +49,8 @@ public class Movimiento implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
-    @Column(name = "N_TIPO")
-    private Integer tipo;
+    @Column(name = "S_ESTADO")
+    private String estado;
 
     @Column(name = "S_UUID")
     private UUID uuid;

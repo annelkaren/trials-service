@@ -78,7 +78,7 @@ public class MovimientosResourceTest {
 
     @Test
     void listaMotivosTest() throws Exception {
-        List<MotivoDevolucionRecord> motivos = Arrays.stream(DevolucionMotivo.values())
+        Arrays.stream(DevolucionMotivo.values())
             .map(motivo -> new MotivoDevolucionRecord(motivo.getId(), motivo.getNombre()))
             .collect(Collectors.toList());
     

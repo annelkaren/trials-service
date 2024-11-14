@@ -30,6 +30,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -400,7 +401,7 @@ class CarpetaServiceTest {
         List<String> anexos = null;
         carpetaService.setObservacionesAnexos(documento, anexos);
 
-        verify(movimientoService, never()).createMovimento(any(), any(), any(), any());
+        verify(movimientoService, never()).createMovimento(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -419,7 +420,8 @@ class CarpetaServiceTest {
                 eq(null),
                 eq(documento),
                 eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
+                eq(EstadoCarpeta.ASIGNADO.name())
         );
     }
 
@@ -439,9 +441,11 @@ class CarpetaServiceTest {
                 eq(documento.getCarpeta()),
                 eq(null),
                 eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar."))
+                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
+                eq(EstadoCarpeta.ASIGNADO.name())
         );
     }
+
     @Test
     void testGetCatalogoList_ValidCatalogo() {
         List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoDiscapacidades");
@@ -559,27 +563,19 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(tipoJuicio)
                 .setCarpeta(validCarpeta);
 
-        ApelacionRecordResponse participante1 = new ApelacionRecordResponse(
+        PersonaDataRecord participante1 = new PersonaDataRecord(
+                1,
                 "Juan",
                 "Pérez",
                 "Gómez",
-                "",
-                "",
-                null,
-                1,
-                "TipoParte1",
-                1
+                "TipoParte1"
         );
-        ApelacionRecordResponse participante2 = new ApelacionRecordResponse(
+        PersonaDataRecord participante2 = new PersonaDataRecord(
+                2,
                 "Maria",
                 "López",
                 "Sánchez",
-                "",
-                "",
-                null,
-                1,
-                "TipoParte2",
-                1
+                "TipoParte2"
         );
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
                 "Juez Perez",
@@ -590,7 +586,7 @@ class CarpetaServiceTest {
         );
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
-        given(personaDocumentoRepository.findPersonaDocumentoByCarpetaId(any()))
+        given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))
                 .willReturn(List.of(participante1, participante2));
         given(audienciaService.getAudienciaAndSalaAndDomicilio(any()))
                 .willReturn(extraAudienciaSelloRecord);
@@ -606,4 +602,27 @@ class CarpetaServiceTest {
         assertThat(result.etapaProcesal()).isEqualTo("Primera Etapa");
         assertThat(result.participantes()).hasSize(2);
     }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoSentidoAmparo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoSentidoAmparo");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoSentidoAmparo.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoSentidoAmparo.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
+    @Test
+    void testGetCatalogoList_CaseCatalogoImpugnacionAmparo() {
+        List<CarpetaCatalogoRecord> result = target.getCatalogoList("catalogoImpugnacionAmparo");
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoImpugnacionAmparo.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        assertNotNull(result);
+        assertEquals(CatalogoImpugnacionAmparo.values().length, result.size());
+        assertThat(result).isEqualTo(items);
+    }
+
 }

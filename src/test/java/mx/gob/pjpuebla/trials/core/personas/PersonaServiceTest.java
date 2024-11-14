@@ -110,7 +110,7 @@ class PersonaServiceTest extends SetupServiceTest {
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", validPersona.getId())
                 .hasFieldOrPropertyWithValue("nombre", validPersona.getNombre() + " "
-                        + validPersona.getApellidoPaterno() + " " + validPersona.getApellidoMaterno());
+                        + validPersona.getApellidoPaterno());
     }
 
     @Test
@@ -286,12 +286,26 @@ class PersonaServiceTest extends SetupServiceTest {
     }
 
     @Test
-    void getAll_CentrosTrabajo() {
-        given(juzgadoRepository.findAllByEstadoIn(Arrays.asList(Estado.ACTIVE))).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
-        given(oficialiaRepository.findOficialiaComun()).willReturn(Arrays.asList(oficialia));
+    void getAll_CentrosTrabajo_adminJuzgados() {
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
+        given(oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(oficialia));
 
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo(pageable, "");
+        List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo("");
+
+        assertThat(centrosTrabajo)
+                .hasSize(1)
+                .anyMatch(centro -> centro.tipo().equals(TipoCentroTrabajo.JUZGADO));
+    }
+
+    @Test
+    void getAll_CentrosTrabajo_adminSistemas() {
+        given(roleService.hasRole(any(), any())).willReturn(true);
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
+        given(oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(oficialia));
+
+        List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo("");
 
         assertThat(centrosTrabajo)
                 .hasSize(2)

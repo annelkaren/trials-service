@@ -20,7 +20,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
     @Query(value = "SELECT j FROM Juzgado j "
             + "JOIN FETCH j.materia m "
             + "WHERE j.estado IN :estados "
-            + "AND lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key% ")
+            + "AND (lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)")
     Page<Juzgado> findAll(String key, List<Estado> estados, Pageable pageable);
 
     Optional<Juzgado> findByIdAndEstadoIn(Integer id, List<Estado> estados);
@@ -40,8 +40,6 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             WHERE j.contadorAsignaciones < j.maxAsignacionesRonda
             AND j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             AND j.instanciaJuzgado = :instanciaJuzgado
-            AND j.contadorAsignaciones = (SELECT MIN(t.contadorAsignaciones) from Juzgado t
-            WHERE t.materia = j.materia and t.instanciaJuzgado = :instanciaJuzgado and j.estado = t.estado)
             """)
     List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
 
@@ -95,11 +93,10 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         WHERE f.estado = :estado
         AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
         """)
-    Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(
+    List<JuzgadoRecordItem> findAllByEstadoAutocomplete(
             @Param("estado") Estado estado,
-            @Param("key") String key,
-            Pageable pageable
+            @Param("key") String key
     );
 
-    Optional<Juzgado> findByNombre(String nombre);
+    Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 }

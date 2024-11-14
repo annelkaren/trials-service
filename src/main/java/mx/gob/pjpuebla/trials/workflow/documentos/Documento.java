@@ -49,10 +49,6 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "S_RUTA")
     private String ruta;
 
-    @Size(max = 250)
-    @Column(name = "S_MOTIVO_EDITA")
-    private String motivoEdita;
-
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
@@ -86,6 +82,10 @@ public class Documento implements Serializable, Auditable {
 
     @Column(name = "N_HORAS")
     private Integer horas;
+
+    @JoinColumn(name = "FN_ACUERDO_RESPUESTA", referencedColumnName= "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Documento acuerdoRespuesta;
 
     @Accessors(chain = false)
     @Embedded

@@ -3,7 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 import java.time.LocalDateTime;
 
 public record DocumentoAsignadoResponseRecord(
-        Integer id,
+    Integer id,
+    Integer carpetaId,
     String expediente,
     String folio,
     String tipoEntrada,

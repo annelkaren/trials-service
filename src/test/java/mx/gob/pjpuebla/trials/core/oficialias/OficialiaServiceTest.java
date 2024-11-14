@@ -150,7 +150,7 @@ class OficialiaServiceTest {
         Oficialia newOficialia = new Oficialia();
         newOficialia.setNombre(existingName);
 
-        given(oficialiaRepository.findByNombre(existingName))
+        given(oficialiaRepository.findByNombreIgnoreCase(existingName))
                 .willReturn(Optional.of(new Oficialia()));
 
         ConflictException exception = assertThrows(
@@ -163,7 +163,7 @@ class OficialiaServiceTest {
 
     @Test
     void create() {
-        given(oficialiaRepository.findByNombre(oficialia.getNombre()))
+        given(oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre()))
                 .willReturn(Optional.empty());
         given(sedeRepository.findById(oficialia.getSede().getId()))
                 .willReturn(Optional.ofNullable(oficialia.getSede()));

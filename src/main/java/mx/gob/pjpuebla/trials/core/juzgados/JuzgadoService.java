@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.util.Messages;
+import mx.gob.pjpuebla.trials.util.SearchLikeEnum;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -26,17 +27,16 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLOutput;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 @Slf4j
@@ -58,7 +58,12 @@ public class JuzgadoService {
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordItem> getAll(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        List<Estado> status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+        List<Estado> status = SearchLikeEnum.searchByEstadoEnum(key);
+        if (status.isEmpty()) {
+            status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+        } else {
+            key = "";
+        }
         Page<Juzgado> page = juzgadoRepository.findAll(key, status, pageable);
 
         List<JuzgadoRecordItem> list = page.getContent().stream()
@@ -66,7 +71,7 @@ public class JuzgadoService {
                         juzgado.getId(),
                         juzgado.getNombre(),
                         juzgado.getEstado(),
-                        juzgado.getMateria().getNombre()
+                        StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase())
                 )).toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -107,7 +112,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem create(Juzgado juzgado) {
-        if(juzgadoRepository.findByNombre(juzgado.getNombre()).isPresent()){
+        if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
 
@@ -228,7 +233,6 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
-
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
@@ -290,8 +294,18 @@ public class JuzgadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key, Pageable pageable) {
+    public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key) {
         key = (key != null) ? key.toLowerCase() : "";
-        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, pageable);
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key);
+    }
+
+    public JuzgadoRecordItem updateStatus(Integer id, Integer status) {
+        Estado estado = Estado.values()[status];
+        Juzgado juzgado = juzgadoRepository.findById(id).
+                orElseThrow(() -> new NotFoundException("Juzgado no encontrado", id.toString()));
+        juzgado.setEstado(estado);
+        juzgadoRepository.save(juzgado);
+
+        return new JuzgadoRecordItem(id, juzgado.getNombre(), juzgado.getEstado(), "");
     }
 }

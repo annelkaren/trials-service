@@ -65,9 +65,13 @@ public class JuzgadoResource {
     }
 
     @GetMapping("/autocomplete")
-    public Page<JuzgadoRecordItem> findAllByEstadoActiveAutocomplete(
-            @PageableDefault Pageable pageable,
+    public List<JuzgadoRecordItem> findAllByEstadoActiveAutocomplete(
             @RequestParam(value = "key", required = false) String key) {
-        return this.juzgadoService.findAllByEstadoAutocomplete(key, pageable);
+        return this.juzgadoService.findAllByEstadoAutocomplete(key);
+    }
+
+    @PatchMapping("/{id}/status/{status}")
+    public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
+        return this.juzgadoService.updateStatus(id, status);
     }
 }

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import jakarta.persistence.EntityNotFoundException;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
@@ -29,6 +30,7 @@ import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
@@ -37,8 +39,10 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
+import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
@@ -70,6 +74,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -256,10 +261,13 @@ class DocumentoServiceTest {
         demanda.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
 
         List<Documento> listPage = Collections.singletonList(demanda);
+        
         given(documentoRepository.findByEstatusCaptura(any(String.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        
         Page<DocumentoGridRecord> page = documentoService.getAll(demanda.getCarpeta().getFolio(),
                 PageRequest.of(1, listPage.size()));
+                
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -339,7 +347,6 @@ class DocumentoServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.id()).isEqualTo(demanda.getId());
 
-        assertThat(demanda.getMotivoEdita()).isEqualTo(motivoEdita);
         assertThat(demanda.getCarpeta().getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
     }
 
@@ -458,7 +465,6 @@ class DocumentoServiceTest {
 
     @Test
     void getAllHistorial() {
-
         Documento documento1 = DocumentoSetUp.create(tipoJuicio);
         documento1.getCarpeta().setFolio("Folio1");
         documento1.getCarpeta().setExpediente("Expediente1");
@@ -471,41 +477,23 @@ class DocumentoServiceTest {
         TipoCarpeta tipoCarpeta1 = TipoCarpeta.DEMANDA;
         documento1.getCarpeta().setTipoCarpeta(tipoCarpeta1);
 
-        Documento documento2 = DocumentoSetUp.create(tipoJuicio);
-        documento2.getCarpeta().setFolio("Folio2");
-        documento2.getCarpeta().setExpediente("Expediente2");
-        documento2.getCarpeta().setEstatus(EstadoCarpeta.TURNADO);
+        Movimiento movimiento1 = new Movimiento().setDocumento(documento1).setEstado(EstadoCarpeta.CAPTURA.name());
+        List<Movimiento> listPage = Arrays.asList(movimiento1);
+        Page<Movimiento> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
 
-        Juzgado juzgado2 = new Juzgado();
-        documento2.getCarpeta().setJuzgado(juzgado2);
-        documento2.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
+        given(movimientoRepository.getAllBandejaHistorial(any(), any(), any(), any(Pageable.class))).willReturn(pageDocumentos);
+        given(personaService.getAuditor()).willReturn(new Persona());
 
-        TipoCarpeta tipoCarpeta2 = TipoCarpeta.EXHORTO;
-        documento2.getCarpeta().setTipoCarpeta(tipoCarpeta2);
-
-        List<Documento> listPage = Arrays.asList(documento1, documento2);
-        Page<Documento> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size());
-
-        given(documentoRepository.findAll(any(), any(Pageable.class))).willReturn(pageDocumentos);
-
-        Documento example = new Documento();
-        example.setCarpeta(new Carpeta());
-
-        Page<DocumentoGridRecord> result = documentoService.getAllHistorial(PageRequest.of(0, 10), example);
+        Page<DocumentoGridRecord> result = documentoService.getAllHistorial(null, PageRequest.of(0, 10));
 
         assertThat(result.getContent())
-                .hasSize(2)
+                .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("folio", "Folio1")
                 .hasFieldOrPropertyWithValue("expediente", "Expediente1")
                 .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CAPTURA);
 
-        assertThat(result.getContent().get(1))
-                .hasFieldOrPropertyWithValue("folio", "Folio2")
-                .hasFieldOrPropertyWithValue("expediente", "Expediente2")
-                .hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.TURNADO);
-
-        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
     @Test
@@ -670,7 +658,7 @@ class DocumentoServiceTest {
         given(roleService.hasRole(any(String.class), any(String.class))).willReturn(false);
 
         Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(1, 20));
-        assertThat(page.getContent().size()).isEqualTo(0);
+        assertThat(page.getContent()).isEmpty();
     }
 
     @Test
@@ -855,7 +843,20 @@ class DocumentoServiceTest {
 
     @Test
     void getIndicadores_success() {
-        IndicadoresRecord expected = new IndicadoresRecord(2, 7, 9, 5);
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setJuzgado(juzgado);
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        demanda.setConcepto(concepto);
+        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now());
+        List<Movimiento> listPage = Collections.singletonList(movimiento);
+        Page<Movimiento> page = new PageImpl<>(listPage);
+
+        Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        given(personaService.getAuditor()).willReturn(persona);
+        given(movimientoService.getAllBandejaRecepcion(any(), any(), any(), any(), any())).willReturn(page);
+
+        IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
         IndicadoresRecord result = documentoService.getIndicadores();
 
@@ -930,6 +931,7 @@ class DocumentoServiceTest {
     void getAllBandejaAsignados() {
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
         DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
+                1,
                 1,
                 "000001/2024",
                 "1",
@@ -1068,18 +1070,18 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(any(Integer.class)))
                 .willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
-        given(movimientoService.createMovimento(any(), any(), any(), any())).willReturn(movimiento);
+        given(movimientoService.createMovimento(any(), any(), any(), any(), any())).willReturn(movimiento);
 
         documentoService.cancelOficio(1);
         verify(personaService).getAuditor();
         verify(documentoRepository).findById(1);
         verify(documentoRepository).actualizarEstatus(1, EstadoCarpeta.CANCELADO);
-        verify(movimientoService).createMovimento(any(), any(), any(), any());
+        verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
     }
 
     @Test
     void movimientoPersonalJuzgado_success() {
-        PersonalJuzgadoRecord record = new PersonalJuzgadoRecord(51, 2);
+        PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2);
         Concepto concepto = ConceptoSetUp.createConcepto();
         Documento documento = DocumentoSetUp.create(tipoJuicio);
         Carpeta carpeta = CarpetaSetUp.create();
@@ -1094,16 +1096,16 @@ class DocumentoServiceTest {
                 .setOficialia(null)
                 .setJuzgado(juzgado);
 
-        when(conceptoRepository.findById(record.idConcepto())).thenReturn(Optional.of(concepto));
-        when(documentoRepository.findById(record.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
+        when(conceptoRepository.findById(personalJuzgadoRecord.idConcepto())).thenReturn(Optional.of(concepto));
+        when(documentoRepository.findById(personalJuzgadoRecord.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
         when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
-        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
+        when(movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name())).thenReturn(movimiento);
 
-        MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(record);
+        MovimientoPersonalJuzgadoRecord resultado = documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
 
         assertNotNull(resultado);
-        assertEquals(carpeta.getId(), resultado.carpeta());
+        assertEquals(personalJuzgadoRecord.idDocumentoRecepcion(), resultado.carpeta());
         assertEquals(movimiento.getFechaAsignacion(), resultado.fechaAsignacion());
         assertEquals(persona.getNombre(), resultado.persona());
         assertEquals(movimiento.getMotivo(), resultado.movimiento());
@@ -1135,7 +1137,7 @@ class DocumentoServiceTest {
         when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
         when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
-        when(movimientoService.createMovimento(carpeta, null, persona, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+        when(movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
 
         List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
 
@@ -1144,10 +1146,11 @@ class DocumentoServiceTest {
     }
 
 
-
     @Test
     void testSendEmailFamiliar() {
+        TipoJuicioDemandasRecord tipoJuicioRecord = new TipoJuicioDemandasRecord(tipoJuicio.getId(), tipoJuicio.getNombre());
         Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setData(new DocumentoData().setTiposJuicios(Arrays.asList(tipoJuicioRecord)));
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setFolio("1");
 
@@ -1195,7 +1198,7 @@ class DocumentoServiceTest {
 
         Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
 
-        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("Laboral", sendEmailData.get("juicio"));
         assertEquals("1", sendEmailData.get("sala"));
         assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
         assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
@@ -1209,7 +1212,9 @@ class DocumentoServiceTest {
 
     @Test
     void testSendEmailFamiliarSinAnexos() {
+        TipoJuicioDemandasRecord tipoJuicioRecord = new TipoJuicioDemandasRecord(tipoJuicio.getId(), tipoJuicio.getNombre());
         Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setData(new DocumentoData().setTiposJuicios(Arrays.asList(tipoJuicioRecord)));
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.getCarpeta().setFolio("1");
 
@@ -1256,7 +1261,7 @@ class DocumentoServiceTest {
 
         Map<String, Object> sendEmailData = sendEmailCaptor.getValue();
 
-        assertEquals("Familiar Oralidad (Alimentos), Familiar Oralidad (Divorcio Incausado Unilateral), Familiar Oralidad (Guardia y Custodia), Familiar Oralidad (Visita y Convivencia)", sendEmailData.get("juicio"));
+        assertEquals("Laboral", sendEmailData.get("juicio"));
         assertEquals("1", sendEmailData.get("sala"));
         assertEquals("J/T/000001/2024/FT-FO", sendEmailData.get("carpetaDigital"));
         assertEquals(tipoJuicio.getNombre(), sendEmailData.get("tipoJuicio"));
@@ -1265,5 +1270,62 @@ class DocumentoServiceTest {
         assertEquals("juan@gmail.com", sendEmailData.get("correo"));
         assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
         assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
+    }
+
+    @Test
+    void deleteAsignado() {
+        Integer id = 1;
+        String nombreParticipante = "Juan Perez";
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(id);
+        personaDocumento.setNombre(nombreParticipante);
+        Carpeta carpeta = CarpetaSetUp.create();
+        personaDocumento.setCarpeta(carpeta);
+        Persona auditor = new Persona();
+        auditor.setNombre("Pedro");
+
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
+        when(personaService.getAuditor()).thenReturn(auditor);
+        documentoService.deleteAsignado(id);
+
+        verify(movimientoService).createMovimento(
+                eq(carpeta),
+                isNull(),
+                eq(auditor),
+                eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante),
+                isNull()
+        );
+
+        verify(personaDocumentoRepository).deleteById(id);
+        verify(personaDocumentoRepository).flush();
+    }
+
+    @Test
+    void deleteAsignado_NotFound() {
+        Integer id = 1;
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.empty());
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> documentoService.deleteAsignado(id)
+        );
+
+        assertEquals("No se encontró la persona documento con ID: " + id, exception.getMessage());
+        verify(personaDocumentoRepository, never()).deleteById(id);
+        verify(personaDocumentoRepository, never()).flush();
+
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(id);
+        personaDocumento.setNombre("Juan Perez");
+
+        when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
+        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros")).when(personaDocumentoRepository).deleteById(id);
+        ConstraintViolationException constraintViolationException = assertThrows(
+                ConstraintViolationException.class,
+                () -> documentoService.deleteAsignado(id)
+        );
+
+        assertTrue(constraintViolationException.getMessage().contains(Messages.CONSTRAINT_ERROR));
+        verify(personaDocumentoRepository).deleteById(id);
+        verify(personaDocumentoRepository, never()).flush();
     }
 }

@@ -26,7 +26,7 @@ public class InstitucionSetUp {
     }
 
     public static InstitucionRecord createInstitucionRecord() {
-        return new InstitucionRecord(1, "institución prueba", "domicilio 1", "1234121212");
+        return new InstitucionRecord(1, "institución prueba", "domicilio 1", "1234121212", "Externa");
     }
 
     public static InstitucionRecordResponse createInstitucionRecordResponse() {
@@ -45,6 +45,7 @@ public class InstitucionSetUp {
                 Estado.ACTIVE,
                 "1234562323",
                 "1212",
+                "Externa",
                 disRecord,
                 domRecord);
     }
