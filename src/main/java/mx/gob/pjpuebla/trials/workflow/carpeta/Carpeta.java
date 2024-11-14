@@ -82,6 +82,8 @@ public class Carpeta implements Serializable, Auditable {
     )
     private Set<Rubro> rubros;
 
+    private Carpeta carpetaPadre;
+
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

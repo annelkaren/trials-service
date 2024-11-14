@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -56,4 +59,5 @@ public class CarpetaResource {
     public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
         return this.carpetaService.getInfoExpediente(docId);
     }
+    
 }

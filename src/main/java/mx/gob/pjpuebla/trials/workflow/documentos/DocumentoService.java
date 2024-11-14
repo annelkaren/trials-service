@@ -32,8 +32,12 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -75,6 +79,7 @@ public class DocumentoService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final CarpetaRepository carpetaRepository;
+    private final CarpetaService carpetaService;
     private final TipoAudienciaService tipoAudienciaService;
     private final SalaService salaService;
     private final AudienciaService audienciaService;
@@ -1073,6 +1078,33 @@ public class DocumentoService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "actualizar a asignado" + id);
         }
+    }
+
+    public AmparoRecordResponse createAmparo(Integer carpetaId, AmparoRecord amparoRecord){
+        Persona persona = personaService.getAuditor();
+        DocumentoData data = new DocumentoData();
+        Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(null);
+
+        data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
+        data.setAmparoImpugnacion(amparoRecord.impugnacion());
+        data.setAmparoQuejoso(amparoRecord.quejoso());
+        data.setAmparoSalaId(amparoRecord.salaId());
+        data.setAmparoSentido(amparoRecord.sentidoAmparo().ordinal());
+        data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo().ordinal());
+
+        Documento amparo = new Documento()
+        .setCarpeta(carpeta)
+        .setData(data)
+        .setEstatus(EstadoCarpeta.ASIGNADO)
+        .setFechaAsignacion(LocalDateTime.now())
+        .setTipoDocumento(TipoDocumento.AMPARO)
+        .setPersona(persona);
+
+        documentoRepository.save(amparo);
+
+        Carpeta pieza = carpetaService.createPieza(carpetaId, new PiezaRecord(null, amparoRecord.tipoAmparo(), Arrays.asList(amparo.getId())));
+
+        return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }
 
 }

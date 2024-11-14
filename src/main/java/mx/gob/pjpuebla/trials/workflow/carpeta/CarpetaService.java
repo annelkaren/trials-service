@@ -6,6 +6,8 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
@@ -22,6 +24,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +48,7 @@ public class CarpetaService {
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
     private final AudienciaService audienciaService;
+    private final TipoPiezaRepository tipoPiezaRepository;
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
@@ -281,4 +286,49 @@ public class CarpetaService {
                 .map(entry -> new ParticipantesRecord(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
+
+    public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord){
+        Carpeta carpetaPadre = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
+        TipoPieza tipoPieza = tipoPiezaRepository.findByIdOrClave(piezaRecord.tipoPiezaId(), piezaRecord.clavePieza()).stream().findFirst()
+                .orElseThrow(() -> new NotFoundException("El Tipo de Pieza no existe", "tipoPieza"));
+        
+        Persona persona = personaService.getAuditor();
+
+        if (piezaRecord.documentos().isEmpty()){
+                throw new NotFoundException("No se puede crear una pieza vacía", "documentos");
+        }
+
+        Carpeta pieza = new Carpeta();
+
+        String clavePieza = carpetaPadre.getExpediente()+"/"+tipoPieza.getClave();
+
+        String numeroPieza = clavePieza + consecutivoPieza(carpetaId, clavePieza);
+
+        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, clavePieza));
+        pieza.setExpediente(numeroPieza);
+        pieza.setCarpetaPadre(carpetaPadre);
+        pieza.setFechaAsignacion(LocalDateTime.now());
+        pieza.setTipoCarpeta(TipoCarpeta.PIEZA);
+        pieza.setPersona(persona);
+        
+        pieza = carpetaRepository.save(pieza);
+
+        asignarPieza(pieza, piezaRecord.documentos());
+
+        return pieza;
+    }
+
+    public String consecutivoPieza(Integer carpetaId, String clavePieza){
+        return clavePieza + StringUtils.leftPad(carpetaRepository.getNumeroPieza(carpetaId, clavePieza).toString(),2,'0');
+    }
+
+    public void asignarPieza(Carpeta pieza, List<Integer> documentos){
+
+        for(Integer documentoId : documentos) {
+                Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+                documento.setCarpeta(pieza);
+                documentoRepository.save(documento);
+        }
+    }
 }
+ 
