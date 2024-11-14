@@ -1080,10 +1080,10 @@ public class DocumentoService {
         }
     }
 
-    public AmparoRecordResponse createAmparo(Integer carpetaId, AmparoRecord amparoRecord){
+    public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord){
         Persona persona = personaService.getAuditor();
         DocumentoData data = new DocumentoData();
-        Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(null);
+        Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId()).orElseThrow(null);
 
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
@@ -1102,7 +1102,7 @@ public class DocumentoService {
 
         documentoRepository.save(amparo);
 
-        Carpeta pieza = carpetaService.createPieza(carpetaId, new PiezaRecord(null, amparoRecord.tipoAmparo(), Arrays.asList(amparo.getId())));
+        Carpeta pieza = carpetaService.createPieza(carpeta.getId(), new PiezaRecord(null, amparoRecord.tipoAmparo(), Arrays.asList(amparo.getId())));
 
         return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }

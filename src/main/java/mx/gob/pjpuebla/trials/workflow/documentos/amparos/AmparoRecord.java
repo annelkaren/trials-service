@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 
 public record AmparoRecord(
+    Integer carpetaId,
     String tipoAmparo,
     LocalDate fechaPresentacion,
     Integer impugnacion,

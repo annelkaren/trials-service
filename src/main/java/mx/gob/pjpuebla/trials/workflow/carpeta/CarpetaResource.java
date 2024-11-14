@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RequiredArgsConstructor
@@ -59,5 +62,11 @@ public class CarpetaResource {
     public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
         return this.carpetaService.getInfoExpediente(docId);
     }
+
+    @GetMapping(value= "/piezas/numPieza")
+    public String getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
+        return this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
+    }
+    
     
 }
