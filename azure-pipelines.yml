@@ -56,8 +56,6 @@ stages:
                 "$(Build.Repository.Name)"
 
           - task: QodanaScan@2024
-            inputs:
-              args: "--baseline,qodana.sarif.json"
             env:
               QODANA_TOKEN: $(QODANA_TOKEN)
               QODANA_ENDPOINT: 'https://qodana.cloud'
