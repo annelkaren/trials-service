@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
-import mx.gob.pjpuebla.trials.core.documentoidentificacion.DocumentoIdentificacion;
-import mx.gob.pjpuebla.trials.core.documentoidentificacion.DocumentoIdentificacionRepository;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
