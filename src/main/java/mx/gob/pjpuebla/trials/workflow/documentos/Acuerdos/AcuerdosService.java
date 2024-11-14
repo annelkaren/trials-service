@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
@@ -139,5 +140,9 @@ public class AcuerdosService {
         documentoContenidoRepository.save(documentoContenido);
 
         return acuerdo;
+    }
+
+    public List<AcuerdoNotificadosRecord> getTipoPartesAcuerdo(Integer carpetaId, String tipoParte){
+        return documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
     }
 }
