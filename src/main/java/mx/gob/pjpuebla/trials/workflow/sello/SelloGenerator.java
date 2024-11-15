@@ -88,7 +88,7 @@ public class SelloGenerator {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
-        parameters.put("folio", documento.getCarpeta().getFolio());
+        parameters.put("folio", (documento.getTipoDocumento() != null) ? documento.getFolio() : documento.getCarpeta().getFolio());
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
