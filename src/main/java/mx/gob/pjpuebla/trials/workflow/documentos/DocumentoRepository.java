@@ -198,9 +198,11 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         AND (
             (:tipoParte = 'ambos' AND (lower(tp.nombre) LIKE '%actor%' OR lower(tp.nombre) LIKE '%demandado%'))
             OR
+            (:tipoParte = 'actor' AND lower(tp.nombre) LIKE '%actor%')
+            OR
             (:tipoParte = 'demandado' AND lower(tp.nombre) LIKE '%demandado%')
             OR
-            (:tipoParte = 'OTROS' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
+            (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
         )
         """)
 List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
