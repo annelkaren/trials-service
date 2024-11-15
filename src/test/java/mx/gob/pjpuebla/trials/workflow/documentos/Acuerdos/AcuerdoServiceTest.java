@@ -1,11 +1,13 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -26,6 +31,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -59,6 +65,7 @@ class AcuerdoServiceTest {
     @Mock 
     private PersonaService personaService;
 
+
     @Test
     public void saveTest(){
         AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
@@ -87,5 +94,24 @@ class AcuerdoServiceTest {
         assertNotNull(result);
     }
 
+    @Test
+    public void getAcuerdos() {
+        // Configuración de los datos de prueba
+        Integer carpetaId = 1;
+        List<AcuerdosRecord> acuerdo = AcuerdoRecordSetUp.createAcuerdoRecord();
+    
+        // Simulación de la respuesta del repositorio
+        given(documentoRepository.findAllAcuerdosByCarpeta(anyInt(), any(PageRequest.class)))
+            .willReturn(new PageImpl<>(acuerdo, PageRequest.of(0, acuerdo.size()), acuerdo.size()));
+    
+        // Invocar el método de servicio
+        Page<AcuerdosRecord> page = acuerdosService.getAcuerdos(carpetaId, PageRequest.of(0, acuerdo.size()));
+    
+        // Verificar la respuesta
+        assertThat(page.getContent())
+            .hasSize(acuerdo.size())
+            .first();
+    }
+    
     
 }

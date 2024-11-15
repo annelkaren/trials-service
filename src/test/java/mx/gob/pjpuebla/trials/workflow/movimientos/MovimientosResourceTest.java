@@ -59,7 +59,7 @@ public class MovimientosResourceTest {
         uuid = UUID.fromString(uuidMov);
         estadoCarpeta = EstadoCarpeta.TURNADO;
 
-        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null);
+        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class MovimientosResourceTest {
 
     @Test
     void listaMotivosTest() throws Exception {
-        List<MotivoDevolucionRecord> motivos = Arrays.stream(DevolucionMotivo.values())
+        Arrays.stream(DevolucionMotivo.values())
             .map(motivo -> new MotivoDevolucionRecord(motivo.getId(), motivo.getNombre()))
             .collect(Collectors.toList());
     

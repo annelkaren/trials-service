@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 
 public class AcuerdoRecordSetUp {
 
@@ -23,5 +25,11 @@ public class AcuerdoRecordSetUp {
 
         return new AcuerdoRecord( 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
                  'o', "<p>prueba</p>");
+    }
+
+    public static List<AcuerdosRecord> createAcuerdoRecord(){
+        List<AcuerdosRecord> acuerdoRecord = new ArrayList<>();
+        acuerdoRecord.add(new AcuerdosRecord(1, LocalDate.now(), "Hola", EstadoCarpeta.CREADO));
+        return acuerdoRecord;
     }
 }

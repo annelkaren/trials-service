@@ -1,7 +1,5 @@
-package mx.gob.pjpuebla.trials.core.etapaprocesal;
+package mx.gob.pjpuebla.trials.core.documentoidentificacion;
 
-import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.etapaprocesal.record.ListEtapaProcesalRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,38 +13,31 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(EtapaProcesalResource.class)
+@WebMvcTest(DocumentoIdentificacionResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class EtapaProcesalResourceTest {
+class DocumentoIdentificacionResourceTest {
 
     @MockBean
-    private EtapaProcesalService mocketapaProcesalService;
+    private DocumentoIdentificacionService mockDocumentoIdentificacionService;
 
     @Autowired
     private MockMvc mockMvc;
 
-    private ListEtapaProcesalRecord etapaProcesalRecord;
+    private IdentificacionDocRecord identificacionDocRecord;
 
     @BeforeEach
-    void setUp(){etapaProcesalRecord = EtapaProcesalSetUp.createListEtapaProcesalRecord();}
+    void setUp(){identificacionDocRecord = DocumentoIdentificacionSetUp.createIdentificacionDoc() ;}
 
     @Test
     void getEtapaProcesal_success() throws Exception {
-        given(mocketapaProcesalService.getEtapaProcesal(anyInt(), anyInt()))
-                .willReturn(Collections.singletonList(etapaProcesalRecord));
+        given(mockDocumentoIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/api/core/etapaprocesal")
-                                .param("IdTipoJuicio", "150")
-                                .param("IdProcedimiento", "0")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
+                        MockMvcRequestBuilders.get("/api/core/documentoidentificacion"))
                 .andExpect(status().isOk());
     }
-
 }
