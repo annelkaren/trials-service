@@ -38,11 +38,11 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Size(max = 15)
+    @Size(max = 20)
     @Column(name = "S_FOLIO", nullable = false)
     private String folio;
 
-    @Size(max = 20)
+    @Size(max = 30)
     @Column(name = "S_EXPEDIENTE", nullable = false)
     private String expediente;
 
@@ -82,6 +82,8 @@ public class Carpeta implements Serializable, Auditable {
     )
     private Set<Rubro> rubros;
 
+    @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpetaPadre;
 
     @Accessors(chain = false)

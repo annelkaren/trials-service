@@ -1102,8 +1102,8 @@ public class DocumentoService {
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
         data.setAmparoQuejoso(amparoRecord.quejoso());
         data.setAmparoSalaId(amparoRecord.salaId());
-        data.setAmparoSentido(amparoRecord.sentidoAmparo().ordinal());
-        data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo().ordinal());
+        data.setAmparoSentido(amparoRecord.sentidoAmparo());
+        data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo());
 
         Documento amparo = new Documento()
         .setCarpeta(carpeta)

@@ -11,8 +11,8 @@ public record AmparoRecord(
     String tipoAmparo,
     LocalDate fechaPresentacion,
     Integer impugnacion,
-    CatalogoSentidoAmparo sentidoAmparo,
-    CatalogoImpugnacionAmparo impugnacionAmparo,
+    String sentidoAmparo,
+    String impugnacionAmparo,
     String quejoso,
     Integer tribunalId,
     Integer salaId) implements Serializable {

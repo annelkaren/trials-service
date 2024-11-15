@@ -64,8 +64,10 @@ public class CarpetaResource {
     }
 
     @GetMapping(value= "/piezas/numPieza")
-    public String getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
-        return this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
+    public NumPiezaRecord getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
+        String numPieza = this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
+
+        return new NumPiezaRecord(numPieza);
     }
     
     

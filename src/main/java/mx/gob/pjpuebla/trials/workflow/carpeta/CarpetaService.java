@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -300,16 +301,19 @@ public class CarpetaService {
 
         Carpeta pieza = new Carpeta();
 
-        String clavePieza = carpetaPadre.getExpediente()+"/"+tipoPieza.getClave();
+        String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, piezaRecord.clavePieza());
 
-        String numeroPieza = clavePieza + consecutivoPieza(carpetaId, clavePieza);
-
-        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, clavePieza));
+        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, piezaRecord.clavePieza()));
         pieza.setExpediente(numeroPieza);
         pieza.setCarpetaPadre(carpetaPadre);
         pieza.setFechaAsignacion(LocalDateTime.now());
         pieza.setTipoCarpeta(TipoCarpeta.PIEZA);
         pieza.setPersona(persona);
+        pieza.setSelloEstatus(SelloEstatus.VALIDO);
+        pieza.setEstatus(EstadoCarpeta.ASIGNADO);
+        pieza.setJuzgado(carpetaPadre.getJuzgado());
+        pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
+        pieza.setAudit(new Audit());
         
         pieza = carpetaRepository.save(pieza);
 
@@ -319,6 +323,11 @@ public class CarpetaService {
     }
 
     public String consecutivoPieza(Integer carpetaId, String clavePieza){
+        if (!carpetaRepository.existsById(carpetaId))
+            throw new NotFoundException("La Carpeta con Id " + carpetaId +" no existe","carpetaId");
+        if (!tipoPiezaRepository.existsByClave(clavePieza))
+            throw new NotFoundException("El tipo de pieza " + clavePieza + " no existe","clavePieza");
+
         return clavePieza + StringUtils.leftPad(carpetaRepository.getNumeroPieza(carpetaId, clavePieza).toString(),2,'0');
     }
 
