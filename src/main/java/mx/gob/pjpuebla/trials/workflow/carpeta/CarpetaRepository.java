@@ -57,7 +57,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     @Query("""
             SELECT COUNT(1)+1 FROM Carpeta c
-            WHERE c.id=:carpetaId and c.tipoCarpeta=TipoCarpeta.PIEZA and c.expediente like %clavePieza%
+            WHERE c.id=:carpetaId and c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA and c.expediente like %:clavePieza%
             """)
     Integer getNumeroPieza(Integer carpetaId, String clavePieza);
 }
