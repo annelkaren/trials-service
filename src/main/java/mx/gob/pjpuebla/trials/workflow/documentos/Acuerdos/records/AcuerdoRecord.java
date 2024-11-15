@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record AcuerdoRecord(
-
+    Integer acuerdoId,
     Integer carpetaId,
     Integer documentoId,
     String tipoAcuerdo,
@@ -13,5 +13,6 @@ public record AcuerdoRecord(
     List<String> rubros,
     List<AcuerdoPromocionesRecord> promocionesRelacionadas,
     Character tamanioPapel,
-    String textoEditor
+    String textoEditor,
+    String resumen
 ) {}

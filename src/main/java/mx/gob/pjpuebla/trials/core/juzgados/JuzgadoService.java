@@ -232,7 +232,6 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
-
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);

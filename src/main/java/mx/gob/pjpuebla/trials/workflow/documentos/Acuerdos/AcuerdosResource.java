@@ -2,6 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,11 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 
 import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -35,6 +41,25 @@ public class AcuerdosResource {
     public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId){
         return acuerdosService.obtenerPromociones(carpetaId);
     }
+
+    @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")
+    public Page<AcuerdosRecord> obtenerAcuerdos(
+        @PageableDefault(size = 20) Pageable pageable,
+        @PathVariable Integer carpetaId){
+
+            return acuerdosService.getAcuerdos(carpetaId, pageable);
+    }
+
+    @PostMapping("/documentos/publicarAcuerdo")
+    public AcuerdoRecord publicarAcuerdo(@RequestBody AcuerdoRecord acuerdo){
+        return acuerdosService.publicarAcuerdo(acuerdo);
+    }
+
+    @GetMapping("/documentos/obtenerTipoPartesAcuerdo/{carpetaId}/{tipoParte}")
+    public List<AcuerdoNotificadosRecord> obtenerTipoPartesAcuerdo(@PathVariable Integer carpetaId, @PathVariable String tipoParte) {
+        return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
+    }
+    
 
 
 

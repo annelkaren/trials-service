@@ -102,20 +102,28 @@ public class DocumentoService {
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        Page<Documento> page = documentoRepository.findByEstatusCaptura(key, pageable);
+        Persona persona = personaService.getAuditor();
+        Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
+        Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
+        Page<Movimiento> page = movimientoService.getAllBandejaEntrada(pageable, juzgadoId, oficialiaId, key);
+        List<DocumentoGridRecord> list = new ArrayList<>();
+        for (Movimiento mov : page.getContent()) {
+            Documento documento = (mov.getDocumento() != null) ? mov.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
+            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta(): documento.getCarpeta();
+            DocumentoGridRecord documentoGridRecord =
+                    new DocumentoGridRecord(
+                            documento.getId(),
+                            (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
+                            carpeta.getExpediente(),
+                            carpeta.getJuzgado().getMateria().getNombre(),
+                            (documento.getTipoDocumento() != null) ? documento.getTipoDocumento().name() : carpeta.getTipoCarpeta().name(),
+                            documento.getAudit().getFechaAlta(),
+                            carpeta.getSelloEstatus(),
+                            (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
+                            (documento.getRuta() != null));
 
-        List<DocumentoGridRecord> list = page.getContent().stream()
-                .map(documento ->
-                        new DocumentoGridRecord(
-                                documento.getId(),
-                                documento.getCarpeta().getFolio(),
-                                documento.getCarpeta().getExpediente(),
-                                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
-                                documento.getCarpeta().getTipoCarpeta().name(),
-                                documento.getAudit().getFechaAlta(),
-                                documento.getCarpeta().getSelloEstatus(),
-                                documento.getCarpeta().getEstatus(),
-                                (documento.getRuta() != null))).toList();
+            list.add(documentoGridRecord);
+        }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -157,12 +165,17 @@ public class DocumentoService {
     public DocumentoRecord updateStatus(Integer id, Integer status) {
         Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
         EstadoCarpeta value = EstadoCarpeta.values()[status];
-        documento.getCarpeta().setEstatus(value);
-        carpetaRepository.save(documento.getCarpeta());
-        boolean isPromocion = documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION);
+        if (documento.getTipoDocumento() == null) {
+            documento.getCarpeta().setEstatus(value);
+            carpetaRepository.save(documento.getCarpeta());
+        } else {
+            documento.setEstatus(value);
+            documentoRepository.save(documento);
+        }
+        boolean isDocumento = documento.getTipoDocumento() != null;
         movimientoService.createMovimento(
-                isPromocion ? null : documento.getCarpeta(),
-                isPromocion ? documento : null,
+                isDocumento ? null : documento.getCarpeta(),
+                isDocumento ? documento : null,
                 personaService.getAuditor(),
                 null,
                 EstadoCarpeta.values()[status].name());
@@ -285,7 +298,6 @@ public class DocumentoService {
 
         Documento documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
-        documento.setMotivoEdita(motivoEdita);
         documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
 
         List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
@@ -304,6 +316,7 @@ public class DocumentoService {
         carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
+        movimientoService.createMovimento(documento.getCarpeta(), documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
@@ -515,9 +528,9 @@ public class DocumentoService {
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO","SECRETARIO", "TECNICO");
+        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO", "SECRETARIO", "TECNICO");
         for (String rol : roles) {
-            if (roleService.hasRole(currentUser.getUsuario(), rol) ) {
+            if (roleService.hasRole(currentUser.getUsuario(), rol)) {
                 return renderOficialMayorData(key, pageable, currentUser);
             }
         }
@@ -583,7 +596,7 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
         Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
-        boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR");
+        boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
         List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
                 .map(item ->
@@ -592,7 +605,7 @@ public class DocumentoService {
                                 item.carpetaId(),
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                esOficialMayor ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
+                                (item.tipoDocumento() != null) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
                                 item.concepto().getNombre(),
                                 item.fechaTurnado(),
                                 item.fechaTurnado().plusDays(item.concepto().getDias()),
@@ -725,16 +738,16 @@ public class DocumentoService {
 
         totalPendientes = page.getSize();
 
-        for ( Movimiento movimiento : page.getContent()) {
+        for (Movimiento movimiento : page.getContent()) {
             LocalDate fechaAsignacion = movimiento.getFechaAsignacion().toLocalDate();
 
-            if (fechaAsignacion.equals(LocalDate.now())){
+            if (fechaAsignacion.equals(LocalDate.now())) {
                 totalRecibidosHoy++;
-            } else if (fechaAsignacion.equals(LocalDate.now().minusDays(1))){
-                    totalRecibidosAyer++;
-                }else {
-                    totalOldies++;
-                }
+            } else if (fechaAsignacion.equals(LocalDate.now().minusDays(1))) {
+                totalRecibidosAyer++;
+            } else {
+                totalOldies++;
+            }
         }
 
         return new IndicadoresRecord(totalPendientes, totalRecibidosHoy, totalRecibidosAyer, totalOldies);
@@ -1034,7 +1047,7 @@ public class DocumentoService {
         return resultados;
     }
 
-    public IndicadoresRecord getIndicadoresAsignados(){
+    public IndicadoresRecord getIndicadoresAsignados() {
         int totalAsignados;
         Integer terminoRebasado = 0;
         Integer termino24horas = 0;
@@ -1044,12 +1057,12 @@ public class DocumentoService {
 
         totalAsignados = asignados.getSize();
 
-        for (DocumentoAsignadoResponseRecord asignado: asignados) {
-            if (asignado.fechaTermino().isAfter(LocalDateTime.now())){
+        for (DocumentoAsignadoResponseRecord asignado : asignados) {
+            if (asignado.fechaTermino().isAfter(LocalDateTime.now())) {
                 terminoRebasado++;
-            }else if (asignado.fechaTermino().isAfter(LocalDateTime.now().plusDays(1))){
+            } else if (asignado.fechaTermino().isAfter(LocalDateTime.now().plusDays(1))) {
                 termino24horas++;
-            }else{
+            } else {
                 termino3dias++;
             }
 

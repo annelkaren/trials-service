@@ -13,4 +13,6 @@ public enum EstadoCarpeta {
     CREADO,
     CON_ACUSE,
     CANCELADO,
+    PUBLICADO,
+    NOTIFICADO
 }

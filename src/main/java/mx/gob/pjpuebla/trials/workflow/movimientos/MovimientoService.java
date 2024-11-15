@@ -81,4 +81,8 @@ public class MovimientoService {
             }
         }
     }
+
+    public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId, String key) {
+        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable);
+    }
 }

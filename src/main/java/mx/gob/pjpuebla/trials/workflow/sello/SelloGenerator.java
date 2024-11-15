@@ -88,7 +88,7 @@ public class SelloGenerator {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
-        parameters.put("folio", documento.getCarpeta().getFolio());
+        parameters.put("folio", (documento.getTipoDocumento() != null) ? documento.getFolio() : documento.getCarpeta().getFolio());
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
@@ -199,7 +199,7 @@ public class SelloGenerator {
     }
 
     private String getCentroTrabajoCapturista() {
-        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
+        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();//No es el centro de trabajo del usuario es de donde se creo
         String user = jwt.getSubject();
         Persona persona = personaRepository.findByUsuario(user).orElseThrow(() -> new NotFoundException("Persona no encontrada", "usuario"));
         String nombreCapturista;

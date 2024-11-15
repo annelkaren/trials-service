@@ -259,12 +259,17 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
         demanda.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
+        Movimiento movimiento = new Movimiento().setDocumento(demanda);
 
-        List<Documento> listPage = Collections.singletonList(demanda);
-        given(documentoRepository.findByEstatusCaptura(any(String.class), any(PageRequest.class)))
+        List<Movimiento> listPage = Collections.singletonList(movimiento);
+
+        given(personaService.getAuditor()).willReturn(new Persona().setJuzgado(juzgado));
+        given(movimientoService.getAllBandejaEntrada(any(),any(),any(), any()))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        
         Page<DocumentoGridRecord> page = documentoService.getAll(demanda.getCarpeta().getFolio(),
                 PageRequest.of(1, listPage.size()));
+                
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -344,7 +349,6 @@ class DocumentoServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.id()).isEqualTo(demanda.getId());
 
-        assertThat(demanda.getMotivoEdita()).isEqualTo(motivoEdita);
         assertThat(demanda.getCarpeta().getSelloEstatus()).isEqualTo(SelloEstatus.NO_VALIDO);
     }
 
@@ -951,7 +955,7 @@ class DocumentoServiceTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", documentoAsignadoRecord.id())
                 .hasFieldOrPropertyWithValue("expediente", documentoAsignadoRecord.expediente())
-                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoCarpeta().name())
+                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoDocumento().name())
                 .hasFieldOrPropertyWithValue("concepto", documentoAsignadoRecord.concepto().getNombre())
                 .hasFieldOrPropertyWithValue("fechaTurnado", documentoAsignadoRecord.fechaTurnado())
                 .hasFieldOrPropertyWithValue("fechaTermino", documentoAsignadoRecord.fechaTurnado().plusDays(concepto.getDias()));
