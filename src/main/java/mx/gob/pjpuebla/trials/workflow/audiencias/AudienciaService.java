@@ -1,11 +1,18 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -23,6 +30,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -33,6 +41,7 @@ public class AudienciaService {
     private final SalaRepository salaRepository;
     private final BloqueRepository bloqueRepository;
     private final EtiquetaRepository etiquetaRepository;
+    private final PersonaService personaService;
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -82,5 +91,35 @@ public class AudienciaService {
                 fechaFormateada,
                 label
         );
+    }
+
+    public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona persona = personaService.getAuditor();
+        Juzgado juzgado = persona.getJuzgado();
+
+        Page<Audiencia> page = audienciaRepository.findByJuzgado(juzgado, key, pageable);
+
+        List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
+                .map(item -> {
+                    String nombreCompleto = item.getSala().getJuez().getNombre() + " " + item.getSala().getJuez().getApellidoPaterno();
+
+                    if (item.getSala().getJuez().getApellidoMaterno() != null) {
+                        nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
+                    }
+
+                    return new AudienciasGeneralesResponseRecord(
+                            item.getId(),
+                            item.getTipoAudiencia().getNombre(),
+                            nombreCompleto,
+                            item.getCarpeta().getExpediente(),
+                            item.getSala().getNombre(),
+                            item.getFechaAudiencia(),
+                            item.getEstatusAudiencia()
+                    );
+                })
+                .toList();
+
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 }
