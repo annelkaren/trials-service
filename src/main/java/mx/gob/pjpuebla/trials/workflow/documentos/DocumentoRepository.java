@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
@@ -173,17 +174,37 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )""")
     List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 
-    // TODO: CORREGIR resume, se deja como "" hasta que se determine que ira ahi
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
-        doc.id,
-        dd.fechaResolucion,
-        null,
-        doc.estatus)
-        FROM DocumentoDetalle dd
-        JOIN dd.documento doc
-        WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta.id = :carpetaId
-        """)
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
+            doc.id,
+            dd.fechaPublicacion,
+            dd.resumen,
+            doc.estatus)
+            FROM DocumentoDetalle dd
+            JOIN dd.documento doc
+            WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta.id = :carpetaId
+            """)
     Page<AcuerdosRecord> findAllAcuerdosByCarpeta(Integer carpetaId, Pageable pageable);
-    
+
+    //TODO: actualizar el metodo cuando se tenga en donde se guardara.
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
+        pd.id,
+        concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
+        :tipoParte,
+        '' )
+        FROM PersonaDocumento pd
+        JOIN pd.tipoPartes tp
+        WHERE pd.carpeta.id = :carpetaId
+        AND (
+            (:tipoParte = 'ambos' AND (lower(tp.nombre) LIKE '%actor%' OR lower(tp.nombre) LIKE '%demandado%'))
+            OR
+            (:tipoParte = 'actor' AND lower(tp.nombre) LIKE '%actor%')
+            OR
+            (:tipoParte = 'demandado' AND lower(tp.nombre) LIKE '%demandado%')
+            OR
+            (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
+        )
+        """)
+List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
 }
