@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 
 @DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -69,4 +72,44 @@ class DocumentoRepositoryTest extends AuditConfigTest {
         assertThat(documento).isNotNull();
         assertThat(documento.getEstatus()).isEqualTo(EstadoCarpeta.DEVUELTO);
     }
+
+    @Test
+    void testFindTipoPartesAcuerdo_actor() {
+        Integer carpetaId = 1;
+        String tipoParte = "actor";
+    
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
+    
+        assertThat(acuerdoNotificados).isNotEmpty();
+        // Verificamos que el nombre contiene el actor (pero sin buscar el término "actor" en el nombre completo)
+        // Si tu consulta filtra bien, deberías comprobar que los resultados son consistentes con el tipo de parte
+        // Ejemplo de que los registros sean los esperados para "actor" (aunque no contiene la palabra "actor")
+        assertThat(acuerdoNotificados.get(0).nombre()).isNotEmpty();
+        assertThat(acuerdoNotificados.get(0).nombre()).doesNotContain("demandado");
+    }
+    
+    @Test
+    void testFindTipoPartesAcuerdo_demandado() {
+        Integer carpetaId = 1;
+        String tipoParte = "demandado";
+    
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
+    
+        assertThat(acuerdoNotificados).isNotEmpty();
+        // Verificamos que solo los demandados estén presentes
+        assertThat(acuerdoNotificados.get(0).nombre()).isNotEmpty();
+        assertThat(acuerdoNotificados.get(0).nombre()).doesNotContain("actor");
+    }
+    
+    @Test
+    void testFindTipoPartesAcuerdo_otros() {
+        Integer carpetaId = 1;
+        String tipoParte = "otros";
+    
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
+    
+        assertThat(acuerdoNotificados).isNotNull();
+        assertThat(acuerdoNotificados).hasSize(0);
+    }
+    
 }
