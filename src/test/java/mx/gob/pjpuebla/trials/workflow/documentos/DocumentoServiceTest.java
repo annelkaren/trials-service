@@ -1337,15 +1337,27 @@ class DocumentoServiceTest {
 
 
     @Test
-    void create_demandaAntigua() {
+    void create_demandaAntiguas() {
 
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+
+        TipoJuicio tipoJuicioOral = new TipoJuicio();
+        tipoJuicioOral.setNombre("Oral");
+
+        TipoJuicio tipoJuicioTradicional = new TipoJuicio();
+        tipoJuicioTradicional.setNombre("Tradicional");
+
+        tipoJuicioTradicional.setTipoSistema(new TipoSistema().setNombre("Tradicional"));
+        List<TipoJuicio> listaTipoJuicios = new ArrayList<>();
+        listaTipoJuicios.add(tipoJuicioTradicional);
+        listaTipoJuicios.add(tipoJuicioOral);
+
         Persona persona = PersonaSetUp.createPersona();
+        persona.getJuzgado().setTipoJuicios(listaTipoJuicios);
 
         given(personaService.getAuditor()).willReturn(persona);
-        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
         lenient().when(juzgadoService.getJuzgadoFolios(any(), any())).thenReturn(juzgadoFolios);
         lenient().when(juzgadoService.checkYearJuzgadoFolios(any())).thenReturn(juzgadoFolios);
         given(documentoRepository.save(any())).willReturn(demanda);
@@ -1370,7 +1382,6 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
 
         verify(personaService).getAuditor();
-        verify(juzgadoService).getConexidadJuzgado(any(), any(), any());
         verify(carpetaRepository).save(any());
         verify(documentoRepository).save(any());
         verify(digitalizacionService).guardarArchivo(multipartFile, demanda.getId());
