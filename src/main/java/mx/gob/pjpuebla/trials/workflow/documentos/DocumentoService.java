@@ -1106,15 +1106,13 @@ public class DocumentoService {
                 throw new NotFoundException("Tipo Juicio no encontrado", "personaId");
             }
             carpeta.setTipoJuicio(tipoJuicioTradicional);
+        } else {
+            throw new NotFoundException("No se encontraron juzgado", "personaId");
         }
 
-        carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
+        carpeta.setJuzgado(persona.getJuzgado());
         carpeta.setFolio(getFolio("D"));
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-
-        if (carpeta.getJuzgado() == null) {
-            carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta()));
-        }
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
         carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
@@ -1124,9 +1122,8 @@ public class DocumentoService {
 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
         documento.setCarpeta(carpeta);
-        documento.setData(documentoRecord.general());
-        documento.setFechaAsignacion(LocalDateTime.now());
-        documento.setPersona(persona);
+        documento.setFechaAsignacion(null);
+        documento.setPersona(null);
         documento = documentoRepository.save(documento);
         createPersonaDocumento(documentoRecord.actor(), carpeta);
         createPersonaDocumento(documentoRecord.demandado(), carpeta);
