@@ -11,6 +11,7 @@ spec:
       serviceAccountName: build-robot
       containers:
         - name: trials-api
+          imagePullPolicy: Always
           image: pjpuebla.azurecr.io/trialsservice:0.0.1
           envFrom:
             - configMapRef:
