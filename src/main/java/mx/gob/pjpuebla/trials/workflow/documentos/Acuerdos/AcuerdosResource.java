@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 
 import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -47,6 +49,17 @@ public class AcuerdosResource {
 
             return acuerdosService.getAcuerdos(carpetaId, pageable);
     }
+
+    @PostMapping("/documentos/publicarAcuerdo")
+    public AcuerdoRecord publicarAcuerdo(@RequestBody AcuerdoRecord acuerdo){
+        return acuerdosService.publicarAcuerdo(acuerdo);
+    }
+
+    @GetMapping("/documentos/obtenerTipoPartesAcuerdo/{carpetaId}/{tipoParte}")
+    public List<AcuerdoNotificadosRecord> obtenerTipoPartesAcuerdo(@PathVariable Integer carpetaId, @PathVariable String tipoParte) {
+        return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
+    }
+    
 
 
 

@@ -60,6 +60,10 @@ stages:
               QODANA_TOKEN: $(QODANA_TOKEN)
               QODANA_ENDPOINT: 'https://qodana.cloud'
 
+          - bash: echo "##vso[task.setvariable variable=tag]nightly"
+            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+            displayName: Set nightly tag only for dev branch
+
           - task: Docker@2
             condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/develop', 'refs/heads/main'))
             displayName: Build and push an image to container registry
