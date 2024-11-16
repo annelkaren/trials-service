@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -181,12 +182,12 @@ public class DocumentoResource {
         return documentoService.getDataDocumentoRecepcion(id);
     }
 
-    @GetMapping(value = "/documentos/oficio/{formato}/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> exportPdf(@PathVariable boolean formato, @PathVariable Integer oficioId) throws JRException, IOException {
+    @GetMapping(value = "/documentos/oficio/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportOficioPdf(@PathVariable Integer oficioId) throws JRException, IOException, WriterException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("oficio", formato + "_" + oficioId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(formato, oficioId));
+        headers.setContentDispositionFormData("oficio", oficioId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(oficioId));
     }
 
     @DeleteMapping("/bandeja/asignados/{id}")
