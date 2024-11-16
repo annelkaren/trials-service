@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
@@ -93,5 +96,14 @@ class AudienciaRepositoryTest extends AuditConfigTest {
     void getSalaNombreByCarpetaId_ReturnsSalaNombre() {
         String salaNombre = audienciaRepository.getSalaNombreByCarpetaId(1);
         assertThat(salaNombre).isNotNull().isEqualTo("1");
+    }
+
+    @Test
+    void findByJuzgado_NoFilter_ReturnsAllAudiencias() {
+        Juzgado juzgado = new Juzgado();
+        juzgado.setId(51);
+        juzgado.setVersion(1);
+        Page<Audiencia> audiencias = audienciaRepository.findByJuzgado(juzgado, null, PageRequest.of(0, 10));
+        assertThat(audiencias).isNotEmpty();
     }
 }

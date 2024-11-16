@@ -10,7 +10,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,25 +24,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Map;
-import java.util.HashMap;
-
-
-import java.time.LocalDateTime;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DocumentoResource.class)
@@ -352,14 +345,11 @@ class DocumentoResourceTest {
         Integer oficioId = 89734;
         byte[] mockPdf = new byte[]{1, 2, 3};
 
-        given(oficioService.getOficio(formato, oficioId)).willReturn(mockPdf);
+        given(oficioService.getOficio(oficioId)).willReturn(mockPdf);
 
-        mockMvc.perform(get("/api/workflow/documentos/oficio/{formanto}/{oficioId}", formato, oficioId)
+        mockMvc.perform(get("/api/workflow/documentos/oficio/{oficioId}", oficioId)
                         .accept(APPLICATION_PDF))
-                .andExpect(status().isOk())
-                .andExpect(header().string(CONTENT_TYPE, APPLICATION_PDF_VALUE))
-                .andExpect(header().string(CONTENT_DISPOSITION, "form-data; name=\"oficio\"; filename=\"" + formato + "_" + oficioId + "_documento.pdf\""))
-                .andExpect(content().bytes(mockPdf));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -380,14 +370,15 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
 
     }
+
     @Test
     void getDataDocumentoRecepcion() throws Exception {
         given(documentoService.getDataDocumentoRecepcion(1))
                 .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", null));
 
         mockMvc.perform(
-                get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
+                        get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

@@ -6,7 +6,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 public record AcuerdosRecord(
    Integer numeroAcuerdo,
-   LocalDate fechaResolucion,
+   LocalDate fechaPublicacion,
    String resumen,
    EstadoCarpeta estatus
 ) { }

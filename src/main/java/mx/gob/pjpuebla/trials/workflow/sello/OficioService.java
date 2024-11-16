@@ -1,72 +1,140 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.lowagie.text.*;
+import com.lowagie.text.html.simpleparser.HTMLWorker;
+import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
-import net.sf.jasperreports.engine.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
+@Slf4j
 @Service
 @Component
 @RequiredArgsConstructor
 public class OficioService {
 
-    @Value("classpath:jasper/OficioCarta.jasper")
-    private Resource oficioCarta;
+    private final DigitalizacionService digitalizacionService;
+    private final DocumentoContenidoService documentoContenidoService;
 
-    @Value("classpath:jasper/OficioOficio.jasper")
-    private Resource oficioOficio;
+    public byte[] getOficio(Integer oficioId) throws JRException, IOException, WriterException {
+        DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(oficioId);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.LETTER, 36.0F, 36.0F, 120.0F, 36.0F);
+        PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
-    public byte[] getOficio(boolean formato, Integer oficioId) throws JRException, IOException {
-        Resource oficio = formato ? oficioOficio : oficioCarta;
-        return JasperExportManager.exportReportToPdf(getReport(oficio, oficioId));
+        pdf.setPageEvent(new PdfPageEventHelper() {
+            @Override
+            public void onEndPage(PdfWriter writer, Document document) {
+                try {
+                    Image image = Image.getInstanceFromClasspath("jasper/header.jpg");
+                    image.setAlignment(Element.ALIGN_RIGHT);
+                    image.setAbsolutePosition(document.leftMargin(), writer.getPageSize().getTop(document.topMargin()) + 10);
+                    image.scaleAbsolute(280f, 76f);
+                    document.add(image);
+
+                    PdfContentByte canvas = writer.getDirectContentUnder();
+                    BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+
+                    String watermarkText = "SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL";
+                    PdfGState gState = new PdfGState();
+                    gState.setFillOpacity(0.3f);
+                    canvas.setGState(gState);
+
+                    canvas.beginText();
+                    canvas.setFontAndSize(baseFont, 20);
+                    float x = document.left() - 10;
+                    float y = (document.bottom() + document.top()) / 2;
+                    canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText, x, y, 90);
+                    canvas.endText();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        });
+
+        document.open();
+
+        BitMatrix bitMatrix;
+        try {
+            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()), BarcodeFormat.QR_CODE, 68, 68);
+            ByteArrayOutputStream qrbaos = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", qrbaos);
+            Image qrcode = Image.getInstance(qrbaos.toByteArray());
+            qrcode.setAbsolutePosition(document.right() - 68, pdf.getPageSize().getTop(document.topMargin()) + 10);
+            document.add(qrcode);
+
+            PdfContentByte canvas = pdf.getDirectContent();
+            BaseFont font = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+            canvas.beginText();
+            canvas.setFontAndSize(font, 10);
+            canvas.setTextMatrix(document.right() - 150, pdf.getPageSize().getTop(document.topMargin()) + 50);
+            canvas.showText(String.valueOf(documentoContenido.getId()));
+            canvas.setTextMatrix(document.right() - 150, pdf.getPageSize().getTop(document.topMargin()) + 35);
+            canvas.showText("No. Oficio: " + documentoContenido.getId());
+            canvas.endText();
+        } catch (WriterException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        List<String> imagenes = extraerImagenes(documentoContenido.getTexto());
+        String textoLimpio = limpiarHTML(documentoContenido.getTexto());
+
+        HTMLWorker htmlWorker = new HTMLWorker(document);
+        htmlWorker.parse(new StringReader(textoLimpio));
+
+        for (String imageUrl : imagenes) {
+            try {
+                Image image = Image.getInstance(imageUrl);
+                image.scaleToFit(350, 350);
+                image.setAlignment(Element.ALIGN_LEFT);
+                document.add(image);
+            } catch (Exception e) {
+                log.error("Error al agregar imagen: ", e);
+            }
+        }
+
+        document.close();
+        return baos.toByteArray();
     }
 
 
-    public JasperPrint getReport(Resource resource, Integer oficioId) throws IOException, JRException {
-        List<String> heder = setHeder(2134323, oficioId);
+    private List<String> extraerImagenes(String html) {
+        List<String> imageUrls = new ArrayList<>();
+        String[] partes = html.split("<img");
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("hederLogo", "jasper/header.jpg");
-        parameters.put("noFolio", heder.get(1));
-        parameters.put("noCodigo", heder.get(0));
-        parameters.put("noQR", "34729");
-        parameters.put("textHtml", bodyText());
-
-        return JasperFillManager.fillReport(
-                resource.getInputStream(),
-                parameters,
-                new JREmptyDataSource());
+        for (int i = 1; i < partes.length; i++) {
+            int srcIndex = partes[i].indexOf("src=\"");
+            if (srcIndex != -1) {
+                int start = srcIndex + 5;
+                int end = partes[i].indexOf("\"", start);
+                if (end != -1) {
+                    String imageUrl = partes[i].substring(start, end);
+                    imageUrls.add(imageUrl);
+                }
+            }
+        }
+        return imageUrls;
     }
 
-    public List<String> setHeder(Integer code, Integer noOficio) {
-        return Arrays.asList(
-                "<b>" + code + "</b>",
-                "<b>No. Oficio: " + noOficio + "</b>"
-        );
+    private String limpiarHTML(String html) {
+        return html.replaceAll("<img[^>]*>", "");
     }
 
-    public String bodyText(){
-        return  """ 
-                //TODO. Obtener cuerpo del oficio de base de datos
-                <h1>El agujero aplastante</h1>
-                <p style="line-height: 1.5;" >Por Chris Mills</p>
-                <h2>Capítulo 1: La oscura noche</h2>
-                <p>
-                  Era una noche oscura. En algún lugar, un búho ululó. La lluvia azotó el ...
-                </p>
-                <h2>Capítulo 2: El silencio eterno</h2>
-                <p>Nuestro protagonista ni susurrar pudo al ver esa sombría figura ...</p>
-                <h3>El espectro habla</h3>
-                <p>
-                  Habían pasado varias horas más, cuando de repente el espectro se incorporó y
-                  exclamó: "¡Por favor, ten piedad de mi alma!"
-                </p>
-                """;
-    }
 
 }
