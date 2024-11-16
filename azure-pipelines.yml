@@ -12,7 +12,10 @@ resources:
 variables:
   imageRepository: 'trialsservice'
   containerRegistry: 'pjpuebla.azurecr.io'
-  tag: '$(Build.BuildNumber)'
+  ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+    tag: '$(Build.BuildNumber)'
+  ${{ else }}:
+    tag: 'nightly'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   # Agent VM image name

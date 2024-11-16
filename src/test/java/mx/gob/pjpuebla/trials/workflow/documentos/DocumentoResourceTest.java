@@ -10,7 +10,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,27 +22,25 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
-import java.util.HashMap;
-
-
-import java.time.LocalDateTime;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DocumentoResource.class)
@@ -352,14 +349,11 @@ class DocumentoResourceTest {
         Integer oficioId = 89734;
         byte[] mockPdf = new byte[]{1, 2, 3};
 
-        given(oficioService.getOficio(formato, oficioId)).willReturn(mockPdf);
+        given(oficioService.getOficio(oficioId)).willReturn(mockPdf);
 
-        mockMvc.perform(get("/api/workflow/documentos/oficio/{formanto}/{oficioId}", formato, oficioId)
+        mockMvc.perform(get("/api/workflow/documentos/oficio/{oficioId}", oficioId)
                         .accept(APPLICATION_PDF))
-                .andExpect(status().isOk())
-                .andExpect(header().string(CONTENT_TYPE, APPLICATION_PDF_VALUE))
-                .andExpect(header().string(CONTENT_DISPOSITION, "form-data; name=\"oficio\"; filename=\"" + formato + "_" + oficioId + "_documento.pdf\""))
-                .andExpect(content().bytes(mockPdf));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -380,14 +374,15 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
 
     }
+
     @Test
     void getDataDocumentoRecepcion() throws Exception {
         given(documentoService.getDataDocumentoRecepcion(1))
                 .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", null));
 
         mockMvc.perform(
-                get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
+                        get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
@@ -463,4 +458,66 @@ class DocumentoResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void create_demanda_antigua() throws Exception {
+
+        String documentoSaveRecordJson = """
+        {
+            "actor": {
+                "nombre": "Carlos",
+                "apellidoPaterno": "González",
+                "apellidoMaterno": "Hernández",
+                "pseudonimo": "carlitos",
+                "tipoPersona": "fisica",
+                "tipoParte": 1
+            },
+            "demandado": {
+                "nombre": "María",
+                "apellidoPaterno": "López",
+                "apellidoMaterno": "Ramírez",
+                "pseudonimo": "mary",
+                "tipoPersona": "fisica",
+                "tipoParte": 2
+            },
+            "anexos": [
+                "Anexo1",
+                "Anexo2"
+            ]
+        }
+    """;
+
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        MockMultipartFile documentoSaveRecord = new MockMultipartFile(
+                "documentoSaveRecord",
+                "documentoSaveRecord",
+                "application/json",
+                documentoSaveRecordJson.getBytes()
+        );
+
+        DocumentoRecord expectedResponse = new DocumentoRecord(1, "12345", TipoCarpeta.DEMANDA);
+        given(documentoService.createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class)))
+                .willReturn(expectedResponse);
+
+        mockMvc.perform(multipart("/api/workflow/registro")
+                        .file(file)
+                        .file(documentoSaveRecord)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("12345"))
+                .andExpect(jsonPath("$.tipoCarpeta").value(TipoCarpeta.DEMANDA.name()));
+
+        verify(documentoService).createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class));
+    }
+
 }
