@@ -37,7 +37,7 @@ public class DocumentoContenidoService {
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
         Character tamanioPapel = ' ';
         String textoEditor = "";
-        Character existeOficio = ' '; 
+        Character existeOficio = ' ';
 
         //Obtenemos información detallada del documento
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
@@ -132,4 +132,9 @@ public class DocumentoContenidoService {
 
         return 1;
    }
+
+    public DocumentoContenido getContenidoByOficioId(Integer oficioId) {
+        return documentoContenidoRepository.findByDocumentoId(oficioId)
+                .orElseThrow(() -> new NotFoundException("Oficio no encontrado", oficioId.toString()));
+    }
 }
