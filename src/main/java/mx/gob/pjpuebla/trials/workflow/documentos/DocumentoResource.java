@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -194,5 +196,12 @@ public class DocumentoResource {
         this.documentoService.deleteAsignado(id);
     }
 
+    @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DocumentoRecord createDemandaAntigua(
+            @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,
+            @RequestPart("file") MultipartFile file) throws JsonProcessingException {
 
+        DocumentoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoSaveRecord.class);
+        return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
+    }
 }

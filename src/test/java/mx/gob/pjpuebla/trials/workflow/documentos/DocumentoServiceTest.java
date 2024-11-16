@@ -76,8 +76,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.time.LocalDate;
@@ -153,6 +155,8 @@ class DocumentoServiceTest {
     private SelloGenerator selloGenerator;
     @Mock
     private EmailService emailService;
+    @Mock
+    private DigitalizacionService digitalizacionService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -1330,4 +1334,47 @@ class DocumentoServiceTest {
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
     }
+
+
+    @Test
+    void create_demandaAntigua() {
+
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        Persona persona = PersonaSetUp.createPersona();
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
+        lenient().when(juzgadoService.getJuzgadoFolios(any(), any())).thenReturn(juzgadoFolios);
+        lenient().when(juzgadoService.checkYearJuzgadoFolios(any())).thenReturn(juzgadoFolios);
+        given(documentoRepository.save(any())).willReturn(demanda);
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
+        given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
+        given(digitalizacionService.guardarArchivo(any(), any()))
+                .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo", "archivo.pdf"));
+        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
+
+        DocumentoRecord response = documentoService.createDemandaAntigua(recordRequest, multipartFile);
+        assertThat(response)
+                .isOfAnyClassIn(DocumentoRecord.class)
+                .hasFieldOrPropertyWithValue("id", documentoRecord.id())
+                .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
+
+        verify(personaService).getAuditor();
+        verify(juzgadoService).getConexidadJuzgado(any(), any(), any());
+        verify(carpetaRepository).save(any());
+        verify(documentoRepository).save(any());
+        verify(digitalizacionService).guardarArchivo(multipartFile, demanda.getId());
+        verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
+    }
+
 }
