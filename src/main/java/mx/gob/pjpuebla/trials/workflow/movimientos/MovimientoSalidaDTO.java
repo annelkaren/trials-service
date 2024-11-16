@@ -18,18 +18,20 @@ public class MovimientoSalidaDTO {
 
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
         String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
+        String tipo = (recordMovimiento.tipoDocumento() != null) ? recordMovimiento.tipoDocumento().name() : recordMovimiento.tipoCarpeta().name();
+        String expediente = (recordMovimiento.expediente() != null) ? recordMovimiento.expediente() : recordMovimiento.expedienteDoc();
         String observacionesTmp = "";
 
         DocumentoData data = (DocumentoData) recordMovimiento.data();
 
-        if (data != null) {
+        if (data != null && data.getExhortoObservaciones() != null) {
             observacionesTmp = data.getExhortoObservaciones().isEmpty() ? "" : data.getExhortoObservaciones();
         }
 
         this.setUuid(recordMovimiento.uuid());
-        this.setTipoDocumento(recordMovimiento.tipoDocumento().name());
+        this.setTipoDocumento(tipo);
         this.setFolio(folioTmp);
-        this.setExpediente(recordMovimiento.expediente());
+        this.setExpediente(expediente);
         this.setFecha(recordMovimiento.fecha());
         this.setJuzgado(recordMovimiento.juzgado());
         this.setObservaciones(observacionesTmp);
