@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+import java.util.Collections;
 import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -80,4 +82,10 @@ public class JuzgadoResource {
     public List<JuzgadoRecordItem> getSalas() {
         return this.juzgadoService.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
     }
+
+    @GetMapping("/actual")
+    public List<JuzgadoRecordItem> getJuzgadoActual() {
+        return Collections.singletonList(this.juzgadoService.getJuzgadoActual());
+    }
+
 }
