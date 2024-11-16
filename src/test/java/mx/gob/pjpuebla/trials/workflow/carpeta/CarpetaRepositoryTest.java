@@ -105,4 +105,19 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         assertThat(carpeta).isNotNull();
         assertThat(carpeta.getEstatus()).isEqualTo(EstadoCarpeta.DEVUELTO);
     }
+
+    @Test
+    void findTipoJuicioIdByCarpetaIdSuccess() {
+        Integer carpetaId = 1;
+        Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
+        assertThat(tipoJuicioId).isNotNull();
+        assertThat(tipoJuicioId).isEqualTo(100);
+    }
+
+    @Test
+    void findTipoJuicioIdByCarpetaIdFail() {
+        Integer carpetaId = 999; 
+        Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
+        assertThat(tipoJuicioId).isNull();
+    }
 }

@@ -38,4 +38,14 @@ public class TipoPartesResource {
         List<TipoPartesRecord> tiposPartes = tipoPartesService.getTipoPartesByDocumentoId(documentoId);
         return ResponseEntity.ok(tiposPartes);
     }
+
+    @GetMapping("/{carpetaId}/listar")
+    public ResponseEntity<List<TipoPartesRecord>> getTiposPartesByCarpetaId(@PathVariable Integer carpetaId) {
+        List<TipoPartesRecord> tiposPartes = tipoPartesService.getTiposPartesByCarpetaId(carpetaId);
+
+        return tiposPartes != null && !tiposPartes.isEmpty() 
+               ? ResponseEntity.ok(tiposPartes)
+               : ResponseEntity.notFound().build();
+    }
+
 }
