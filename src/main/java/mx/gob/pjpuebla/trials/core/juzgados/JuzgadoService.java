@@ -307,4 +307,8 @@ public class JuzgadoService {
 
         return new JuzgadoRecordItem(id, juzgado.getNombre(), juzgado.getEstado(), "");
     }
+
+    public List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado){
+        return  juzgadoRepository.findAllByInstancia(instanciaJuzgado);
+    }
 }

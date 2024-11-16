@@ -301,9 +301,10 @@ public class CarpetaService {
 
         Carpeta pieza = new Carpeta();
 
-        String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, piezaRecord.clavePieza());
+        String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, tipoPieza.getClave());
 
-        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, piezaRecord.clavePieza()));
+        //Folio temporal hasta que se cree la Historia de Piezas :3
+        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, tipoPieza.getClave()));
         pieza.setExpediente(numeroPieza);
         pieza.setCarpetaPadre(carpetaPadre);
         pieza.setFechaAsignacion(LocalDateTime.now());
@@ -336,6 +337,7 @@ public class CarpetaService {
         for(Integer documentoId : documentos) {
                 Documento documento = documentoRepository.findById(documentoId).orElseThrow();
                 documento.setCarpeta(pieza);
+                documento.setData(documento.getData().setPieza(pieza.getExpediente()));
                 documentoRepository.save(documento);
         }
     }

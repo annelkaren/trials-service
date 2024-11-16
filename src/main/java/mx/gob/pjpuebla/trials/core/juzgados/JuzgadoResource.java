@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -73,5 +74,10 @@ public class JuzgadoResource {
     @PatchMapping("/{id}/status/{status}")
     public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.juzgadoService.updateStatus(id, status);
+    }
+
+    @GetMapping("/salas")
+    public List<JuzgadoRecordItem> getSalas() {
+        return this.juzgadoService.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
     }
 }

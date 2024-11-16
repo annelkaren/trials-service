@@ -1101,9 +1101,11 @@ public class DocumentoService {
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
         data.setAmparoQuejoso(amparoRecord.quejoso());
+        data.setAmparoTribunalId(amparoRecord.tribunalId());
         data.setAmparoSalaId(amparoRecord.salaId());
         data.setAmparoSentido(amparoRecord.sentidoAmparo());
         data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo());
+        data.setAmparoTipo(amparoRecord.tipoAmparo());
 
         Documento amparo = new Documento()
         .setCarpeta(carpeta)
@@ -1115,7 +1117,7 @@ public class DocumentoService {
 
         documentoRepository.save(amparo);
 
-        Carpeta pieza = carpetaService.createPieza(carpeta.getId(), new PiezaRecord(null, amparoRecord.tipoAmparo(), Arrays.asList(amparo.getId())));
+        Carpeta pieza = carpetaService.createPieza(carpeta.getId(), new PiezaRecord(null, amparoRecord.tipoAmparo(), Collections.singletonList(amparo.getId())));
 
         return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }

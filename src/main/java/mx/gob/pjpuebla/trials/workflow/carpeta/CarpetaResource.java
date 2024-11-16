@@ -63,7 +63,7 @@ public class CarpetaResource {
         return this.carpetaService.getInfoExpediente(docId);
     }
 
-    @GetMapping(value= "/piezas/numPieza")
+    @GetMapping(value= "/piezas/numPieza", produces = MediaType.APPLICATION_JSON_VALUE)
     public NumPiezaRecord getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
         String numPieza = this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
 
