@@ -22,7 +22,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +33,8 @@ import java.util.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -454,4 +458,66 @@ class DocumentoResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void create_demanda_antigua() throws Exception {
+
+        String documentoSaveRecordJson = """
+        {
+            "actor": {
+                "nombre": "Carlos",
+                "apellidoPaterno": "González",
+                "apellidoMaterno": "Hernández",
+                "pseudonimo": "carlitos",
+                "tipoPersona": "fisica",
+                "tipoParte": 1
+            },
+            "demandado": {
+                "nombre": "María",
+                "apellidoPaterno": "López",
+                "apellidoMaterno": "Ramírez",
+                "pseudonimo": "mary",
+                "tipoPersona": "fisica",
+                "tipoParte": 2
+            },
+            "anexos": [
+                "Anexo1",
+                "Anexo2"
+            ]
+        }
+    """;
+
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        MockMultipartFile documentoSaveRecord = new MockMultipartFile(
+                "documentoSaveRecord",
+                "documentoSaveRecord",
+                "application/json",
+                documentoSaveRecordJson.getBytes()
+        );
+
+        DocumentoRecord expectedResponse = new DocumentoRecord(1, "12345", TipoCarpeta.DEMANDA);
+        given(documentoService.createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class)))
+                .willReturn(expectedResponse);
+
+        mockMvc.perform(multipart("/api/workflow/registro")
+                        .file(file)
+                        .file(documentoSaveRecord)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("12345"))
+                .andExpect(jsonPath("$.tipoCarpeta").value(TipoCarpeta.DEMANDA.name()));
+
+        verify(documentoService).createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class));
+    }
+
 }

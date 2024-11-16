@@ -54,6 +54,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -79,6 +80,7 @@ public class DocumentoService {
     private final SalaService salaService;
     private final AudienciaService audienciaService;
     private final MovimientoService movimientoService;
+    private final DigitalizacionService digitalizacionService;
     private final MovimientoRepository movimientoRepository;
     private final PersonaService personaService;
     private final PersonaRepository personaRepository;
@@ -1086,6 +1088,50 @@ public class DocumentoService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "actualizar a asignado" + id);
         }
+    }
+
+    public DocumentoRecord createDemandaAntigua(DocumentoSaveRecord documentoRecord, MultipartFile multipartFile) {
+        Persona persona = personaService.getAuditor();
+        Carpeta carpeta = new Carpeta();
+        Documento documento = new Documento();
+
+        if (persona != null && persona.getJuzgado() != null && persona.getJuzgado().getTipoJuicios() != null) {
+            TipoJuicio tipoJuicioTradicional = persona.getJuzgado().getTipoJuicios().stream()
+                    .filter(tipoJuicio -> tipoJuicio != null && tipoJuicio.getTipoSistema() != null
+                            && "Tradicional".equals(tipoJuicio.getTipoSistema().getNombre()))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException("Tipo Juicio 'Tradicional' no encontrado para la persona logueada", "personaId"));
+
+            if (tipoJuicioTradicional == null) {
+                throw new NotFoundException("Tipo Juicio no encontrado", "personaId");
+            }
+            carpeta.setTipoJuicio(tipoJuicioTradicional);
+        } else {
+            throw new NotFoundException("No se encontraron juzgado", "personaId");
+        }
+
+        carpeta.setJuzgado(persona.getJuzgado());
+        carpeta.setFolio(getFolio("D"));
+        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
+        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
+        carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
+        carpeta.setSelloEstatus(SelloEstatus.VALIDO);
+        carpeta.setFechaAsignacion(LocalDateTime.now());
+        carpeta.setPersona(persona);
+        carpeta = carpetaRepository.save(carpeta);
+
+        movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
+        documento.setCarpeta(carpeta);
+        documento.setFechaAsignacion(null);
+        documento.setPersona(null);
+        documento = documentoRepository.save(documento);
+        createPersonaDocumento(documentoRecord.actor(), carpeta);
+        createPersonaDocumento(documentoRecord.demandado(), carpeta);
+        addAnexos(documentoRecord.anexos(), documento);
+
+        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+
+        return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
 }
