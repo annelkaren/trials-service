@@ -1113,7 +1113,8 @@ public class DocumentoService {
         .setEstatus(EstadoCarpeta.ASIGNADO)
         .setFechaAsignacion(LocalDateTime.now())
         .setTipoDocumento(TipoDocumento.AMPARO)
-        .setPersona(persona);
+        .setPersona(persona)
+                .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
 
         documentoRepository.save(amparo);
 
