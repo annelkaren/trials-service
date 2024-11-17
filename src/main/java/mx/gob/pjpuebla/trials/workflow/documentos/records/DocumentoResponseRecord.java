@@ -9,6 +9,8 @@ public record DocumentoResponseRecord(
         PersonaDocumentoRecord actor,
         PersonaDocumentoRecord demandado,
         List<String> anexos,
-        String tipoJuicio
+        DocumentoData general,
+        String tipoJuicio,
+        Integer tipoJuicioId
 ) implements Serializable {
 }
