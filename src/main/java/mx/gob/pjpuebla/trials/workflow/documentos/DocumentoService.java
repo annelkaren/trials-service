@@ -317,7 +317,7 @@ public class DocumentoService {
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-    public DocumentoResponseRecord getDemandaById(Integer id) {
+    public Object getDemandaById(Integer id) {
 
         Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, id.toString()));
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonasByCarpetaId(documento.getCarpeta().getId(), Rol.PRINCIPAL);
@@ -333,7 +333,7 @@ public class DocumentoService {
                 demandado = persona;
             }
         }
-        return new DocumentoResponseRecord(actor, demandado, anexos);
+        return new DocumentoResponseRecord(actor, demandado, anexos, documento.getCarpeta().getTipoJuicio().getNombre());
     }
 
     /**
