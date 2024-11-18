@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -132,7 +135,7 @@ class AudienciaServiceTest {
         );
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
-        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(),"domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -142,7 +145,6 @@ class AudienciaServiceTest {
         assertThat(entity.nombreTipoJuicio()).isEqualTo("Familiar Oralidad (Alimentos)");
         assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Example Domicilio</b>");
     }
-
 
 
     @Test
@@ -197,4 +199,15 @@ class AudienciaServiceTest {
     }
 
 
+    @Test
+    void deleteAudiencia() {
+        Integer audienciaId = 1;
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(audienciaId);
+        audiencia.setEstado(Estado.ACTIVE);
+
+        when(audienciaRepository.findById(audienciaId)).thenReturn(Optional.of(audiencia));
+        doThrow(DataIntegrityViolationException.class).when(audienciaRepository).save(audiencia);
+        assertThrows(ConstraintViolationException.class, () -> audienciaService.deleteAudiencia(audienciaId));
+    }
 }
