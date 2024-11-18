@@ -1098,7 +1098,8 @@ public class DocumentoService {
     public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord){
         Persona persona = personaService.getAuditor();
         DocumentoData data = new DocumentoData();
-        Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId()).orElseThrow(null);
+        Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
+                .orElseThrow(()->new NotFoundException("La Carpeta no existe","Carpeta"));
 
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
@@ -1116,7 +1117,7 @@ public class DocumentoService {
         .setFechaAsignacion(LocalDateTime.now())
         .setTipoDocumento(TipoDocumento.AMPARO)
         .setPersona(persona)
-                .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
+        .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
 
         documentoRepository.save(amparo);
 

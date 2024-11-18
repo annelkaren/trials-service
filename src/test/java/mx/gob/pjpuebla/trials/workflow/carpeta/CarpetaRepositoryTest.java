@@ -105,4 +105,14 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         assertThat(carpeta).isNotNull();
         assertThat(carpeta.getEstatus()).isEqualTo(EstadoCarpeta.DEVUELTO);
     }
+
+    @Test
+    void getNumeroPiezaTest(){
+        Integer carpetaId = 1;
+        String clavePieza = "AD";
+
+        Integer numPieza = carpetaRepository.getNumeroPieza(carpetaId, clavePieza);
+        assertThat(numPieza).isEqualTo(1);
+
+    }
 }
