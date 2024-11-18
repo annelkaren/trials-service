@@ -20,7 +20,7 @@ public class PersonaDocumentoService {
         List<PersonaDocumento> list = personaDocumentoRepository
                 .findByCarpetaIdAndRolAndTipoPartesNombre(carpetaId, Rol.PRINCIPAL, tipo);
 
-        List<PersonaDocumentoNameRecord> partes = list.stream()
+        return list.stream()
                 .map(item ->
                         new PersonaDocumentoNameRecord(
                                 item.getId(),
@@ -28,7 +28,6 @@ public class PersonaDocumentoService {
                                         ((item.getApellidoMaterno() != null) ? " " + item.getApellidoMaterno() : "")
                         ))
                 .toList();
-        return partes;
     }
 
 }
