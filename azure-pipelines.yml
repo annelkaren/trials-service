@@ -15,7 +15,7 @@ variables:
   ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
     tag: '$(Build.BuildNumber)'
   ${{ else }}:
-    tag: 'nightly'
+    tag: '$(Build.BuildId)'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   # Agent VM image name
