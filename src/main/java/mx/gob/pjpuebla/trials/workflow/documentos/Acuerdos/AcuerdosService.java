@@ -125,24 +125,83 @@ public class AcuerdosService {
                 .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoId"));
 
         Documento documento = documentoRepository.findById(acuerdoId)
-            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
-        
-        //Actualizamos el estatus de documento a publicado esperando definirlo:
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        // Actualizamos el estatus de documento a publicado esperando definirlo:
         documento.setEstatus(EstadoCarpeta.PUBLICADO);
         documentoRepository.save(documento);
 
-        //Actualizamos fecha de publicación en documento detalle:
+        // Actualizamos fecha de publicación en documento detalle:
         documentoDetalle.setFechaPublicacion(LocalDate.now());
         documentoDetalleRepository.save(documentoDetalle);
 
-        //Actualizamos estatus de la bandera de documento contenido:
+        // Actualizamos estatus de la bandera de documento contenido:
         documentoContenido.setOficioPublicado('s');
         documentoContenidoRepository.save(documentoContenido);
 
         return acuerdo;
     }
 
-    public List<AcuerdoNotificadosRecord> getTipoPartesAcuerdo(Integer carpetaId, String tipoParte){
+    public List<AcuerdoNotificadosRecord> getTipoPartesAcuerdo(Integer carpetaId, String tipoParte) {
         return documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
+    }
+
+    public AcuerdoRecord getAcuerdo(Integer acuerdoId) {
+
+        Documento documento = documentoRepository.findById(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoDetalleId"));
+
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoContenidoId"));
+
+        return new AcuerdoRecord(
+                acuerdoId,
+                documento.getCarpeta().getId(),
+                acuerdoId,
+                documentoDetalle.getTipoAcuerdo(),
+                documentoDetalle.getFechaResolucion(),
+                documentoDetalle.getEtapaProcesal(),
+                documento.getData().getRubros(),
+                null,
+                documentoContenido.getTamanioPapel(),
+                documentoContenido.getTexto(),
+                documentoDetalle.getResumen());
+
+    }
+
+    public DocumentoGenericRecord update(AcuerdoRecord acuerdo) {
+
+        Documento documento = documentoRepository.findById(acuerdo.acuerdoId())
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdo.acuerdoId())
+                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoDetalleId"));
+
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdo.acuerdoId())
+                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoContenidoId"));
+    
+        //Actualizar datos del documento:
+        documento.getData().setRubros(acuerdo.rubros());
+        documentoRepository.save(documento);
+
+        //Actualizar documento detalle:
+        documentoDetalle.setTipoAcuerdo(acuerdo.tipoAcuerdo());
+        documentoDetalle.setFechaResolucion(acuerdo.fechaResolucion());
+        documentoDetalle.setEtapaProcesal(acuerdo.etapaProcesal());
+        documentoDetalle.setResumen(acuerdo.resumen());
+        documentoDetalleRepository.save(documentoDetalle);
+
+        //Actualizar documento contenido:
+        documentoContenido.setTamanioPapel(acuerdo.tamanioPapel());
+        documentoContenido.setTexto(acuerdo.textoEditor());
+        documentoContenidoRepository.save(documentoContenido);
+
+        //Actualizar promociones relacionadas.
+
+        return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);
+        
     }
 }

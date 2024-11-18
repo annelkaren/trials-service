@@ -174,6 +174,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )""")
     List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
 
+    
+
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
             doc.id,

@@ -21,6 +21,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecor
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+
+
 
 
 @RequiredArgsConstructor
@@ -59,6 +62,18 @@ public class AcuerdosResource {
     public List<AcuerdoNotificadosRecord> obtenerTipoPartesAcuerdo(@PathVariable Integer carpetaId, @PathVariable String tipoParte) {
         return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
     }
+
+    @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")
+    public AcuerdoRecord obtenerAcuerdo(@PathVariable Integer acuerdoId) {
+        return acuerdosService.getAcuerdo(acuerdoId);
+    }
+
+    @PutMapping("/documentos/actualizarAcuerdo")
+    public DocumentoGenericRecord actualizarAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
+
+        return acuerdosService.update(acuerdo);
+    }
+    
     
 
 
