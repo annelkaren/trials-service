@@ -60,4 +60,11 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             WHERE c.carpetaPadre.id=:carpetaId and c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA and c.expediente like %:clavePieza%
             """)
     Integer getNumeroPieza(Integer carpetaId, String clavePieza);
+    
+    @Query("""
+            SELECT c.tipoJuicio.id
+            FROM Carpeta c
+            WHERE c.id = :carpetaId
+            """)
+    Integer findTipoJuicioIdByCarpetaId(@Param("carpetaId") Integer carpetaId);
 }
