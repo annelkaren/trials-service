@@ -99,4 +99,13 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
     );
 
     Optional<Juzgado> findByNombreIgnoreCase(String nombre);
+
+    @Query("""
+            SELECT
+            new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id,  f.nombre, f.estado, m.nombre)
+            FROM Juzgado f
+            LEFT JOIN f.materia m
+            WHERE f.instanciaJuzgado=:instanciaJuzgado
+            """)
+    List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado);
 }

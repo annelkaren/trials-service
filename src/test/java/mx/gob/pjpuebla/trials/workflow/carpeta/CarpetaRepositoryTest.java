@@ -107,6 +107,14 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
+    void getNumeroPiezaTest(){
+        Integer carpetaId = 1;
+        String clavePieza = "AD";
+
+        Integer numPieza = carpetaRepository.getNumeroPieza(carpetaId, clavePieza);
+        assertThat(numPieza).isEqualTo(1);
+    }
+
     void findTipoJuicioIdByCarpetaIdSuccess() {
         Integer carpetaId = 1;
         Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);

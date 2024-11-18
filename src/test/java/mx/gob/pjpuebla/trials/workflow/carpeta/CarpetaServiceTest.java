@@ -25,13 +25,13 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -43,6 +43,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
@@ -59,6 +60,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
@@ -106,6 +108,8 @@ class CarpetaServiceTest {
     private AnexoRepository anexoRepository;
     @Mock
     private AudienciaService audienciaService;
+    @Mock
+    private TipoPiezaRepository tipoPiezaRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -116,6 +120,7 @@ class CarpetaServiceTest {
     private JuzgadoFolios juzgadoFolios;
     private TipoPartes actorApelacion;
     private TipoPartes demandadoApelacion;
+    
 
     @BeforeEach
     public void setUp() {
@@ -625,4 +630,36 @@ class CarpetaServiceTest {
         assertThat(result).isEqualTo(items);
     }
 
+    @Test
+    void createPiezaTest(){
+        Integer carpetaPadreId = 1;
+
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        Persona persona = PersonaSetUp.createPersona();
+        String consecutivo = "AD01";
+        String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
+        Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
+        PiezaRecord piezaRecord = new PiezaRecord(null, tipoPieza.getClave(), Collections.singletonList(1));
+
+        Carpeta piezaTmp = new Carpeta()
+                .setId(5)
+                .setExpediente(expediente)
+                .setCarpetaPadre(validCarpeta);
+
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(validCarpeta));
+        given(tipoPiezaRepository.findByIdOrClave(any(), eq("AD"))).willReturn(Collections.singletonList(tipoPieza));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(carpetaRepository.existsById(carpetaPadreId)).willReturn(true);
+        given(tipoPiezaRepository.existsByClave(any())).willReturn(true);
+        given(carpetaRepository.save(any())).willReturn(piezaTmp);
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+
+        piezaTmp = target.createPieza(carpetaPadreId, piezaRecord);
+        assertThat(piezaTmp).isNotNull()
+                .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");
+
+    }
 }

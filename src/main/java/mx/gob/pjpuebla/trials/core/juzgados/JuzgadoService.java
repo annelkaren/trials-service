@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -51,6 +53,7 @@ public class JuzgadoService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final JuzgadoFoliosRepository juzgadoFoliosRepository;
+    private final PersonaService personaService;
 
     private static final Random RANDOM = new Random();
 
@@ -306,5 +309,21 @@ public class JuzgadoService {
         juzgadoRepository.save(juzgado);
 
         return new JuzgadoRecordItem(id, juzgado.getNombre(), juzgado.getEstado(), "");
+    }
+
+    public List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado){
+        return  juzgadoRepository.findAllByInstancia(instanciaJuzgado);
+    }
+
+    public JuzgadoRecordItem getJuzgadoActual() {
+        Persona persona = personaService.getAuditor();
+
+        if (persona.getJuzgado() == null) {
+            throw new NotFoundException("El usuario actual no esta asignado a un juzgado", "Juzgado");
+        }
+
+        Juzgado juzgadoActual = persona.getJuzgado();
+
+        return new JuzgadoRecordItem(juzgadoActual.getId(), juzgadoActual.getNombre(), juzgadoActual.getEstado(), juzgadoActual.getMateria().getNombre());
     }
 }

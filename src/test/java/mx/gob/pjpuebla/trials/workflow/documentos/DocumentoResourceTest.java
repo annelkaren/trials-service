@@ -1,11 +1,20 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
@@ -518,6 +527,21 @@ class DocumentoResourceTest {
                 .andExpect(jsonPath("$.tipoCarpeta").value(TipoCarpeta.DEMANDA.name()));
 
         verify(documentoService).createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class));
+    }
+
+    @Test
+    void crear_amparo() throws Exception{
+        String pieza = "000001/2024/AD01";
+        AmparoRecordResponse amparoRecordResponse = new AmparoRecordResponse(1, 1, pieza, LocalDateTime.now());
+
+        given(documentoService.createAmparo(any())).willReturn(amparoRecordResponse);
+
+        mockMvc.perform(
+                        post("/api/workflow/documentos/amparo")
+                                .content(ResourceUtilTest.asJsonString(amparoRecordResponse))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
 }

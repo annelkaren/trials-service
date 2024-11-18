@@ -10,6 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
 
 @RequiredArgsConstructor
 @RestController
@@ -56,4 +62,13 @@ public class CarpetaResource {
     public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
         return this.carpetaService.getInfoExpediente(docId);
     }
+
+    @GetMapping(value= "/piezas/numPieza", produces = MediaType.APPLICATION_JSON_VALUE)
+    public NumPiezaRecord getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
+        String numPieza = this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
+
+        return new NumPiezaRecord(numPieza);
+    }
+    
+    
 }
