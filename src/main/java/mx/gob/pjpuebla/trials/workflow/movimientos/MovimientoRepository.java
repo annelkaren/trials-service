@@ -25,6 +25,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     LEFT JOIN Juzgado j on j = m.juzgado
                     LEFT JOIN Carpeta cd on cd = d.carpeta
                     WHERE m.uuid = :uuid
+                    ORDER BY j.id, c.tipoCarpeta, c.folio, d.folio
                     """)
     List<MovimientoSalidaRecord> getSalidas(UUID uuid, EstadoCarpeta estadoCarpeta);
 
