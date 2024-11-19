@@ -338,7 +338,7 @@ public class DocumentoService {
                 demandado = persona;
             }
         }
-        return new DocumentoResponseRecord(actor, demandado, anexos);
+        return new DocumentoResponseRecord(actor, demandado, anexos, documento.getData(), documento.getCarpeta().getTipoJuicio().getNombre(), documento.getCarpeta().getTipoJuicio().getId());
     }
 
     /**
