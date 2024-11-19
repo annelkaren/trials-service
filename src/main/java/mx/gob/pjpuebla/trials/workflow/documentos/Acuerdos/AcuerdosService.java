@@ -199,8 +199,21 @@ public class AcuerdosService {
         documentoContenido.setTexto(acuerdo.textoEditor());
         documentoContenidoRepository.save(documentoContenido);
 
-        //Actualizar promociones relacionadas.
+        //Actualizar promociones relacionadas a null
+        documentoRepository.actualizacionAcuerdoRespuesta(acuerdo.carpetaId());
 
+        //volver a recorrer las promociones pero ahora las que el usuario setee
+        if (acuerdo.promocionesRelacionadas() != null) {
+                for (AcuerdoPromocionesRecord promo : acuerdo.promocionesRelacionadas()) {
+                        Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
+                        if (promocion != null) {
+                            promocion.setAcuerdoRespuesta(documento);
+                            documentoRepository.save(promocion);
+                        }
+                }
+        }
+
+            
         return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);
         
     }

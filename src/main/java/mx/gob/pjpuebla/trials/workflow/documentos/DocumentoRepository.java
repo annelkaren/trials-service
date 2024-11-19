@@ -157,13 +157,18 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
+    //TODO: revisar si esta consulta es correcta:
+    /*Objetivo: listar todos los documentos qu ese encuentren relacionados con una carpeta en caso de que quiera a excepcion de los que ya tiene un acuerdo,
+        Para el caso de que quiera editar un acuerdo esta consulta tambien funciona, ahi es donde entra el parametro :actualización donde si es si entonces envia aun asi
+        los que ya tengan acuerdo seleccionado en el sentido de que quiera 'Desmarcarlo/desasociarlo de un acuerdo.', de ahi la columna seleccion.
+    */
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
                 doc.id,
                 CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
                 doc.ruta,
                 (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion,
-                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END)
+                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END) as seleccion
             FROM Documento doc
             JOIN doc.carpeta carpeta
             WHERE carpeta.id = :carpetaId
@@ -171,6 +176,11 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(@Param("carpetaId") Integer carpetaId,
             @Param("actualizacion") String actualizacion);
+
+    @Modifying
+    @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId")
+    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId);
+
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
