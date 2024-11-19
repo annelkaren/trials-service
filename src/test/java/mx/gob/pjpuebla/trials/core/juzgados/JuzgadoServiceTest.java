@@ -7,6 +7,9 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -71,6 +74,8 @@ class JuzgadoServiceTest {
     MateriaRepository materiaRepository;
     @Mock
     JuzgadoFoliosRepository juzgadoFoliosRepository;
+    @Mock
+    PersonaService personaService;
 
     private Juzgado juzgado;
     private JuzgadoFolios juzgadoFolios;
@@ -422,6 +427,36 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("id", response.id())
                 .hasFieldOrPropertyWithValue("nombre", response.nombre())
                 .hasFieldOrPropertyWithValue("estado", response.estado());
+
+    }
+
+    @Test
+    void getSalas(){
+        Juzgado sala = JuzgadoSetUp.createJuzgado(MateriaSetUp.createMateria(), SedeSetUp.createSede())
+                .setInstanciaJuzgado(InstanciaJuzgado.SEGUNDA_INSTANCIA)
+                .setNombre("Sala Civil");
+
+        List<JuzgadoRecordItem> salas = Collections.singletonList(
+                new JuzgadoRecordItem(sala.getId(), sala.getNombre(), sala.getEstado(), sala.getSede().getNombre()));
+
+        given(juzgadoRepository.findAllByInstancia(any())).willReturn(salas);
+        salas = juzgadoService.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
+
+        assertThat(salas).isNotNull().anyMatch(s->s.nombre().equals(sala.getNombre()));
+    }
+
+    @Test
+    void juzgadoActual(){
+        Persona persona = PersonaSetUp.createPersona();
+        persona.setJuzgado(juzgado);
+
+        JuzgadoRecordItem juzgadoActual = new JuzgadoRecordItem(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getNombre());
+
+        given(personaService.getAuditor()).willReturn(persona);
+
+        juzgadoActual = juzgadoService.getJuzgadoActual();
+
+        assertThat(juzgadoActual).isNotNull().hasFieldOrPropertyWithValue("nombre", juzgado.getNombre());
 
     }
 }

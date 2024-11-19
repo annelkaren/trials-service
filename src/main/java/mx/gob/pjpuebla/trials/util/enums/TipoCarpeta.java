@@ -12,5 +12,6 @@ public enum TipoCarpeta {
     AMPARO,
     CARTA_ROGATORIA,
     COOPERACION_JUDICIAL_E_INTERNACIONAL,
-    OFICIO
+    OFICIO,
+    PIEZA
 }

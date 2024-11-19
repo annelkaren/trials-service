@@ -44,6 +44,8 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -51,8 +53,11 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -157,6 +162,8 @@ class DocumentoServiceTest {
     private EmailService emailService;
     @Mock
     private DigitalizacionService digitalizacionService;
+    @Mock
+    private CarpetaService carpetaService;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -1388,4 +1395,33 @@ class DocumentoServiceTest {
         verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
     }
 
+    @Test
+    void createAmparo() {
+        AmparoRecord amparoRecord = new AmparoRecord(1,
+                "AD",
+                LocalDate.now(),
+                0,
+                CatalogoSentidoAmparo.CONCEDE.name(),
+                CatalogoImpugnacionAmparo.CONFIRMA.name(),
+                "JUAN PEREZ",
+                1,
+                null);
+        String pieza = "000001/2024/AD01";
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona();
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setId(10);
+        documento.getCarpeta().setExpediente(pieza);
+
+        AmparoRecordResponse response = new AmparoRecordResponse(documento.getCarpeta().getId(), documento.getId(), pieza, LocalDateTime.now());
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(carpeta));
+        given(conceptoRepository.findByNombre(any())).willReturn(Optional.of(concepto));
+        given(carpetaService.createPieza(any(), any())).willReturn(documento.getCarpeta());
+        response = documentoService.createAmparo(amparoRecord);
+
+        assertThat(response).isNotNull().hasFieldOrPropertyWithValue("numeroPieza", pieza);
+    }
 }

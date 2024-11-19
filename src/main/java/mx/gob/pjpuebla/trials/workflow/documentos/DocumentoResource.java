@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
@@ -197,6 +199,13 @@ public class DocumentoResource {
         this.documentoService.deleteAsignado(id);
     }
 
+    @PostMapping(value="/documentos/amparo")
+    public AmparoRecordResponse crearAmparo(@RequestBody AmparoRecord amparoRecord) {
+
+        return documentoService.createAmparo(amparoRecord);
+
+    }
+    
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(
             @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,

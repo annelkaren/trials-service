@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -202,6 +203,21 @@ class JuzgadoResourceTest {
         mockMvc.perform(
                         patch("/api/core/juzgados/1/status/1")
                                 .content(ResourceUtilTest.asJsonString(juzgadoRecordItem))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void get_salas() throws Exception {
+        List<JuzgadoRecordItem> salas = Collections.singletonList(
+                new JuzgadoRecordItem(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getSede().getNombre()));
+        given(mockJuzgadoService.findAllByInstancia(any()))
+                .willReturn(salas);
+
+        mockMvc.perform(
+                        get("/api/core/juzgados/salas")
+                                .content(ResourceUtilTest.asJsonString(salas))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
