@@ -6,7 +6,6 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResp
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
