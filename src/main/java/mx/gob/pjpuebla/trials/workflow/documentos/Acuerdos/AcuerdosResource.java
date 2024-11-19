@@ -40,11 +40,6 @@ public class AcuerdosResource {
         return acuerdosService.save(acuerdo);
     }
 
-    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion){
-        return acuerdosService.obtenerPromociones(carpetaId, actualizacion);
-    }
-
     @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")
     public Page<AcuerdosRecord> obtenerAcuerdos(
         @PageableDefault(size = 20) Pageable pageable,
@@ -63,6 +58,11 @@ public class AcuerdosResource {
         return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
     }
 
+    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion){
+        return acuerdosService.obtenerPromociones(carpetaId, actualizacion);
+    }
+
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")
     public AcuerdoRecord obtenerAcuerdo(@PathVariable Integer acuerdoId) {
         return acuerdosService.getAcuerdo(acuerdoId);
@@ -74,8 +74,5 @@ public class AcuerdosResource {
         return acuerdosService.update(acuerdo);
     }
     
-    
-
-
 
 }

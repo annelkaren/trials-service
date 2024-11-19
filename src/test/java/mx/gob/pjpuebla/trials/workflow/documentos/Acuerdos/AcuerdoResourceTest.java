@@ -2,11 +2,14 @@ package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.ObjectInputFilter.Status;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
@@ -96,5 +100,45 @@ class AcuerdoResourceTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void obtenerPromocionesTest() throws Exception {
+        List<AcuerdoPromocionesRecord> acuerdoPromocionesRecord = AcuerdoRecordSetUp.createAcuerdoPromocionesRecord();
+
+        given(acuerdosService.obtenerPromociones(anyInt(), anyString()))
+                .willReturn(acuerdoPromocionesRecord);
+
+        mockMvc.perform(
+                get("/api/workflow/documentos/obtenerPromociones/{carpetaId}/{actualizacion}", 1,"SI")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void obtenerAcuerdo() throws Exception {
+        AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
+
+        given(acuerdosService.getAcuerdo(anyInt())).willReturn(acuerdo);
+
+        mockMvc.perform(
+                get("/api/workflow/documentos/obtenerAcuerdo/{acuerdoId}", 1)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void actualizarAcuerdo() throws Exception {
+        DocumentoGenericRecord documento = new DocumentoGenericRecord(1, TipoDocumento.ACUERDO);
+        AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
+
+        given(acuerdosService.update(acuerdo)).willReturn(documento);
+
+        mockMvc.perform(
+                put("/api/workflow/documentos/actualizarAcuerdo")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceUtilTest.asJsonString(acuerdo)))
+                .andExpect(status().isOk());
+    }
+
 
 }

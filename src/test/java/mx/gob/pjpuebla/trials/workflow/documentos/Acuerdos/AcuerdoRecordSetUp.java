@@ -39,4 +39,11 @@ public class AcuerdoRecordSetUp {
         acuerdoRecord.add(new AcuerdoNotificadosRecord(1, "nombre", "Demadado", "Correo"));
         return acuerdoRecord;
     }
+
+    public static List<AcuerdoPromocionesRecord> createAcuerdoPromocionesRecord(){
+        List<AcuerdoPromocionesRecord> acuerdoPromocionesRecords = new ArrayList<>();
+        acuerdoPromocionesRecords.add(new AcuerdoPromocionesRecord(1, "Nombre", "archivo_name", null, 1));
+
+        return acuerdoPromocionesRecords;
+    }
 }
