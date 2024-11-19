@@ -327,7 +327,11 @@ public class DocumentoService {
         carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
-        movimientoService.createMovimento(documento.getCarpeta(), documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        if (documento.getTipoDocumento() != null) {
+            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        } else {
+            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        }
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
