@@ -27,7 +27,7 @@ public class MenuService {
         Persona persona = personaService.getAuditor();
         List<RoleRecord> userRoles = roleService.getRolesByUserId(persona.getUsuario());
         String roles = userRoles.stream()
-                .map(RoleRecord::name)
+                .map(RoleRecord::id)
                 .collect(Collectors.joining("|"));
         List<Menu> menus = menuRepository.findMenus("(TODOS|" + roles + ")");
         menus.sort(Comparator.comparing(Menu::getOrder));

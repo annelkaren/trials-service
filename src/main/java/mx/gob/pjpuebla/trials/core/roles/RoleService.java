@@ -8,11 +8,12 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ import java.util.List;
 @Transactional
 public class RoleService {
 
+    private final AuditorAware<Jwt> auditorAware;
     private final KeycloakSecurityUtil keycloakSecurityUtil;
 
     @Value("${keycloak.realm}")
@@ -70,16 +72,16 @@ public class RoleService {
 
     public boolean hasRole(String userId, String role) {
         List<RoleRecord> roles = getRolesByUserId(userId);
-        return roles.stream().anyMatch(current -> current.name().equalsIgnoreCase(role));
+        return roles.stream().anyMatch(current -> current.id().equalsIgnoreCase(role));
     }
 
-    public List<RoleRecord> getAll(){
+    public List<RoleRecord> getAll() {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
-        return mapRoles(roles);
+        return mapRoles(roles, "");
     }
 
-    public List<RoleRecord> getAllAvailablesByUserId(String userId) {
+    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo) {
         List<RoleRepresentation> roles = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> allRoles = keycloak.realm(realm).roles().list(false);
@@ -88,27 +90,49 @@ public class RoleService {
             List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
             allRoles.forEach(role -> {
                 boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
-                if (!isAnExistingRole && !role.getName().toLowerCase().contains("default")) {
+                if (!isAnExistingRole) {
                     roles.add(role);
                 }
             });
-            return mapRoles(roles);
+            List<RoleRepresentation> filteredList = excludeAdminRoleIfNotApply(currentRoles, roles);
+            return mapRoles(filteredList, tipoCentroTrabajo);
         } catch (Exception ex) {
             throw new NotFoundException("Usuario no encontrado en keycloak", "usuario");
         }
     }
 
-    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations) {
+    private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> currentRoles, List<RoleRepresentation> roles) {
+        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
+        boolean isAdminsystem = hasRole(jwt.getSubject(), "ADMINISTRADOR");
+        if (!isAdminsystem) {
+            return roles.stream()
+                    .filter(role -> !role.getName().equalsIgnoreCase("ADMINISTRADOR"))
+                    .toList();
+        }
+        return roles;
+    }
+
+    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations, String tipoCentroTrabajo) {
         List<RoleRecord> roles = new ArrayList<>();
-        roleRepresentations.stream()
+        List<RoleRepresentation> temporalList = roleRepresentations.stream()
                 .filter(r -> r.getAttributes() != null)
                 .filter(r -> r.getAttributes().containsKey("client-role"))
                 .filter(r -> r.getAttributes().get("client-role").contains("true"))
-                .forEach(r -> roles.add(mapRole(r)));
+                .filter(r -> r.getAttributes().containsKey("centro-trabajo")).toList();
+
+        if (!tipoCentroTrabajo.isEmpty() && !tipoCentroTrabajo.equalsIgnoreCase("undefined")) {
+            temporalList.stream()
+                    .filter(r -> r.getAttributes().get("centro-trabajo").contains(tipoCentroTrabajo)
+                            || r.getAttributes().get("centro-trabajo").contains("-"))
+                    .forEach(r -> roles.add(mapRole(r)));
+        } else {
+            temporalList.forEach(r -> roles.add(mapRole(r)));
+        }
+        roles.sort(Comparator.comparing(RoleRecord::id));
         return roles;
     }
 
     private RoleRecord mapRole(RoleRepresentation roleRepresentation) {
-        return new RoleRecord(roleRepresentation.getName(), roleRepresentation.getName());
+        return new RoleRecord(roleRepresentation.getName(), roleRepresentation.getDescription());
     }
 }
