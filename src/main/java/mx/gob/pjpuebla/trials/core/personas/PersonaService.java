@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -50,6 +51,7 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Persona> page = personaRepository.findAll(Example.of(example, exampleMatcher), pageable);
@@ -85,8 +87,10 @@ public class PersonaService {
     }
 
     public PersonaRecordResponse create(Persona persona, List<RoleRecord> roles) {
+        List<String> rolesToSave = getNames(roles);
+        validateAdminRole(rolesToSave, persona);
         persona.setUsuario(usuarioService.create(persona));
-        roleService.addRoles(persona.getUsuario(), getNames(roles));
+        roleService.addRoles(persona.getUsuario(), rolesToSave);
 
         fillPersonaData(persona);
 
@@ -118,9 +122,11 @@ public class PersonaService {
 
     public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
         try {
+            List<String> rolesToSave = getNames(roles);
+            validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
             persona = personaRepository.save(persona);
-            roleService.updateRoles(persona.getUsuario(), getNames(roles));
+            roleService.updateRoles(persona.getUsuario(), rolesToSave);
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Persona.class.getSimpleName());
@@ -137,7 +143,7 @@ public class PersonaService {
 
     private List<String> getNames(List<RoleRecord> list) {
         List<String> roles = new ArrayList<>();
-        list.forEach(roleRecord -> roles.add(roleRecord.name()));
+        list.forEach(roleRecord -> roles.add(roleRecord.id()));
         return roles;
     }
 
@@ -253,5 +259,24 @@ public class PersonaService {
                 p.getCelular(),
                 ""
         ));
+    }
+
+    private void validateAdminRole(List<String> rolesToSave, Persona persona) {
+        boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR"));
+        if (hasAdminRole && (
+                (persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
+                        || (persona.getOficialia() != null && persona.getOficialia().getId() != null))) {
+            throw new ConflictException("Un Administrador (sistema) no puede pertenecer a un centro de trabajo");
+        }
+        if (hasAdminRole && rolesToSave.size() > 1) {
+            throw new ConflictException("Un Administrador (sistema) no puede tener más roles asociados");
+        }
+
+        if (!hasAdminRole && (
+                (persona.getJuzgado() == null || persona.getJuzgado().getId() == null)
+                        && (persona.getOficialia() == null || persona.getOficialia().getId() == null))
+                && rolesToSave.size() > 0) {
+            throw new ConflictException("Seleccione un centro de trabajo para asignar los roles correspondientes");
+        }
     }
 }
