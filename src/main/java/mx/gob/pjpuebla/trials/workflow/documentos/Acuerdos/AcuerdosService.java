@@ -96,8 +96,8 @@ public class AcuerdosService {
         return new DocumentoGenericRecord(doc.getId(), TipoDocumento.ACUERDO);
     }
 
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId) {
-        return documentoRepository.obtenerPromociones(carpetaId);
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, String actualizacion) {
+        return documentoRepository.obtenerPromociones(carpetaId, actualizacion);
     }
 
     public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable) {

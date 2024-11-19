@@ -40,9 +40,9 @@ public class AcuerdosResource {
         return acuerdosService.save(acuerdo);
     }
 
-    @GetMapping("/documentos/obtenerPromociones/{carpetaId}")
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId){
-        return acuerdosService.obtenerPromociones(carpetaId);
+    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion){
+        return acuerdosService.obtenerPromociones(carpetaId, actualizacion);
     }
 
     @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")

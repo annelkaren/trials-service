@@ -162,19 +162,15 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 doc.id,
                 CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
                 doc.ruta,
-                (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion)
+                (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion,
+                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END)
             FROM Documento doc
             JOIN doc.carpeta carpeta
             WHERE carpeta.id = :carpetaId
-            AND NOT EXISTS (
-                SELECT 1
-                FROM Documento doc2
-                WHERE doc2.tipoDocumento = TipoDocumento.ACUERDO
-                AND doc2.carpeta.id = carpeta.id
-            )""")
-    List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId);
-
-    
+            AND (:actualizacion = 'SI' OR (:actualizacion != 'SI' AND doc.acuerdoRespuesta IS NULL))
+            """)
+    List<AcuerdoPromocionesRecord> obtenerPromociones(@Param("carpetaId") Integer carpetaId,
+            @Param("actualizacion") String actualizacion);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
@@ -188,25 +184,25 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             """)
     Page<AcuerdosRecord> findAllAcuerdosByCarpeta(Integer carpetaId, Pageable pageable);
 
-    //TODO: actualizar el metodo cuando se tenga en donde se guardara.
+    // TODO: actualizar el metodo cuando se tenga en donde se guardara.
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
-        pd.id,
-        concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
-        :tipoParte,
-        '' )
-        FROM PersonaDocumento pd
-        JOIN pd.tipoPartes tp
-        WHERE pd.carpeta.id = :carpetaId
-        AND (
-            (:tipoParte = 'ambos' AND (lower(tp.nombre) LIKE '%actor%' OR lower(tp.nombre) LIKE '%demandado%'))
-            OR
-            (:tipoParte = 'actor' AND lower(tp.nombre) LIKE '%actor%')
-            OR
-            (:tipoParte = 'demandado' AND lower(tp.nombre) LIKE '%demandado%')
-            OR
-            (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
-        )
-        """)
-List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
+            pd.id,
+            concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
+            :tipoParte,
+            '' )
+            FROM PersonaDocumento pd
+            JOIN pd.tipoPartes tp
+            WHERE pd.carpeta.id = :carpetaId
+            AND (
+                (:tipoParte = 'ambos' AND (lower(tp.nombre) LIKE '%actor%' OR lower(tp.nombre) LIKE '%demandado%'))
+                OR
+                (:tipoParte = 'actor' AND lower(tp.nombre) LIKE '%actor%')
+                OR
+                (:tipoParte = 'demandado' AND lower(tp.nombre) LIKE '%demandado%')
+                OR
+                (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
+            )
+            """)
+    List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
 }
