@@ -1,0 +1,39 @@
+package mx.gob.pjpuebla.trials.workflow.carpeta.records;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public record InfoExpedienteDetalleRecord(
+        String determinacion,
+        String fechaAdmision,
+        String fechaDesechado,
+        String ubicacion,
+        String asunto,
+        String fase,
+        String observaciones,
+        String sentencia,
+        String promovente,
+        String numeroCarpetaInvestigacion,
+        String numeroOficio,
+        String lugarHecho,
+        LocalDate fechaHecho,
+        Integer cantidadPrincipal,
+        String moneda,
+        Integer numeroHijos,
+        Integer numeroHijosMenoresEdad,
+        String actaMatrimonio,
+        String lugarRegistroMatrimonio,
+        String entidad,
+        String municipio,
+        String localidad,
+        String fechaRegistro,
+        LocalTime horaFormal,
+        LocalTime horaMaterial,
+        String lugarDisposicion,
+        String presentacionImputado,
+        String solicitudAudiencia,
+        String fechaPresentacionImputado,
+        Integer tipoJuicioHijoId,
+        String tipoJuicioHijo
+) {
+}

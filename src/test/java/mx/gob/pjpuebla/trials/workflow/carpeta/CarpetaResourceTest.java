@@ -1,8 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
+import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
@@ -22,7 +25,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
+import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -177,24 +184,136 @@ class CarpetaResourceTest {
 
     @Test
     void getInfoRecepcionExpediente() throws Exception {
+        EtapaProcesalRecord etapaProcesalRecord = new EtapaProcesalRecord(1, "Etapa 1");
+        RubroRecord rubroRecord1 = new RubroRecord(1, "Rubro1");
+        RubroRecord rubroRecord2 = new RubroRecord(2, "Rubro2");
+
+        List<RubroRecord> rubroList = new ArrayList<>();
+        rubroList.add(rubroRecord1);
+        rubroList.add(rubroRecord2);
+
         InfoExpedienteRecord infoExpedienteRecord = new InfoExpedienteRecord(
                 "000001/2024",
                 "Oralidad Familiar",
-                "",
+                1,
                 "Juez Perez",
-                LocalDateTime.now(),
-                "",
+                "01/01/2000 01:00:00",
+                "asunto 1",
                 "Procedimiento1, Procedimiento2",
-                "Rubro1, Rubro2",
-                "Primera Etapa",
+                rubroList,
+                etapaProcesalRecord,
                 null,
-                ""
+                "",
+                "materia 1",
+                1,
+                "tipoSistema 1"
         );
 
         given(mockCarpetaService.getInfoExpediente(any()))
                 .willReturn(infoExpedienteRecord);
 
         mockMvc.perform(get("/api/workflow/carpeta/recepcion/" + 1))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getInfoExpedienteDetalle() throws Exception {
+        EtapaProcesalRecord etapaProcesalRecord = new EtapaProcesalRecord(1, "Etapa 1");
+
+        InfoExpedienteDetalleRecord infoExpedienteRecord = new InfoExpedienteDetalleRecord(
+                "determinacion 1",
+                "01/01/2000 01:00:00",
+                "01/01/2000 01:00:00",
+                "ubicacion 1",
+                "asunto 1",
+                "fase 1",
+                "observacion 1",
+                "sentencia 1",
+                "promovente",
+                "123",
+                "123",
+                "",
+                LocalDate.now(),
+                1,
+                "pesos",
+                0,
+                0,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                LocalTime.now(),
+                LocalTime.now(),
+                "",
+                "",
+                "",
+                "",
+                0,
+                ""
+        );
+
+        given(mockCarpetaService.getInfoExpedienteDetalle(any()))
+                .willReturn(infoExpedienteRecord);
+
+        mockMvc.perform(get("/api/workflow/carpeta/expediente/detalle/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void saveExpedienteDetalle() throws Exception {
+        EtapaProcesalRecord etapaProcesalRecord = new EtapaProcesalRecord(1, "Primera Etapa");
+
+        RubroRecord rubroRecord1 = new RubroRecord(1, "Rubro1");
+        RubroRecord rubroRecord2 = new RubroRecord(2, "Rubro2");
+        List<RubroRecord> rubroList = new ArrayList<>();
+        rubroList.add(rubroRecord1);
+        rubroList.add(rubroRecord2);
+
+        SaveExpedienteDetalleRecord saveExpedienteDetalleRecord = new SaveExpedienteDetalleRecord(
+                CatalogoDeterminacionJurisdiccional.PRESENTACION,
+                "01/01/2000 01:00:00",
+                "01/01/2000 01:00:00",
+                "ubicacion 1",
+                "asunto 1",
+                "fase 1",
+                "observacion 1",
+                "sentencia 1",
+                "promovente",
+                "123",
+                "123",
+                "",
+                LocalDate.now(),
+                0,
+                "",
+                0,
+                0,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                LocalTime.now(),
+                LocalTime.now(),
+                "",
+                PresentacionImputado.PRESENTACION_VOLUNTARIA,
+                SolicitudAudiencia.SOLICITUD_AUDIENCIA_PRIVADA,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                1,
+                etapaProcesalRecord,
+                rubroList
+        );
+
+        mockMvc.perform(post("/api/workflow/carpeta/expediente/detalle/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceUtilTest.asJsonString(saveExpedienteDetalleRecord)))
                 .andExpect(status().isOk());
     }
 }
