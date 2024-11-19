@@ -8,6 +8,9 @@ import java.util.List;
 public record DocumentoResponseRecord(
         PersonaDocumentoRecord actor,
         PersonaDocumentoRecord demandado,
-        List<String> anexos
+        List<String> anexos,
+        DocumentoData general,
+        String tipoJuicio,
+        Integer tipoJuicioId
 ) implements Serializable {
 }
