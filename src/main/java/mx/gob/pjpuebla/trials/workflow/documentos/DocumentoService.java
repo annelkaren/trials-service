@@ -32,6 +32,8 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
@@ -98,8 +100,13 @@ public class DocumentoService {
     private final SelloGenerator selloGenerator;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaRepository audienciaRepository;
+    private final CarpetaDetalleRepository carpetaDetalleRepository;
+
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
+    private static final String TIPO_JUICIO_NOT_FOUND = "Tipo Juicio no encontrado: ";
+    private static final String CARPETA_NOT_FOUND = "Carpeta no encontrada";
+    private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -189,7 +196,7 @@ public class DocumentoService {
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
         TipoJuicio tpoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", documentoRecord.tipoJuicioId().toString()));
+                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, documentoRecord.tipoJuicioId().toString()));
         carpeta.setTipoJuicio(tpoJuicio);
 
         carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
@@ -229,6 +236,8 @@ public class DocumentoService {
                 sendEmailFamiliar(documentoRecord, documento, carpeta, tpoJuicio);
             }
         }
+
+        carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -318,7 +327,11 @@ public class DocumentoService {
         carpetaRepository.save(documento.getCarpeta());
         documentoRepository.save(documento);
 
-        movimientoService.createMovimento(documento.getCarpeta(), documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        if (documento.getTipoDocumento() != null) {
+            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        } else {
+            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+        }
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
@@ -406,7 +419,7 @@ public class DocumentoService {
     @Transactional
     public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord) {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId())
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documentoPromocionRecord.carpetaId()));
+                .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId" + documentoPromocionRecord.carpetaId()));
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
         documento.setFolio(getFolio("P"));
@@ -460,6 +473,8 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
         movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
 
+        carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
+
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
@@ -478,9 +493,9 @@ public class DocumentoService {
         Carpeta carpeta = new Carpeta();
 
         Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId: " + apelacionRecord.carpetaId()));
+                .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId: " + apelacionRecord.carpetaId()));
         carpeta.setTipoJuicio(tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
-                .orElseThrow(() -> new NotFoundException("Tipo Juicio no encontrado", "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId())));
+                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId())));
 
         carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
         carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta())); // TODO.ASIGNAR JUZGADO CORRECTAMENTE
@@ -667,9 +682,9 @@ public class DocumentoService {
 
         Concepto concepto = new Concepto();
         if (tipoDocumento == TipoDocumento.PROMOCION) {
-            concepto = conceptoRepository.findByNombre(conceptoAdjun).orElseThrow(() -> new NotFoundException("Concepto no encontrado", conceptoAdjun));
+            concepto = conceptoRepository.findByNombre(conceptoAdjun).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoAdjun));
         } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO)) {
-            concepto = conceptoRepository.findByNombre(conceptoDistri).orElseThrow(() -> new NotFoundException("Concepto no encontrado", conceptoDistri));
+            concepto = conceptoRepository.findByNombre(conceptoDistri).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoDistri));
         }
         return concepto;
     }
@@ -918,9 +933,9 @@ public class DocumentoService {
     public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(PersonalJuzgadoRecord record) {
         Carpeta carpeta = null;
         Concepto concepto = conceptoRepository.findById(record.idConcepto())
-                .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+                .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "conceptoId" + record.idConcepto()));
         Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoRecepcion()));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId" + record.idDocumentoRecepcion()));
         documento.setConcepto(concepto);
         Persona persona = personaService.getAuditor();
         if (documento.getTipoDocumento() != null) { //Documento
@@ -928,7 +943,7 @@ public class DocumentoService {
             documento.setPersona(persona);
         } else { //Carpeta
             carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
-                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + record.idDocumentoRecepcion()));
+                    .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId" + record.idDocumentoRecepcion()));
             carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
             carpeta.setPersona(persona);
             carpetaRepository.save(carpeta);
@@ -1008,13 +1023,13 @@ public class DocumentoService {
                     .orElseThrow(() -> new NotFoundException("Personal no encontrado", "personalJuzgadoId" + record.idPersonalJuzgado()));
 
             Concepto concepto = conceptoRepository.findById(record.idConcepto())
-                    .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId" + record.idConcepto()));
+                    .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "conceptoId" + record.idConcepto()));
 
             Documento documento = documentoRepository.findById(record.idDocumentoAsignado())
-                    .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + record.idDocumentoAsignado()));
+                    .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId" + record.idDocumentoAsignado()));
 
             Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
-                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + documento.getCarpeta().getId()));
+                    .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId" + documento.getCarpeta().getId()));
 
             documento.setConcepto(concepto);
             documento.setPrioridad(record.prioridad());
@@ -1125,7 +1140,7 @@ public class DocumentoService {
 
         return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }
-    
+
     public DocumentoRecord createDemandaAntigua(DocumentoSaveRecord documentoRecord, MultipartFile multipartFile) {
         Persona persona = personaService.getAuditor();
         Carpeta carpeta = new Carpeta();
@@ -1139,7 +1154,7 @@ public class DocumentoService {
                     .orElseThrow(() -> new NotFoundException("Tipo Juicio 'Tradicional' no encontrado para la persona logueada", "personaId"));
 
             if (tipoJuicioTradicional == null) {
-                throw new NotFoundException("Tipo Juicio no encontrado", "personaId");
+                throw new NotFoundException(TIPO_JUICIO_NOT_FOUND, "personaId");
             }
             carpeta.setTipoJuicio(tipoJuicioTradicional);
         } else {

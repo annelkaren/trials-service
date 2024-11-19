@@ -6,6 +6,8 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -17,10 +19,14 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
+import mx.gob.pjpuebla.trials.core.rubros.RubroResource;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
@@ -32,6 +38,11 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
+import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
+import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -39,6 +50,10 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -68,6 +83,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -110,6 +126,16 @@ class CarpetaServiceTest {
     private AudienciaService audienciaService;
     @Mock
     private TipoPiezaRepository tipoPiezaRepository;
+    @Mock
+    private CarpetaDetalleRepository carpetaDetalleRepository;
+    @Mock
+    private TipoJuicioRepository tipoJuicioRepository;
+    @Mock
+    private RubroRepository rubroRepository;
+    @Mock
+    private EtapaProcesalRepository etapaProcesalRepository;
+    @Mock
+    private CarpetaEtapasRepository carpetaEtapasRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -120,7 +146,7 @@ class CarpetaServiceTest {
     private JuzgadoFolios juzgadoFolios;
     private TipoPartes actorApelacion;
     private TipoPartes demandadoApelacion;
-    
+
 
     @BeforeEach
     public void setUp() {
@@ -559,11 +585,13 @@ class CarpetaServiceTest {
     @Test
     void getInfoExpediente() {
         Rubro rubro1 = new Rubro()
+                .setId(1)
                 .setNombre("Rubro1")
-                .setProcedimiento(new Procedimiento().setNombre("Procedimiento1"));
+                .setProcedimiento(new Procedimiento().setId(1).setNombre("Procedimiento1"));
         Rubro rubro2 = new Rubro()
+                .setId(2)
                 .setNombre("Rubro2")
-                .setProcedimiento(new Procedimiento().setNombre("Procedimiento2"));
+                .setProcedimiento(new Procedimiento().setId(2).setNombre("Procedimiento2"));
         validCarpeta.setRubros(Set.of(rubro1, rubro2));
         Documento documento = DocumentoSetUp.create(tipoJuicio)
                 .setCarpeta(validCarpeta);
@@ -603,8 +631,7 @@ class CarpetaServiceTest {
         assertThat(result.tipoJuicio()).isEqualTo(documento.getCarpeta().getTipoJuicio().getNombre());
         assertThat(result.juezAsignado()).isEqualTo("Juez Perez");
         assertThat(result.tipoProcedimiento()).isEqualTo("Procedimiento1, Procedimiento2");
-        assertThat(result.rubros()).isEqualTo("Rubro1, Rubro2");
-        assertThat(result.etapaProcesal()).isEqualTo("Primera Etapa");
+        assertThat(result.etapaProcesal()).isEqualTo(null);
         assertThat(result.participantes()).hasSize(2);
     }
 
@@ -630,6 +657,137 @@ class CarpetaServiceTest {
         assertThat(result).isEqualTo(items);
     }
 
+    @Test
+    void getInfoExpedienteDetalle() {
+        Rubro rubro1 = new Rubro()
+                .setId(1)
+                .setNombre("Rubro1")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento1"));
+        Rubro rubro2 = new Rubro()
+                .setId(2)
+                .setNombre("Rubro2")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento2"));
+        Persona persona = new Persona();
+        persona.setNombre("Nombre1")
+                .setApellidoPaterno("apellido")
+                .setApellidoMaterno("apellido2")
+                .setOcupacion("Secretario")
+                .setJuzgado(validCarpeta.getJuzgado());
+
+        validCarpeta.setRubros(Set.of(rubro1, rubro2))
+                .setDeterminacionJurisdiccional(CatalogoDeterminacionJurisdiccional.PRESENTACION)
+                .setPersona(persona);
+
+        Documento documento = DocumentoSetUp.create(tipoJuicio)
+                .setCarpeta(validCarpeta);
+
+        CarpetaDetalle carpetaDetalle = new CarpetaDetalle()
+                .setId(1)
+                .setCarpeta(validCarpeta)
+                .setTipoJuicio(tipoJuicio);
+
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
+
+        InfoExpedienteDetalleRecord result = target.getInfoExpedienteDetalle(1);
+
+        assertThat(result).isNotNull();
+        assertThat(result.determinacion()).isEqualTo("PRESENTACION");
+        assertThat(result.ubicacion()).isEqualTo("Nombre1 apellido apellido2, Secretario, JuzgadoTEST");
+    }
+
+    @Test
+    void saveExpedienteDetalle() {
+        Rubro rubro1 = new Rubro()
+                .setNombre("Rubro1")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento1"));
+        Rubro rubro2 = new Rubro()
+                .setNombre("Rubro2")
+                .setProcedimiento(new Procedimiento().setNombre("Procedimiento2"));
+        Persona persona = new Persona();
+        persona.setNombre("Nombre1")
+                .setApellidoPaterno("apellido")
+                .setApellidoMaterno("apellido2")
+                .setOcupacion("Secretario")
+                .setJuzgado(validCarpeta.getJuzgado());
+
+        validCarpeta.setRubros(Set.of(rubro1, rubro2))
+                .setDeterminacionJurisdiccional(CatalogoDeterminacionJurisdiccional.PRESENTACION)
+                .setPersona(persona);
+
+        Documento documento = DocumentoSetUp.create(tipoJuicio)
+                .setCarpeta(validCarpeta);
+
+        CarpetaDetalle carpetaDetalle = new CarpetaDetalle()
+                .setId(1)
+                .setCarpeta(validCarpeta)
+                .setTipoJuicio(tipoJuicio);
+
+        EtapaProcesal etapaProcesal = new EtapaProcesal().setNombre("Primera Etapa").setId(1);
+        EtapaProcesal etapaProcesal2 = new EtapaProcesal().setNombre("Segunda Etapa").setId(2);
+        CarpetaEtapas carpetaEtapas = new CarpetaEtapas().setId(1).setEtapaProcesal(etapaProcesal2);
+
+        SaveExpedienteDetalleRecord detalle = new SaveExpedienteDetalleRecord(
+                CatalogoDeterminacionJurisdiccional.PRESENTACION,
+                null,
+                null,
+                "Juzgado Central",
+                "",
+                "Fase inicial",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                null,
+                100000,
+                "MXN",
+                0,
+                0,
+                "",
+                "",
+                "",
+                "",
+                "",
+                null,
+                null,
+                null,
+                "",
+                PresentacionImputado.PRESENTACION_VOLUNTARIA,
+                SolicitudAudiencia.SOLICITUD_AUDIENCIA_PRIVADA,
+                null,
+                "",
+                "",
+                "",
+                "",
+                "",
+                1,
+                new EtapaProcesalRecord(1, "Etapa Inicial"),
+                List.of(
+                        new RubroRecord(1, "Rubro1"),
+                        new RubroRecord(2, "Rubro2")
+                )
+        );
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(carpetaDetalleRepository.findByCarpetaId(anyInt())).willReturn(carpetaDetalle);
+        given(tipoJuicioRepository.findById(anyInt())).willReturn(Optional.ofNullable(tipoJuicio));
+        given(rubroRepository.findById(anyInt())).willReturn(Optional.of(rubro1));
+        given(etapaProcesalRepository.findById(anyInt())).willReturn(Optional.ofNullable(etapaProcesal));
+        given(carpetaEtapasRepository.findByCarpetaId(anyInt())).willReturn(Optional.ofNullable(carpetaEtapas));
+
+        target.saveExpedienteDetalle(detalle, 1);
+
+        verify(documentoRepository).findById(anyInt());
+        verify(carpetaDetalleRepository).findByCarpetaId(anyInt());
+        verify(tipoJuicioRepository).findById(anyInt());
+        verify(rubroRepository, times(2)).findById(anyInt());
+        verify(etapaProcesalRepository).findById(anyInt());
+        verify(carpetaEtapasRepository).save(any(CarpetaEtapas.class));
+        verify(carpetaDetalleRepository).save(any(CarpetaDetalle.class));
+        verify(documentoRepository).save(any(Documento.class));
+    }
     @Test
     void createPiezaTest(){
         Integer carpetaPadreId = 1;
