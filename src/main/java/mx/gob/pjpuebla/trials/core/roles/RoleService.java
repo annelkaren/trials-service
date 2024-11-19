@@ -97,7 +97,6 @@ public class RoleService {
             List<RoleRepresentation> filteredList = excludeAdminRoleIfNotApply(currentRoles, roles);
             return mapRoles(filteredList, tipoCentroTrabajo);
         } catch (Exception ex) {
-            ex.printStackTrace();
             throw new NotFoundException("Usuario no encontrado en keycloak", "usuario");
         }
     }
@@ -127,7 +126,7 @@ public class RoleService {
                             || r.getAttributes().get("centro-trabajo").contains("-"))
                     .forEach(r -> roles.add(mapRole(r)));
         } else {
-            temporalList.stream().forEach(r -> roles.add(mapRole(r)));
+            temporalList.forEach(r -> roles.add(mapRole(r)));
         }
         roles.sort(Comparator.comparing(RoleRecord::id));
         return roles;

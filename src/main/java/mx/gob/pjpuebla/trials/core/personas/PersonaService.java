@@ -51,7 +51,6 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Persona> page = personaRepository.findAll(Example.of(example, exampleMatcher), pageable);
@@ -275,7 +274,7 @@ public class PersonaService {
         if (!hasAdminRole && (
                 (persona.getJuzgado() == null || persona.getJuzgado().getId() == null)
                         && (persona.getOficialia() == null || persona.getOficialia().getId() == null))
-                && rolesToSave.size() > 0) {
+                && !rolesToSave.isEmpty()) {
             throw new ConflictException("Seleccione un centro de trabajo para asignar los roles correspondientes");
         }
     }
