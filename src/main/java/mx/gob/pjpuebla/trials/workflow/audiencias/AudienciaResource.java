@@ -37,4 +37,9 @@ public class AudienciaResource {
         return this.audienciaService.getAudienciasMotivos();
     }
 
+    @PutMapping("/bandeja/audienciasgenerales/diferir/{id}")
+    public void diferir(@PathVariable Integer id) {
+        this.audienciaService.diferirAudiencia(id);
+    }
+
 }
