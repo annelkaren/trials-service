@@ -3,13 +3,18 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
+import mx.gob.pjpuebla.trials.util.Messages;
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +35,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,19 +51,19 @@ public class AudienciaService {
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
-            .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
         Bloque bloque = bloqueRepository.findById(salaAudienciaRecord.bloqueId())
-            .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "BloqueId"));
+                .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "BloqueId"));
 
         Audiencia audiencia = new Audiencia()
-        .setFechaAudiencia(salaAudienciaRecord.fechaAudiencia())
-        .setSala(sala)
-        .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
-        .setTipoAudiencia(tipoAudiencia)
-        .setCarpeta(carpeta)
-        .setBloque(bloque)
-        .setEstado(Estado.ACTIVE); 
-        
+                .setFechaAudiencia(salaAudienciaRecord.fechaAudiencia())
+                .setSala(sala)
+                .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
+                .setTipoAudiencia(tipoAudiencia)
+                .setCarpeta(carpeta)
+                .setBloque(bloque)
+                .setEstado(Estado.ACTIVE);
+
         return audienciaRepository.save(audiencia);
     }
 
@@ -70,8 +76,8 @@ public class AudienciaService {
                 audienciaOralidadFamiliarRcord.fechaAudiencia().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
 
         if (audienciaOralidadFamiliarRcord == null) {
-            audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("","","", "", "", LocalDateTime.MIN);
-        }else {
+            audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("", "", "", "", "", LocalDateTime.MIN);
+        } else {
             nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " " + audienciaOralidadFamiliarRcord.apellidoPaterno() + " " + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null ? audienciaOralidadFamiliarRcord.apellidoMaterno() : "");
         }
 
@@ -121,5 +127,22 @@ public class AudienciaService {
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public void deleteAudiencia(Integer id) {
+        try {
+            Audiencia audiencia = audienciaRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+            audiencia.setEstado(Estado.DELETED);
+            audienciaRepository.save(audiencia);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
+        }
+    }
+
+    public List<CarpetaCatalogoRecord> getAudienciasMotivos() {
+        return Arrays.stream(CatalogoMotivosRetrasoAudiencias.values())
+                .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                .toList();
     }
 }

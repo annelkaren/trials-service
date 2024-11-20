@@ -55,6 +55,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             JOIN a.carpeta c
             JOIN a.sala s
             WHERE s.juzgado = :juzgado
+             AND a.estado = 0
             AND (
                 :key IS NULL
                 OR lower(c.expediente) LIKE %:key%

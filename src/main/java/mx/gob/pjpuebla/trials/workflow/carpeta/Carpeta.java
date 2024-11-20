@@ -17,6 +17,8 @@ import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -82,6 +84,14 @@ public class Carpeta implements Serializable, Auditable {
             inverseJoinColumns = @JoinColumn(name = "FN_RUBRO", referencedColumnName = "PN_ID")
     )
     private Set<Rubro> rubros;
+
+    @Enumerated
+    @Column(name = "S_DETERMINACION_JURISDICCIONAL")
+    private CatalogoDeterminacionJurisdiccional determinacionJurisdiccional;
+
+    @Enumerated
+    @Column(name = "N_SENTENCIA", nullable = false)
+    private TipoSentencia sentencia;
 
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

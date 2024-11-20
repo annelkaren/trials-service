@@ -14,13 +14,17 @@ import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoProfesionOficio;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
@@ -32,17 +36,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -132,7 +139,7 @@ class AudienciaServiceTest {
         );
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
-        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(),"domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
+        when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -142,7 +149,6 @@ class AudienciaServiceTest {
         assertThat(entity.nombreTipoJuicio()).isEqualTo("Familiar Oralidad (Alimentos)");
         assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Example Domicilio</b>");
     }
-
 
 
     @Test
@@ -196,5 +202,28 @@ class AudienciaServiceTest {
                 .hasFieldOrPropertyWithValue("estatus", audiencia.getEstatusAudiencia());
     }
 
+    @Test
+    void deleteAudiencia() {
+        Integer audienciaId = 1;
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(audienciaId);
+        audiencia.setEstado(Estado.ACTIVE);
 
+        when(audienciaRepository.findById(audienciaId)).thenReturn(Optional.of(audiencia));
+        doThrow(DataIntegrityViolationException.class).when(audienciaRepository).save(audiencia);
+        assertThrows(ConstraintViolationException.class, () -> audienciaService.deleteAudiencia(audienciaId));
+    }
+
+    @Test
+    void getAudienciasMotivos() {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoMotivosRetrasoAudiencias.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+
+        List<CarpetaCatalogoRecord> result = audienciaService.getAudienciasMotivos();
+
+        assertNotNull(result);
+        assertEquals(result.size(), CatalogoMotivosRetrasoAudiencias.values().length);
+        assertThat(result).isEqualTo(items);
+    }
 }

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,7 @@ public class TipoJuicioService {
         List<TipoJuicioRecord> list = page.getContent().stream()
                 .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
                 .toList();
-        
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -61,25 +63,28 @@ public class TipoJuicioService {
 
     @Transactional(readOnly = true)
     public Page<TipoJuicioRecord> getAllActiveByCentroTrabajo(Pageable pageable) {
-        Persona usuario =  personaService.getAuditor();
+        Persona usuario = personaService.getAuditor();
 
-        Integer centroTrabajoId = usuario.getOficialia()!=null?usuario.getOficialia().getId():usuario.getJuzgado().getId();
+        Integer centroTrabajoId = usuario.getOficialia() != null ? usuario.getOficialia().getId() : usuario.getJuzgado().getId();
 
-        if (centroTrabajoId==null){
+        if (centroTrabajoId == null) {
             throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
         }
 
+        List<TipoJuicioRecord> list = new ArrayList<>();
         Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(
-            usuario.getOficialia()!=null?usuario.getOficialia().getId():null, 
-            usuario.getJuzgado()!=null?usuario.getJuzgado().getId():null, pageable);
-        List<TipoJuicioRecord> list = page.getContent().stream()
-                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(),
-                        new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()),
+                usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
+                usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null, pageable);
+        for (TipoJuicio tipoJuicio : page.getContent()) {
+            if (!tipoJuicio.getMateria().getNombre().equalsIgnoreCase("exhorto")) {
+                TipoJuicioRecord tipoJuicioRecord = new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(),
+                        new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()),
                         new MateriaRecord(
-                                m.getMateria().getId(),
-                                StringUtils.capitalize(m.getMateria().getNombre().toLowerCase()))))
-                .toList();
-        
+                                tipoJuicio.getMateria().getId(),
+                                StringUtils.capitalize(tipoJuicio.getMateria().getNombre().toLowerCase())));
+                list.add(tipoJuicioRecord);
+            }
+        }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -90,10 +95,10 @@ public class TipoJuicioService {
                 .collect(Collectors.toList());
     }
 
-    public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId){
+    public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId) {
         List<TipoJuicioDemandasRecord> result = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
 
-        if (result.isEmpty()){
+        if (result.isEmpty()) {
             throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
         }
 

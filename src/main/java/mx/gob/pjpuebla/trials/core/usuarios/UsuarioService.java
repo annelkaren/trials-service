@@ -41,7 +41,7 @@ public class UsuarioService {
                         userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
                 return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             } else {
-                throw new UserAlreadyExistException("Usuario existente", persona.getCorreoElectronico());
+                throw new UserAlreadyExistException("El correo electrónico proporcionado ya se encuentra registrado", persona.getCorreoElectronico());
             }
         }
     }
