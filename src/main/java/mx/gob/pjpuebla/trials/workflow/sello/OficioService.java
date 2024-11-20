@@ -6,7 +6,6 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.lowagie.text.*;
-import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -98,29 +94,4 @@ public class OficioService {
         document.close();
         return baos.toByteArray();
     }
-
-
-    private List<String> extraerImagenes(String html) {
-        List<String> imageUrls = new ArrayList<>();
-        String[] partes = html.split("<img");
-
-        for (int i = 1; i < partes.length; i++) {
-            int srcIndex = partes[i].indexOf("src=\"");
-            if (srcIndex != -1) {
-                int start = srcIndex + 5;
-                int end = partes[i].indexOf("\"", start);
-                if (end != -1) {
-                    String imageUrl = partes[i].substring(start, end);
-                    imageUrls.add(imageUrl);
-                }
-            }
-        }
-        return imageUrls;
-    }
-
-    private String limpiarHTML(String html) {
-        return html.replaceAll("<img[^>]*>", "");
-    }
-
-
 }
