@@ -63,6 +63,12 @@ public class CarpetaResource {
 
         return new NumPiezaRecord(numPieza);
     }
-    
+
+    @PostMapping(value = "/piezas/crear", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PiezaRecordResponse createPieza(@RequestParam Integer carpetaId, @RequestBody PiezaRecord piezaRecord){
+        Carpeta pieza = carpetaService.createPieza(carpetaId, piezaRecord);
+
+        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente());
+    }
     
 }

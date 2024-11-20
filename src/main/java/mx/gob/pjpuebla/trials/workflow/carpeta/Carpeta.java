@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -85,6 +86,10 @@ public class Carpeta implements Serializable, Auditable {
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpetaPadre;
+
+    @JoinColumn(name = "FN_TIPO_PIEZA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TipoPieza tipoPieza;
 
     @Accessors(chain = false)
     @Embedded
