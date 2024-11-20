@@ -1,19 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
@@ -43,12 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_PDF;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -354,7 +342,6 @@ class DocumentoResourceTest {
 
     @Test
     void get_oficio_pdf() throws Exception {
-        boolean formato = true;
         Integer oficioId = 89734;
         byte[] mockPdf = new byte[]{1, 2, 3};
 
