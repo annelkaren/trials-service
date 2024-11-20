@@ -300,8 +300,8 @@ public class JuzgadoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona personaLogueada = personaService.getAuditor();
        
-        String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : "Oficialia";
-        Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : personaLogueada.getOficialia().getId();
+        String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : personaLogueada.getOficialia() != null ? "Oficialia" : null;
+        Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : personaLogueada.getOficialia() != null ? personaLogueada.getOficialia().getId() : null;
 
         return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo);
     }

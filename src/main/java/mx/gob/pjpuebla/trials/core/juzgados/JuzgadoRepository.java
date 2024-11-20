@@ -93,6 +93,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         WHERE f.estado = :estado
         AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
         AND (
+                (:centroTrabajo IS NULL AND :idCentroTrabajo IS NULL)
+             OR
                 ( :centroTrabajo = "Juzgado" AND f.id = :idCentroTrabajo)
              OR ( :centroTrabajo = "Oficialia" AND f.id IN (
                     SELECT oj.id FROM Oficialia o 
