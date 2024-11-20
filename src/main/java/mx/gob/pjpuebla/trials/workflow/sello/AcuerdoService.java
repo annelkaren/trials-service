@@ -33,7 +33,7 @@ public class AcuerdoService {
     public byte[] getAcuerdoPdf(Integer documentoId) throws JRException, IOException, WriterException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.LETTER, 36.0F, 65.0F, 60.0F, 36.0F);
+        Document document = new Document(PageSize.LETTER, 65.0F, 65.0F, 60.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
         pdf.setPageEvent(new PdfPageEventHelper() {
@@ -51,10 +51,14 @@ public class AcuerdoService {
                     String watermarkText = "SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL";
                     canvas.beginText();
                     canvas.setFontAndSize(baseFont, 18);
-                    float x1 = document.left() - 18;
+                    float x1 = document.left() - 22;
                     float y1 = (document.bottom() + document.top()) / 2;
                     canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText, x1, y1, 90);
                     canvas.endText();
+
+                    PdfGState gState1 = new PdfGState();
+                    gState1.setFillOpacity(0.1f);
+                    canvas.setGState(gState1);
 
                     String watermarkText2 = "Poder Judicial" ;
                     String watermarkText22=  "del" ;
@@ -99,14 +103,14 @@ public class AcuerdoService {
 
             canvas.beginText();
             canvas.setFontAndSize(baseFont, 18);
-            float x3 = document.right() + 22;
+            float x3 = document.right() + 32;
             float y3 = (document.top() - 280);
             canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText3, x3, y3, 270);
             canvas.endText();
 
             canvas.beginText();
             canvas.setFontAndSize(baseFont, 18);
-            float x4 = document.right() + 3;
+            float x4 = document.right() + 10;
             float y4 = (document.top() - 280);
             canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText4, x4, y4, 270);
             canvas.endText();
@@ -134,7 +138,7 @@ public class AcuerdoService {
     }
 
 
-    private void procesarHTMLConImagenes(String html, Document document) throws IOException, DocumentException {
+    public void procesarHTMLConImagenes(String html, Document document) throws IOException, DocumentException {
         String[] partes = html.split("<img");
 
         for (int i = 0; i < partes.length; i++) {

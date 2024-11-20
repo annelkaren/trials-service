@@ -31,11 +31,12 @@ public class OficioService {
 
     private final DigitalizacionService digitalizacionService;
     private final DocumentoContenidoService documentoContenidoService;
+    private final AcuerdoService acuerdoService;
 
     public byte[] getOficio(Integer oficioId) throws JRException, IOException, WriterException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(oficioId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.LETTER, 36.0F, 36.0F, 120.0F, 36.0F);
+        Document document = new Document(PageSize.LETTER, 65.0F, 65.0F, 120.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
         pdf.setPageEvent(new PdfPageEventHelper() {
@@ -58,7 +59,7 @@ public class OficioService {
 
                     canvas.beginText();
                     canvas.setFontAndSize(baseFont, 20);
-                    float x = document.left() - 10;
+                    float x = document.left() - 20;
                     float y = (document.bottom() + document.top()) / 2;
                     canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText, x, y, 90);
                     canvas.endText();
@@ -92,22 +93,7 @@ public class OficioService {
             log.error(e.getMessage(), e);
         }
 
-        List<String> imagenes = extraerImagenes(documentoContenido.getTexto());
-        String textoLimpio = limpiarHTML(documentoContenido.getTexto());
-
-        HTMLWorker htmlWorker = new HTMLWorker(document);
-        htmlWorker.parse(new StringReader(textoLimpio));
-
-        for (String imageUrl : imagenes) {
-            try {
-                Image image = Image.getInstance(imageUrl);
-                image.scaleToFit(350, 350);
-                image.setAlignment(Element.ALIGN_LEFT);
-                document.add(image);
-            } catch (Exception e) {
-                log.error("Error al agregar imagen: ", e);
-            }
-        }
+        acuerdoService.procesarHTMLConImagenes(documentoContenido.getTexto(), document);
 
         document.close();
         return baos.toByteArray();
