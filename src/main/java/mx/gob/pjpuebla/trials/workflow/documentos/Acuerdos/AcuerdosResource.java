@@ -1,10 +1,17 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.google.zxing.WriterException;
+import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +40,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class AcuerdosResource {
 
     private final AcuerdosService acuerdosService;
+    private final AcuerdoService acuerdoServicePdf;
 
     @PostMapping("/documentos/crearAcuerdo")
     public DocumentoGenericRecord crearAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
@@ -72,6 +80,14 @@ public class AcuerdosResource {
     public DocumentoGenericRecord actualizarAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
 
         return acuerdosService.update(acuerdo);
+    }
+
+    @GetMapping(value = "/acuerdos/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportAcuerdoPdf(@PathVariable Integer documentoId) throws JRException, IOException, WriterException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
     }
     
 
