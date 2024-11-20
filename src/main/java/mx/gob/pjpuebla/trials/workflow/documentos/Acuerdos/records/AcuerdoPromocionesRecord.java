@@ -4,5 +4,6 @@ public record AcuerdoPromocionesRecord(
     Integer id,
     String nombre,
     String nombreArchivo,
-    String recomendacion
+    String recomendacion,
+    Integer seleccionado
 ) {}

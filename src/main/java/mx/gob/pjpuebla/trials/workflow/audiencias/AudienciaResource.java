@@ -3,10 +3,14 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -27,4 +31,10 @@ public class AudienciaResource {
     public void delete(@PathVariable Integer id) {
         this.audienciaService.deleteAudiencia(id);
     }
+
+    @GetMapping(value = "/audiencias/motivos", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<CarpetaCatalogoRecord> getAudienciasMotivos(){
+        return this.audienciaService.getAudienciasMotivos();
+    }
+
 }
