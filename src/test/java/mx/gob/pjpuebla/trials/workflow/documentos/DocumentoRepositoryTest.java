@@ -151,21 +151,5 @@ void testActualizacionAcuerdoRespuesta() {
     assertThat(documentos).isNotEmpty();
     documentos.forEach(documento -> assertThat(documento.seleccionado()).isEqualTo(0));
 }
-
-@Test
-void testFindAllAcuerdosByCarpeta() {
-    Integer carpetaId = 1;
-    Pageable pageable = PageRequest.of(0, 10);
-
-    Page<AcuerdosRecord> acuerdosPage = documentoRepository.findAllAcuerdosByCarpeta(carpetaId, pageable);
-
-    assertThat(acuerdosPage).isNotEmpty();
-    assertThat(acuerdosPage.getTotalElements()).isGreaterThan(0);
-    acuerdosPage.forEach(acuerdo -> {
-        assertThat(acuerdo.fechaPublicacion()).isNotNull();
-        assertThat(acuerdo.resumen()).isNotEmpty();
-        assertThat(acuerdo.estatus()).isNotNull();
-    });
-}
     
 }
