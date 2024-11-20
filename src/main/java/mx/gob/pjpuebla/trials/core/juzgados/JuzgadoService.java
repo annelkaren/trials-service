@@ -296,18 +296,14 @@ public class JuzgadoService {
     }
 
     @Transactional(readOnly = true)
-    public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key, Integer aplicaFiltroOficio) {
+    public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona personaLogueada = personaService.getAuditor();
        
         String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : "Oficialia";
         Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : personaLogueada.getOficialia().getId();
 
-        System.out.println("Centro de trabajo: " + centroTrabajo);
-        System.out.println("Id centro trabajo: " + idCentroTrabajo.toString());
-        System.out.println("Aplica oficio: "  + aplicaFiltroOficio.toString());
-
-        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo, aplicaFiltroOficio);
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo);
     }
 
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {

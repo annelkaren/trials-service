@@ -53,6 +53,8 @@ import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -396,7 +398,7 @@ class JuzgadoServiceTest {
     @Test
     void getAllByEstadoAutocomplete_return_page() {
         List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
-        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any()))
+        given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), anyString(), anyInt()))
                 .willReturn(listPage);
         List<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("");
         assertThat(page)
