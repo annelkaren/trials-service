@@ -1,12 +1,21 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
+import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -14,6 +23,10 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -22,12 +35,15 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +60,16 @@ public class CarpetaService {
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
     private final AudienciaService audienciaService;
+    private final TipoPiezaRepository tipoPiezaRepository;
+    private final CarpetaDetalleRepository carpetaDetalleRepository;
+    private final CarpetaEtapasRepository carpetaEtapasRepository;
+    private final TipoJuicioRepository tipoJuicioRepository;
+    private final EtapaProcesalRepository etapaProcesalRepository;
+    private final RubroRepository rubroRepository;
+
+    private static final String DOC_NOT_FOUND = "Documento no encontrado";
+    private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
+
 
     public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
@@ -229,19 +255,20 @@ public class CarpetaService {
 
     public InfoExpedienteRecord getInfoExpediente(Integer docId) {
         Documento documento = documentoRepository.findById(docId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", docId.toString()));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
 
         //Obtiene nombre de rubros
-        String rubros = documento.getCarpeta().getRubros().stream()
-                .map(Rubro::getNombre)
-                .sorted()
-                .collect(Collectors.joining(", "));
+        List<RubroRecord> rubros = documento.getCarpeta().getRubros().stream()
+                .map(rubro -> new RubroRecord(rubro.getId(), rubro.getNombre()))
+                .sorted(Comparator.comparing(RubroRecord::name))
+                .toList();
 
         //Obtiene nombre de procedimientos dados los rubros
         String tipoProcedimiento = documento.getCarpeta().getRubros().stream()
                 .map(Rubro::getProcedimiento)
                 .filter(Objects::nonNull)
                 .map(Procedimiento::getNombre)
+                .distinct()
                 .sorted()
                 .collect(Collectors.joining(", "));
 
@@ -251,18 +278,31 @@ public class CarpetaService {
         //Obtiene el nombre del juez
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+
+        EtapaProcesalRecord etapaProcesalRecord = null;
+
+        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(documento.getCarpeta().getId());
+        if (optionalCarpetaEtapas.isPresent()) {
+            CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
+            etapaProcesalRecord = new EtapaProcesalRecord(carpetaEtapas.getEtapaProcesal().getId(), carpetaEtapas.getEtapaProcesal().getNombre());
+        }
+
         return new InfoExpedienteRecord(
                 documento.getCarpeta().getExpediente(),
-                documento.getCarpeta().getTipoJuicio().getNombre(),
-                documento.getCarpeta().getTipoJuicio().getNombre(), //TODO añadir causa para expediente tipo PENAL
+                documento.getCarpeta().getTipoJuicio().getNombre(), //TODO mapear de forma correcta expediente tipo PENAL
+                documento.getCarpeta().getTipoJuicio().getId(), //TODO mapear de forma correcta expediente tipo PENAL
                 extraAudienciaSelloRecord.nombreJuez(),
-                LocalDateTime.now(), //TODO añadir fecha presentación
+                LocalDateTime.now().format(pattern), //TODO añadir fecha presentación
                 "Asunto de penal desde Backend", //TODO añadir asunto para expediente tipo PENAL
                 tipoProcedimiento,
                 rubros,
-                "Primera Etapa", //TODO añadir etapa procesal
+                etapaProcesalRecord,
                 getParticipantes(apelacionRecordResponseList),
-                null //TODO añadir razón de devolución
+                null, //TODO añadir razón de devolución
+                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
+                documento.getCarpeta().getJuzgado().getMateria().getId(),
+                documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null
         );
     }
 
@@ -280,5 +320,193 @@ public class CarpetaService {
         return agrupadoPorTipo.entrySet().stream()
                 .map(entry -> new ParticipantesRecord(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord){
+        Carpeta carpetaPadre = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
+        TipoPieza tipoPieza = tipoPiezaRepository.findByIdOrClave(piezaRecord.tipoPiezaId(), piezaRecord.clavePieza()).stream().findFirst()
+                .orElseThrow(() -> new NotFoundException("El Tipo de Pieza no existe", "tipoPieza"));
+
+        Persona persona = personaService.getAuditor();
+
+        if (piezaRecord.documentos().isEmpty()){
+                throw new NotFoundException("No se puede crear una pieza vacía", "documentos");
+        }
+
+        Carpeta pieza = new Carpeta();
+
+        String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, tipoPieza.getClave());
+
+        //Folio temporal hasta que se cree la Historia de Piezas :3
+        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, tipoPieza.getClave()));
+        pieza.setExpediente(numeroPieza);
+        pieza.setCarpetaPadre(carpetaPadre);
+        pieza.setFechaAsignacion(LocalDateTime.now());
+        pieza.setTipoCarpeta(TipoCarpeta.PIEZA);
+        pieza.setPersona(persona);
+        pieza.setSelloEstatus(SelloEstatus.VALIDO);
+        pieza.setEstatus(EstadoCarpeta.ASIGNADO);
+        pieza.setJuzgado(carpetaPadre.getJuzgado());
+        pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
+        pieza.setAudit(new Audit());
+
+        pieza = carpetaRepository.save(pieza);
+
+        asignarPieza(pieza, piezaRecord.documentos());
+
+        return pieza;
+    }
+
+    public String consecutivoPieza(Integer carpetaId, String clavePieza){
+        if (!carpetaRepository.existsById(carpetaId))
+            throw new NotFoundException("La Carpeta con Id " + carpetaId +" no existe","carpetaId");
+        if (!tipoPiezaRepository.existsByClave(clavePieza))
+            throw new NotFoundException("El tipo de pieza " + clavePieza + " no existe","clavePieza");
+
+        return clavePieza + StringUtils.leftPad(carpetaRepository.getNumeroPieza(carpetaId, clavePieza).toString(),2,'0');
+    }
+
+    public void asignarPieza(Carpeta pieza, List<Integer> documentos){
+
+        for(Integer documentoId : documentos) {
+                Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+                documento.setCarpeta(pieza);
+                documento.setData(documento.getData().setPieza(pieza.getExpediente()));
+                documentoRepository.save(documento);
+        }
+    }
+
+    public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+
+        Documento documento = documentoRepository.findById(docId)
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
+
+        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+
+        String nombre = documento.getCarpeta().getPersona().getNombre() + " " +
+                (documento.getCarpeta().getPersona().getApellidoPaterno()!=null ? documento.getCarpeta().getPersona().getApellidoPaterno() + " " : "")  +
+                (documento.getCarpeta().getPersona().getApellidoMaterno()!=null ? documento.getCarpeta().getPersona().getApellidoMaterno() : "") + ", ";
+
+        String rol = (documento.getCarpeta().getPersona().getOcupacion()!=null ? documento.getCarpeta().getPersona().getOcupacion() + ", " : "");
+
+        String ubicacion = documento.getCarpeta().getPersona().getJuzgado() != null ?
+                documento.getCarpeta().getPersona().getJuzgado().getNombre() : documento.getCarpeta().getPersona().getOficialia().getNombre();
+
+        return new InfoExpedienteDetalleRecord(
+                documento.getCarpeta().getDeterminacionJurisdiccional()!=null ? documento.getCarpeta().getDeterminacionJurisdiccional().name() : null,
+                carpetaDetalle.getFechaAdmision()!=null ? carpetaDetalle.getFechaAdmision().format(pattern) : null,
+                carpetaDetalle.getFechaDesechado()!=null ? carpetaDetalle.getFechaDesechado().format(pattern) : null,
+                nombre + rol + ubicacion,
+                carpetaDetalle.getAsunto(),
+                null,
+                carpetaDetalle.getObservaciones(),
+                documento.getCarpeta().getSentencia()!=null ? documento.getCarpeta().getSentencia().name() : null,
+                carpetaDetalle.getPromovente(),
+                carpetaDetalle.getNumeroCarpetaInvestigacion(),
+                carpetaDetalle.getNumeroOficio(),
+                carpetaDetalle.getLugarHecho(),
+                carpetaDetalle.getFechaHecho(),
+                carpetaDetalle.getCantidadPrincipal(),
+                carpetaDetalle.getMoneda(),
+                carpetaDetalle.getNumeroHijos(),
+                carpetaDetalle.getNumeroHijosMenoresEdad(),
+                carpetaDetalle.getActaMatrimonio(),
+                carpetaDetalle.getLugarRegistroMatrimonio(),
+                carpetaDetalle.getEntidad(),
+                carpetaDetalle.getMunicipio(),
+                carpetaDetalle.getLocalidad(),
+                carpetaDetalle.getFechaRegistro()!=null ? carpetaDetalle.getFechaRegistro().format(pattern) : null,
+                carpetaDetalle.getHoraFormal(),
+                carpetaDetalle.getHoraMaterial(),
+                carpetaDetalle.getLugarDisposicion(),
+                carpetaDetalle.getPresentacionImputado()!=null ? carpetaDetalle.getPresentacionImputado().name() : null,
+                carpetaDetalle.getSolicitudAudiencia()!=null ? carpetaDetalle.getSolicitudAudiencia().name() : null,
+                carpetaDetalle.getFechaPresentacionImputado()!=null ? carpetaDetalle.getFechaPresentacionImputado().format(pattern) : null,
+                carpetaDetalle.getTipoJuicio()!=null ? carpetaDetalle.getTipoJuicio().getId() : null,
+                carpetaDetalle.getTipoJuicio()!=null ? carpetaDetalle.getTipoJuicio().getNombre() : null
+        );
+    }
+
+    public void saveExpedienteDetalle(
+            SaveExpedienteDetalleRecord detalle,
+            Integer docId
+    ) {
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+
+        Documento documento = documentoRepository.findById(docId)
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
+        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+
+        //TODO editar fase para PENAL
+        //TODO editar juez en caso penal
+
+        documento.getCarpeta().setDeterminacionJurisdiccional(detalle.determinacion()!=null ? detalle.determinacion() : CatalogoDeterminacionJurisdiccional.PRESENTACION);
+
+        //edita tipo juicio
+        TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
+                .orElseThrow(() -> new NotFoundException("TipoJuicio no encontrado", detalle.tipoJuicioHijoId().toString()));
+
+        //edita rubros
+        Set<Rubro> rubros = detalle.rubros().stream()
+                .map(rubroRecord -> rubroRepository.findById(rubroRecord.id())
+                        .orElseThrow(() -> new IllegalArgumentException("Rubro no encontrado con id: " + rubroRecord.id())))
+                .collect(Collectors.toSet());
+
+        documento.getCarpeta().setRubros(rubros);
+
+        //edita etapa procesal
+        EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
+                .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada", detalle.etapaProcesal().id().toString()));
+        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(documento.getCarpeta().getId());
+        if (optionalCarpetaEtapas.isPresent()) {
+            CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
+            //Si el registro Etapa Procesal mas reciente no coincide con el obtenido de detalle registra la nueva etapa procesal
+            if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
+                carpetaEtapasRepository.save( new CarpetaEtapas()
+                        .setCarpeta(documento.getCarpeta())
+                        .setFechaRegistro(LocalDateTime.now())
+                        .setEtapaProcesal(etapaProcesalDetalle)
+                );
+            }
+        }else{
+            carpetaEtapasRepository.save( new CarpetaEtapas()
+                    .setCarpeta(documento.getCarpeta())
+                    .setFechaRegistro(LocalDateTime.now())
+                    .setEtapaProcesal(etapaProcesalDetalle)
+            );
+        }
+
+        //TODO falta actualizar domicilios para Familiar Oralidad
+
+        carpetaDetalle
+                .setTipoJuicio(tipoJuicioHijo)
+                .setAsunto(detalle.asunto())
+                .setObservaciones(detalle.observaciones())
+                .setPromovente(detalle.promovente())
+                .setNumeroCarpetaInvestigacion(detalle.numeroCarpetaInvestigacion())
+                .setNumeroCarpetaInvestigacion(detalle.numeroCarpetaInvestigacion())
+                .setNumeroOficio(detalle.numeroOficio())
+                .setLugarHecho(detalle.lugarHecho())
+                .setFechaHecho(detalle.fechaHecho())
+                .setCantidadPrincipal(detalle.cantidadPrincipal())
+                .setMoneda(detalle.moneda())
+                .setNumeroHijos(detalle.numeroHijos())
+                .setNumeroHijosMenoresEdad(detalle.numeroHijosMenoresEdad())
+                .setActaMatrimonio(detalle.actaMatrimonio())
+                .setLugarRegistroMatrimonio(detalle.lugarRegistroMatrimonio())
+                .setEntidad(detalle.entidad())
+                .setMunicipio(detalle.municipio())
+                .setLocalidad(detalle.localidad())
+                .setFechaRegistro(detalle.fechaRegistro()!=null ? (LocalDateTime.parse(detalle.fechaRegistro(), pattern)) : null)
+                .setHoraFormal(detalle.horaFormal())
+                .setHoraMaterial(detalle.horaMaterial())
+                .setLugarDisposicion(detalle.lugarDisposicion())
+                .setPresentacionImputado(detalle.presentacionImputado())
+                .setSolicitudAudiencia(detalle.solicitudAudiencia())
+                .setFechaPresentacionImputado(detalle.fechaPresentacionImputado()!=null ? (LocalDateTime.parse(detalle.fechaPresentacionImputado(), pattern)):null);
+
+        carpetaDetalleRepository.save(carpetaDetalle);
+        documentoRepository.save(documento);
     }
 }

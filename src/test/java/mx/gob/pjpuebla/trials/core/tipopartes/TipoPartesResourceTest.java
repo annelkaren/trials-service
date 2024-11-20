@@ -123,4 +123,28 @@ class TipoPartesResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isNotFound());
     }
+
+    @Test
+    void getTiposPartesByCarpetaId_success() throws Exception {
+        List<TipoPartesRecord> list = Arrays.asList(validTipoPartesRecord);
+        
+        given(mockTipoPartesService.getTiposPartesByCarpetaId(anyInt()))
+                .willReturn(list);
+    
+        mockMvc.perform(
+                get("/api/core/tipopartes/{carpetaId}/listar", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getTiposPartesByCarpetaId_not_found() throws Exception {
+        given(mockTipoPartesService.getTiposPartesByCarpetaId(anyInt()))
+                .willThrow(NotFoundException.class);
+
+        mockMvc.perform(
+                get("/api/core/tipopartes/{carpetaId}/listar", 0)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNotFound());
+    }
 }

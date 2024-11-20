@@ -44,6 +44,8 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
@@ -51,8 +53,12 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -76,8 +82,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.time.LocalDate;
@@ -153,6 +161,12 @@ class DocumentoServiceTest {
     private SelloGenerator selloGenerator;
     @Mock
     private EmailService emailService;
+    @Mock
+    private DigitalizacionService digitalizacionService;
+    @Mock
+    private CarpetaService carpetaService;
+    @Mock
+    private CarpetaDetalleRepository carpetaDetalleRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -1329,5 +1343,88 @@ class DocumentoServiceTest {
         assertTrue(constraintViolationException.getMessage().contains(Messages.CONSTRAINT_ERROR));
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
+    }
+
+
+    @Test
+    void create_demandaAntiguas() {
+
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+
+        TipoJuicio tipoJuicioOral = new TipoJuicio();
+        tipoJuicioOral.setNombre("Oral");
+
+        TipoJuicio tipoJuicioTradicional = new TipoJuicio();
+        tipoJuicioTradicional.setNombre("Tradicional");
+
+        tipoJuicioTradicional.setTipoSistema(new TipoSistema().setNombre("Tradicional"));
+        List<TipoJuicio> listaTipoJuicios = new ArrayList<>();
+        listaTipoJuicios.add(tipoJuicioTradicional);
+        listaTipoJuicios.add(tipoJuicioOral);
+
+        Persona persona = PersonaSetUp.createPersona();
+        persona.getJuzgado().setTipoJuicios(listaTipoJuicios);
+
+        given(personaService.getAuditor()).willReturn(persona);
+        lenient().when(juzgadoService.getJuzgadoFolios(any(), any())).thenReturn(juzgadoFolios);
+        lenient().when(juzgadoService.checkYearJuzgadoFolios(any())).thenReturn(juzgadoFolios);
+        given(documentoRepository.save(any())).willReturn(demanda);
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
+        given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
+        given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
+        given(digitalizacionService.guardarArchivo(any(), any()))
+                .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo", "archivo.pdf"));
+        DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
+
+        DocumentoRecord response = documentoService.createDemandaAntigua(recordRequest, multipartFile);
+        assertThat(response)
+                .isOfAnyClassIn(DocumentoRecord.class)
+                .hasFieldOrPropertyWithValue("id", documentoRecord.id())
+                .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
+                .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
+
+        verify(personaService).getAuditor();
+        verify(carpetaRepository).save(any());
+        verify(documentoRepository).save(any());
+        verify(digitalizacionService).guardarArchivo(multipartFile, demanda.getId());
+        verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void createAmparo() {
+        AmparoRecord amparoRecord = new AmparoRecord(1,
+                "AD",
+                LocalDate.now(),
+                0,
+                CatalogoSentidoAmparo.CONCEDE.name(),
+                CatalogoImpugnacionAmparo.CONFIRMA.name(),
+                "JUAN PEREZ",
+                1,
+                null);
+        String pieza = "000001/2024/AD01";
+        Carpeta carpeta = CarpetaSetUp.create();
+        Persona persona = PersonaSetUp.createPersona();
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setId(10);
+        documento.getCarpeta().setExpediente(pieza);
+
+        AmparoRecordResponse response = new AmparoRecordResponse(documento.getCarpeta().getId(), documento.getId(), pieza, LocalDateTime.now());
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(carpeta));
+        given(conceptoRepository.findByNombre(any())).willReturn(Optional.of(concepto));
+        given(carpetaService.createPieza(any(), any())).willReturn(documento.getCarpeta());
+        response = documentoService.createAmparo(amparoRecord);
+
+        assertThat(response).isNotNull().hasFieldOrPropertyWithValue("numeroPieza", pieza);
     }
 }

@@ -1,11 +1,20 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
@@ -22,7 +31,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +42,8 @@ import java.util.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -454,4 +467,81 @@ class DocumentoResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void create_demanda_antigua() throws Exception {
+
+        String documentoSaveRecordJson = """
+        {
+            "actor": {
+                "nombre": "Carlos",
+                "apellidoPaterno": "González",
+                "apellidoMaterno": "Hernández",
+                "pseudonimo": "carlitos",
+                "tipoPersona": "fisica",
+                "tipoParte": 1
+            },
+            "demandado": {
+                "nombre": "María",
+                "apellidoPaterno": "López",
+                "apellidoMaterno": "Ramírez",
+                "pseudonimo": "mary",
+                "tipoPersona": "fisica",
+                "tipoParte": 2
+            },
+            "anexos": [
+                "Anexo1",
+                "Anexo2"
+            ]
+        }
+    """;
+
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        MockMultipartFile documentoSaveRecord = new MockMultipartFile(
+                "documentoSaveRecord",
+                "documentoSaveRecord",
+                "application/json",
+                documentoSaveRecordJson.getBytes()
+        );
+
+        DocumentoRecord expectedResponse = new DocumentoRecord(1, "12345", TipoCarpeta.DEMANDA);
+        given(documentoService.createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class)))
+                .willReturn(expectedResponse);
+
+        mockMvc.perform(multipart("/api/workflow/registro")
+                        .file(file)
+                        .file(documentoSaveRecord)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("12345"))
+                .andExpect(jsonPath("$.tipoCarpeta").value(TipoCarpeta.DEMANDA.name()));
+
+        verify(documentoService).createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class));
+    }
+
+    @Test
+    void crear_amparo() throws Exception{
+        String pieza = "000001/2024/AD01";
+        AmparoRecordResponse amparoRecordResponse = new AmparoRecordResponse(1, 1, pieza, LocalDateTime.now());
+
+        given(documentoService.createAmparo(any())).willReturn(amparoRecordResponse);
+
+        mockMvc.perform(
+                        post("/api/workflow/documentos/amparo")
+                                .content(ResourceUtilTest.asJsonString(amparoRecordResponse))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 }

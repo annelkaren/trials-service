@@ -2,7 +2,10 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import jakarta.ws.rs.core.MediaType;
 
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
+import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,11 +17,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -46,4 +52,27 @@ class AudienciaResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void delete_success() throws Exception {
+        mockMvc.perform(
+                delete("/api/workflow/bandeja/audienciasgenerales/1")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAudienciasMotivos() throws Exception {
+        List<CarpetaCatalogoRecord> items = Arrays.stream(CatalogoMotivosRetrasoAudiencias.values())
+                .map(data -> new CarpetaCatalogoRecord(data.name(), data.getEtiqueta()))
+                .toList();
+        when(audienciaService.getAudienciasMotivos())
+                .thenReturn(items);
+
+        mockMvc.perform(get("/api/workflow/audiencias/motivos")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].clave").value("ACTOR_NO_LLEGO"))
+                .andExpect(jsonPath("$[0].etiqueta").value("La parte actora no llegó con la oportunidad solicitada"))
+                .andExpect(jsonPath("$.length()").value(CatalogoMotivosRetrasoAudiencias.values().length));
+    }
 }

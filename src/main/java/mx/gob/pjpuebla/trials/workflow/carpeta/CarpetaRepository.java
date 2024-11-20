@@ -53,4 +53,18 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     @Modifying
     @Query("UPDATE Carpeta c SET c.estatus = :estado WHERE c.id = :carpetaId")
     void actualizarEstatus(@Param("carpetaId") Integer carpetaId, @Param("estado") EstadoCarpeta estado);
+
+
+    @Query("""
+            SELECT COUNT(1)+1 FROM Carpeta c
+            WHERE c.carpetaPadre.id=:carpetaId and c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA and c.expediente like %:clavePieza%
+            """)
+    Integer getNumeroPieza(Integer carpetaId, String clavePieza);
+    
+    @Query("""
+            SELECT c.tipoJuicio.id
+            FROM Carpeta c
+            WHERE c.id = :carpetaId
+            """)
+    Integer findTipoJuicioIdByCarpetaId(@Param("carpetaId") Integer carpetaId);
 }

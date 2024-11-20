@@ -16,8 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -36,6 +36,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
@@ -98,6 +99,15 @@ class AcuerdoServiceTest {
     }
 
     @Test
+    void obtenerPromocionesTest(){
+        Integer carpetaId = 1;
+        String actualizacion = "NO";
+
+        List<AcuerdoPromocionesRecord> result = acuerdosService.obtenerPromociones(carpetaId, actualizacion);
+        assertNotNull(result);
+    }
+
+    @Test
     void getAcuerdos() {
         Integer carpetaId = 1;
         List<AcuerdosRecord> acuerdo = AcuerdoRecordSetUp.createAcuerdoRecord();
@@ -135,5 +145,55 @@ class AcuerdoServiceTest {
     
     }
 
+    @Test
+    void getAcuerdoTest(){
+        AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
+        DocumentoData docData = new DocumentoData();
+        docData.setRubros(acuerdoRecord.rubros());
+
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.setData(docData);
+
+        documento.setData(new DocumentoData());
+        given(documentoRepository.findById(anyInt()))
+            .willReturn(Optional.of(documento));
+
+        given(documentoDetalleRepository.findByDocumentoId(anyInt()))
+            .willReturn(Optional.of(new DocumentoDetalle()));
+
+        given(documentoContenidoRepository.findByDocumentoId(anyInt()))
+            .willReturn(Optional.of(new DocumentoContenido()));
+
+        AcuerdoRecord result = acuerdosService.getAcuerdo(1);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void update(){
+        AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
+        Carpeta carpeta = CarpetaSetUp.create();
+        
+        DocumentoData docData = new DocumentoData();
+        docData.setRubros(acuerdoRecord.rubros());
+        
+        Documento doc = new Documento();
+        doc.setCarpeta(carpeta);
+        doc.setTipoDocumento(TipoDocumento.ACUERDO);
+        doc.setData(docData);
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(doc));
+        given(documentoRepository.save(any(Documento.class))).willReturn(doc);
+        
+        given(documentoDetalleRepository.findByDocumentoId(anyInt())).willReturn(Optional.of(new DocumentoDetalle()));
+        given(documentoDetalleRepository.save(any(DocumentoDetalle.class))).willReturn(new DocumentoDetalle());
+        
+        given(documentoContenidoRepository.findByDocumentoId(anyInt())).willReturn(Optional.of(new DocumentoContenido()));
+        given(documentoContenidoRepository.save(any(DocumentoContenido.class))).willReturn(new DocumentoContenido());
+        
+        DocumentoGenericRecord result = acuerdosService.update(acuerdoRecord);
+        
+        assertNotNull(result);
+    }
 
 }

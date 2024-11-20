@@ -1,19 +1,23 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
-import java.time.LocalDateTime;
+import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
+
 import java.util.List;
 
 public record InfoExpedienteRecord(
         String expediente,
         String tipoJuicio,
-        String tipoCausa,
+        Integer tipoJuicioId,
         String juezAsignado,
-        LocalDateTime fechaPresentacion,
+        String fechaPresentacion,
         String asunto,
         String tipoProcedimiento,
-        String rubros,
-        String etapaProcesal,
+        List<RubroRecord> rubros,
+        EtapaProcesalRecord etapaProcesal,
         List<ParticipantesRecord> participantes,
-        String razonDevolucion
+        String razonDevolucion,
+        String materia,
+        Integer materiaId,
+        String tipoSistema
 ) {
 }

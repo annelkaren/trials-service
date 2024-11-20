@@ -1,10 +1,13 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+import java.util.Collections;
 import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -74,4 +77,15 @@ public class JuzgadoResource {
     public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.juzgadoService.updateStatus(id, status);
     }
+
+    @GetMapping("/salas")
+    public List<JuzgadoRecordItem> getSalas() {
+        return this.juzgadoService.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
+    }
+
+    @GetMapping("/actual")
+    public List<JuzgadoRecordItem> getJuzgadoActual() {
+        return Collections.singletonList(this.juzgadoService.getJuzgadoActual());
+    }
+
 }
