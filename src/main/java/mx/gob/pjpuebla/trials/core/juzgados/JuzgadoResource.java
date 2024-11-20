@@ -69,8 +69,9 @@ public class JuzgadoResource {
 
     @GetMapping("/autocomplete")
     public List<JuzgadoRecordItem> findAllByEstadoActiveAutocomplete(
-            @RequestParam(value = "key", required = false) String key) {
-        return this.juzgadoService.findAllByEstadoAutocomplete(key);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "aplicaFiltroOficio", required = false) Integer aplicaFiltroOficio) {
+        return this.juzgadoService.findAllByEstadoAutocomplete(key, aplicaFiltroOficio);
     }
 
     @PatchMapping("/{id}/status/{status}")

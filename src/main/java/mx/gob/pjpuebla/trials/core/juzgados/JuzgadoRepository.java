@@ -92,11 +92,25 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         LEFT JOIN f.materia m
         WHERE f.estado = :estado
         AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
+        AND (
+                (:aplicaFiltroOficio = 1 AND :centroTrabajo = "Juzgado" AND f.id = :idCentroTrabajo)
+             OR (:aplicaFiltroOficio = 1 AND :centroTrabajo = "Oficialia" AND f.id IN (
+                    SELECT oj.id FROM Oficialia o 
+                    JOIN o.juzgados oj 
+                    WHERE o.id = :idCentroTrabajo
+                ))
+             OR (:aplicaFiltroOficio = 0)
+            )
         """)
     List<JuzgadoRecordItem> findAllByEstadoAutocomplete(
             @Param("estado") Estado estado,
-            @Param("key") String key
+            @Param("key") String key,
+            @Param("centroTrabajo") String centroTrabajo,
+            @Param("idCentroTrabajo" ) Integer idCentroTrabajo,
+            @Param("aplicaFiltroOficio") Integer aplicaFiltroOficio
     );
+    
+    
 
     Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 
