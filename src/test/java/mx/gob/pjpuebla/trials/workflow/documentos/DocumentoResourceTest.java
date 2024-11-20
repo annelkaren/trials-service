@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
+import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -71,6 +72,9 @@ class DocumentoResourceTest {
 
     @MockBean
     private OficioService oficioService;
+
+    @MockBean
+    private AcuerdoService acuerdoService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -541,6 +545,18 @@ class DocumentoResourceTest {
                                 .content(ResourceUtilTest.asJsonString(amparoRecordResponse))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void get_acuerdo_pdf() throws Exception {
+        Integer documentoId = 89734;
+        byte[] mockPdf = new byte[]{1, 2, 3};
+
+        given(oficioService.getOficio(documentoId)).willReturn(mockPdf);
+
+        mockMvc.perform(get("/api/workflow/documentos/acuerdos/{documentoId}", documentoId)
+                        .accept(APPLICATION_PDF))
                 .andExpect(status().isOk());
     }
 
