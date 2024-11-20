@@ -231,7 +231,7 @@ class AudienciaServiceTest {
     void diferirAudiencia_success() {
         Audiencia audiencia = new Audiencia();
         audiencia.setId(1);
-        audiencia.setFechaAudiencia(null);
+        audiencia.setFechaAudiencia(LocalDateTime.now());
         audiencia.setEstatusAudiencia(EstatusAudiencia.PROGRAMADA);
 
         when(audienciaRepository.findById(1)).thenReturn(Optional.of(audiencia));

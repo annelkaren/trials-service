@@ -79,7 +79,7 @@ class AudienciaResourceTest {
     @Test
     void diferir_success() throws Exception {
         mockMvc.perform(
-                put("/api/workflow/bandeja/audienciasgenerales/diferir/1")
+                patch("/api/workflow/bandeja/audienciasgenerales/diferir/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
