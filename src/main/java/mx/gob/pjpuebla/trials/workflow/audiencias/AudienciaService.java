@@ -5,9 +5,11 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
@@ -33,6 +35,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -135,5 +138,11 @@ public class AudienciaService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
         }
+    }
+
+    public List<CarpetaCatalogoRecord> getAudienciasMotivos() {
+        return Arrays.stream(CatalogoMotivosRetrasoAudiencias.values())
+                .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                .toList();
     }
 }
