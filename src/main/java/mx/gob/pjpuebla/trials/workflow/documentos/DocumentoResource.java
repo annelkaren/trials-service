@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -38,6 +39,7 @@ public class DocumentoResource {
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
+    private final AcuerdoService acuerdoService;
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
@@ -192,6 +194,14 @@ public class DocumentoResource {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("oficio", oficioId + "_documento.pdf");
         return ResponseEntity.ok().headers(headers).body(oficioService.getOficio(oficioId));
+    }
+
+    @GetMapping(value = "/documentos/acuerdos/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportAcuerdoPdf(@PathVariable Integer documentoId) throws JRException, IOException, WriterException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(acuerdoService.getAcuerdoPdf(documentoId));
     }
 
     @DeleteMapping("/bandeja/asignados/{id}")
