@@ -21,7 +21,7 @@ public class AcuerdoRecordSetUp {
         rubros.add("rubro 1");
 
         List<AcuerdoPromocionesRecord> promociones = new ArrayList<>();
-        promociones.add(new AcuerdoPromocionesRecord(1, "prueba", "archivoName", "recomendacion 1"));
+        promociones.add(new AcuerdoPromocionesRecord(1, "prueba", "archivoName", "recomendacion 1", 1));
 
 
         return new AcuerdoRecord( 1, 1, 1, "tipo acuerdo test", LocalDate.now(), "etapa procesal prueba", rubros, promociones,
@@ -38,5 +38,12 @@ public class AcuerdoRecordSetUp {
         List<AcuerdoNotificadosRecord> acuerdoRecord = new ArrayList<>();
         acuerdoRecord.add(new AcuerdoNotificadosRecord(1, "nombre", "Demadado", "Correo"));
         return acuerdoRecord;
+    }
+
+    public static List<AcuerdoPromocionesRecord> createAcuerdoPromocionesRecord(){
+        List<AcuerdoPromocionesRecord> acuerdoPromocionesRecords = new ArrayList<>();
+        acuerdoPromocionesRecords.add(new AcuerdoPromocionesRecord(1, "Nombre", "archivo_name", null, 1));
+
+        return acuerdoPromocionesRecords;
     }
 }
