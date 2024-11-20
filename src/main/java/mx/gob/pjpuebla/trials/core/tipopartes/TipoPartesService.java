@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 
@@ -23,6 +24,7 @@ public class TipoPartesService {
 
     private final TipoPartesRepository tipoPartesRepository;
     private final DocumentoRepository documentoRepository;
+    private final CarpetaRepository carpetaRepository;
 
     public Page<TipoPartesRecord> getAll(Pageable pageable, TipoPartes example) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
@@ -67,5 +69,21 @@ public class TipoPartesService {
         return tiposPartes.stream()
         .map(tipoParte -> new TipoPartesRecord(tipoParte.getId(), tipoParte.getNombre(), tipoJuicio.getNombre()))
         .collect(Collectors.toList());
+    }
+
+    public List<TipoPartesRecord> getTiposPartesByCarpetaId(Integer carpetaId) {
+        Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
+        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioId(tipoJuicioId);
+
+        if (tipoJuicioId == null) {
+            throw new NotFoundException("No se encontró el tipo de juicio para la carpeta ID ",carpetaId.toString());
+        }
+        return tiposPartes.stream()
+            .map(tipoParte -> new TipoPartesRecord(
+                    tipoParte.getId(),
+                    tipoParte.getNombre(),
+                    tipoParte.getTipoJuicio() != null ? tipoParte.getTipoJuicio().getNombre() : null 
+            ))
+            .collect(Collectors.toList());
     }
 }

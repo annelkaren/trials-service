@@ -20,8 +20,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -141,6 +140,18 @@ class InstitucionResourceTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void getAllByTipo() throws Exception {
+        given(mockInstitucionService.getAll(eq(new Institucion().setNombre("").setTipoInstitucion("Tribunal Federal")), any()))
+                .willReturn(new PageImpl<>(Collections.singletonList(institucionRecord)));
+
+        mockMvc.perform(
+                        get("/api/core/instituciones/tribunales")
+                                .param("nombre", "I")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
 }

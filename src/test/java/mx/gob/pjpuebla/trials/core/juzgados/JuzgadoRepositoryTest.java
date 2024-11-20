@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -89,4 +90,10 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
         assertThat(juzgado.get().getNombre()).isEqualTo(nombreJuzgado);
     }
 
+    @Test
+    void findByInstancia(){
+        List<JuzgadoRecordItem> juzgadoRecordItemList = juzgadoRepository.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
+
+        assertThat(juzgadoRecordItemList).isNotNull().anyMatch(j->j.nombre().contains("Sala"));
+    }
 }

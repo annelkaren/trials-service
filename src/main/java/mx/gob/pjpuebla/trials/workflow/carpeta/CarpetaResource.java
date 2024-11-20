@@ -56,4 +56,25 @@ public class CarpetaResource {
     public InfoExpedienteRecord getInfoRecepcionExpediente(@PathVariable Integer docId){
         return this.carpetaService.getInfoExpediente(docId);
     }
+
+    @GetMapping(value = "/expediente/detalle/{docId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(@PathVariable Integer docId){
+        return this.carpetaService.getInfoExpedienteDetalle(docId);
+    }
+
+    @PostMapping(value = "/expediente/detalle/{docId}")
+    public void saveExpedienteDetalle(
+            @RequestBody SaveExpedienteDetalleRecord infoExpedienteDetalleRecord,
+            @PathVariable Integer docId) {
+        this.carpetaService.saveExpedienteDetalle(infoExpedienteDetalleRecord, docId);
+    }
+
+    @GetMapping(value= "/piezas/numPieza", produces = MediaType.APPLICATION_JSON_VALUE)
+    public NumPiezaRecord getConsecutivoPiezas(@RequestParam String clavePieza, @RequestParam Integer carpetaId) {
+        String numPieza = this.carpetaService.consecutivoPieza(carpetaId, clavePieza);
+
+        return new NumPiezaRecord(numPieza);
+    }
+
+
 }

@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 
@@ -21,7 +22,8 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
- 
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,10 @@ class TipoPartesServiceTest {
 
     @Mock
     DocumentoRepository mockDocumentoRepository;
+
+    @Mock
+    CarpetaRepository mockCarpetaRepository;
+
 
     @InjectMocks
     TipoPartesService target;
@@ -137,7 +143,7 @@ class TipoPartesServiceTest {
                 given(mockDocumentoRepository.findById(1)).willReturn(Optional.empty());
 
                 NotFoundException thrown = assertThrows(NotFoundException.class, () -> {
-                        target.getTipoPartesByDocumentoId(1);
+                        target.getTipoPartesByDocumentoId(1); 
                 });
 
                 assertThat(thrown.getMessage()).contains("Documento no encontrado");
@@ -175,4 +181,22 @@ class TipoPartesServiceTest {
                 assertThat(thrown.getMessage()).contains("Tipo de juicio no encontrado");
             }
 
+    @Test
+    void getTiposPartesByCarpetaId_success() {
+        Integer carpetaId = 1;
+        Integer tipoJuicioId = 100;
+        List<TipoPartes> tiposPartes = Arrays.asList(validTipoPartes);
+
+        given(mockCarpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId)).willReturn(tipoJuicioId);
+        given(mockTipoPartesRepository.findByTipoJuicioId(tipoJuicioId)).willReturn(tiposPartes);
+
+        List<TipoPartesRecord> result = target.getTiposPartesByCarpetaId(carpetaId);
+
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).hasFieldOrPropertyWithValue("id", validTipoPartes.getId())
+                .hasFieldOrPropertyWithValue("nombre", validTipoPartes.getNombre())
+                .hasFieldOrPropertyWithValue("tipoJuicio", validTipoPartes.getTipoJuicio().getNombre());
+    }
+        
 }

@@ -61,4 +61,10 @@ public class InstitucionResource {
 
         return this.institucionService.getAllByEstadoAutocomplete(new Institucion().setNombre(nombre), pageable);
     }
+
+    @GetMapping("/tribunales")
+    public Page<InstitucionRecord> getAllSalas(@RequestParam(value = "nombre", required = false) String nombre) {
+        Institucion example = new Institucion().setNombre(nombre).setTipoInstitucion("Tribunal Federal");
+        return this.institucionService.getAll(example, Pageable.unpaged());
+    }
 }

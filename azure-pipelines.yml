@@ -12,7 +12,10 @@ resources:
 variables:
   imageRepository: 'trialsservice'
   containerRegistry: 'pjpuebla.azurecr.io'
-  tag: '$(Build.BuildNumber)'
+  ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+    tag: '$(Build.BuildNumber)'
+  ${{ else }}:
+    tag: '$(Build.BuildId)'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   # Agent VM image name
@@ -59,10 +62,6 @@ stages:
             env:
               QODANA_TOKEN: $(QODANA_TOKEN)
               QODANA_ENDPOINT: 'https://qodana.cloud'
-
-          - bash: echo "##vso[task.setvariable variable=tag]nightly"
-            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-            displayName: Set nightly tag only for dev branch
 
           - task: Docker@2
             condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/develop', 'refs/heads/main'))
