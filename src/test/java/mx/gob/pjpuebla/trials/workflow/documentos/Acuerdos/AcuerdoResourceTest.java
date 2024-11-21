@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +44,9 @@ class AcuerdoResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private AcuerdoService acuerdoServicePdf;
 
     @Test
     void crear_acuerdo() throws Exception {
@@ -136,6 +141,18 @@ class AcuerdoResourceTest {
                 put("/api/workflow/documentos/actualizarAcuerdo")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceUtilTest.asJsonString(acuerdo)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void get_acuerdo_pdf() throws Exception {
+        Integer documentoId = 89734;
+        byte[] mockPdf = new byte[]{1, 2, 3};
+
+        given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
+
+        mockMvc.perform(get("/api/workflow/acuerdos/{documentoId}", documentoId)
+                        .accept(APPLICATION_PDF))
                 .andExpect(status().isOk());
     }
 
