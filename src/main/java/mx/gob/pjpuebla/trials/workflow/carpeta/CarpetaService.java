@@ -351,6 +351,7 @@ public class CarpetaService {
         pieza.setEstatus(EstadoCarpeta.ASIGNADO);
         pieza.setJuzgado(carpetaPadre.getJuzgado());
         pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
+        pieza.setTipoPieza(tipoPieza);
         pieza.setAudit(new Audit());
 
         pieza = carpetaRepository.save(pieza);
@@ -515,5 +516,13 @@ public class CarpetaService {
 
     public List<PiezaRecordResponse> getPiezas(Integer documentoId){
         return this.carpetaRepository.findPiezasByDocumentoId(documentoId);
+    }
+
+    public PiezaRecordResponse adjuntarPiezaDocumentos(Integer piezaId, PiezaRecord piezaRecord){
+        Carpeta pieza = carpetaRepository.findById(piezaId).orElseThrow(()-> new NotFoundException("La pieza no existe","piezaId"));
+
+        asignarPieza(pieza, piezaRecord.documentos());
+
+        return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
     }
 }
