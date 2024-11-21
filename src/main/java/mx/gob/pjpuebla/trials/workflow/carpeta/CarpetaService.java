@@ -248,6 +248,9 @@ public class CarpetaService {
             case "catalogoImpugnacionAmparo" -> Arrays.stream(CatalogoImpugnacionAmparo.values())
                     .map(e-> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
                     .toList();
+            case "catalogoTipoPiezas" -> this.tipoPiezaRepository.findAll().stream()
+                    .map(e-> new CarpetaCatalogoRecord(e.getClave(), e.getTipo()))
+                    .toList();
             default -> Collections.emptyList();
         };
     }
@@ -508,5 +511,9 @@ public class CarpetaService {
 
         carpetaDetalleRepository.save(carpetaDetalle);
         documentoRepository.save(documento);
+    }
+
+    public List<PiezaRecordResponse> getPiezas(Integer documentoId){
+        return this.carpetaRepository.findPiezasByDocumentoId(documentoId);
     }
 }

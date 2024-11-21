@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.transaction.Transactional;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -67,4 +68,19 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             WHERE c.id = :carpetaId
             """)
     Integer findTipoJuicioIdByCarpetaId(@Param("carpetaId") Integer carpetaId);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse(
+                c.id, c.expediente, tp.tipo
+            )
+            FROM Documento d
+            JOIN Carpeta c on c.carpetaPadre.id = d.carpeta.id
+            JOIN c.tipoPieza tp
+            WHERE d.id = :documentoId
+            AND c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA
+            AND c.estatus NOT IN (
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.CANCELADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.INTEGRADO)
+            """)
+    List<PiezaRecordResponse> findPiezasByDocumentoId(Integer documentoId);
 }

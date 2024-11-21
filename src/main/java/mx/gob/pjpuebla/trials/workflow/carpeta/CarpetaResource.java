@@ -80,7 +80,14 @@ public class CarpetaResource {
     public PiezaRecordResponse createPieza(@RequestParam Integer carpetaId, @RequestBody PiezaRecord piezaRecord){
         Carpeta pieza = carpetaService.createPieza(carpetaId, piezaRecord);
 
-        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente());
+        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+    }
+
+    @GetMapping(value= "/piezas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<PiezaRecordResponse> getPiezas(@RequestParam Integer documentoId) {
+
+        return  this.carpetaService.getPiezas(documentoId);
+
     }
     
 
