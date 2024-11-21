@@ -51,7 +51,6 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @NotNull
     @Column(name = "T_FECHA_AUDIENCIA")
     private LocalDateTime fechaAudiencia;
 
