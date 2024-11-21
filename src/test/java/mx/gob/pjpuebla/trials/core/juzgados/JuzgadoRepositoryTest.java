@@ -73,7 +73,7 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     void findAllByEstadoAutocomplete() {
         Estado estado = Estado.ACTIVE;
         String key = "juzgado";
-        List<JuzgadoRecordItem> page = juzgadoRepository.findAllByEstadoAutocomplete(estado, key, "Juzgado", 1);
+        List<JuzgadoRecordItem> page = juzgadoRepository.findAllByEstadoAutocomplete(estado, key, "Juzgado", 51);
         assertThat(page).isNotNull();
         assertThat(page).isNotEmpty();
 
