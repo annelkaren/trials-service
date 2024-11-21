@@ -191,10 +191,8 @@ public class PersonaService {
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
         if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR")) {
-            String centroTrabajo = currentUser.getJuzgado() != null ? "Juzgado" : "Oficialia";
-            Integer idCentroTrabajo = currentUser.getJuzgado() != null ? currentUser.getJuzgado().getId() : currentUser.getOficialia().getId();
-            
-            List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre, centroTrabajo, idCentroTrabajo);
+            List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
+
             List<Oficialia> oficialias = oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
 
             for (JuzgadoRecordItem juzgado : juzgados) {
