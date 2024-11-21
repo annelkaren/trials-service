@@ -97,8 +97,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
              OR
                 ( :centroTrabajo = "Juzgado" AND f.id = :idCentroTrabajo)
              OR ( :centroTrabajo = "Oficialia" AND f.id IN (
-                    SELECT oj.id FROM Oficialia o 
-                    JOIN o.juzgados oj 
+                    SELECT oj.id FROM Oficialia o
+                    JOIN o.juzgados oj
                     WHERE o.id = :idCentroTrabajo
                 ))
             )
@@ -109,7 +109,19 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             @Param("centroTrabajo") String centroTrabajo,
             @Param("idCentroTrabajo" ) Integer idCentroTrabajo
     );
-    
+
+    @Query("""
+        SELECT
+        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+        FROM Juzgado f
+        LEFT JOIN f.materia m
+        WHERE f.estado = :estado
+        AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
+        """)
+    List<JuzgadoRecordItem> findAllByEstadoAutocomplete(
+            @Param("estado") Estado estado,
+            @Param("key") String key
+    );
     
 
     Optional<Juzgado> findByNombreIgnoreCase(String nombre);

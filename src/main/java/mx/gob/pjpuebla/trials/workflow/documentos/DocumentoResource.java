@@ -87,7 +87,7 @@ public class DocumentoResource {
     }
 
     @GetMapping("/bandeja/entrada")
-    public Page<DocumentoGridRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
+    public Page<DocumentoGridRecord> getAll(Pageable pageable,
                                             @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAll(key, pageable);
     }

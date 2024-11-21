@@ -288,7 +288,7 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void getAll_CentrosTrabajo_adminJuzgados() {
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
-        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "", "Juzgado", 1)).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
+        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(oficialia));
 
         List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo("");
@@ -302,7 +302,7 @@ class PersonaServiceTest extends SetupServiceTest {
     void getAll_CentrosTrabajo_adminSistemas() {
         given(roleService.hasRole(any(), any())).willReturn(true);
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
-        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "", "Juzgado", 1)).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
+        given(juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, "TEST")));
         given(oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, "")).willReturn(Arrays.asList(oficialia));
 
         List<CentroTrabajoRecord> centrosTrabajo = personaService.findAllCentroTrabajo("");
