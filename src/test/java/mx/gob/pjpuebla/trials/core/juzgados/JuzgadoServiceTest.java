@@ -398,8 +398,11 @@ class JuzgadoServiceTest {
     @Test
     void getAllByEstadoAutocomplete_return_page() {
         List<JuzgadoRecordItem> listPage = Collections.singletonList(juzgadoRecordItem);
+        Persona persona = PersonaSetUp.createPersona();
         given(juzgadoRepository.findAllByEstadoAutocomplete(any(), any(), anyString(), anyInt()))
                 .willReturn(listPage);
+
+        given(personaService.getAuditor()).willReturn(persona);
         List<JuzgadoRecordItem> page = juzgadoService.findAllByEstadoAutocomplete("");
         assertThat(page)
                 .hasSize(1)
