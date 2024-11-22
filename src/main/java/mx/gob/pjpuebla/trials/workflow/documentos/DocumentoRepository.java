@@ -115,14 +115,21 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 c.estatus,
                 ''
             )
-            FROM Documento d
-            JOIN d.carpeta c on c.persona=:personaAsignada
+            FROM Carpeta c
+            LEFT JOIN Documento d on d.carpeta = c
             where case when :key is null then 1
                 when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
                 else 0 end = 1
-                AND c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                AND
+                c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+                AND
+                d.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+                AND
+                c.persona=:personaAsignada
             """)
     Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
@@ -215,4 +222,5 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )
             """)
     List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
+
 }
