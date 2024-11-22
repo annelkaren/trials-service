@@ -1422,4 +1422,37 @@ class DocumentoServiceTest {
 
         assertThat(response).isNotNull().hasFieldOrPropertyWithValue("numeroPieza", pieza);
     }
+
+    @Test
+    void getExhortoById_Success() {
+
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        given(documentoRepository.findById(documento.getId()))
+                .willReturn(Optional.of(documento));
+        given(anexoRepository.findNombresAnexosByDocumentoId(documento.getId()))
+                .willReturn(Arrays.asList("Anexo1", "Anexo2"));
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setExhortoObservaciones("Observaciones");
+        documentoData.setExhortoProcedencia("Procedencia");
+        documento.setData(documentoData);
+
+        Carpeta carpeta = new Carpeta();
+        TipoJuicio tipoJuicioExhorto = new TipoJuicio();
+        tipoJuicioExhorto.setNombre("Juicio Tipo");
+        carpeta.setTipoJuicio(tipoJuicioExhorto);
+        documento.setCarpeta(carpeta);
+
+        ExhortoResponseRecord result = documentoService.getExhortoById(documento.getId());
+
+        assertNotNull(result);
+        assertEquals(Arrays.asList("Anexo1", "Anexo2"), result.anexos());
+        assertEquals("Observaciones", result.exhortoObservaciones());
+        assertEquals("Procedencia", result.exhortoProcedencia());
+        assertEquals("Juicio Tipo", result.tipoJuicio());
+    }
+
 }
