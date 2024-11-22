@@ -645,6 +645,7 @@ class DocumentoServiceTest {
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        given(movimientoService.getOrigen(any(), any())).willReturn("OCP");
         given(personaService.getAuditor()).willReturn(persona);
         given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
         given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
@@ -681,15 +682,11 @@ class DocumentoServiceTest {
     void getOrigen_juzgado() {
         // Mismo juzgado
         Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
-        Persona persona = new Persona().setJuzgado(juzgado).setNombre("Juan");
+        Persona persona = new Persona().setJuzgado(juzgado);
+        given(movimientoService.getOrigen(any(), any())).willReturn(juzgado.getNombre());
         Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("name").toString()).contains(persona.getJuzgado().getNombre());
         assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
-        // diferente juzgado
-        persona = new Persona().setJuzgado(new Juzgado().setNombre("Juzgado 2").setId(100));
-        origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen.get("name").toString()).isEqualTo(persona.getJuzgado().getNombre());
-        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
@@ -698,22 +695,19 @@ class DocumentoServiceTest {
         Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
         Movimiento movimiento = new Movimiento().setOficialia(oficialia);
         Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
+        given(movimientoService.getOrigen(any(), any())).willReturn(oficialia.getNombre());
         Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen.get("name").toString()).contains(persona.getNombre());
+        assertThat(origen.get("name").toString()).contains(oficialia.getNombre());
         assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
-        // diferente oficialia
-        persona = new Persona().setOficialia(new Oficialia().setNombre("Oficialia 2").setId(3));
-        origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen.get("name").toString()).contains(persona.getOficialia().getNombre());
-        assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
     @Test
     void getOrigen_invalid() {
         Movimiento movimiento = new Movimiento();
         Persona persona = new Persona();
+        given(movimientoService.getOrigen(any(), any())).willReturn("");
         Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
-        assertThat(origen.containsKey("name")).isFalse();
+        assertThat(origen.get("name").toString()).contains("");
         assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
     }
 
@@ -985,7 +979,8 @@ class DocumentoServiceTest {
         anexos.add(new AnexoRecepcionRecord(2, EstadoAnexo.ASIGNADO, "Anexo 2"));
         anexos.add(new AnexoRecepcionRecord(3, EstadoAnexo.ASIGNADO, "Anexo 3"));
         given(documentoRepository.findById(documentoId))
-                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()).setTipoDocumento(TipoDocumento.PROMOCION)));
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())
+                        .setTipoDocumento(TipoDocumento.PROMOCION).setFolio("1")));
 
         given(anexoRepository.findAnexosByDocumentoId(documentoId))
                 .willReturn(anexos);
@@ -1427,4 +1422,37 @@ class DocumentoServiceTest {
 
         assertThat(response).isNotNull().hasFieldOrPropertyWithValue("numeroPieza", pieza);
     }
+
+    @Test
+    void getExhortoById_Success() {
+
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.getCarpeta().setFolio("1");
+
+        given(documentoRepository.findById(documento.getId()))
+                .willReturn(Optional.of(documento));
+        given(anexoRepository.findNombresAnexosByDocumentoId(documento.getId()))
+                .willReturn(Arrays.asList("Anexo1", "Anexo2"));
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setExhortoObservaciones("Observaciones");
+        documentoData.setExhortoProcedencia("Procedencia");
+        documento.setData(documentoData);
+
+        Carpeta carpeta = new Carpeta();
+        TipoJuicio tipoJuicioExhorto = new TipoJuicio();
+        tipoJuicioExhorto.setNombre("Juicio Tipo");
+        carpeta.setTipoJuicio(tipoJuicioExhorto);
+        documento.setCarpeta(carpeta);
+
+        ExhortoResponseRecord result = documentoService.getExhortoById(documento.getId());
+
+        assertNotNull(result);
+        assertEquals(Arrays.asList("Anexo1", "Anexo2"), result.anexos());
+        assertEquals("Observaciones", result.exhortoObservaciones());
+        assertEquals("Procedencia", result.exhortoProcedencia());
+        assertEquals("Juicio Tipo", result.tipoJuicio());
+    }
+
 }

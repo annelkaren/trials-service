@@ -190,6 +190,7 @@ class JuzgadoResourceTest {
         mockMvc.perform(
                 get("/api/core/juzgados/autocomplete")
                         .param("key", "J")
+                        .param("aplicaFiltroOficio", "1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

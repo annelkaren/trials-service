@@ -1,19 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoImpugnacionAmparo;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoSentidoAmparo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
@@ -43,12 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_PDF;
-import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -354,7 +342,6 @@ class DocumentoResourceTest {
 
     @Test
     void get_oficio_pdf() throws Exception {
-        boolean formato = true;
         Integer oficioId = 89734;
         byte[] mockPdf = new byte[]{1, 2, 3};
 
@@ -387,7 +374,7 @@ class DocumentoResourceTest {
     @Test
     void getDataDocumentoRecepcion() throws Exception {
         given(documentoService.getDataDocumentoRecepcion(1))
-                .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", null));
+                .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", "", null));
 
         mockMvc.perform(
                         get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)
@@ -543,5 +530,21 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+
+
+    @Test
+    void getExhortoById() throws Exception {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+
+        given(documentoService.getExhortoById(1)).willReturn(new ExhortoResponseRecord(anexos, "Obeservaciones", "Procedencia", "Exhorto"));
+
+
+        mockMvc.perform(
+                        get("/api/workflow/exhorto/{id}", 1)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 
 }
