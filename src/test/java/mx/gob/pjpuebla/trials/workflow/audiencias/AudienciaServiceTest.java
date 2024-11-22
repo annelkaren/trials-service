@@ -226,4 +226,20 @@ class AudienciaServiceTest {
         assertEquals(result.size(), CatalogoMotivosRetrasoAudiencias.values().length);
         assertThat(result).isEqualTo(items);
     }
+
+    @Test
+    void diferirAudiencia_success() {
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+        audiencia.setFechaAudiencia(LocalDateTime.now());
+        audiencia.setEstatusAudiencia(EstatusAudiencia.PROGRAMADA);
+
+        when(audienciaRepository.findById(1)).thenReturn(Optional.of(audiencia));
+
+        audienciaService.diferirAudiencia(1);
+
+        assertNull(audiencia.getFechaAudiencia());
+        assertEquals(EstatusAudiencia.DIFERIDA, audiencia.getEstatusAudiencia());
+        verify(audienciaRepository).save(audiencia);
+    }
 }

@@ -531,4 +531,20 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
+
+
+    @Test
+    void getExhortoById() throws Exception {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+
+        given(documentoService.getExhortoById(1)).willReturn(new ExhortoResponseRecord(anexos, "Obeservaciones", "Procedencia", "Exhorto"));
+
+
+        mockMvc.perform(
+                        get("/api/workflow/exhorto/{id}", 1)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+
 }
