@@ -116,16 +116,15 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 ''
             )
             FROM Carpeta c
-            LEFT JOIN Documento d on d.carpeta = c
-            where case when :key is null then 1
-                when c.expediente like %:key% or c.folio like %:key% or d.concepto.nombre like %:key% then 1
-                else 0 end = 1
-                AND
-                c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+            LEFT JOIN Documento d on d.carpeta = c AND
+                d.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+            WHERE CASE WHEN :key IS NULL THEN 1
+                WHEN c.expediente LIKE %:key% OR c.folio LIKE %:key% OR d.concepto.nombre LIKE %:key% THEN 1
+                ELSE 0 END = 1
                 AND
-                d.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
                 AND
