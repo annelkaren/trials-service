@@ -35,5 +35,6 @@ public class DocumentoData implements Serializable {
     private Integer amparoTribunalId;
     private String amparoTipo;
     private String pieza;
+    private String domicilioAcreedor;
 }
 
