@@ -344,8 +344,7 @@ public class CarpetaService {
 
         String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, tipoPieza.getClave());
 
-        //Folio temporal hasta que se cree la Historia de Piezas :3
-        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, tipoPieza.getClave()));
+        pieza.setFolio(documentoRepository.getNextValPieza().toString());
         pieza.setExpediente(numeroPieza);
         pieza.setCarpetaPadre(carpetaPadre);
         pieza.setFechaAsignacion(LocalDateTime.now());

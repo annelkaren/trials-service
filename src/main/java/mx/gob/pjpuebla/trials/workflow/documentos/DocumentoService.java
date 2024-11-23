@@ -621,7 +621,7 @@ public class DocumentoService {
                                 item.carpetaId(),
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                (item.tipoDocumento() != null) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
+                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
                                 item.concepto().getNombre(),
                                 item.fechaTurnado(),
                                 item.fechaTurnado().plusDays(item.concepto().getDias()),
@@ -728,6 +728,9 @@ public class DocumentoService {
                     break;
                 case "P":
                     tipoDocumentoNombre = TipoDocumento.PROMOCION;
+                    break;
+                case "PZ":
+                    tipoCarpetaNombre = TipoCarpeta.PIEZA;
                     break;
                 default:
                     throw new IllegalArgumentException("El tipo de carpeta es desconocido");
@@ -1117,6 +1120,7 @@ public class DocumentoService {
         DocumentoData data = new DocumentoData();
         Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
                 .orElseThrow(()->new NotFoundException("La Carpeta no existe","Carpeta"));
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.AMPARO, persona.getJuzgado(), null);
 
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
@@ -1130,6 +1134,7 @@ public class DocumentoService {
         Documento amparo = new Documento()
         .setCarpeta(carpeta)
         .setData(data)
+        .setFolio(String.valueOf(folio))
         .setEstatus(EstadoCarpeta.ASIGNADO)
         .setFechaAsignacion(LocalDateTime.now())
         .setTipoDocumento(TipoDocumento.AMPARO)
