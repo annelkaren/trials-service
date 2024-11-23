@@ -16,7 +16,6 @@ public class PersonaDetalleResource {
     
     @PostMapping("/create")
     public PersonaDetalleRecord createPersonaDetalle(@RequestBody PersonaDTO personaDTO) {
-        PersonaDetalleRecord nuevaPersonaDetalle = personaDetalleService.createPersonaDetalle(personaDTO);
-        return nuevaPersonaDetalle;
+        return personaDetalleService.createPersonaDetalle(personaDTO);
     }
 } 

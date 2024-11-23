@@ -116,6 +116,11 @@ public class DocumentoResource {
         return this.documentoService.createPromocion(documentoPromocionRecord);
     }
 
+    @GetMapping("/documento/promocion/{id}")
+    public DocPromocionInfoRecord getInfoPromocion(@PathVariable Integer id) {
+        return this.documentoService.getInfoPromocion(id);
+    }
+
     @PostMapping("/exhorto")
     public DocumentoRecord createExhorto(@RequestBody DocumentoExhortoRecord documentoExhortoRecord) {
         return documentoService.createExhorto(documentoExhortoRecord);
@@ -211,7 +216,7 @@ public class DocumentoResource {
             @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,
             @RequestPart("file") MultipartFile file) throws JsonProcessingException {
 
-        DocumentoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoSaveRecord.class);
+        DocumentoAntiguoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoAntiguoSaveRecord.class);
         return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
     }
 

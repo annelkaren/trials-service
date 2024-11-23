@@ -37,6 +37,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepo
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
@@ -1148,7 +1149,7 @@ public class DocumentoService {
         return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }
 
-    public DocumentoRecord createDemandaAntigua(DocumentoSaveRecord documentoRecord, MultipartFile multipartFile) {
+    public DocumentoRecord createDemandaAntigua(DocumentoAntiguoSaveRecord documentoRecord, MultipartFile multipartFile) {
         Persona persona = personaService.getAuditor();
         Carpeta carpeta = new Carpeta();
         Documento documento = new Documento();
@@ -1171,7 +1172,7 @@ public class DocumentoService {
         carpeta.setJuzgado(persona.getJuzgado());
         carpeta.setFolio(getFolio("D"));
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
+        carpeta.setExpediente(documentoRecord.numero() + "/" + documentoRecord.anio());
         carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
@@ -1199,5 +1200,26 @@ public class DocumentoService {
         return new ExhortoResponseRecord( anexos, documento.getData().getExhortoObservaciones() , documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
     }
 
+    public DocPromocionInfoRecord getInfoPromocion(Integer docId){
+        Documento doc = documentoRepository.findById(docId)
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + docId));
+
+        String[] expediente = doc.getCarpeta().getExpediente().split("/");
+
+        CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
+                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId());
+
+        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(docId);
+
+        return new DocPromocionInfoRecord(
+                expediente[0],
+                Integer.parseInt(expediente[1]),
+                doc.getCarpeta().getJuzgado().getNombre(),
+                carpetaResponseRecord.actor(),
+                carpetaResponseRecord.demandado(),
+                doc.getData().getTipoPromocion().name(),
+                anexos
+        );
+    }
 }
 
