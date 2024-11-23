@@ -1368,6 +1368,7 @@ class DocumentoServiceTest {
         lenient().when(juzgadoService.checkYearJuzgadoFolios(any())).thenReturn(juzgadoFolios);
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Demandado"), any())).willReturn(Optional.of(demandado));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
         given(digitalizacionService.guardarArchivo(any(), any()))
@@ -1380,7 +1381,24 @@ class DocumentoServiceTest {
                 "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
         );
 
-        DocumentoRecord response = documentoService.createDemandaAntigua(recordRequest, multipartFile);
+        PersonaDocumentoItemRecord actorItem = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoItem = new PersonaDocumentoItemRecord(
+                "María", "López", "", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+
+        List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setExhortoObservaciones("Observaciones");
+        documentoData.setExhortoProcedencia("Procedencia");
+
+        DocumentoAntiguoSaveRecord recordRt = new DocumentoAntiguoSaveRecord(actorItem, demandadoItem, anexos, tipoJuicio.getId(),documentoData ,"00111", "2024");
+        DocumentoRecord response = documentoService.createDemandaAntigua(recordRt, multipartFile);
         assertThat(response)
                 .isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())

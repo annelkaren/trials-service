@@ -216,7 +216,7 @@ public class DocumentoResource {
             @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,
             @RequestPart("file") MultipartFile file) throws JsonProcessingException {
 
-        DocumentoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoSaveRecord.class);
+        DocumentoAntiguoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoAntiguoSaveRecord.class);
         return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
     }
 

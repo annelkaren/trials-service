@@ -1144,7 +1144,7 @@ public class DocumentoService {
         return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(), amparo.getFechaAsignacion());
     }
 
-    public DocumentoRecord createDemandaAntigua(DocumentoSaveRecord documentoRecord, MultipartFile multipartFile) {
+    public DocumentoRecord createDemandaAntigua(DocumentoAntiguoSaveRecord documentoRecord, MultipartFile multipartFile) {
         Persona persona = personaService.getAuditor();
         Carpeta carpeta = new Carpeta();
         Documento documento = new Documento();
@@ -1167,7 +1167,7 @@ public class DocumentoService {
         carpeta.setJuzgado(persona.getJuzgado());
         carpeta.setFolio(getFolio("D"));
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-        carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
+        carpeta.setExpediente(documentoRecord.numero() + "/" + documentoRecord.anio());
         carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
