@@ -499,7 +499,7 @@ class DocumentoResourceTest {
         );
 
         DocumentoRecord expectedResponse = new DocumentoRecord(1, "12345", TipoCarpeta.DEMANDA);
-        given(documentoService.createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class)))
+        given(documentoService.createDemandaAntigua(any(DocumentoAntiguoSaveRecord.class), any(MultipartFile.class)))
                 .willReturn(expectedResponse);
 
         mockMvc.perform(multipart("/api/workflow/registro")
@@ -513,7 +513,7 @@ class DocumentoResourceTest {
                 .andExpect(jsonPath("$.folio").value("12345"))
                 .andExpect(jsonPath("$.tipoCarpeta").value(TipoCarpeta.DEMANDA.name()));
 
-        verify(documentoService).createDemandaAntigua(any(DocumentoSaveRecord.class), any(MultipartFile.class));
+        verify(documentoService).createDemandaAntigua(any(DocumentoAntiguoSaveRecord.class), any(MultipartFile.class));
     }
 
     @Test
