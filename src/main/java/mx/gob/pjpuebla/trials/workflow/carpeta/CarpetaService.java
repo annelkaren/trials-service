@@ -134,6 +134,7 @@ public class CarpetaService {
             DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord,
             Integer documentoId
     ) {
+        Persona persona = personaService.getAuditor();
         Documento documento = validacionBandejaRecepcion(documentoId);
 
         List<String> anexosFaltantes = docRecepcionMovimientosRecord.anexos().stream()
@@ -156,10 +157,13 @@ public class CarpetaService {
         if (documento.getTipoDocumento() == null && documento.getCarpeta() != null && (
                 documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.DEMANDA
                         || documento.getCarpeta().getTipoCarpeta() == TipoCarpeta.EXHORTO)
-        )
+        ) {
             documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-        else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION))
+            documento.getCarpeta().setPersona(persona);
+        } else if (documento.getTipoDocumento() != null && (documento.getTipoDocumento() == TipoDocumento.PROMOCION)) {
             documento.setEstatus(EstadoCarpeta.ASIGNADO);
+            documento.setPersona(persona);
+        }
 
         documento = documentoRepository.save(documento);
 

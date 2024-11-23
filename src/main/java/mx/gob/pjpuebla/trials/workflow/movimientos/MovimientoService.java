@@ -85,4 +85,17 @@ public class MovimientoService {
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId, String key) {
         return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable);
     }
+
+    public String getOrigen(Integer documentoId, Integer carpetaId) {
+        Movimiento movimiento;
+        if (documentoId != null) {
+            movimiento = movimientoRepository.findFirstByDocumentoIdOrderByIdAsc(documentoId);
+            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre() : movimiento.getJuzgado().getNombre();
+        }
+        if (carpetaId != null) {
+            movimiento = movimientoRepository.findFirstByCarpetaIdOrderByIdAsc(carpetaId);
+            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre() : movimiento.getJuzgado().getNombre();
+        }
+        return "";
+    }
 }

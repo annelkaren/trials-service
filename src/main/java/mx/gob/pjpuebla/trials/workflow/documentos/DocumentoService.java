@@ -195,9 +195,9 @@ public class DocumentoService {
         Persona persona = personaService.getAuditor();
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
-        TipoJuicio tpoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
+        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, documentoRecord.tipoJuicioId().toString()));
-        carpeta.setTipoJuicio(tpoJuicio);
+        carpeta.setTipoJuicio(tipoJuicio);
 
         carpeta.setJuzgado(juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio()));
         carpeta.setFolio(getFolio("D"));
@@ -230,10 +230,11 @@ public class DocumentoService {
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta());
 
         //flujo para demanda de oralidad:
-        if (Arrays.asList("FAMILIAR", "ORAL").contains(tpoJuicio.getMateria().getNombre().toUpperCase())) {
-            crearAudienciaOralidad(documentoRecord, carpeta, tpoJuicio);
+        if ("FAMILIAR".contains(tipoJuicio.getMateria().getNombre().toUpperCase())
+                && tipoJuicio.getNombre().toUpperCase().contains("ORAL")) {
+            crearAudienciaOralidad(documentoRecord, carpeta, tipoJuicio);
             if (documentoRecord.general().getTieneAbogado() == 0) {
-                sendEmailFamiliar(documentoRecord, documento, carpeta, tpoJuicio);
+                sendEmailFamiliar(documentoRecord, documento, carpeta, tipoJuicio);
             }
         }
 
@@ -588,24 +589,22 @@ public class DocumentoService {
     }
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
+        String origen = movimientoService.getOrigen(
+                (movimiento.getDocumento() != null) ? movimiento.getDocumento().getId() : null,
+                (movimiento.getCarpeta() != null) ? movimiento.getCarpeta().getId() : null);
         Map<String, Object> map = new HashMap<>();
         map.put(IS_INTERNO, false);
         if (persona.getJuzgado() != null) {
-            if (movimiento.getJuzgado() != null && Objects.equals(movimiento.getJuzgado().getId(), persona.getJuzgado().getId())) {
+            if (Objects.equals(origen.toUpperCase(), persona.getJuzgado().getNombre().toUpperCase())) {
                 map.put(IS_INTERNO, true);
-                map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
-            } else {
-                map.put("name", persona.getJuzgado().getNombre());
             }
         }
         if (persona.getOficialia() != null) {
-            if (movimiento.getOficialia() != null && Objects.equals(movimiento.getOficialia().getId(), persona.getOficialia().getId())) {
+            if (Objects.equals(origen.toUpperCase(), persona.getOficialia().getNombre().toUpperCase())) {
                 map.put(IS_INTERNO, true);
-                map.put("name", persona.getNombre() + " " + persona.getApellidoPaterno());
-            } else {
-                map.put("name", persona.getOficialia().getNombre());
             }
         }
+        map.put("name", origen);
         return map;
     }
 
@@ -807,14 +806,17 @@ public class DocumentoService {
 
         Documento doc = documentoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
-
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+        String origen = movimientoService.getOrigen(
+                (doc.getTipoDocumento() != null) ? doc.getId() : null,
+                (doc.getTipoDocumento() != null) ? null : doc.getCarpeta().getId());
 
         return new DocumentoRecepcionRecord(
-                doc.getCarpeta().getFolio(),
+                (doc.getTipoDocumento() != null) ? doc.getFolio() : doc.getCarpeta().getFolio(),
                 doc.getCarpeta().getExpediente(),
                 (doc.getTipoDocumento() != null) ? doc.getTipoDocumento().name() : doc.getCarpeta().getTipoCarpeta().name(),
                 doc.getRuta(),
+                origen,
                 anexosActuales
         );
     }
@@ -1183,6 +1185,13 @@ public class DocumentoService {
         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
 
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
+    }
+
+
+    public ExhortoResponseRecord getExhortoById(Integer id) {
+        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, id.toString()));
+        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
+        return new ExhortoResponseRecord( anexos, documento.getData().getExhortoObservaciones() , documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
     }
 
 }

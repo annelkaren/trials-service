@@ -192,6 +192,7 @@ public class PersonaService {
 
         if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR")) {
             List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
+
             List<Oficialia> oficialias = oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
 
             for (JuzgadoRecordItem juzgado : juzgados) {

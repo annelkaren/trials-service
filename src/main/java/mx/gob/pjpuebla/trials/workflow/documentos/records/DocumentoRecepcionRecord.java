@@ -9,5 +9,6 @@ public record DocumentoRecepcionRecord(
     String expediente,
     String tipoEntrada,
     String digitalizacion,
+    String origen,
     List<AnexoRecepcionRecord> anexos
 ) {}

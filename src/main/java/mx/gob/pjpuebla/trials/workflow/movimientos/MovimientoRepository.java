@@ -124,4 +124,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable);
 
+    Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
+
+    Movimiento findFirstByDocumentoIdOrderByIdAsc(Integer carpetaId);
 }

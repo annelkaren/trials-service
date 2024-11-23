@@ -5,7 +5,8 @@ public record DocumentoOficioRecord(
     Integer institucionId,
     LocalDate fechaEmision,
     String asunto,
-    Integer carpetaId
+    Integer carpetaId,
+    Integer juzgado
 ) {
     
 }

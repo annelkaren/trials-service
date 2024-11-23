@@ -298,7 +298,12 @@ public class JuzgadoService {
     @Transactional(readOnly = true)
     public List<JuzgadoRecordItem> findAllByEstadoAutocomplete(String key) {
         key = (key != null) ? key.toLowerCase() : "";
-        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key);
+        Persona personaLogueada = personaService.getAuditor();
+       
+        String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : personaLogueada.getOficialia() != null ? "Oficialia" : null;
+        Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : personaLogueada.getOficialia() != null ? personaLogueada.getOficialia().getId() : null;
+
+        return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo);
     }
 
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {

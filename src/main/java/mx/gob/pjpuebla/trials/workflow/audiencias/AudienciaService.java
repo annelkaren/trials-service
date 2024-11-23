@@ -145,4 +145,17 @@ public class AudienciaService {
                 .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
                 .toList();
     }
+
+    public void diferirAudiencia(Integer id) {
+        try {
+            Audiencia audiencia = audienciaRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+
+            audiencia.setFechaAudiencia(null);
+            audiencia.setEstatusAudiencia(EstatusAudiencia.DIFERIDA);
+            audienciaRepository.save(audiencia);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
+        }
+    }
 }
