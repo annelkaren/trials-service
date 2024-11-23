@@ -89,9 +89,9 @@ public class PersonaDetalleService {
 
         PersonaDocumento personaDocumento = new PersonaDocumento();
 
-        if(!personaDTO.getDatosGenerales().getNombre().equals("")){
+        if(!personaDTO.getDatosGenerales().getNombre().isEmpty()){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombre());
-        } else if (!personaDTO.getDatosGenerales().getRazonSocial().equals("")){
+        } else if (!personaDTO.getDatosGenerales().getRazonSocial().isEmpty()){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
         }
         personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
