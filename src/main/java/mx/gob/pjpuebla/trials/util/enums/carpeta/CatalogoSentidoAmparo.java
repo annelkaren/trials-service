@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CatalogoSentidoAmparo {
     CONCEDE("Se concede"),
-    NIEGA("Se Niega"),
+    NIEGA("Se niega"),
     SOBRESEE("Se sobresee"),
     EFECTOS("Para efectos");
 

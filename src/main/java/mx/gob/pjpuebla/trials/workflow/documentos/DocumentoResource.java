@@ -214,12 +214,4 @@ public class DocumentoResource {
         DocumentoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoSaveRecord.class);
         return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
     }
-
-    @GetMapping(value = "/exhorto/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ExhortoResponseRecord> getExhortoById(@PathVariable Integer id) {
-        ExhortoResponseRecord editDocumento = documentoService.getExhortoById(id);
-        return ResponseEntity.ok(editDocumento);
-    }
-
-
 }

@@ -1187,12 +1187,5 @@ public class DocumentoService {
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
 
-
-    public ExhortoResponseRecord getExhortoById(Integer id) {
-        Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, id.toString()));
-        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
-        return new ExhortoResponseRecord( anexos, documento.getData().getExhortoObservaciones() , documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
-    }
-
 }
 
