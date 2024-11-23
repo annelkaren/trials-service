@@ -373,14 +373,19 @@ public class CarpetaService {
         return clavePieza + StringUtils.leftPad(carpetaRepository.getNumeroPieza(carpetaId, clavePieza).toString(),2,'0');
     }
 
-    public void asignarPieza(Carpeta pieza, List<Integer> documentos){
+    public void asignarPieza(Carpeta pieza, List<Integer> documentos) {
 
-        for(Integer documentoId : documentos) {
-                Documento documento = documentoRepository.findById(documentoId).orElseThrow();
-                documento.setCarpeta(pieza);
-                documento.setData(documento.getData().setPieza(pieza.getExpediente()));
-                documentoRepository.save(documento);
+        for (Integer documentoId : documentos) {
+            Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+            documento.setCarpeta(pieza);
+            documento.setData(documento.getData().setPieza(pieza.getExpediente()));
+            documentoRepository.save(documento);
         }
+
+        Documento documento = documentoRepository.findById(documentos.stream().findFirst().orElseThrow()).orElseThrow();
+
+        documento.setEstatus(EstadoCarpeta.ASIGNADO);
+        documentoRepository.save(documento);
     }
 
     public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {

@@ -626,7 +626,7 @@ public class DocumentoService {
                                 item.fechaTurnado(),
                                 item.fechaTurnado().plusDays(item.concepto().getDias()),
                                 item.estatus().name(),
-                                "Observación de Prueba " //item.observaciones()
+                                item.observaciones()
                         ))
                 .toList();
 
@@ -682,7 +682,7 @@ public class DocumentoService {
         Concepto concepto = new Concepto();
         if (tipoDocumento == TipoDocumento.PROMOCION) {
             concepto = conceptoRepository.findByNombre(conceptoAdjun).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoAdjun));
-        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO)) {
+        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO) || tipoCarpeta == TipoCarpeta.PIEZA) {
             concepto = conceptoRepository.findByNombre(conceptoDistri).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoDistri));
         }
         return concepto;
