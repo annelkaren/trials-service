@@ -116,6 +116,11 @@ public class DocumentoResource {
         return this.documentoService.createPromocion(documentoPromocionRecord);
     }
 
+    @GetMapping("/documento/promocion/{id}")
+    public DocPromocionInfoRecord getInfoPromocion(@PathVariable Integer id) {
+        return this.documentoService.getInfoPromocion(id);
+    }
+
     @PostMapping("/exhorto")
     public DocumentoRecord createExhorto(@RequestBody DocumentoExhortoRecord documentoExhortoRecord) {
         return documentoService.createExhorto(documentoExhortoRecord);

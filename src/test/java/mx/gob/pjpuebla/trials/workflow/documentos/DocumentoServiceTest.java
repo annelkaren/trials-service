@@ -57,6 +57,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
@@ -1455,4 +1456,31 @@ class DocumentoServiceTest {
         assertEquals("Juicio Tipo", result.tipoJuicio());
     }
 
+
+    @Test
+    void getInfoPromocion() {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
+                1, "actor 1", "demandado 1"
+        );
+
+        DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.ESCRITO);
+        documento.setData(documentoData);
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any())).willReturn(carpetaResponseRecord);
+        given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
+
+        DocPromocionInfoRecord response = documentoService.getInfoPromocion(1);
+
+        assertThat(response).isNotNull();
+        assertEquals("000001", response.expediente());
+        assertEquals(2024, response.year());
+        assertEquals("JuzgadoTEST", response.juzgado());
+        assertEquals("actor 1", response.actor());
+        assertEquals("demandado 1", response.demandado());
+        assertEquals("ESCRITO", response.tipoPromocion());
+        assertEquals("Anexo1", response.anexos().get(0));
+    }
 }

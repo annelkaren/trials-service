@@ -37,6 +37,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepo
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
@@ -1194,5 +1195,26 @@ public class DocumentoService {
         return new ExhortoResponseRecord( anexos, documento.getData().getExhortoObservaciones() , documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
     }
 
+    public DocPromocionInfoRecord getInfoPromocion(Integer docId){
+        Documento doc = documentoRepository.findById(docId)
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + docId));
+
+        String[] expediente = doc.getCarpeta().getExpediente().split("/");
+
+        CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
+                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId());
+
+        List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(docId);
+
+        return new DocPromocionInfoRecord(
+                expediente[0],
+                Integer.parseInt(expediente[1]),
+                doc.getCarpeta().getJuzgado().getNombre(),
+                carpetaResponseRecord.actor(),
+                carpetaResponseRecord.demandado(),
+                doc.getData().getTipoPromocion().name(),
+                anexos
+        );
+    }
 }
 

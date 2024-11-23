@@ -31,8 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -527,6 +526,28 @@ class DocumentoResourceTest {
                         post("/api/workflow/documentos/amparo")
                                 .content(ResourceUtilTest.asJsonString(amparoRecordResponse))
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getInfoPromocion() throws Exception {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        DocPromocionInfoRecord docPromocionInfoRecord = new DocPromocionInfoRecord(
+                "000001",
+                2024,
+                "Juzgado 1",
+                "actor 1",
+                "demandado 1",
+                "ESCRITO",
+                anexos
+                );
+
+        given(documentoService.getInfoPromocion(anyInt()))
+                .willReturn(docPromocionInfoRecord);
+
+        mockMvc.perform(
+                        get("/api/workflow/demanda/1")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
