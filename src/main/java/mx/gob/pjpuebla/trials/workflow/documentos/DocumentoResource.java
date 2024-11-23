@@ -87,7 +87,7 @@ public class DocumentoResource {
     }
 
     @GetMapping("/bandeja/entrada")
-    public Page<DocumentoGridRecord> getAll(@PageableDefault(size = 20) Pageable pageable,
+    public Page<DocumentoGridRecord> getAll(Pageable pageable,
                                             @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAll(key, pageable);
     }
@@ -214,4 +214,12 @@ public class DocumentoResource {
         DocumentoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoSaveRecord.class);
         return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
     }
+
+    @GetMapping(value = "/exhorto/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ExhortoResponseRecord> getExhortoById(@PathVariable Integer id) {
+        ExhortoResponseRecord editDocumento = documentoService.getExhortoById(id);
+        return ResponseEntity.ok(editDocumento);
+    }
+
+
 }

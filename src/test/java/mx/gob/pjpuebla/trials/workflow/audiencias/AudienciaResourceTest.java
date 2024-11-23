@@ -75,4 +75,12 @@ class AudienciaResourceTest {
                 .andExpect(jsonPath("$[0].etiqueta").value("La parte actora no llegó con la oportunidad solicitada"))
                 .andExpect(jsonPath("$.length()").value(CatalogoMotivosRetrasoAudiencias.values().length));
     }
+
+    @Test
+    void diferir_success() throws Exception {
+        mockMvc.perform(
+                patch("/api/workflow/bandeja/audienciasgenerales/diferir/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }
