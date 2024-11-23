@@ -62,7 +62,9 @@ public class PersonaDetalleService {
                         if (etiqueta != null && etiqueta.equalsIgnoreCase(texto)) {
                             return true;
                         }
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {}
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        log.error(e.getMessage(), e);
+                    }
                    
                     return enumValue.name().equalsIgnoreCase(texto);
                 })
@@ -87,9 +89,9 @@ public class PersonaDetalleService {
 
         PersonaDocumento personaDocumento = new PersonaDocumento();
 
-        if(personaDTO.getDatosGenerales().getNombre() != ""){
+        if(!personaDTO.getDatosGenerales().getNombre().equals("")){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombre());
-        } else if (personaDTO.getDatosGenerales().getRazonSocial() != ""){
+        } else if (!personaDTO.getDatosGenerales().getRazonSocial().equals("")){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
         }
         personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
