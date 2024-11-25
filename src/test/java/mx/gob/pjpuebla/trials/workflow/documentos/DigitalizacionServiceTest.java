@@ -1,9 +1,13 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -71,14 +75,15 @@ class DigitalizacionServiceTest {
     void testCrearDirectorio_OficioAdministrativo() {
         DocumentoData docData = DocumentoSetUp.createDocumentoData("Administrativo");
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+
+
         documento.setCarpeta(null);
         documento.setTipoDocumento(TipoDocumento.OFICIO);
         documento.setData(docData);
 
         given(personaService.getAuditor()).willReturn(persona);
-        given(persona.getJuzgado()).willReturn(juzgado);
-        given(juzgado.getNombre()).willReturn("NombreDelJuzgadoTEST");
-
+        given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
+  
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         assertNotNull(createdDirectory);
@@ -97,6 +102,9 @@ class DigitalizacionServiceTest {
         documento.setTipoDocumento(TipoDocumento.OFICIO);
         documento.setData(docData);
 
+        given(personaService.getAuditor()).willReturn(persona);
+        given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
+  
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         assertNotNull(createdDirectory);
@@ -110,8 +118,11 @@ class DigitalizacionServiceTest {
     void testCreateDirectorio_Demanda() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        Persona persona = PersonaSetUp.createPersona();
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
+
 
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
@@ -125,10 +136,13 @@ class DigitalizacionServiceTest {
     @Test
     void testCreateDirectorio_Exhorto() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        Persona persona = PersonaSetUp.createPersona();
+        
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
         documento.getCarpeta().setExpediente("E000006");
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
 
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
@@ -179,6 +193,8 @@ class DigitalizacionServiceTest {
      */
     @Test
     void cargarArchivoPdf() throws IOException {
+        Persona persona = PersonaSetUp.createPersona();
+        
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
 
@@ -186,6 +202,7 @@ class DigitalizacionServiceTest {
         long expectedFileSize = fileMock.getSize();
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
 
         DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
 
@@ -247,6 +264,7 @@ class DigitalizacionServiceTest {
      */
     @Test
     void testGetDocumentoExistente() throws IOException {
+        Persona persona = PersonaSetUp.createPersona();
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
@@ -254,6 +272,7 @@ class DigitalizacionServiceTest {
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
 
         DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
 
@@ -271,11 +290,14 @@ class DigitalizacionServiceTest {
     void testGetDocumentoNoExistente() {
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        Persona persona = PersonaSetUp.createPersona();
+
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
 
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
 
         DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
 
