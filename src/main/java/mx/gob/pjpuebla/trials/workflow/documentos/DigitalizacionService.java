@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -77,11 +78,14 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
+        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : null;
         Carpeta carpeta = documento.getCarpeta();
+
+      
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
-            return manejarOficio(documento, year, juzgado);
+            return manejarOficio(documento, year, juzgado, oficialia);
         }
 
         return manejarCarpeta(carpeta, year, juzgado);
@@ -175,11 +179,12 @@ public class DigitalizacionService {
      * @param juzgado   El juzgado relacionado con el documento.
      * @return La ruta del directorio creado para el oficio.
      */
-    private Path manejarOficio(Documento documento, String year, String juzgado) {
+    private Path manejarOficio(Documento documento, String year, String juzgado, String oficialia) {
         String tipoOficio = documento.getData().getTipoOficio();
-
+       
         if ("Administrativo".equals(tipoOficio)) {
-            return crearDirectorios(Paths.get(basePath, year, juzgado, "oficiosAdministrativos"));
+           
+            return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
             return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
@@ -244,6 +249,12 @@ public class DigitalizacionService {
      * @return El nombre del juzgado.
      */
     private String obtenerJuzgado(Documento documento) {
+        Persona persona = personaService.getAuditor();
+        
+        if(persona.getJuzgado() == null){
+            return null;
+        }
+
         return (documento.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
                 : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
     }
