@@ -317,7 +317,7 @@ public class CarpetaService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "));
             if (!nombreCompleto.isEmpty()) {
-                ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto);
+                ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto, participante.rol());
                 agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
             }
         }

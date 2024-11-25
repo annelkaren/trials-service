@@ -22,7 +22,7 @@ import java.util.List;
 public class PaisResource {
 
     private static final String COUNTRIES_PATH = "https://restcountries.com/v3.1";
-    private static final String ALL_PATH   = "/all?fields=translations,cca2,ccn3,name";
+    private static final String ALL_PATH   = "/translation/all?fields=translations,cca2,ccn3,name";
     private final RestTemplate restTemplate = new RestTemplate();
 
     @GetMapping

@@ -1,5 +1,72 @@
 package mx.gob.pjpuebla.trials.workflow.personadetalle;
 
-public class PersonaDetalleRepositoryTest {
-     
+
+import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.jdbc.Sql;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Sql(value = {
+        "/scripts/INSERT_DOCUMENTOS_IDENTIFICACION.sql",
+        "/scripts/INSERT_ESCOLARIDADES.sql",
+        "/scripts/INSERT_LENGUAS_INDIGENAS.sql",
+        "/scripts/INSERT_NACIONALIDADES.sql",
+        "/scripts/INSERT_ESTADO_CIVIL.sql",
+        "/scripts/INSERT_DOMICILIOS.sql",
+        "/scripts/INSERT_DISTRITOS.sql",
+        "/scripts/INSERT_SEDES.sql",
+        "/scripts/INSERT_MATERIAS.sql",
+        "/scripts/INSERT_JUZGADOS.sql",
+        "/scripts/INSERT_PERSONAS.sql",
+        "/scripts/INSERT_TIPO_SISTEMAS.sql",
+        "/scripts/INSERT_TIPO_JUICIOS.sql",
+        "/scripts/INSERT_CARPETAS.sql",
+        "/scripts/INSERT_TIPO_PARTES.sql",
+        "/scripts/INSERT_PERSONAS_DOCUMENTOS.sql",
+        "/scripts/INSERT_PERSONADETALLE.sql"
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {
+        "/scripts/DELETE_PERSONADETALLE.sql",
+        "/scripts/DELETE_PERSONAS_DOCUMENTOS.sql",
+        "/scripts/DELETE_TIPO_PARTES.sql",
+        "/scripts/DELETE_CARPETAS.sql",
+        "/scripts/DELETE_PERSONAS.sql",
+        "/scripts/DELETE_TIPO_JUICIOS.sql",
+        "/scripts/DELETE_TIPO_SISTEMAS.sql",
+        "/scripts/DELETE_JUZGADOS.sql",
+        "/scripts/DELETE_MATERIAS.sql",
+        "/scripts/DELETE_SEDES.sql",
+        "/scripts/DELETE_DISTRITOS.sql",
+        "/scripts/DELETE_DOMICILIOS.sql",
+        "/scripts/DELETE_ESTADO_CIVIL.sql",
+        "/scripts/DELETE_ESCOLARIDADES.sql",
+        "/scripts/DELETE_LENGUAS_INDIGENAS.sql",
+        "/scripts/DELETE_NACIONALIDADES.sql",
+        "/scripts/DELETE_PERSONAS_DOCUMENTOS.sql",
+        "/scripts/DELETE_DOCUMENTOS_IDENTIFICACION.sql"
+
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
+class PersonaDetalleRepositoryTest extends AuditConfigTest {
+
+    @Autowired
+    private PersonaDetalleRepository personaDetalleRepository;
+
+
+    @Test
+    void findDistritoJuzgadoByDocumentoId(){
+        Optional<PersonaDetalle> entity = personaDetalleRepository.findByPersonaDocumentoId(1);
+        assertThat(entity).isNotNull();
+        assertThat(entity.get().getPaisNacimiento()).isEqualTo("México");
+        assertThat(entity.get().getRfc()).isEqualTo("ABC1234567890");
+    }
+
 }

@@ -601,14 +601,16 @@ class CarpetaServiceTest {
                 "Juan",
                 "Pérez",
                 "Gómez",
-                "TipoParte1"
+                "TipoParte1",
+                Rol.PRINCIPAL
         );
         PersonaDataRecord participante2 = new PersonaDataRecord(
                 2,
                 "Maria",
                 "López",
                 "Sánchez",
-                "TipoParte2"
+                "TipoParte2",
+                Rol.PRINCIPAL
         );
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
                 "Juez Perez",
