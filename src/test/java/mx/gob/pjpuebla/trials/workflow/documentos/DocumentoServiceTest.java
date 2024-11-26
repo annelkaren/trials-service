@@ -69,6 +69,8 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalle;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -168,6 +170,8 @@ class DocumentoServiceTest {
     private CarpetaService carpetaService;
     @Mock
     private CarpetaDetalleRepository carpetaDetalleRepository;
+    @Mock
+    private PersonaDetalleRepository personaDetalleRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -1283,7 +1287,6 @@ class DocumentoServiceTest {
         assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
         assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
     }
-
     @Test
     void deleteAsignado() {
         Integer id = 1;
@@ -1296,10 +1299,16 @@ class DocumentoServiceTest {
         Persona auditor = new Persona();
         auditor.setNombre("Pedro");
 
+        // Configuración de los mocks
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
         when(personaService.getAuditor()).thenReturn(auditor);
+        Optional<PersonaDetalle> personaDetalle = Optional.empty();  // Suponemos que no hay detalle asociado
+        when(personaDetalleRepository.findByPersonaDocumentoId(id)).thenReturn(personaDetalle);
+
+        // Llamada al método a probar
         documentoService.deleteAsignado(id);
 
+        // Verificación de los efectos secundarios
         verify(movimientoService).createMovimento(
                 eq(carpeta),
                 isNull(),
@@ -1307,7 +1316,7 @@ class DocumentoServiceTest {
                 eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante),
                 isNull()
         );
-
+        verify(personaDetalleRepository, never()).deleteById(any());  // Verifica que no se eliminó ningún detalle
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository).flush();
     }
@@ -1316,6 +1325,8 @@ class DocumentoServiceTest {
     void deleteAsignado_NotFound() {
         Integer id = 1;
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Verifica que se lanza la excepción EntityNotFoundException cuando no se encuentra el documento
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
                 () -> documentoService.deleteAsignado(id)
@@ -1324,23 +1335,40 @@ class DocumentoServiceTest {
         assertEquals("No se encontró la persona documento con ID: " + id, exception.getMessage());
         verify(personaDocumentoRepository, never()).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
+    }
 
+    @Test
+    void deleteAsignado_ConstraintViolation() {
+        Integer id = 1;
+        String nombreParticipante = "Juan Perez";
         PersonaDocumento personaDocumento = new PersonaDocumento();
         personaDocumento.setId(id);
-        personaDocumento.setNombre("Juan Perez");
+        personaDocumento.setNombre(nombreParticipante);
+        Carpeta carpeta = CarpetaSetUp.create();
+        personaDocumento.setCarpeta(carpeta);
+        Persona auditor = new Persona();
+        auditor.setNombre("Pedro");
 
+        // Configuración de los mocks
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
-        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros")).when(personaDocumentoRepository).deleteById(id);
-        ConstraintViolationException constraintViolationException = assertThrows(
+        when(personaService.getAuditor()).thenReturn(auditor);
+        Optional<PersonaDetalle> personaDetalle = Optional.empty();  // Suponemos que no hay detalle asociado
+        when(personaDetalleRepository.findByPersonaDocumentoId(id)).thenReturn(personaDetalle);
+
+        // Simular la excepción DataIntegrityViolationException al intentar eliminar
+        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros"))
+                .when(personaDocumentoRepository).deleteById(id);
+
+        // Verifica que se lanza ConstraintViolationException
+        ConstraintViolationException exception = assertThrows(
                 ConstraintViolationException.class,
                 () -> documentoService.deleteAsignado(id)
         );
 
-        assertTrue(constraintViolationException.getMessage().contains(Messages.CONSTRAINT_ERROR));
+        assertTrue(exception.getMessage().contains(Messages.CONSTRAINT_ERROR));
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
     }
-
 
     @Test
     void create_demandaAntiguas() {
