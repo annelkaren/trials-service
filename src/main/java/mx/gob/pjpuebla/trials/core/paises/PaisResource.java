@@ -2,8 +2,16 @@ package mx.gob.pjpuebla.trials.core.paises;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaMateriaRecord;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
+import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.client.RestTemplate;
@@ -21,38 +29,11 @@ import java.util.List;
 @SecurityRequirement(name = "Keycloak")
 public class PaisResource {
 
-    private static final String COUNTRIES_PATH = "https://restcountries.com/v3.1";
-    private static final String ALL_PATH   = "/all?fields=translations,cca2,ccn3,name";
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final PaisService paisService;
 
-    @GetMapping
-    @Cacheable("paises")
-    public List<PaisRecord> getPaises() {
-
-        ResponseEntity<List<Pais>> responseEntity = restTemplate.exchange(
-                COUNTRIES_PATH + ALL_PATH,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<Pais>>() {}
-        );
-
-        List<Pais> paises = responseEntity.getBody();
-
-        if (paises == null) {
-            paises = new ArrayList<>();
-        }
-
-        return paises.stream().map(pais -> {
-            String name = (pais.getTranslations() != null && pais.getTranslations().getSpa() != null)
-                    ? pais.getTranslations().getSpa().getOfficial()
-                    : "Desconocido";
-
-            String codeAlpha2 = pais.getCodeAlpha2() != null ? pais.getCodeAlpha2() : "N/A";
-            String codeNumeric = pais.getCodeNumeric() != null ? pais.getCodeNumeric() : "000";
-
-            return new PaisRecord(name, codeAlpha2, codeNumeric);
-        }).toList();
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<PaisRecord> getAll(){
+        return paisService.getAll();
     }
-
 
 }

@@ -18,10 +18,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PaisResource.class)
@@ -29,27 +31,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class PaisResourceTest {
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
     @MockBean
-    private RestTemplate restTemplate;
+    private PaisService paisService;
 
+    @Autowired
     private MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-    }
 
     @Test
     void testGetPaisesSuccess() throws Exception {
+        Pais pais1 = new Pais();
+        pais1.setId(1);
+        pais1.setCca2("MX");
+        pais1.setNombreComun("México");
 
-        when(restTemplate.exchange(
-                anyString(), any(HttpMethod.class), any(), eq(new ParameterizedTypeReference<List<Pais>>() {}))
-        ).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        Pais pais2 = new Pais();
+        pais1.setId(2);
+        pais2.setCca2("US");
+        pais2.setNombreComun("Estados Unidos");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/core/paises"))
+        List<PaisRecord> paisRecords = Arrays.asList(
+                new PaisRecord(pais1.getCca2(), pais1.getNombreComun(), pais1.getId().toString()),
+                new PaisRecord(pais2.getCca2(), pais2.getNombreComun(),pais1.getId().toString())
+        );
+
+        when(paisService.getAll()).thenReturn(paisRecords);
+
+        mockMvc.perform(get("/api/core/paises")
+                        .contentType("application/json"))
                 .andExpect(status().isOk());
+
     }
 }
