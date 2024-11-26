@@ -22,7 +22,7 @@ public class PersonaResource {
 
     @GetMapping
     public Page<PersonaRecordResponse> getAll(
-            @PageableDefault(size = 20) Pageable pageable,
+            @PageableDefault(size = 25) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.personaService.findAllByCentroTrabajo(nombre, pageable);
     }

@@ -1,40 +1,37 @@
 package mx.gob.pjpuebla.trials.core.paises;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import mx.gob.pjpuebla.trials.util.*;
 
-public class Pais {
+import java.io.Serializable;
 
-    private final Name name;
-    private final String codeAlpha2;
-    private final String codeNumeric;
-    private final Translations translations;
-
-    public Pais(Name name, String codeAlpha2, String codeNumeric, Translations translations) {
-        this.name = name;
-        this.codeAlpha2 = codeAlpha2;
-        this.codeNumeric = codeNumeric;
-        this.translations = translations;
-    }
-
-    @JsonAlias("name")
-    public Name getName() {
-        return name;
-    }
-
-    @JsonAlias("cca2")
-    public String getCodeAlpha2() {
-        return codeAlpha2;
-    }
-
-    @JsonAlias("ccn3")
-    public String getCodeNumeric() {
-        return codeNumeric;
-    }
-
-    @JsonAlias("translations")
-    public Translations getTranslations() {
-        return translations;
-    }
+@Data
+@Entity
+@EntityListeners(AuditListener.class)
+@Table(name = "TBL_PAISES")
+public class Pais  implements Serializable {
 
 
+    @Id
+    @Column(name = "PN_ID", insertable = false, updatable = false)
+    private Integer id;
+
+    @NotBlank
+    @Size(min = 3, max = 2)
+    @Column(name = "s_key", nullable = false)
+    private String key;
+
+    @NotBlank
+    @Size(min = 3, max = 250)
+    @Column(name = "S_NOMBRE_OFICIAL", nullable = false)
+    private String nombreOficial;
+
+
+    @NotBlank
+    @Size(min = 3, max = 250)
+    @Column(name = "S_NOMBRE_COMUN", nullable = false)
+    private String  nombreComun;
 }

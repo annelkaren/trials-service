@@ -340,7 +340,7 @@ class PersonaServiceTest extends SetupServiceTest {
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
         Page<Persona> page = new PageImpl<>(List.of(validPersona));
-        List<PersonaRecordResponse> list = page.stream().map(p-> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular(), "")).toList();
+        List<PersonaRecordResponse> list = page.stream().map(p-> new PersonaRecordResponse(p.getId(), p.getNombre(), p.getCorreoElectronico(), p.getCelular(), "","")).toList();
         Page<PersonaRecordResponse> response = new PageImpl<>(list);
 
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
