@@ -25,6 +25,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,7 +72,8 @@ public class PersonaService {
                             persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""),
                             persona.getCorreoElectronico(),
                             persona.getCelular(),
-                            centroTrabajo
+                            centroTrabajo,
+                            persona.getEstado().name()
                     );
                 })
                 .toList();
@@ -86,6 +89,9 @@ public class PersonaService {
     }
 
     public PersonaRecordResponse create(Persona persona, List<RoleRecord> roles) {
+        if (!isValidAge(persona.getFechaNacimiento())) {
+            throw new ConflictException("El usuario debe ser mayor de edad");
+        }
         List<String> rolesToSave = getNames(roles);
         validateAdminRole(rolesToSave, persona);
         persona.setUsuario(usuarioService.create(persona));
@@ -94,7 +100,13 @@ public class PersonaService {
         fillPersonaData(persona);
 
         persona = personaRepository.save(persona);
-        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "");
+    }
+
+    private boolean isValidAge(LocalDate date) {
+        LocalDate currentDate = LocalDate.now();
+        long numberOfYears = ChronoUnit.YEARS.between(date, currentDate);
+        return numberOfYears >= 18;
     }
 
     private void fillPersonaData(Persona persona) {
@@ -121,12 +133,15 @@ public class PersonaService {
 
     public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
         try {
+            if (!isValidAge(persona.getFechaNacimiento())) {
+                throw new ConflictException("El usuario debe ser mayor de edad");
+            }
             List<String> rolesToSave = getNames(roles);
             validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), rolesToSave);
-            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "");
+            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Persona.class.getSimpleName());
         }
@@ -232,7 +247,8 @@ public class PersonaService {
                                 p.getCorreoElectronico(),
                                 p.getCelular(),
                                 (p.getJuzgado() != null) ? p.getJuzgado().getNombre() :
-                                        (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-"
+                                        (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-",
+                                p.getEstado().name()
                         ))
                 .toList();
 
@@ -257,6 +273,7 @@ public class PersonaService {
                 p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
                 p.getCorreoElectronico(),
                 p.getCelular(),
+                "",
                 ""
         ));
     }
