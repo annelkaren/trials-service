@@ -1,16 +1,10 @@
 package mx.gob.pjpuebla.trials.core.paises;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.distritos.Distrito;
-import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.util.*;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.Tipo;
 
 import java.io.Serializable;
 
