@@ -14,5 +14,6 @@ public enum EstadoCarpeta {
     CON_ACUSE,
     CANCELADO,
     PUBLICADO,
-    NOTIFICADO
+    NOTIFICADO,
+    INTEGRADO //Para indicar que una pieza fue integrada al expediente
 }

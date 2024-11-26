@@ -41,6 +41,11 @@ public class SelloCaratulaService {
         String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
         String procedencia = getExhortoPromocion(documento);
 
+        if (documento.getCarpeta().getTipoPieza()!=null){
+            actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Actor");
+            demandado= getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Demandado");
+        }
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
@@ -53,6 +58,10 @@ public class SelloCaratulaService {
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
         parameters.put("isExhorto", isExhorto); // es un Exhorto
         parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
+
+        if (documento.getCarpeta().getTipoPieza()!= null){
+            parameters.put("tipoPieza", documento.getCarpeta().getTipoPieza().getTipo());
+        }
 
         isExhorto = false;
 
@@ -92,6 +101,7 @@ public class SelloCaratulaService {
                 case "DEMANDA" -> "D";
                 case "APELACION" -> "A";
                 case "EXHORTO" -> "E";
+                case "PIEZA" -> "PZ";
                 default -> "";
             };
 
