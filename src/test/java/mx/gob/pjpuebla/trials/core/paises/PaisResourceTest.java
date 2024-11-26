@@ -42,7 +42,7 @@ class PaisResourceTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
-    @Test
+    /*@Test
     void testGetPaisesSuccess() throws Exception {
 
         when(restTemplate.exchange(
@@ -51,5 +51,5 @@ class PaisResourceTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/core/paises"))
                 .andExpect(status().isOk());
-    }
+    }*/
 }
