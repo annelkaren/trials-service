@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -19,7 +20,8 @@ public class PaisService {
     public List<PaisRecord> getAll() {
         List<Pais> paisList = paisRepository.findAll();
         return paisList.stream()
-                .map(p -> new PaisRecord(p.getNombreComun(), p.getCca2(), p.getId().toString()))
-                .toList();
+                .map(p -> new PaisRecord(p.getNombreComun(), p.getKey(), p.getId().toString()))
+                .sorted(Comparator.comparing(PaisRecord::nombre)).toList();
     }
+
 }

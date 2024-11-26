@@ -27,13 +27,13 @@ class PaisServiceTest {
     @Test
     void testGetAll() {
         Pais pais1 = new Pais();
-        pais1.setCca2("MX");
+        pais1.setKey("MX");
         pais1.setNombreComun("México");
         pais1.setNombreOficial("Estados Unidos Mexicanos");
         pais1.setId(2);
 
         Pais pais2 = new Pais();
-        pais2.setCca2("US");
+        pais2.setKey("US");
         pais2.setNombreComun("Estados Unidos");
         pais2.setNombreOficial("Estados Unidos de América");
         pais2.setId(1);
@@ -44,11 +44,11 @@ class PaisServiceTest {
 
         assertEquals(2, result.size());
 
-        assertEquals("MX", result.get(0).codeAlpha2());
-        assertEquals("México", result.get(0).nombre());
-        assertNotNull(result.get(0).codeNumeric());
-        assertEquals("US", result.get(1).codeAlpha2());
-        assertEquals("Estados Unidos", result.get(1).nombre());
+        assertEquals("MX", result.get(1).codeAlpha2());
+        assertEquals("México", result.get(1).nombre());
         assertNotNull(result.get(1).codeNumeric());
+        assertEquals("US", result.get(0).codeAlpha2());
+        assertEquals("Estados Unidos", result.get(0).nombre());
+        assertNotNull(result.get(0).codeNumeric());
     }
 }

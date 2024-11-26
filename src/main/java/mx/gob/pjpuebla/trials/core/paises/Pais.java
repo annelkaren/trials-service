@@ -21,8 +21,8 @@ public class Pais  implements Serializable {
 
     @NotBlank
     @Size(min = 3, max = 2)
-    @Column(name = "S_CCA2", nullable = false)
-    private String cca2;
+    @Column(name = "s_key", nullable = false)
+    private String key;
 
     @NotBlank
     @Size(min = 3, max = 250)

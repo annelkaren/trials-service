@@ -31,17 +31,17 @@ class PaisResourceTest {
     void testGetPaisesSuccess() throws Exception {
         Pais pais1 = new Pais();
         pais1.setId(1);
-        pais1.setCca2("MX");
+        pais1.setKey("MX");
         pais1.setNombreComun("México");
 
         Pais pais2 = new Pais();
         pais1.setId(2);
-        pais2.setCca2("US");
+        pais2.setKey("US");
         pais2.setNombreComun("Estados Unidos");
 
         List<PaisRecord> paisRecords = Arrays.asList(
-                new PaisRecord(pais1.getCca2(), pais1.getNombreComun(), pais1.getId().toString()),
-                new PaisRecord(pais2.getCca2(), pais2.getNombreComun(),pais1.getId().toString())
+                new PaisRecord(pais1.getKey(), pais1.getNombreComun(), pais1.getId().toString()),
+                new PaisRecord(pais2.getKey(), pais2.getNombreComun(),pais1.getId().toString())
         );
 
         when(paisService.getAll()).thenReturn(paisRecords);
