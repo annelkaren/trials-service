@@ -131,8 +131,10 @@ public class DocumentoService {
                             documento.getId(),
                             (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
                             carpeta.getExpediente(),
-                            carpeta.getJuzgado().getMateria().getNombre(),
-                            (documento.getTipoDocumento() != null) ? documento.getTipoDocumento().name() : carpeta.getTipoCarpeta().name(),
+                            StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
+                            (documento.getTipoDocumento() != null) ?
+                                    StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase()) :
+                                    StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase()),
                             documento.getAudit().getFechaAlta(),
                             carpeta.getSelloEstatus(),
                             (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
@@ -336,9 +338,9 @@ public class DocumentoService {
         documentoRepository.save(documento);
 
         if (documento.getTipoDocumento() != null) {
-            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.EDICION.name());
         } else {
-            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.EDICION.name());
         }
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -412,8 +414,8 @@ public class DocumentoService {
                     documento.getId(),
                     folio,
                     carpeta.getExpediente(),
-                    carpeta.getJuzgado().getMateria().getNombre(),
-                    (documento.getTipoDocumento() == null) ? carpeta.getTipoCarpeta().name() : documento.getTipoDocumento().name(),
+                    StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
+                    (documento.getTipoDocumento() == null) ? StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase()) : StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase()),
                     movimiento.getFechaAsignacion(),
                     null,
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
