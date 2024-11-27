@@ -8,4 +8,6 @@ public interface SecuenciaRepositoryCustom {
 
     Long getNextValPromocion();
 
+    Long getNextValPieza();
+
 }

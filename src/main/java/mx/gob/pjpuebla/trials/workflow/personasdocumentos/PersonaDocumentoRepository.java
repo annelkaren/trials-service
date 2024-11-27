@@ -106,7 +106,8 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
                 pd.nombre,
                 pd.apellidoPaterno,
                 pd.apellidoMaterno,
-                pd.tipoPartes.nombre
+                pd.tipoPartes.nombre,
+                pd.rol
             )
             FROM PersonaDocumento pd
             WHERE pd.carpeta.id = :carpetaId

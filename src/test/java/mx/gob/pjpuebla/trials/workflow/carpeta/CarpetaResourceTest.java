@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
+import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
@@ -316,4 +317,41 @@ class CarpetaResourceTest {
                         .content(ResourceUtilTest.asJsonString(saveExpedienteDetalleRecord)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testPostAdjuntarPieza() throws Exception{
+
+        PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+        TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
+        Carpeta pieza = CarpetaSetUp.create().setTipoPieza(tipoPieza);
+
+        given(mockCarpetaService.createPieza(any(), any())).willReturn(pieza);
+
+        mockMvc.perform(post("/api/workflow/carpeta/piezas/adjuntar?carpetaId=1")
+                        .content(ResourceUtilTest.asJsonString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
+
+   /* @Test
+    void testPutAdjuntarPieza(){
+        PiezaRecord piezaRecord = new PiezaRecord(null, "AD", Collections.singletonList(1));
+        Carpeta piezaTmp = new Carpeta()
+                .setId(5)
+                .setExpediente("000001/2024/AD01")
+                .setCarpetaPadre(new Carpeta().setId(1))
+                .setTipoCarpeta(TipoCarpeta.PIEZA)
+                .setTipoPieza(new TipoPieza().setClave("AD"));
+
+        PiezaRecordResponse response = new PiezaRecordResponse(2, piezaTmp.getExpediente(), piezaTmp.getTipoPieza().getClave());
+
+        given(mockCarpetaService.createPieza(1, piezaRecord)).willReturn(piezaTmp);
+
+        mockMvc.perform(put("/api/workflow/carpeta/piezas/adjuntar?carpetaId=1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceUtilTest.asJsonString(response)))
+                .andExpect(status().isOk());
+    }*/
 }

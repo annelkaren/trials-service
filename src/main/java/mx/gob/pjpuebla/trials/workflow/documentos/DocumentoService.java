@@ -53,6 +53,8 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalle;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -105,6 +107,7 @@ public class DocumentoService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaRepository audienciaRepository;
     private final CarpetaDetalleRepository carpetaDetalleRepository;
+    private final PersonaDetalleRepository personaDetalleRepository;
 
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
@@ -300,7 +303,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo parte no encontrada", "TipoParteId")));
         entity.setCarpeta(carpeta);
 
-        //campos exlusivos para demanda de tipo familiar 
+        //campos exlusivos para demanda de tipo familiar
         entity.setCurp(persona.curp());
         entity.setIne(persona.ine());
         entity.setDomicilio(persona.domicilio());
@@ -625,12 +628,12 @@ public class DocumentoService {
                                 item.carpetaId(),
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                (item.tipoDocumento() != null) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
+                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
                                 item.concepto().getNombre(),
                                 item.fechaTurnado(),
                                 item.fechaTurnado().plusDays(item.concepto().getDias()),
                                 item.estatus().name(),
-                                "Observación de Prueba " //item.observaciones()
+                                item.observaciones()
                         ))
                 .toList();
 
@@ -686,7 +689,7 @@ public class DocumentoService {
         Concepto concepto = new Concepto();
         if (tipoDocumento == TipoDocumento.PROMOCION) {
             concepto = conceptoRepository.findByNombre(conceptoAdjun).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoAdjun));
-        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO)) {
+        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO) || tipoCarpeta == TipoCarpeta.PIEZA) {
             concepto = conceptoRepository.findByNombre(conceptoDistri).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoDistri));
         }
         return concepto;
@@ -732,6 +735,9 @@ public class DocumentoService {
                     break;
                 case "P":
                     tipoDocumentoNombre = TipoDocumento.PROMOCION;
+                    break;
+                case "PZ":
+                    tipoCarpetaNombre = TipoCarpeta.PIEZA;
                     break;
                 default:
                     throw new IllegalArgumentException("El tipo de carpeta es desconocido");
@@ -1110,6 +1116,7 @@ public class DocumentoService {
     public void deleteAsignado(Integer id) {
         try {
             Optional<PersonaDocumento> personaDocumento = personaDocumentoRepository.findById(id);
+
             Persona persona = personaService.getAuditor();
             if (personaDocumento.isPresent()) {
                 movimientoService.createMovimento(
@@ -1119,6 +1126,8 @@ public class DocumentoService {
                         String.join(" ", "ELIMINADO DE PARTICIPANTE", personaDocumento.get().getNombre()),
                         null
                 );
+                Optional<PersonaDetalle> personaDetalle = personaDetalleRepository.findByPersonaDocumentoId(personaDocumento.get().getId());
+                personaDetalle.ifPresent(detalle -> personaDetalleRepository.deleteById(detalle.getId()));
                 personaDocumentoRepository.deleteById(id);
                 personaDocumentoRepository.flush();
             } else {
@@ -1134,6 +1143,7 @@ public class DocumentoService {
         DocumentoData data = new DocumentoData();
         Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
                 .orElseThrow(()->new NotFoundException("La Carpeta no existe","Carpeta"));
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.AMPARO, persona.getJuzgado(), null);
 
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
         data.setAmparoImpugnacion(amparoRecord.impugnacion());
@@ -1147,6 +1157,7 @@ public class DocumentoService {
         Documento amparo = new Documento()
         .setCarpeta(carpeta)
         .setData(data)
+        .setFolio(String.valueOf(folio))
         .setEstatus(EstadoCarpeta.ASIGNADO)
         .setFechaAsignacion(LocalDateTime.now())
         .setTipoDocumento(TipoDocumento.AMPARO)

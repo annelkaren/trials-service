@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -116,7 +117,7 @@ public class AudienciaService {
 
                     return new AudienciasGeneralesResponseRecord(
                             item.getId(),
-                            item.getTipoAudiencia().getNombre(),
+                            StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
                             nombreCompleto,
                             item.getCarpeta().getExpediente(),
                             item.getSala().getNombre(),
