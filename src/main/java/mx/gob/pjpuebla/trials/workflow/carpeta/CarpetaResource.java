@@ -3,9 +3,13 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,6 +98,13 @@ public class CarpetaResource {
         return  this.carpetaService.getPiezas(documentoId);
 
     }
-    
 
+    @GetMapping(value = "/documentos/{carpetaId}/detalle")
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
+            @PathVariable Integer carpetaId,
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable){
+
+        return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
+    }
 }

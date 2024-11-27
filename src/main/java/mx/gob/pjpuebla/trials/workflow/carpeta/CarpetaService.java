@@ -30,6 +30,9 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasReposi
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -37,6 +40,9 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -532,5 +538,44 @@ public class CarpetaService {
         asignarPieza(pieza, piezaRecord.documentos());
 
         return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+    }
+
+    public List<DocumentoDetalleCarpetaResponse> getAllPiezasCarpeta(String key, Integer carpetaId){
+        List<DocumentoDetalleCarpeta> list = carpetaRepository.findPiezasByCarpetaPadreId(key, carpetaId);
+
+        return list.stream()
+                .map(
+                        e -> new DocumentoDetalleCarpetaResponse(
+                                e.id()!=null?e.id():null,
+                                e.tipoDocumento()!=null?e.tipoDocumento().name():"DEMANDA",
+                                e.folio(),
+                                e.fechaRegistro(),
+                                e.ruta(),
+                                (e.persona()!=null)?e.persona().getUsuario():""
+                        )).toList();
+    }
+
+    public List<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(String key, Integer carpetaId){
+        List<DocumentoDetalleCarpeta> list = documentoRepository.findDocumentosByCarpeta(key, carpetaId);
+
+        return list.stream()
+                .map(
+                        e -> new DocumentoDetalleCarpetaResponse(
+                                e.id()!=null?e.id():null,
+                                e.tipoDocumento()!=null?e.tipoDocumento().name():"DEMANDA",
+                                e.folio(),
+                                e.fechaRegistro(),
+                                e.ruta(),
+                                (e.persona()!=null)?e.persona().getUsuario():""
+                        )).toList();
+    }
+
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId, Pageable pageable){
+        List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosByCarpeta(key, carpetaId);
+        List<DocumentoDetalleCarpetaResponse> piezas = this.getAllPiezasCarpeta(key, carpetaId);
+
+        List<DocumentoDetalleCarpetaResponse> lista = Stream.concat(documentos.stream(), piezas.stream()).toList();
+
+        return new PageImpl<>(lista, pageable, lista.size());
     }
 }

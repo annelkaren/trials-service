@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -85,22 +86,26 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     List<PiezaRecordResponse> findPiezasByDocumentoId(Integer documentoId);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.DocumentoDetalleCarpeta(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta(
                 c.id,
                 c.expediente,
                 null,
                 c.tipoPieza,
                 c.audit.fechaAlta,
                 null,
-                c.personaAsignada
+                c.persona   
             )
             FROM Carpeta c
             JOIN c.tipoPieza tp
-            WHERE on c.carpetaPadre.id = :carpetaPadreId
+            WHERE c.carpetaPadre.id = :carpetaPadreId
             AND c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA
             AND c.estatus NOT IN (
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.CANCELADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.INTEGRADO)
+            AND
+                CASE WHEN :key IS NULL THEN 1
+                WHEN c.expediente LIKE %:key% OR c.tipoPieza.tipo LIKE %:key% THEN 1
+                ELSE 0 END = 1
             """)
-    List<PiezaRecordResponse> findPiezasByCarpetaPadreId(Integer carpetaPadreId);
+    List<DocumentoDetalleCarpeta> findPiezasByCarpetaPadreId(String key, Integer carpetaPadreId);
 }

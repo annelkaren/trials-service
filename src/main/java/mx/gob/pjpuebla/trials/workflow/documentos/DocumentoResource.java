@@ -227,14 +227,4 @@ public class DocumentoResource {
         return ResponseEntity.ok(editDocumento);
     }
 
-    @GetMapping(value = "/documentos/{carpetaId}/detalle")
-    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
-            @PathVariable Integer carpetaId,
-            @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable){
-
-        return this.documentoService.getAllDocumentosByCarpeta(key, carpetaId, pageable);
-
-
-    }
 }
