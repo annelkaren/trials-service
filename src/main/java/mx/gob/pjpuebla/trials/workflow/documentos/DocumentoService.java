@@ -11,7 +11,10 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -814,6 +817,7 @@ public class DocumentoService {
         Documento doc = documentoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+        addAnexoExtra(anexosActuales, doc);
         String origen = movimientoService.getOrigen(
                 (doc.getTipoDocumento() != null) ? doc.getId() : null,
                 (doc.getTipoDocumento() != null) ? null : doc.getCarpeta().getId());
@@ -828,6 +832,18 @@ public class DocumentoService {
         );
     }
 
+    private void addAnexoExtra(List<AnexoRecepcionRecord> anexos, Documento documento){
+        if(documento.getCarpeta().getTipoJuicio().getMateria().getNombre().equals("LABORAL")){
+            Optional<AnexoRecepcionRecord> anexo = anexos.stream().filter(it -> it.nombre().equalsIgnoreCase("Constancia de no conciliación")).findFirst();
+            if(!anexo.isPresent()){
+                Anexo entity = new Anexo();
+                entity.setNombre("Constancia de no conciliación");
+                entity.setDocumento(documento);
+                entity = anexoRepository.save(entity);
+                anexos.add(new AnexoRecepcionRecord(entity.getId(), entity.getEstado(), entity.getNombre()));
+            }
+        }
+    }
 
     public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId) {
 
