@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -100,11 +101,13 @@ public class CarpetaResource {
 
     }
 
-    @GetMapping(value = "/documentos/{carpetaId}/detalle")
+    @GetMapping(value = "/documentos/{carpetaId}")
     public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
             @PathVariable Integer carpetaId,
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20, sort = "fechaRegistro", direction = Sort.Direction.ASC) Pageable pageable){
+            @PageableDefault(size = 20) @SortDefault.SortDefaults({
+                    @SortDefault(sort = "fechaRegistro", direction = Sort.Direction.ASC)
+            }) Pageable pageable){
 
         return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
     }
