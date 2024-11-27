@@ -227,7 +227,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 null,
                 COALESCE(m.fechaAsignacion, d.audit.fechaAlta),
                 d.ruta,
-                p
+                COALESCE(p.id, d.persona.id)
             )
             FROM Documento d
             LEFT JOIN Movimiento m on m.estado = 'CAPTURA' and m.documento = d

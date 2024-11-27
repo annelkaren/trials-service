@@ -93,7 +93,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                 c.tipoPieza,
                 c.audit.fechaAlta,
                 null,
-                c.persona   
+                c.persona.id
             )
             FROM Carpeta c
             JOIN c.tipoPieza tp

@@ -14,5 +14,5 @@ public record DocumentoDetalleCarpeta(
         TipoPieza tipoCarpeta,
         LocalDateTime fechaRegistro,
         String ruta,
-        Persona persona) {
+        Long personaOrigenId) {
 }

@@ -547,15 +547,15 @@ public class CarpetaService {
                 .map(
                         e -> new DocumentoDetalleCarpetaResponse(
                                 e.id()!=null?e.id():null,
-                                e.tipoDocumento()!=null?e.tipoDocumento().name():"DEMANDA",
+                                "PIEZA DE "+e.tipoCarpeta().getTipo(),
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
-                                (e.persona()!=null)?e.persona().getUsuario():""
+                                personaService.findById(e.personaOrigenId()).permisos().get(0).name()
                         )).toList();
     }
 
-    public List<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(String key, Integer carpetaId){
+    public List<DocumentoDetalleCarpetaResponse> getAllDocumentosCarpeta(String key, Integer carpetaId){
         List<DocumentoDetalleCarpeta> list = documentoRepository.findDocumentosByCarpeta(key, carpetaId);
 
         return list.stream()
@@ -566,12 +566,12 @@ public class CarpetaService {
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
-                                (e.persona()!=null)?e.persona().getUsuario():""
+                                (e.personaOrigenId()!=null)?personaService.findById(e.personaOrigenId()).permisos().get(0).name():""
                         )).toList();
     }
 
     public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId, Pageable pageable){
-        List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosByCarpeta(key, carpetaId);
+        List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosCarpeta(key, carpetaId);
         List<DocumentoDetalleCarpetaResponse> piezas = this.getAllPiezasCarpeta(key, carpetaId);
 
         List<DocumentoDetalleCarpetaResponse> lista = Stream.concat(documentos.stream(), piezas.stream()).toList();

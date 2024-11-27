@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -103,7 +104,7 @@ public class CarpetaResource {
     public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
             @PathVariable Integer carpetaId,
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable){
+            @PageableDefault(size = 20, sort = "fechaRegistro", direction = Sort.Direction.ASC) Pageable pageable){
 
         return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
     }
