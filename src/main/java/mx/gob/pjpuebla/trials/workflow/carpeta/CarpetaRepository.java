@@ -83,4 +83,24 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.INTEGRADO)
             """)
     List<PiezaRecordResponse> findPiezasByDocumentoId(Integer documentoId);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.DocumentoDetalleCarpeta(
+                c.id,
+                c.expediente,
+                null,
+                c.tipoPieza,
+                c.audit.fechaAlta,
+                null,
+                c.personaAsignada
+            )
+            FROM Carpeta c
+            JOIN c.tipoPieza tp
+            WHERE on c.carpetaPadre.id = :carpetaPadreId
+            AND c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA
+            AND c.estatus NOT IN (
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.CANCELADO,
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.INTEGRADO)
+            """)
+    List<PiezaRecordResponse> findPiezasByCarpetaPadreId(Integer carpetaPadreId);
 }

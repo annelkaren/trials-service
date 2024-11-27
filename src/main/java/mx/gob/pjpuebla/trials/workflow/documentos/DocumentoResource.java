@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
@@ -226,5 +227,14 @@ public class DocumentoResource {
         return ResponseEntity.ok(editDocumento);
     }
 
+    @GetMapping(value = "/documentos/{carpetaId}/detalle")
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
+            @PathVariable Integer carpetaId,
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) Pageable pageable){
 
+        return this.documentoService.getAllDocumentosByCarpeta(key, carpetaId, pageable);
+
+
+    }
 }

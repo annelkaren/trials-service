@@ -1227,5 +1227,22 @@ public class DocumentoService {
                 anexos
         );
     }
+
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(String key, Integer carpetaId, Pageable pageable){
+        Page<DocumentoDetalleCarpeta> page = documentoRepository.findDocumentosByCarpeta(key, carpetaId, pageable);
+
+        List<DocumentoDetalleCarpetaResponse> result = page.getContent().stream()
+                .map(
+                e -> new DocumentoDetalleCarpetaResponse(
+                        e.id()!=null?e.id():null,
+                        e.tipoDocumento()!=null?e.tipoDocumento().name():"DEMANDA",
+                        e.folio(),
+                        e.fechaRegistro(),
+                        e.ruta(),
+                        (e.persona()!=null)?e.persona().getUsuario():""
+                )).toList();
+
+        return new PageImpl<>(result, pageable, page.getTotalElements());
+    }
 }
 

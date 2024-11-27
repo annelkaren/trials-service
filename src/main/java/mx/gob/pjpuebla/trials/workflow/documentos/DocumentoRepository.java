@@ -4,14 +4,11 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
 import java.util.List;
@@ -221,5 +218,31 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             )
             """)
     List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta(
+                d.id,
+                d.folio,
+                d.tipoDocumento,
+                null,
+                COALESCE(m.fechaAsignacion, d.audit.fechaAlta),
+                d.ruta,
+                COALESCE(p, d.persona)
+            )
+            FROM Documento d
+            LEFT JOIN Movimiento m on m.estado = 'CAPTURA' and m.documento = d
+            LEFT JOIN m.persona p
+            WHERE
+                d.carpeta.id=:carpetaId
+                AND
+                CASE WHEN :key IS NULL THEN 1
+                WHEN d.folio LIKE %:key% THEN 1
+                ELSE 0 END = 1
+                AND
+                CASE WHEN d.tipoDocumento IS NULL OR d.tipoDocumento != TipoDocumento.PROMOCION THEN 1
+                    WHEN d.tipoDocumento = TipoDocumento.PROMOCION AND d.estatus = EstadoCarpeta.INTEGRADO THEN 1
+                    ELSE 0 END = 1
+            """)
+    Page<DocumentoDetalleCarpeta> findDocumentosByCarpeta(String key, Integer carpetaId, Pageable pageable);
 
 }
