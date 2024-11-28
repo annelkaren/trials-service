@@ -57,6 +57,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
@@ -68,6 +69,8 @@ import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalle;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.PersonaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -167,6 +170,8 @@ class DocumentoServiceTest {
     private CarpetaService carpetaService;
     @Mock
     private CarpetaDetalleRepository carpetaDetalleRepository;
+    @Mock
+    private PersonaDetalleRepository personaDetalleRepository;
 
     private TipoJuicio tipoJuicio;
     private Juzgado juzgado;
@@ -1282,7 +1287,6 @@ class DocumentoServiceTest {
         assertEquals("María López".trim(), sendEmailData.get("demandado").toString().trim());
         assertEquals("<ul><li>Sin anexo</li></ul>", sendEmailData.get("anexos"));
     }
-
     @Test
     void deleteAsignado() {
         Integer id = 1;
@@ -1295,10 +1299,16 @@ class DocumentoServiceTest {
         Persona auditor = new Persona();
         auditor.setNombre("Pedro");
 
+        // Configuración de los mocks
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
         when(personaService.getAuditor()).thenReturn(auditor);
+        Optional<PersonaDetalle> personaDetalle = Optional.empty();  // Suponemos que no hay detalle asociado
+        when(personaDetalleRepository.findByPersonaDocumentoId(id)).thenReturn(personaDetalle);
+
+        // Llamada al método a probar
         documentoService.deleteAsignado(id);
 
+        // Verificación de los efectos secundarios
         verify(movimientoService).createMovimento(
                 eq(carpeta),
                 isNull(),
@@ -1306,7 +1316,7 @@ class DocumentoServiceTest {
                 eq("ELIMINADO DE PARTICIPANTE " + nombreParticipante),
                 isNull()
         );
-
+        verify(personaDetalleRepository, never()).deleteById(any());  // Verifica que no se eliminó ningún detalle
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository).flush();
     }
@@ -1315,6 +1325,8 @@ class DocumentoServiceTest {
     void deleteAsignado_NotFound() {
         Integer id = 1;
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Verifica que se lanza la excepción EntityNotFoundException cuando no se encuentra el documento
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
                 () -> documentoService.deleteAsignado(id)
@@ -1323,23 +1335,40 @@ class DocumentoServiceTest {
         assertEquals("No se encontró la persona documento con ID: " + id, exception.getMessage());
         verify(personaDocumentoRepository, never()).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
+    }
 
+    @Test
+    void deleteAsignado_ConstraintViolation() {
+        Integer id = 1;
+        String nombreParticipante = "Juan Perez";
         PersonaDocumento personaDocumento = new PersonaDocumento();
         personaDocumento.setId(id);
-        personaDocumento.setNombre("Juan Perez");
+        personaDocumento.setNombre(nombreParticipante);
+        Carpeta carpeta = CarpetaSetUp.create();
+        personaDocumento.setCarpeta(carpeta);
+        Persona auditor = new Persona();
+        auditor.setNombre("Pedro");
 
+        // Configuración de los mocks
         when(personaDocumentoRepository.findById(id)).thenReturn(Optional.of(personaDocumento));
-        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros")).when(personaDocumentoRepository).deleteById(id);
-        ConstraintViolationException constraintViolationException = assertThrows(
+        when(personaService.getAuditor()).thenReturn(auditor);
+        Optional<PersonaDetalle> personaDetalle = Optional.empty();  // Suponemos que no hay detalle asociado
+        when(personaDetalleRepository.findByPersonaDocumentoId(id)).thenReturn(personaDetalle);
+
+        // Simular la excepción DataIntegrityViolationException al intentar eliminar
+        doThrow(new DataIntegrityViolationException("No se puede eliminar debido a dependencias existentes con otros registros"))
+                .when(personaDocumentoRepository).deleteById(id);
+
+        // Verifica que se lanza ConstraintViolationException
+        ConstraintViolationException exception = assertThrows(
                 ConstraintViolationException.class,
                 () -> documentoService.deleteAsignado(id)
         );
 
-        assertTrue(constraintViolationException.getMessage().contains(Messages.CONSTRAINT_ERROR));
+        assertTrue(exception.getMessage().contains(Messages.CONSTRAINT_ERROR));
         verify(personaDocumentoRepository).deleteById(id);
         verify(personaDocumentoRepository, never()).flush();
     }
-
 
     @Test
     void create_demandaAntiguas() {
@@ -1367,6 +1396,7 @@ class DocumentoServiceTest {
         lenient().when(juzgadoService.checkYearJuzgadoFolios(any())).thenReturn(juzgadoFolios);
         given(documentoRepository.save(any())).willReturn(demanda);
         given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Demandado"), any())).willReturn(Optional.of(demandado));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
         given(digitalizacionService.guardarArchivo(any(), any()))
@@ -1379,7 +1409,24 @@ class DocumentoServiceTest {
                 "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
         );
 
-        DocumentoRecord response = documentoService.createDemandaAntigua(recordRequest, multipartFile);
+        PersonaDocumentoItemRecord actorItem = new PersonaDocumentoItemRecord(
+                "William", "Perez", "", null,
+                "fisica", 1, "DIAG021007HTLLCDA3", "", "", "2461140011", "juan@gmail.com"
+        );
+
+        PersonaDocumentoItemRecord demandadoItem = new PersonaDocumentoItemRecord(
+                "María", "López", "", null,
+                "fisica", 2, "DIAG021007HTLLCDA5", "", "", "2462240022", "mariaLopez@gmail.com"
+        );
+
+        List<String> anexos = Arrays.asList("Acta de nacimiento", "INE");
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setExhortoObservaciones("Observaciones");
+        documentoData.setExhortoProcedencia("Procedencia");
+
+        DocumentoAntiguoSaveRecord recordRt = new DocumentoAntiguoSaveRecord(actorItem, demandadoItem, anexos, tipoJuicio.getId(),documentoData ,"00111", "2024");
+        DocumentoRecord response = documentoService.createDemandaAntigua(recordRt, multipartFile);
         assertThat(response)
                 .isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
@@ -1455,4 +1502,31 @@ class DocumentoServiceTest {
         assertEquals("Juicio Tipo", result.tipoJuicio());
     }
 
+
+    @Test
+    void getInfoPromocion() {
+        List<String> anexos = List.of("Anexo1", "Anexo2");
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
+                1, "actor 1", "demandado 1"
+        );
+
+        DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.ESCRITO);
+        documento.setData(documentoData);
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any())).willReturn(carpetaResponseRecord);
+        given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
+
+        DocPromocionInfoRecord response = documentoService.getInfoPromocion(1);
+
+        assertThat(response).isNotNull();
+        assertEquals("000001", response.expediente());
+        assertEquals(2024, response.year());
+        assertEquals("JuzgadoTEST", response.juzgado());
+        assertEquals("actor 1", response.actor());
+        assertEquals("demandado 1", response.demandado());
+        assertEquals("ESCRITO", response.tipoPromocion());
+        assertEquals("Anexo1", response.anexos().get(0));
+    }
 }

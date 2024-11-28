@@ -138,7 +138,7 @@ public class CarpetaService {
         Documento documento = validacionBandejaRecepcion(documentoId);
 
         List<String> anexosFaltantes = docRecepcionMovimientosRecord.anexos().stream()
-                .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
+                .filter(anexo -> (anexo.estado() == EstadoAnexo.NORECIBIDO || anexo.estado() == null))
                 .map(AnexoBandejaRecepcionRecord::nombre)
                 .toList();
 
@@ -150,7 +150,7 @@ public class CarpetaService {
             anexoRepository.save(anexoTemp);
         }
 
-        setObservacionesAnexos(documento, anexosFaltantes);
+
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción.
@@ -173,7 +173,8 @@ public class CarpetaService {
                 (documento.getTipoDocumento() == null) ? null : documento,
                 EstadoCarpeta.ASIGNADO.name(),
                 docRecepcionMovimientosRecord.observaciones(),
-                docRecepcionMovimientosRecord.recomendaciones()
+                docRecepcionMovimientosRecord.recomendaciones(),
+                setObservacionesAnexos(anexosFaltantes)
         );
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
@@ -200,18 +201,12 @@ public class CarpetaService {
 
     }
 
-    public void setObservacionesAnexos(Documento documento, List<String> anexos) {
+    public String setObservacionesAnexos(List<String> anexos) {
         if (anexos.isEmpty()) {
-            return;
+            return null;
         }
         String concatenatedAnexos = String.join(", ", anexos);
-        String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
-        movimientoService.createMovimento(
-                (documento.getTipoDocumento() == null ? documento.getCarpeta() : null),
-                (documento.getTipoDocumento() == null) ? null : documento,
-                personaService.getAuditor(),
-                motivo,
-                EstadoCarpeta.ASIGNADO.name());
+        return "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {
@@ -251,6 +246,9 @@ public class CarpetaService {
                     .toList();
             case "catalogoImpugnacionAmparo" -> Arrays.stream(CatalogoImpugnacionAmparo.values())
                     .map(e-> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                    .toList();
+            case "catalogoTipoPiezas" -> this.tipoPiezaRepository.findAll().stream()
+                    .map(e-> new CarpetaCatalogoRecord(e.getClave(), e.getTipo()))
                     .toList();
             default -> Collections.emptyList();
         };
@@ -317,7 +315,7 @@ public class CarpetaService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "));
             if (!nombreCompleto.isEmpty()) {
-                ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto);
+                ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto, participante.rol());
                 agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>()).add(persona);
             }
         }
@@ -341,8 +339,7 @@ public class CarpetaService {
 
         String numeroPieza = carpetaPadre.getExpediente()+"/"+ consecutivoPieza(carpetaId, tipoPieza.getClave());
 
-        //Folio temporal hasta que se cree la Historia de Piezas :3
-        pieza.setFolio(carpetaPadre.getFolio()+"."+consecutivoPieza(carpetaId, tipoPieza.getClave()));
+        pieza.setFolio(documentoRepository.getNextValPieza().toString());
         pieza.setExpediente(numeroPieza);
         pieza.setCarpetaPadre(carpetaPadre);
         pieza.setFechaAsignacion(LocalDateTime.now());
@@ -352,6 +349,7 @@ public class CarpetaService {
         pieza.setEstatus(EstadoCarpeta.ASIGNADO);
         pieza.setJuzgado(carpetaPadre.getJuzgado());
         pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
+        pieza.setTipoPieza(tipoPieza);
         pieza.setAudit(new Audit());
 
         pieza = carpetaRepository.save(pieza);
@@ -370,14 +368,19 @@ public class CarpetaService {
         return clavePieza + StringUtils.leftPad(carpetaRepository.getNumeroPieza(carpetaId, clavePieza).toString(),2,'0');
     }
 
-    public void asignarPieza(Carpeta pieza, List<Integer> documentos){
+    public void asignarPieza(Carpeta pieza, List<Integer> documentos) {
 
-        for(Integer documentoId : documentos) {
-                Documento documento = documentoRepository.findById(documentoId).orElseThrow();
-                documento.setCarpeta(pieza);
-                documento.setData(documento.getData().setPieza(pieza.getExpediente()));
-                documentoRepository.save(documento);
+        for (Integer documentoId : documentos) {
+            Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+            documento.setCarpeta(pieza);
+            documento.setData(documento.getData().setPieza(pieza.getExpediente()));
+            documentoRepository.save(documento);
         }
+
+        Documento documento = documentoRepository.findById(documentos.stream().findFirst().orElseThrow()).orElseThrow();
+
+        documento.setEstatus(EstadoCarpeta.ASIGNADO);
+        documentoRepository.save(documento);
     }
 
     public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {
@@ -512,5 +515,17 @@ public class CarpetaService {
 
         carpetaDetalleRepository.save(carpetaDetalle);
         documentoRepository.save(documento);
+    }
+
+    public List<PiezaRecordResponse> getPiezas(Integer documentoId){
+        return this.carpetaRepository.findPiezasByDocumentoId(documentoId);
+    }
+
+    public PiezaRecordResponse adjuntarPiezaDocumentos(Integer piezaId, PiezaRecord piezaRecord){
+        Carpeta pieza = carpetaRepository.findById(piezaId).orElseThrow(()-> new NotFoundException("La pieza no existe","piezaId"));
+
+        asignarPieza(pieza, piezaRecord.documentos());
+
+        return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
     }
 }

@@ -37,12 +37,14 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_SALAS.sql",
         "/scripts/INSERT_TIPO_SISTEMAS.sql",
         "/scripts/INSERT_TIPO_JUICIOS.sql",
+        "/scripts/INSERT_TIPO_PIEZAS.sql",
         "/scripts/INSERT_CARPETAS.sql",
         "/scripts/INSERT_AUDIENCIAS.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
         "/scripts/DELETE_AUDIENCIAS.sql",
         "/scripts/DELETE_CARPETAS.sql",
+        "/scripts/DELETE_TIPO_PIEZAS.sql",
         "/scripts/DELETE_TIPO_JUICIOS.sql",
         "/scripts/DELETE_TIPO_SISTEMAS.sql",
         "/scripts/DELETE_SALAS.sql",

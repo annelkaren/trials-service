@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -30,22 +31,22 @@ import java.util.UUID;
  * <p>
  * CREACION DE RUTAS SEGUN TIPO DE DOCUMENTO / CARPETA:
  * </p>
- * 
+ *
  * <p>
  * OFICIO:
  * - ADMINISTRATIVO (No tiene relacion con una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/oficiosAdministrativos/{documentId}
  * - JURISDICCIONAL (Debe tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/oficios/{documentId}
- * 
+ * <p>
  * ACUSE (OFICIO ADMINISTRATIVO):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/oficiosAdministrativos/{documentId}
  * ACUSE (OFICIO JURISDICCIONAL):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/oficiosJurisdiccionales/{documentId}
- * 
+ * <p>
  * DEMANDA (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}
- * 
+ * <p>
  * EXHORTO (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}
  * </p>
@@ -77,24 +78,25 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
+        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : null;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
-            return manejarOficio(documento, year, juzgado);
+            return manejarOficio(documento, year, juzgado, oficialia);
         }
 
         return manejarCarpeta(carpeta, year, juzgado);
     }
 
-    public DigitalizacionRecord guardarArchivo(MultipartFile file, Integer documentoId){
+    public DigitalizacionRecord guardarArchivo(MultipartFile file, Integer documentoId) {
         this.basePath = this.rootFolder + "/digitalizacion/";
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) :  generarNombreArchivo(null);
-       
+        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) : generarNombreArchivo(null);
+
         // Guardar el archivo y manejar posibles excepciones
         try {
             Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
@@ -104,7 +106,6 @@ public class DigitalizacionService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al guardar el archivo en el servidor", e);
         }
-        
 
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         documento.setRuta(nombreUnicoArchivo);
@@ -112,7 +113,6 @@ public class DigitalizacionService {
 
         return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
     }
-
 
     public byte[] getDocumento(Integer documentoId) throws IOException {
         this.basePath = this.rootFolder + "/digitalizacion/";
@@ -139,7 +139,7 @@ public class DigitalizacionService {
      * @return Un nombre único generado para el archivo PDF.
      */
     private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
-        if(tipoCarpeta == null){
+        if (tipoCarpeta == null) {
             return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
         }
         return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
@@ -175,11 +175,12 @@ public class DigitalizacionService {
      * @param juzgado   El juzgado relacionado con el documento.
      * @return La ruta del directorio creado para el oficio.
      */
-    private Path manejarOficio(Documento documento, String year, String juzgado) {
+    private Path manejarOficio(Documento documento, String year, String juzgado, String oficialia) {
         String tipoOficio = documento.getData().getTipoOficio();
 
         if ("Administrativo".equals(tipoOficio)) {
-            return crearDirectorios(Paths.get(basePath, year, juzgado, "oficiosAdministrativos"));
+
+            return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
             return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
@@ -198,14 +199,14 @@ public class DigitalizacionService {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
-       
-        
+
+
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
                 String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
-                return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado,carpeta.getExpediente())));
+                return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
@@ -221,7 +222,7 @@ public class DigitalizacionService {
      * @return La ruta del expediente construida.
      */
     private String construirRutaExpediente(String year, String juzgado, String expediente) {
-        return   year + "/" + juzgado + "/" + expediente;
+        return year + "/" + juzgado + "/" + expediente;
     }
 
     /**
@@ -231,10 +232,10 @@ public class DigitalizacionService {
      */
     private void validateDocumento(Documento documento) {
         validateNotNull(documento, "El documento no puede ser nulo");
-        if(documento.getCarpeta() == null){
+        if (documento.getCarpeta() == null) {
             validateNotNull(documento.getTipoDocumento(), "El tipo de documento no puede ser nulo");
         }
-       
+
     }
 
     /**
@@ -244,7 +245,13 @@ public class DigitalizacionService {
      * @return El nombre del juzgado.
      */
     private String obtenerJuzgado(Documento documento) {
-        return (documento.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
+        Persona persona = personaService.getAuditor();
+
+        if (persona.getJuzgado() == null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.OFICIO)) {
+            return null;
+        }
+
+        return (documento.getCarpeta() == null ? persona.getJuzgado().getNombre()
                 : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
     }
 

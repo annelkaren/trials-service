@@ -76,5 +76,24 @@ public class CarpetaResource {
         return new NumPiezaRecord(numPieza);
     }
 
+    @PostMapping(value = "/piezas/adjuntar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PiezaRecordResponse createPieza(@RequestParam Integer carpetaId, @RequestBody PiezaRecord piezaRecord){
+        Carpeta pieza = carpetaService.createPieza(carpetaId, piezaRecord);
+
+        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+    }
+
+    @PutMapping(value = "/piezas/adjuntar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PiezaRecordResponse adjuntarPieza(@RequestParam Integer piezaId, @RequestBody PiezaRecord piezaRecord){
+        return carpetaService.adjuntarPiezaDocumentos(piezaId, piezaRecord);
+    }
+
+    @GetMapping(value= "/piezas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<PiezaRecordResponse> getPiezas(@RequestParam Integer documentoId) {
+
+        return  this.carpetaService.getPiezas(documentoId);
+
+    }
+    
 
 }

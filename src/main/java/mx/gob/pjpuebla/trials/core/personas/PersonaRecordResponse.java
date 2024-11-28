@@ -10,6 +10,7 @@ public record PersonaRecordResponse(
         String nombre,
         String email,
         String celular,
-        String centroTrabajo
+        String centroTrabajo,
+        String estatus
 ) implements Serializable {
 }

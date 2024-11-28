@@ -19,8 +19,8 @@ import java.time.LocalTime;
 public class CarpetaDetalle implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "idCarpetaDetalle", sequenceName = "SEQ_CARPETA_DETALLE_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idCarpetaDetalle")
+    @SequenceGenerator(name = "idCarpetaDetalle", sequenceName = "SEQ_CARPETA_DETALLE_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
