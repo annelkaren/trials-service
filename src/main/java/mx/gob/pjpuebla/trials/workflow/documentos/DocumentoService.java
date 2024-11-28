@@ -628,7 +628,7 @@ public class DocumentoService {
                                 item.carpetaId(),
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
+                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().getEtiqueta(): item.tipoCarpeta().name(),
                                 item.concepto()!=null? item.concepto().getNombre():"",
                                 item.fechaTurnado(),
                                 item.fechaTurnado().plusDays(item.concepto()!=null?item.concepto().getDias():0),

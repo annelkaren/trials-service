@@ -536,16 +536,19 @@ public class CarpetaService {
 
     public List<DocumentoDetalleCarpetaResponse> getAllPiezasCarpeta(String key, Integer carpetaId){
         List<DocumentoDetalleCarpeta> list = carpetaRepository.findPiezasByCarpetaPadreId(key, carpetaId);
+        Persona persona = personaService.getAuditor();
 
         return list.stream()
                 .map(
                         e -> new DocumentoDetalleCarpetaResponse(
                                 e.id()!=null?e.id():null,
-                                "PIEZA DE "+e.tipoCarpeta().getTipo(),
+                                "PIEZA DE "+e.tipoPieza().getTipo(),
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
-                                personaService.findById(e.personaOrigenId()).permisos().get(0).name()
+                                personaService.findById(e.personaOrigenId()).permisos().get(0).name(),
+                                e.tipoCarpeta().name(),
+                                Objects.equals(e.personaOrigenId(), persona.getId())
                         )).toList();
     }
 
@@ -556,11 +559,13 @@ public class CarpetaService {
                 .map(
                         e -> new DocumentoDetalleCarpetaResponse(
                                 e.id()!=null?e.id():null,
-                                e.tipoDocumento()!=null?e.tipoDocumento().name():"DEMANDA",
+                                e.tipoDocumento()!=null?e.tipoDocumento().getEtiqueta():"DEMANDA",
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
-                                (e.personaOrigenId()!=null)?personaService.findById(e.personaOrigenId()).permisos().get(0).name():""
+                                (e.personaOrigenId()!=null)?personaService.findById(e.personaOrigenId()).permisos().get(0).name():"",
+                                e.tipoCarpeta().name(),
+                                Boolean.FALSE
                         )).toList();
     }
 

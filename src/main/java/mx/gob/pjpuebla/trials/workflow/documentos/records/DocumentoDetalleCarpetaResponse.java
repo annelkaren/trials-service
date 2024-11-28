@@ -8,6 +8,8 @@ public record DocumentoDetalleCarpetaResponse(
         String identificador,
         LocalDateTime fechaRegistro,
         String ruta,
-        String origen
+        String origen,
+        String tipoCarpeta,
+        Boolean asignado
 ) {
 }
