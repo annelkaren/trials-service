@@ -304,7 +304,8 @@ public class CarpetaService {
                 null, //TODO añadir razón de devolución
                 documento.getCarpeta().getJuzgado().getMateria().getNombre(),
                 documento.getCarpeta().getJuzgado().getMateria().getId(),
-                documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null
+                documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null,
+                documento.getCarpeta().getJuzgado().getNombre()
         );
     }
 

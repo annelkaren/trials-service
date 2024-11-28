@@ -11,10 +11,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.core.rubros.Rubro;
-import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -365,7 +362,7 @@ public class DocumentoService {
     /**
      * Devuelve un numero de folio
      *
-     * @param tipo E-exhorto, D-demanda, P-promocion.
+     * @param tipo E-exhorto, D-demanda, P-promocion, ES-exhorto_salida.
      * @return string
      */
     private String getFolio(String tipo) {
@@ -376,6 +373,8 @@ public class DocumentoService {
                     documentoRepository.getNextValDemanda();
             case "P" ->           // Case para promocion
                     documentoRepository.getNextValPromocion();
+            case "ES" ->           // Case para exhorto salida
+                    documentoRepository.getNextValExhortoSalida();
             default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         };
         return valNum.toString();
@@ -1242,6 +1241,31 @@ public class DocumentoService {
                 doc.getData().getTipoPromocion().name(),
                 anexos
         );
+    }
+
+    @Transactional
+    public DocumentoPromocionResponseRecord createExhortoSalida(DocumentoExhortoSalidaRecord docExhortoSalidaRecord, MultipartFile multipartFile) {
+        Carpeta carpeta = carpetaRepository.findById(docExhortoSalidaRecord.carpetaId())
+                .orElseThrow(()->new NotFoundException("La Carpeta no existe","Carpeta"));
+        Persona auditor = personaService.getAuditor();
+        DocumentoData data = new DocumentoData();
+        data.setTramite(docExhortoSalidaRecord.tramite())
+                .setDestino(docExhortoSalidaRecord.destino())
+                .setExhortoObservaciones(docExhortoSalidaRecord.observaciones())
+                .setFechaEntrega(docExhortoSalidaRecord.fechaEntrega())
+                .setFechaDevolucion(docExhortoSalidaRecord.fechaDevolucion());
+        Documento documento = new Documento();
+        documento.setData(data)
+                .setCarpeta(carpeta)
+                .setPersona(auditor)
+                .setFolio(getFolio("ES"))
+                .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
+        documento = documentoRepository.save(documento);
+        if(multipartFile != null){
+            digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        }
+        movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
+        return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 }
 
