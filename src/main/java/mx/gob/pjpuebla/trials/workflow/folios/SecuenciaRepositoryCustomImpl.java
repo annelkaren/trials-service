@@ -54,4 +54,14 @@ public class SecuenciaRepositoryCustomImpl implements SecuenciaRepositoryCustom 
         }
     }
 
+    @Override
+    public Long getNextValExhortoSalida() {
+        try {
+            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_EXHORTO_SALIDA_FOLIO')");
+            return ((Number) query.getSingleResult()).longValue();  // Cambiado a getSingleResult
+        } catch (Exception e) {
+            log.error("Error al obtener el siguiente valor de la secuencia de exhorto salida", e);
+            return null;
+        }
+    }
 }
