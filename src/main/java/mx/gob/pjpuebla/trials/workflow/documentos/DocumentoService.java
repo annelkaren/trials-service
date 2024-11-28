@@ -620,12 +620,12 @@ public class DocumentoService {
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
+        Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
         List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
                 .map(item ->
-                        new DocumentoAsignadoResponseRecord(
+                        /*new DocumentoAsignadoResponseRecord(
                                 item.id(),
                                 item.carpetaId(),
                                 item.expediente(),
@@ -636,6 +636,18 @@ public class DocumentoService {
                                 item.fechaTurnado().plusDays(item.concepto().getDias()),
                                 item.estatus().name(),
                                 item.observaciones()
+                         */
+                        new DocumentoAsignadoResponseRecord(
+                                item.getId(),
+                                item.getId(),
+                                item.getMotivo(),
+                                "",
+                                "",
+                                "",
+                                item.getFechaAsignacion(),
+                                item.getFechaAsignacion(),
+                                "",
+                                ""
                         ))
                 .toList();
 

@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -101,7 +102,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
 
-    @Query("""
+    /*@Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoRecord(
                 d.id,
                 c.id as carpetaId,
@@ -129,8 +130,48 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
                 AND
                 c.persona=:personaAsignada
+            """)*/
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                LEFT JOIN c.persona pc
+                LEFT JOIN d.persona pd
+                WHERE (
+                    (c IS NOT NULL AND c.estatus IN (
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                    ) AND pc = :personaAsignada)
+                    OR (d IS NOT NULL AND d.estatus IN (
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                    ) AND pd = :personaAsignada)
+                )
+                 AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                )
+                AND m.estado IN ('TURNADO','ASIGNADO','DEVUELTO')
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key%
+                    OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                )
             """)
-    Page<DocumentoAsignadoRecord> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
+    Page<Movimiento> findByPersonaAsignada(String key, Persona personaAsignada, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
