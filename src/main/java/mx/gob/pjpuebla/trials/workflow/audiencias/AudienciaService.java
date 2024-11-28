@@ -77,16 +77,22 @@ public class AudienciaService {
 
     public ExtraAudienciaSelloRecord getAudienciaAndSalaAndDomicilio(Documento documento) {
         String nombreJuez = "";
-        AudienciaOralidadFamiliarRecord audienciaOralidadFamiliarRcord =
-                audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(documento.getCarpeta().getId());
+        AudienciaOralidadFamiliarRecord audienciaOralidadFamiliarRcord = audienciaRepository
+                .getJuzAndSalaAndAudienciaByIdcarpeta(documento.getCarpeta().getId());
 
-        String fechaFormateada = (audienciaOralidadFamiliarRcord != null) ?
-                audienciaOralidadFamiliarRcord.fechaAudiencia().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+        String fechaFormateada = (audienciaOralidadFamiliarRcord != null)
+                ? audienciaOralidadFamiliarRcord.fechaAudiencia()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                : "";
 
         if (audienciaOralidadFamiliarRcord == null) {
             audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("", "", "", "", "", LocalDateTime.MIN);
         } else {
-            nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " " + audienciaOralidadFamiliarRcord.apellidoPaterno() + " " + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null ? audienciaOralidadFamiliarRcord.apellidoMaterno() : "");
+            nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " "
+                    + audienciaOralidadFamiliarRcord.apellidoPaterno() + " "
+                    + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null
+                            ? audienciaOralidadFamiliarRcord.apellidoMaterno()
+                            : "");
         }
 
         String calle = Optional.of(documento)
@@ -103,8 +109,7 @@ public class AudienciaService {
                 audienciaOralidadFamiliarRcord.nombreSala(),
                 audienciaOralidadFamiliarRcord.nombreTipoJuicio(),
                 fechaFormateada,
-                label
-        );
+                label);
     }
 
     public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(String key, Pageable pageable) {
@@ -116,7 +121,8 @@ public class AudienciaService {
 
         List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
                 .map(item -> {
-                    String nombreCompleto = item.getSala().getJuez().getNombre() + " " + item.getSala().getJuez().getApellidoPaterno();
+                    String nombreCompleto = item.getSala().getJuez().getNombre() + " "
+                            + item.getSala().getJuez().getApellidoPaterno();
 
                     if (item.getSala().getJuez().getApellidoMaterno() != null) {
                         nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
@@ -129,8 +135,7 @@ public class AudienciaService {
                             item.getCarpeta().getExpediente(),
                             item.getSala().getNombre(),
                             item.getFechaAudiencia(),
-                            item.getEstatusAudiencia()
-                    );
+                            item.getEstatusAudiencia());
                 })
                 .toList();
 
@@ -167,32 +172,35 @@ public class AudienciaService {
         }
     }
 
-    public AudienciasResponseRecord createAudiencia(AudienciaSaveRecord audiencia){
+    public AudienciasResponseRecord createAudiencia(AudienciaSaveRecord audiencia) {
 
-        //TODO: AGREGAR VALIDACIÓN DE LA AGENDA ANTES DE EJECUTAR EL GUARDADO
+        // TODO: AGREGAR VALIDACIÓN DE LA AGENDA ANTES DE EJECUTAR EL GUARDADO
 
-        //Obtenemos sala:
+        // Obtenemos sala:
         Sala sala = salaRepository.findById(audiencia.salaId())
-            .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
 
-        //obtenemos el tipo de audiencias:
+        // obtenemos el tipo de audiencias:
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
-            .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
 
-        //Obtenemos carpeta:
+        // Obtenemos carpeta:
         Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
-            .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));;
+                .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));
+        
+        //Transformacion de fecha hora para empatar con el tipo de dato de la entidad
+        LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
 
         Audiencia audienciaNew = new Audiencia()
-        .setFechaAudiencia(audiencia.fecha())
-        .setSala(sala)
-        .setInicio(audiencia.hora())
-        .setFin(audiencia.hora().plusMinutes(audiencia.duracion()))
-        .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
-        .setTipoAudiencia(tipoAudiencia)
-        .setCarpeta(carpeta)
-        .setBloque(null) // pendiente definirlo
-        .setEstado(Estado.ACTIVE);
+                .setFechaAudiencia(fechaHora)
+                .setSala(sala)
+                .setInicio(fechaHora)
+                .setFin(fechaHora.plusMinutes(audiencia.duracion()))
+                .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
+                .setTipoAudiencia(tipoAudiencia)
+                .setCarpeta(carpeta)
+                .setEstado(Estado.ACTIVE)
+                .setDescripcion(audiencia.descripcion());
 
         audienciaRepository.save(audienciaNew);
 
