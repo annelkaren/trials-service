@@ -207,7 +207,8 @@ class CarpetaResourceTest {
                 "",
                 "materia 1",
                 1,
-                "tipoSistema 1"
+                "tipoSistema 1",
+                "Juzgado 1"
         );
 
         given(mockCarpetaService.getInfoExpediente(any()))

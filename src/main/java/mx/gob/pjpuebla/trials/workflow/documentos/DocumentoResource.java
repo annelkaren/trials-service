@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.util.List;
@@ -226,5 +227,15 @@ public class DocumentoResource {
         return ResponseEntity.ok(editDocumento);
     }
 
-
+    @PostMapping(value = "/exhorto/salida", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DocumentoPromocionResponseRecord createExhortoSalida(
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart("documentoExhortoSalida") String documentoExhortoSalidaRecordJson
+    ) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        DocumentoExhortoSalidaRecord documentoExhortoSalidaRecord =
+                objectMapper.readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
+        return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
+    }
 }

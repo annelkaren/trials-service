@@ -567,5 +567,42 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
-
+    @Test
+    void createExhortoSalida() throws Exception {
+        String documentoExhortoSalidaRecordJson = """
+            {
+                "carpetaId": "1",
+                "destino": "Juzgado 1",
+                "tramite": "Nombre del exhorto",
+                "observaciones": "Sin observaciones",
+                "fechaEntrega": "2024-01-01",
+                "fechaDevolucion": "2024-01-02"
+            }
+        """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile documentoExhortoSalidaRecord = new MockMultipartFile(
+                "documentoExhortoSalida",
+                "documentoExhortoSalida",
+                "application/json",
+                documentoExhortoSalidaRecordJson.getBytes()
+        );
+        DocumentoPromocionResponseRecord expectedResponse = new DocumentoPromocionResponseRecord(1, "12345", TipoDocumento.EXHORTO_SALIDA);
+        given(documentoService.createExhortoSalida(any(DocumentoExhortoSalidaRecord.class), any(MultipartFile.class)))
+                .willReturn(expectedResponse);
+        mockMvc.perform(multipart("/api/workflow/exhorto/salida")
+                        .file(file)
+                        .file(documentoExhortoSalidaRecord)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("12345"))
+                .andExpect(jsonPath("$.tipoDocumento").value(TipoDocumento.EXHORTO_SALIDA.name()));
+    }
 }
