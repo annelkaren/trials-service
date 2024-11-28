@@ -107,21 +107,22 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 d.folio,
                 c.tipoCarpeta,
                 d.tipoDocumento,
-                d.concepto,
+                co,
                 c.fechaAsignacion,
                 c.estatus,
                 ''
             )
             FROM Carpeta c
             LEFT JOIN Documento d on d.carpeta = c AND
-                d.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                (d.estatus IN (mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
+                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO) OR d.estatus IS NULL)
+            LEFT JOIN d.concepto co
             WHERE CASE WHEN :key IS NULL THEN 1
-                WHEN c.expediente LIKE %:key% OR c.folio LIKE %:key% OR d.concepto.nombre LIKE %:key% THEN 1
+                WHEN c.expediente LIKE %:key% OR c.folio LIKE %:key% OR co.nombre LIKE %:key% THEN 1
                 ELSE 0 END = 1
                 AND
-                c.estatus in( mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                c.estatus in(mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO)
                 AND
@@ -239,7 +240,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 WHEN d.folio LIKE %:key% THEN 1
                 ELSE 0 END = 1
                 AND
-                CASE WHEN d.tipoDocumento IS NULL OR d.tipoDocumento != TipoDocumento.PROMOCION THEN 1
+                CASE WHEN d.tipoDocumento IS NULL OR d.tipoDocumento != TipoDocumento.PROMOCION or d.carpeta.tipoCarpeta = TipoCarpeta.PIEZA THEN 1
                     WHEN d.tipoDocumento = TipoDocumento.PROMOCION AND d.estatus = EstadoCarpeta.INTEGRADO THEN 1
                     ELSE 0 END = 1
             """)

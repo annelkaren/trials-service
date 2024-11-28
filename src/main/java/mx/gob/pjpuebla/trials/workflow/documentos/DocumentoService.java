@@ -626,9 +626,9 @@ public class DocumentoService {
                                 item.expediente(),
                                 esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
                                 (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
-                                item.concepto().getNombre(),
+                                item.concepto()!=null? item.concepto().getNombre():"",
                                 item.fechaTurnado(),
-                                item.fechaTurnado().plusDays(item.concepto().getDias()),
+                                item.fechaTurnado().plusDays(item.concepto()!=null?item.concepto().getDias():0),
                                 item.estatus().name(),
                                 item.observaciones()
                         ))

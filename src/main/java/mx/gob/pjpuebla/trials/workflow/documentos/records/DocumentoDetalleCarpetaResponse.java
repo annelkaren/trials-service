@@ -7,7 +7,7 @@ public record DocumentoDetalleCarpetaResponse(
         String tipo,
         String identificador,
         LocalDateTime fechaRegistro,
-        String archivo,
+        String ruta,
         String origen
 ) {
 }

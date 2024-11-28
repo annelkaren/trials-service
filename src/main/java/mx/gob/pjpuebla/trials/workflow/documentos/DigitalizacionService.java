@@ -78,14 +78,17 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : null;
+        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : juzgado;
         Carpeta carpeta = documento.getCarpeta();
-
-      
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
             return manejarOficio(documento, year, juzgado, oficialia);
+        }
+
+        // Revisar la ruta para los documentos de una pieza
+        if (carpeta.getTipoCarpeta()==TipoCarpeta.PIEZA){
+            carpeta = carpeta.getCarpetaPadre();
         }
 
         return manejarCarpeta(carpeta, year, juzgado);
@@ -250,12 +253,16 @@ public class DigitalizacionService {
      */
     private String obtenerJuzgado(Documento documento) {
         Persona persona = personaService.getAuditor();
-        
+        String nombreCentroTrabajo = "";
+
         if(persona.getJuzgado() == null){
-            return null;
+            if (persona.getOficialia()!=null){
+                nombreCentroTrabajo = persona.getOficialia().getNombre();
+            }
+            //return null;
         }
 
-        return (documento.getCarpeta() == null ? personaService.getAuditor().getJuzgado().getNombre()
+        return (documento.getCarpeta() == null ? nombreCentroTrabajo
                 : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
     }
 
