@@ -7,7 +7,9 @@ import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -28,10 +30,13 @@ import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
+import mx.gob.pjpuebla.trials.core.tipoacuerdo.TipoAcuerdoRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -49,6 +54,8 @@ public class AudienciaService {
     private final BloqueRepository bloqueRepository;
     private final EtiquetaRepository etiquetaRepository;
     private final PersonaService personaService;
+    private final TipoAudienciaRepository tipoAudienciaRepository;
+    private final CarpetaRepository carpetaRepository;
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -158,5 +165,37 @@ public class AudienciaService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
         }
+    }
+
+    public AudienciasResponseRecord createAudiencia(AudienciaSaveRecord audiencia){
+
+        //TODO: AGREGAR VALIDACIÓN DE LA AGENDA ANTES DE EJECUTAR EL GUARDADO
+
+        //Obtenemos sala:
+        Sala sala = salaRepository.findById(audiencia.salaId())
+            .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        //obtenemos el tipo de audiencias:
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
+            .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        //Obtenemos carpeta:
+        Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
+            .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));;
+
+        Audiencia audienciaNew = new Audiencia()
+        .setFechaAudiencia(audiencia.fecha())
+        .setSala(sala)
+        .setInicio(audiencia.hora())
+        .setFin(audiencia.hora().plusMinutes(audiencia.duracion()))
+        .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
+        .setTipoAudiencia(tipoAudiencia)
+        .setCarpeta(carpeta)
+        .setBloque(null) // pendiente definirlo
+        .setEstado(Estado.ACTIVE);
+
+        audienciaRepository.save(audienciaNew);
+
+        return new AudienciasResponseRecord(audienciaNew.getId(), EstatusAudiencia.PROGRAMADA);
     }
 }
