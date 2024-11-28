@@ -144,7 +144,7 @@ public class CarpetaService {
         Documento documento = validacionBandejaRecepcion(documentoId);
 
         List<String> anexosFaltantes = docRecepcionMovimientosRecord.anexos().stream()
-                .filter(anexo -> anexo.estado() == EstadoAnexo.NORECIBIDO)
+                .filter(anexo -> (anexo.estado() == EstadoAnexo.NORECIBIDO || anexo.estado() == null))
                 .map(AnexoBandejaRecepcionRecord::nombre)
                 .toList();
 
@@ -156,7 +156,7 @@ public class CarpetaService {
             anexoRepository.save(anexoTemp);
         }
 
-        setObservacionesAnexos(documento, anexosFaltantes);
+
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción.
@@ -179,7 +179,8 @@ public class CarpetaService {
                 (documento.getTipoDocumento() == null) ? null : documento,
                 EstadoCarpeta.ASIGNADO.name(),
                 docRecepcionMovimientosRecord.observaciones(),
-                docRecepcionMovimientosRecord.recomendaciones()
+                docRecepcionMovimientosRecord.recomendaciones(),
+                setObservacionesAnexos(anexosFaltantes)
         );
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
@@ -206,18 +207,12 @@ public class CarpetaService {
 
     }
 
-    public void setObservacionesAnexos(Documento documento, List<String> anexos) {
+    public String setObservacionesAnexos(List<String> anexos) {
         if (anexos.isEmpty()) {
-            return;
+            return null;
         }
         String concatenatedAnexos = String.join(", ", anexos);
-        String motivo = "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
-        movimientoService.createMovimento(
-                (documento.getTipoDocumento() == null ? documento.getCarpeta() : null),
-                (documento.getTipoDocumento() == null) ? null : documento,
-                personaService.getAuditor(),
-                motivo,
-                EstadoCarpeta.ASIGNADO.name());
+        return "Hacen falta los siguientes anexos: " + concatenatedAnexos + ". Por favor validar.";
     }
 
     public List<CarpetaCatalogoRecord> getCatalogoList(String catalogo) {
