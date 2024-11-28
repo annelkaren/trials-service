@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
@@ -35,8 +36,8 @@ public class AudienciaSetUp {
             1,
             1,
             1, 
-            LocalDateTime.now(), 
-            LocalDateTime.now(), 
+            LocalDate.now(), 
+            LocalTime.now(), 
             12, 
             "descripcion");
     }
