@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
@@ -7,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
@@ -26,6 +28,17 @@ public class AudienciaSetUp {
         .setCarpeta(carpeta)
         .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
         .setEstado(Estado.ACTIVE);
+    }
+
+    public static AudienciaSaveRecord audienciaSaveRecordCreate(){
+        return new AudienciaSaveRecord(
+            1,
+            1,
+            1, 
+            LocalDateTime.now(), 
+            LocalDateTime.now(), 
+            12, 
+            "descripcion");
     }
 
 
