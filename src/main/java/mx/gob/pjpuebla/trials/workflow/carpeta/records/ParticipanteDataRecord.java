@@ -1,9 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
 
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 
 public record ParticipanteDataRecord(
         Integer id,
-        String nombre
+        String nombre,
+        Rol rol
 ) {
 }

@@ -41,9 +41,9 @@ public class MovimientoService {
         return movimiento;
     }
 
-    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones) {
+    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones, String motivo) {
         Persona personaAuditor = personaService.getAuditor();
-        Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, "", estado)
+        Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, motivo, estado)
                 .setObservaciones(observaciones)
                 .setRecomendaciones(recomendaciones);
         movimiento = movimientoRepository.save(movimiento);

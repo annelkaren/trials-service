@@ -1,3 +1,8 @@
+-- Primero elimina la pieza --
+DELETE
+FROM TBL_CARPETAS
+WHERE PN_ID = 3;
+
 DELETE
 FROM TBL_CARPETAS
 WHERE PN_ID IN (1,2);

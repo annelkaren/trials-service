@@ -430,7 +430,7 @@ class CarpetaServiceTest {
         documento.setCarpeta(new Carpeta());
 
         List<String> anexos = null;
-        carpetaService.setObservacionesAnexos(documento, anexos);
+        carpetaService.setObservacionesAnexos(anexos);
 
         verify(movimientoService, never()).createMovimento(any(), any(), any(), any(), any());
     }
@@ -440,41 +440,11 @@ class CarpetaServiceTest {
         TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
         Documento documento = DocumentoSetUp.create(tipoJuicio1);
         List<String> anexos = List.of("Anexo 1", "Anexo 2");
-        Persona persona = PersonaSetUp.createPersona();
-        documento.setTipoDocumento(TipoDocumento.OFICIO);
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
-        when(personaService.getAuditor()).thenReturn(persona);
+        String motivo = target.setObservacionesAnexos(anexos);
 
-        target.setObservacionesAnexos(documento, anexos);
-
-        verify(movimientoService).createMovimento(
-                eq(null),
-                eq(documento),
-                eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
-                eq(EstadoCarpeta.ASIGNADO.name())
-        );
-    }
-
-    @Test
-    void observacionAnexos_createsMovimiento_nullDocumento() {
-        TipoJuicio tipoJuicio1 = TipoJuicioSetUp.createTipoJuicio();
-        Documento documento = DocumentoSetUp.create(tipoJuicio1);
-        List<String> anexos = List.of("Anexo 1", "Anexo 2");
-        Persona persona = PersonaSetUp.createPersona();
-
-
-        when(personaService.getAuditor()).thenReturn(persona);
-
-        target.setObservacionesAnexos(documento, anexos);
-
-        verify(movimientoService).createMovimento(
-                eq(documento.getCarpeta()),
-                eq(null),
-                eq(persona),
-                argThat(motivo -> motivo.equals("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.")),
-                eq(EstadoCarpeta.ASIGNADO.name())
-        );
+        assertThat(motivo).isEqualTo("Hacen falta los siguientes anexos: Anexo 1, Anexo 2. Por favor validar.");
     }
 
     @Test
@@ -601,14 +571,16 @@ class CarpetaServiceTest {
                 "Juan",
                 "Pérez",
                 "Gómez",
-                "TipoParte1"
+                "TipoParte1",
+                Rol.PRINCIPAL
         );
         PersonaDataRecord participante2 = new PersonaDataRecord(
                 2,
                 "Maria",
                 "López",
                 "Sánchez",
-                "TipoParte2"
+                "TipoParte2",
+                Rol.PRINCIPAL
         );
         ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
                 "Juez Perez",

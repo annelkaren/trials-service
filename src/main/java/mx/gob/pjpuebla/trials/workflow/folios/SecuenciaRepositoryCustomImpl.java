@@ -43,4 +43,15 @@ public class SecuenciaRepositoryCustomImpl implements SecuenciaRepositoryCustom 
         }
     }
 
+    @Override
+    public Long getNextValPieza() {
+        try {
+            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_PIEZA_FOLIO')");
+            return ((Number) query.getSingleResult()).longValue();  // Cambiado a getSingleResult
+        } catch (Exception e) {
+            log.error("Error al obtener el siguiente valor de la secuencia de pieza", e);
+            return null;
+        }
+    }
+
 }

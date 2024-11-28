@@ -5,6 +5,8 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -31,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_ESCOLARIDADES.sql",
         "/scripts/INSERT_ESTADO_CIVIL.sql",
         "/scripts/INSERT_PERSONAS.sql",
+        "/scripts/INSERT_TIPO_PIEZAS.sql",
         "/scripts/INSERT_CARPETAS.sql",
         "/scripts/INSERT_DOCUMENTOS.sql",
         "/scripts/INSERT_TIPO_PARTES.sql",
@@ -41,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/DELETE_TIPO_PARTES.sql",
         "/scripts/DELETE_DOCUMENTOS.sql",
         "/scripts/DELETE_CARPETAS.sql",
+        "/scripts/DELETE_TIPO_PIEZAS.sql",
         "/scripts/DELETE_PERSONAS.sql",
         "/scripts/DELETE_ESTADO_CIVIL.sql",
         "/scripts/DELETE_ESCOLARIDADES.sql",
@@ -127,5 +131,14 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         Integer carpetaId = 999; 
         Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
         assertThat(tipoJuicioId).isNull();
+    }
+
+    @Test
+    void findPiezasByDocumentoId(){
+        Integer documentoId = 2;
+
+        List<PiezaRecordResponse> piezas = carpetaRepository.findPiezasByDocumentoId(documentoId);
+
+        assertThat(piezas).isNotNull();
     }
 }
