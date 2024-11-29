@@ -97,6 +97,6 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
             """)
     Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
 
-    Page<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre, Pageable pageable);
+    List<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre);
  
 }

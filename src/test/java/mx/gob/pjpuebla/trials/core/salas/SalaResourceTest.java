@@ -122,8 +122,8 @@ class SalaResourceTest {
 
     @Test
     void getAllbyJuzgado_success() throws Exception {
-        given(mockSalaService.getAllbyJuzgado(any(String.class), any(Pageable.class), anyInt()))
-                .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
+        given(mockSalaService.getAllbyJuzgado(any(String.class), anyInt()))
+                .willReturn(Collections.singletonList(salaRecord));
 
         mockMvc.perform(
                         get("/api/core/salas/juzgado/1")

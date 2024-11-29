@@ -293,16 +293,14 @@ class SalaServiceTest {
         audiencia.setCarpeta(new Carpeta());
         audiencia.getCarpeta().setJuzgado(juzgado);
 
-        Page<Sala> page = new PageImpl<>(Collections.singletonList(sala), PageRequest.of(0, 10), 1);
-
         given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
-        given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "", PageRequest.of(0, 10))).willReturn(page);
+        given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "")).willReturn(Collections.singletonList(sala));
 
-        Page<SalaRecord> result = salaService.getAllbyJuzgado("", PageRequest.of(0, 10), 1);
+        List<SalaRecord> result = salaService.getAllbyJuzgado("", 1);
 
         assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0))
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0))
                 .hasFieldOrPropertyWithValue("id", sala.getId())
                 .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
                 .hasFieldOrPropertyWithValue("juez", sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + (sala.getJuez().getApellidoMaterno() != null ? sala.getJuez().getApellidoMaterno() : ""))
