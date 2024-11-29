@@ -5,12 +5,9 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
+import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
@@ -42,7 +39,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -204,5 +203,68 @@ public class AudienciaService {
         audienciaRepository.save(audienciaNew);
 
         return new AudienciasResponseRecord(audienciaNew.getId(), EstatusAudiencia.PROGRAMADA);
+    }
+
+    public List<String> getEstatusAudiencias() {
+        return Arrays.stream(EstatusAudiencia.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+    }
+
+    public void setHoraAudiencias(Integer id, LocalDateTime hora, Boolean isInicio) {
+        try {
+            Audiencia audiencia = audienciaRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+
+            if(isInicio) {
+                audiencia.setInicio(hora);
+                audienciaRepository.save(audiencia);
+            } else {
+                audiencia.setFin(hora);
+                audienciaRepository.save(audiencia);
+            }
+
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
+        }
+    }
+
+    public void audienciaTabGeneral (AudienciaTabGeneralRecord audienciaTab) {
+
+        Audiencia audiencia = audienciaRepository.findById(audienciaTab.idAudiencia())
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audienciaTab.idTipoAudiencia())
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        Sala sala = salaRepository.findById(audienciaTab.idSala())
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        audiencia.setTipoAudiencia(tipoAudiencia);
+        audiencia.setSala(sala);
+        audiencia.setEstatusAudiencia(audienciaTab.estatusAudiencia());
+
+        if(audienciaTab.motivoRetraso() != null){
+            audiencia.setMotivoRetrasoAudiencias(audienciaTab.motivoRetraso());
+        }
+
+        if(audienciaTab.resultadoDesahogo() != null){
+            audiencia.setResultadosDesahogo(audienciaTab.resultadoDesahogo());
+        }
+
+        if(audienciaTab.actores() == null){
+            audiencia.setAsisteActor(Asistencia.SI);
+            audiencia.setAsisteDemandano(Asistencia.SI);
+        } else {
+            if(Objects.equals(audienciaTab.actores(), "ACTOR")){
+                audiencia.setAsisteActor(Asistencia.NO);
+            } else if (Objects.equals(audienciaTab.actores(), "DEMANDADO")) {
+                audiencia.setAsisteDemandano(Asistencia.NO);
+            } else if (Objects.equals(audienciaTab.actores(), "AMBOS")) {
+                audiencia.setAsisteActor(Asistencia.NO);
+                audiencia.setAsisteDemandano(Asistencia.NO);
+            }
+        }
+        audienciaRepository.save(audiencia);
     }
 }

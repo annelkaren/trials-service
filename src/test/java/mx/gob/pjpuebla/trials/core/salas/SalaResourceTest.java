@@ -119,4 +119,16 @@ class SalaResourceTest {
                 .andExpect(status().isOk());
 
     }
+
+    @Test
+    void getAllbyJuzgado_success() throws Exception {
+        given(mockSalaService.getAllbyJuzgado(any(String.class), anyInt()))
+                .willReturn(Collections.singletonList(salaRecord));
+
+        mockMvc.perform(
+                        get("/api/core/salas/juzgado/1")
+                                .param("nombre", "A")
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }

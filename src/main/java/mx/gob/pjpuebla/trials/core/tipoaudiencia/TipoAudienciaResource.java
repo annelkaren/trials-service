@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/tipoaudiencia")
@@ -31,5 +33,12 @@ public class TipoAudienciaResource {
             @PageableDefault Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.tipoAudienciaService.findTipoAudienciaByDocumentoId(idDocumento, pageable, nombre);
+    }
+
+    @GetMapping("/autocomplete")
+    public List<TipoAudienciaRecord> getAllAutocomplete(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre) {
+        return this.tipoAudienciaService.getAll(pageable, nombre);
     }
 }

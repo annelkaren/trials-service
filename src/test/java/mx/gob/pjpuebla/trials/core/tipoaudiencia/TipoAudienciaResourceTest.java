@@ -98,4 +98,19 @@ class TipoAudienciaResourceTest {
         ).andExpect(status().isOk());
     }
 
+    @Test
+    void getAllAutocomplete_success() throws Exception {
+        given(mocktipoAudienciaService.getAll(any(Pageable.class), any(String.class)))
+                .willReturn(Collections.singletonList(tipoAudienciaRecord));
+
+        mockMvc.perform(
+                        get("/api/core/tipoaudiencia/autocomplete")
+                                .param("nombre", "T")
+                                .param("page", "0")
+                                .param("size", "20")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+    }
+
 }

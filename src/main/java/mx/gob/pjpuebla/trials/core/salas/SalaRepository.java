@@ -94,5 +94,7 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
                 and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
             """)
     Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
+
+    List<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre);
  
 }

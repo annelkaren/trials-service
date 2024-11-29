@@ -30,6 +30,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasReposi
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
@@ -374,6 +375,11 @@ public class CarpetaService {
 
         for (Integer documentoId : documentos) {
             Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+
+            if (documento.getData()==null){
+                documento.setData(new DocumentoData());
+            }
+            
             documento.setCarpeta(pieza);
             documento.setData(documento.getData().setPieza(pieza.getExpediente()));
             documentoRepository.save(documento);

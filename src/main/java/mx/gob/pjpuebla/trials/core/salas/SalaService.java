@@ -275,4 +275,26 @@ public class SalaService {
         return Boolean.FALSE;
     }
 
+    @Transactional(readOnly = true)
+    public List<SalaRecord> getAllbyJuzgado(String nombre, Integer idAudiencia) {
+
+        Audiencia audiencia = audienciaRepository.findById(idAudiencia)
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        Juzgado juzgado = audiencia.getCarpeta().getJuzgado();
+
+        List<Sala> salas = salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, nombre);
+
+        return salas.stream()
+                .map(sala -> new SalaRecord(
+                        sala.getId(),
+                        sala.getNombre(),
+                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno() : ""),
+                        sala.getJuzgado().getNombre(),
+                        new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
+                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
+                        sala.getEstado()))
+                .toList();
+    }
+
 }
