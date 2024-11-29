@@ -35,8 +35,8 @@ public class InstitucionSetUp {
                 dom.getInterior(), dom.getEstadoRepublica(), dom.getMunicipio(), dom.getLocalidad(), dom.getColonia(),
                 dom.getCodigoPostal(), dom.getReferencia());
 
-        Distrito dis = DistritoSetUp.createDistrito();
-        DistritoRecord disRecord = new DistritoRecord(dis.getId(), dis.getNombre());
+       // Distrito dis = DistritoSetUp.createDistrito();
+       // DistritoRecord disRecord = new DistritoRecord(dis.getId(), dis.getNombre());
 
         return new InstitucionRecordResponse(
                 1,
@@ -46,7 +46,6 @@ public class InstitucionSetUp {
                 "1234562323",
                 "1212",
                 "Externa",
-                disRecord,
                 domRecord);
     }
 }

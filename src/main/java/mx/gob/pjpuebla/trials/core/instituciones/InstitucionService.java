@@ -58,7 +58,7 @@ public class InstitucionService {
             throw new ConflictException("No pueden existir 2 instituciones con el mismo nombre");
         }
 
-        institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
+     //   institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
         institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
         institucion = institucionRepository.save(institucion);
         return institucion.getId();
@@ -66,7 +66,7 @@ public class InstitucionService {
 
     public Integer update(Institucion institucion) {
         try {
-            institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
+        //    institucion.setDistrito(distritoRepository.findById(institucion.getDistrito().getId()).orElse(null));
             institucion.setDomicilio(domicilioRepository.save(institucion.getDomicilio()));
             institucion = institucionRepository.save(institucion);
 
