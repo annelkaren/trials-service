@@ -1,8 +1,5 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
 
-import mx.gob.pjpuebla.trials.core.distritos.Distrito;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
@@ -34,9 +31,6 @@ public class InstitucionSetUp {
         DomicilioRecord domRecord = new DomicilioRecord(dom.getId(), dom.getCalle(), dom.getExterior(),
                 dom.getInterior(), dom.getEstadoRepublica(), dom.getMunicipio(), dom.getLocalidad(), dom.getColonia(),
                 dom.getCodigoPostal(), dom.getReferencia());
-
-       // Distrito dis = DistritoSetUp.createDistrito();
-       // DistritoRecord disRecord = new DistritoRecord(dis.getId(), dis.getNombre());
 
         return new InstitucionRecordResponse(
                 1,
