@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "TBL_CARPETA_ETAPAS")
 public class CarpetaEtapas implements Serializable {
+
     @Id
-    @SequenceGenerator(name = "idCarpetaEtapas", sequenceName = "SEQ_CARPETA_ETAPAS_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idCarpetaEtapas")
+    @SequenceGenerator(name = "idCarpetaEtapas", sequenceName = "SEQ_CARPETA_ETAPAS_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

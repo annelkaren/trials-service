@@ -30,7 +30,6 @@ import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
-import mx.gob.pjpuebla.trials.core.tipoacuerdo.TipoAcuerdoRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
