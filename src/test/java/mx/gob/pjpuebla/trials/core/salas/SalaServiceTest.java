@@ -40,10 +40,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -86,8 +83,6 @@ class SalaServiceTest {
     EventoService eventoService;
     @InjectMocks
     SalaService salaService;
-    @Mock
-    SalaRepository salaRepository;
 
     private Sala sala;
     private SalaRecordResponse salaRecordResponse;
@@ -301,7 +296,7 @@ class SalaServiceTest {
         Page<Sala> page = new PageImpl<>(Collections.singletonList(sala), PageRequest.of(0, 10), 1);
 
         given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
-        given(salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "", PageRequest.of(0, 10))).willReturn(page);
+        given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "", PageRequest.of(0, 10))).willReturn(page);
 
         Page<SalaRecord> result = salaService.getAllbyJuzgado("", PageRequest.of(0, 10), 1);
 
@@ -310,7 +305,7 @@ class SalaServiceTest {
         assertThat(result.getContent().get(0))
                 .hasFieldOrPropertyWithValue("id", sala.getId())
                 .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
-                .hasFieldOrPropertyWithValue("juez", sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + sala.getJuez().getApellidoMaterno())
+                .hasFieldOrPropertyWithValue("juez", sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + (sala.getJuez().getApellidoMaterno() != null ? sala.getJuez().getApellidoMaterno() : ""))
                 .hasFieldOrPropertyWithValue("juzgado", sala.getJuzgado().getNombre())
                 .hasFieldOrPropertyWithValue("estado", sala.getEstado());
     }

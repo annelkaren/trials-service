@@ -102,7 +102,7 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name="N_MOTIVO_RETRASO")
     private CatalogoMotivosRetrasoAudiencias motivoRetrasoAudiencias;
 
-    @Column(name = "S_RESULTADOS_DESAHOGO", nullable = false)
+    @Column(name = "S_RESULTADOS_DESAHOGO")
     private String resultadosDesahogo;
 
     @Accessors(chain = false)
