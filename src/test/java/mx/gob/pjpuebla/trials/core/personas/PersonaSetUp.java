@@ -1,12 +1,14 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.Sexo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PersonaSetUp {
 
@@ -35,6 +37,13 @@ public class PersonaSetUp {
                 "Gonzalitos", "XXXX111111XXXXXX11", "", LocalDate.of(1992, 1, 1),
                 "juanperez@mail.com", "", "", Sexo.FEMENINO, "", Estado.ACTIVE,
                 1, 1, 1, null,null, "", null);
+    }
+
+    public static PersonaRecord createPersonaRecord(List<RoleRecord> roles) {
+        return new PersonaRecord(1L, 0, "Juan", "Perez",
+                "Gonzalitos", "XXXX111111XXXXXX11", "", LocalDate.of(1992, 1, 1),
+                "juanperez@mail.com", "", "", Sexo.FEMENINO, "", Estado.ACTIVE,
+                1, 1, 1, null,null, "", roles);
     }
 
     public static PersonaRecordResponse createPersonaRecordResponse() {

@@ -968,7 +968,7 @@ class DocumentoServiceTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", documentoAsignadoRecord.id())
                 .hasFieldOrPropertyWithValue("expediente", documentoAsignadoRecord.expediente())
-                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoDocumento().name())
+                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoDocumento().getEtiqueta())
                 .hasFieldOrPropertyWithValue("concepto", documentoAsignadoRecord.concepto().getNombre())
                 .hasFieldOrPropertyWithValue("fechaTurnado", documentoAsignadoRecord.fechaTurnado())
                 .hasFieldOrPropertyWithValue("fechaTermino", documentoAsignadoRecord.fechaTurnado().plusDays(concepto.getDias()));
