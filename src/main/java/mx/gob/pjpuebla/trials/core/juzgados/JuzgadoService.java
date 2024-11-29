@@ -157,6 +157,10 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem update(Juzgado juzgado) {
+        Optional<Juzgado> test = juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre());
+        if (test.isPresent() && !Objects.equals(test.get().getId(), juzgado.getId())) {
+            throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
+        }
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));

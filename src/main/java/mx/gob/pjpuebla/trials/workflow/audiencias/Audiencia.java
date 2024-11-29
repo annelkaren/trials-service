@@ -41,8 +41,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 public class Audiencia implements  Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudiencia")
+    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

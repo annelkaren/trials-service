@@ -76,6 +76,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -293,7 +294,7 @@ class DocumentoServiceTest {
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", demanda.getId())
-                .hasFieldOrPropertyWithValue("tipoEntrada", demanda.getCarpeta().getTipoCarpeta().toString())
+                .hasFieldOrPropertyWithValue("tipoEntrada", StringUtils.capitalize(demanda.getCarpeta().getTipoCarpeta().name().toLowerCase()))
                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
     }
 
@@ -944,18 +945,18 @@ class DocumentoServiceTest {
 
     @Test
     void getAllBandejaAsignados() {
+        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        demanda.getCarpeta().setFolio("1");
+        demanda.setTipoDocumento(TipoDocumento.PROMOCION);
+        demanda.setEstatus(EstadoCarpeta.ASIGNADO);
+        demanda.getCarpeta().setJuzgado(juzgado);
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
-        DocumentoAsignadoRecord documentoAsignadoRecord = new DocumentoAsignadoRecord(
-                1,
-                1,
-                "000001/2024",
-                "1",
-                "1",
-                TipoCarpeta.DEMANDA, TipoDocumento.PROMOCION, concepto, LocalDateTime.now(), EstadoCarpeta.ASIGNADO, "");
+        demanda.setConcepto(concepto);
+        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("ASIGNADO")
+                .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
+        List<Movimiento> listPage = Collections.singletonList(movimiento);
 
-        List<DocumentoAsignadoRecord> listPage = Collections.singletonList(documentoAsignadoRecord);
-
-        given(documentoRepository.findByPersonaAsignada(anyString(), any(), any()))
+        given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), any()))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
         given(personaService.getAuditor())
                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
@@ -966,12 +967,12 @@ class DocumentoServiceTest {
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
-                .hasFieldOrPropertyWithValue("id", documentoAsignadoRecord.id())
-                .hasFieldOrPropertyWithValue("expediente", documentoAsignadoRecord.expediente())
-                .hasFieldOrPropertyWithValue("tipoEntrada", documentoAsignadoRecord.tipoDocumento().name())
-                .hasFieldOrPropertyWithValue("concepto", documentoAsignadoRecord.concepto().getNombre())
-                .hasFieldOrPropertyWithValue("fechaTurnado", documentoAsignadoRecord.fechaTurnado())
-                .hasFieldOrPropertyWithValue("fechaTermino", documentoAsignadoRecord.fechaTurnado().plusDays(concepto.getDias()));
+                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente())
+                .hasFieldOrPropertyWithValue("tipoEntrada", StringUtils.capitalize(demanda.getTipoDocumento().name().toLowerCase()))
+                .hasFieldOrPropertyWithValue("concepto", concepto.getNombre())
+                .hasFieldOrPropertyWithValue("fechaTurnado", movimiento.getFechaAsignacion())
+                .hasFieldOrPropertyWithValue("fechaTermino", movimiento.getFechaAsignacion().plusDays(concepto.getDias()));
     }
 
     @Test
