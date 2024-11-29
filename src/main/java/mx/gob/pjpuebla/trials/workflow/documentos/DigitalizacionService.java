@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -251,7 +252,7 @@ public class DigitalizacionService {
             return null;
         }
 
-        return (documento.getCarpeta() == null ? persona.getJuzgado().getNombre()
+        return (documento.getCarpeta() == null ? Objects.requireNonNull(persona.getJuzgado()).getNombre()
                 : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
     }
 

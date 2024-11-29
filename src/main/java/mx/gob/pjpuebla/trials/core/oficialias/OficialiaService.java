@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -118,7 +119,7 @@ public class OficialiaService {
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
         Optional<Oficialia> test = oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre());
-        if (test.isPresent() && test.get().getId() != oficialia.getId()) {
+        if (test.isPresent() && !Objects.equals(test.get().getId(), oficialia.getId())) {
             throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
         }
         try {

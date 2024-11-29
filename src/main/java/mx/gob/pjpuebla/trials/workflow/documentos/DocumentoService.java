@@ -838,7 +838,7 @@ public class DocumentoService {
     private void addAnexoExtra(List<AnexoRecepcionRecord> anexos, Documento documento){
         if(documento.getCarpeta().getTipoJuicio().getMateria().getNombre().equals("LABORAL")){
             Optional<AnexoRecepcionRecord> anexo = anexos.stream().filter(it -> it.nombre().equalsIgnoreCase("Constancia de no conciliación")).findFirst();
-            if(!anexo.isPresent()){
+            if(anexo.isEmpty()){
                 Anexo entity = new Anexo();
                 entity.setNombre("Constancia de no conciliación");
                 entity.setDocumento(documento);

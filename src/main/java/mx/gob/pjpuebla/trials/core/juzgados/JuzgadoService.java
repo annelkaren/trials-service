@@ -158,7 +158,7 @@ public class JuzgadoService {
 
     public JuzgadoRecordItem update(Juzgado juzgado) {
         Optional<Juzgado> test = juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre());
-        if (test.isPresent() && test.get().getId() != juzgado.getId()) {
+        if (test.isPresent() && !Objects.equals(test.get().getId(), juzgado.getId())) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
         try {
