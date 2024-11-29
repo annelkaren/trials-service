@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -94,5 +96,7 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
                 and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
             """)
     Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
+
+    Page<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre, Pageable pageable);
  
 }

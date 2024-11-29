@@ -30,8 +30,10 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.FinSemana;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,6 +86,8 @@ class SalaServiceTest {
     EventoService eventoService;
     @InjectMocks
     SalaService salaService;
+    @Mock
+    SalaRepository salaRepository;
 
     private Sala sala;
     private SalaRecordResponse salaRecordResponse;
@@ -284,6 +288,32 @@ class SalaServiceTest {
        assertThat(salaAudiencia).isNotNull()
        .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
    }
+
+    @Test
+    void testGetAllbyJuzgado() {
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+        Juzgado juzgado = new Juzgado();
+        juzgado.setNombre("Juzgado 1");
+        audiencia.setCarpeta(new Carpeta());
+        audiencia.getCarpeta().setJuzgado(juzgado);
+
+        Page<Sala> page = new PageImpl<>(Collections.singletonList(sala), PageRequest.of(0, 10), 1);
+
+        given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
+        given(salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "", PageRequest.of(0, 10))).willReturn(page);
+
+        Page<SalaRecord> result = salaService.getAllbyJuzgado("", PageRequest.of(0, 10), 1);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0))
+                .hasFieldOrPropertyWithValue("id", sala.getId())
+                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
+                .hasFieldOrPropertyWithValue("juez", sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + sala.getJuez().getApellidoMaterno())
+                .hasFieldOrPropertyWithValue("juzgado", sala.getJuzgado().getNombre())
+                .hasFieldOrPropertyWithValue("estado", sala.getEstado());
+    }
 
 
 }

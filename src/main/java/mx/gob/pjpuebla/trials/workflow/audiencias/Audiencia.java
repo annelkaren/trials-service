@@ -29,6 +29,7 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -96,6 +97,13 @@ public class Audiencia implements  Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO")
     private Estado estado;
+
+    @Enumerated
+    @Column(name="N_MOTIVO_RETRASO")
+    private CatalogoMotivosRetrasoAudiencias motivoRetrasoAudiencias;
+
+    @Column(name = "S_RESULTADOS_DESAHOGO", nullable = false)
+    private String resultadosDesahogo;
 
     @Accessors(chain = false)
     @Embedded
