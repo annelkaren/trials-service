@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
@@ -48,6 +49,7 @@ public class SalaService {
     private final TipoPartesRepository tipoPartesRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final EventoService eventoService;
+    private final PersonaService personaService;
     private static final Integer TIEMPO_ESPERA_AUDIENCIA =  3;
 
     @Transactional(readOnly = true)
@@ -73,6 +75,13 @@ public class SalaService {
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
 
+    }
+
+    public List<SalaRecord> getAllByJuzgado(){
+        //Traemos las salas relacionadas al juzgado de la persona logueda.
+        Integer juzgadoId = personaService.getAuditor().getJuzgado().getId();
+
+        return salaRepository.findByJuzgado(juzgadoId);
     }
 
     @Transactional(readOnly = true)

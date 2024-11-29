@@ -1,9 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import jakarta.ws.rs.core.MediaType;
-
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.junit.jupiter.api.Test;
@@ -82,5 +82,16 @@ class AudienciaResourceTest {
                 patch("/api/workflow/bandeja/audienciasgenerales/diferir/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void createAudiencia() throws Exception {
+        AudienciaSaveRecord audiencia = AudienciaSetUp.audienciaSaveRecordCreate();
+        mockMvc.perform(
+                post("/api/workflow/audiencias/crearAudiencias")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceUtilTest.asJsonString(audiencia)))
+                .andExpect(status().isOk());
+        
     }
 }
