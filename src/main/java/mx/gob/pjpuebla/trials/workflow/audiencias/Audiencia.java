@@ -73,6 +73,9 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name="T_HORA_FIN")
     private LocalDateTime fin;
 
+    @Column(name = "S_DESCRIPCION")
+    private String descripcion;
+
     @NotNull
     @Enumerated
     @Column(name="N_ESTATUS_AUDIENCIA")

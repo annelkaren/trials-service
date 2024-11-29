@@ -2,7 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +42,11 @@ public class AudienciaResource {
     @PatchMapping("/bandeja/audienciasgenerales/diferir/{id}")
     public void diferir(@PathVariable Integer id) {
         this.audienciaService.diferirAudiencia(id);
+    }
+
+    @PostMapping("/audiencias/crearAudiencias")
+    public AudienciasResponseRecord create(@RequestBody AudienciaSaveRecord audiencia) {
+        return this.audienciaService.createAudiencia(audiencia);
     }
 
 }

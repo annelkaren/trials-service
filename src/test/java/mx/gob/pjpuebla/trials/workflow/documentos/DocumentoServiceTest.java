@@ -1529,4 +1529,40 @@ class DocumentoServiceTest {
         assertEquals("ESCRITO", response.tipoPromocion());
         assertEquals("Anexo1", response.anexos().get(0));
     }
+
+    @Test
+    void createExhortoSalida() {
+        Documento exhortoSalida = DocumentoSetUp.create(tipoJuicio);
+        exhortoSalida.setFolio("123")
+                .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
+
+        Persona persona = PersonaSetUp.createPersona();
+
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
+
+        DocumentoExhortoSalidaRecord documentoExhortoSalidaRecord = new DocumentoExhortoSalidaRecord(
+                1,
+                "Juzgado 1",
+                "Nombre del exhorto",
+                "Sin observaciones",
+                LocalDate.now(),
+                LocalDate.now());
+
+        given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(exhortoSalida.getCarpeta()));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.save(any())).willReturn(exhortoSalida);
+        given(documentoRepository.getNextValExhortoSalida()).willReturn(123L);
+
+        DocumentoPromocionResponseRecord response = documentoService.createExhortoSalida(documentoExhortoSalidaRecord, multipartFile);
+        assertThat(response)
+                .isOfAnyClassIn(DocumentoPromocionResponseRecord.class)
+                .hasFieldOrPropertyWithValue("id", exhortoSalida.getId())
+                .hasFieldOrPropertyWithValue("folio", "123")
+                .hasFieldOrPropertyWithValue("tipoDocumento", TipoDocumento.EXHORTO_SALIDA);
+    }
 }
