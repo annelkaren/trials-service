@@ -54,4 +54,13 @@ public class SalaResource {
         return this.salaService.update(sala);
     }
 
+    @GetMapping("/juzgado/{idAudiencia}")
+    public List<SalaRecord> getAllbyJuzgado(
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @PathVariable Integer idAudiencia) {
+        return this.salaService.getAllbyJuzgado(nombre, idAudiencia);
+    }
+
+
+
 }

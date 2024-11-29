@@ -4,7 +4,9 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaTabGeneralRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.SetHorasRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -93,5 +96,36 @@ class AudienciaResourceTest {
                         .content(ResourceUtilTest.asJsonString(audiencia)))
                 .andExpect(status().isOk());
         
+    }
+
+    @Test
+    void getEstatusAudiencias() throws Exception {
+        List<String> estatusList = Arrays.asList("PROGRAMADA", "DESAHOGADA");
+
+        given(audienciaService.getEstatusAudiencias()).willReturn(estatusList);
+
+        mockMvc.perform(get("/api/workflow/audiencias/estatus")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void setHoraAudiencias() throws Exception {
+        SetHorasRecord setHorasRecord = new SetHorasRecord(1, LocalDateTime.now(), true);
+
+        mockMvc.perform(post("/api/workflow/audiencias/horaInicio")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"idAudiencia\":1,\"hora\":\"2024-11-27T10:00:00\",\"isInicio\":true}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void audienciaTabGeneral_success() throws Exception {
+        AudienciaTabGeneralRecord audienciaTabGeneralRecord = AudienciaSetUp.createAudienciaTabGeneralRecord();
+
+        mockMvc.perform(patch("/api/workflow/audiencias/tabGeneral")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceUtilTest.asJsonString(audienciaTabGeneralRecord)))
+                .andExpect(status().isOk());
     }
 }

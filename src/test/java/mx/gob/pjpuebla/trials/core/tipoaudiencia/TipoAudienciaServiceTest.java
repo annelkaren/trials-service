@@ -141,4 +141,19 @@ class TipoAudienciaServiceTest {
                 .hasFieldOrPropertyWithValue("nombre", nombreAudiencia);
     }
 
+    @Test
+    void getAll_returns_list_of_tipoAudienciaRecords() {
+        List<TipoAudiencia> tipoAudienciaList = Collections.singletonList(tipoAudiencia);
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        given(mockTipoAudienciaRepository.findAll(pageRequest))
+                .willReturn(new PageImpl<>(tipoAudienciaList, pageRequest, tipoAudienciaList.size()));
+
+        List<TipoAudienciaRecord> result = tipoAudenciaService.getAll(pageRequest, "Desahogo");
+        assertThat(result)
+                .hasSize(1)
+                .first().hasFieldOrPropertyWithValue("id", tipoAudiencia.getId())
+                .hasFieldOrPropertyWithValue("nombre", tipoAudiencia.getNombre());
+    }
+
 }
