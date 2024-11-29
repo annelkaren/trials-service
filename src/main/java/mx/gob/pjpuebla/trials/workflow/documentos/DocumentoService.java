@@ -619,25 +619,27 @@ public class DocumentoService {
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
+        Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, pageable);
 
-        List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
-                .map(item ->
-                        new DocumentoAsignadoResponseRecord(
-                                item.id(),
-                                item.carpetaId(),
-                                item.expediente(),
-                                esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
-                                "",
-                                item.fechaTurnado(),
-                                item.fechaTurnado().plusDays(1),
-                                item.estatus().name(),
-                                item.observaciones()
-                        ))
-                .toList();
-
+        List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
+        for (Movimiento mov : page.getContent()) {
+            Documento documento = (mov.getDocumento() != null) ? mov.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
+            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta(): documento.getCarpeta();
+            DocumentoAsignadoResponseRecord documentoGridRecord =
+                    new DocumentoAsignadoResponseRecord(
+                            documento.getId(),
+                            carpeta.getId(),
+                            carpeta.getExpediente(),
+                            (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
+                            StringUtils.capitalize((documento.getTipoDocumento() != null) ? documento.getTipoDocumento().name().toLowerCase() : carpeta.getTipoCarpeta().name().toLowerCase()),
+                            documento.getConcepto().getNombre(),
+                            mov.getFechaAsignacion(),
+                            mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()),
+                            StringUtils.capitalize((documento.getTipoDocumento() != null) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
+                            "");
+            list.add(documentoGridRecord);
+        }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 

@@ -15,6 +15,6 @@ public enum EstadoCarpeta {
     CANCELADO,
     PUBLICADO,
     NOTIFICADO,
-    INTEGRADO, //Para indicar que una pieza fue integrada al expediente
-    EDICION,
+    INTEGRADO,//Para indicar que una pieza fue integrada al expediente
+    EDICION
 }
