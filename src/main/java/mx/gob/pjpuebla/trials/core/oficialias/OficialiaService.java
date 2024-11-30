@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -181,7 +182,7 @@ public class OficialiaService {
                 o.getId(), 
                 o.getNombre(), 
                 o.getEstado(), 
-                String.join(", ", o.getMaterias().stream().map(m->m.getNombre()).toList()), 
+                String.join(", ", o.getMaterias().stream().map(m-> StringUtils.capitalize(m.getNombre().toLowerCase())).toList()),
                 o.getMaterias().stream().map(m->m.getId()).toArray(), 
                 o.getSede().getId(), 
                 o.getTipoOficialia().getNombre(), 

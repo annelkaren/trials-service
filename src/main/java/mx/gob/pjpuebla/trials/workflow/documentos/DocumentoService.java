@@ -624,15 +624,21 @@ public class DocumentoService {
 
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
-            Documento documento = (mov.getDocumento() != null) ? mov.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
+            Documento documento = mov.getDocumento();
+            if (mov.getCarpeta() != null && !mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
+                documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
+            }
+            if (mov.getCarpeta() != null && mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
+                documento = documentoRepository.findByCarpetaId(mov.getCarpeta().getId());
+            }
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta(): documento.getCarpeta();
             DocumentoAsignadoResponseRecord documentoGridRecord =
                     new DocumentoAsignadoResponseRecord(
                             documento.getId(),
                             carpeta.getId(),
                             carpeta.getExpediente(),
-                            (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
-                            StringUtils.capitalize((documento.getTipoDocumento() != null) ? documento.getTipoDocumento().name().toLowerCase() : carpeta.getTipoCarpeta().name().toLowerCase()),
+                            (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getFolio() : carpeta.getFolio(),
+                            StringUtils.capitalize((documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getTipoDocumento().name().toLowerCase() : carpeta.getTipoCarpeta().name().toLowerCase()),
                             documento.getConcepto().getNombre(),
                             mov.getFechaAsignacion(),
                             mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()),

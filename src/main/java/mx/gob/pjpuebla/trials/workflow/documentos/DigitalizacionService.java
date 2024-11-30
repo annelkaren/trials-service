@@ -180,7 +180,6 @@ public class DigitalizacionService {
         String tipoOficio = documento.getData().getTipoOficio();
 
         if ("Administrativo".equals(tipoOficio)) {
-
             return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
