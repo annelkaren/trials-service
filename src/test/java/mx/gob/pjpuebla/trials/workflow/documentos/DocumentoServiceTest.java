@@ -960,7 +960,6 @@ class DocumentoServiceTest {
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
         given(personaService.getAuditor())
                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
-
         Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",
                 PageRequest.of(1, listPage.size()));
         System.out.println(page.getContent());

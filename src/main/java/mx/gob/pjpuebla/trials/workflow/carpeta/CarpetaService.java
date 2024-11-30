@@ -358,7 +358,7 @@ public class CarpetaService {
         pieza = carpetaRepository.save(pieza);
 
         asignarPieza(pieza, piezaRecord.documentos());
-
+        movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
         return pieza;
     }
 
