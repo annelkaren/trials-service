@@ -352,18 +352,20 @@ class JuzgadoServiceTest {
         assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
 
         TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
+        Materia materiaFamiliar = new Materia().setNombre("Familiar");
+        tipoJuicio.setMateria(materiaFamiliar);
         NotFoundException exceptionApelacion = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoApelacion)
         );
-        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
+        assertThat(exceptionApelacion.getMessage()).contains("No hay sala disponible para asignar.");
 
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         NotFoundException exceptionExhorto = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoExhorto)
         );
-        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
+        assertThat(exceptionExhorto.getMessage()).contains("No se encontró un Juzgado de la materia");
     }
 
     @Test
