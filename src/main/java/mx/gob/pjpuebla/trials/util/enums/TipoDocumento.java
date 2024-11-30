@@ -4,9 +4,15 @@ import lombok.Getter;
 
 @Getter
 public enum TipoDocumento {
-    PROMOCION,
-    OFICIO,
-    ACUERDO,
-    AMPARO,
-    EXHORTO_SALIDA
+    PROMOCION("PROMOCIÓN"),
+    OFICIO("OFICIO"),
+    ACUERDO("ACUERDO"),
+    AMPARO("AMPARO"),
+    EXHORTO_SALIDA("EXHORTO DE SALIDA");
+
+    private final String etiqueta;
+
+    TipoDocumento(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
 }

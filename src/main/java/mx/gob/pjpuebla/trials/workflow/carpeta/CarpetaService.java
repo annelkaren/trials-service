@@ -30,6 +30,9 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasReposi
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -37,6 +40,9 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -369,6 +375,11 @@ public class CarpetaService {
 
         for (Integer documentoId : documentos) {
             Documento documento = documentoRepository.findById(documentoId).orElseThrow();
+
+            if (documento.getData()==null){
+                documento.setData(new DocumentoData());
+            }
+            
             documento.setCarpeta(pieza);
             documento.setData(documento.getData().setPieza(pieza.getExpediente()));
             documentoRepository.save(documento);
@@ -524,5 +535,49 @@ public class CarpetaService {
         asignarPieza(pieza, piezaRecord.documentos());
 
         return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+    }
+
+    public List<DocumentoDetalleCarpetaResponse> getAllPiezasCarpeta(String key, Integer carpetaId){
+        List<DocumentoDetalleCarpeta> list = carpetaRepository.findPiezasByCarpetaPadreId(key, carpetaId);
+        Persona persona = personaService.getAuditor();
+
+        return list.stream()
+                .map(
+                        e -> new DocumentoDetalleCarpetaResponse(
+                                e.id()!=null?e.id():null,
+                                "PIEZA DE "+e.tipoPieza().getTipo(),
+                                e.folio(),
+                                e.fechaRegistro(),
+                                e.ruta(),
+                                personaService.findById(e.personaOrigenId()).permisos().get(0).name(),
+                                e.tipoCarpeta().name(),
+                                Objects.equals(e.personaOrigenId(), persona.getId())
+                        )).toList();
+    }
+
+    public List<DocumentoDetalleCarpetaResponse> getAllDocumentosCarpeta(String key, Integer carpetaId){
+        List<DocumentoDetalleCarpeta> list = documentoRepository.findDocumentosByCarpeta(key, carpetaId);
+
+        return list.stream()
+                .map(
+                        e -> new DocumentoDetalleCarpetaResponse(
+                                e.id()!=null?e.id():null,
+                                e.tipoDocumento()!=null?e.tipoDocumento().getEtiqueta():"DEMANDA",
+                                e.folio(),
+                                e.fechaRegistro(),
+                                e.ruta(),
+                                (e.personaOrigenId()!=null)?personaService.findById(e.personaOrigenId()).permisos().get(0).name():"",
+                                e.tipoCarpeta().name(),
+                                Boolean.FALSE
+                        )).toList();
+    }
+
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId, Pageable pageable){
+        List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosCarpeta(key, carpetaId);
+        List<DocumentoDetalleCarpetaResponse> piezas = this.getAllPiezasCarpeta(key, carpetaId);
+
+        List<DocumentoDetalleCarpetaResponse> lista = Stream.concat(documentos.stream(), piezas.stream()).toList();
+
+        return new PageImpl<>(lista, pageable, lista.size());
     }
 }

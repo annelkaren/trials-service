@@ -4,14 +4,13 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
-import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
-import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
@@ -23,6 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
@@ -34,12 +36,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -336,23 +341,50 @@ class CarpetaResourceTest {
 
     }
 
-   /* @Test
-    void testPutAdjuntarPieza(){
-        PiezaRecord piezaRecord = new PiezaRecord(null, "AD", Collections.singletonList(1));
-        Carpeta piezaTmp = new Carpeta()
-                .setId(5)
-                .setExpediente("000001/2024/AD01")
-                .setCarpetaPadre(new Carpeta().setId(1))
-                .setTipoCarpeta(TipoCarpeta.PIEZA)
-                .setTipoPieza(new TipoPieza().setClave("AD"));
+   @Test
+    void testPutAdjuntarPieza() throws Exception{
+        PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+        TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
+        PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD");
 
-        PiezaRecordResponse response = new PiezaRecordResponse(2, piezaTmp.getExpediente(), piezaTmp.getTipoPieza().getClave());
+        given(mockCarpetaService.adjuntarPiezaDocumentos(any(), any())).willReturn(pieza);
 
-        given(mockCarpetaService.createPieza(1, piezaRecord)).willReturn(piezaTmp);
-
-        mockMvc.perform(put("/api/workflow/carpeta/piezas/adjuntar?carpetaId=1")
+        mockMvc.perform(put("/api/workflow/carpeta/piezas/adjuntar?piezaId=1")
+                        .content(ResourceUtilTest.asJsonString(request))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(ResourceUtilTest.asJsonString(response)))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }*/
+    }
+
+    @Test
+    void testGetAllDocumentosPiezas() throws Exception{
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION,
+                tipoPieza, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF",
+                1L, TipoCarpeta.DEMANDA);
+        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null,
+                null, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA);
+
+        List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
+        List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
+        Page<DocumentoDetalleCarpetaResponse> lista = new PageImpl<>(
+                Stream.concat( documentos.stream(), piezas.stream())
+                        .map(e->new DocumentoDetalleCarpetaResponse(
+                                e.id(),
+                                "",
+                                e.folio(),
+                                e.fechaRegistro(),
+                                e.ruta(),
+                                "",
+                                e.tipoCarpeta().name(),
+                                Boolean.FALSE)).toList());
+
+        given(mockCarpetaService.getAllDocumentosPiezas(null, 1, Pageable.ofSize(lista.getSize()))).willReturn(lista);
+
+        mockMvc.perform(get("/api/workflow/carpeta/documentos/1"))
+                .andExpect(status().isOk());
+    }
 }
