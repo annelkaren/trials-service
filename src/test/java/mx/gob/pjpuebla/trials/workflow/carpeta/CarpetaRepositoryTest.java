@@ -2,11 +2,13 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -140,5 +142,15 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         List<PiezaRecordResponse> piezas = carpetaRepository.findPiezasByDocumentoId(documentoId);
 
         assertThat(piezas).isNotNull();
+    }
+
+    @Test
+    void findPiezasByCarpetaId(){
+        Integer carpetaPadreId = 2;
+
+        List<DocumentoDetalleCarpeta> piezas = carpetaRepository.findPiezasByCarpetaPadreId(null, carpetaPadreId);
+
+        assertThat(piezas).isNotNull()
+                .allMatch((p)->p.tipoCarpeta()== TipoCarpeta.PIEZA);
     }
 }

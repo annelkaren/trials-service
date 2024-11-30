@@ -13,11 +13,9 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
-import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.*;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
@@ -58,9 +56,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -72,11 +68,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -790,6 +791,43 @@ class CarpetaServiceTest {
         piezaTmp = target.createPieza(carpetaPadreId, piezaRecord);
         assertThat(piezaTmp).isNotNull()
                 .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");
+
+    }
+
+    @Test
+    void testGetAllDocumentosPiezas(){
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        PersonaRecord persona = PersonaSetUp.createPersonaRecord(Collections.singletonList(new RoleRecord("1","OFICIAL")));
+
+
+        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION, null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF", 1L, TipoCarpeta.DEMANDA);
+        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null, tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA);
+
+        List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
+        List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
+        Page<DocumentoDetalleCarpetaResponse> lista = new PageImpl<>(
+                Stream.concat( documentos.stream(), piezas.stream())
+                        .map(e->new DocumentoDetalleCarpetaResponse(
+                            e.id(),
+                            "",
+                            e.folio(),
+                            e.fechaRegistro(),
+                            e.ruta(),
+                            "",
+                            e.tipoCarpeta().name(),
+                            Boolean.FALSE)).toList());
+
+        given(personaService.findById(any())).willReturn(persona);
+        given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());
+        given(documentoRepository.findDocumentosByCarpeta(any(), any())).willReturn(documentos);
+        given(carpetaRepository.findPiezasByCarpetaPadreId(any(), any())).willReturn(piezas);
+
+        lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
+
+        assertThat(lista).isNotEmpty();
 
     }
 }
