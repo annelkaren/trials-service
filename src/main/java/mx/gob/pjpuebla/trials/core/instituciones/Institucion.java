@@ -65,9 +65,6 @@ public class Institucion implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Domicilio domicilio;
 
-    @JoinColumn(name = "FN_DISTRITO", referencedColumnName = "PN_ID", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Distrito distrito;
 
     @Size(max = 30)
     @Column(name = "S_TIPO_INSTITUCION")

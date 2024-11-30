@@ -16,7 +16,6 @@ public record InstitucionRecordResponse(
         String telefono,
         String extension,
         String tipoInstitucion,
-        DistritoRecord distrito,
         DomicilioRecord domicilio
 ) implements Serializable {
 }

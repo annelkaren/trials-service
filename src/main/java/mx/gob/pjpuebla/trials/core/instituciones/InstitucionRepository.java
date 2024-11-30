@@ -24,7 +24,6 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                     i.telefono,
                     i.extension,
                     i.tipoInstitucion,
-                    new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
                     new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
                         d.id,
                         d.calle,
@@ -40,7 +39,6 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                 )
                 FROM Institucion i
                 JOIN i.domicilio d
-                JOIN i.distrito dis
                 WHERE i.id = :id AND i.estado IN :estados
             """)
     Optional<InstitucionRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
