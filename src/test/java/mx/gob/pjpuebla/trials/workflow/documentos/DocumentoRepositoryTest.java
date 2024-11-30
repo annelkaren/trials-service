@@ -4,6 +4,7 @@ import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,5 +150,14 @@ void testActualizacionAcuerdoRespuesta() {
     assertThat(documentos).isNotEmpty();
     documentos.forEach(documento -> assertThat(documento.seleccionado()).isEqualTo(0));
 }
-    
+    @Test
+    void testfindDocumentosByCarpeta(){
+        Integer carpetaId=1;
+
+        List<DocumentoDetalleCarpeta> documentos = documentoRepository.findDocumentosByCarpeta(null, carpetaId);
+
+        assertThat(documentos).isNotEmpty();
+
+    }
+
 }

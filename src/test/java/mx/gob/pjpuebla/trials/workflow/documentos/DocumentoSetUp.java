@@ -40,6 +40,7 @@ public class DocumentoSetUp {
                 .setExpediente("000001/2024")
                 .setEstatus(EstadoCarpeta.CAPTURA)
                 .setTipoJuicio(tipoJuicio)
+                .setTipoCarpeta(TipoCarpeta.DEMANDA)
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setJuzgado(JuzgadoSetUp.createJuzgado());
 
