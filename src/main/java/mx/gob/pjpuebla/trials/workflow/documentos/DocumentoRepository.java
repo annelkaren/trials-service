@@ -101,7 +101,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
 
-    Documento findByCarpetaId(Integer id);
+    Documento findByCarpetaIdAndRutaIsNull(Integer id);
 
     @Query("""
             SELECT m
@@ -127,6 +127,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
                 ) AND pd = :personaAsignada
+                AND jsonb_extract_path_text(d.data, 'pieza') is null
                 AND jcd.id = :juzgadoId)
             )
              AND m.fechaAsignacion = (

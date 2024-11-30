@@ -629,7 +629,7 @@ public class DocumentoService {
                 documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
             }
             if (mov.getCarpeta() != null && mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
-                documento = documentoRepository.findByCarpetaId(mov.getCarpeta().getId());
+                documento = documentoRepository.findByCarpetaIdAndRutaIsNull(mov.getCarpeta().getId());
             }
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta(): documento.getCarpeta();
             DocumentoAsignadoResponseRecord documentoGridRecord =
