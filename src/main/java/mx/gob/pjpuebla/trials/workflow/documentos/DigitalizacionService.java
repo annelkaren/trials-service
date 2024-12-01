@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -79,7 +78,7 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : juzgado;
+        String oficialia = juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
@@ -185,7 +184,6 @@ public class DigitalizacionService {
         String tipoOficio = documento.getData().getTipoOficio();
 
         if ("Administrativo".equals(tipoOficio)) {
-
             return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
