@@ -243,8 +243,13 @@ public class JuzgadoService {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
 
-            if (juzgados.isEmpty())
+            if (juzgados.isEmpty()){
+                if (TipoCarpeta.APELACION.name().equals(tipoCarpeta.name())) {
+                    throw new NotFoundException("No hay sala disponible para asignar.", tipoJuicio.getNombre());
+                }
                 throw (new NotFoundException("No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ", tipoJuicio.getNombre()));
+            }
+
         }
 
         int rand = RANDOM.nextInt(juzgados.size());
