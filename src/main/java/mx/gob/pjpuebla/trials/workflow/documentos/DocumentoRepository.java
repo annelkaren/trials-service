@@ -153,7 +153,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 dd.fechaEmision,
                 dd.fechaEntrega,
                 CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
-                CASE WHEN COUNT(dc) > 0 THEN true ELSE false END
+                CASE WHEN COUNT(dc) > 0 THEN true ELSE false END,
+                dc.tamanioPapel
             )
             FROM Documento doc
             LEFT JOIN doc.institucion ins

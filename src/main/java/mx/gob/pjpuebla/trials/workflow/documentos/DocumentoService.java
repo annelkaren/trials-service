@@ -932,7 +932,8 @@ public class DocumentoService {
                         item.fechaEmision(),
                         item.fechaEntrega(),
                         item.bandAcuse(),
-                        item.bandDigitalizado()
+                        item.bandDigitalizado(),
+                        item.tamanioPapel()
                 ))
                 .toList();
 

@@ -404,7 +404,8 @@ class DocumentoResourceTest {
                 LocalDate.now(),
                 LocalDate.now(),
                 false,
-                false
+                false,
+                'C'
         );
         given(documentoService.getAllOficios(any(), any()))
                 .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));
