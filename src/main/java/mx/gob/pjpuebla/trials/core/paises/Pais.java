@@ -20,7 +20,7 @@ public class Pais  implements Serializable {
     private Integer id;
 
     @NotBlank
-    @Size(min = 3, max = 2)
+    @Size(min = 2, max = 3)
     @Column(name = "s_key", nullable = false)
     private String key;
 

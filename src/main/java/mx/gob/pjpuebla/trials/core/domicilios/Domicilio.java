@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.paises.Pais;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -23,9 +24,9 @@ public class Domicilio implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Long id;
 
-    @NotBlank
+    
     @Size(min = 3, max = 250)
-    @Column(name = "S_CALLE", nullable = false)
+    @Column(name = "S_CALLE")
     private String calle;
 
     @Size(max = 20)
@@ -61,6 +62,11 @@ public class Domicilio implements Serializable, Auditable {
     @Size(max = 250)
     @Column(name = "S_REFERENCIA")
     private String referencia;
+
+    
+    @ManyToOne
+    @JoinColumn(name = "FN_PAIS_RESIDENCIA")
+    private Pais paisResidencia;
 
     @Accessors(chain = false)
     @Embedded

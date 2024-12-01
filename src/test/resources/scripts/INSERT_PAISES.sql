@@ -1,0 +1,2 @@
+INSERT INTO TBL_PAISES (PN_ID, S_KEY, S_NOMBRE_OFICIAL, S_NOMBRE_COMUN)
+VALUES (1, 'MX', 'Estados Unidos Mexicanos', 'México');
