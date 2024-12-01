@@ -381,7 +381,9 @@ public class CarpetaService {
             }
             
             documento.setCarpeta(pieza);
-            documento.setData(documento.getData().setPieza(pieza.getExpediente()));
+            documento.setData(documento.getData().
+                    setPieza(pieza.getExpediente()).
+                    setEstadoPieza(EstadoCarpeta.ASIGNADO));
             documentoRepository.save(documento);
         }
 
@@ -534,7 +536,7 @@ public class CarpetaService {
 
         asignarPieza(pieza, piezaRecord.documentos());
 
-        return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+        return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo(), pieza.getEstatus());
     }
 
     public List<DocumentoDetalleCarpetaResponse> getAllPiezasCarpeta(String key, Integer carpetaId){
@@ -579,5 +581,35 @@ public class CarpetaService {
         List<DocumentoDetalleCarpetaResponse> lista = Stream.concat(documentos.stream(), piezas.stream()).toList();
 
         return new PageImpl<>(lista, pageable, lista.size());
+    }
+
+    public PiezaRecordResponse acoplarPieza(Integer piezaId, EstadoCarpeta estadoPieza){
+        Carpeta pieza = carpetaRepository.findById(piezaId).orElseThrow(()->new NotFoundException("La pieza no existe","piezaId"));
+
+        if (pieza.getTipoCarpeta()!=TipoCarpeta.PIEZA){
+            throw new RuntimeException("No es una pieza");
+        }
+
+        if (pieza.getEstatus()==EstadoCarpeta.CANCELADO || pieza.getEstatus()==EstadoCarpeta.INTEGRADO){
+            throw  new RuntimeException("No se puede actualizar el estado de la Pieza");
+        }
+
+        // TODO agregar validación para cancelar o integrar la Pieza
+
+        List<Documento> documentos = documentoRepository.findByCarpetaId(piezaId);
+
+        for(Documento doc: documentos){
+            doc.setCarpeta(pieza.getCarpetaPadre());
+            doc.setData(doc.getData().setEstadoPieza(estadoPieza));
+
+            documentoRepository.save(doc);
+        }
+
+        pieza.setEstatus(estadoPieza);
+        pieza.setPersona(null);
+
+        pieza = carpetaRepository.save(pieza);
+
+        return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo(), pieza.getEstatus());
     }
 }

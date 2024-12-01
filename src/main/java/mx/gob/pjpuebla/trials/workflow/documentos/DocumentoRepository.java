@@ -263,4 +263,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             """)
     List<DocumentoDetalleCarpeta> findDocumentosByCarpeta(String key, Integer carpetaId);
 
+    List<Documento> findByCarpetaId(Integer carpetaId);
+
 }
