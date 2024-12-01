@@ -14,6 +14,7 @@ public record OficioResponseRecord(
         LocalDate fechaEmision,
         LocalDate fechaEntrega,
         Boolean bandAcuse,
-        Boolean bandDigitalizado
+        Boolean bandDigitalizado,
+        Character tamanioPapel
 ) implements Serializable {
 }
