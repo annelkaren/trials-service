@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
@@ -14,6 +15,8 @@ public record DocumentoDetalleCarpeta(
         LocalDateTime fechaRegistro,
         String ruta,
         Long personaOrigenId,
-        TipoCarpeta tipoCarpeta
+        TipoCarpeta tipoCarpeta,
+        EstadoCarpeta estadoCarpeta
+
 ) {
 }

@@ -803,8 +803,11 @@ class CarpetaServiceTest {
         PersonaRecord persona = PersonaSetUp.createPersonaRecord(Collections.singletonList(new RoleRecord("1","OFICIAL")));
 
 
-        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION, null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF", 1L, TipoCarpeta.DEMANDA);
-        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null, tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA);
+        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION,
+                null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF",
+                1L, TipoCarpeta.DEMANDA, EstadoCarpeta.ASIGNADO);
+        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null,
+                tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA, EstadoCarpeta.ASIGNADO);
 
         List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
         List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
@@ -818,7 +821,8 @@ class CarpetaServiceTest {
                             e.ruta(),
                             "",
                             e.tipoCarpeta().name(),
-                            Boolean.FALSE)).toList());
+                            Boolean.FALSE,
+                            EstadoCarpeta.ASIGNADO.name(), "")).toList());
 
         given(personaService.findById(any())).willReturn(persona);
         given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());
@@ -828,6 +832,40 @@ class CarpetaServiceTest {
         lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
 
         assertThat(lista).isNotEmpty();
+
+    }
+
+    @Test
+    void acoplarPiezaExpediente(){
+        Integer carpetaPadreId = 1;
+
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        Persona persona = PersonaSetUp.createPersona();
+        String consecutivo = "AD01";
+        String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
+        Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
+        List<Documento> documentos = Collections.singletonList(documento);
+
+        Carpeta pieza = new Carpeta()
+                .setId(5)
+                .setExpediente(expediente)
+                .setCarpetaPadre(validCarpeta)
+                .setTipoPieza(tipoPieza)
+                .setTipoCarpeta(TipoCarpeta.PIEZA);
+
+        PiezaRecordResponse response;
+
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(pieza));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.findByCarpetaId(any())).willReturn(documentos);
+        given(carpetaRepository.save(any())).willReturn(pieza);
+
+        response = target.acoplarPieza(pieza.getId(), EstadoCarpeta.CANCELADO.name());
+
+        assertThat(response).isNotNull().hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CANCELADO);
 
     }
 }

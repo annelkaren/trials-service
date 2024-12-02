@@ -246,7 +246,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 COALESCE(m.fechaAsignacion, d.audit.fechaAlta),
                 d.ruta,
                 COALESCE(p.id, d.persona.id),
-                d.carpeta.tipoCarpeta
+                d.carpeta.tipoCarpeta,
+                d.estatus
             )
             FROM Documento d
             LEFT JOIN Movimiento m on m.estado = 'CAPTURA' and m.documento = d
@@ -263,5 +264,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     ELSE 0 END = 1
             """)
     List<DocumentoDetalleCarpeta> findDocumentosByCarpeta(String key, Integer carpetaId);
+
+    List<Documento> findByCarpetaId(Integer carpetaId);
 
 }

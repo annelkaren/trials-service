@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
@@ -86,7 +87,7 @@ public class CarpetaResource {
     public PiezaRecordResponse createPieza(@RequestParam Integer carpetaId, @RequestBody PiezaRecord piezaRecord){
         Carpeta pieza = carpetaService.createPieza(carpetaId, piezaRecord);
 
-        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo(), pieza.getEstatus());
     }
 
     @PutMapping(value = "/piezas/adjuntar", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,5 +111,12 @@ public class CarpetaResource {
             }) Pageable pageable){
 
         return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
+    }
+
+    @PostMapping(value="/piezas/acoplar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PiezaRecordResponse acoplarPieza(
+            @RequestParam("piezaId") Integer piezaId,
+            @RequestParam("estatus") String estadoPieza){
+            return this.carpetaService.acoplarPieza(piezaId, estadoPieza);
     }
 }
