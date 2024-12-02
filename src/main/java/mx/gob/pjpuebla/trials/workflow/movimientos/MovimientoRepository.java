@@ -120,6 +120,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(d.folio) LIKE %:key%
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(c.juzgado.nombre) LIKE %:key%
                 )
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable);

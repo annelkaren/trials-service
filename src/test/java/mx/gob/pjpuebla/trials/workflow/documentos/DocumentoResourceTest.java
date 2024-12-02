@@ -95,7 +95,7 @@ class DocumentoResourceTest {
                 demanda.getCarpeta().getExpediente(),
                 "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
                 EstadoCarpeta.CAPTURA,
-                true);
+                true, "Juzgado 1");
 
         given(documentoService.getAll(any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
@@ -212,7 +212,7 @@ class DocumentoResourceTest {
         String materiaNombre = "MERCANTIL";
 
         DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true);
+                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1");
 
         given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));

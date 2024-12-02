@@ -135,8 +135,9 @@ public class DocumentoService {
                             documento.getAudit().getFechaAlta(),
                             carpeta.getSelloEstatus(),
                             (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
-                            (documento.getRuta() != null));
-
+                            (documento.getRuta() != null),
+                            documento.getCarpeta().getJuzgado().getNombre()
+                    );
             list.add(documentoGridRecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -418,7 +419,8 @@ public class DocumentoService {
                     movimiento.getFechaAsignacion(),
                     null,
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
-                    false
+                    false,
+                    ""
             );
             listaDocumentoRecords.add(drecord);
         }
@@ -619,8 +621,8 @@ public class DocumentoService {
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        //boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
-        Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, pageable);
+        boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
+        Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
 
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {

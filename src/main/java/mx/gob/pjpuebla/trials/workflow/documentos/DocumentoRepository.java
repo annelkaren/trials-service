@@ -120,13 +120,13 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
                 ) AND pc = :personaAsignada
                 AND jc.id = :juzgadoId)
-                OR (d IS NOT NULL AND d.estatus IN (
+                OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                 mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
                 ) AND pd = :personaAsignada
                 AND jsonb_extract_path_text(d.data, 'pieza') is null
-                AND jcd.id = :juzgadoId)
+                AND jcd.id = :juzgadoId) else false  end > false
             )
              AND m.fechaAsignacion = (
                 SELECT MAX(m2.fechaAsignacion)
@@ -144,7 +144,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 OR LOWER(c.expediente) LIKE %:key%
             )
         """)
-    Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, Pageable pageable);
+    Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
