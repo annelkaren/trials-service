@@ -135,8 +135,9 @@ public class DocumentoService {
                             documento.getAudit().getFechaAlta(),
                             carpeta.getSelloEstatus(),
                             (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
-                            (documento.getRuta() != null));
-
+                            (documento.getRuta() != null),
+                            documento.getCarpeta().getJuzgado().getNombre()
+                    );
             list.add(documentoGridRecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -418,7 +419,8 @@ public class DocumentoService {
                     movimiento.getFechaAsignacion(),
                     null,
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
-                    false
+                    false,
+                    ""
             );
             listaDocumentoRecords.add(drecord);
         }
