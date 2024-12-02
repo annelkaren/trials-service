@@ -1,10 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.personadetalle;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
-import java.util.Arrays;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,24 +17,20 @@ import mx.gob.pjpuebla.trials.core.lenguasindigenas.LenguaIndigena;
 import mx.gob.pjpuebla.trials.core.lenguasindigenas.LenguaIndigenaRepository;
 import mx.gob.pjpuebla.trials.core.nacionalidades.Nacionalidad;
 import mx.gob.pjpuebla.trials.core.nacionalidades.NacionalidadRepository;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.paises.Pais;
+import mx.gob.pjpuebla.trials.core.paises.PaisRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoCondicionMigratoria;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDiscapacidades;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoEstadoCivil;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoFrecuenciaIngreso;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoGrupoVulnerable;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoIngresoMensualNeto;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoProfesionOficio;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoTipoDefensor;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoTiposDomicilio;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTO;
+import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTOGet;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class PersonaDetalleService {
@@ -50,63 +44,38 @@ public class PersonaDetalleService {
     private final EscolaridadRepository escolaridadRepository;
     private final DomicilioRepository domicilioRepository;
     private final PersonaDetalleRepository personaDetalleRepository;
+    private final PaisRepository paisRepository;
 
-    public static <E extends Enum<E>> Integer obtenerOrdinalDesdeString(String texto, Class<E> enumClass) {
-        if (texto == null || texto.trim().isEmpty()) {
-            return null;
-        }
-        return Arrays.stream(enumClass.getEnumConstants())
-                .filter(enumValue -> {
-                    try {
-                        String etiqueta = (String) enumClass.getMethod("getEtiqueta").invoke(enumValue);
-                        if (etiqueta != null && etiqueta.equalsIgnoreCase(texto)) {
-                            return true;
-                        }
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        log.error(e.getMessage(), e);
-                    }
-                   
-                    return enumValue.name().equalsIgnoreCase(texto);
-                })
-                .findFirst()
-                .map(Enum::ordinal)
-                .orElseThrow(() -> new IllegalArgumentException("Valor no válido: " + texto));
-    }
-    
-    
-    
     public PersonaDetalleRecord createPersonaDetalle(PersonaDTO personaDTO){
        
         Integer idCarpeta = personaDTO.getDatosGenerales().getIdCarpeta();
         Carpeta carpeta = carpetaRepository.findById(idCarpeta).orElseThrow(() -> new EntityNotFoundException("Carpeta no encontrada"));
         
-        TipoJuicio tipoJucio = carpeta.getTipoJuicio();
-        Integer tipoJuicioId = tipoJucio.getId();
-
-        String tipoParteNombre = personaDTO.getDatosGenerales().getTipo().get(0);
-        TipoPartes tipoPartes = tipoPartesRepository.findByNombreAndTipoJuicioId(tipoParteNombre, tipoJuicioId)
-            .orElseThrow(() -> new EntityNotFoundException("Tipo de partes no encontrado")); // Handle Optional
+        Integer tipoParteId = personaDTO.getDatosGenerales().getTipo();
+        TipoPartes tipoParte = tipoPartesRepository.findById(tipoParteId)
+            .orElseThrow(() -> new EntityNotFoundException("Tipo de partes no encontrado")); 
 
         PersonaDocumento personaDocumento = new PersonaDocumento();
 
-        if(!personaDTO.getDatosGenerales().getNombre().isEmpty()){
-            personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombre());
+        if(!personaDTO.getDatosGenerales().getNombres().isEmpty()){
+            personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombres());
         } else if (!personaDTO.getDatosGenerales().getRazonSocial().isEmpty()){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
         }
+        
         personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
         personaDocumento.setApellidoMaterno(personaDTO.getDatosGenerales().getApellidoMaterno());
         personaDocumento.setPseudonimo(personaDTO.getDatosGenerales().getPseudonimo());
         personaDocumento.setTipoPersona(personaDTO.getDatosGenerales().getTipoPersona());
         personaDocumento.setCarpeta(carpeta);
-        personaDocumento.setTipoPartes(tipoPartes);
+        personaDocumento.setTipoPartes(tipoParte);
         personaDocumento.setCurp(personaDTO.getDatosGenerales().getCurp());
         personaDocumento.setCelular(personaDTO.getDatosContacto().getTelefono());  
         personaDocumento.setCorreoElectronico(personaDTO.getDatosContacto().getCorreoElectronico());
-        
-        personaDocumentoRepository.save(personaDocumento);
 
+        
         Domicilio domicilio = new Domicilio();
+        
         domicilio.setCalle(personaDTO.getDatosContacto().getCalle());
         domicilio.setInterior(personaDTO.getDatosContacto().getNumeroInterior());
         domicilio.setExterior(personaDTO.getDatosContacto().getNumeroExterior());
@@ -115,7 +84,12 @@ public class PersonaDetalleService {
         domicilio.setMunicipio(personaDTO.getDatosContacto().getMunicipio());
         domicilio.setEstadoRepublica(personaDTO.getDatosContacto().getEstado());
 
-        domicilioRepository.save(domicilio);
+        if( personaDTO.getDatosContacto().getPais() != null){
+            Integer idPaisResidencia = personaDTO.getDatosContacto().getPais();
+            Pais paisResidencia = paisRepository.findById(idPaisResidencia).orElseThrow(() -> new EntityNotFoundException("Pais de residencia no encontrado"));  
+            domicilio.setPaisResidencia(paisResidencia);
+        } 
+
 
         PersonaDetalle personaDetalle = new PersonaDetalle();
 
@@ -134,7 +108,7 @@ public class PersonaDetalleService {
         } else {
             personaDetalle.setNacionalidad(null);
         }
-        
+
         if (personaDTO.getDatosEstadistica().getEscolaridad() != null) {
             Escolaridad escolaridad = escolaridadRepository.findById(personaDTO.getDatosEstadistica().getEscolaridad())
                 .orElseThrow(() -> new EntityNotFoundException("Escolaridad no encontrada"));
@@ -143,16 +117,23 @@ public class PersonaDetalleService {
             personaDetalle.setEscolaridad(null);
         }
         
-        if (personaDTO.getDatosEstadistica().getDocumento() != null) {
-            DocumentoIdentificacion documentoIdentificacion = documentoIdentificacionRepository.findById(personaDTO.getDatosEstadistica().getDocumento())
+        if (personaDTO.getDatosEstadistica().getDocumentoIdentificacion() != null) {
+            DocumentoIdentificacion documentoIdentificacion = documentoIdentificacionRepository.findById(personaDTO.getDatosEstadistica().getDocumentoIdentificacion())
                 .orElseThrow(() -> new EntityNotFoundException("Documento Identificación no encontrado"));
             personaDetalle.setDocumentoIdentificacion(documentoIdentificacion);
         } else {
             personaDetalle.setDocumentoIdentificacion(null);
         }
        
+        if (personaDTO.getDatosGenerales().getEnRepresentacion() != null) {
+            PersonaDocumento enRepresentacion = personaDocumentoRepository.findById(personaDTO.getDatosGenerales().getEnRepresentacion())
+                .orElseThrow(() -> new EntityNotFoundException("Persona representada no encontrada"));
+            personaDetalle.setEnRepresentacionDe(enRepresentacion);
+        }
+
         personaDetalle.setPersonaDocumento(personaDocumento);
         personaDetalle.setDomicilio(domicilio);
+        
         personaDetalle.setSexo(personaDTO.getDatosGenerales().getSexo());
         LocalDate fechaNacimientoStr = personaDTO.getDatosGenerales().getFechaNacimiento();
         if (fechaNacimientoStr != null) {
@@ -160,12 +141,18 @@ public class PersonaDetalleService {
         } else {
             personaDetalle.setFechaNacimiento(null); 
         } 
-        personaDetalle.setPaisNacimiento(personaDTO.getDatosEstadistica().getPaisNacimiento());
+       
         personaDetalle.setMunicipioNacimiento(personaDTO.getDatosEstadistica().getMunicipioNacimiento());
         personaDetalle.setEntidadNacimiento(personaDTO.getDatosEstadistica().getEntidadNacimiento());
         personaDetalle.setEdad(personaDTO.getDatosGenerales().getEdad());
 
-        personaDetalle.setLenguaExtranjera(personaDTO.getDatosEstadistica().getLenguaExtranjeraDetalle());
+        if(personaDTO.getDatosEstadistica().getPaisNacimiento() != null){
+            Integer idPaisNacimiento = personaDTO.getDatosEstadistica().getPaisNacimiento();
+            Pais paisNacimiento = paisRepository.findById(idPaisNacimiento).orElseThrow(() -> new EntityNotFoundException("Pais de nacimiento no encontrado"));
+            personaDetalle.setPaisNacimiento(paisNacimiento);
+        }
+
+        personaDetalle.setLenguaExtranjera(personaDTO.getDatosEstadistica().getLenguaExtranjera());
         personaDetalle.setSabeLeerEscribir(personaDTO.getDatosEstadistica().getSabeLeer()); 
         personaDetalle.setLugarTrabajo(personaDTO.getDatosEstadistica().getLugarTrabajo());
         personaDetalle.setCantidadDependientesEconomicos(personaDTO.getDatosEstadistica().getCantidadDependientes());
@@ -177,40 +164,320 @@ public class PersonaDetalleService {
         personaDetalle.setDatosPrivados(personaDTO.getDatosEstadistica().getDatosPrivados());
         personaDetalle.setCedula(personaDTO.getDatosGenerales().getCedula());
         personaDetalle.setAdscripcion(personaDTO.getDatosGenerales().getAdscripcion());
-        
-        String tipoDomicilioTexto = personaDTO.getDatosContacto().getTipoDomicilio();
-        personaDetalle.setTipoDomicilio(obtenerOrdinalDesdeString(tipoDomicilioTexto, CatalogoTiposDomicilio.class));
-        
-        String discapacidadTexto = personaDTO.getDatosEstadistica().getDiscapacidad();
-        personaDetalle.setDiscapacidad(obtenerOrdinalDesdeString(discapacidadTexto, CatalogoDiscapacidades.class));
-        
-        String estadoCivilTexto = personaDTO.getDatosGenerales().getEstadoCivil().toString(); 
-        personaDetalle.setEstadoCivil(obtenerOrdinalDesdeString(estadoCivilTexto, CatalogoEstadoCivil.class));
 
-        String condicionMigratoriaTexto = personaDTO.getDatosEstadistica().getCondicionMigratoria();
-        personaDetalle.setCondicionMigratoria(obtenerOrdinalDesdeString(condicionMigratoriaTexto, CatalogoCondicionMigratoria.class));
+        personaDetalle.setTipoDomicilio(personaDTO.getDatosContacto().getTipoDomicilio());
         
-        String grupoVulnerableTexto = personaDTO.getDatosEstadistica().getGrupoVulnerable();
-        personaDetalle.setGrupoVulnerable(obtenerOrdinalDesdeString(grupoVulnerableTexto, CatalogoGrupoVulnerable.class));
+        personaDetalle.setDiscapacidad(personaDTO.getDatosEstadistica().getDiscapacidad());
         
-        String profesionTexto = personaDTO.getDatosEstadistica().getProfesion();
-        personaDetalle.setProfesionOficio(obtenerOrdinalDesdeString(profesionTexto, CatalogoProfesionOficio.class));
+        personaDetalle.setEstadoCivil(personaDTO.getDatosGenerales().getEstadoCivil());
+
+        personaDetalle.setCondicionMigratoria(personaDTO.getDatosEstadistica().getCondicionMigratoria());
+        
+        personaDetalle.setGrupoVulnerable(personaDTO.getDatosEstadistica().getGrupoVulnerable());
+        
+        personaDetalle.setProfesionOficio(personaDTO.getDatosEstadistica().getProfesion());
+    
+        personaDetalle.setIngresoMensualNeto(personaDTO.getDatosEstadistica().getIngresosMensuales());
        
-        String ingresoNetoTexto = personaDTO.getDatosEstadistica().getIngresosMensuales();
-        personaDetalle.setIngresoMensualNeto(obtenerOrdinalDesdeString(ingresoNetoTexto, CatalogoIngresoMensualNeto.class));
-       
-        String frecuenciaIngresoTexto = personaDTO.getDatosEstadistica().getFrecuenciaIngreso();
-        personaDetalle.setFrecuenciaIngreso(obtenerOrdinalDesdeString(frecuenciaIngresoTexto, CatalogoFrecuenciaIngreso.class));
+        personaDetalle.setFrecuenciaIngreso(personaDTO.getDatosEstadistica().getFrecuenciaIngreso());
+
+        personaDetalle.setTipoDefensor(personaDTO.getDatosGenerales().getTipoDefensor());
         
-        String tipoDefensorTexto = personaDTO.getDatosGenerales().getTipoDefensor();
-        personaDetalle.setTipoDefensor(obtenerOrdinalDesdeString(tipoDefensorTexto, CatalogoTipoDefensor.class));
+        personaDetalle.setRfc(personaDTO.getDatosGenerales().getRfc());
         
-        Boolean hablaEspanol = personaDTO.getDatosEstadistica().getHablaEspanol();
-        personaDetalle.setHablaEspanol(hablaEspanol);
+        // BOOLEAN  
+        personaDetalle.setHablaEspanol(personaDTO.getDatosEstadistica().getHablaEspanol());
+
+        personaDetalle.setRecibePercepciones(personaDTO.getDatosEstadistica().getRecibePercepciones());
+
+        personaDetalle.setHablaLenguaIndigena(personaDTO.getDatosEstadistica().getHablaLenguaIndigena());
        
+        personaDetalle.setPerteneceGrupoVulnerable(personaDTO.getDatosEstadistica().getPerteneceGrupoVulnerable());
+       
+        personaDetalle.setTieneBienes(personaDTO.getDatosEstadistica().getTieneBienes());
+
+        personaDetalle.setTieneSeniasParticulares(personaDTO.getDatosEstadistica().getTieneSeniasParticulares());
+
+        personaDetalle.setPerteneceGrupoEtnico(personaDTO.getDatosEstadistica().getPerteneceGrupoEtnico());
+       
+        personaDetalle.setTieneReligion(personaDTO.getDatosEstadistica().getTieneReligion());
+       
+        personaDetalle.setTieneDependientes(personaDTO.getDatosEstadistica().getTieneDependientes());
+       
+        personaDetalle.setHablaLenguaExtranjera(personaDTO.getDatosEstadistica().getHablaLenguaExtranjera()); 
+       
+        personaDocumentoRepository.save(personaDocumento);
+        domicilioRepository.save(domicilio);
         personaDetalleRepository.save(personaDetalle);
-
-        return new PersonaDetalleRecord(personaDetalle.getId(), personaDocumento.getId(), domicilio.getId());
+               
+        return new PersonaDetalleRecord(personaDetalle.getId(),personaDocumento.getId(), domicilio.getId());
     }
+
+    public PersonaDTOGet getParticipante(Integer id){
+        PersonaDocumento personaDocumento = personaDocumentoRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", "id"));
+
+        PersonaDetalle personaDetalle = personaDetalleRepository.findByPersonaDocumentoId(id)
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+
+        Domicilio domicilio = domicilioRepository.findById(personaDetalle.getDomicilio().getId())
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+
+        PersonaDTOGet personaDTOGet = new PersonaDTOGet();
+
+        personaDTOGet.setPersonaDocumentoId(id);
+        personaDTOGet.setDomicilioId(domicilio.getId());
+        personaDTOGet.setPersonaDetalleId(personaDetalle.getId());
+
+        PersonaDTOGet.DatosGenerales datosGenerales = new PersonaDTOGet.DatosGenerales();
+        datosGenerales.setApellidoPaterno(personaDocumento.getApellidoPaterno());
+        datosGenerales.setApellidoMaterno(personaDocumento.getApellidoMaterno());
+        datosGenerales.setCurp(personaDocumento.getCurp());
+        datosGenerales.setCedula(personaDetalle.getCedula());
+        datosGenerales.setEstadoCivil(personaDetalle.getEstadoCivil());
+        datosGenerales.setFechaNacimiento(personaDetalle.getFechaNacimiento());
+        datosGenerales.setSexo(personaDetalle.getSexo());
+        datosGenerales.setNacionalidad(personaDetalle.getNacionalidad());
+        datosGenerales.setAdscripcion(personaDetalle.getAdscripcion());
+        datosGenerales.setCurp(personaDocumento.getCurp());
+        datosGenerales.setEdad(personaDetalle.getEdad());
+        datosGenerales.setEnRepresentacion(personaDetalle.getEnRepresentacionDe());
+        datosGenerales.setPseudonimo(personaDocumento.getPseudonimo());
+        datosGenerales.setRfc(personaDetalle.getRfc());
+        datosGenerales.setSexo(personaDetalle.getSexo());
+        datosGenerales.setEstadoCivil(personaDetalle.getEstadoCivil());
+        if(personaDocumento.getTipoPersona().equalsIgnoreCase("fisica")){
+            datosGenerales.setNombre(personaDocumento.getNombre());
+        } else {
+            datosGenerales.setRazonSocial(personaDocumento.getNombre());
+        }
+               
+        datosGenerales.setPseudonimo(personaDocumento.getPseudonimo());
+        datosGenerales.setTipo(personaDocumento.getTipoPartes().getId());
+        datosGenerales.setTipoDefensor(personaDetalle.getTipoDefensor());
+        datosGenerales.setTipoPersona(personaDocumento.getTipoPersona());        
+        personaDTOGet.setDatosGenerales(datosGenerales);
+
+        personaDTOGet.setDatosGenerales(datosGenerales);
+
+        PersonaDTOGet.DatosContacto datosContacto = new PersonaDTOGet.DatosContacto();
+
+        datosContacto.setCalle(domicilio.getCalle());
+        datosContacto.setCodigoPostal(domicilio.getCodigoPostal());
+        datosContacto.setColonia(domicilio.getColonia());
+        datosContacto.setCorreoElectronico(personaDocumento.getCorreoElectronico());
+        datosContacto.setEstado(domicilio.getEstadoRepublica());
+        datosContacto.setMunicipio(domicilio.getMunicipio());
+        datosContacto.setNumeroExterior(domicilio.getExterior());
+        datosContacto.setNumeroInterior(domicilio.getInterior());
+        datosContacto.setTelefono(personaDocumento.getCelular());
+        datosContacto.setTipoDomicilio(personaDetalle.getTipoDomicilio());
+        datosContacto.setPais(domicilio.getPaisResidencia());
+
+        personaDTOGet.setDatosContacto(datosContacto);
+
+        PersonaDTOGet.DatosEstadistica datosEstadistica = new PersonaDTOGet.DatosEstadistica();
+
+        datosEstadistica.setCantidadBienes(personaDetalle.getBienes());
+        datosEstadistica.setCantidadDependientes(personaDetalle.getCantidadDependientesEconomicos());
+        datosEstadistica.setCondicionMigratoria(personaDetalle.getCondicionMigratoria());
+        datosEstadistica.setDatosPrivados(personaDetalle.getDatosPrivados());
+        datosEstadistica.setDetallesDependientes(personaDetalle.getDetalleDependientes());
+        datosEstadistica.setDiscapacidad(personaDetalle.getDiscapacidad());
+        datosEstadistica.setDocumento(personaDetalle.getDocumentoIdentificacion());
+        datosEstadistica.setEntidadNacimiento(personaDetalle.getEntidadNacimiento());
+        datosEstadistica.setEscolaridad(personaDetalle.getEscolaridad());
+        datosEstadistica.setFrecuenciaIngreso(personaDetalle.getFrecuenciaIngreso());
+        datosEstadistica.setGrupoEtnico(personaDetalle.getGrupoEtnico());
+        datosEstadistica.setGrupoVulnerable(personaDetalle.getGrupoVulnerable());
+        datosEstadistica.setHablaEspanol(personaDetalle.getHablaEspanol());
+        datosEstadistica.setIngresosMensuales(personaDetalle.getIngresoMensualNeto());
+        datosEstadistica.setLenguaIndigena(personaDetalle.getLenguaIndigena());
+        datosEstadistica.setLugarTrabajo(personaDetalle.getLugarTrabajo());
+        datosEstadistica.setMunicipioNacimiento(personaDetalle.getMunicipioNacimiento());
+        datosEstadistica.setPaisNacimiento(personaDetalle.getPaisNacimiento());
+        datosEstadistica.setProfesion(personaDetalle.getProfesionOficio());
+        datosEstadistica.setRecibePercepciones(personaDetalle.getRecibePercepciones());
+        datosEstadistica.setReligion(personaDetalle.getReligion());
+        datosEstadistica.setSabeLeer(personaDetalle.getSabeLeerEscribir());
+        datosEstadistica.setSenias(personaDetalle.getSeniasParticulares());
+        datosEstadistica.setCantidadDependientes(personaDetalle.getCantidadDependientesEconomicos());
+        datosEstadistica.setHablaLenguaIndigena(personaDetalle.getHablaLenguaIndigena());
+        datosEstadistica.setPerteneceGrupoVulnerable(personaDetalle.getPerteneceGrupoVulnerable());
+        datosEstadistica.setTieneBienes(personaDetalle.getTieneBienes());
+        datosEstadistica.setTieneSeniasParticulares(personaDetalle.getTieneSeniasParticulares());
+        datosEstadistica.setPerteneceGrupoEtnico(personaDetalle.getPerteneceGrupoEtnico());
+        datosEstadistica.setTieneReligion(personaDetalle.getTieneReligion());
+        datosEstadistica.setTieneDependientes(personaDetalle.getTieneDependientes());
+        datosEstadistica.setHablaLenguaExtranjera(personaDetalle.getHablaLenguaExtranjera());
+        datosEstadistica.setLenguaExtranjera(personaDetalle.getLenguaExtranjera());
+        datosEstadistica.setPerteneceGrupoVulnerable(personaDetalle.getPerteneceGrupoVulnerable());
+        personaDTOGet.setDatosEstadistica(datosEstadistica);
+
+        return personaDTOGet;
+    }
+
+    @Transactional
+    public void updateParticipante(Integer personaDocumentoId, PersonaDTO personaDTO) throws NotFoundException {
+        PersonaDocumento personaDocumento = personaDocumentoRepository.findById(personaDocumentoId)
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", "id"));
+
+        PersonaDetalle personaDetalle = personaDetalleRepository.findByPersonaDocumentoId(personaDocumentoId)
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+
+        Domicilio domicilio = domicilioRepository.findById(personaDetalle.getDomicilio().getId())
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+
+        Integer tipoParteId = personaDTO.getDatosGenerales().getTipo();
+        TipoPartes tipoParte = tipoPartesRepository.findById(tipoParteId)
+            .orElseThrow(() -> new EntityNotFoundException("Tipo de partes no encontrado")); 
+
         
+        if(!personaDTO.getDatosGenerales().getNombres().isEmpty()){
+            personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombres());
+        } else if (!personaDTO.getDatosGenerales().getRazonSocial().isEmpty()){
+            personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
+        }
+        
+        personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
+        personaDocumento.setApellidoMaterno(personaDTO.getDatosGenerales().getApellidoMaterno());
+        personaDocumento.setPseudonimo(personaDTO.getDatosGenerales().getPseudonimo());
+        personaDocumento.setTipoPersona(personaDTO.getDatosGenerales().getTipoPersona());
+        personaDocumento.setTipoPartes(tipoParte);
+        personaDocumento.setCurp(personaDTO.getDatosGenerales().getCurp());
+        personaDocumento.setCelular(personaDTO.getDatosContacto().getTelefono());  
+        personaDocumento.setCorreoElectronico(personaDTO.getDatosContacto().getCorreoElectronico());
+
+        domicilio.setCalle(personaDTO.getDatosContacto().getCalle());
+        domicilio.setInterior(personaDTO.getDatosContacto().getNumeroInterior());
+        domicilio.setExterior(personaDTO.getDatosContacto().getNumeroExterior());
+        domicilio.setColonia(personaDTO.getDatosContacto().getColonia());
+        domicilio.setCodigoPostal(personaDTO.getDatosContacto().getCodigoPostal());
+        domicilio.setMunicipio(personaDTO.getDatosContacto().getMunicipio());
+        domicilio.setEstadoRepublica(personaDTO.getDatosContacto().getEstado());
+
+        if( personaDTO.getDatosContacto().getPais() != null){
+            Integer idPaisResidencia = personaDTO.getDatosContacto().getPais();
+            Pais paisResidencia = paisRepository.findById(idPaisResidencia).orElseThrow(() -> new EntityNotFoundException("Pais de residencia no encontrado"));  
+            domicilio.setPaisResidencia(paisResidencia);
+        } 
+
+        if (personaDTO.getDatosEstadistica().getLenguaIndigena() != null) {
+            LenguaIndigena lenguaIndigena = lenguaIndigenaRepository.findById(personaDTO.getDatosEstadistica().getLenguaIndigena())
+                .orElseThrow(() -> new EntityNotFoundException("Lengua indígena no encontrada"));
+            personaDetalle.setLenguaIndigena(lenguaIndigena);
+        } else {
+            personaDetalle.setLenguaIndigena(null);
+        }
+        
+        if (personaDTO.getDatosGenerales().getNacionalidad() != null) {
+            Nacionalidad nacionalidad = nacionalidadRepository.findById(personaDTO.getDatosGenerales().getNacionalidad())
+                .orElseThrow(() -> new EntityNotFoundException("Nacionalidad no encontrada"));
+            personaDetalle.setNacionalidad(nacionalidad);
+        } else {
+            personaDetalle.setNacionalidad(null);
+        }
+
+        if (personaDTO.getDatosEstadistica().getEscolaridad() != null) {
+            Escolaridad escolaridad = escolaridadRepository.findById(personaDTO.getDatosEstadistica().getEscolaridad())
+                .orElseThrow(() -> new EntityNotFoundException("Escolaridad no encontrada"));
+            personaDetalle.setEscolaridad(escolaridad);
+        } else {
+            personaDetalle.setEscolaridad(null);
+        }
+    
+        if (personaDTO.getDatosEstadistica().getDocumentoIdentificacion() != null) {
+            DocumentoIdentificacion documentoIdentificacion = documentoIdentificacionRepository.findById(personaDTO.getDatosEstadistica().getDocumentoIdentificacion())
+                .orElseThrow(() -> new EntityNotFoundException("Documento Identificación no encontrado"));
+            personaDetalle.setDocumentoIdentificacion(documentoIdentificacion);
+        } else {
+            personaDetalle.setDocumentoIdentificacion(null);
+        }
+       
+        if (personaDTO.getDatosGenerales().getEnRepresentacion() != null) {
+            PersonaDocumento enRepresentacion = personaDocumentoRepository.findById(personaDTO.getDatosGenerales().getEnRepresentacion())
+                .orElseThrow(() -> new EntityNotFoundException("Persona representada no encontrada"));
+            personaDetalle.setEnRepresentacionDe(enRepresentacion);
+        }
+
+        personaDetalle.setPersonaDocumento(personaDocumento);
+        personaDetalle.setDomicilio(domicilio);
+        
+        personaDetalle.setSexo(personaDTO.getDatosGenerales().getSexo());
+        LocalDate fechaNacimientoStr = personaDTO.getDatosGenerales().getFechaNacimiento();
+        if (fechaNacimientoStr != null) {
+            personaDetalle.setFechaNacimiento(java.sql.Date.valueOf(personaDTO.getDatosGenerales().getFechaNacimiento()));
+        } else {
+            personaDetalle.setFechaNacimiento(null); 
+        } 
+       
+        personaDetalle.setMunicipioNacimiento(personaDTO.getDatosEstadistica().getMunicipioNacimiento());
+        personaDetalle.setEntidadNacimiento(personaDTO.getDatosEstadistica().getEntidadNacimiento());
+        personaDetalle.setEdad(personaDTO.getDatosGenerales().getEdad());
+
+        if(personaDTO.getDatosEstadistica().getPaisNacimiento() != null){
+            Integer idPaisNacimiento = personaDTO.getDatosEstadistica().getPaisNacimiento();
+            Pais paisNacimiento = paisRepository.findById(idPaisNacimiento).orElseThrow(() -> new EntityNotFoundException("Pais de nacimiento no encontrado"));
+            personaDetalle.setPaisNacimiento(paisNacimiento);
+        }
+
+        personaDetalle.setLenguaExtranjera(personaDTO.getDatosEstadistica().getLenguaExtranjera());
+        personaDetalle.setSabeLeerEscribir(personaDTO.getDatosEstadistica().getSabeLeer()); 
+        personaDetalle.setLugarTrabajo(personaDTO.getDatosEstadistica().getLugarTrabajo());
+        personaDetalle.setCantidadDependientesEconomicos(personaDTO.getDatosEstadistica().getCantidadDependientes());
+        personaDetalle.setDetalleDependientes(personaDTO.getDatosEstadistica().getDetallesDependientes());
+        personaDetalle.setBienes(personaDTO.getDatosEstadistica().getCantidadBienes());
+        personaDetalle.setReligion(personaDTO.getDatosEstadistica().getReligion());
+        personaDetalle.setSeniasParticulares(personaDTO.getDatosEstadistica().getSenias());
+        personaDetalle.setGrupoEtnico(personaDTO.getDatosEstadistica().getGrupoEtnico());
+        personaDetalle.setDatosPrivados(personaDTO.getDatosEstadistica().getDatosPrivados());
+        personaDetalle.setCedula(personaDTO.getDatosGenerales().getCedula());
+        personaDetalle.setAdscripcion(personaDTO.getDatosGenerales().getAdscripcion());
+
+        personaDetalle.setTipoDomicilio(personaDTO.getDatosContacto().getTipoDomicilio());
+        
+        personaDetalle.setDiscapacidad(personaDTO.getDatosEstadistica().getDiscapacidad());
+        
+        personaDetalle.setEstadoCivil(personaDTO.getDatosGenerales().getEstadoCivil());
+
+        personaDetalle.setCondicionMigratoria(personaDTO.getDatosEstadistica().getCondicionMigratoria());
+        
+        personaDetalle.setGrupoVulnerable(personaDTO.getDatosEstadistica().getGrupoVulnerable());
+        
+        personaDetalle.setProfesionOficio(personaDTO.getDatosEstadistica().getProfesion());
+    
+        personaDetalle.setIngresoMensualNeto(personaDTO.getDatosEstadistica().getIngresosMensuales());
+       
+        personaDetalle.setFrecuenciaIngreso(personaDTO.getDatosEstadistica().getFrecuenciaIngreso());
+
+        personaDetalle.setTipoDefensor(personaDTO.getDatosGenerales().getTipoDefensor());
+        
+        personaDetalle.setRfc(personaDTO.getDatosGenerales().getRfc());
+        
+   
+        personaDetalle.setHablaEspanol(personaDTO.getDatosEstadistica().getHablaEspanol());
+
+        personaDetalle.setRecibePercepciones(personaDTO.getDatosEstadistica().getRecibePercepciones());
+
+        personaDetalle.setHablaLenguaIndigena(personaDTO.getDatosEstadistica().getHablaLenguaIndigena());
+       
+        personaDetalle.setPerteneceGrupoVulnerable(personaDTO.getDatosEstadistica().getPerteneceGrupoVulnerable());
+       
+        personaDetalle.setTieneBienes(personaDTO.getDatosEstadistica().getTieneBienes());
+
+        personaDetalle.setTieneSeniasParticulares(personaDTO.getDatosEstadistica().getTieneSeniasParticulares());
+
+        personaDetalle.setPerteneceGrupoEtnico(personaDTO.getDatosEstadistica().getPerteneceGrupoEtnico());
+       
+        personaDetalle.setTieneReligion(personaDTO.getDatosEstadistica().getTieneReligion());
+       
+        personaDetalle.setTieneDependientes(personaDTO.getDatosEstadistica().getTieneDependientes());
+       
+        personaDetalle.setHablaLenguaExtranjera(personaDTO.getDatosEstadistica().getHablaLenguaExtranjera()); 
+
+       
+        personaDocumentoRepository.save(personaDocumento);
+        domicilioRepository.save(domicilio);
+        personaDetalleRepository.save(personaDetalle);
+    }
 }

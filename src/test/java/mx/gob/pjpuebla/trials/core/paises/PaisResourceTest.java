@@ -40,8 +40,8 @@ class PaisResourceTest {
         pais2.setNombreComun("Estados Unidos");
 
         List<PaisRecord> paisRecords = Arrays.asList(
-                new PaisRecord(pais1.getKey(), pais1.getNombreComun(), pais1.getId().toString()),
-                new PaisRecord(pais2.getKey(), pais2.getNombreComun(),pais1.getId().toString())
+                new PaisRecord(pais1.getKey(), pais1.getNombreComun(), pais1.getId().toString(), pais1.getId()),
+                new PaisRecord(pais2.getKey(), pais2.getNombreComun(),pais1.getId().toString(), pais2.getId())
         );
 
         when(paisService.getAll()).thenReturn(paisRecords);
