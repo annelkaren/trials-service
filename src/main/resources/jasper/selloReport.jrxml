@@ -173,10 +173,6 @@
 				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				<text><![CDATA[Anexos:]]></text>
 			</element>
-			<element kind="staticText" uuid="d5efdcb5-34fa-412b-ba1f-333c39ec8116" x="52" y="171" width="140" height="19" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<text><![CDATA[Relación de Expedientes:]]></text>
-			</element>
 			<element kind="textField" uuid="dc799aac-d730-4ecc-b30e-6344817efdd6" stretchType="ContainerHeight" x="52" y="130" width="410" height="39" markup="html" textAdjust="StretchHeight">
 				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 				<expression><![CDATA[$P{anexos}]]></expression>
@@ -205,9 +201,10 @@
 				<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
 				<expression><![CDATA[$P{domiciliofamiliar}]]></expression>
 			</element>
-			<element kind="textField" uuid="6179a437-db31-47a4-815f-a391e9988601" stretchType="ContainerHeight" x="52" y="193" width="410" height="50" markup="html" textAdjust="StretchHeight">
+			<element kind="textField" uuid="6179a437-db31-47a4-815f-a391e9988601" stretchType="ContainerHeight" x="52" y="180" width="410" height="62" markup="html" textAdjust="StretchHeight" bold="false">
 				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{relacionExpediente}]]></expression>
+				<expression><![CDATA[(("<b>Relación de Expedientes: <br/></b>" +$P{relacionExpediente} == null || $P{relacionExpediente}.trim().isEmpty()) ? " " : $P{relacionExpediente})
+]]></expression>
 			</element>
 			<element kind="textField" uuid="771cbad0-e6a8-4361-9981-cb8f950c57d9" x="299" y="29" width="46" height="18" markup="html" bold="false">
 				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>

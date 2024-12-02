@@ -238,9 +238,10 @@ public class PersonaService {
                 pageable
         );
 
+        String normalizedSearch = nombre.replaceAll("[^a-zA-Z0-9@]", "").toLowerCase();
+
         List<PersonaRecordResponse> list = page.stream()
-                .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
-                .map(p ->
+                .filter(p -> nombre.isEmpty() || containsNormalized(p.getNombre(), normalizedSearch) || containsNormalized(p.getApellidoPaterno(), normalizedSearch) || containsNormalized(p.getApellidoMaterno(), normalizedSearch) || containsNormalized(p.getCorreoElectronico(), normalizedSearch) || p.getJuzgado() != null && containsNormalized(p.getJuzgado().getNombre(), normalizedSearch) || containsNormalized(p.getCelular(), normalizedSearch)).map(p ->
                         new PersonaRecordResponse(
                                 p.getId(),
                                 p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
@@ -253,6 +254,11 @@ public class PersonaService {
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    private boolean containsNormalized(String field, String search) {
+        if (field == null) return false;
+        return field.replaceAll("[^a-zA-Z0-9@]", "").toLowerCase().contains(search);
     }
 
     @Transactional(readOnly = true)

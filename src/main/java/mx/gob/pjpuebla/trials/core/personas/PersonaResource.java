@@ -23,8 +23,8 @@ public class PersonaResource {
     @GetMapping
     public Page<PersonaRecordResponse> getAll(
             @PageableDefault(size = 25) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.personaService.findAllByCentroTrabajo(nombre, pageable);
+            @RequestParam(value = "searchQuery", required = false) String searchQuery) {
+        return this.personaService.findAllByCentroTrabajo(searchQuery, pageable);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
