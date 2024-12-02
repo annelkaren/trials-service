@@ -388,4 +388,18 @@ class CarpetaResourceTest {
         mockMvc.perform(get("/api/workflow/carpeta/documentos/1"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testPostAcoplarPieza() throws Exception{
+
+        PiezaRecordResponse response = new PiezaRecordResponse(1, "000001/2024/AD01", "AMPARO DIRECTO", EstadoCarpeta.CANCELADO);
+
+        given(mockCarpetaService.acoplarPieza(any(), any())).willReturn(response);
+
+        mockMvc.perform(post("/api/workflow/carpeta/piezas/acoplar?piezaId=1&estatus=CANCELADO")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
 }

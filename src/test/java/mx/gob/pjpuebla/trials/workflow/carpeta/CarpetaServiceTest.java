@@ -834,4 +834,38 @@ class CarpetaServiceTest {
         assertThat(lista).isNotEmpty();
 
     }
+
+    @Test
+    void acoplarPiezaExpediente(){
+        Integer carpetaPadreId = 1;
+
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        Persona persona = PersonaSetUp.createPersona();
+        String consecutivo = "AD01";
+        String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
+        Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
+        List<Documento> documentos = Collections.singletonList(documento);
+
+        Carpeta pieza = new Carpeta()
+                .setId(5)
+                .setExpediente(expediente)
+                .setCarpetaPadre(validCarpeta)
+                .setTipoPieza(tipoPieza)
+                .setTipoCarpeta(TipoCarpeta.PIEZA);
+
+        PiezaRecordResponse response;
+
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(pieza));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.findByCarpetaId(any())).willReturn(documentos);
+        given(carpetaRepository.save(any())).willReturn(pieza);
+
+        response = target.acoplarPieza(pieza.getId(), EstadoCarpeta.CANCELADO.name());
+
+        assertThat(response).isNotNull().hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CANCELADO);
+
+    }
 }
