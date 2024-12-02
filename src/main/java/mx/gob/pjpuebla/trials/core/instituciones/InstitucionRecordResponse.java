@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
