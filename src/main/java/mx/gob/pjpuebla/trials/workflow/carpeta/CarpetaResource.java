@@ -113,10 +113,10 @@ public class CarpetaResource {
         return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
     }
 
-    @PostMapping(value="/piezas/{id}/acoplar", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/piezas/acoplar", produces = MediaType.APPLICATION_JSON_VALUE)
     public PiezaRecordResponse acoplarPieza(
-            @PathVariable("id") Integer piezaId,
-            @RequestParam EstadoCarpeta estadoPieza){
+            @RequestParam("piezaId") Integer piezaId,
+            @RequestParam("estatus") String estadoPieza){
             return this.carpetaService.acoplarPieza(piezaId, estadoPieza);
     }
 }

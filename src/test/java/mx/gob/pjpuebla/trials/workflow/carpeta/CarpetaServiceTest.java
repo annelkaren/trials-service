@@ -803,8 +803,11 @@ class CarpetaServiceTest {
         PersonaRecord persona = PersonaSetUp.createPersonaRecord(Collections.singletonList(new RoleRecord("1","OFICIAL")));
 
 
-        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION, null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF", 1L, TipoCarpeta.DEMANDA);
-        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null, tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA);
+        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION,
+                null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF",
+                1L, TipoCarpeta.DEMANDA, EstadoCarpeta.ASIGNADO);
+        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null,
+                tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA, EstadoCarpeta.ASIGNADO);
 
         List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
         List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
@@ -818,7 +821,8 @@ class CarpetaServiceTest {
                             e.ruta(),
                             "",
                             e.tipoCarpeta().name(),
-                            Boolean.FALSE)).toList());
+                            Boolean.FALSE,
+                            EstadoCarpeta.ASIGNADO.name(), "")).toList());
 
         given(personaService.findById(any())).willReturn(persona);
         given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());

@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -372,6 +373,7 @@ public class CarpetaService {
     }
 
     public void asignarPieza(Carpeta pieza, List<Integer> documentos) {
+        Persona persona = personaService.getAuditor();
 
         for (Integer documentoId : documentos) {
             Documento documento = documentoRepository.findById(documentoId).orElseThrow();
@@ -385,6 +387,7 @@ public class CarpetaService {
                     setPieza(pieza.getExpediente()).
                     setEstadoPieza(EstadoCarpeta.ASIGNADO));
             documentoRepository.save(documento);
+            movimientoService.createMovimento(null, documento, persona, "Asignar a Pieza", EstadoCarpeta.ASIGNADO.name());
         }
 
         Documento documento = documentoRepository.findById(documentos.stream().findFirst().orElseThrow()).orElseThrow();
@@ -546,14 +549,16 @@ public class CarpetaService {
         return list.stream()
                 .map(
                         e -> new DocumentoDetalleCarpetaResponse(
-                                e.id()!=null?e.id():null,
+                                e.id(),
                                 "PIEZA DE "+e.tipoPieza().getTipo(),
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
                                 personaService.findById(e.personaOrigenId()).permisos().get(0).name(),
                                 e.tipoCarpeta().name(),
-                                Objects.equals(e.personaOrigenId(), persona.getId())
+                                Objects.equals(e.personaOrigenId(), persona.getId()),
+                                e.estadoCarpeta().name(),
+                                ""
                         )).toList();
     }
 
@@ -563,14 +568,16 @@ public class CarpetaService {
         return list.stream()
                 .map(
                         e -> new DocumentoDetalleCarpetaResponse(
-                                e.id()!=null?e.id():null,
+                                e.id(),
                                 e.tipoDocumento()!=null?e.tipoDocumento().getEtiqueta():"DEMANDA",
                                 e.folio(),
                                 e.fechaRegistro(),
                                 e.ruta(),
                                 (e.personaOrigenId()!=null)?personaService.findById(e.personaOrigenId()).permisos().get(0).name():"",
                                 e.tipoCarpeta().name(),
-                                Boolean.FALSE
+                                Boolean.FALSE,
+                                e.estadoCarpeta()!=null?e.estadoCarpeta().name() : "",
+                                ""
                         )).toList();
     }
 
@@ -583,15 +590,17 @@ public class CarpetaService {
         return new PageImpl<>(lista, pageable, lista.size());
     }
 
-    public PiezaRecordResponse acoplarPieza(Integer piezaId, EstadoCarpeta estadoPieza){
+    public PiezaRecordResponse acoplarPieza(Integer piezaId, String estadoPiezaReq){
         Carpeta pieza = carpetaRepository.findById(piezaId).orElseThrow(()->new NotFoundException("La pieza no existe","piezaId"));
+        EstadoCarpeta estadoPieza = EstadoCarpeta.valueOf(estadoPiezaReq);
+        Persona persona = personaService.getAuditor();
 
         if (pieza.getTipoCarpeta()!=TipoCarpeta.PIEZA){
-            throw new RuntimeException("No es una pieza");
+            throw new ConflictException("No es una pieza");
         }
 
         if (pieza.getEstatus()==EstadoCarpeta.CANCELADO || pieza.getEstatus()==EstadoCarpeta.INTEGRADO){
-            throw  new RuntimeException("No se puede actualizar el estado de la Pieza");
+            throw new ConflictException("No se puede actualizar el estado de la Pieza");
         }
 
         // TODO agregar validación para cancelar o integrar la Pieza
@@ -606,7 +615,7 @@ public class CarpetaService {
         }
 
         pieza.setEstatus(estadoPieza);
-        pieza.setPersona(null);
+        movimientoService.createMovimento(pieza, null, persona,null, estadoPieza.name() );
 
         pieza = carpetaRepository.save(pieza);
 

@@ -10,6 +10,8 @@ public record DocumentoDetalleCarpetaResponse(
         String ruta,
         String origen,
         String tipoCarpeta,
-        Boolean asignado
+        Boolean asignado,
+        String estatus,
+        String observaciones
 ) {
 }

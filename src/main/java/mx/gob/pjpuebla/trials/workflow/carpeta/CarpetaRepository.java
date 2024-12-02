@@ -72,7 +72,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse(
-                c.id, c.expediente, tp.tipo
+                c.id, c.expediente, tp.tipo, c.estatus
             )
             FROM Documento d
             JOIN Carpeta c on c.carpetaPadre.id = d.carpeta.id
@@ -94,15 +94,13 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                 c.audit.fechaAlta,
                 null,
                 c.persona.id,
-                c.tipoCarpeta
+                c.tipoCarpeta,
+                c.estatus
             )
             FROM Carpeta c
             JOIN c.tipoPieza tp
             WHERE c.carpetaPadre.id = :carpetaPadreId
             AND c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA
-            AND c.estatus NOT IN (
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.CANCELADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.INTEGRADO)
             AND
                 CASE WHEN :key IS NULL THEN 1
                 WHEN c.expediente LIKE %:key% OR c.tipoPieza.tipo LIKE %:key% THEN 1

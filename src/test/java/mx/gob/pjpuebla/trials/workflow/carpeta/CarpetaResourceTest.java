@@ -345,7 +345,7 @@ class CarpetaResourceTest {
     void testPutAdjuntarPieza() throws Exception{
         PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
         TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
-        PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD");
+        PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD", EstadoCarpeta.ASIGNADO);
 
         given(mockCarpetaService.adjuntarPiezaDocumentos(any(), any())).willReturn(pieza);
 
@@ -364,9 +364,9 @@ class CarpetaResourceTest {
                 .setTipo("Amparo Directo");
         DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION,
                 tipoPieza, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF",
-                1L, TipoCarpeta.DEMANDA);
+                1L, TipoCarpeta.DEMANDA, EstadoCarpeta.ASIGNADO);
         DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null,
-                null, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA);
+                null, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA, EstadoCarpeta.ASIGNADO);
 
         List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
         List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
@@ -380,7 +380,8 @@ class CarpetaResourceTest {
                                 e.ruta(),
                                 "",
                                 e.tipoCarpeta().name(),
-                                Boolean.FALSE)).toList());
+                                Boolean.FALSE,
+                                EstadoCarpeta.ASIGNADO.name(),"")).toList());
 
         given(mockCarpetaService.getAllDocumentosPiezas(null, 1, Pageable.ofSize(lista.getSize()))).willReturn(lista);
 
