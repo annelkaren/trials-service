@@ -49,6 +49,16 @@ public class DocumentoDetalle implements Serializable {
     @Column(name="S_ETAPA_PROCESAL")
     private String etapaProcesal;
 
+    @Column(name="S_TIPO_SENTENCIA")
+    private String tipoSentencia;
+
+    @Column(name="S_TIPO_RESOLUCION")
+    private String tipoResolucion;
+
+    @Size(max = 600)
+    @Column(name = "S_EXTRACTO_SENTENCIA")
+    private String extractoSentencia;
+
     @Size(max = 150)
     @Column(name = "S_RESUMEN")
     private String resumen;
