@@ -401,4 +401,20 @@ class CarpetaResourceTest {
                 .andExpect(status().isOk());
 
     }
+
+    @Test
+    void testGetLibroDeGobierno_Success() throws Exception {
+        List<LibroGobiernoRecord> libroGobiernoRecords = List.of(new LibroGobiernoRecord(1, "000001/2024", LocalDateTime.now(), "Oralidad familiar", "Actor", "Demandado"));
+        Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
+
+        when(mockCarpetaService.libroDeGobierno(anyString(), any(Pageable.class)))
+                .thenReturn(libroGobiernoPage);
+
+        mockMvc.perform(get("/api/workflow/carpeta/librogobierno")
+                        .param("key", "L")
+                        .param("size", "20")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 }

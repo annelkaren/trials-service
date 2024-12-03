@@ -119,4 +119,11 @@ public class CarpetaResource {
             @RequestParam("estatus") String estadoPieza){
             return this.carpetaService.acoplarPieza(piezaId, estadoPieza);
     }
+
+    @GetMapping("/librogobierno")
+    public Page<LibroGobiernoRecord> getLibroDeGobierno(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return carpetaService.libroDeGobierno(key, pageable);
+    }
 }
