@@ -46,7 +46,11 @@ public class SentenciasService {
         DocumentoDetalle docDetalle = new DocumentoDetalle()
                 .setFechaResolucion(sentencia.fechaResolucion())
                 .setEtapaProcesal(sentencia.etapaProcesal())
+                .setTipoSentencia(sentencia.tipoSentencia())
+                .setTipoResolucion(sentencia.tipoResolucion())
+                .setExtractoSentencia(sentencia.extractoSentencia())
                 .setDocumento(doc);
+        documentoDetalleRepository.save(docDetalle);
 
         // Creacón de la información de contenido:
         DocumentoContenido docContenido = new DocumentoContenido()
@@ -55,8 +59,7 @@ public class SentenciasService {
                 .setTexto(sentencia.textoEditor());
         documentoContenidoRepository.save(docContenido);
 
-        // Buscamos las promociones las cuales fueron marcadas para asociar a la
-        // sentencia
+        // Buscamos las promociones las cuales fueron marcadas para asociar
 
         if (sentencia.promocionesRelacionadas() != null) {
             for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
+import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
@@ -49,14 +51,13 @@ public class DocumentoDetalle implements Serializable {
     @Column(name="S_ETAPA_PROCESAL")
     private String etapaProcesal;
 
-    @Column(name="S_TIPO_SENTENCIA")
-    private String tipoSentencia;
+    @Column(name="N_TIPO_SENTENCIA")
+    private TipoSentencia tipoSentencia;
 
-    @Column(name="S_TIPO_RESOLUCION")
-    private String tipoResolucion;
+    @Column(name = "N_TIPO_RESOLUCION")
+    private TipoResolucion tipoResolucion;
 
-    @Size(max = 600)
-    @Column(name = "S_EXTRACTO_SENTENCIA")
+    @Column(name = "S_TIPO_EXTRACTO_SENTENCIA")
     private String extractoSentencia;
 
     @Size(max = 150)
