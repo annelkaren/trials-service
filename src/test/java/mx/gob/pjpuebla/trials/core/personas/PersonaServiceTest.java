@@ -344,9 +344,9 @@ class PersonaServiceTest extends SetupServiceTest {
         Page<PersonaRecordResponse> response = new PageImpl<>(list);
 
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
-        given(mockPersonaRepository.findByCentroTrabajo(any(), any(), any())).willReturn(page);
+        given(mockPersonaRepository.findByCentroTrabajoAndSearch(any(), any(), any(), any())).willReturn(page);
 
-        response = personaService.findAllByCentroTrabajo("", PageRequest.of( response.getSize(), 20));
+        response = personaService.findAllByCentroTrabajo(null, null, PageRequest.of(0, response.getSize()));
 
         assertThat(response).isNotEmpty();
     }
