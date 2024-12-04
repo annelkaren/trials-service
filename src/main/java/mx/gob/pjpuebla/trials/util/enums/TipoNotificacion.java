@@ -4,7 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum TipoNotificacion {
-    ESTRADO,
-    CORREO_ELECTRONICO,
-    DOMICILIO
+    ESTRADO("Estrado"),
+    CORREO_ELECTRONICO("Correo electrónico"),
+    DOMICILIO("Domicilio"),
+    NINGUNO("Ninguno");
+
+    private final String tipoNotificacion;
+
+    TipoNotificacion(String tipoNotificacion){
+        this.tipoNotificacion = tipoNotificacion;
+    }
 }

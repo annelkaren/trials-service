@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +20,7 @@ public class NotificacionResource {
 
     private final NotificacionService notificacionService;
 
-    @GetMapping("/bandeja/notificaciones")
+    @GetMapping( value = "/bandeja/notificaciones" ,  produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<NotificacionRecord> getAllNotificaciones(@PageableDefault(size = 20) Pageable pageable,
                                                          @RequestParam(value = "key", required = false) String key) {
         return this.notificacionService.getAllNotificaciones(key, pageable);
