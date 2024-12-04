@@ -225,14 +225,15 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, Pageable pageable) {
+    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre,String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
 
         if (usuario.getJuzgado() == null && usuario.getOficialia() == null) { //Admin de sistema
             return getAll(new Persona().setNombre(nombre), pageable);
         }
 
-        Page<Persona> page = personaRepository.findByCentroTrabajo(
+        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
+                searchQuery,
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
                 pageable
