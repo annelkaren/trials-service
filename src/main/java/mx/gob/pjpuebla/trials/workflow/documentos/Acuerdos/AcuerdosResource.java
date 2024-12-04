@@ -89,6 +89,10 @@ public class AcuerdosResource {
         headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
         return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
     }
-    
+
+    @GetMapping(value = "/acuerdos/{acuerdoId}/promociones")
+    public List<AcuerdoPromocionesRecord> getPromocionesAcuerdos(@PathVariable Integer acuerdoId){
+        return acuerdosService.findPromocionesByAcuerdo(acuerdoId);
+    }
 
 }

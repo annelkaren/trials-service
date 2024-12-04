@@ -218,7 +218,10 @@ public class AcuerdosService {
         
     }
 
-    List<Documento> findPromocionesByAcuerdo(Integer acuerdoId){
-        return documentoRepository.findByAcuerdoRespuestaId(acuerdoId);
+    List<AcuerdoPromocionesRecord> findPromocionesByAcuerdo(Integer acuerdoId){
+        List<Documento> promociones =  documentoRepository.findByAcuerdoRespuestaId(acuerdoId);
+
+        return promociones.stream()
+                .map((p)-> new AcuerdoPromocionesRecord(p.getId(), p.getFolio(), p.getRuta(), "", null)).toList();
     }
 }
