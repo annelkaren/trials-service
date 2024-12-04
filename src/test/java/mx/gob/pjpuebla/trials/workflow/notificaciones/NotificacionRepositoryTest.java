@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/DELETE_CARPETAS.sql",
         "/scripts/DELETE_TIPO_PIEZAS.sql",
         "/scripts/DELETE_PERSONAS.sql",
+        "/scripts/DELETE_ESTADO_CIVIL.sql",
         "/scripts/DELETE_ESCOLARIDADES.sql",
         "/scripts/DELETE_JUZGADOS.sql",
         "/scripts/DELETE_TIPO_JUICIOS.sql",
