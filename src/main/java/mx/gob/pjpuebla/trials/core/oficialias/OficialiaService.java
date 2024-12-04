@@ -174,9 +174,9 @@ public class OficialiaService {
 
 
     @Transactional(readOnly = true)
-    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
-        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(pageable);
-
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(String searchQuery, Pageable pageable) {
+        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(searchQuery , pageable);
+System.out.println("oficialias Hola");
         return new PageImpl<>(oficialias.stream().map(o -> 
             new OficialiaMateriaRecord(
                 o.getId(), 

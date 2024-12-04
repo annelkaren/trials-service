@@ -62,11 +62,24 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
     List<OficialiaJuzgadoRecord> findAllOficialiasWithActiveJuzgados();
 
     @Query("""
-            Select o FROM Oficialia o
-            WHERE o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
-            OR o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.INACTIVE
-            """)
-    Page<Oficialia> findAllActive(Pageable pageable);
+     Select o FROM Oficialia o
+     LEFT JOIN o.materias m
+     LEFT JOIN o.juzgados j
+     LEFT JOIN o.tipoOficialia t
+     WHERE (
+                 :searchTerm IS NULL OR
+                LOWER(TRANSLATE(o.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+                LOWER(TRANSLATE(m.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+                LOWER(TRANSLATE(o.tipoOficialia.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+                LOWER(TRANSLATE(j.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN'))
+     )
+     AND (
+         o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+         OR o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.INACTIVE
+     )
+ """)
+    Page<Oficialia> findAllActive(@Param("searchTerm") String searchTerm, Pageable pageable);
+
 
     @Query("""
         SELECT o
