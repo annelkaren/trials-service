@@ -640,7 +640,7 @@ public class CarpetaService {
             return new LibroGobiernoRecord(
                     carpeta.getId(),
                     carpeta.getExpediente(),
-                    carpeta.getAudit().getFechaAlta(),
+                    (carpeta.getAudit() != null && carpeta.getAudit().getFechaAlta() != null) ? carpeta.getAudit().getFechaAlta() : null,
                     carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre() : "Sin Tipo de Juicio",
                     actor,
                     demandado
