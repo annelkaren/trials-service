@@ -19,7 +19,6 @@ import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
-import mx.gob.pjpuebla.trials.core.rubros.RubroResource;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -70,8 +69,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -868,4 +867,34 @@ class CarpetaServiceTest {
         assertThat(response).isNotNull().hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CANCELADO);
 
     }
+
+    @Test
+    void libroDeGobierno() {
+
+        Persona persona = PersonaSetUp.createPersona();
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado);
+
+        List<Carpeta> carpetas = List.of(CarpetaSetUp.create());
+        Page<Carpeta> carpetaPage = new PageImpl<>(carpetas, PageRequest.of(0, 10), carpetas.size());
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(carpetaRepository.findByJuzgado(eq(juzgado), eq("000001/2024"), eq(PageRequest.of(0, 10))))
+                .willReturn(carpetaPage);
+
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
+                .willReturn(actor);
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
+                .willReturn(demandado);
+
+        Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
+
+        assertThat(result).isNotNull();
+
+        verify(personaService).getAuditor();
+        verify(carpetaRepository).findByJuzgado(eq(juzgado), eq("000001/2024"),  eq(PageRequest.of(0, 10)));
+        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any());
+        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
+    }
+
 }
