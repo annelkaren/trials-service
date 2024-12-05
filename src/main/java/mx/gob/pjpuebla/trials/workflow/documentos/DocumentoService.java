@@ -566,9 +566,9 @@ public class DocumentoService {
         Page<Movimiento> page = movimientoService.getBandejaRecepcion(
                 pageable,
                 currentUser.getJuzgado().getId(),
-                Arrays.asList(EstadoCarpeta.TURNADO),
+                EstadoCarpeta.TURNADO,
                 key,
-                Arrays.asList(EstadoCarpeta.TURNADO.name()),
+                EstadoCarpeta.TURNADO.name(),
                 currentUser
         );
         List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();

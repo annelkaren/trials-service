@@ -74,7 +74,7 @@ public class MovimientoService {
         return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos);
     }
 
-    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos, Persona personaId) {
+    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key, String motivos, Persona personaId) {
         return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
     }
 

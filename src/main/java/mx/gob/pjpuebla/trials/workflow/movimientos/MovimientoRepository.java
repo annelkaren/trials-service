@@ -80,8 +80,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 LEFT JOIN m.juzgado j
                 LEFT JOIN m.oficialia o
                 WHERE (
-                    (c IS NOT NULL AND c.estatus IN :estado)
-                    OR (d IS NOT NULL AND d.estatus IN :estado)
+                    (c IS NOT NULL AND c.estatus = :estado)
+                    OR (d IS NOT NULL AND d.estatus = :estado)
                 )
                 AND m.fechaAsignacion = (
                     SELECT MAX(m2.fechaAsignacion)
@@ -90,7 +90,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
                 )
-                AND m.estado IN (:motivos)
+                AND m.estado = :motivos
                 AND m.destino = :personaId
                 AND (
                     (c IS NOT NULL AND jc.id = :juzgadoId)
@@ -105,7 +105,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
                 )
             """)
-    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos, Persona personaId);
+    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key, String motivos, Persona personaId);
 
     @Query("""
                 SELECT m

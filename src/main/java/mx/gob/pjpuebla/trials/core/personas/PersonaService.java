@@ -275,7 +275,7 @@ public class PersonaService {
                 list.add(item);
             }
         }
-        if (list.size() > 0)
+        if (!list.isEmpty())
             personasDelJuzgado.removeAll(list);
         return personasDelJuzgado.stream().map(p -> new PersonaRecordResponse(
                 p.getId(),
