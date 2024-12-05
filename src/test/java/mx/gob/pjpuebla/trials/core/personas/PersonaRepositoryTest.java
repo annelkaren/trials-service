@@ -99,7 +99,7 @@ class PersonaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByJuzgadoId() {
-        Page<Persona> personas = personaRepository.findByJuzgadoId(51, PageRequest.of(0, 20));
+        List<Persona> personas = personaRepository.findByJuzgadoId(51);
         assertThat(personas).isNotEmpty();
     }
 }

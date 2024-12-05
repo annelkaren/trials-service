@@ -357,13 +357,13 @@ class PersonaServiceTest extends SetupServiceTest {
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(roleService.hasRole(any(), any())).willReturn(false);
+        given(mockPersonaRepository.findByJuzgadoId(eq(juzgado.getId())))
+                .willReturn(List.of(validPersona));
 
-        given(mockPersonaRepository.findByJuzgadoId(eq(juzgado.getId()), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(validPersona), PageRequest.of(0, 10), 1));
-
-        Page<PersonaRecordResponse> response = personaService.getPersonalTurnado(PageRequest.of(0, 10));
+        List<PersonaRecordResponse> response = personaService.getPersonalTurnado();
 
         assertThat(response).isNotEmpty();
-        assertThat(response.getContent()).hasSize(1);
+        assertThat(response).hasSize(1);
     }
 }

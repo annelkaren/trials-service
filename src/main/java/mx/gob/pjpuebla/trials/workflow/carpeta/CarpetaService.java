@@ -619,7 +619,7 @@ public class CarpetaService {
         }
 
         pieza.setEstatus(estadoPieza);
-        movimientoService.createMovimento(pieza, null, persona,null, estadoPieza.name() );
+        movimientoService.createMovimento(pieza, null, persona,null, estadoPieza.name());
 
         pieza = carpetaRepository.save(pieza);
 

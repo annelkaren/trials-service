@@ -186,8 +186,8 @@ class PersonaResourceTest {
 
     @Test
     void getPersonalTurnado_success() throws Exception {
-        given(mockPersonaService.getPersonalTurnado(any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
+        given(mockPersonaService.getPersonalTurnado())
+                .willReturn(Collections.singletonList(personaRecordResponse));
 
         mockMvc.perform(
                 get("/api/core/personas/turnado")

@@ -38,8 +38,15 @@ public class Movimiento implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Persona persona;
 
+    @JoinColumn(name = "FN_PERSONA_DESTINO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona destino;
+
     @Column(name = "S_MOTIVO")
     private String motivo;
+
+    @Column(name = "S_CONCEPTO")
+    private String concepto;
 
     @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
