@@ -222,6 +222,6 @@ public class AcuerdosService {
         List<Documento> promociones =  documentoRepository.findByAcuerdoRespuestaId(acuerdoId);
 
         return promociones.stream()
-                .map((p)-> new AcuerdoPromocionesRecord(p.getId(), p.getFolio(), p.getRuta(), "", null)).toList();
+                .map(p -> new AcuerdoPromocionesRecord(p.getId(), (p.getTipoDocumento()==null)?"Demanda Inicial":"Promoción "+ p.getFolio(), p.getRuta(), "", null)).toList();
     }
 }

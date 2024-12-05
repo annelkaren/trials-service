@@ -90,7 +90,7 @@ public class AcuerdosResource {
         return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
     }
 
-    @GetMapping(value = "/acuerdos/{acuerdoId}/promociones")
+    @GetMapping(value = "/documentos/acuerdos/{acuerdoId}/promociones")
     public List<AcuerdoPromocionesRecord> getPromocionesAcuerdos(@PathVariable Integer acuerdoId){
         return acuerdosService.findPromocionesByAcuerdo(acuerdoId);
     }
