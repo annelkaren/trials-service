@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -194,6 +195,18 @@ class AcuerdoServiceTest {
         DocumentoGenericRecord result = acuerdosService.update(acuerdoRecord);
         
         assertNotNull(result);
+    }
+
+    @Test
+    void testfindPromocionesAcuerdo(){
+        Documento promocion = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        List<Documento> promociones = Collections.singletonList(promocion);
+
+        given(documentoRepository.findByAcuerdoRespuestaId(any())).willReturn(promociones);
+
+        List<AcuerdoPromocionesRecord> result = acuerdosService.findPromocionesByAcuerdo(1);
+
+        assertThat(result).isNotEmpty();
     }
 
 }

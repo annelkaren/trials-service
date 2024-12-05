@@ -267,4 +267,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     List<Documento> findByCarpetaId(Integer carpetaId);
 
+    List<Documento> findByAcuerdoRespuestaId(Integer acuerdoId);
+
 }

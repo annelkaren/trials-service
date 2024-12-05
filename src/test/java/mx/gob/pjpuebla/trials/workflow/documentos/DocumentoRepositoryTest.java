@@ -160,4 +160,13 @@ void testActualizacionAcuerdoRespuesta() {
 
     }
 
+    @Test
+    void testFindDocumentosByAcuerdoId(){
+        Integer acuerdoId=5;
+
+        List<Documento> promociones = documentoRepository.findByAcuerdoRespuestaId(acuerdoId);
+
+        assertThat(promociones).isNotEmpty();
+    }
+
 }
