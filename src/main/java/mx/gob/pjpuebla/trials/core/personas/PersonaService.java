@@ -262,20 +262,29 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PersonaRecordResponse> getPersonalTurnado(Pageable pageable) {
+    public List<PersonaRecordResponse> getPersonalTurnado() {
         Persona persona = getAuditor();
+        List<Persona> list = new ArrayList<>();
         Integer juzgadoId = persona.getJuzgado() != null ? persona.getJuzgado().getId() : null;
 
-        Page<Persona> personasDelJuzgado = personaRepository.findByJuzgadoId(juzgadoId, pageable);
+        List<Persona> personasDelJuzgado = personaRepository.findByJuzgadoId(juzgadoId);
 
-        return personasDelJuzgado.map(p -> new PersonaRecordResponse(
+        for (Persona item : personasDelJuzgado) {
+            if (roleService.hasRole(item.getUsuario(), "ADMINISTRADOR_JUZGADO") ||
+                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO")) {
+                list.add(item);
+            }
+        }
+        if (list.size() > 0)
+            personasDelJuzgado.removeAll(list);
+        return personasDelJuzgado.stream().map(p -> new PersonaRecordResponse(
                 p.getId(),
                 p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
                 p.getCorreoElectronico(),
                 p.getCelular(),
                 "",
                 ""
-        ));
+        )).toList();
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {

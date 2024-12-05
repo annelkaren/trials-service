@@ -64,5 +64,5 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             """)
     Page<Persona> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
 
-    Page<Persona> findByJuzgadoId(Integer juzgadoId, Pageable pageable);
+    List<Persona> findByJuzgadoId(Integer juzgadoId);
 }

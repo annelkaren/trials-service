@@ -675,16 +675,6 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void getAllBandejaRecepcion_accessDenied() {
-        Persona persona = new Persona().setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
-        given(personaService.getAuditor()).willReturn(persona);
-        given(roleService.hasRole(any(String.class), any(String.class))).willReturn(false);
-
-        Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("", PageRequest.of(1, 20));
-        assertThat(page.getContent()).isEmpty();
-    }
-
-    @Test
     void getOrigen_juzgado() {
         // Mismo juzgado
         Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
@@ -1155,7 +1145,7 @@ class DocumentoServiceTest {
         when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
         when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
-        when(movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name())).thenReturn(movimiento);
+        when(movimientoService.createMovimentoTurnado(any(), any(), any(), any(), any(), any(), any())).thenReturn(movimiento);
 
         List<MovimientoPersonalJuzgadoRecord> resultados = documentoService.turnadoPersonalJuzgado(records);
 

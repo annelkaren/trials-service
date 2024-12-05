@@ -50,6 +50,14 @@ public class MovimientoService {
         return movimiento;
     }
 
+    public Movimiento createMovimentoTurnado(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, String concepto, Persona destino) {
+        Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado)
+                .setConcepto(concepto)
+                .setDestino(destino);
+        movimiento = movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
     private Movimiento createMovimiento(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado) {
         return new Movimiento()
                 .setCarpeta(carpeta)
@@ -64,6 +72,10 @@ public class MovimientoService {
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos) {
         return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos);
+    }
+
+    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos, Persona personaId) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {

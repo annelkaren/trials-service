@@ -65,8 +65,8 @@ public class PersonaResource {
     }
 
     @GetMapping("/turnado")
-    public Page<PersonaRecordResponse> getPersonalTurnado(@PageableDefault(size = 20) Pageable pageable) {
-        return this.personaService.getPersonalTurnado(pageable);
+    public List<PersonaRecordResponse> getPersonalTurnado() {
+        return this.personaService.getPersonalTurnado();
     }
 
 }

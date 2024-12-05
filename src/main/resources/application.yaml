@@ -21,7 +21,7 @@ spring:
     out-of-order: true
 
   mail:
-    host: smtp-pulse.com
+    host: smtp.gmail.com
     port: 587
     properties.mail.smtp:
       starttls:
@@ -31,8 +31,8 @@ spring:
       connectiontimeout: 5000
       timeout: 5000
       writetimeout: 5000
-    username: secgj@htsjpuebla.gob.mx
-    password: awZDQrinnb9pDhzzeYkV
+    username: annelkaren@gmail.com
+    password: naaj eusw llhl rhti
 
   security:
     oauth2:
