@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
@@ -118,5 +117,12 @@ public class CarpetaResource {
             @RequestParam("piezaId") Integer piezaId,
             @RequestParam("estatus") String estadoPieza){
             return this.carpetaService.acoplarPieza(piezaId, estadoPieza);
+    }
+
+    @GetMapping("/librogobierno")
+    public Page<LibroGobiernoRecord> getLibroDeGobierno(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return carpetaService.libroDeGobierno(key, pageable);
     }
 }

@@ -247,10 +247,10 @@ class OficialiaServiceTest {
         List<OficialiaMateriaRecord> listPage = Collections.singletonList(oficialiaMateriaRecordResponse);
         List<Oficialia> list = Collections.singletonList(tmp);
 
-        given(oficialiaRepository.findAllActive(any(PageRequest.class)))
+        given(oficialiaRepository.findAllActive(any(), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(list, PageRequest.of(0, list.size()), list.size()));
 
-        Page<OficialiaMateriaRecord> page = oficialiaService.getAllByOficialiaMateria(PageRequest.of(1, listPage.size()));
+        Page<OficialiaMateriaRecord> page = oficialiaService.getAllByOficialiaMateria(null, PageRequest.of(1, listPage.size()));
 
         assertThat(page.getContent())
                 .hasSize(1)
