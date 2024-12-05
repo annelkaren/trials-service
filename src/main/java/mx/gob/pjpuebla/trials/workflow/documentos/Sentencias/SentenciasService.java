@@ -24,10 +24,10 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 @Service
 public class SentenciasService {
 
-    private DocumentoRepository documentoRepository;
-    private DocumentoContenidoRepository documentoContenidoRepository;
-    private DocumentoDetalleRepository documentoDetalleRepository;
-    private CarpetaRepository carpetaRepository;
+    private final DocumentoRepository documentoRepository;
+    private final DocumentoContenidoRepository documentoContenidoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final CarpetaRepository carpetaRepository;
 
     public DocumentoGenericRecord crearSentencia(SentenciaRecordSave sentencia) {
 

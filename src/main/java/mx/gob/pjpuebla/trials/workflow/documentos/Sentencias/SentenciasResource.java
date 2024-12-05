@@ -12,7 +12,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/worflow")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "keycloak")
 public class SentenciasResource {
 
