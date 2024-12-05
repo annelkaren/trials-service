@@ -20,7 +20,7 @@ public class SentenciasResource {
 
     @PostMapping("/documentos/crearSentencia")
     public DocumentoGenericRecord crearSentencia(@RequestBody SentenciaRecordSave sentencia){
-        return sentenciasService.crearSentencia(sentencia);
+        return sentenciasService.save(sentencia);
     }
     
 }

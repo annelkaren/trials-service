@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.Sentencias;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -9,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Sentencias.records.SentenciaRecordSave;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
@@ -29,7 +32,7 @@ public class SentenciasService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final CarpetaRepository carpetaRepository;
 
-    public DocumentoGenericRecord crearSentencia(SentenciaRecordSave sentencia) {
+    public DocumentoGenericRecord save(SentenciaRecordSave sentencia) {
 
         Carpeta carpeta = carpetaRepository.findById(sentencia.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
@@ -74,4 +77,72 @@ public class SentenciasService {
 
     }
 
+    public DocumentoGenericRecord publicarSentencia(SentenciaRecordSave sentencia) {
+        Integer acuerdoId = sentencia.sentenciaId() != null ? sentencia.sentenciaId() : save(sentencia).id();
+
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoId"));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoId"));
+
+        Documento documento = documentoRepository.findById(acuerdoId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        // Actualizamos el estatus de documento a publicado esperando definirlo:
+        documento.setEstatus(EstadoCarpeta.PUBLICADO);
+        documentoRepository.save(documento);
+
+        // Actualizamos fecha de publicación en documento detalle:
+        documentoDetalle.setFechaPublicacion(LocalDate.now());
+        documentoDetalleRepository.save(documentoDetalle);
+
+        // Actualizamos estatus de la bandera de documento contenido:
+        documentoContenido.setOficioPublicado('s');
+        documentoContenidoRepository.save(documentoContenido);
+
+        return new DocumentoGenericRecord(documento.getId(), documento.getTipoDocumento());
+    }
+
+        public DocumentoGenericRecord update(SentenciaRecordSave sentencia) {
+
+        Documento documento = documentoRepository.findById(sentencia.sentenciaId())
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(sentencia.sentenciaId())
+                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoDetalleId"));
+
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(sentencia.sentenciaId())
+                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoContenidoId"));
+    
+        //Actualizar documento detalle:
+
+        documentoDetalle.setFechaResolucion(sentencia.fechaResolucion());
+        documentoDetalle.setTipoSentencia(sentencia.tipoSentencia());
+        documentoDetalle.setTipoResolucion(sentencia.tipoResolucion());
+        documentoDetalle.setExtractoSentencia(sentencia.extractoSentencia());
+        documentoDetalle.setEtapaProcesal(sentencia.etapaProcesal());
+        documentoDetalleRepository.save(documentoDetalle);
+
+        //Actualizar documento contenido:
+        documentoContenido.setTamanioPapel(sentencia.tamanioPapel());
+        documentoContenido.setTexto(sentencia.textoEditor());
+        documentoContenidoRepository.save(documentoContenido);
+
+        //Actualizar promociones relacionadas a null
+        documentoRepository.actualizacionAcuerdoRespuesta(sentencia.carpetaId());
+
+        //volver a recorrer las promociones pero ahora las que el usuario setee
+        if (sentencia.promocionesRelacionadas() != null) {
+                for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {
+                        Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
+                        if (promocion != null) {
+                            promocion.setAcuerdoRespuesta(documento);
+                            documentoRepository.save(promocion);
+                        }
+                }
+        }
+
+        return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);        
+    }
 }
