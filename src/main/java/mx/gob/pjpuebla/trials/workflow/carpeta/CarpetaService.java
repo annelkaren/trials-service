@@ -104,6 +104,10 @@ public class CarpetaService {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
 
+        if (persona == null) {
+            return "";
+        }
+
         String nombre = persona.nombre() != null ? persona.nombre() : "";
         String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
         String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
@@ -621,4 +625,27 @@ public class CarpetaService {
 
         return new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo(), pieza.getEstatus());
     }
+
+    public Page<LibroGobiernoRecord> libroDeGobierno(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona persona = personaService.getAuditor();
+        Juzgado juzgado = persona.getJuzgado();
+
+        Page<Carpeta> carpetas = carpetaRepository.findByJuzgado(juzgado, key, pageable);
+
+        return carpetas.map(carpeta -> {
+            String actor = getNombrePersonaByIdAndParte(carpeta.getId(), "Actor");
+            String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), "Demandado");
+
+            return new LibroGobiernoRecord(
+                    carpeta.getId(),
+                    carpeta.getExpediente(),
+                    (carpeta.getAudit() != null && carpeta.getAudit().getFechaAlta() != null) ? carpeta.getAudit().getFechaAlta() : null,
+                    carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre() : "Sin Tipo de Juicio",
+                    actor,
+                    demandado
+            );
+        });
+    }
+
 }

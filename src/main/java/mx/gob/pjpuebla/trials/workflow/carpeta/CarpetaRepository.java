@@ -1,8 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.transaction.Transactional;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -107,4 +110,16 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                 ELSE 0 END = 1
             """)
     List<DocumentoDetalleCarpeta> findPiezasByCarpetaPadreId(String key, Integer carpetaPadreId);
+
+    @Query("""
+       SELECT c FROM Carpeta c
+       WHERE c.juzgado = :juzgado
+       AND (
+           :key IS NULL
+           OR lower(c.expediente) LIKE %:key%
+       )
+       """)
+    Page<Carpeta> findByJuzgado(@Param("juzgado") Juzgado juzgado,
+                                      @Param("key") String key,
+                                      Pageable pageable);
 }

@@ -8,7 +8,8 @@ public enum TipoDocumento {
     OFICIO("OFICIO"),
     ACUERDO("ACUERDO"),
     AMPARO("AMPARO"),
-    EXHORTO_SALIDA("EXHORTO DE SALIDA");
+    EXHORTO_SALIDA("EXHORTO DE SALIDA"),
+    SENTENCIA("SENTENCIA");
 
     private final String etiqueta;
 
