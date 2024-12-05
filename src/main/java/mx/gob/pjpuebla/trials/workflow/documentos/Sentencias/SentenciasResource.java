@@ -12,7 +12,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/worflow")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "keycloak")
 public class SentenciasResource {
 
@@ -20,7 +20,7 @@ public class SentenciasResource {
 
     @PostMapping("/documentos/crearSentencia")
     public DocumentoGenericRecord crearSentencia(@RequestBody SentenciaRecordSave sentencia){
-        return sentenciasService.crearSentencia(sentencia);
+        return sentenciasService.save(sentencia);
     }
     
 }

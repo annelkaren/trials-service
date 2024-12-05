@@ -213,9 +213,7 @@ public class AcuerdosService {
                 }
         }
 
-            
-        return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);
-        
+        return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);        
     }
 
     List<AcuerdoPromocionesRecord> findPromocionesByAcuerdo(Integer acuerdoId){
