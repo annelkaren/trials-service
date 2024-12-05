@@ -49,7 +49,7 @@ public class AcuerdosResource {
     }
 
     @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")
-    public Page<AcuerdosRecord> obtenerAcuerdos(
+    public Page<AcuerdosRecord> obtenerAcuerdosYsentencias(
         @PageableDefault(size = 20) Pageable pageable,
         @PathVariable Integer carpetaId){
 

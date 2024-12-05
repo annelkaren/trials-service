@@ -8,5 +8,6 @@ public record AcuerdosRecord(
    Integer numeroAcuerdo,
    LocalDate fechaPublicacion,
    String resumen,
-   EstadoCarpeta estatus
+   EstadoCarpeta estatus,
+   String extractoSentencia
 ) { }

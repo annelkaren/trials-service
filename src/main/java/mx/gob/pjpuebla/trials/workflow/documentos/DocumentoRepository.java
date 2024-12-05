@@ -208,12 +208,14 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             doc.id,
             dd.fechaPublicacion,
             dd.resumen,
-            doc.estatus)
+            doc.estatus,
+            LEFT(dd.extractoSentencia, 20)
+            )
             FROM DocumentoDetalle dd
             JOIN dd.documento doc
-            WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta.id = :carpetaId
+            WHERE doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA)  AND doc.carpeta.id = :carpetaId
             """)
-    Page<AcuerdosRecord> findAllAcuerdosByCarpeta(Integer carpetaId, Pageable pageable);
+    Page<AcuerdosRecord> findAllAcuerdosYSentenciasByCarpeta(Integer carpetaId, Pageable pageable);
 
     // TODO: actualizar el metodo cuando se tenga en donde se guardara.
     @Query("""

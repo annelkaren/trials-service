@@ -113,7 +113,7 @@ class AcuerdoServiceTest {
         Integer carpetaId = 1;
         List<AcuerdosRecord> acuerdo = AcuerdoRecordSetUp.createAcuerdoRecord();
     
-        given(documentoRepository.findAllAcuerdosByCarpeta(anyInt(), any(PageRequest.class)))
+        given(documentoRepository.findAllAcuerdosYSentenciasByCarpeta(anyInt(), any(PageRequest.class)))
             .willReturn(new PageImpl<>(acuerdo, PageRequest.of(0, acuerdo.size()), acuerdo.size()));
     
         Page<AcuerdosRecord> page = acuerdosService.getAcuerdos(carpetaId, PageRequest.of(0, acuerdo.size()));

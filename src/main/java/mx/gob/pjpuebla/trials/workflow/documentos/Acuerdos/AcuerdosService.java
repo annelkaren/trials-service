@@ -99,16 +99,17 @@ public class AcuerdosService {
     public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, String actualizacion) {
         return documentoRepository.obtenerPromociones(carpetaId, actualizacion);
     }
-
+    
     public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable) {
-        Page<AcuerdosRecord> page = documentoRepository.findAllAcuerdosByCarpeta(carpetaId, pageable);
+        Page<AcuerdosRecord> page = documentoRepository.findAllAcuerdosYSentenciasByCarpeta(carpetaId, pageable);
 
         List<AcuerdosRecord> list = page.getContent().stream()
                 .map(acuerdo -> new AcuerdosRecord(
                         acuerdo.numeroAcuerdo(),
                         acuerdo.fechaPublicacion(),
                         acuerdo.resumen(),
-                        acuerdo.estatus()))
+                        acuerdo.estatus(),
+                        acuerdo.extractoSentencia()))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());

@@ -30,7 +30,7 @@ public class AcuerdoRecordSetUp {
 
     public static List<AcuerdosRecord> createAcuerdoRecord(){
         List<AcuerdosRecord> acuerdoRecord = new ArrayList<>();
-        acuerdoRecord.add(new AcuerdosRecord(1, LocalDate.now(), "Hola", EstadoCarpeta.CREADO));
+        acuerdoRecord.add(new AcuerdosRecord(1, LocalDate.now(), "Hola", EstadoCarpeta.CREADO, "dsdsdsd"));
         return acuerdoRecord;
     }
 
