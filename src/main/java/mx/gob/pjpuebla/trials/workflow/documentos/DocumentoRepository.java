@@ -245,7 +245,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 null,
                 COALESCE(m.fechaAsignacion, d.audit.fechaAlta),
                 d.ruta,
-                COALESCE(p.id, d.persona.id),
+                COALESCE(p.id, COALESCE(d.persona.id,(SELECT id FROM Persona p where p.usuario=d.audit.usuarioAlta))),
                 d.carpeta.tipoCarpeta,
                 d.estatus
             )
@@ -255,15 +255,11 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             WHERE
                 d.carpeta.id=:carpetaId
                 AND
-                CASE WHEN :key IS NULL THEN 1
-                WHEN d.folio LIKE %:key% THEN 1
-                ELSE 0 END = 1
-                AND
                 CASE WHEN d.tipoDocumento IS NULL OR d.tipoDocumento != TipoDocumento.PROMOCION or d.carpeta.tipoCarpeta = TipoCarpeta.PIEZA THEN 1
                     WHEN d.tipoDocumento = TipoDocumento.PROMOCION AND d.estatus = EstadoCarpeta.INTEGRADO THEN 1
                     ELSE 0 END = 1
             """)
-    List<DocumentoDetalleCarpeta> findDocumentosByCarpeta(String key, Integer carpetaId);
+    List<DocumentoDetalleCarpeta> findDocumentosByCarpeta(Integer carpetaId);
 
     List<Documento> findByCarpetaId(Integer carpetaId);
 
