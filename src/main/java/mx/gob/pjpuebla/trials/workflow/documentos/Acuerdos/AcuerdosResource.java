@@ -72,8 +72,8 @@ public class AcuerdosResource {
     }
 
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")
-    public AcuerdoRecord obtenerAcuerdo(@PathVariable Integer acuerdoId) {
-        return acuerdosService.getAcuerdo(acuerdoId);
+    public Object obtenerAcuerdoOSentencias(@PathVariable Integer acuerdoId) {
+        return acuerdosService.getAcuerdoOSentencia(acuerdoId);
     }
 
     @PutMapping("/documentos/actualizarAcuerdo")

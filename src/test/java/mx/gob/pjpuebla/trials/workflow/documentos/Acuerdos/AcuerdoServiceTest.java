@@ -165,7 +165,7 @@ class AcuerdoServiceTest {
         given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
 
-        AcuerdoRecord result = acuerdosService.getAcuerdo(1);
+        Object result = acuerdosService.getAcuerdoOSentencia(1);
 
         assertNotNull(result);
     }

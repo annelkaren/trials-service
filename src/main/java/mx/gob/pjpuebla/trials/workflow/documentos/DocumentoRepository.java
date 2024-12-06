@@ -221,7 +221,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             dd.fechaPublicacion,
             dd.resumen,
             doc.estatus,
-            LEFT(dd.extractoSentencia, 20)
+            LEFT(dd.extractoSentencia, 20),
+            doc.tipoDocumento
             )
             FROM DocumentoDetalle dd
             JOIN dd.documento doc

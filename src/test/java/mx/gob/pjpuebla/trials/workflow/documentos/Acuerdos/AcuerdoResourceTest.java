@@ -122,7 +122,7 @@ class AcuerdoResourceTest {
     void obtenerAcuerdo() throws Exception {
         AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
 
-        given(acuerdosService.getAcuerdo(anyInt())).willReturn(acuerdo);
+        given(acuerdosService.getAcuerdoOSentencia(anyInt())).willReturn(acuerdo);
 
         mockMvc.perform(
                 get("/api/workflow/documentos/obtenerAcuerdo/{acuerdoId}", 1)
