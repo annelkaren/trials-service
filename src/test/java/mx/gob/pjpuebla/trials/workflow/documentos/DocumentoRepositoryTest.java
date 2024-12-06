@@ -154,7 +154,7 @@ void testActualizacionAcuerdoRespuesta() {
     void testfindDocumentosByCarpeta(){
         Integer carpetaId=1;
 
-        List<DocumentoDetalleCarpeta> documentos = documentoRepository.findDocumentosByCarpeta(null, carpetaId);
+        List<DocumentoDetalleCarpeta> documentos = documentoRepository.findDocumentosByCarpeta(carpetaId);
 
         assertThat(documentos).isNotEmpty();
 
