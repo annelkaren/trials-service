@@ -19,6 +19,7 @@ public record InfoExpedienteRecord(
         String materia,
         Integer materiaId,
         String tipoSistema,
-        String juzgadoNombre
+        String juzgadoNombre,
+        String tipoPieza
 ) {
 }
