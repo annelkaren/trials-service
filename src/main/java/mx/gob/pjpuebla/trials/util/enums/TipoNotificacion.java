@@ -8,7 +8,7 @@ public enum TipoNotificacion {
     CORREO_ELECTRONICO("Correo electrónico"),
     DOMICILIO("Domicilio"),
     NINGUNO("Ninguno");
-
+    
     private final String tipoNotificacion;
 
     TipoNotificacion(String tipoNotificacion){

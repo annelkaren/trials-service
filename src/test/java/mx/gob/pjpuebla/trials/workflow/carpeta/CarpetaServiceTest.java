@@ -825,7 +825,7 @@ class CarpetaServiceTest {
 
         given(personaService.findById(any())).willReturn(persona);
         given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());
-        given(documentoRepository.findDocumentosByCarpeta(any(), any())).willReturn(documentos);
+        given(documentoRepository.findDocumentosByCarpeta(any())).willReturn(documentos);
         given(carpetaRepository.findPiezasByCarpetaPadreId(any(), any())).willReturn(piezas);
 
         lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));

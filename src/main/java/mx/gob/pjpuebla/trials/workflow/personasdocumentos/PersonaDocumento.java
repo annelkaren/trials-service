@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -73,6 +74,16 @@ public class PersonaDocumento implements Serializable, Auditable {
     @JoinColumn(name = "FN_TIPO_PARTE", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoPartes tipoPartes;
+
+    @Column(name = "N_TIPO_NOTIFICACION")
+    private Integer tipoNotificacion;
+
+    @Column(name = "S_CORREO_NOTIFICACION")
+    private String correoNotificacion;
+
+    @JoinColumn(name = "FN_DOMICILIO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Domicilio fnDomicilio;
 
     @Accessors(chain = false)
     @Embedded
