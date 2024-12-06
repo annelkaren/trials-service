@@ -312,7 +312,8 @@ public class CarpetaService {
                 documento.getCarpeta().getJuzgado().getMateria().getNombre(),
                 documento.getCarpeta().getJuzgado().getMateria().getId(),
                 documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null,
-                documento.getCarpeta().getJuzgado().getNombre()
+                documento.getCarpeta().getJuzgado().getNombre(),
+                (documento.getCarpeta().getTipoPieza() != null) ? documento.getCarpeta().getTipoPieza().getTipo() : null
         );
     }
 
