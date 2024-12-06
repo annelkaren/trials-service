@@ -1017,7 +1017,7 @@ public class DocumentoService {
             documento = null;
         }
 
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null);
 
         return new MovimientoPersonalJuzgadoRecord(
                 record.idDocumentoRecepcion(),
