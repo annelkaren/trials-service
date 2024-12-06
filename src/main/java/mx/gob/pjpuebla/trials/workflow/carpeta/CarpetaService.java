@@ -130,7 +130,7 @@ public class CarpetaService {
             throw new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId, "documentoId");
         }
 
-        // Obtener y devolver los anexos de la bandeja de recepción
+        // Obtener y r los anexos de la bandeja de recepción
         List<AnexoBandejaRecepcionRecord> anexos = carpetaRepository.findAnexosByDocumentoId(documento.getId());
         return new BandejaRecepcionRecord(
                 documento.getId(),

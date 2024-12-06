@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -23,9 +26,12 @@ import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 
 
 @WebMvcTest(NotificacionResource.class)
@@ -60,6 +66,33 @@ class NotificacionResourceTest {
                         get("/api/workflow/bandeja/notificaciones")
                                 .param("key", "")
                                 .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void create_success() throws Exception {
+        NotificacionDto notificacionDto = new NotificacionDto();
+        notificacionDto.setCalle("Av. Principal");
+        notificacionDto.setCiudad("Puebla");
+        notificacionDto.setCodigoPostal("72000");
+        notificacionDto.setColonia("Centro");
+        notificacionDto.setCorreo("usuario@correo.com");
+        notificacionDto.setEstadoRepublica("Puebla");
+        notificacionDto.setExterior("123");
+        notificacionDto.setIdDomicilio(1L);
+        notificacionDto.setInterior("A");
+        notificacionDto.setLatitud("19.0413");
+        notificacionDto.setLongitud("-98.2062");
+        notificacionDto.setMetodo(1);
+        notificacionDto.setMunicipio("Puebla");
+        notificacionDto.setPersonId(101);
+        notificacionDto.setUsarCorreoRegistrado(true);
+
+        doNothing().when(notificacionService).create(any(NotificacionDto.class));
+       
+        mockMvc.perform(post("/api/workflow/notificaciones/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(notificacionDto)))
                 .andExpect(status().isOk());
     }
 

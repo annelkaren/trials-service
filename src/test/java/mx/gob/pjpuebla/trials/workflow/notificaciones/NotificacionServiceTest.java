@@ -3,6 +3,10 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +19,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -32,6 +39,9 @@ class NotificacionServiceTest {
 
     private Carpeta carpeta;
     private Notificacion notificacion;
+
+    @Mock
+    private PersonaDocumentoRepository personaDocumentoRepository;
 
     @BeforeEach
     public void setUp(){
@@ -76,5 +86,63 @@ class NotificacionServiceTest {
         assertEquals(1, result.getTotalElements());
     }
 
+    @Test
+    void create_withValidData_createsNotification() throws Exception {
+        NotificacionDto notificacionDto = new NotificacionDto();
+        notificacionDto.setPersonId(1);
+        notificacionDto.setMetodo(1); // Notificación por correo
+        notificacionDto.setUsarCorreoRegistrado(false);
+        notificacionDto.setCorreo("nuevo@correo.com");
 
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1);
+        persona.setTipoNotificacion(0);
+
+        when(personaDocumentoRepository.findById(1)).thenReturn(Optional.of(persona));
+
+        notificacionService.create(notificacionDto);
+
+        assertEquals(1, persona.getTipoNotificacion());
+        assertEquals("nuevo@correo.com", persona.getCorreoNotificacion());
+        assertNull(persona.getFnDomicilio());
+
+        verify(personaDocumentoRepository).save(persona);
+    }
+
+    @Test
+    void create_ShouldUpdatePersonaWithNotificationDetails() throws Exception {
+        NotificacionDto notificacionDto = new NotificacionDto();
+        notificacionDto.setPersonId(1);
+        notificacionDto.setMetodo(1); // Email
+        notificacionDto.setUsarCorreoRegistrado(false);
+        notificacionDto.setCorreo("nuevo_correo@example.com");
+
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1);
+
+        when(personaDocumentoRepository.findById(1)).thenReturn(Optional.of(persona));
+
+        notificacionService.create(notificacionDto);
+
+        assertEquals(1, persona.getTipoNotificacion());
+        assertEquals("nuevo_correo@example.com", persona.getCorreoNotificacion());
+        assertNull(persona.getFnDomicilio());
+
+        verify(personaDocumentoRepository).save(persona);
+    }
+
+ @Test
+    void create_ShouldThrowException_WhenPersonaNotFound() {
+        NotificacionDto notificacionDto = new NotificacionDto();
+        notificacionDto.setPersonId(99);
+
+        when(personaDocumentoRepository.findById(99)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> notificacionService.create(notificacionDto)
+        );
+
+        assertEquals("PersonaDocumento no encontrado para el ID: 99", exception.getMessage());
+    }
 }

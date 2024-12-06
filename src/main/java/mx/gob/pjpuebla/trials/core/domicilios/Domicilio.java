@@ -62,11 +62,19 @@ public class Domicilio implements Serializable, Auditable {
     @Size(max = 250)
     @Column(name = "S_REFERENCIA")
     private String referencia;
-
     
     @ManyToOne
     @JoinColumn(name = "FN_PAIS_RESIDENCIA")
     private Pais paisResidencia;
+
+    @Column(name = "S_LATITUD")
+    private String latitud;
+
+    @Column(name = "S_LONGITUD")
+    private String longitud;
+
+    @Column(name = "S_CIUDAD")
+    private String ciudad;
 
     @Accessors(chain = false)
     @Embedded

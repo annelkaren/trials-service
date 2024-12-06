@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTO;
 import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTOGet;
 
+import java.util.List;
+
 import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,4 +47,10 @@ public class PersonaDetalleResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR_500).body("Error interno del servidor");
         }
     }
+
+    @GetMapping("/tipo-notificacion")
+    public List<TipoNotificacionRecord> getAllTiposNotificacion() {
+        return personaDetalleService.getAllTiposNotificacion();
+    }
+    
 } 

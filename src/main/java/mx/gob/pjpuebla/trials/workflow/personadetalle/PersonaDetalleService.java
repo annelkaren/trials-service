@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.personadetalle;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,7 @@ import mx.gob.pjpuebla.trials.core.paises.PaisRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTO;
@@ -479,5 +484,15 @@ public class PersonaDetalleService {
         personaDocumentoRepository.save(personaDocumento);
         domicilioRepository.save(domicilio);
         personaDetalleRepository.save(personaDetalle);
+    }
+
+    public List<TipoNotificacionRecord> getAllTiposNotificacion() {
+        return Arrays.stream(TipoNotificacion.values())
+        .map(tipo -> new TipoNotificacionRecord(
+                tipo.ordinal(),
+                tipo.name(),
+                tipo.getTipoNotificacion() 
+        ))
+        .collect(Collectors.toList());
     }
 }
