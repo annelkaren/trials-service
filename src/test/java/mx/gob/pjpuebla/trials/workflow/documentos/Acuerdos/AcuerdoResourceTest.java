@@ -109,7 +109,7 @@ class AcuerdoResourceTest {
     void obtenerPromocionesTest() throws Exception {
         List<AcuerdoPromocionesRecord> acuerdoPromocionesRecord = AcuerdoRecordSetUp.createAcuerdoPromocionesRecord();
 
-        given(acuerdosService.obtenerPromociones(anyInt(), anyString()))
+        given(acuerdosService.obtenerPromociones(anyInt(), anyString(), 0))
                 .willReturn(acuerdoPromocionesRecord);
 
         mockMvc.perform(

@@ -179,16 +179,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
-    // TODO: revisar si esta consulta es correcta:
-    /*
-     * Objetivo: listar todos los documentos qu ese encuentren relacionados con una
-     * carpeta en caso de que quiera a excepcion de los que ya tiene un acuerdo,
-     * Para el caso de que quiera editar un acuerdo esta consulta tambien funciona,
-     * ahi es donde entra el parametro :actualización donde si es si entonces envia
-     * aun asi
-     * los que ya tengan acuerdo seleccionado en el sentido de que quiera
-     * 'Desmarcarlo/desasociarlo de un acuerdo.', de ahi la columna seleccion.
-     */
+
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
             doc.id,
@@ -202,13 +193,17 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         JOIN doc.concepto concepto
         LEFT JOIN Movimiento m ON m.documento = doc AND m.estado = 'ASIGNADO'
         WHERE carpeta.id = :carpetaId
-        AND (doc.tipoDocumento = TipoDocumento.PROMOCION OR doc.tipoDocumento IS NULL)
+        AND (
+            (doc.tipoDocumento = TipoDocumento.PROMOCION OR doc.tipoDocumento IS NULL) 
+            OR (:isSentencia = 1 AND doc.tipoDocumento = TipoDocumento.ACUERDO)
+        )
         AND (concepto.nombre = 'Adjuntar' OR doc.tipoDocumento IS NULL)
         AND (doc.acuerdoRespuesta IS NULL OR :actualizacion = 'SI')
         """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
             @Param("carpetaId") Integer carpetaId,
-            @Param("actualizacion") String actualizacion);
+            @Param("actualizacion") String actualizacion,
+            @Param("isSentencia") Integer isSentencia);
     
 
     @Modifying

@@ -121,7 +121,7 @@ void testObtenerPromociones_actualizacionSI() {
     Integer carpetaId = 1;
     String actualizacion = "SI";
 
-    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion);
+    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion, 0);
 
     assertThat(promociones).isNotEmpty();
     assertThat(promociones.get(0).nombre()).startsWith("Promo ");
@@ -132,7 +132,7 @@ void testObtenerPromociones_actualizacionNo() {
     Integer carpetaId = 1;
     String actualizacion = "NO";
 
-    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion);
+    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion, 0);
 
     assertThat(promociones).isNotEmpty();
     promociones.forEach(promocion -> assertThat(promocion.seleccionado()).isEqualTo(0));
@@ -146,7 +146,7 @@ void testActualizacionAcuerdoRespuesta() {
     documentoRepository.actualizacionAcuerdoRespuesta(carpetaId);
 
     // Verificar que los documentos en la carpeta tienen `acuerdoRespuesta` como null
-    List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, "SI");
+    List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, "SI", 0);
     assertThat(documentos).isNotEmpty();
     documentos.forEach(documento -> assertThat(documento.seleccionado()).isEqualTo(0));
 }

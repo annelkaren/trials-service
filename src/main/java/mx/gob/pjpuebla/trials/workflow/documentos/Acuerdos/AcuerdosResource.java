@@ -67,8 +67,8 @@ public class AcuerdosResource {
     }
 
     @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion){
-        return acuerdosService.obtenerPromociones(carpetaId, actualizacion);
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion, @PathVariable Integer isSentencia){
+        return acuerdosService.obtenerPromociones(carpetaId, actualizacion, isSentencia);
     }
 
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")

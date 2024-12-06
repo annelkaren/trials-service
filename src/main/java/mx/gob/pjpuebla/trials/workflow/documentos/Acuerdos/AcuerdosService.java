@@ -97,8 +97,8 @@ public class AcuerdosService {
                 return new DocumentoGenericRecord(doc.getId(), TipoDocumento.ACUERDO);
         }
 
-        public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, String actualizacion) {
-                return documentoRepository.obtenerPromociones(carpetaId, actualizacion);
+        public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, String actualizacion, Integer isSentencia) {
+                return documentoRepository.obtenerPromociones(carpetaId, actualizacion,isSentencia);
         }
 
         public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable) {
@@ -165,7 +165,11 @@ public class AcuerdosService {
                                 .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado",
                                                 "documentoContenidoId"));
 
+                List<AcuerdoPromocionesRecord> promociones;
+
                 if (documento.getTipoDocumento().equals(TipoDocumento.ACUERDO)) {
+
+                        promociones = obtenerPromociones(documento.getCarpeta().getId(), "SI", 0);
                         return new AcuerdoRecord(
                                         acuerdoId,
                                         documento.getCarpeta().getId(),
@@ -174,25 +178,26 @@ public class AcuerdosService {
                                         documentoDetalle.getFechaResolucion(),
                                         documentoDetalle.getEtapaProcesal(),
                                         documento.getData().getRubros(),
-                                        null,
+                                        promociones,
                                         documentoContenido.getTamanioPapel(),
                                         documentoContenido.getTexto(),
                                         documentoDetalle.getResumen());
                 }
 
                 else if (documento.getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
+                        promociones = obtenerPromociones(documento.getCarpeta().getId(), "SI", 1);
                         return new SentenciaRecordSave(
-                                acuerdoId,
-                                acuerdoId,
-                                documento.getCarpeta().getId(),
-                                documentoDetalle.getTipoSentencia(),
-                                documentoDetalle.getFechaResolucion(),
-                                documentoDetalle.getEtapaProcesal(),
-                                documentoDetalle.getTipoResolucion(),
-                                documentoDetalle.getExtractoSentencia(),
-                                documentoContenido.getTamanioPapel(),
-                                documentoContenido.getTexto(),
-                                null);
+                                        acuerdoId,
+                                        acuerdoId,
+                                        documento.getCarpeta().getId(),
+                                        documentoDetalle.getTipoSentencia(),
+                                        documentoDetalle.getFechaResolucion(),
+                                        documentoDetalle.getEtapaProcesal(),
+                                        documentoDetalle.getTipoResolucion(),
+                                        documentoDetalle.getExtractoSentencia(),
+                                        documentoContenido.getTamanioPapel(),
+                                        documentoContenido.getTexto(),
+                                        promociones);
                 } else {
                         return null;
                 }
