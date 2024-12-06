@@ -97,8 +97,8 @@ public class AcuerdosService {
                 return new DocumentoGenericRecord(doc.getId(), TipoDocumento.ACUERDO);
         }
 
-        public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, String actualizacion, Integer isSentencia) {
-                return documentoRepository.obtenerPromociones(carpetaId, actualizacion,isSentencia);
+        public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, Integer documentoId, String tipoDocumento) {
+                return documentoRepository.obtenerPromociones(carpetaId, documentoId, tipoDocumento);
         }
 
         public Page<AcuerdosRecord> getAcuerdos(Integer carpetaId, Pageable pageable) {
@@ -169,7 +169,7 @@ public class AcuerdosService {
 
                 if (documento.getTipoDocumento().equals(TipoDocumento.ACUERDO)) {
 
-                        promociones = obtenerPromociones(documento.getCarpeta().getId(), "SI", 0);
+                        promociones = null;//.obtenerPromocionesAcuerdo(documento.getCarpeta().getId(), "SI");
                         return new AcuerdoRecord(
                                         acuerdoId,
                                         documento.getCarpeta().getId(),
@@ -185,7 +185,8 @@ public class AcuerdosService {
                 }
 
                 else if (documento.getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
-                        promociones = obtenerPromociones(documento.getCarpeta().getId(), "SI", 1);
+                        promociones = null; //documentoRepository.obtenerPromocionesSentencia(documento.getCarpeta().getId(), "SI");
+                        
                         return new SentenciaRecordSave(
                                         acuerdoId,
                                         acuerdoId,

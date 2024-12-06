@@ -179,32 +179,36 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
-
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
-            doc.id,
-            COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial'),
-            doc.ruta,
-            m.recomendaciones,
-            CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
-        )
-        FROM Documento doc
-        JOIN doc.carpeta carpeta
-        JOIN doc.concepto concepto
-        LEFT JOIN Movimiento m ON m.documento = doc AND m.estado = 'ASIGNADO'
-        WHERE carpeta.id = :carpetaId
-        AND (
-            (doc.tipoDocumento = TipoDocumento.PROMOCION OR doc.tipoDocumento IS NULL) 
-            OR (:isSentencia = 1 AND doc.tipoDocumento = TipoDocumento.ACUERDO)
-        )
-        AND (concepto.nombre = 'Adjuntar' OR doc.tipoDocumento IS NULL)
-        AND (doc.acuerdoRespuesta IS NULL OR :actualizacion = 'SI')
-        """)
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+                doc.id,
+                COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial'),
+                doc.ruta,
+                m.recomendaciones,
+                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
+            )
+            FROM Documento doc
+            JOIN doc.carpeta carpeta
+            JOIN doc.concepto concepto
+            LEFT JOIN Movimiento m ON m.documento = doc AND m.estado = 'ASIGNADO'
+            WHERE 
+                CASE
+                    WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL AND 
+                        (
+                            (:tipoDocumento = "ACUERDO" AND doc.tipoDocumento = TipoDocumento.PROMOCION) OR
+                            (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.PROMOCION) ) 
+                        )
+                     THEN 1
+                ELSE 0
+                END = 1
+                AND carpeta.id = :carpetaId
+                AND (concepto.nombre = 'Adjuntar' OR doc.tipoDocumento IS NULL)
+           
+            """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
             @Param("carpetaId") Integer carpetaId,
-            @Param("actualizacion") String actualizacion,
-            @Param("isSentencia") Integer isSentencia);
-    
+            @Param("documentoId") Integer documentoId,
+            @Param("tipoDocumento") String tipoDocumento);
 
     @Modifying
     @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId")

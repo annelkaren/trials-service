@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
@@ -66,9 +67,15 @@ public class AcuerdosResource {
         return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
     }
 
-    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion, @PathVariable Integer isSentencia){
-        return acuerdosService.obtenerPromociones(carpetaId, actualizacion, isSentencia);
+    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{documentoId}/{tipoDocumento}")
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(
+            @PathVariable Integer carpetaId,
+            @PathVariable(required = false) String documentoId,
+            @PathVariable String tipoDocumento){
+
+            Integer documentoIdParsed = "null".equalsIgnoreCase(documentoId) ? null : Integer.valueOf(documentoId);
+
+            return acuerdosService.obtenerPromociones(carpetaId, documentoIdParsed, tipoDocumento);
     }
 
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")

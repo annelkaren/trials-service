@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
+import mx.gob.pjpuebla.trials.util.enums.Tipo;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
@@ -109,11 +110,11 @@ class AcuerdoResourceTest {
     void obtenerPromocionesTest() throws Exception {
         List<AcuerdoPromocionesRecord> acuerdoPromocionesRecord = AcuerdoRecordSetUp.createAcuerdoPromocionesRecord();
 
-        given(acuerdosService.obtenerPromociones(anyInt(), anyString(), 0))
+        given(acuerdosService.obtenerPromociones(anyInt(), anyInt(), anyString()))
                 .willReturn(acuerdoPromocionesRecord);
 
         mockMvc.perform(
-                get("/api/workflow/documentos/obtenerPromociones/{carpetaId}/{actualizacion}", 1,"SI")
+                get("/api/workflow/documentos/obtenerPromociones/{carpetaId}/{documentoId}/{tipoDocumento}", 1,1, "ACUERDO")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

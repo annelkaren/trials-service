@@ -102,9 +102,9 @@ class AcuerdoServiceTest {
     @Test
     void obtenerPromocionesTest(){
         Integer carpetaId = 1;
-        String actualizacion = "NO";
+        Integer documentoId = 1;
 
-        List<AcuerdoPromocionesRecord> result = acuerdosService.obtenerPromociones(carpetaId, actualizacion, 0);
+        List<AcuerdoPromocionesRecord> result = acuerdosService.obtenerPromociones(carpetaId, documentoId, "ACUERDO");
         assertNotNull(result);
     }
 
