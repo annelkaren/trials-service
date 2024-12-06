@@ -152,16 +152,16 @@ public class AcuerdosService {
                 return documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
         }
 
-        public Object getAcuerdoOSentencia(Integer acuerdoId) {
+        public Object getAcuerdoOSentencia(Integer documentoId) {
 
-                Documento documento = documentoRepository.findById(acuerdoId)
+                Documento documento = documentoRepository.findById(documentoId)
                                 .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
 
-                DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
+                DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId)
                                 .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
                                                 "documentoDetalleId"));
 
-                DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
+                DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)
                                 .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado",
                                                 "documentoContenidoId"));
 
@@ -169,11 +169,11 @@ public class AcuerdosService {
 
                 if (documento.getTipoDocumento().equals(TipoDocumento.ACUERDO)) {
 
-                        promociones = null;//.obtenerPromocionesAcuerdo(documento.getCarpeta().getId(), "SI");
+                        promociones = obtenerPromociones(documento.getCarpeta().getId(), documentoId, "ACUERDO");
                         return new AcuerdoRecord(
-                                        acuerdoId,
+                                        documentoId,
                                         documento.getCarpeta().getId(),
-                                        acuerdoId,
+                                        documentoId,
                                         documentoDetalle.getTipoAcuerdo(),
                                         documentoDetalle.getFechaResolucion(),
                                         documentoDetalle.getEtapaProcesal(),
@@ -188,8 +188,8 @@ public class AcuerdosService {
                         promociones = null; //documentoRepository.obtenerPromocionesSentencia(documento.getCarpeta().getId(), "SI");
                         
                         return new SentenciaRecordSave(
-                                        acuerdoId,
-                                        acuerdoId,
+                                        documentoId,
+                                        documentoId,
                                         documento.getCarpeta().getId(),
                                         documentoDetalle.getTipoSentencia(),
                                         documentoDetalle.getFechaResolucion(),
