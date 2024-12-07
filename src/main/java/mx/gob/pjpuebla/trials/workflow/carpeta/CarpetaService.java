@@ -130,7 +130,7 @@ public class CarpetaService {
             throw new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId, "documentoId");
         }
 
-        // Obtener y devolver los anexos de la bandeja de recepción
+        // Obtener y r los anexos de la bandeja de recepción
         List<AnexoBandejaRecepcionRecord> anexos = carpetaRepository.findAnexosByDocumentoId(documento.getId());
         return new BandejaRecepcionRecord(
                 documento.getId(),
@@ -312,7 +312,8 @@ public class CarpetaService {
                 documento.getCarpeta().getJuzgado().getMateria().getNombre(),
                 documento.getCarpeta().getJuzgado().getMateria().getId(),
                 documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null,
-                documento.getCarpeta().getJuzgado().getNombre()
+                documento.getCarpeta().getJuzgado().getNombre(),
+                (documento.getCarpeta().getTipoPieza() != null) ? documento.getCarpeta().getTipoPieza().getTipo() : null
         );
     }
 
@@ -567,7 +568,7 @@ public class CarpetaService {
     }
 
     public List<DocumentoDetalleCarpetaResponse> getAllDocumentosCarpeta(String key, Integer carpetaId){
-        List<DocumentoDetalleCarpeta> list = documentoRepository.findDocumentosByCarpeta(key, carpetaId);
+        List<DocumentoDetalleCarpeta> list = documentoRepository.findDocumentosByCarpeta(carpetaId);
 
         return list.stream()
                 .map(
@@ -582,7 +583,7 @@ public class CarpetaService {
                                 Boolean.FALSE,
                                 e.estadoCarpeta()!=null?e.estadoCarpeta().name() : "",
                                 ""
-                        )).toList();
+                        )).filter(d->key==null||d.tipo().toUpperCase().contains(key)).toList();
     }
 
     public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId, Pageable pageable){
