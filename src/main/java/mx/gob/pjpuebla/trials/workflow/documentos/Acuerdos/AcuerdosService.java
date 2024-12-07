@@ -236,7 +236,7 @@ public class AcuerdosService {
                 documentoContenidoRepository.save(documentoContenido);
 
                 // Actualizar promociones relacionadas a null
-                documentoRepository.actualizacionAcuerdoRespuesta(acuerdo.carpetaId());
+                documentoRepository.actualizacionAcuerdoRespuesta(acuerdo.carpetaId(), acuerdo.documentoId());
 
                 // volver a recorrer las promociones pero ahora las que el usuario setee
                 if (acuerdo.promocionesRelacionadas() != null) {

@@ -200,9 +200,11 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND carpeta.id = :carpetaId
                 AND (concepto.nombre = 'Adjuntar' OR doc.tipoDocumento IS NULL)
                 AND (
-                        (:tipoDocumento = "ACUERDO" AND doc.tipoDocumento = TipoDocumento.PROMOCION) OR
-                        (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.PROMOCION) ) 
-                    )
+                        ( :tipoDocumento = "ACUERDO" AND doc.tipoDocumento = TipoDocumento.PROMOCION OR (:tipoDocumento = "ACUERDO" AND doc.tipoDocumento IS NULL )) 
+                         OR
+                        (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.PROMOCION)) OR (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IS NULL ) 
+                    ) 
+                    
            
             """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
@@ -211,8 +213,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("tipoDocumento") String tipoDocumento);
 
     @Modifying
-    @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId")
-    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId);
+    @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
+    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId, @Param("documentoId") Integer documentoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(

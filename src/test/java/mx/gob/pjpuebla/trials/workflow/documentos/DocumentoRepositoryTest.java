@@ -142,9 +142,9 @@ void testObtenerPromociones_actualizacionNo() {
 @Test
 void testActualizacionAcuerdoRespuesta() {
     Integer carpetaId = 1;
-
+    Integer documentoId = 1;
     // Ejecutar la actualización
-    documentoRepository.actualizacionAcuerdoRespuesta(carpetaId);
+    documentoRepository.actualizacionAcuerdoRespuesta(carpetaId, documentoId);
 
     // Verificar que los documentos en la carpeta tienen `acuerdoRespuesta` como null
     List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, 1, "ACUERDO");

@@ -27,122 +27,130 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 @Service
 public class SentenciasService {
 
-    private final DocumentoRepository documentoRepository;
-    private final DocumentoContenidoRepository documentoContenidoRepository;
-    private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final CarpetaRepository carpetaRepository;
+        private final DocumentoRepository documentoRepository;
+        private final DocumentoContenidoRepository documentoContenidoRepository;
+        private final DocumentoDetalleRepository documentoDetalleRepository;
+        private final CarpetaRepository carpetaRepository;
 
-    public DocumentoGenericRecord save(SentenciaRecordSave sentencia) {
+        public DocumentoGenericRecord save(SentenciaRecordSave sentencia) {
 
-        Carpeta carpeta = carpetaRepository.findById(sentencia.carpetaId())
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
+                Carpeta carpeta = carpetaRepository.findById(sentencia.carpetaId())
+                                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
 
-        // creación del nuevo documento.
-        Documento doc = new Documento()
-                .setCarpeta(carpeta)
-                .setTipoDocumento(TipoDocumento.SENTENCIA)
-                .setEstatus(EstadoCarpeta.CREADO);
+                // creación del nuevo documento.
+                Documento doc = new Documento()
+                                .setCarpeta(carpeta)
+                                .setTipoDocumento(TipoDocumento.SENTENCIA)
+                                .setEstatus(EstadoCarpeta.CREADO);
 
-        doc = documentoRepository.save(doc);
+                doc = documentoRepository.save(doc);
 
-        // Creación de la información de detalle
-        DocumentoDetalle docDetalle = new DocumentoDetalle()
-                .setFechaResolucion(sentencia.fechaResolucion())
-                .setEtapaProcesal(sentencia.etapaProcesal())
-                .setTipoSentencia(sentencia.tipoSentencia())
-                .setTipoResolucion(sentencia.tipoResolucion())
-                .setExtractoSentencia(sentencia.extractoSentencia())
-                .setDocumento(doc);
-        documentoDetalleRepository.save(docDetalle);
+                // Creación de la información de detalle
+                DocumentoDetalle docDetalle = new DocumentoDetalle()
+                                .setFechaResolucion(sentencia.fechaResolucion())
+                                .setEtapaProcesal(sentencia.etapaProcesal())
+                                .setTipoSentencia(sentencia.tipoSentencia())
+                                .setTipoResolucion(sentencia.tipoResolucion())
+                                .setExtractoSentencia(sentencia.extractoSentencia())
+                                .setDocumento(doc);
+                documentoDetalleRepository.save(docDetalle);
 
-        // Creacón de la información de contenido:
-        DocumentoContenido docContenido = new DocumentoContenido()
-                .setDocumento(doc)
-                .setTamanioPapel(sentencia.tamanioPapel())
-                .setTexto(sentencia.textoEditor());
-        documentoContenidoRepository.save(docContenido);
+                // Creacón de la información de contenido:
+                DocumentoContenido docContenido = new DocumentoContenido()
+                                .setDocumento(doc)
+                                .setTamanioPapel(sentencia.tamanioPapel())
+                                .setTexto(sentencia.textoEditor());
+                documentoContenidoRepository.save(docContenido);
 
-        // Buscamos las promociones las cuales fueron marcadas para asociar
+                // Buscamos las promociones las cuales fueron marcadas para asociar
 
-        if (sentencia.promocionesRelacionadas() != null) {
-            for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {
-                Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
-                if (promocion != null) {
-                    promocion.setAcuerdoRespuesta(doc);
-                    documentoRepository.save(promocion);
+                if (sentencia.promocionesRelacionadas() != null) {
+                        for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {
+                                Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
+                                if (promocion != null) {
+                                        promocion.setAcuerdoRespuesta(doc);
+                                        documentoRepository.save(promocion);
+                                }
+                        }
                 }
-            }
+                return new DocumentoGenericRecord(doc.getId(), doc.getTipoDocumento());
+
         }
-        return new DocumentoGenericRecord(doc.getId(), doc.getTipoDocumento());
 
-    }
+        public DocumentoGenericRecord publicarSentencia(SentenciaRecordSave sentencia) {
+                Integer acuerdoId = sentencia.sentenciaId() != null ? sentencia.sentenciaId() : save(sentencia).id();
 
-    public DocumentoGenericRecord publicarSentencia(SentenciaRecordSave sentencia) {
-        Integer acuerdoId = sentencia.sentenciaId() != null ? sentencia.sentenciaId() : save(sentencia).id();
+                DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
+                                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado",
+                                                "documentoId"));
 
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
-                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoId"));
+                DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
+                                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
+                                                "documentoId"));
 
-        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
-                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoId"));
+                Documento documento = documentoRepository.findById(acuerdoId)
+                                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
 
-        Documento documento = documentoRepository.findById(acuerdoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+                // Actualizamos el estatus de documento a publicado esperando definirlo:
+                documento.setEstatus(EstadoCarpeta.PUBLICADO);
+                documentoRepository.save(documento);
 
-        // Actualizamos el estatus de documento a publicado esperando definirlo:
-        documento.setEstatus(EstadoCarpeta.PUBLICADO);
-        documentoRepository.save(documento);
+                // Actualizamos fecha de publicación en documento detalle:
+                documentoDetalle.setFechaPublicacion(LocalDate.now());
+                documentoDetalleRepository.save(documentoDetalle);
 
-        // Actualizamos fecha de publicación en documento detalle:
-        documentoDetalle.setFechaPublicacion(LocalDate.now());
-        documentoDetalleRepository.save(documentoDetalle);
+                // Actualizamos estatus de la bandera de documento contenido:
+                documentoContenido.setOficioPublicado('s');
+                documentoContenidoRepository.save(documentoContenido);
 
-        // Actualizamos estatus de la bandera de documento contenido:
-        documentoContenido.setOficioPublicado('s');
-        documentoContenidoRepository.save(documentoContenido);
-
-        return new DocumentoGenericRecord(documento.getId(), documento.getTipoDocumento());
-    }
+                return new DocumentoGenericRecord(documento.getId(), documento.getTipoDocumento());
+        }
 
         public DocumentoGenericRecord update(SentenciaRecordSave sentencia) {
 
-        Documento documento = documentoRepository.findById(sentencia.sentenciaId())
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+                Documento documento = documentoRepository.findById(sentencia.sentenciaId())
+                                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
 
-        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(sentencia.sentenciaId())
-                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado", "documentoDetalleId"));
+                DocumentoDetalle documentoDetalle = documentoDetalleRepository
+                                .findByDocumentoId(sentencia.sentenciaId())
+                                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
+                                                "documentoDetalleId"));
 
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(sentencia.sentenciaId())
-                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado", "documentoContenidoId"));
-    
-        //Actualizar documento detalle:
+                DocumentoContenido documentoContenido = documentoContenidoRepository
+                                .findByDocumentoId(sentencia.sentenciaId())
+                                .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado",
+                                                "documentoContenidoId"));
 
-        documentoDetalle.setFechaResolucion(sentencia.fechaResolucion());
-        documentoDetalle.setTipoSentencia(sentencia.tipoSentencia());
-        documentoDetalle.setTipoResolucion(sentencia.tipoResolucion());
-        documentoDetalle.setExtractoSentencia(sentencia.extractoSentencia());
-        documentoDetalle.setEtapaProcesal(sentencia.etapaProcesal());
-        documentoDetalleRepository.save(documentoDetalle);
+                // Actualizar documento detalle:
 
-        //Actualizar documento contenido:
-        documentoContenido.setTamanioPapel(sentencia.tamanioPapel());
-        documentoContenido.setTexto(sentencia.textoEditor());
-        documentoContenidoRepository.save(documentoContenido);
+                documentoDetalle.setFechaResolucion(sentencia.fechaResolucion());
+                documentoDetalle.setTipoSentencia(sentencia.tipoSentencia());
+                documentoDetalle.setTipoResolucion(sentencia.tipoResolucion());
+                documentoDetalle.setExtractoSentencia(sentencia.extractoSentencia());
+                documentoDetalle.setEtapaProcesal(sentencia.etapaProcesal());
+                documentoDetalleRepository.save(documentoDetalle);
 
-        //Actualizar promociones relacionadas a null
-        documentoRepository.actualizacionAcuerdoRespuesta(sentencia.carpetaId());
+                // Actualizar documento contenido:
+                documentoContenido.setTamanioPapel(sentencia.tamanioPapel());
+                documentoContenido.setTexto(sentencia.textoEditor());
+                documentoContenidoRepository.save(documentoContenido);
 
-        //volver a recorrer las promociones pero ahora las que el usuario setee
-        if (sentencia.promocionesRelacionadas() != null) {
-                for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {
-                        Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
-                        if (promocion != null) {
-                            promocion.setAcuerdoRespuesta(documento);
-                            documentoRepository.save(promocion);
+                // Actualizar promociones relacionadas a null
+                documentoRepository.actualizacionAcuerdoRespuesta(sentencia.carpetaId(), sentencia.sentenciaId());
+
+                // volver a recorrer las promociones pero ahora las que el usuario setee
+                
+                if (sentencia.promocionesRelacionadas() != null) {
+                        for (AcuerdoPromocionesRecord promo : sentencia.promocionesRelacionadas()) {
+                                Documento promocion = documentoRepository.findById(promo.id()).orElse(null);
+                                if (promocion != null) {
+                                        promocion.setAcuerdoRespuesta(documento);
+                                        documentoRepository.save(promocion);
+                                }
                         }
                 }
-        }
+              
 
-        return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);        
-    }
+                return new DocumentoGenericRecord(documento.getId(), TipoDocumento.ACUERDO);
+        }
 }
