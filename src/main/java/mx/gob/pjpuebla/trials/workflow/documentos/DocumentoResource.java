@@ -238,4 +238,9 @@ public class DocumentoResource {
                 objectMapper.readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
         return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
     }
+
+    @PostMapping(value = "/documentos/{id}/adjuntar")
+    public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId){
+        return documentoService.adjuntarPromocion(promocionId);
+    }
 }
