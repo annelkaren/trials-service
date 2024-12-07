@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.Sentencias.records.SentenciaRecordSave;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 @RequiredArgsConstructor
@@ -32,4 +31,8 @@ public class SentenciasResource {
         return sentenciasService.update(sentencia);
     }
     
+    @PostMapping("/documentos/publicarSentencia")
+    public DocumentoGenericRecord publicarSentencia(@RequestBody SentenciaRecordSave sentencia){
+        return sentenciasService.publicarSentencia(sentencia);
+    }
 }

@@ -654,11 +654,6 @@ public class DocumentoService {
         Persona persona = personaService.getAuditor();
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
         
-        //TODO: CONDICION MOMENTANEA PARA MOSTRAR EN ROL DE PROYECTISTA, VALIDAR SI ES CORRECTO ESTA MANERA DE LISTARLO:
-        if(!esOficialMayor){
-            esOficialMayor =  roleService.hasRole(persona.getUsuario(), "PROYECTISTA");
-        }
-      
         Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
 
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
