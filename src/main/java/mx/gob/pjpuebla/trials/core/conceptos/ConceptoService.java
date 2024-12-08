@@ -40,7 +40,7 @@ public class ConceptoService {
     private ConceptoRecordResponse mapToRecordResponse(Concepto concepto) {
         Juzgado juzgado = concepto.getJuzgado();
         JuzgadoRecordItem juzgadoRecordItem = null;
-
+        concepto.setDias(concepto.getDias() * 24);
         if (juzgado != null) {
             String materiaNombre = (juzgado.getMateria() != null) ? juzgado.getMateria().getNombre() : null;
             juzgadoRecordItem = new JuzgadoRecordItem(

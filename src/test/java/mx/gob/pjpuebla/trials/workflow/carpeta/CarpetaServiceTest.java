@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -316,6 +317,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_promocion_Success() {
+        Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -331,6 +333,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
+        documento.setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -348,6 +351,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_Success() {
+        Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -362,6 +366,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
+        documento.setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);

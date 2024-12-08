@@ -69,4 +69,7 @@ public class Movimiento implements Serializable {
     @Size(max = 60)
     @Column(name = "S_RECOMENDACIONES")
     private String recomendaciones;
+
+    @Column(name = "S_DURACION")
+    private String duracion;
 }

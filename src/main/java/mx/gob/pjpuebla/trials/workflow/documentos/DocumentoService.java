@@ -708,6 +708,8 @@ public class DocumentoService {
                         .setEstatus(EstadoCarpeta.TURNADO);
                 documento.setConcepto(getConceptoByTipoCarpetaDocumento(documento.getTipoDocumento(), null));
                 documento = documentoRepository.save(documento);
+                movimiento.setConcepto(documento.getConcepto().getNombre());
+                movimiento.setDuracion(documento.getConcepto().getDias().toString() +"d");
                 movimiento.setDocumento(documento);
                 movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
             } else {
@@ -721,6 +723,8 @@ public class DocumentoService {
                 documentoRepository.save(documento2);
 
                 carpeta = carpetaRepository.save(carpeta);
+                movimiento.setConcepto(documento2.getConcepto().getNombre());
+                movimiento.setDuracion(documento2.getConcepto().getDias().toString() +"d");
                 movimiento.setCarpeta(carpeta);
                 movimiento.setJuzgado(carpeta.getJuzgado());
             }
@@ -1010,6 +1014,8 @@ public class DocumentoService {
         Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId" + record.idDocumentoRecepcion()));
         documento.setConcepto(concepto);
+        String duration = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
+
         Persona persona = personaService.getAuditor();
         if (documento.getTipoDocumento() != null) { //Documento
             documento.setEstatus(EstadoCarpeta.ASIGNADO);
@@ -1022,8 +1028,7 @@ public class DocumentoService {
             carpetaRepository.save(carpeta);
             documento = null;
         }
-
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration);
 
         return new MovimientoPersonalJuzgadoRecord(
                 record.idDocumentoRecepcion(),
@@ -1106,7 +1111,9 @@ public class DocumentoService {
 
             documento.setConcepto(concepto);
             documento.setPrioridad(record.prioridad());
-            documento.setHoras(record.horas());
+            float toDays = record.horas() / 24;
+            if (toDays != (float) concepto.getDias())
+                documento.setHoras(record.horas());
             if (documento.getTipoDocumento() != null) {
                 documento.setEstatus(EstadoCarpeta.TURNADO);
             } else {
@@ -1118,8 +1125,9 @@ public class DocumentoService {
 
             Persona persona = personaService.getAuditor();
 
+            String duracion = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
             Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
-                    EstadoCarpeta.TURNADO.name(), StringUtils.capitalize(concepto.getNombre().toLowerCase()), personalJuzgado);
+                    EstadoCarpeta.TURNADO.name(), StringUtils.capitalize(concepto.getNombre().toLowerCase()), personalJuzgado, duracion);
 
             MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
                     carpeta.getId(),
