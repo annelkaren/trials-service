@@ -1105,8 +1105,8 @@ public class DocumentoService {
 
             documento.setConcepto(concepto);
             documento.setPrioridad(record.prioridad());
-            double toDays = record.horas() / 24;
-            if (toDays != (double) concepto.getDias())
+            float toDays = record.horas() / 24;
+            if (toDays != (float) concepto.getDias())
                 documento.setHoras(record.horas());
             if (documento.getTipoDocumento() != null) {
                 documento.setEstatus(EstadoCarpeta.TURNADO);
