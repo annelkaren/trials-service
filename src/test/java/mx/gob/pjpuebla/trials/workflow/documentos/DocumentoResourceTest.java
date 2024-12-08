@@ -617,6 +617,20 @@ class DocumentoResourceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
 
+    void saveSentenciaPublica() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/workflow/documentos/sentencia/publica/" + 1)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }

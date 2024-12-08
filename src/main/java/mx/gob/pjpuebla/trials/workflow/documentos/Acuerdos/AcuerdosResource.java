@@ -49,7 +49,7 @@ public class AcuerdosResource {
     }
 
     @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")
-    public Page<AcuerdosRecord> obtenerAcuerdos(
+    public Page<AcuerdosRecord> obtenerAcuerdosYsentencias(
         @PageableDefault(size = 20) Pageable pageable,
         @PathVariable Integer carpetaId){
 
@@ -66,14 +66,20 @@ public class AcuerdosResource {
         return acuerdosService.getTipoPartesAcuerdo(carpetaId, tipoParte);
     }
 
-    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{actualizacion}")
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(@PathVariable Integer carpetaId, @PathVariable String actualizacion){
-        return acuerdosService.obtenerPromociones(carpetaId, actualizacion);
+    @GetMapping("/documentos/obtenerPromociones/{carpetaId}/{documentoId}/{tipoDocumento}")
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(
+            @PathVariable Integer carpetaId,
+            @PathVariable(required = false) String documentoId,
+            @PathVariable String tipoDocumento){
+
+            Integer documentoIdParsed = "null".equalsIgnoreCase(documentoId) ? null : Integer.valueOf(documentoId);
+
+            return acuerdosService.obtenerPromociones(carpetaId, documentoIdParsed, tipoDocumento);
     }
 
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")
-    public AcuerdoRecord obtenerAcuerdo(@PathVariable Integer acuerdoId) {
-        return acuerdosService.getAcuerdo(acuerdoId);
+    public Object obtenerAcuerdoOSentencias(@PathVariable Integer acuerdoId) {
+        return acuerdosService.getAcuerdoOSentencia(acuerdoId);
     }
 
     @PutMapping("/documentos/actualizarAcuerdo")

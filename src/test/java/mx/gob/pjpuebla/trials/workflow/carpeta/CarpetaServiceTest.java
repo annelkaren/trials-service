@@ -52,9 +52,9 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepo
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
@@ -74,6 +74,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -83,7 +84,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -136,6 +137,8 @@ class CarpetaServiceTest {
     private EtapaProcesalRepository etapaProcesalRepository;
     @Mock
     private CarpetaEtapasRepository carpetaEtapasRepository;
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -897,4 +900,41 @@ class CarpetaServiceTest {
         verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
     }
 
+    @Test
+    void getCarpetaByExpedienteAndSentencia() {
+        juzgado.setMateria(MateriaSetUp.createMateria());
+        Persona auditor = PersonaSetUp.createPersona();
+        auditor.setJuzgado(juzgado);
+        Carpeta carpeta = CarpetaSetUp.create();
+        carpeta.setJuzgado(juzgado);
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setCarpeta(carpeta);
+        DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                .setTipoSentencia(TipoSentencia.SENTENCIA_DEFINITIVA)
+                .setTipoResolucion(TipoResolucion.CONDENATORIA)
+                .setFechaResolucion(LocalDate.now());
+
+        given(personaService.getAuditor()).willReturn(auditor);
+        given(documentoRepository.findByExpedienteAndTipoDocumento(carpeta.getExpediente(), TipoDocumento.SENTENCIA, auditor.getJuzgado().getId()))
+                .willReturn(Optional.of(documento));
+        given(documentoDetalleRepository.findByDocumentoId(documento.getId()))
+                .willReturn(Optional.of(documentoDetalle));
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
+                .willReturn(actor);
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
+                .willReturn(demandado);
+
+        SentenciaPublicaResponseRecord result = target.getCarpetaByExpedienteAndSentencia(carpeta.getExpediente());
+
+        assertThat(result)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("idCarpeta", carpeta.getId())
+                .hasFieldOrPropertyWithValue("actor", "Juan Perez")
+                .hasFieldOrPropertyWithValue("demandado", "Nauj Zerep")
+                .hasFieldOrPropertyWithValue("materia", carpeta.getJuzgado().getMateria().getNombre())
+                .hasFieldOrPropertyWithValue("juzgado", carpeta.getJuzgado().getNombre())
+                .hasFieldOrPropertyWithValue("sentencia", documentoDetalle.getTipoSentencia().name())
+                .hasFieldOrPropertyWithValue("resolucion", documentoDetalle.getTipoResolucion().name())
+                .hasFieldOrPropertyWithValue("fechaResolucion", documentoDetalle.getFechaResolucion());
+    }
 }

@@ -19,6 +19,5 @@ public record SentenciaRecordSave(
     String extractoSentencia,
     Character tamanioPapel,
     String textoEditor,
-    String resumen,
     List<AcuerdoPromocionesRecord> promocionesRelacionadas
 ){}

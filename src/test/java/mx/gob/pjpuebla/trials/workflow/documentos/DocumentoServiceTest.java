@@ -1574,4 +1574,32 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("folio", documento.getFolio())
                 .hasFieldOrPropertyWithValue("tipoDocumento", documento.getTipoDocumento());
     }
+
+    @Test
+    void saveSentenciaPublica() {
+        Documento docSentencia = DocumentoSetUp.create(tipoJuicio);
+        docSentencia.setTipoDocumento(TipoDocumento.SENTENCIA);
+
+        Documento docSentenciaSave = DocumentoSetUp.create(tipoJuicio);
+        docSentenciaSave.setTipoDocumento(TipoDocumento.SENTENCIA_PUBLICA);
+
+        Persona persona = PersonaSetUp.createPersona();
+
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(docSentencia));
+        given(documentoRepository.save(any())).willReturn(docSentenciaSave);
+
+        documentoService.saveSentenciaPublica(1, multipartFile);
+        verify(personaService).getAuditor();
+        verify(documentoRepository).findById(1);
+        verify(documentoRepository).save(any(Documento.class));
+        verify(digitalizacionService).guardarArchivo(multipartFile, docSentenciaSave.getId());    
+     }
 }

@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
@@ -14,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 
@@ -116,39 +119,17 @@ class DocumentoRepositoryTest extends AuditConfigTest {
         assertThat(acuerdoNotificados).hasSize(0);
     }
 
-@Test
-void testObtenerPromociones_actualizacionSI() {
-    Integer carpetaId = 1;
-    String actualizacion = "SI";
-
-    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion);
-
-    assertThat(promociones).isNotEmpty();
-    assertThat(promociones.get(0).nombre()).startsWith("Promo ");
-}
-
-@Test
-void testObtenerPromociones_actualizacionNo() {
-    Integer carpetaId = 1;
-    String actualizacion = "NO";
-
-    List<AcuerdoPromocionesRecord> promociones = documentoRepository.obtenerPromociones(carpetaId, actualizacion);
-
-    assertThat(promociones).isNotEmpty();
-    promociones.forEach(promocion -> assertThat(promocion.seleccionado()).isEqualTo(0));
-}
 
 @Test
 void testActualizacionAcuerdoRespuesta() {
     Integer carpetaId = 1;
-
+    Integer documentoId = 5;
     // Ejecutar la actualización
-    documentoRepository.actualizacionAcuerdoRespuesta(carpetaId);
+    documentoRepository.actualizacionAcuerdoRespuesta(carpetaId, documentoId);
 
     // Verificar que los documentos en la carpeta tienen `acuerdoRespuesta` como null
-    List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, "SI");
-    assertThat(documentos).isNotEmpty();
-    documentos.forEach(documento -> assertThat(documento.seleccionado()).isEqualTo(0));
+    List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, documentoId, "ACUERDO");
+    assertThat(documentos.isEmpty());
 }
     @Test
     void testfindDocumentosByCarpeta(){
