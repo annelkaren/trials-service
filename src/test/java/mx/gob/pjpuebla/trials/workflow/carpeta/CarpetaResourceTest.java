@@ -418,4 +418,28 @@ class CarpetaResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void getCarpetaByExpedienteAndSentencia() throws Exception {
+        SentenciaPublicaResponseRecord sentenciaPublicaResponseRecord = new SentenciaPublicaResponseRecord(
+                1,
+                1,
+                "actor uno",
+                "actor dos",
+                "laboral",
+                "juzgado 1",
+                "sentencia",
+                "resolucion",
+                LocalDate.now()
+        );
+        given(mockCarpetaService.getCarpetaByExpedienteAndSentencia(anyString()))
+                .willReturn(sentenciaPublicaResponseRecord);
+        mockMvc.perform(
+                        get("/api/workflow/carpeta/sentencia")
+                                .param("numExpediente", "000001")
+                                .param("year", "2024")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 }

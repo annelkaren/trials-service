@@ -606,4 +606,20 @@ class DocumentoResourceTest {
                 .andExpect(jsonPath("$.folio").value("12345"))
                 .andExpect(jsonPath("$.tipoDocumento").value(TipoDocumento.EXHORTO_SALIDA.name()));
     }
+
+    @Test
+    void saveSentenciaPublica() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/workflow/documentos/sentencia/publica/" + 1)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }

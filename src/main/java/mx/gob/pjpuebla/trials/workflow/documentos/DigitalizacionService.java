@@ -50,6 +50,9 @@ import java.util.UUID;
  * EXHORTO (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}
  * </p>
+ * SENTENCIA PUBLICA (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
+ * </p>
  */
 @Slf4j
 @Service
@@ -84,6 +87,10 @@ public class DigitalizacionService {
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
             return manejarOficio(documento, year, juzgado, oficialia);
+        }
+
+        if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
+            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
 
         // Revisar la ruta para los documentos de una pieza

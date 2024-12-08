@@ -3,10 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaTabGeneralRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.SetHorasRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,4 +125,16 @@ class AudienciaResourceTest {
                         .content(ResourceUtilTest.asJsonString(audienciaTabGeneralRecord)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void reprogramarAudiencia_success() throws Exception {
+        given(audienciaService.reprogramarAudiencia(any(ReprogramarAudienciaRecord.class)))
+                .willReturn(AudienciaSetUp.createAudienciasResponseRecord());
+
+        mockMvc.perform(patch("/api/workflow/bandeja/audienciasgenerales/reprogramar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceUtilTest.asJsonString(AudienciaSetUp.createReprogramarAudienciaRecord())))
+                .andExpect(status().isOk());
+    }
+
 }

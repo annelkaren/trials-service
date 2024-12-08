@@ -125,4 +125,14 @@ public class CarpetaResource {
             @RequestParam(value = "key", required = false) String key) {
         return carpetaService.libroDeGobierno(key, pageable);
     }
+
+    @GetMapping(value = "/sentencia")
+    public ResponseEntity<SentenciaPublicaResponseRecord> getCarpetaByExpedienteAndSentencia(
+            @RequestParam String numExpediente,
+            @RequestParam Integer year
+    ){
+        SentenciaPublicaResponseRecord sentenciaResponse = carpetaService.getCarpetaByExpedienteAndSentencia(
+                numExpediente + "/" + year);
+        return ResponseEntity.ok(sentenciaResponse);
+    }
 }
