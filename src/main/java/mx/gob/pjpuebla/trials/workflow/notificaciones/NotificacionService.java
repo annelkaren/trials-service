@@ -101,7 +101,6 @@ public class NotificacionService {
                         .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));
                     persona.setFnDomicilio(domicilio);
                 } catch (Exception e) {
-                    e.printStackTrace();
                     throw new RuntimeException("Error al registrar la notificación", e);
                 }
                 
@@ -111,7 +110,6 @@ public class NotificacionService {
         try {
             personaDocumentoRepository.save(persona);
         } catch (Exception e) {
-            e.printStackTrace(); // Esto imprimirá la excepción exacta en los logs
             throw new RuntimeException("Error al registrar la notificación", e);
         }
     }
