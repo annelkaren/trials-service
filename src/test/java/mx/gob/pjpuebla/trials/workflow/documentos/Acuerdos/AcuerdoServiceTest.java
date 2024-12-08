@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.domain.Page;
@@ -146,29 +147,35 @@ class AcuerdoServiceTest {
     
     }
 
-    @Test
-    void getAcuerdoTest(){
-        AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
-        DocumentoData docData = new DocumentoData();
-        docData.setRubros(acuerdoRecord.rubros());
+@Test
+void getAcuerdoTest(){
+    AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
+    DocumentoData docData = new DocumentoData();
+    docData.setRubros(acuerdoRecord.rubros());
 
-        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
-        documento.setData(docData);
+    Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+    documento.setTipoDocumento(TipoDocumento.ACUERDO);
+    documento.setData(docData);
 
-        documento.setData(new DocumentoData());
-        given(documentoRepository.findById(anyInt()))
+    documento.setData(new DocumentoData());
+    given(documentoRepository.findById(anyInt()))
             .willReturn(Optional.of(documento));
 
-        given(documentoDetalleRepository.findByDocumentoId(anyInt()))
+    given(documentoDetalleRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoDetalle()));
 
-        given(documentoContenidoRepository.findByDocumentoId(anyInt()))
+    given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
 
-        Object result = acuerdosService.getAcuerdoOSentencia(1);
 
-        assertNotNull(result);
-    }
+    Mockito.lenient().when(documentoRepository.obtenerPromociones(1, 5, "ACUERDO"))
+            .thenReturn(List.of(new AcuerdoPromocionesRecord(1, "d", "c", "s", 1)));
+            
+    Object result = acuerdosService.getAcuerdoOSentencia(1);
+
+    assertNotNull(result);
+}
+
 
     @Test
     void update(){
