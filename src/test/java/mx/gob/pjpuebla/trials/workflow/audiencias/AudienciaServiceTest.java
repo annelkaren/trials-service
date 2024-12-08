@@ -340,5 +340,26 @@ class AudienciaServiceTest {
         verify(audienciaRepository).save(audiencia);
     }
 
+    @Test
+    void reprogramarAudiencia_success() {
+        Audiencia audienciaMock = new Audiencia();
+        audienciaMock.setId(1);
+        audienciaMock.setFechaAudiencia(LocalDateTime.now());
+
+        when(audienciaRepository.findById(51)).thenReturn(Optional.of(audienciaMock));
+        when(salaRepository.findById(1)).thenReturn(Optional.of(sala));
+        when(tipoAudienciaRepository.findById(1)).thenReturn(Optional.of(tipoAudiencia));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
+        when(audienciaRepository.save(any(Audiencia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ReprogramarAudienciaRecord reprogramarAudienciaRecord = AudienciaSetUp.createReprogramarAudienciaRecord();
+
+        AudienciasResponseRecord response = audienciaService.reprogramarAudiencia(reprogramarAudienciaRecord);
+
+        assertNotNull(response);
+        assertEquals(1, response.audienciaId());
+        assertEquals(EstatusAudiencia.DIFERIDA, response.estatus());
+    }
+
 
 }
