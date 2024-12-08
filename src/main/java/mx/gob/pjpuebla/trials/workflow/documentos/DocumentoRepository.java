@@ -103,49 +103,50 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Documento findByCarpetaIdAndRutaIsNull(Integer id);
 
     @Query("""
-            SELECT m
-            FROM Movimiento m
-            LEFT JOIN m.carpeta c
-            LEFT JOIN c.juzgado jc
-            LEFT JOIN m.documento d
-            LEFT JOIN d.carpeta cd
-            LEFT JOIN cd.juzgado jcd
-            LEFT JOIN m.juzgado j
-            LEFT JOIN m.oficialia o
-            LEFT JOIN c.persona pc
-            LEFT JOIN d.persona pd
-            WHERE (
-                (c IS NOT NULL AND c.estatus IN (
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                ) AND pc = :personaAsignada
-                AND jc.id = :juzgadoId)
-                OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-                mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                ) AND pd = :personaAsignada
-                AND jsonb_extract_path_text(d.data, 'pieza') is null
-                AND jcd.id = :juzgadoId) else false  end > false
-            )
-             AND m.fechaAsignacion = (
-                SELECT MAX(m2.fechaAsignacion)
-                FROM Movimiento m2
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                LEFT JOIN c.persona pc
+                LEFT JOIN d.persona pd
                 WHERE (
-                (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
-            )
-            AND m.estado IN ('TURNADO','ASIGNADO','DEVUELTO')
-            AND (
-                LOWER(c.folio) LIKE %:key%
-                OR LOWER(d.folio) LIKE %:key%
-                OR LOWER(cd.folio) LIKE %:key%
-                OR LOWER(cd.expediente) LIKE %:key%
-                OR LOWER(c.expediente) LIKE %:key%
-            )
-        """)
-    Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial, Pageable pageable);
+                    (c IS NOT NULL AND c.estatus IN (
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                    ) AND pc = :personaAsignada
+                    AND jc.id = :juzgadoId)
+                    OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                    ) AND pd = :personaAsignada
+                    AND jsonb_extract_path_text(d.data, 'pieza') is null
+                    AND jcd.id = :juzgadoId) else false  end > false
+                )
+                 AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                )
+                AND m.estado IN ('TURNADO','ASIGNADO','DEVUELTO')
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key%
+                    OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                )
+            """)
+    Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
+            Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
@@ -179,42 +180,80 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
-    //TODO: revisar si esta consulta es correcta:
-    /*Objetivo: listar todos los documentos qu ese encuentren relacionados con una carpeta en caso de que quiera a excepcion de los que ya tiene un acuerdo,
-        Para el caso de que quiera editar un acuerdo esta consulta tambien funciona, ahi es donde entra el parametro :actualización donde si es si entonces envia aun asi
-        los que ya tengan acuerdo seleccionado en el sentido de que quiera 'Desmarcarlo/desasociarlo de un acuerdo.', de ahi la columna seleccion.
-    */
+    //colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
-                doc.id,
-                CONCAT('Promo ', ROW_NUMBER() OVER (ORDER BY doc.id)) AS numeroPromocion,
-                doc.ruta,
-                (SELECT m.recomendaciones FROM Movimiento m WHERE m.documento = doc) as recomendacion,
-                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END) as seleccion
-            FROM Documento doc
-            JOIN doc.carpeta carpeta
-            WHERE carpeta.id = :carpetaId
-            AND (:actualizacion = 'SI' OR (:actualizacion != 'SI' AND doc.acuerdoRespuesta IS NULL))
-            """)
-    List<AcuerdoPromocionesRecord> obtenerPromociones(@Param("carpetaId") Integer carpetaId,
-            @Param("actualizacion") String actualizacion);
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+            doc.id,
+           CASE
+                WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
+                WHEN doc.tipoDocumento IS NULL THEN 'Demanda inicial'
+                ELSE COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial')
+            END,
+            doc.ruta,
+            m.recomendaciones,
+            CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
+        )
+        FROM Documento doc
+        JOIN doc.carpeta carpeta
+        LEFT JOIN doc.concepto concepto
+        LEFT JOIN Movimiento m ON m.documento = doc
+        WHERE 
+            (
+                (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR 
+                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
+            )
+            AND (
+                
+                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL)) 
+                OR 
+                (concepto.nombre = 'Adjuntar' 
+                 OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
+                 OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL) 
+                )
+            )
+            AND (
+               
+                ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
+                OR 
+               
+                (m.estado = 'ASIGNADO')
+            )
+            AND doc.carpeta.id = :carpetaId
+            AND 
+            CASE 
+                WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
+                WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
+                ELSE 0
+            END = 1
+    """)
+    List<AcuerdoPromocionesRecord> obtenerPromociones(
+        @Param("carpetaId") Integer carpetaId,
+        @Param("documentoId") Integer documentoId,
+        @Param("tipoDocumento") String tipoDocumento);
+    
+    
+    
+
 
     @Modifying
-    @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId")
-    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId);
-
+    @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
+    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId,
+            @Param("documentoId") Integer documentoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
             doc.id,
             dd.fechaPublicacion,
             dd.resumen,
-            doc.estatus)
+            doc.estatus,
+            LEFT(dd.extractoSentencia, 20),
+            doc.tipoDocumento
+            )
             FROM DocumentoDetalle dd
             JOIN dd.documento doc
-            WHERE doc.tipoDocumento = TipoDocumento.ACUERDO AND doc.carpeta.id = :carpetaId
+            WHERE doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA)  AND doc.carpeta.id = :carpetaId
             """)
-    Page<AcuerdosRecord> findAllAcuerdosByCarpeta(Integer carpetaId, Pageable pageable);
+    Page<AcuerdosRecord> findAllAcuerdosYSentenciasByCarpeta(Integer carpetaId, Pageable pageable);
 
     // TODO: actualizar el metodo cuando se tenga en donde se guardara.
     @Query("""

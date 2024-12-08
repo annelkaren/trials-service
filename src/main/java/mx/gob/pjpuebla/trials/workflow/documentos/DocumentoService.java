@@ -554,6 +554,7 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
+            System.out.println("entre ");
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return renderData(key, pageable, currentUser);
@@ -649,10 +650,12 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
+        
         Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
 
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
+          
             Documento documento = mov.getDocumento();
             if (mov.getCarpeta() != null && !mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
                 documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
@@ -661,13 +664,18 @@ public class DocumentoService {
                 documento = documentoRepository.findByCarpetaIdAndRutaIsNull(mov.getCarpeta().getId());
             }
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
+           
+           
             DocumentoAsignadoResponseRecord documentoGridRecord =
                     new DocumentoAsignadoResponseRecord(
                             documento.getId(),
                             carpeta.getId(),
                             carpeta.getExpediente(),
                             (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getFolio() : carpeta.getFolio(),
-                            StringUtils.capitalize((documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getTipoDocumento().name().toLowerCase() : carpeta.getTipoCarpeta().name().toLowerCase()),
+                            StringUtils.capitalize(
+                                (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? 
+                                    documento.getTipoDocumento().name().toLowerCase() : 
+                                    carpeta.getTipoCarpeta().name().toLowerCase()),
                             documento.getConcepto().getNombre(),
                             mov.getFechaAsignacion(),
                             mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()),

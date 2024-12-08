@@ -58,7 +58,7 @@ public class DocumentoDetalle implements Serializable {
     private TipoResolucion tipoResolucion;
 
     @Size(max=600)
-    @Column(name = "S_TIPO_EXTRACTO_SENTENCIA")
+    @Column(name = "S_EXTRACTO_SENTENCIA")
     private String extractoSentencia;
 
     @Size(max = 150)
