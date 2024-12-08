@@ -65,4 +65,9 @@ public class MovimientoResource {
             return ResponseEntity.status(500).body("Error al crear el movimiento: " + e.getMessage());
         }
     }
+
+    @GetMapping("/turnado/{carpetaId}")
+    public List<TurnadoMovimientoRecord> turnadoList(@PathVariable("carpetaId") Integer carpetaId){
+        return movimientoService.getTurnadoMovimientos(carpetaId);
+    }
 }

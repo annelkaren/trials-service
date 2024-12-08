@@ -239,6 +239,11 @@ public class DocumentoResource {
         return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
     }
 
+    @PostMapping(value = "/documentos/promocion/{promocionId}/adjuntar")
+    public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId){
+        return documentoService.adjuntarPromocion(promocionId);
+    }
+    
     @PostMapping(value = "/documentos/sentencia/publica/{docId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void saveSentenciaPublica(
             @RequestPart("file") MultipartFile file,

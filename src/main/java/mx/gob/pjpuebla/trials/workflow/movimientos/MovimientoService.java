@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,19 +43,23 @@ public class MovimientoService {
         return movimiento;
     }
 
-    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones, String motivo) {
+    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones, String motivo, String concepto, String duracion) {
         Persona personaAuditor = personaService.getAuditor();
         Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, motivo, estado)
                 .setObservaciones(observaciones)
-                .setRecomendaciones(recomendaciones);
+                .setRecomendaciones(recomendaciones)
+                .setConcepto(concepto)
+                .setDuracion(duracion);
+
         movimiento = movimientoRepository.save(movimiento);
         return movimiento;
     }
 
-    public Movimiento createMovimentoTurnado(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, String concepto, Persona destino) {
+    public Movimiento createMovimentoTurnado(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, String concepto, Persona destino, String duracion) {
         Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado)
                 .setConcepto(concepto)
-                .setDestino(destino);
+                .setDestino(destino)
+                .setDuracion(duracion);
         movimiento = movimientoRepository.save(movimiento);
         return movimiento;
     }
@@ -109,5 +115,29 @@ public class MovimientoService {
             return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre() : movimiento.getJuzgado().getNombre();
         }
         return "";
+    }
+
+    public List<TurnadoMovimientoRecord> getTurnadoMovimientos(Integer carpetaId) {
+        List<TurnadoMovimientoRecord> movimientoRecords = new ArrayList<>();
+        List<Movimiento> list = movimientoRepository.findByCarpetaIdAndEstadoInOrderByIdAsc(carpetaId,
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.ASIGNADO.name(), EstadoCarpeta.CAPTURA.name()));
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getEstado().equals(EstadoCarpeta.TURNADO.name()) &&
+                    (i+1)<list.size() && list.get(i + 1).getEstado().equals(EstadoCarpeta.ASIGNADO.name())) {
+                Movimiento origen = list.get(i);
+                Movimiento destino = list.get(i+1);
+                TurnadoMovimientoRecord record = new TurnadoMovimientoRecord(
+                        (origen.getUuid() != null) ? list.get(0).getOficialia().getNombre() : origen.getPersona().getNombre() + " " + origen.getPersona().getApellidoPaterno(),
+                        destino.getPersona().getNombre() + " " + destino.getPersona().getApellidoPaterno(),
+                        origen.getFechaAsignacion().toLocalDate(),
+                        destino.getFechaAsignacion().toLocalDate(),
+                        origen.getConcepto(),
+                        destino.getConcepto(),
+                        (origen.getDuracion().endsWith("h"))? origen.getDuracion().replace("h", " horas"):origen.getDuracion().replace("d","")
+                );
+                movimientoRecords.add(record);
+            }
+        }
+        return movimientoRecords;
     }
 }
