@@ -1557,4 +1557,21 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("folio", "123")
                 .hasFieldOrPropertyWithValue("tipoDocumento", TipoDocumento.EXHORTO_SALIDA);
     }
+
+    @Test
+    void testAdjuntarPromocion(){
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+
+        documento.setId(10).setEstatus(EstadoCarpeta.ASIGNADO).setTipoDocumento(TipoDocumento.PROMOCION).setFolio("0");
+
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any())).willReturn(documento);
+
+        DocumentoPromocionResponseRecord responseRecord = documentoService.adjuntarPromocion(10);
+
+        assertThat(responseRecord).isNotNull()
+                .hasFieldOrPropertyWithValue("id", documento.getId())
+                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
+                .hasFieldOrPropertyWithValue("tipoDocumento", documento.getTipoDocumento());
+    }
 }

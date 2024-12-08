@@ -606,4 +606,17 @@ class DocumentoResourceTest {
                 .andExpect(jsonPath("$.folio").value("12345"))
                 .andExpect(jsonPath("$.tipoDocumento").value(TipoDocumento.EXHORTO_SALIDA.name()));
     }
+
+    @Test
+    void testAdjuntarPromocion() throws Exception{
+        DocumentoPromocionResponseRecord responseRecord = new DocumentoPromocionResponseRecord(10,"1", TipoDocumento.PROMOCION);
+
+        given(documentoService.adjuntarPromocion(anyInt())).willReturn(responseRecord);
+
+        mockMvc.perform(post("/api/workflow/documentos/promocion/10/adjuntar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+    }
 }
