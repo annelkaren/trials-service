@@ -238,4 +238,12 @@ public class DocumentoResource {
                 objectMapper.readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
         return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
     }
+
+    @PostMapping(value = "/documentos/sentencia/publica/{docId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void saveSentenciaPublica(
+            @RequestPart("file") MultipartFile file,
+            @PathVariable("docId")  Integer docId
+    ){
+        documentoService.saveSentenciaPublica(docId, file);
+    }
 }

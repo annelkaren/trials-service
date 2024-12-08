@@ -9,10 +9,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.Sentencias.records.SentenciaRecordSave;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/worflow")
+@RequestMapping("/api/workflow")
 @SecurityRequirement(name = "keycloak")
 public class SentenciasResource {
 
@@ -20,7 +22,17 @@ public class SentenciasResource {
 
     @PostMapping("/documentos/crearSentencia")
     public DocumentoGenericRecord crearSentencia(@RequestBody SentenciaRecordSave sentencia){
-        return sentenciasService.crearSentencia(sentencia);
+        return sentenciasService.save(sentencia);
+    }
+
+    @PutMapping("/documentos/actualizarSentencia")
+    public DocumentoGenericRecord putMethodName(@RequestBody SentenciaRecordSave sentencia) {
+        
+        return sentenciasService.update(sentencia);
     }
     
+    @PostMapping("/documentos/publicarSentencia")
+    public DocumentoGenericRecord publicarSentencia(@RequestBody SentenciaRecordSave sentencia){
+        return sentenciasService.publicarSentencia(sentencia);
+    }
 }

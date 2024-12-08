@@ -133,7 +133,9 @@ public class AudienciaService {
                             item.getCarpeta().getExpediente(),
                             item.getSala().getNombre(),
                             item.getFechaAudiencia(),
-                            item.getEstatusAudiencia());
+                            item.getEstatusAudiencia(),
+                            juzgado.getId()
+                    );
                 })
                 .toList();
 
@@ -266,5 +268,35 @@ public class AudienciaService {
             }
         }
         audienciaRepository.save(audiencia);
+    }
+
+    public AudienciasResponseRecord reprogramarAudiencia(ReprogramarAudienciaRecord audiencia) {
+        Audiencia audienciaReprogramar = audienciaRepository.findById(audiencia.audienciaId())
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        Sala sala = salaRepository.findById(audiencia.salaId())
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
+
+        LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
+
+        audienciaReprogramar.setFechaAudiencia(fechaHora);
+        audienciaReprogramar.setSala(sala);
+        audienciaReprogramar.setInicio(fechaHora);
+        audienciaReprogramar.setFin(fechaHora.plusMinutes(audiencia.duracion()));
+        audienciaReprogramar.setEstatusAudiencia(EstatusAudiencia.DIFERIDA);
+        audienciaReprogramar.setTipoAudiencia(tipoAudiencia);
+        audienciaReprogramar.setCarpeta(carpeta);
+        audienciaReprogramar.setEstado(Estado.ACTIVE);
+        audienciaReprogramar.setDescripcion(audiencia.descripcion());
+
+        audienciaRepository.save(audienciaReprogramar);
+
+        return new AudienciasResponseRecord(audienciaReprogramar.getId(), EstatusAudiencia.DIFERIDA);
     }
 }
