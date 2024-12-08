@@ -1,4 +1,6 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
+
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 
 import java.time.LocalDateTime;
 

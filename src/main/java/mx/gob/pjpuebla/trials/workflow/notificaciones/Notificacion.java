@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import mx.gob.pjpuebla.trials.core.listaestrados.ListaEstrado;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;

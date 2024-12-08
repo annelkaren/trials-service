@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

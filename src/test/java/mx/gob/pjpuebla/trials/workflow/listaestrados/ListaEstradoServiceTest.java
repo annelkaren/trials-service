@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

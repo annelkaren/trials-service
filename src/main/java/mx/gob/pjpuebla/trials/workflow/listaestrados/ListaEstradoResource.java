@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core/listaestrado")
+@RequestMapping("/api/workflow/listaestrado")
 @SecurityRequirement(name = "Keycloak")
 public class ListaEstradoResource {
 

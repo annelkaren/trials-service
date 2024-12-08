@@ -1,6 +1,8 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;

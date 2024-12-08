@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,7 @@ class ListaEstradoResourceTest {
         given(mocklistaEstradoService.findAllByListaEstradoId(any(), any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(listaEstradoA)));
 
-        mockMvc.perform(get("/api/core/listaestrado")
+        mockMvc.perform(get("/api/workflow/listaestrado")
                         .param("searchQuery", "a")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) ;

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.listaestrados;
+package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 
 import jakarta.persistence.*;
