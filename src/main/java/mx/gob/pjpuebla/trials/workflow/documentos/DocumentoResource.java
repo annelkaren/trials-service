@@ -239,7 +239,7 @@ public class DocumentoResource {
         return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
     }
 
-    @PostMapping(value = "/documentos/{id}/adjuntar")
+    @PostMapping(value = "/documentos/promocion/{promocionId}/adjuntar")
     public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId){
         return documentoService.adjuntarPromocion(promocionId);
     }
