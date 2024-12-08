@@ -181,7 +181,9 @@ public class CarpetaService {
                 EstadoCarpeta.ASIGNADO.name(),
                 docRecepcionMovimientosRecord.observaciones(),
                 docRecepcionMovimientosRecord.recomendaciones(),
-                setObservacionesAnexos(anexosFaltantes)
+                setObservacionesAnexos(anexosFaltantes),
+                documento.getConcepto().getNombre(),
+                documento.getConcepto().getDias().toString()+"d"
         );
 
         return new DocumentoRecord(documento.getId(), documento.getCarpeta().getFolio(),
