@@ -62,4 +62,9 @@ public class AudienciaResource {
         this.audienciaService.audienciaTabGeneral(audienciaTabGeneralRecord);
     }
 
+    @PatchMapping("/bandeja/audienciasgenerales/reprogramar")
+    public AudienciasResponseRecord reprogramarAudiencia(@RequestBody ReprogramarAudienciaRecord audiencia) {
+        return this.audienciaService.reprogramarAudiencia(audiencia);
+    }
+
 }

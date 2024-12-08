@@ -11,6 +11,7 @@ public record AudienciasGeneralesResponseRecord(
         String numCarpeta,
         String lugar,
         LocalDateTime fechaHora,
-        EstatusAudiencia estatus
+        EstatusAudiencia estatus,
+        Integer juzgado
 ) {
 }
