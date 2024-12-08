@@ -20,6 +20,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
@@ -1310,6 +1311,19 @@ public class DocumentoService {
         }
         movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+    }
+
+    public DocumentoPromocionResponseRecord adjuntarPromocion(Integer documentoId){
+        Documento documento = documentoRepository.findById(documentoId).orElseThrow(()->new NotFoundException("La promoción no existe","documentoId"));
+
+        if (documento.getEstatus()==EstadoCarpeta.ASIGNADO){
+            documento.setEstatus(EstadoCarpeta.INTEGRADO);
+            documentoRepository.save(documento);
+
+            return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+        }
+
+        throw new ConflictException("No se puede integrar la promoción");
     }
 
     @Transactional

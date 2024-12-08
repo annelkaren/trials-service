@@ -608,6 +608,17 @@ class DocumentoResourceTest {
     }
 
     @Test
+    void testAdjuntarPromocion() throws Exception{
+        DocumentoPromocionResponseRecord responseRecord = new DocumentoPromocionResponseRecord(10,"1", TipoDocumento.PROMOCION);
+
+        given(documentoService.adjuntarPromocion(anyInt())).willReturn(responseRecord);
+
+        mockMvc.perform(post("/api/workflow/documentos/promocion/10/adjuntar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
     void saveSentenciaPublica() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file",

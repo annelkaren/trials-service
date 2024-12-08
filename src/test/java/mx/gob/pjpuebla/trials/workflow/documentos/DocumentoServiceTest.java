@@ -1559,6 +1559,23 @@ class DocumentoServiceTest {
     }
 
     @Test
+    void testAdjuntarPromocion(){
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+
+        documento.setId(10).setEstatus(EstadoCarpeta.ASIGNADO).setTipoDocumento(TipoDocumento.PROMOCION).setFolio("0");
+
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any())).willReturn(documento);
+
+        DocumentoPromocionResponseRecord responseRecord = documentoService.adjuntarPromocion(10);
+
+        assertThat(responseRecord).isNotNull()
+                .hasFieldOrPropertyWithValue("id", documento.getId())
+                .hasFieldOrPropertyWithValue("folio", documento.getFolio())
+                .hasFieldOrPropertyWithValue("tipoDocumento", documento.getTipoDocumento());
+    }
+
+    @Test
     void saveSentenciaPublica() {
         Documento docSentencia = DocumentoSetUp.create(tipoJuicio);
         docSentencia.setTipoDocumento(TipoDocumento.SENTENCIA);
@@ -1583,5 +1600,6 @@ class DocumentoServiceTest {
         verify(personaService).getAuditor();
         verify(documentoRepository).findById(1);
         verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionService).guardarArchivo(multipartFile, docSentenciaSave.getId());    }
+        verify(digitalizacionService).guardarArchivo(multipartFile, docSentenciaSave.getId());    
+     }
 }
