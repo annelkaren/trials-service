@@ -179,42 +179,65 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
+    //colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
-                doc.id,
-                COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial'),
-                doc.ruta,
-                m.recomendaciones,
-                CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+            doc.id,
+           CASE
+                WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
+                WHEN doc.tipoDocumento IS NULL THEN 'Demanda inicial'
+                ELSE COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial')
+            END,
+            doc.ruta,
+            m.recomendaciones,
+            CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
+        )
+        FROM Documento doc
+        JOIN doc.carpeta carpeta
+        LEFT JOIN doc.concepto concepto
+        LEFT JOIN Movimiento m ON m.documento = doc
+        WHERE 
+            (
+                (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR 
+                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
             )
-            FROM Documento doc
-            JOIN doc.carpeta carpeta
-            JOIN doc.concepto concepto
-            LEFT JOIN Movimiento m ON m.documento = doc AND m.estado = 'ASIGNADO'
-            WHERE 
-                CASE
-                    WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
-                    WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
+            AND (
+                
+                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL)) 
+                OR 
+                (concepto.nombre = 'Adjuntar' 
+                 OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
+                 OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL) 
+                )
+            )
+            AND (
+               
+                ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
+                OR 
+               
+                (m.estado = 'ASIGNADO')
+            )
+            AND doc.carpeta.id = :carpetaId
+            AND 
+            CASE 
+                WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
+                WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
                 ELSE 0
-                END = 1
-                AND carpeta.id = :carpetaId
-                AND (concepto.nombre = 'Adjuntar' OR doc.tipoDocumento IS NULL)
-                AND (
-                        ( :tipoDocumento = "ACUERDO" AND doc.tipoDocumento = TipoDocumento.PROMOCION OR (:tipoDocumento = "ACUERDO" AND doc.tipoDocumento IS NULL )) 
-                         OR
-                        (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IN (TipoDocumento.ACUERDO, TipoDocumento.PROMOCION)) OR (:tipoDocumento = "SENTENCIA" AND doc.tipoDocumento IS NULL ) 
-                    ) 
-                    
-           
-            """)
+            END = 1
+    """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
-            @Param("carpetaId") Integer carpetaId,
-            @Param("documentoId") Integer documentoId,
-            @Param("tipoDocumento") String tipoDocumento);
+        @Param("carpetaId") Integer carpetaId,
+        @Param("documentoId") Integer documentoId,
+        @Param("tipoDocumento") String tipoDocumento);
+    
+    
+    
+
 
     @Modifying
     @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
-    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId, @Param("documentoId") Integer documentoId);
+    void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId,
+            @Param("documentoId") Integer documentoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(

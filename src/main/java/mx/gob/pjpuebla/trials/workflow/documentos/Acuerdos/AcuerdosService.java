@@ -185,7 +185,7 @@ public class AcuerdosService {
                 }
 
                 else if (documento.getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
-                        promociones = null; //documentoRepository.obtenerPromocionesSentencia(documento.getCarpeta().getId(), "SI");
+                        promociones = obtenerPromociones(documento.getCarpeta().getId(), documentoId, "SENTENCIA");
                         
                         return new SentenciaRecordSave(
                                         documentoId,
