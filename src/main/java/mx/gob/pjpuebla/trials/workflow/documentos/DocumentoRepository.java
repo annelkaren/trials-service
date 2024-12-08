@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
 import java.util.List;
+import java.util.Optional;
 
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import org.springframework.data.domain.Page;
@@ -264,5 +265,15 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     List<Documento> findByCarpetaId(Integer carpetaId);
 
     List<Documento> findByAcuerdoRespuestaId(Integer acuerdoId);
+
+    @Query("""
+            SELECT d
+            FROM Carpeta c
+            JOIN Documento d ON d.carpeta.id = c.id
+            WHERE c.expediente = :expediente
+              AND d.tipoDocumento = :tipoDocumento
+              AND c.juzgado.id = :juzgadoId
+        """)
+    Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento, Integer juzgadoId);
 
 }

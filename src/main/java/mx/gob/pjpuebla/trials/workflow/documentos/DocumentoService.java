@@ -35,10 +35,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -1305,6 +1302,24 @@ public class DocumentoService {
         }
         movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+    }
+
+    @Transactional
+    public void saveSentenciaPublica(Integer idDocumento, MultipartFile multipartFile) {
+        Persona auditor = personaService.getAuditor();
+
+        Documento docSentencia = documentoRepository.findById(idDocumento)
+                .orElseThrow(()->new NotFoundException(DOC_NOT_FOUND, idDocumento.toString()));
+
+        Documento docSentenciaPublica= new Documento();
+        docSentenciaPublica
+                .setCarpeta(docSentencia.getCarpeta())
+                .setPersona(auditor)
+                .setTipoDocumento(TipoDocumento.SENTENCIA_PUBLICA)
+                .setAcuerdoRespuesta(docSentencia);
+        docSentenciaPublica = documentoRepository.save(docSentenciaPublica);
+
+        digitalizacionService.guardarArchivo(multipartFile, docSentenciaPublica.getId());
     }
 }
 

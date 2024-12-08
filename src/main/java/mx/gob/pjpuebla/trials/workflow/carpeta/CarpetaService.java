@@ -31,6 +31,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasReposi
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
@@ -73,6 +75,7 @@ public class CarpetaService {
     private final TipoJuicioRepository tipoJuicioRepository;
     private final EtapaProcesalRepository etapaProcesalRepository;
     private final RubroRepository rubroRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
 
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
@@ -649,4 +652,30 @@ public class CarpetaService {
         });
     }
 
+    public SentenciaPublicaResponseRecord getCarpetaByExpedienteAndSentencia(String expediente) {
+        Persona auditor = personaService.getAuditor();
+        if (auditor == null || auditor.getJuzgado() == null) {
+            throw new IllegalArgumentException("No se puede determinar el juzgado.");
+        }
+
+        Documento documento = documentoRepository.findByExpedienteAndTipoDocumento(expediente, TipoDocumento.SENTENCIA, auditor.getJuzgado().getId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada o le falta sentencia", expediente));
+
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
+                .orElseThrow(() -> new NotFoundException("Detalle documento no encontrado", documento.getId().toString()));
+
+        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        return new SentenciaPublicaResponseRecord(
+                documento.getCarpeta().getId(),
+                documento.getId(),
+                actor,
+                demandado,
+                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
+                documento.getCarpeta().getJuzgado().getNombre(),
+                documentoDetalle.getTipoSentencia().name(),
+                documentoDetalle.getTipoResolucion().name(),
+                documentoDetalle.getFechaResolucion()
+        );
+    }
 }
