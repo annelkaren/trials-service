@@ -1,11 +1,19 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,17 +30,30 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(MockitoExtension.class)
 class NotificacionServiceTest {
 
     @Mock
     private NotificacionRepository notificacionRepository;
+
+    @Mock
+    private NotificacionesDetallesRepository notificacionesDetallesRepository;
+
+    @Mock
+    private DocumentoRepository documentoRepository;
 
     @InjectMocks
     private NotificacionService notificacionService;
@@ -44,11 +65,10 @@ class NotificacionServiceTest {
     private PersonaDocumentoRepository personaDocumentoRepository;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         carpeta = CarpetaSetUp.create();
-        notificacion =  NotificacionSetUp.createNotificacion();
+        notificacion = NotificacionSetUp.createNotificacion();
     }
-
 
     @Test
     void getNotificacionPorTipoEstrado() {
@@ -131,7 +151,7 @@ class NotificacionServiceTest {
         verify(personaDocumentoRepository).save(persona);
     }
 
- @Test
+    @Test
     void create_ShouldThrowException_WhenPersonaNotFound() {
         NotificacionDto notificacionDto = new NotificacionDto();
         notificacionDto.setPersonId(99);
@@ -139,10 +159,49 @@ class NotificacionServiceTest {
         when(personaDocumentoRepository.findById(99)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> notificacionService.create(notificacionDto)
-        );
+                IllegalArgumentException.class,
+                () -> notificacionService.create(notificacionDto));
 
         assertEquals("PersonaDocumento no encontrado para el ID: 99", exception.getMessage());
     }
+
+@Test
+void createRegistroNotificacion() {
+    NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
+    List<Integer> personaIds = List.of(1, 2, 3);
+
+    List<PersonaDocumento> personasMock = List.of(
+            PersonasDocumentosSetUp.createPersonasDocumentos(),
+            PersonasDocumentosSetUp.createPersonasDocumentos(),
+            PersonasDocumentosSetUp.createPersonasDocumentos());
+
+    List<NotificacionesDetalles> detalles = List.of(
+            NotificacionSetUp.createNotificacionDetalles(), 
+            NotificacionSetUp.createNotificacionDetalles(), 
+            NotificacionSetUp.createNotificacionDetalles());
+
+    // Simular la búsqueda del documento
+    given(documentoRepository.findById(anyInt()))
+            .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
+
+    // Simular que se guarda la notificación y se le asigna un ID
+    Notificacion notificacionMock = NotificacionSetUp.createNotificacion().setId(1); // Asignar un ID mock
+    given(notificacionRepository.save(any(Notificacion.class)))
+            .willReturn(notificacionMock);  // Retornar la notificación mock con ID
+
+    // Simular la búsqueda de personas
+    given(personaDocumentoRepository.findAllById(personaIds)).willReturn(personasMock);
+
+    // Simular el guardado de los detalles
+    lenient().when(notificacionesDetallesRepository.saveAll(anyList())).thenReturn(detalles);
+
+    // Ejecutar el método
+    NotificacionResponseRecord response = notificacionService.createRegistroNotificacion(notificacion);
+
+    // Validar el resultado
+    assertNotNull(response);
+    assertEquals(1, response.idNotificacion());
+    assertTrue(response.mensaje().contains("Notificación creada con éxito"));
+}
+
 }

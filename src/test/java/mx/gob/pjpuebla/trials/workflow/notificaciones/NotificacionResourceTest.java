@@ -1,8 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,6 +95,17 @@ class NotificacionResourceTest {
         mockMvc.perform(post("/api/workflow/notificaciones/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(notificacionDto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void create_notificacion_acuerdo() throws Exception {
+        NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
+
+        mockMvc.perform(
+            post("/api/workflow/notificaciones/acuerdos/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceUtilTest.asJsonString(notificacion)))
                 .andExpect(status().isOk());
     }
 
