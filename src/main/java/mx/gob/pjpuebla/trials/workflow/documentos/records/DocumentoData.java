@@ -29,6 +29,7 @@ public class DocumentoData implements Serializable {
     private List<String> rubros;
     private String amparoQuejoso;
     private LocalDate amparoFechaPresentacion;
+    private LocalDate amparoFechaTermino;
     private Integer amparoImpugnacion;
     private String amparoSentido;
     private String amparoSentidoImpugnacion;

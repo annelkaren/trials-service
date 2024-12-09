@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum TipoDocumento {
-    PROMOCION("PROMOCIÓN"),
+    PROMOCION("PROMOCIÓN"), 
     OFICIO("OFICIO"),
     ACUERDO("ACUERDO"),
     AMPARO("AMPARO"),

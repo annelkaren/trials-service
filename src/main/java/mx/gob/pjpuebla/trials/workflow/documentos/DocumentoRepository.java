@@ -197,7 +197,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         JOIN doc.carpeta carpeta
         LEFT JOIN doc.concepto concepto
         LEFT JOIN Movimiento m ON m.documento = doc
-        WHERE 
+        WHERE
             (
                 (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR 
                 (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))

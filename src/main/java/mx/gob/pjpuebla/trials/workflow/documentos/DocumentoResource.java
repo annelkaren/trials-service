@@ -7,18 +7,22 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -251,4 +255,25 @@ public class DocumentoResource {
     ){
         documentoService.saveSentenciaPublica(docId, file);
     }
-}
+
+    @GetMapping("/documentos/amparo/{id}") 
+    public ResponseEntity<AmparoGetRecord> getAmparoById(@PathVariable Integer id) {
+        AmparoGetRecord amparoRecord = documentoService.getAmparoById(id);
+        if (amparoRecord == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(amparoRecord);
+    }
+
+    @PutMapping("/documentos/amparo/update/{id}")
+    public ResponseEntity<String> updateAmparoData(@PathVariable Integer id, @RequestBody AmparoUpdateRecord amparoUpdate) {
+        try {
+            documentoService.updateAmparoData(id, amparoUpdate);
+            return ResponseEntity.ok("Documento actualizado con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Documento no encontrado con ID: " + id);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el documento");
+        }
+    }
+} 

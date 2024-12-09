@@ -36,9 +36,14 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -555,7 +560,6 @@ public class DocumentoService {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
         if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-            System.out.println("entre ");
             return renderOficialMayorData(key, pageable, currentUser);
         }
         return renderData(key, pageable, currentUser);
@@ -1203,8 +1207,9 @@ public class DocumentoService {
         data.setAmparoTribunalId(amparoRecord.tribunalId());
         data.setAmparoSalaId(amparoRecord.salaId());
         data.setAmparoSentido(amparoRecord.sentidoAmparo());
-        data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo());
+        data.setAmparoSentidoImpugnacion(amparoRecord.sentidoImpugnacion());
         data.setAmparoTipo(amparoRecord.tipoAmparo());
+        data.setAmparoFechaTermino(amparoRecord.fechaTermino());
 
         Documento amparo = new Documento()
                 .setCarpeta(carpeta)
@@ -1351,5 +1356,47 @@ public class DocumentoService {
 
         digitalizacionService.guardarArchivo(multipartFile, docSentenciaPublica.getId());
     }
-}
 
+    public AmparoGetRecord getAmparoById(Integer id) {
+        Documento documento = documentoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+        
+        Carpeta carpeta = carpetaRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+            
+        Integer carpetaId = carpeta.getId();
+        DocumentoData data = documento.getData(); 
+        
+        return new AmparoGetRecord(
+            carpetaId,
+            data.getAmparoTipo(),
+            data.getAmparoFechaPresentacion(),    
+            data.getAmparoFechaTermino(),         
+            data.getAmparoImpugnacion(),          
+            data.getAmparoSentido(),              
+            data.getAmparoSentidoImpugnacion(),   
+            data.getAmparoQuejoso(),              
+            data.getAmparoTribunalId(),           
+            data.getAmparoSalaId()
+        );
+    }
+
+    public void updateAmparoData(Integer id, AmparoUpdateRecord amparoUpdateRecord) {
+        Documento documento = documentoRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Documento not found with id: " + id));
+        
+        DocumentoData data = documento.getData();
+        
+        data.setAmparoFechaPresentacion(amparoUpdateRecord.fechaPresentacion());
+        data.setAmparoFechaTermino(amparoUpdateRecord.fechaTermino());
+        data.setAmparoImpugnacion(amparoUpdateRecord.impugnacion());
+        data.setAmparoSentido(amparoUpdateRecord.sentidoAmparo());
+        data.setAmparoSentidoImpugnacion(amparoUpdateRecord.sentidoImpugnacion());
+        data.setAmparoQuejoso(amparoUpdateRecord.quejoso());
+        data.setAmparoTribunalId(amparoUpdateRecord.tribunalId());
+        data.setAmparoSalaId(amparoUpdateRecord.salaId());
+        data.setAmparoTipo(amparoUpdateRecord.tipoAmparo());
+       
+        documentoRepository.save(documento);
+    }
+}

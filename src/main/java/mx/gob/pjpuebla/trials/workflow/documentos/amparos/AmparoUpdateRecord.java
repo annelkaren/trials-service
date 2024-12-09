@@ -3,9 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.amparos;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-public record AmparoRecord(
-    Integer carpetaId,
-    String tipoAmparo,
+public record AmparoUpdateRecord(
     LocalDate fechaPresentacion,
     LocalDate fechaTermino,
     Integer impugnacion,
@@ -13,5 +11,7 @@ public record AmparoRecord(
     String sentidoImpugnacion,
     String quejoso,
     Integer tribunalId,
-    Integer salaId) implements Serializable {
+    Integer salaId,
+    String tipoAmparo) 
+    implements Serializable {
 }
