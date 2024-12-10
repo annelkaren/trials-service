@@ -71,7 +71,7 @@ public class NotificacionService {
 
         persona.setTipoNotificacion(notificacionData.getMetodo());
 
-        if (notificacionData.getMetodo() == 1) {
+        if (notificacionData.getMetodo().equals(TipoNotificacion.CORREO_ELECTRONICO)) {
             if (notificacionData.getUsarCorreoRegistrado()) {
                 persona.setCorreoNotificacion(null);
                 persona.setFnDomicilio(null);
@@ -81,12 +81,12 @@ public class NotificacionService {
             }
         }
 
-        if (notificacionData.getMetodo() == 3 || notificacionData.getMetodo() == 0) {
+        if (notificacionData.getMetodo().equals(TipoNotificacion.NINGUNO) || notificacionData.getMetodo().equals(TipoNotificacion.ESTRADO)) {
             persona.setCorreoNotificacion(null);
             persona.setFnDomicilio(null);
         }
 
-        if (notificacionData.getMetodo() == 2) {
+        if (notificacionData.getMetodo().equals(TipoNotificacion.DOMICILIO)) {
             if (notificacionData.getIdDomicilio() != null) {
                 Domicilio domicilio = domicilioRepository.findById(notificacionData.getIdDomicilio())
                         .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));

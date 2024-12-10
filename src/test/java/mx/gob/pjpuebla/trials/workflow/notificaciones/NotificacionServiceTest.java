@@ -110,7 +110,7 @@ class NotificacionServiceTest {
     void create_withValidData_createsNotification() throws Exception {
         NotificacionDto notificacionDto = new NotificacionDto();
         notificacionDto.setPersonId(1);
-        notificacionDto.setMetodo(1); // Notificación por correo
+        notificacionDto.setMetodo(TipoNotificacion.CORREO_ELECTRONICO); // Notificación por correo
         notificacionDto.setUsarCorreoRegistrado(false);
         notificacionDto.setCorreo("nuevo@correo.com");
 
@@ -133,7 +133,7 @@ class NotificacionServiceTest {
     void create_ShouldUpdatePersonaWithNotificationDetails() throws Exception {
         NotificacionDto notificacionDto = new NotificacionDto();
         notificacionDto.setPersonId(1);
-        notificacionDto.setMetodo(1); // Email
+        notificacionDto.setMetodo(TipoNotificacion.CORREO_ELECTRONICO); // Email
         notificacionDto.setUsarCorreoRegistrado(false);
         notificacionDto.setCorreo("nuevo_correo@example.com");
 

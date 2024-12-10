@@ -85,7 +85,7 @@ class NotificacionResourceTest {
         notificacionDto.setInterior("A");
         notificacionDto.setLatitud("19.0413");
         notificacionDto.setLongitud("-98.2062");
-        notificacionDto.setMetodo(1);
+        notificacionDto.setMetodo(TipoNotificacion.CORREO_ELECTRONICO);
         notificacionDto.setMunicipio("Puebla");
         notificacionDto.setPersonId(101);
         notificacionDto.setUsarCorreoRegistrado(true);
