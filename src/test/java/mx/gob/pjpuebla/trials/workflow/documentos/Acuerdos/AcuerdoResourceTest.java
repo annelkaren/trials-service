@@ -27,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
-import mx.gob.pjpuebla.trials.util.enums.Tipo;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
@@ -152,7 +151,7 @@ class AcuerdoResourceTest {
 
         given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
 
-        mockMvc.perform(get("/api/workflow/acuerdos/{documentoId}", documentoId)
+        mockMvc.perform(get("/api/workflow/documentos/acuerdos/{documentoId}", documentoId)
                         .accept(APPLICATION_PDF))
                 .andExpect(status().isOk());
     }
