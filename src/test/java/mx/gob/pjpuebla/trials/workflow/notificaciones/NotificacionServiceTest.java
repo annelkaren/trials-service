@@ -1,12 +1,18 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
@@ -26,6 +32,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,16 +46,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificacionServiceTest {
 
     @Mock
     private NotificacionRepository notificacionRepository;
+
+    @Mock
+    private ListaEstradoRepository listaEstradoRepository;
+
+    @Mock
+    private PersonaService personaService;
 
     @Mock
     private NotificacionesDetallesRepository notificacionesDetallesRepository;
@@ -58,8 +72,10 @@ class NotificacionServiceTest {
     @InjectMocks
     private NotificacionService notificacionService;
 
+
     private Carpeta carpeta;
     private Notificacion notificacion;
+
 
     @Mock
     private PersonaDocumentoRepository personaDocumentoRepository;
@@ -75,13 +91,12 @@ class NotificacionServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
-        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, pageable))
+        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
                 .thenReturn(notificacionPage);
-        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", pageable);
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", "PENDIENTE_DE_ASIGNAR", pageable);
 
         assertEquals(1, result.getTotalElements());
         NotificacionRecord notificacionrecord = result.getContent().get(0);
-        assertEquals(notificacion.getConcepto(), notificacionrecord.concepto());
         assertEquals(notificacion.getNotas(), notificacionrecord.notas());
         assertEquals(notificacion.getTipoNotificacion(), notificacionrecord.tipo());
     }
@@ -89,21 +104,26 @@ class NotificacionServiceTest {
     @Test
     void getInvalid() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("invalido", pageable);
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("invalido", "invalido", pageable);
 
         assertEquals(0, result.getTotalElements());
     }
 
     @Test
     void getAll() {
-
         Pageable pageable = PageRequest.of(0, 10);
         Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
-        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, pageable))
+        List<String> rubros = List.of("Primer rubro", "Segundo rubro", "Tercer rubro");
+        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
                 .thenReturn(notificacionPage);
 
-        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(null, pageable);
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(null, null, pageable);
         assertEquals(1, result.getTotalElements());
+        List<String> formattedRubros = notificacionService.formatConcepto(rubros);
+
+        assertEquals(2, formattedRubros.size());
+        assertEquals("Primer rubro", formattedRubros.get(0));
+        assertEquals(" y 2 más", formattedRubros.get(1));
     }
 
     @Test
@@ -176,8 +196,8 @@ void createRegistroNotificacion() {
             PersonasDocumentosSetUp.createPersonasDocumentos());
 
     List<NotificacionesDetalles> detalles = List.of(
-            NotificacionSetUp.createNotificacionDetalles(), 
-            NotificacionSetUp.createNotificacionDetalles(), 
+            NotificacionSetUp.createNotificacionDetalles(),
+            NotificacionSetUp.createNotificacionDetalles(),
             NotificacionSetUp.createNotificacionDetalles());
 
     // Simular la búsqueda del documento
@@ -203,5 +223,73 @@ void createRegistroNotificacion() {
     assertEquals(200, response.estatus());
     assertTrue(response.mensaje().contains("Notificación creada con éxito"));
 }
+
+
+    @Test
+    void createNotaNotificacion_Success() {
+        Integer id = 1;
+        String nuevasNotas = "Estas son las nuevas notas";
+        Notificacion notificacionExistente = new Notificacion();
+        notificacionExistente.setId(id);
+        notificacionExistente.setNotas("Notas originales");
+
+        when(notificacionRepository.findById(id)).thenReturn(Optional.of(notificacionExistente));
+        notificacionService.createNotaNotificacion(id, nuevasNotas);
+        assertEquals(nuevasNotas, notificacionExistente.getNotas());
+        verify(notificacionRepository, times(1)).save(notificacionExistente);
+    }
+
+
+    @Test
+    void createListaEstrado_Success() {
+        List<Integer> notificacionIds = List.of(1, 2, 3);
+        Date fechaVencimiento = new Date();
+
+        Persona auditor = new Persona();
+        auditor.setUsuario("auditorUsuario");
+        when(personaService.getAuditor()).thenReturn(auditor);
+
+        ListaEstrado listaEstradoMock = new ListaEstrado();
+        listaEstradoMock.setId(1);
+        listaEstradoMock.setUsuarioAlta(auditor.getUsuario());
+        listaEstradoMock.setFechaVencimiento(fechaVencimiento);
+        when(listaEstradoRepository.save(any(ListaEstrado.class))).thenReturn(listaEstradoMock);
+
+        List<Notificacion> notificaciones = notificacionIds.stream()
+                .map(id -> {
+                    Notificacion nuevaNotificacion = new Notificacion();
+                    nuevaNotificacion.setId(id);
+                    nuevaNotificacion.setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR);
+                    return nuevaNotificacion;
+                })
+                .toList();
+
+        when(notificacionRepository.findAllById(notificacionIds)).thenReturn(notificaciones);
+
+
+        notificacionService.createListaEstrado(notificacionIds, fechaVencimiento);
+        verify(listaEstradoRepository).save(any(ListaEstrado.class));
+        verify(notificacionRepository).findAllById(notificacionIds);
+
+        assertTrue(notificaciones.stream().allMatch(n ->
+                n.getEstadoNotificacion() == EstadoNotificacion.ASIGNADO &&
+                        n.getListaEstrado().equals(listaEstradoMock)
+        ));
+
+
+        verify(notificacionRepository).saveAll(notificaciones);
+    }
+
+    @Test
+    void createListaEstrado_Error() {
+        List<Integer> notificacionIds = Collections.emptyList();
+        Date fechaVencimiento = new Date();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> notificacionService.createListaEstrado(notificacionIds, fechaVencimiento));
+
+        assertEquals("Debe proporcionar al menos un ID de notificación.", exception.getMessage());
+        verifyNoInteractions(personaService, listaEstradoRepository, notificacionRepository);
+    }
+
 
 }

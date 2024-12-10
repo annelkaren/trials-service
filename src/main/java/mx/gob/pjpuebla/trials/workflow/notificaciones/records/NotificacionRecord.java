@@ -1,18 +1,20 @@
-package mx.gob.pjpuebla.trials.workflow.notificaciones;
+package mx.gob.pjpuebla.trials.workflow.notificaciones.records;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 
+
 import java.io.Serializable;
-import java.util.Date;
+import java.util.List;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record NotificacionRecord(
+        Integer id,
         String expediente,
-        String concepto,
+        List<String> concepto,
         String notas,
         TipoNotificacion tipo,
-        Date fechaPublicacion,
-        Date fechaResolucion
+        DocumentoDetalleRecord documentoDetalleRecord
 ) implements Serializable {
 }

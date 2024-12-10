@@ -7,6 +7,9 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaResponse;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotaResponse;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -28,10 +31,23 @@ public class NotificacionResource {
 
     private final NotificacionService notificacionService;
 
-    @GetMapping( value = "/bandeja/notificaciones" ,  produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/bandeja/notificaciones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<NotificacionRecord> getAllNotificaciones(@PageableDefault(size = 20) Pageable pageable,
-                                                         @RequestParam(value = "key", required = false) String key) {
-        return this.notificacionService.getAllNotificaciones(key, pageable);
+                                                         @RequestParam(value = "tipo", required = false) String tipo,
+                                                         @RequestParam(value = "estado", required = false) String estado) {
+        return this.notificacionService.getAllNotificaciones(tipo, estado, pageable);
+    }
+
+
+    @PostMapping(value = "/bandeja/notificaciones/createNota", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void createNotaNotificacion(@RequestBody NotaResponse notaResponse) {
+        notificacionService.createNotaNotificacion(notaResponse.id(), notaResponse.notas());
+    }
+
+
+    @PostMapping(value = "/bandeja/notificaciones/createLista", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void createListaEstrado(@RequestBody ListaResponse listaResponse) {
+        notificacionService.createListaEstrado(listaResponse.notificacionIds(), listaResponse.fechaVencimiento());
     }
 
     @PostMapping("notificaciones/create")

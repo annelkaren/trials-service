@@ -5,5 +5,6 @@ import lombok.Getter;
 @Getter
 public enum EstadoNotificacion {
     PENDIENTE_DE_ASIGNAR,
-    ASIGNADO
+    ASIGNADO,
+    COMPLETADO
 }

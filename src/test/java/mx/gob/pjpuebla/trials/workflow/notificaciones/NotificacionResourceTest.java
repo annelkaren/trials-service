@@ -6,6 +6,10 @@ import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaResponse;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotaResponse;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +28,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 
 import static org.mockito.ArgumentMatchers.any;
@@ -58,10 +63,15 @@ class NotificacionResourceTest {
     @Test
     void getAll_success() throws Exception {
         LocalDate localDate = LocalDate.now();
-        Date fecha = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        notificacionRecord = new NotificacionRecord("000001/2024", "Audiencia", "Notas Audiencia", TipoNotificacion.ESTRADO, fecha, fecha);
+        DocumentoDetalleRecord documentoDetalleRecord = new DocumentoDetalleRecord(
+                localDate.minusDays(10),
+                localDate.minusDays(5)
+        );
+        List<String> concepto = Collections.singletonList("Audiencia");
 
-        when(notificacionService.getAllNotificaciones(anyString(), any(Pageable.class)))
+        notificacionRecord = new NotificacionRecord(1,"000001/2024",  concepto, "Notas Audiencia", TipoNotificacion.ESTRADO,  documentoDetalleRecord );
+
+        when(notificacionService.getAllNotificaciones(anyString(), anyString(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(notificacionRecord)));
 
         mockMvc.perform(
@@ -70,6 +80,34 @@ class NotificacionResourceTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void create_nota() throws Exception {
+        doNothing().when(notificacionService).createNotaNotificacion(any(Integer.class), anyString());
+        NotaResponse notaResponse =  new NotaResponse(1, "nota nueva");
+        String requestBody = new ObjectMapper().writeValueAsString(notaResponse);
+
+        mockMvc.perform(post("/api/workflow/bandeja/notificaciones/createNota")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void createListaEstrado_success() throws Exception {
+
+        doNothing().when(notificacionService).createListaEstrado(any(List.class), any(Date.class));
+        ListaResponse listaResponse = new ListaResponse(List.of(1, 2, 3),
+                Date.from(LocalDate.now().plusDays(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        String requestBody = new ObjectMapper().writeValueAsString(listaResponse);
+
+
+        mockMvc.perform(post("/api/workflow/bandeja/notificaciones/createLista")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk());
+    }
+
 
     @Test
     void create_success() throws Exception {

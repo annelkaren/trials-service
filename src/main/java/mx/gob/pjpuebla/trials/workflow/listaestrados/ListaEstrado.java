@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Entity
@@ -27,4 +28,7 @@ public class ListaEstrado implements Serializable {
 
     @Column(name = "S_USUARIO_ALTA", updatable = false)
     private String usuarioAlta;
+
+    @Column(name = "T_FECHA_VENCIMIENTO", updatable = false)
+    private Date fechaVencimiento;
 }

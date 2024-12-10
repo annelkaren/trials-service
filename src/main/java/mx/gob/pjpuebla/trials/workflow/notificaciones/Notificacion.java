@@ -12,7 +12,6 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
-import java.util.Date;
 
 @Entity
 @Data
@@ -25,8 +24,6 @@ public class Notificacion implements Serializable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @Column(name = "S_CONCEPTO")
-    private String concepto;
 
     @Size(max = 500)
     @Column(name = "S_NOTAS")
@@ -36,12 +33,6 @@ public class Notificacion implements Serializable {
     @Enumerated
     @Column(name = "N_TIPO", nullable = false)
     private TipoNotificacion tipoNotificacion;
-
-    @Column(name = "T_FECHA_PUBLICACION")
-    private Date fechaPublicacion;
-
-    @Column(name = "T_FECHA_RESOLUCION")
-    private Date fechaResolucion;
 
     @NotNull
     @Enumerated

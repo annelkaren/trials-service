@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.estados.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
@@ -9,8 +10,13 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRe
 import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,24 +28,33 @@ public class NotificacionSetUp {
     }
 
     public static Notificacion createNotificacion() {
-        LocalDate localDate = LocalDate.now();
-        Date fecha = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         return new Notificacion()
                 .setId(1)
-                .setConcepto("Audiencia")
-                .setNotas("Notas de audiencia")
+                .setNotas("Notas audiencia")
                 .setTipoNotificacion(TipoNotificacion.ESTRADO)
-                .setFechaPublicacion(fecha)
-                .setFechaResolucion(fecha)
                 .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
-                .setCarpeta(CarpetaSetUp.create());
+                .setCarpeta(CarpetaSetUp.create())
+                .setDocumento(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
+
     }
 
     public static NotificacionRecord createNotificacionRecord() {
         LocalDate localDate = LocalDate.now();
-        Date fecha = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        return new NotificacionRecord("000001/2024", "Audiencia", "Notas de audiencia", TipoNotificacion.ESTRADO, fecha, fecha);
+        List<String> rubros = Collections.singletonList("Audiencia");
+        DocumentoDetalleRecord documentoDetalleRecord = new DocumentoDetalleRecord(
+                localDate.minusDays(10),
+                localDate.minusDays(5)
+        );
+        return new NotificacionRecord(
+                1,
+                "000001/2024",
+                rubros,
+                "Notas Audiencia",
+                TipoNotificacion.ESTRADO,
+                documentoDetalleRecord
+        );
+
     }
 
     public static NotificacionSaveRecord createNotificacionSaveRecord() {
