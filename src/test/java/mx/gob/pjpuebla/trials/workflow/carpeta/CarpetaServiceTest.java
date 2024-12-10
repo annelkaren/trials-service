@@ -883,7 +883,7 @@ class CarpetaServiceTest {
         Juzgado juzgado = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado);
 
-        List<Carpeta> carpetas = List.of(CarpetaSetUp.create());
+        List<Carpeta> carpetas = List.of(CarpetaSetUp.create().setPersona(persona));
         Page<Carpeta> carpetaPage = new PageImpl<>(carpetas, PageRequest.of(0, 10), carpetas.size());
 
         given(personaService.getAuditor()).willReturn(persona);

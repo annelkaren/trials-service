@@ -405,7 +405,7 @@ class CarpetaResourceTest {
 
     @Test
     void testGetLibroDeGobierno_Success() throws Exception {
-        List<LibroGobiernoRecord> libroGobiernoRecords = List.of(new LibroGobiernoRecord(1, "000001/2024", LocalDateTime.now(), "Oralidad familiar", "Actor", "Demandado"));
+        List<LibroGobiernoRecord> libroGobiernoRecords = List.of(new LibroGobiernoRecord(1, "000001/2024", LocalDateTime.now(), "Oralidad familiar", "Actor", "Demandado", Boolean.TRUE));
         Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
         when(mockCarpetaService.libroDeGobierno(anyString(), any(Pageable.class)))

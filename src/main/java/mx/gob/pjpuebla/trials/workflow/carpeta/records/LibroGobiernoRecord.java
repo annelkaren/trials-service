@@ -8,6 +8,7 @@ public record LibroGobiernoRecord(
         LocalDateTime fechaHora,
         String tipoJuicio,
         String actor,
-        String demandado
+        String demandado,
+        Boolean asignado
 ) {
 }
