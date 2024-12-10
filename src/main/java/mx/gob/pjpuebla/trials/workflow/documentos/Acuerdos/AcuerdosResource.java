@@ -88,8 +88,9 @@ public class AcuerdosResource {
         return acuerdosService.update(acuerdo);
     }
 
-    @GetMapping(value = "/acuerdos/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    @GetMapping(value = "/documentos/acuerdos/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportAcuerdoPdf(@PathVariable Integer documentoId) throws JRException, IOException, WriterException {
+        System.out.println(documentoId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
