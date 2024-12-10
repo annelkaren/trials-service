@@ -177,7 +177,6 @@ public class NotificacionService {
         ListaEstrado listaEstrado = new ListaEstrado();
 
         listaEstrado.setPersona(persona);
-        System.out.println(persona);
         listaEstrado.setFechaVencimiento(fechaVencimiento);
         listaEstrado.setFechaAlta(LocalDateTime.now());
         listaEstrado = listaEstradoRepository.save(listaEstrado);
@@ -237,9 +236,8 @@ public class NotificacionService {
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
                     .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
-                    .setTipoNotificacion(TipoNotificacion.ESTRADO)
-                    .setDocumento(documento)
-                    .setCarpeta(documento.getCarpeta());
+                    .setTipoNotificacion(persona.getTipoNotificacion())
+                    .setDocumento(documento);
             notif = notificacionRepository.save(notif);
 
             NotificacionesDetalles detalle = new NotificacionesDetalles()
