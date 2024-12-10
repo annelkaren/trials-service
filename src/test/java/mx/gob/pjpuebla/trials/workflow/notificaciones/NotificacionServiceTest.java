@@ -200,7 +200,7 @@ void createRegistroNotificacion() {
 
     // Validar el resultado
     assertNotNull(response);
-    assertEquals(1, response.idNotificacion());
+    assertEquals(200, response.estatus());
     assertTrue(response.mensaje().contains("Notificación creada con éxito"));
 }
 

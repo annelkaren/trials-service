@@ -81,7 +81,8 @@ public class NotificacionService {
             }
         }
 
-        if (notificacionData.getMetodo().equals(TipoNotificacion.NINGUNO) || notificacionData.getMetodo().equals(TipoNotificacion.ESTRADO)) {
+        if (notificacionData.getMetodo().equals(TipoNotificacion.NINGUNO)
+                || notificacionData.getMetodo().equals(TipoNotificacion.ESTRADO)) {
             persona.setCorreoNotificacion(null);
             persona.setFnDomicilio(null);
         }
@@ -129,43 +130,43 @@ public class NotificacionService {
     public NotificacionResponseRecord createRegistroNotificacion(NotificacionSaveRecord notificacion) {
         // Validar existencia del documento
         Documento documento = documentoRepository.findById(notificacion.documentoId())
-            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
-    
-        // Crear y guardar la notificación
-        Notificacion notif = new Notificacion()
-            .setNotas(notificacion.notas())
-            .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
-            .setDocumento(documento);
-        notif = notificacionRepository.save(notif);
-    
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
         // Cargar todas las personas en una sola consulta
         List<Integer> personaIds = notificacion.personasDocumentosId();
         List<PersonaDocumento> personas = personaDocumentoRepository.findAllById(personaIds);
-    
+
         // Validar que todos los IDs fueron encontrados
         if (personas.size() != personaIds.size()) {
             List<Integer> noEncontrados = personaIds.stream()
-                .filter(id -> personas.stream().noneMatch(persona -> persona.getId().equals(id)))
-                .toList();
+                    .filter(id -> personas.stream().noneMatch(persona -> persona.getId().equals(id)))
+                    .toList();
             throw new NotFoundException("Algunas personas no fueron encontradas", "personaIds: " + noEncontrados);
         }
-    
-        // Crear los detalles de notificaciones
+
+        // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
+
+            Notificacion notif = new Notificacion()
+                    .setNotas(notificacion.notas())
+                    .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
+                    .setTipoNotificacion(persona.getTipoNotificacion())
+                    .setDocumento(documento);
+            notif = notificacionRepository.save(notif);
+
             NotificacionesDetalles detalle = new NotificacionesDetalles()
-                .setNotificacion(notif) // Usar la variable 'notif' sin problemas
-                .setPersonaDocumento(persona);
+                    .setNotificacion(notif) // Usar la variable 'notif' sin problemas
+                    .setPersonaDocumento(persona);
             detalles.add(detalle);
         }
-    
+
         // Guardar todos los detalles en un solo paso
         notificacionesDetallesRepository.saveAll(detalles);
-    
+
         // Respuesta con más información
-        return new NotificacionResponseRecord(notif.getId(),
-            String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
+        return new NotificacionResponseRecord(200,
+                String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
-    
 
 }

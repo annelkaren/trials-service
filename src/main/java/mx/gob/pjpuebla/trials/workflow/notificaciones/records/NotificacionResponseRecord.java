@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones.records;
 
 public record NotificacionResponseRecord(
-    Integer idNotificacion,
+    Integer estatus,
     String mensaje
 ) {}

@@ -44,7 +44,7 @@ public class NotificacionResource {
         }
     }
 
-    @PostMapping("notificaciones/acuerdos/create")
+    @PostMapping("/documentos/enviarNotificacion")
     public NotificacionResponseRecord createRegistroNotificacion(@RequestBody NotificacionSaveRecord notificacion){
         return notificacionService.createRegistroNotificacion(notificacion);
     }

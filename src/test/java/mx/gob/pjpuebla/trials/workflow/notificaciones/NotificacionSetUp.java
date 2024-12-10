@@ -47,7 +47,7 @@ public class NotificacionSetUp {
     }
 
     public static NotificacionResponseRecord createNotificacionResponseRecord(){
-        return new NotificacionResponseRecord(1, "Notificacion creada");
+        return new NotificacionResponseRecord(200, "Notificacion creada");
     }
 
     public static NotificacionesDetalles createNotificacionDetalles(){
