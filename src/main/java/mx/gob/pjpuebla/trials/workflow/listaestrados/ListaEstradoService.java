@@ -33,11 +33,16 @@ public class ListaEstradoService {
 
             long noNotificaciones = notificacionRepository.countNotificacionesByListaEstradoId(le.getId());
 
+            String nombreCompleto =
+                    (le.getPersona().getNombre() != null ? le.getPersona().getNombre() : "") +
+                            (le.getPersona().getApellidoMaterno() != null ? le.getPersona().getApellidoMaterno() : "") +
+                            (le.getPersona().getApellidoPaterno() != null ? le.getPersona().getApellidoPaterno() : "");
+
             return new ListaEstradoRecord(
                     le.getId(),
                     le.getFechaAlta().toString(),
                     (int) noNotificaciones,
-                    le.getPersona().getNombre()
+                    nombreCompleto
             );
         });
     }
