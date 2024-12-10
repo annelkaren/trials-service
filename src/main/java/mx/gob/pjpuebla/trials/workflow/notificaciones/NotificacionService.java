@@ -3,15 +3,22 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
+import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetallesRepository;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -22,10 +29,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import mx.gob.pjpuebla.trials.error.NotFoundException;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -34,33 +42,57 @@ public class NotificacionService {
     private final NotificacionRepository notificacionRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DomicilioRepository domicilioRepository;
+    private final PersonaService personaService;
+    private final ListaEstradoRepository listaEstradoRepository;
     private final DocumentoRepository documentoRepository;
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
 
-    public Page<NotificacionRecord> getAllNotificaciones(String key, Pageable pageable) {
-        key = (key != null) ? key.toLowerCase() : "";
+    public Page<NotificacionRecord> getAllNotificaciones(String tipo, String estado, Pageable pageable) {
+        tipo = (tipo != null) ? tipo.toLowerCase() : "";
+        estado = (estado != null) ? estado.toLowerCase() : "";
 
         TipoNotificacion tipoNotificacion = TipoNotificacion.ESTRADO;
-        if (!key.isEmpty()) {
+        if (!tipo.isEmpty()) {
             try {
-                tipoNotificacion = TipoNotificacion.valueOf(key.toUpperCase());
+                tipoNotificacion = TipoNotificacion.valueOf(tipo.toUpperCase());
             } catch (IllegalArgumentException e) {
                 return Page.empty(pageable);
             }
         }
-        Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, pageable);
+        EstadoNotificacion estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+        if (!estado.isEmpty()) {
+            try {
+                estadoNotificacion = EstadoNotificacion.valueOf(estado.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Page.empty(pageable);
+            }
+        }
+        Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, estadoNotificacion, pageable);
+
         List<NotificacionRecord> list = page.getContent().stream()
-                .map(item -> new NotificacionRecord(
-                        item.getCarpeta().getExpediente(),
-                        item.getConcepto(),
-                        item.getNotas(),
-                        item.getTipoNotificacion(),
-                        item.getFechaPublicacion(),
-                        item.getFechaResolucion()))
+                .map(notificacion -> {
+                    Optional<DocumentoDetalleRecord> documentoDetalleRecord;
+                    documentoDetalleRecord = notificacionRepository.findDocumentoDetalleByDocumentoId(notificacion.getDocumento().getId());
+
+                    List<String> rubros = notificacion.getDocumento().getData() != null
+                            ? notificacion.getDocumento().getData().getRubros()
+                            : new ArrayList<>();
+                    List<String> concepto = formatConcepto(rubros);
+
+                    return new NotificacionRecord(
+                            notificacion.getId(),
+                            notificacion.getCarpeta().getExpediente(),
+                            concepto,
+                            notificacion.getNotas(),
+                            notificacion.getTipoNotificacion(),
+                            documentoDetalleRecord.orElse(null)
+                    );
+                })
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
+
 
     @Transactional
     @PostMapping
@@ -126,6 +158,59 @@ public class NotificacionService {
         }
     }
 
+    public void createNotaNotificacion(Integer id, String notas) {
+
+        Notificacion notificacion = notificacionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Notificacion no encontrada", "notificacionId: " + id));
+
+        notificacion.setNotas(notas);
+        notificacionRepository.save(notificacion);
+    }
+
+    public void createListaEstrado(List<Integer> notificacionIds, Date fechaVencimiento) {
+
+        if (notificacionIds == null || notificacionIds.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos un ID de notificación.");
+        }
+        Persona persona = personaService.getAuditor();
+      
+        ListaEstrado listaEstrado = new ListaEstrado();
+
+        listaEstrado.setUsuarioAlta(persona.getUsuario());
+        listaEstrado.setFechaVencimiento(fechaVencimiento);
+        listaEstrado.setFechaAlta(LocalDateTime.now());
+        listaEstrado = listaEstradoRepository.save(listaEstrado);
+
+        List<Notificacion> notificaciones = notificacionRepository.findAllById(notificacionIds);
+
+        for (Notificacion notificacion : notificaciones) {
+            notificacion.setEstadoNotificacion(EstadoNotificacion.ASIGNADO);
+            notificacion.setListaEstrado(listaEstrado);
+        }
+
+        notificacionRepository.saveAll(notificaciones);
+
+    }
+
+
+    public List<String> formatConcepto(List<String> rubros) {
+        if (rubros == null || rubros.isEmpty()) {
+            return new ArrayList<>();
+        }
+        int num = rubros.size();
+        String mensaje = num > 1 ? String.format(" y %d más", num - 1) : "";
+
+        List<String> result = new ArrayList<>();
+        result.add(rubros.get(0));
+
+        if (!mensaje.isEmpty()) {
+            result.add(mensaje);
+        }
+
+        return result;
+    }
+
+
     @Transactional
     public NotificacionResponseRecord createRegistroNotificacion(NotificacionSaveRecord notificacion) {
         // Validar existencia del documento
@@ -156,7 +241,7 @@ public class NotificacionService {
             notif = notificacionRepository.save(notif);
 
             NotificacionesDetalles detalle = new NotificacionesDetalles()
-                    .setNotificacion(notif) 
+                    .setNotificacion(notif)
                     .setPersonaDocumento(persona);
             detalles.add(detalle);
         }
@@ -168,5 +253,4 @@ public class NotificacionService {
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
-
 }
