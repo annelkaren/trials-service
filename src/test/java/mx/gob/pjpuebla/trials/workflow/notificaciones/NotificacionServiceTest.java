@@ -122,7 +122,7 @@ class NotificacionServiceTest {
 
         notificacionService.create(notificacionDto);
 
-        assertEquals(1, persona.getTipoNotificacion());
+        assertEquals(TipoNotificacion.CORREO_ELECTRONICO, persona.getTipoNotificacion());
         assertEquals("nuevo@correo.com", persona.getCorreoNotificacion());
         assertNull(persona.getFnDomicilio());
 
@@ -144,7 +144,7 @@ class NotificacionServiceTest {
 
         notificacionService.create(notificacionDto);
 
-        assertEquals(1, persona.getTipoNotificacion());
+        assertEquals(TipoNotificacion.CORREO_ELECTRONICO, persona.getTipoNotificacion());
         assertEquals("nuevo_correo@example.com", persona.getCorreoNotificacion());
         assertNull(persona.getFnDomicilio());
 

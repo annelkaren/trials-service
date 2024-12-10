@@ -103,7 +103,7 @@ class NotificacionResourceTest {
         NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
 
         mockMvc.perform(
-            post("/api/workflow/notificaciones/acuerdos/create")
+            post("/api/workflow/documentos/enviarNotificacion")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceUtilTest.asJsonString(notificacion)))
                 .andExpect(status().isOk());
