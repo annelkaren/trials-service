@@ -141,7 +141,7 @@ public class NotificacionService {
             List<Integer> noEncontrados = personaIds.stream()
                     .filter(id -> personas.stream().noneMatch(persona -> persona.getId().equals(id)))
                     .toList();
-            throw new NotFoundException("Algunas personas no fueron encontradas", "personaIds: " + noEncontrados);
+            throw new NotFoundException("Error al obtener la lista de personas seleccionadas", "personaIds: " + noEncontrados);
         }
 
         // Crear los detalles de notificaciones Y NOTIFICACIONES
@@ -156,7 +156,7 @@ public class NotificacionService {
             notif = notificacionRepository.save(notif);
 
             NotificacionesDetalles detalle = new NotificacionesDetalles()
-                    .setNotificacion(notif) // Usar la variable 'notif' sin problemas
+                    .setNotificacion(notif) 
                     .setPersonaDocumento(persona);
             detalles.add(detalle);
         }
