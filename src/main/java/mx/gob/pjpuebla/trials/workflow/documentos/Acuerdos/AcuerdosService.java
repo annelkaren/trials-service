@@ -149,7 +149,7 @@ public class AcuerdosService {
         }
 
         public List<AcuerdoNotificadosRecord> getTipoPartesAcuerdo(Integer carpetaId, String tipoParte) {
-                return documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
+                return  documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);  
         }
 
         public Object getAcuerdoOSentencia(Integer documentoId) {

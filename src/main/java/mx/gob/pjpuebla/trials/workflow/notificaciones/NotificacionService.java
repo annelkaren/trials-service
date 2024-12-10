@@ -1,11 +1,17 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
-
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -16,6 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -25,6 +34,8 @@ public class NotificacionService {
     private final NotificacionRepository notificacionRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DomicilioRepository domicilioRepository;
+    private final DocumentoRepository documentoRepository;
+    private final NotificacionesDetallesRepository notificacionesDetallesRepository;
 
     public Page<NotificacionRecord> getAllNotificaciones(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
@@ -45,8 +56,7 @@ public class NotificacionService {
                         item.getNotas(),
                         item.getTipoNotificacion(),
                         item.getFechaPublicacion(),
-                        item.getFechaResolucion()
-                ))
+                        item.getFechaResolucion()))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -56,29 +66,31 @@ public class NotificacionService {
     @PostMapping
     public void create(NotificacionDto notificacionData) throws Exception {
         PersonaDocumento persona = personaDocumentoRepository.findById(notificacionData.getPersonId())
-            .orElseThrow(() -> new IllegalArgumentException("PersonaDocumento no encontrado para el ID: " + notificacionData.getPersonId()));
-    
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "PersonaDocumento no encontrado para el ID: " + notificacionData.getPersonId()));
+
         persona.setTipoNotificacion(notificacionData.getMetodo());
 
-        if(notificacionData.getMetodo() == 1){
-            if(notificacionData.getUsarCorreoRegistrado()){
+        if (notificacionData.getMetodo().equals(TipoNotificacion.CORREO_ELECTRONICO)) {
+            if (notificacionData.getUsarCorreoRegistrado()) {
                 persona.setCorreoNotificacion(null);
                 persona.setFnDomicilio(null);
-            }else{
+            } else {
                 persona.setCorreoNotificacion(notificacionData.getCorreo());
                 persona.setFnDomicilio(null);
             }
         }
 
-        if(notificacionData.getMetodo() == 3 || notificacionData.getMetodo() == 0){
+        if (notificacionData.getMetodo().equals(TipoNotificacion.NINGUNO)
+                || notificacionData.getMetodo().equals(TipoNotificacion.ESTRADO)) {
             persona.setCorreoNotificacion(null);
             persona.setFnDomicilio(null);
         }
-                
-        if(notificacionData.getMetodo() == 2){
-            if(notificacionData.getIdDomicilio() != null){
+
+        if (notificacionData.getMetodo().equals(TipoNotificacion.DOMICILIO)) {
+            if (notificacionData.getIdDomicilio() != null) {
                 Domicilio domicilio = domicilioRepository.findById(notificacionData.getIdDomicilio())
-                .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));
+                        .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));
                 persona.setCorreoNotificacion(null);
                 persona.setFnDomicilio(domicilio);
             } else {
@@ -98,12 +110,12 @@ public class NotificacionService {
                 try {
                     Domicilio domicilioGuardado = domicilioRepository.save(newDomicilio);
                     Domicilio domicilio = domicilioRepository.findById(domicilioGuardado.getId())
-                        .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));
+                            .orElseThrow(() -> new RuntimeException("Domicilio no encontrado"));
                     persona.setFnDomicilio(domicilio);
                 } catch (Exception e) {
                     throw new RuntimeException("Error al registrar la notificación", e);
                 }
-                
+
             }
         }
 
@@ -112,6 +124,49 @@ public class NotificacionService {
         } catch (Exception e) {
             throw new RuntimeException("Error al registrar la notificación", e);
         }
+    }
+
+    @Transactional
+    public NotificacionResponseRecord createRegistroNotificacion(NotificacionSaveRecord notificacion) {
+        // Validar existencia del documento
+        Documento documento = documentoRepository.findById(notificacion.documentoId())
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+        // Cargar todas las personas en una sola consulta
+        List<Integer> personaIds = notificacion.personasDocumentosId();
+        List<PersonaDocumento> personas = personaDocumentoRepository.findAllById(personaIds);
+
+        // Validar que todos los IDs fueron encontrados
+        if (personas.size() != personaIds.size()) {
+            List<Integer> noEncontrados = personaIds.stream()
+                    .filter(id -> personas.stream().noneMatch(persona -> persona.getId().equals(id)))
+                    .toList();
+            throw new NotFoundException("Error al obtener la lista de personas seleccionadas", "personaIds: " + noEncontrados);
+        }
+
+        // Crear los detalles de notificaciones Y NOTIFICACIONES
+        List<NotificacionesDetalles> detalles = new ArrayList<>();
+        for (PersonaDocumento persona : personas) {
+
+            Notificacion notif = new Notificacion()
+                    .setNotas(notificacion.notas())
+                    .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
+                    .setTipoNotificacion(persona.getTipoNotificacion())
+                    .setDocumento(documento);
+            notif = notificacionRepository.save(notif);
+
+            NotificacionesDetalles detalle = new NotificacionesDetalles()
+                    .setNotificacion(notif) 
+                    .setPersonaDocumento(persona);
+            detalles.add(detalle);
+        }
+
+        // Guardar todos los detalles en un solo paso
+        notificacionesDetallesRepository.saveAll(detalles);
+
+        // Respuesta con más información
+        return new NotificacionResponseRecord(200,
+                String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
 
 }

@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import java.io.Serializable;
@@ -75,8 +76,9 @@ public class PersonaDocumento implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoPartes tipoPartes;
 
+    @Enumerated
     @Column(name = "N_TIPO_NOTIFICACION")
-    private Integer tipoNotificacion;
+    private TipoNotificacion tipoNotificacion;
 
     @Column(name = "S_CORREO_NOTIFICACION")
     private String correoNotificacion;
