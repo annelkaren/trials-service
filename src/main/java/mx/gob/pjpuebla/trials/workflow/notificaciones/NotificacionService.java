@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -133,7 +134,7 @@ public class NotificacionService {
         // Crear y guardar la notificación
         Notificacion notif = new Notificacion()
             .setNotas(notificacion.notas())
-            .setEstadoNotificacion(notificacion.estado())
+            .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
             .setDocumento(documento);
         notif = notificacionRepository.save(notif);
     

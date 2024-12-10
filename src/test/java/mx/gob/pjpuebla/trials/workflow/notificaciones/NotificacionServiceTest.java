@@ -116,7 +116,7 @@ class NotificacionServiceTest {
 
         PersonaDocumento persona = new PersonaDocumento();
         persona.setId(1);
-        persona.setTipoNotificacion(0);
+        persona.setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO);
 
         when(personaDocumentoRepository.findById(1)).thenReturn(Optional.of(persona));
 

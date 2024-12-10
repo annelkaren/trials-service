@@ -255,13 +255,12 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             """)
     Page<AcuerdosRecord> findAllAcuerdosYSentenciasByCarpeta(Integer carpetaId, Pageable pageable);
 
-    // TODO: actualizar el metodo cuando se tenga en donde se guardara.
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
             pd.id,
             concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
             :tipoParte,
-            '' )
+            pd.tipoNotificacion )
             FROM PersonaDocumento pd
             JOIN pd.tipoPartes tp
             WHERE pd.carpeta.id = :carpetaId
@@ -272,7 +271,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 OR
                 (:tipoParte = 'demandado' AND lower(tp.nombre) LIKE '%demandado%')
                 OR
-                (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%' AND lower(tp.nombre) LIKE %:#{#tipoParte.toLowerCase()}%)
+                (:tipoParte = 'otros' AND lower(tp.nombre) NOT LIKE '%actor%' AND lower(tp.nombre) NOT LIKE '%demandado%')
             )
             """)
     List<AcuerdoNotificadosRecord> findTipoPartesAcuerdo(Integer carpetaId, String tipoParte);
