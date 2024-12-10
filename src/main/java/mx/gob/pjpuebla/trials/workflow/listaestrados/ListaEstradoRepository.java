@@ -12,9 +12,10 @@ public interface ListaEstradoRepository extends JpaRepository<ListaEstrado, Inte
 
     @Query("""
     SELECT l FROM ListaEstrado l
+    LEFT JOIN l.persona p
     WHERE (
         :searchTerm IS NULL OR
-        lower(TRANSLATE(l.usuarioAlta, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN'))
+        lower(TRANSLATE(p.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN'))
     )
     AND (
         CASE

@@ -19,10 +19,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
+        "/scripts/INSERT_DOMICILIOS.sql",
+        "/scripts/INSERT_ESCOLARIDADES.sql",
+        "/scripts/INSERT_ESTADO_CIVIL.sql",
+        "/scripts/INSERT_DISTRITOS.sql",
+        "/scripts/INSERT_SEDES.sql",
+        "/scripts/INSERT_MATERIAS.sql",
+        "/scripts/INSERT_TIPO_SISTEMAS.sql",
+        "/scripts/INSERT_TIPO_JUICIOS.sql",
+        "/scripts/INSERT_JUZGADOS.sql",
+        "/scripts/INSERT_JUZGADO_TIPOJUICIO.sql",
+        "/scripts/INSERT_PERSONAS.sql",
         "/scripts/INSERT_LISTADO_ESTRADOS.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
         "/scripts/DELETE_LISTADO_ESTRADOS.sql",
+        "/scripts/DELETE_PERSONAS.sql",
+        "/scripts/DELETE_JUZGADO_TIPOJUICIO.sql",
+        "/scripts/DELETE_JUZGADOS.sql",
+        "/scripts/DELETE_TIPO_JUICIOS.sql",
+        "/scripts/DELETE_TIPO_SISTEMAS.sql",
+        "/scripts/DELETE_MATERIAS.sql",
+        "/scripts/DELETE_SEDES.sql",
+        "/scripts/DELETE_DISTRITOS.sql",
+        "/scripts/DELETE_ESTADO_CIVIL.sql",
+        "/scripts/DELETE_ESCOLARIDADES.sql",
+        "/scripts/DELETE_DOMICILIOS.sql",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class ListaEstradoRepositoryTest extends AuditConfigTest {
 
@@ -33,7 +55,5 @@ class ListaEstradoRepositoryTest extends AuditConfigTest {
         void findAllListaEstradoIdAndSearch(){
             Page<ListaEstrado> entity = listaEstradoRepository.findAllListaEstradoIdAndSearch("",null, PageRequest.of(0, 20));
             assertThat(entity).isNotEmpty();
-            assertThat(entity.getContent().get(0).getUsuarioAlta()).isEqualTo("anibaldemar");
-            assertThat(entity.getContent().get(1).getUsuarioAlta()).isEqualTo("anibaldemar");
         }
 }

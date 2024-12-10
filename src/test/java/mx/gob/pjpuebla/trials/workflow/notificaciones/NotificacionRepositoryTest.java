@@ -95,6 +95,12 @@ class NotificacionRepositoryTest extends AuditConfigTest {
         assertThat(documentoDetalleRecord.fechaResolucion()).isEqualTo("1990-10-10");
         assertThat(documentoDetalleRecord.fechaPublicacion()).isEqualTo("1990-10-10");
     }
+    @Test
+    void testCountNotificacionesByListaEstradoId() {
+        Integer listaEstradoId = 1;
+        long count = notificacionRepository.countNotificacionesByListaEstradoId(listaEstradoId);
 
+        assertThat(count).isNotNegative();
+    }
 
 }

@@ -42,12 +42,18 @@ class ListaEstradoResourceTest {
     @Test
     void getAll_success() throws Exception {
         given(mocklistaEstradoService.findAllByListaEstradoId(any(), any(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(listaEstradoA)));
+                .willReturn(new PageImpl<>(Collections.singletonList(
+                        new ListaEstradoRecord(
+                                1,
+                                listaEstradoA.getFechaAlta().toString(),
+                                5,
+                                listaEstradoA.getPersona().getNombre())
+                )));
 
         mockMvc.perform(get("/api/workflow/listaestrado")
                         .param("searchQuery", "a")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) ;
+                .andExpect(status().isOk());
      }
 
 }

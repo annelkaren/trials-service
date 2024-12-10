@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,8 +17,8 @@ import java.util.Date;
 public class ListaEstrado implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idLenguasIndigenas")
-    @SequenceGenerator(name = "idLenguasIndigenas", sequenceName = "SEQ_LENGUAS_INDIGENAS_ID")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idListaEstrado")
+    @SequenceGenerator(name = "idListaEstrado", sequenceName = "SEQ_LISTA_ESTRADOS_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
@@ -26,9 +27,11 @@ public class ListaEstrado implements Serializable {
     @Column(name = "T_FECHA_ALTA", updatable = false)
     private LocalDateTime fechaAlta;
 
-    @Column(name = "S_USUARIO_ALTA", updatable = false)
-    private String usuarioAlta;
-
     @Column(name = "T_FECHA_VENCIMIENTO", updatable = false)
     private Date fechaVencimiento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FN_PERSONA")
+    private Persona persona;
+
 }

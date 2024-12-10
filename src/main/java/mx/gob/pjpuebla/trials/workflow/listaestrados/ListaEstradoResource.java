@@ -20,7 +20,7 @@ public class ListaEstradoResource {
     private final ListaEstradoService listaEstradoService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<ListaEstrado> getAll(
+    public Page<ListaEstradoRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "listaEstrado", required = false) Integer listaEstrado,
             @RequestParam(value = "searchQuery", required = false) String searchQuery
