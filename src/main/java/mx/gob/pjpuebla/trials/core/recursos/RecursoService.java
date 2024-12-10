@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.core.recursos;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
-import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import org.keycloak.admin.client.resource.AuthorizationResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.authorization.DecisionEffect;
