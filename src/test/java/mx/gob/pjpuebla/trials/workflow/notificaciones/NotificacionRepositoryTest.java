@@ -63,6 +63,12 @@ class NotificacionRepositoryTest  extends AuditConfigTest {
         assertThat(result.getContent()).allMatch(notificacion -> notificacion.getTipoNotificacion() == tipo);
 
     }
+    @Test
+    void testCountNotificacionesByListaEstradoId() {
+        Integer listaEstradoId = 1;
+        long count = notificacionRepository.countNotificacionesByListaEstradoId(listaEstradoId);
 
+        assertThat(count).isNotNegative();
+    }
 
 }

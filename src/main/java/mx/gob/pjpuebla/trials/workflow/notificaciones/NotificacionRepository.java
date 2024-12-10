@@ -17,4 +17,8 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
             WHERE c.tipoNotificacion = :tipoNotificacion
             """)
     Page<Notificacion> getNotificacionByTipo(@Param("tipoNotificacion") TipoNotificacion tipoNotificacion, Pageable pageable);
+
+    @Query("SELECT COUNT(n) FROM Notificacion n WHERE n.listaEstrado.id = :listaEstradoId")
+    long countNotificacionesByListaEstradoId(@Param("listaEstradoId") Integer listaEstradoId);
+
 }
