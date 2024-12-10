@@ -169,6 +169,7 @@ class PersonaDetalleServiceTest {
 
         TipoPartes mockTipoPartes = new TipoPartes();
         mockTipoPartes.setId(200);
+        mockTipoPartes.setNombre("Actor"); 
         when(tipoPartesRepository.findById(200)).thenReturn(Optional.of(mockTipoPartes));
 
         Nacionalidad mockNacionalidad = new Nacionalidad();
@@ -203,7 +204,7 @@ class PersonaDetalleServiceTest {
         verify(lenguaIndigenaRepository, times(1)).findById(11);
         verify(documentoIdentificacionRepository, times(1)).findById(50);
         verify(paisRepository, times(2)).findById(25);
-
+ 
     }
 
     @Test

@@ -26,6 +26,7 @@ import mx.gob.pjpuebla.trials.core.paises.PaisRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -60,6 +61,7 @@ public class PersonaDetalleService {
         TipoPartes tipoParte = tipoPartesRepository.findById(tipoParteId)
             .orElseThrow(() -> new EntityNotFoundException("Tipo de partes no encontrado")); 
 
+        String nombreTipoParte = tipoParte.getNombre();
         PersonaDocumento personaDocumento = new PersonaDocumento();
 
         if(!personaDTO.getDatosGenerales().getNombres().isEmpty()){
@@ -67,7 +69,13 @@ public class PersonaDetalleService {
         } else if (!personaDTO.getDatosGenerales().getRazonSocial().isEmpty()){
             personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
         }
-        
+
+        if(nombreTipoParte.equals("Actor") || nombreTipoParte.equals("Demandado")) {
+           personaDocumento.setRol( Rol.PRINCIPAL);
+        } else {
+            personaDocumento.setRol( Rol.SECUNDARIO);
+        }
+
         personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
         personaDocumento.setApellidoMaterno(personaDTO.getDatosGenerales().getApellidoMaterno());
         personaDocumento.setPseudonimo(personaDTO.getDatosGenerales().getPseudonimo());
@@ -77,6 +85,7 @@ public class PersonaDetalleService {
         personaDocumento.setCurp(personaDTO.getDatosGenerales().getCurp());
         personaDocumento.setCelular(personaDTO.getDatosContacto().getTelefono());  
         personaDocumento.setCorreoElectronico(personaDTO.getDatosContacto().getCorreoElectronico());
+        
 
         
         Domicilio domicilio = new Domicilio();

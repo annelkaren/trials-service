@@ -58,8 +58,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -98,9 +100,12 @@ import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -1443,12 +1448,14 @@ class DocumentoServiceTest {
         AmparoRecord amparoRecord = new AmparoRecord(1,
                 "AD",
                 LocalDate.now(),
+   null,
                 0,
                 CatalogoSentidoAmparo.CONCEDE.name(),
                 CatalogoImpugnacionAmparo.CONFIRMA.name(),
                 "JUAN PEREZ",
                 1,
-                null);
+                null
+                );
         String pieza = "000001/2024/AD01";
         Carpeta carpeta = CarpetaSetUp.create();
         Persona persona = PersonaSetUp.createPersona();
@@ -1608,4 +1615,96 @@ class DocumentoServiceTest {
         verify(documentoRepository).save(any(Documento.class));
         verify(digitalizacionService).guardarArchivo(multipartFile, docSentenciaSave.getId());    
      }
+
+     @Test
+     void getAmparoById_success() {
+         Integer documentoId = 1;
+     
+         DocumentoData documentoData = new DocumentoData();
+         documentoData.setAmparoTipo("AD");
+         documentoData.setAmparoFechaPresentacion(LocalDate.of(2024, 12, 1));
+         documentoData.setAmparoFechaTermino(LocalDate.of(2024, 12, 15));
+         documentoData.setAmparoImpugnacion(2);
+         documentoData.setAmparoSentido("SOBRESEE");
+         documentoData.setAmparoSentidoImpugnacion("REVOCA");
+         documentoData.setAmparoQuejoso("Juan Pérez");
+         documentoData.setAmparoTribunalId(5);
+         documentoData.setAmparoSalaId(10);
+     
+         Carpeta carpeta = new Carpeta();
+         carpeta.setId(100);
+     
+         Documento documento = new Documento();
+         documento.setId(documentoId);
+         documento.setData(documentoData);
+     
+         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+         given(carpetaRepository.findById(documentoId)).willReturn(Optional.of(carpeta));
+     
+         AmparoGetRecord response = documentoService.getAmparoById(documentoId);
+     
+         assertThat(response)
+                 .isNotNull()
+                 .hasFieldOrPropertyWithValue("carpetaId", carpeta.getId())
+                 .hasFieldOrPropertyWithValue("tipoAmparo", documentoData.getAmparoTipo())
+                 .hasFieldOrPropertyWithValue("fechaPresentacion", documentoData.getAmparoFechaPresentacion())
+                 .hasFieldOrPropertyWithValue("fechaTermino", documentoData.getAmparoFechaTermino())
+                 .hasFieldOrPropertyWithValue("impugnacion", documentoData.getAmparoImpugnacion())
+                 .hasFieldOrPropertyWithValue("sentidoAmparo", documentoData.getAmparoSentido())
+                 .hasFieldOrPropertyWithValue("impugnacionAmparo", documentoData.getAmparoSentidoImpugnacion())
+                 .hasFieldOrPropertyWithValue("quejoso", documentoData.getAmparoQuejoso())
+                 .hasFieldOrPropertyWithValue("tribunalId", documentoData.getAmparoTribunalId())
+                 .hasFieldOrPropertyWithValue("salaId", documentoData.getAmparoSalaId());
+     }
+
+     @Test
+     void updateAmparoData_success() {
+        Integer documentoId = 1;
+        AmparoUpdateRecord updateRecord = new AmparoUpdateRecord(
+                LocalDate.of(2024, 12, 1),
+                LocalDate.of(2024, 12, 15),
+                3,
+                "Favorable",
+                "Desfavorable",
+                "Juan Pérez",
+                5,
+                10,
+                "Amparo Directo"
+        );
+
+        DocumentoData documentoData = new DocumentoData();
+        documentoData.setAmparoFechaPresentacion(LocalDate.of(2024, 11, 1));
+        documentoData.setAmparoFechaTermino(LocalDate.of(2024, 11, 15));
+        documentoData.setAmparoImpugnacion(1);
+        documentoData.setAmparoSentido("Neutral");
+        documentoData.setAmparoSentidoImpugnacion("Neutral");
+        documentoData.setAmparoQuejoso("Pedro López");
+        documentoData.setAmparoTribunalId(2);
+        documentoData.setAmparoSalaId(3);
+        documentoData.setAmparoTipo("Amparo Indirecto");
+
+        Documento documento = new Documento();
+        documento.setId(documentoId);
+        documento.setData(documentoData);
+
+        given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+        given(documentoRepository.save(any())).willReturn(documento);
+
+        documentoService.updateAmparoData(documentoId, updateRecord);
+
+        verify(documentoRepository).findById(documentoId);
+        verify(documentoRepository).save(documento);
+
+        assertThat(documento.getData())
+                .hasFieldOrPropertyWithValue("amparoFechaPresentacion", updateRecord.fechaPresentacion())
+                .hasFieldOrPropertyWithValue("amparoFechaTermino", updateRecord.fechaTermino())
+                .hasFieldOrPropertyWithValue("amparoImpugnacion", updateRecord.impugnacion())
+                .hasFieldOrPropertyWithValue("amparoSentido", updateRecord.sentidoAmparo())
+                .hasFieldOrPropertyWithValue("amparoSentidoImpugnacion", updateRecord.sentidoImpugnacion())
+                .hasFieldOrPropertyWithValue("amparoQuejoso", updateRecord.quejoso())
+                .hasFieldOrPropertyWithValue("amparoTribunalId", updateRecord.tribunalId())
+                .hasFieldOrPropertyWithValue("amparoSalaId", updateRecord.salaId())
+                .hasFieldOrPropertyWithValue("amparoTipo", updateRecord.tipoAmparo());
+     }
+
 }
