@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 import java.time.LocalDate;
 
-import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 public record DocumentoOficioDigitalizacionRecord(
