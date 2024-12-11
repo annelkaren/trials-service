@@ -88,7 +88,7 @@ public class RoleService {
         List<RoleRepresentation> allRoles = keycloak.realm(realm).roles().list(false);
         try {
             UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
-            if(isEdicion) {
+            if (isEdicion) {
                 List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
                 allRoles.forEach(role -> {
                     boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
@@ -97,7 +97,7 @@ public class RoleService {
                     }
                 });
                 filteredList = excludeAdminRoleIfNotApply(roles);
-            }else {
+            } else {
                 filteredList = excludeAdminRoleIfNotApply(allRoles);
             }
             return mapRoles(filteredList, tipoCentroTrabajo);
