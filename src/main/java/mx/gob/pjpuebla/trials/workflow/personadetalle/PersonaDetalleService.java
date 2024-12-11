@@ -337,13 +337,24 @@ public class PersonaDetalleService {
     @Transactional
     public void updateParticipante(Integer personaDocumentoId, PersonaDTO personaDTO) throws NotFoundException {
         PersonaDocumento personaDocumento = personaDocumentoRepository.findById(personaDocumentoId)
-        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", "id"));
+        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrada", "id"));
 
-        PersonaDetalle personaDetalle = personaDetalleRepository.findByPersonaDocumentoId(personaDocumentoId)
-        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+        Optional<PersonaDetalle> optionalPersonaDetalle = personaDetalleRepository.findByPersonaDocumentoId(personaDocumentoId);
+        PersonaDetalle personaDetalle;
+        Domicilio domicilio;
 
-        Domicilio domicilio = domicilioRepository.findById(personaDetalle.getDomicilio().getId())
-        .orElseThrow(() -> new NotFoundException("PersonaDocumento no encontrado", ""));
+        if(optionalPersonaDetalle.isPresent()){
+           personaDetalle = personaDetalleRepository.findByPersonaDocumentoId(personaDocumentoId)
+            .orElseThrow(() -> new NotFoundException("PersonaDetalle no encontrada", ""));
+
+            domicilio = domicilioRepository.findById(personaDetalle.getDomicilio().getId())
+            .orElseThrow(() -> new NotFoundException("Domicilio no encontrado", ""));
+        } else {
+            personaDetalle = new PersonaDetalle();
+            personaDetalle.setPersonaDocumento(personaDocumento);
+            domicilio = new Domicilio();
+            personaDetalle.setDomicilio(domicilio);
+        }        
 
         Integer tipoParteId = personaDTO.getDatosGenerales().getTipo();
         TipoPartes tipoParte = tipoPartesRepository.findById(tipoParteId)
