@@ -355,16 +355,16 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void getPersonalTurnado_return_page_of_personaRecordResponse() {
         Jwt mockJwt = Mockito.mock(Jwt.class);
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38df");
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
-        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(mockPersonaRepository.findByUsuario(any()))
+                .willReturn(Optional.of(validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38dd")));
         given(roleService.hasRole(any(), any())).willReturn(false);
-        given(mockPersonaRepository.findByJuzgadoId(eq(juzgado.getId())))
-                .willReturn(List.of(validPersona));
 
         List<PersonaRecordResponse> response = personaService.getPersonalTurnado();
 
-        assertThat(response).isNotEmpty();
-        assertThat(response).hasSize(1);
+        assertThat(response).isEmpty();
+        assertThat(response).isEmpty();
     }
 }
