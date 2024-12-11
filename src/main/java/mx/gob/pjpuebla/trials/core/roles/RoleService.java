@@ -81,27 +81,32 @@ public class RoleService {
         return mapRoles(roles, "");
     }
 
-    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo) {
+    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion) {
         List<RoleRepresentation> roles = new ArrayList<>();
+        List<RoleRepresentation> filteredList = new ArrayList<>();
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> allRoles = keycloak.realm(realm).roles().list(false);
         try {
             UserResource userRepresentation = keycloak.realm(realm).users().get(userId);
-            List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
-            allRoles.forEach(role -> {
-                boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
-                if (!isAnExistingRole) {
-                    roles.add(role);
-                }
-            });
-            List<RoleRepresentation> filteredList = excludeAdminRoleIfNotApply(currentRoles, roles);
+            if(isEdicion) {
+                List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
+                allRoles.forEach(role -> {
+                    boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
+                    if (!isAnExistingRole) {
+                        roles.add(role);
+                    }
+                });
+                filteredList = excludeAdminRoleIfNotApply(roles);
+            }else {
+                filteredList = excludeAdminRoleIfNotApply(allRoles);
+            }
             return mapRoles(filteredList, tipoCentroTrabajo);
         } catch (Exception ex) {
             throw new NotFoundException("Usuario no encontrado en keycloak", "usuario");
         }
     }
 
-    private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> currentRoles, List<RoleRepresentation> roles) {
+    private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> roles) {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         boolean isAdminsystem = hasRole(jwt.getSubject(), "ADMINISTRADOR");
         if (!isAdminsystem) {
