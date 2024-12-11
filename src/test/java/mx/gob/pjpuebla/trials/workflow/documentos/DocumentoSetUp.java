@@ -114,7 +114,7 @@ public class DocumentoSetUp {
             1,
             LocalDate.now(),
             EstadoCarpeta.ASIGNADO,
-            EstadoAcuse.CREADO,
+            "CREADO",
             "asunto prueba",
             'C', 
             'S', 
