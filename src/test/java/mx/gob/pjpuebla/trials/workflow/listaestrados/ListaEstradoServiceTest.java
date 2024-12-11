@@ -135,8 +135,8 @@ class ListaEstradoServiceTest {
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setJuzgado(JuzgadoSetUp.createJuzgado())
                 .setRubros(Set.of(rubro1, rubro2));
-        List<Notificacion> notificacionList = List.of(new Notificacion().setCarpeta(carpeta)
-                .setDocumento(new Documento().setId(1)));
+        Documento documento = new Documento().setId(1).setCarpeta(carpeta);
+        List<Notificacion> notificacionList = List.of(new Notificacion().setDocumento(documento));
         Persona persona = new Persona();
         persona.setJuzgado(new Juzgado().setNombre("Juzgado Prueba"));
 

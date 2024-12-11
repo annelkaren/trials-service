@@ -199,28 +199,25 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         LEFT JOIN Movimiento m ON m.documento = doc
         WHERE
             (
-                (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR 
+                (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR
                 (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
             )
             AND (
-                
-                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL)) 
-                OR 
-                (concepto.nombre = 'Adjuntar' 
+                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL))
+                OR
+                (concepto.nombre = 'Adjuntar'
                  OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
-                 OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL) 
+                 OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL)
                 )
             )
             AND (
-               
                 ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
-                OR 
-               
+                OR
                 (m.estado = 'ASIGNADO')
             )
             AND doc.carpeta.id = :carpetaId
-            AND 
-            CASE 
+            AND
+            CASE
                 WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
                 WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
                 ELSE 0

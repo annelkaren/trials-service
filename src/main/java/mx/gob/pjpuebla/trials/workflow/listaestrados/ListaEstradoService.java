@@ -56,8 +56,8 @@ public class ListaEstradoService {
 
             String nombreCompleto =
                     (le.getPersona().getNombre() != null ? le.getPersona().getNombre() : "") +
-                            (le.getPersona().getApellidoMaterno() != null ? le.getPersona().getApellidoMaterno() : "") +
-                            (le.getPersona().getApellidoPaterno() != null ? le.getPersona().getApellidoPaterno() : "");
+                            (le.getPersona().getApellidoMaterno() != null ? " " + le.getPersona().getApellidoMaterno() : "") +
+                            (le.getPersona().getApellidoPaterno() != null ? " " + le.getPersona().getApellidoPaterno() : "");
 
             return new ListaEstradoRecord(
                     le.getId(),
@@ -87,10 +87,10 @@ public class ListaEstradoService {
                 .map(notificacion -> {
                     String juzgado = nombreCentroTrabajo != null ? nombreCentroTrabajo : "";
                     String diaPublicado = LocalDate.now().toString();
-                    String asunto = "EXP." + notificacion.getCarpeta().getExpediente()
-                            + "\n" + notificacion.getCarpeta().getTipoJuicio().getNombre()
+                    String asunto = "EXP." + notificacion.getDocumento().getCarpeta().getExpediente()
+                            + "\n" + notificacion.getDocumento().getCarpeta().getTipoJuicio().getNombre()
                             + "\n" + "***** VS *****";
-                    String nombresRubros = notificacion.getCarpeta().getRubros().stream()
+                    String nombresRubros = notificacion.getDocumento().getCarpeta().getRubros().stream()
                             .map(Rubro::getNombre)
                             .collect(Collectors.joining(", "));
                     DocumentoDetalle doc = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);

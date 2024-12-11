@@ -8,7 +8,6 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
@@ -38,10 +37,6 @@ public class Notificacion implements Serializable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoNotificacion estadoNotificacion;
-
-    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Carpeta carpeta;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
