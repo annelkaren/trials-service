@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
+import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,8 @@ class ListaEstradoServiceTest {
 
     @Mock
     ListaEstradoRepository listaEstradoRepository;
+    @Mock
+    NotificacionRepository notificacionRepository;
     @InjectMocks
     ListaEstradoService target;
 
@@ -39,10 +42,15 @@ class ListaEstradoServiceTest {
         when(listaEstradoRepository.findAllListaEstradoIdAndSearch(any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(listaEstrado)));
 
-        Page<ListaEstrado> result = target.findAllByListaEstradoId(1, null, PageRequest.of(0, 20));
+        when(notificacionRepository.countNotificacionesByListaEstradoId(any())).thenReturn(5L);
+
+        Page<ListaEstradoRecord> result = target.findAllByListaEstradoId(1, null, PageRequest.of(0, 20));
 
         assertNotNull(result);
+
         verify(listaEstradoRepository).findAllListaEstradoIdAndSearch("", 1, PageRequest.of(0, 20));
+
+        verify(notificacionRepository).countNotificacionesByListaEstradoId(listaEstrado.getId());
     }
 
     @Test
@@ -50,13 +58,14 @@ class ListaEstradoServiceTest {
         when(listaEstradoRepository.findAllListaEstradoIdAndSearch(any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(listaEstrado)));
 
-        Page<ListaEstrado> result = target.findAllByListaEstradoId(1, "", PageRequest.of(0, 20));
+        when(notificacionRepository.countNotificacionesByListaEstradoId(any())).thenReturn(5L);
+
+        Page<ListaEstradoRecord> result = target.findAllByListaEstradoId(1, "", PageRequest.of(0, 20));
 
         assertNotNull(result);
+
         verify(listaEstradoRepository).findAllListaEstradoIdAndSearch("", 1, PageRequest.of(0, 20));
+
+        verify(notificacionRepository).countNotificacionesByListaEstradoId(listaEstrado.getId());
     }
-
-
-
-
 }

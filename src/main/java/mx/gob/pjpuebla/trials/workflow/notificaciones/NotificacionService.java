@@ -176,7 +176,7 @@ public class NotificacionService {
       
         ListaEstrado listaEstrado = new ListaEstrado();
 
-        listaEstrado.setUsuarioAlta(persona.getUsuario());
+        listaEstrado.setPersona(persona);
         listaEstrado.setFechaVencimiento(fechaVencimiento);
         listaEstrado.setFechaAlta(LocalDateTime.now());
         listaEstrado = listaEstradoRepository.save(listaEstrado);

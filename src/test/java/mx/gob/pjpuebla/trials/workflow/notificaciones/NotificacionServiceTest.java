@@ -251,7 +251,7 @@ void createRegistroNotificacion() {
 
         ListaEstrado listaEstradoMock = new ListaEstrado();
         listaEstradoMock.setId(1);
-        listaEstradoMock.setUsuarioAlta(auditor.getUsuario());
+        listaEstradoMock.setPersona(auditor);
         listaEstradoMock.setFechaVencimiento(fechaVencimiento);
         when(listaEstradoRepository.save(any(ListaEstrado.class))).thenReturn(listaEstradoMock);
 
