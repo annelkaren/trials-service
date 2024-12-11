@@ -912,14 +912,14 @@ public class DocumentoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
-        EstadoAcuse estadoAcuse = null;
+        String estadoAcuse = null;
         String rutaAcuse = "";
 
         if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
-            estadoAcuse = documentoDetalle.getEstado();
+            estadoAcuse = documentoDetalle.getEstado().getEtiqueta();
             rutaAcuse = documentoDetalle.getRuta();
         }
 

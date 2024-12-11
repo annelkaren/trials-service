@@ -7,6 +7,10 @@
   "http-method-as-scope": true,
   "paths": [
     {
+      "path": "/api/workflow/etiquetas/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
       "path": "/error",
       "enforcement-mode": "DISABLED"
     },

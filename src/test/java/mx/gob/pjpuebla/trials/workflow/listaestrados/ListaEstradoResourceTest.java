@@ -11,11 +11,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,4 +58,15 @@ class ListaEstradoResourceTest {
                 .andExpect(status().isOk());
      }
 
+    @Test
+    void getReporteListaEstrados() throws Exception {
+        Object response = "Mocked Report Data";
+
+        given(mocklistaEstradoService.getReporteListaEstrados(anyInt()))
+                .willReturn(ResponseEntity.ok(response));
+
+        mockMvc.perform(get("/api/workflow/listaestrado/1")
+                                .accept(org.springframework.http.MediaType.APPLICATION_PDF))
+                .andExpect(status().isOk());
+    }
 }
