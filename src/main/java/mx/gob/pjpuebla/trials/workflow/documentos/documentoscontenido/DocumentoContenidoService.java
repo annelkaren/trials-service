@@ -46,7 +46,7 @@ public class DocumentoContenidoService {
         LocalDate fechaEntrega = null;
         String asunto = "";
         String comentario = "";
-        EstadoAcuse estatusAcuse = null;
+        String estatusAcuse = null;
         String rutaAcuse = "";
 
         if (documentoDetalle != null) {
@@ -54,7 +54,7 @@ public class DocumentoContenidoService {
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
             comentario = documentoDetalle.getComentario();
-            estatusAcuse = documentoDetalle.getEstado();
+            estatusAcuse = documentoDetalle.getEstado().getEtiqueta();
             rutaAcuse = documentoDetalle.getRuta();
         }
 
