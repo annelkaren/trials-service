@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.domain.Page;
@@ -24,7 +26,6 @@ import org.springframework.data.domain.PageRequest;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -101,9 +102,9 @@ class AcuerdoServiceTest {
     @Test
     void obtenerPromocionesTest(){
         Integer carpetaId = 1;
-        String actualizacion = "NO";
+        Integer documentoId = 1;
 
-        List<AcuerdoPromocionesRecord> result = acuerdosService.obtenerPromociones(carpetaId, actualizacion);
+        List<AcuerdoPromocionesRecord> result = acuerdosService.obtenerPromociones(carpetaId, documentoId, "ACUERDO");
         assertNotNull(result);
     }
 
@@ -112,7 +113,7 @@ class AcuerdoServiceTest {
         Integer carpetaId = 1;
         List<AcuerdosRecord> acuerdo = AcuerdoRecordSetUp.createAcuerdoRecord();
     
-        given(documentoRepository.findAllAcuerdosByCarpeta(anyInt(), any(PageRequest.class)))
+        given(documentoRepository.findAllAcuerdosYSentenciasByCarpeta(anyInt(), any(PageRequest.class)))
             .willReturn(new PageImpl<>(acuerdo, PageRequest.of(0, acuerdo.size()), acuerdo.size()));
     
         Page<AcuerdosRecord> page = acuerdosService.getAcuerdos(carpetaId, PageRequest.of(0, acuerdo.size()));
@@ -145,29 +146,35 @@ class AcuerdoServiceTest {
     
     }
 
-    @Test
-    void getAcuerdoTest(){
-        AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
-        DocumentoData docData = new DocumentoData();
-        docData.setRubros(acuerdoRecord.rubros());
+@Test
+void getAcuerdoTest(){
+    AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
+    DocumentoData docData = new DocumentoData();
+    docData.setRubros(acuerdoRecord.rubros());
 
-        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
-        documento.setData(docData);
+    Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+    documento.setTipoDocumento(TipoDocumento.ACUERDO);
+    documento.setData(docData);
 
-        documento.setData(new DocumentoData());
-        given(documentoRepository.findById(anyInt()))
+    documento.setData(new DocumentoData());
+    given(documentoRepository.findById(anyInt()))
             .willReturn(Optional.of(documento));
 
-        given(documentoDetalleRepository.findByDocumentoId(anyInt()))
+    given(documentoDetalleRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoDetalle()));
 
-        given(documentoContenidoRepository.findByDocumentoId(anyInt()))
+    given(documentoContenidoRepository.findByDocumentoId(anyInt()))
             .willReturn(Optional.of(new DocumentoContenido()));
 
-        AcuerdoRecord result = acuerdosService.getAcuerdo(1);
 
-        assertNotNull(result);
-    }
+    Mockito.lenient().when(documentoRepository.obtenerPromociones(1, 5, "ACUERDO"))
+            .thenReturn(List.of(new AcuerdoPromocionesRecord(1, "d", "c", "s", 1)));
+            
+    Object result = acuerdosService.getAcuerdoOSentencia(1);
+
+    assertNotNull(result);
+}
+
 
     @Test
     void update(){
@@ -194,6 +201,18 @@ class AcuerdoServiceTest {
         DocumentoGenericRecord result = acuerdosService.update(acuerdoRecord);
         
         assertNotNull(result);
+    }
+
+    @Test
+    void testfindPromocionesAcuerdo(){
+        Documento promocion = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        List<Documento> promociones = Collections.singletonList(promocion);
+
+        given(documentoRepository.findByAcuerdoRespuestaId(any())).willReturn(promociones);
+
+        List<AcuerdoPromocionesRecord> result = acuerdosService.findPromocionesByAcuerdo(1);
+
+        assertThat(result).isNotEmpty();
     }
 
 }

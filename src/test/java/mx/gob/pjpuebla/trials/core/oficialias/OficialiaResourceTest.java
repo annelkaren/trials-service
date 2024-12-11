@@ -82,7 +82,7 @@ class OficialiaResourceTest {
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockOficialiaService.getAllByOficialiaMateria(any(Pageable.class)))
+        given(mockOficialiaService.getAllByOficialiaMateria(any(),any(Pageable.class)))
                 .willReturn(new PageImpl<OficialiaMateriaRecord>(Collections.singletonList(oficialiaMateriaRecordResponse)));
 
         mockMvc.perform(

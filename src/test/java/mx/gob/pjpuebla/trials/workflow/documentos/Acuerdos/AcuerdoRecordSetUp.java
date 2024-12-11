@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
@@ -30,13 +32,13 @@ public class AcuerdoRecordSetUp {
 
     public static List<AcuerdosRecord> createAcuerdoRecord(){
         List<AcuerdosRecord> acuerdoRecord = new ArrayList<>();
-        acuerdoRecord.add(new AcuerdosRecord(1, LocalDate.now(), "Hola", EstadoCarpeta.CREADO));
+        acuerdoRecord.add(new AcuerdosRecord(1, LocalDate.now(), "Hola", EstadoCarpeta.CREADO, "dsdsdsd", TipoDocumento.SENTENCIA));
         return acuerdoRecord;
     }
 
     public static List<AcuerdoNotificadosRecord> createAcuerdoNotificadoRecord(){
         List<AcuerdoNotificadosRecord> acuerdoRecord = new ArrayList<>();
-        acuerdoRecord.add(new AcuerdoNotificadosRecord(1, "nombre", "Demadado", "Correo"));
+        acuerdoRecord.add(new AcuerdoNotificadosRecord(1, "nombre", "Demadado", TipoNotificacion.CORREO_ELECTRONICO));
         return acuerdoRecord;
     }
 

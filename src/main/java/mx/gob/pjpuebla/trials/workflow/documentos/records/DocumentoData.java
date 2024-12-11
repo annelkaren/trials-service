@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
@@ -28,6 +29,7 @@ public class DocumentoData implements Serializable {
     private List<String> rubros;
     private String amparoQuejoso;
     private LocalDate amparoFechaPresentacion;
+    private LocalDate amparoFechaTermino;
     private Integer amparoImpugnacion;
     private String amparoSentido;
     private String amparoSentidoImpugnacion;
@@ -35,6 +37,11 @@ public class DocumentoData implements Serializable {
     private Integer amparoTribunalId;
     private String amparoTipo;
     private String pieza;
+    private EstadoCarpeta estadoPieza;
     private String domicilioAcreedor;
+    private String tramite;
+    private String destino;
+    private LocalDate fechaEntrega;
+    private LocalDate fechaDevolucion;
 }
 

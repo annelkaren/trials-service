@@ -15,8 +15,8 @@ import java.io.Serializable;
 public class AcuerdoRubros implements Serializable {
 
     @Id
-    @SequenceGenerator(name="idAcuerdoRubros", sequenceName = "SEQ_ACUERDO_RUBROS_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAcuerdoRubros")
+    @SequenceGenerator(name="idAcuerdoRubros", sequenceName = "SEQ_ACUERDO_RUBROS_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

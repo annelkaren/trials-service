@@ -1,17 +1,22 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
 
-import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -140,5 +145,26 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         List<PiezaRecordResponse> piezas = carpetaRepository.findPiezasByDocumentoId(documentoId);
 
         assertThat(piezas).isNotNull();
+    }
+
+    @Test
+    void findPiezasByCarpetaId(){
+        Integer carpetaPadreId = 2;
+
+        List<DocumentoDetalleCarpeta> piezas = carpetaRepository.findPiezasByCarpetaPadreId(null, carpetaPadreId);
+
+        assertThat(piezas).isNotNull()
+                .allMatch((p)->p.tipoCarpeta()== TipoCarpeta.PIEZA);
+    }
+
+    @Test
+    void findByJuzgadoTest() {
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        juzgado.setId(51);
+
+        Page<Carpeta> result = carpetaRepository.findByJuzgado(juzgado, "000001/2024", Pageable.ofSize(10));
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isNotEmpty();
     }
 }

@@ -109,11 +109,11 @@ class AcuerdoResourceTest {
     void obtenerPromocionesTest() throws Exception {
         List<AcuerdoPromocionesRecord> acuerdoPromocionesRecord = AcuerdoRecordSetUp.createAcuerdoPromocionesRecord();
 
-        given(acuerdosService.obtenerPromociones(anyInt(), anyString()))
+        given(acuerdosService.obtenerPromociones(anyInt(), anyInt(), anyString()))
                 .willReturn(acuerdoPromocionesRecord);
 
         mockMvc.perform(
-                get("/api/workflow/documentos/obtenerPromociones/{carpetaId}/{actualizacion}", 1,"SI")
+                get("/api/workflow/documentos/obtenerPromociones/{carpetaId}/{documentoId}/{tipoDocumento}", 1,1, "ACUERDO")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -122,7 +122,7 @@ class AcuerdoResourceTest {
     void obtenerAcuerdo() throws Exception {
         AcuerdoRecord acuerdo = AcuerdoRecordSetUp.create();
 
-        given(acuerdosService.getAcuerdo(anyInt())).willReturn(acuerdo);
+        given(acuerdosService.getAcuerdoOSentencia(anyInt())).willReturn(acuerdo);
 
         mockMvc.perform(
                 get("/api/workflow/documentos/obtenerAcuerdo/{acuerdoId}", 1)
@@ -151,7 +151,7 @@ class AcuerdoResourceTest {
 
         given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
 
-        mockMvc.perform(get("/api/workflow/acuerdos/{documentoId}", documentoId)
+        mockMvc.perform(get("/api/workflow/documentos/acuerdos/{documentoId}", documentoId)
                         .accept(APPLICATION_PDF))
                 .andExpect(status().isOk());
     }

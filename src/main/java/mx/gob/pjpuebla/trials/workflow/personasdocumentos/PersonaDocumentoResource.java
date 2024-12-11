@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,4 +25,15 @@ public class PersonaDocumentoResource {
             @PathVariable String tipo) {
         return personaDocumentoService.getTipoPartesPrincipales(carpetaId, tipo);
     }
+
+    @GetMapping("/correo/{id}")
+    public String getCorreoByPersonaDocumentoId(@PathVariable Integer id) {
+        return personaDocumentoService.getCorreoByPersonaDocumentoId(id);
+    }  
+    
+    @GetMapping("/domicilio/{id}")
+    public Domicilio getDomicilioByPersonaDocumentoId(@PathVariable Integer id) {
+        return personaDocumentoService.getDomicilioByPersonaDocumentoId(id);
+    }  
+
 }

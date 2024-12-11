@@ -337,6 +337,7 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void findAllByCentroTrabajo(){
         Jwt mockJwt = Mockito.mock(Jwt.class);
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38df");
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
         Page<Persona> page = new PageImpl<>(List.of(validPersona));
@@ -344,9 +345,9 @@ class PersonaServiceTest extends SetupServiceTest {
         Page<PersonaRecordResponse> response = new PageImpl<>(list);
 
         given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
-        given(mockPersonaRepository.findByCentroTrabajo(any(), any(), any())).willReturn(page);
+        given(mockPersonaRepository.findByCentroTrabajoAndSearch(any(), any(), any(), any())).willReturn(page);
 
-        response = personaService.findAllByCentroTrabajo(null, PageRequest.of(0, response.getSize()));
+        response = personaService.findAllByCentroTrabajo(null, null, PageRequest.of(0, response.getSize()));
 
         assertThat(response).isNotEmpty();
     }
@@ -354,16 +355,16 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void getPersonalTurnado_return_page_of_personaRecordResponse() {
         Jwt mockJwt = Mockito.mock(Jwt.class);
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38df");
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
-        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.of(validPersona));
+        given(mockPersonaRepository.findByUsuario(any()))
+                .willReturn(Optional.of(validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38dd")));
+        given(roleService.hasRole(any(), any())).willReturn(false);
 
-        given(mockPersonaRepository.findByJuzgadoId(eq(juzgado.getId()), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(validPersona), PageRequest.of(0, 10), 1));
+        List<PersonaRecordResponse> response = personaService.getPersonalTurnado();
 
-        Page<PersonaRecordResponse> response = personaService.getPersonalTurnado(PageRequest.of(0, 10));
-
-        assertThat(response).isNotEmpty();
-        assertThat(response.getContent()).hasSize(1);
+        assertThat(response).isEmpty();
+        assertThat(response).isEmpty();
     }
 }

@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -187,8 +186,8 @@ class PersonaResourceTest {
 
     @Test
     void getPersonalTurnado_success() throws Exception {
-        given(mockPersonaService.getPersonalTurnado(any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
+        given(mockPersonaService.getPersonalTurnado())
+                .willReturn(Collections.singletonList(personaRecordResponse));
 
         mockMvc.perform(
                 get("/api/core/personas/turnado")

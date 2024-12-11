@@ -92,14 +92,14 @@ class PersonaRepositoryTest extends AuditConfigTest {
         persona.setJuzgado(new Juzgado().setId(51));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
 
-        Page<Persona> page = personaRepository.findByCentroTrabajo(null, persona.getJuzgado().getId(), PageRequest.of(0, 20));
+        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(null, null,persona.getJuzgado().getId(), PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty();
     }
 
     @Test
     void findByJuzgadoId() {
-        Page<Persona> personas = personaRepository.findByJuzgadoId(51, PageRequest.of(0, 20));
+        List<Persona> personas = personaRepository.findByJuzgadoId(51);
         assertThat(personas).isNotEmpty();
     }
 }

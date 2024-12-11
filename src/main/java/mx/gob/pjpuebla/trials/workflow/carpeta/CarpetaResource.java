@@ -3,9 +3,15 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +86,7 @@ public class CarpetaResource {
     public PiezaRecordResponse createPieza(@RequestParam Integer carpetaId, @RequestBody PiezaRecord piezaRecord){
         Carpeta pieza = carpetaService.createPieza(carpetaId, piezaRecord);
 
-        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo());
+        return  new PiezaRecordResponse(pieza.getId(), pieza.getExpediente(), pieza.getTipoPieza().getTipo(), pieza.getEstatus());
     }
 
     @PutMapping(value = "/piezas/adjuntar", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,6 +100,39 @@ public class CarpetaResource {
         return  this.carpetaService.getPiezas(documentoId);
 
     }
-    
 
+    @GetMapping(value = "/documentos/{carpetaId}")
+    public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosByCarpeta(
+            @PathVariable Integer carpetaId,
+            @RequestParam(value = "key", required = false) String key,
+            @PageableDefault(size = 20) @SortDefault.SortDefaults({
+                    @SortDefault(sort = "fechaRegistro", direction = Sort.Direction.ASC)
+            }) Pageable pageable){
+
+        return this.carpetaService.getAllDocumentosPiezas(key, carpetaId, pageable);
+    }
+
+    @PostMapping(value="/piezas/acoplar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PiezaRecordResponse acoplarPieza(
+            @RequestParam("piezaId") Integer piezaId,
+            @RequestParam("estatus") String estadoPieza){
+            return this.carpetaService.acoplarPieza(piezaId, estadoPieza);
+    }
+
+    @GetMapping("/librogobierno")
+    public Page<LibroGobiernoRecord> getLibroDeGobierno(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return carpetaService.libroDeGobierno(key, pageable);
+    }
+
+    @GetMapping(value = "/sentencia")
+    public ResponseEntity<SentenciaPublicaResponseRecord> getCarpetaByExpedienteAndSentencia(
+            @RequestParam String numExpediente,
+            @RequestParam Integer year
+    ){
+        SentenciaPublicaResponseRecord sentenciaResponse = carpetaService.getCarpetaByExpedienteAndSentencia(
+                numExpediente + "/" + year);
+        return ResponseEntity.ok(sentenciaResponse);
+    }
 }

@@ -82,4 +82,15 @@ public class TipoAudienciaService {
     public TipoAudiencia obtenerTipoAudiencia(String tipoAudiencia) {
         return tipoAudienciaRepository.findByNombre(tipoAudiencia);
     }
+
+    @Transactional(readOnly = true)
+    public List<TipoAudienciaRecord> getAll(Pageable pageable, String nombre) {
+        Page<TipoAudiencia> page = tipoAudienciaRepository.findAll(pageable);
+        return page.getContent().stream()
+                .map(tipoAudiencia -> new TipoAudienciaRecord(
+                        tipoAudiencia.getId(),
+                        tipoAudiencia.getNombre()
+                ))
+                .toList();
+    }
 }

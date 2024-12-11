@@ -1,10 +1,10 @@
-package mx.gob.pjpuebla.trials.workflow.personadetalle;
+package mx.gob.pjpuebla.trials.workflow.personadetalle.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 public class PersonaDTO {
@@ -46,7 +46,7 @@ public class PersonaDTO {
         private String numeroInterior;
 
         @JsonProperty("pais")
-        private String pais;
+        private Integer pais;
 
         @JsonProperty("telefono")
         private String telefono;
@@ -76,8 +76,8 @@ public class PersonaDTO {
         @JsonProperty("discapacidad")
         private String discapacidad;
 
-        @JsonProperty("documento")
-        private Integer documento;
+        @JsonProperty("documentoIdentificacion")
+        private Integer documentoIdentificacion;
 
         @JsonProperty("entidadNacimiento")
         private String entidadNacimiento;
@@ -100,8 +100,8 @@ public class PersonaDTO {
         @JsonProperty("ingresosMensuales")
         private String ingresosMensuales;
 
-        @JsonProperty("lenguaExtranjeraDetalle")
-        private String lenguaExtranjeraDetalle;
+        @JsonProperty("lenguaExtranjera")
+        private String lenguaExtranjera;
 
         @JsonProperty("lenguaIndigena")
         private Integer lenguaIndigena;
@@ -113,7 +113,7 @@ public class PersonaDTO {
         private String municipioNacimiento;
 
         @JsonProperty("paisNacimiento")
-        private String paisNacimiento;
+        private Integer paisNacimiento;
 
         @JsonProperty("profesion")
         private String profesion;
@@ -130,8 +130,30 @@ public class PersonaDTO {
         @JsonProperty("senias")
         private String senias;
 
+        @JsonProperty("hablaLenguaIndigena")
+        private Boolean hablaLenguaIndigena;
+
+        @JsonProperty("perteneceGrupoVulnerable")
+        private Boolean perteneceGrupoVulnerable;
+
+        @JsonProperty("tieneBienes")
+        private Boolean tieneBienes;
+
+        @JsonProperty("tieneSeniasParticulares")
+        private Boolean tieneSeniasParticulares;
+
+        @JsonProperty("perteneceGrupoEtnico")
+        private Boolean perteneceGrupoEtnico;
+
+        @JsonProperty("tieneReligion")
+        private Boolean tieneReligion;
+
         @JsonProperty("tieneDependientes")
         private Boolean tieneDependientes;
+
+        @JsonProperty("hablaLenguaExtranjera")
+        private Boolean hablaLenguaExtranjera;
+
     }
 
     @Data
@@ -156,7 +178,7 @@ public class PersonaDTO {
         private Integer edad;
 
         @JsonProperty("enRepresentacion")
-        private String enRepresentacion;
+        private Integer enRepresentacion;
 
         @JsonProperty("estadoCivil")
         private String estadoCivil;
@@ -172,7 +194,7 @@ public class PersonaDTO {
         private Integer nacionalidad;
 
         @JsonProperty("nombre")
-        private String nombre;
+        private String nombres;
 
         @JsonProperty("pseudonimo")
         private String pseudonimo;
@@ -187,7 +209,7 @@ public class PersonaDTO {
         private String sexo;
 
         @JsonProperty("tipo")
-        private List<String> tipo;
+        private Integer tipo;
 
         @JsonProperty("tipoDefensor")
         private String tipoDefensor;
@@ -195,4 +217,5 @@ public class PersonaDTO {
         @JsonProperty("tipoPersona")
         private String tipoPersona;
     }
+
 }

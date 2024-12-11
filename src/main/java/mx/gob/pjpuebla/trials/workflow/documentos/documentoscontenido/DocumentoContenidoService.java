@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -32,28 +31,29 @@ public class DocumentoContenidoService {
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
 
         // TODO: asignar vaiores cuando se tengan disponibles
-        
+
         // Obtenemos texto del editor:
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)
+                .orElse(null);
         Character tamanioPapel = ' ';
         String textoEditor = "";
         Character existeOficio = ' ';
 
-        //Obtenemos información detallada del documento
+        // Obtenemos información detallada del documento
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId).orElse(null);
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
         String comentario = "";
-        EstadoAcuse estatusAcuse = null;
+        String estatusAcuse = null;
         String rutaAcuse = "";
 
-        if(documentoDetalle != null){
+        if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
-            asunto = documentoDetalle.getAsunto();  
+            asunto = documentoDetalle.getAsunto();
             comentario = documentoDetalle.getComentario();
-            estatusAcuse = documentoDetalle.getEstado();
+            estatusAcuse = documentoDetalle.getEstado().getEtiqueta();
             rutaAcuse = documentoDetalle.getRuta();
         }
 
@@ -82,7 +82,8 @@ public class DocumentoContenidoService {
     }
 
     public Integer cancelarOficio(Integer documentoId) {
-        Documento doc = documentoRepository.findById(documentoId).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+        Documento doc = documentoRepository.findById(documentoId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
 
         doc.setEstatus(EstadoCarpeta.CANCELADO);
         documentoRepository.save(doc);
@@ -92,46 +93,55 @@ public class DocumentoContenidoService {
 
     public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(
             DocumentoOficioDigitalizacionRecord oficio) {
-        Documento doc = documentoRepository.findById(oficio.idOficio()).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
+        Documento doc = documentoRepository.findById(oficio.idOficio()).orElseThrow(
+                () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
 
-        Institucion institucion = institucionRepository.findById(oficio.dependencia()).orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
+        Institucion institucion = institucionRepository.findById(oficio.dependencia()).orElseThrow(
+                () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
 
         doc.setInstitucion(institucion);
         documentoRepository.save(doc);
 
         // Actualizamos asunto:
-         //Obtenemos información detallada del documento
-        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
-        if(documentoDetalle != null){
+        // Obtenemos información detallada del documento
+        DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(oficio.idOficio())
+                .orElse(null);
+        if (documentoDetalle != null) {
             documentoDetalle.setAsunto(oficio.asunto());
             documentoDetalleRepository.save(documentoDetalle);
         }
-       
-        // Actualizamos o creamos la parte de documento contenido
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio()).orElse(null);
 
-        if (documentoContenido == null) { documentoContenido = new DocumentoContenido(); }
+        // Actualizamos o creamos la parte de documento contenido
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(oficio.idOficio())
+                .orElse(null);
+
+        if (documentoContenido == null) {
+            documentoContenido = new DocumentoContenido();
+        }
 
         documentoContenido.setDocumento(doc);
         documentoContenido.setTamanioPapel(oficio.tamanioPapel());
         documentoContenido.setTexto(oficio.textoEditor());
         documentoContenidoRepository.save(documentoContenido);
-        
+
         return oficio;
     }
 
-    public Integer publicarCancelarOficio(Integer documentoId, Character oficioPublicado){
+    public Integer publicarCancelarOficio(Integer documentoId, Character oficioPublicado) {
 
-        //Actualizamos o creamos la parte de documento contenido
-        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId).orElse(null);
+        // Actualizamos o creamos la parte de documento contenido
+        DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)
+                .orElse(null);
 
-        if(documentoContenido == null){ documentoContenido = new DocumentoContenido(); }
+        if (documentoContenido == null) {
+            documentoContenido = new DocumentoContenido();
+        }
 
         documentoContenido.setOficioPublicado(oficioPublicado);
         documentoContenidoRepository.save(documentoContenido);
 
         return 1;
-   }
+    }
 
     public DocumentoContenido getContenidoByOficioId(Integer oficioId) {
         return documentoContenidoRepository.findByDocumentoId(oficioId)

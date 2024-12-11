@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -13,15 +14,12 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
-import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.personas.*;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
-import mx.gob.pjpuebla.trials.core.rubros.RubroResource;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -55,12 +53,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepo
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapasRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.*;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -72,18 +68,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -136,6 +138,8 @@ class CarpetaServiceTest {
     private EtapaProcesalRepository etapaProcesalRepository;
     @Mock
     private CarpetaEtapasRepository carpetaEtapasRepository;
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -313,6 +317,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_promocion_Success() {
+        Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -328,6 +333,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
+        documento.setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -345,6 +351,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_Success() {
+        Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
@@ -359,6 +366,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
+        documento.setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -791,5 +799,147 @@ class CarpetaServiceTest {
         assertThat(piezaTmp).isNotNull()
                 .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");
 
+    }
+
+    @Test
+    void testGetAllDocumentosPiezas(){
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        PersonaRecord persona = PersonaSetUp.createPersonaRecord(Collections.singletonList(new RoleRecord("1","OFICIAL")));
+
+
+        DocumentoDetalleCarpeta documento = new DocumentoDetalleCarpeta(1,"1", TipoDocumento.PROMOCION,
+                null, LocalDateTime.now(), "DEMANDA_174FD31D-3E83-4F81-AE3D-0C4EA91D772E.PDF",
+                1L, TipoCarpeta.DEMANDA, EstadoCarpeta.ASIGNADO);
+        DocumentoDetalleCarpeta pieza = new DocumentoDetalleCarpeta(3, "000001/2024/AD01", null,
+                tipoPieza, LocalDateTime.now(), null, 1L, TipoCarpeta.PIEZA, EstadoCarpeta.ASIGNADO);
+
+        List<DocumentoDetalleCarpeta> documentos = Collections.singletonList(documento);
+        List<DocumentoDetalleCarpeta> piezas = Collections.singletonList(pieza);
+        Page<DocumentoDetalleCarpetaResponse> lista = new PageImpl<>(
+                Stream.concat( documentos.stream(), piezas.stream())
+                        .map(e->new DocumentoDetalleCarpetaResponse(
+                            e.id(),
+                            "",
+                            e.folio(),
+                            e.fechaRegistro(),
+                            e.ruta(),
+                            "",
+                            e.tipoCarpeta().name(),
+                            Boolean.FALSE,
+                            EstadoCarpeta.ASIGNADO.name(), "")).toList());
+
+        given(personaService.findById(any())).willReturn(persona);
+        given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());
+        given(documentoRepository.findDocumentosByCarpeta(any())).willReturn(documentos);
+        given(carpetaRepository.findPiezasByCarpetaPadreId(any(), any())).willReturn(piezas);
+
+        lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
+
+        assertThat(lista).isNotEmpty();
+
+    }
+
+    @Test
+    void acoplarPiezaExpediente(){
+        Integer carpetaPadreId = 1;
+
+        TipoPieza tipoPieza = new TipoPieza()
+                .setId(1)
+                .setClave("AD")
+                .setTipo("Amparo Directo");
+        Persona persona = PersonaSetUp.createPersona();
+        String consecutivo = "AD01";
+        String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
+        Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
+        List<Documento> documentos = Collections.singletonList(documento);
+
+        Carpeta pieza = new Carpeta()
+                .setId(5)
+                .setExpediente(expediente)
+                .setCarpetaPadre(validCarpeta)
+                .setTipoPieza(tipoPieza)
+                .setTipoCarpeta(TipoCarpeta.PIEZA);
+
+        PiezaRecordResponse response;
+
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(pieza));
+        given(personaService.getAuditor()).willReturn(persona);
+        given(documentoRepository.findByCarpetaId(any())).willReturn(documentos);
+        given(carpetaRepository.save(any())).willReturn(pieza);
+
+        response = target.acoplarPieza(pieza.getId(), EstadoCarpeta.CANCELADO.name());
+
+        assertThat(response).isNotNull().hasFieldOrPropertyWithValue("estatus", EstadoCarpeta.CANCELADO);
+
+    }
+
+    @Test
+    void libroDeGobierno() {
+
+        Persona persona = PersonaSetUp.createPersona();
+        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+        persona.setJuzgado(juzgado);
+
+        List<Carpeta> carpetas = List.of(CarpetaSetUp.create().setPersona(persona));
+        Page<Carpeta> carpetaPage = new PageImpl<>(carpetas, PageRequest.of(0, 10), carpetas.size());
+
+        given(personaService.getAuditor()).willReturn(persona);
+        given(carpetaRepository.findByJuzgado(eq(juzgado), eq("000001/2024"), eq(PageRequest.of(0, 10))))
+                .willReturn(carpetaPage);
+
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
+                .willReturn(actor);
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
+                .willReturn(demandado);
+
+        Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
+
+        assertThat(result).isNotNull();
+
+        verify(personaService).getAuditor();
+        verify(carpetaRepository).findByJuzgado(eq(juzgado), eq("000001/2024"),  eq(PageRequest.of(0, 10)));
+        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any());
+        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
+    }
+
+    @Test
+    void getCarpetaByExpedienteAndSentencia() {
+        juzgado.setMateria(MateriaSetUp.createMateria());
+        Persona auditor = PersonaSetUp.createPersona();
+        auditor.setJuzgado(juzgado);
+        Carpeta carpeta = CarpetaSetUp.create();
+        carpeta.setJuzgado(juzgado);
+        Documento documento = DocumentoSetUp.create(tipoJuicio);
+        documento.setCarpeta(carpeta);
+        DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                .setTipoSentencia(TipoSentencia.SENTENCIA_DEFINITIVA)
+                .setTipoResolucion(TipoResolucion.CONDENATORIA)
+                .setFechaResolucion(LocalDate.now());
+
+        given(personaService.getAuditor()).willReturn(auditor);
+        given(documentoRepository.findByExpedienteAndTipoDocumento(carpeta.getExpediente(), TipoDocumento.SENTENCIA, auditor.getJuzgado().getId()))
+                .willReturn(Optional.of(documento));
+        given(documentoDetalleRepository.findByDocumentoId(documento.getId()))
+                .willReturn(Optional.of(documentoDetalle));
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
+                .willReturn(actor);
+        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
+                .willReturn(demandado);
+
+        SentenciaPublicaResponseRecord result = target.getCarpetaByExpedienteAndSentencia(carpeta.getExpediente());
+
+        assertThat(result)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("idCarpeta", carpeta.getId())
+                .hasFieldOrPropertyWithValue("actor", "Juan Perez")
+                .hasFieldOrPropertyWithValue("demandado", "Nauj Zerep")
+                .hasFieldOrPropertyWithValue("materia", carpeta.getJuzgado().getMateria().getNombre())
+                .hasFieldOrPropertyWithValue("juzgado", carpeta.getJuzgado().getNombre())
+                .hasFieldOrPropertyWithValue("sentencia", documentoDetalle.getTipoSentencia().name())
+                .hasFieldOrPropertyWithValue("resolucion", documentoDetalle.getTipoResolucion().name())
+                .hasFieldOrPropertyWithValue("fechaResolucion", documentoDetalle.getFechaResolucion());
     }
 }

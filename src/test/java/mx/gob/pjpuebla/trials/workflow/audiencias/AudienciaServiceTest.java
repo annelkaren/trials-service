@@ -12,16 +12,15 @@ import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
-import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoProfesionOficio;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
@@ -51,6 +50,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +61,12 @@ class AudienciaServiceTest {
 
     @Mock
     private AudienciaRepository audienciaRepository;
+
+    @Mock
+    private TipoAudienciaRepository tipoAudienciaRepository;
+
+    @Mock
+    private CarpetaRepository carpetaRepository;
 
     @Mock
     private SalaRepository salaRepository;
@@ -83,6 +92,7 @@ class AudienciaServiceTest {
     private Persona persona;
     private TipoJuicio tipoJuicio;
     private Etiqueta tipoJuicioEtiqueta;
+    
 
     @BeforeEach
     public void setUp() {
@@ -242,4 +252,114 @@ class AudienciaServiceTest {
         assertEquals(EstatusAudiencia.DIFERIDA, audiencia.getEstatusAudiencia());
         verify(audienciaRepository).save(audiencia);
     }
+
+    @Test
+    void createAudiencia() {
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+        audiencia.setEstatusAudiencia(EstatusAudiencia.PROGRAMADA);
+    
+        given(salaRepository.findById(anyInt())).willReturn(Optional.of(sala));
+        given(tipoAudienciaRepository.findById(anyInt())).willReturn(Optional.of(tipoAudiencia));
+        given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(carpeta));
+        given(audienciaRepository.save(any(Audiencia.class))).willAnswer(invocation -> {
+            Audiencia saved = invocation.getArgument(0);
+            saved.setId(1); 
+            return saved;
+        });
+    
+        AudienciasResponseRecord response = audienciaService.createAudiencia(AudienciaSetUp.audienciaSaveRecordCreate());
+    
+        assertEquals(1, response.audienciaId());
+        assertEquals(EstatusAudiencia.PROGRAMADA, response.estatus());
+    }
+
+    @Test
+    void testGetEstatusAudiencias() {
+        List<String> result = audienciaService.getEstatusAudiencias();
+        assertNotNull(result);
+
+        for (EstatusAudiencia estatus : EstatusAudiencia.values()) {
+            assertTrue(result.contains(estatus.name()));
+        }
+    }
+
+    @Test
+    void testSetHoraAudiencias_success_inicio() {
+        LocalDateTime horaInicio = LocalDateTime.now();
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+
+        when(audienciaRepository.findById(1)).thenReturn(Optional.of(audiencia));
+
+        audienciaService.setHoraAudiencias(1, horaInicio, true);
+
+        assertEquals(horaInicio, audiencia.getInicio());
+    }
+
+    @Test
+    void testSetHoraAudiencias_success_fin() {
+        LocalDateTime horaFin = LocalDateTime.now();
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+
+        when(audienciaRepository.findById(1)).thenReturn(Optional.of(audiencia));
+
+        audienciaService.setHoraAudiencias(1, horaFin, false);
+
+        assertEquals(horaFin, audiencia.getFin());
+    }
+
+    @Test
+    void testAudienciaTabGeneral() {
+        AudienciaTabGeneralRecord audienciaTab = AudienciaSetUp.createAudienciaTabGeneralRecord();
+
+        Audiencia audiencia = new Audiencia();
+        audiencia.setId(1);
+        audiencia.setEstatusAudiencia(EstatusAudiencia.PROGRAMADA);
+
+        TipoAudiencia tipoAudiencia = new TipoAudiencia();
+        tipoAudiencia.setId(1);
+
+        Sala sala = new Sala();
+        sala.setId(1);
+
+        when(audienciaRepository.findById(1)).thenReturn(Optional.of(audiencia));
+        when(tipoAudienciaRepository.findById(1)).thenReturn(Optional.of(tipoAudiencia));
+        when(salaRepository.findById(1)).thenReturn(Optional.of(sala));
+
+        audienciaService.audienciaTabGeneral(audienciaTab);
+
+        assertEquals(tipoAudiencia, audiencia.getTipoAudiencia());
+        assertEquals(sala, audiencia.getSala());
+        assertEquals("PROGRAMADA", audiencia.getEstatusAudiencia().name());
+
+        assertEquals(CatalogoMotivosRetrasoAudiencias.RETRASO_AUDIENCIA, audiencia.getMotivoRetrasoAudiencias());
+        assertEquals("Otro", audiencia.getResultadosDesahogo());
+
+        verify(audienciaRepository).save(audiencia);
+    }
+
+    @Test
+    void reprogramarAudiencia_success() {
+        Audiencia audienciaMock = new Audiencia();
+        audienciaMock.setId(1);
+        audienciaMock.setFechaAudiencia(LocalDateTime.now());
+
+        when(audienciaRepository.findById(51)).thenReturn(Optional.of(audienciaMock));
+        when(salaRepository.findById(1)).thenReturn(Optional.of(sala));
+        when(tipoAudienciaRepository.findById(1)).thenReturn(Optional.of(tipoAudiencia));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
+        when(audienciaRepository.save(any(Audiencia.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ReprogramarAudienciaRecord reprogramarAudienciaRecord = AudienciaSetUp.createReprogramarAudienciaRecord();
+
+        AudienciasResponseRecord response = audienciaService.reprogramarAudiencia(reprogramarAudienciaRecord);
+
+        assertNotNull(response);
+        assertEquals(1, response.audienciaId());
+        assertEquals(EstatusAudiencia.DIFERIDA, response.estatus());
+    }
+
+
 }

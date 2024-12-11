@@ -11,10 +11,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.core.rubros.Rubro;
-import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -23,6 +20,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
@@ -42,8 +40,10 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -125,19 +125,22 @@ public class DocumentoService {
         List<DocumentoGridRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = (mov.getDocumento() != null) ? mov.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
-            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta(): documento.getCarpeta();
+            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
             DocumentoGridRecord documentoGridRecord =
                     new DocumentoGridRecord(
                             documento.getId(),
                             (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
                             carpeta.getExpediente(),
-                            carpeta.getJuzgado().getMateria().getNombre(),
-                            (documento.getTipoDocumento() != null) ? documento.getTipoDocumento().name() : carpeta.getTipoCarpeta().name(),
+                            StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
+                            (documento.getTipoDocumento() != null) ?
+                                    StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase()) :
+                                    StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase()),
                             documento.getAudit().getFechaAlta(),
                             carpeta.getSelloEstatus(),
                             (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
-                            (documento.getRuta() != null));
-
+                            (documento.getRuta() != null),
+                            documento.getCarpeta().getJuzgado().getNombre()
+                    );
             list.add(documentoGridRecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -336,9 +339,9 @@ public class DocumentoService {
         documentoRepository.save(documento);
 
         if (documento.getTipoDocumento() != null) {
-            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+            movimientoService.createMovimento(null, documento, documento.getPersona(), motivoEdita, EstadoCarpeta.EDICION.name());
         } else {
-            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.CAPTURA.name());
+            movimientoService.createMovimento(documento.getCarpeta(), null, documento.getPersona(), motivoEdita, EstadoCarpeta.EDICION.name());
         }
         return new DocumentoRecord(documentoId, documento.getCarpeta().getFolio(), documento.getCarpeta().getTipoCarpeta());
     }
@@ -376,6 +379,8 @@ public class DocumentoService {
                     documentoRepository.getNextValDemanda();
             case "P" ->           // Case para promocion
                     documentoRepository.getNextValPromocion();
+            case "ES" ->           // Case para exhorto salida
+                    documentoRepository.getNextValExhortoSalida();
             default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         };
         return valNum.toString();
@@ -412,12 +417,13 @@ public class DocumentoService {
                     documento.getId(),
                     folio,
                     carpeta.getExpediente(),
-                    carpeta.getJuzgado().getMateria().getNombre(),
-                    (documento.getTipoDocumento() == null) ? carpeta.getTipoCarpeta().name() : documento.getTipoDocumento().name(),
+                    StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
+                    (documento.getTipoDocumento() == null) ? StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase()) : StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase()),
                     movimiento.getFechaAsignacion(),
                     null,
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
-                    false
+                    false,
+                    ""
             );
             listaDocumentoRecords.add(drecord);
         }
@@ -553,13 +559,43 @@ public class DocumentoService {
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona currentUser = personaService.getAuditor();
-        List<String> roles = Arrays.asList("OFICIAL_MAYOR_JUZGADO", "SECRETARIO", "TECNICO");
-        for (String rol : roles) {
-            if (roleService.hasRole(currentUser.getUsuario(), rol)) {
-                return renderOficialMayorData(key, pageable, currentUser);
-            }
+        if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
+            return renderOficialMayorData(key, pageable, currentUser);
         }
-        return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        return renderData(key, pageable, currentUser);
+    }
+
+    private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser) {
+        Page<Movimiento> page = movimientoService.getBandejaRecepcion(
+                pageable,
+                currentUser.getJuzgado().getId(),
+                EstadoCarpeta.TURNADO,
+                key,
+                EstadoCarpeta.TURNADO.name(),
+                currentUser
+        );
+        List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();
+        for (Movimiento movimiento : page.getContent()) {
+            Carpeta carpeta = movimiento.getCarpeta();
+            Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+            String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
+            String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
+            String concepto = documento.getConcepto().getNombre();
+            DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
+                    documento.getId(),
+                    folio,
+                    documento.getCarpeta().getExpediente(),
+                    tipoEntrada,
+                    movimiento.getPersona().getNombre() + " " + movimiento.getPersona().getApellidoPaterno() + " " + ((movimiento.getPersona().getApellidoMaterno() != null) ? movimiento.getPersona().getApellidoMaterno() : ""),
+                    concepto,
+                    movimiento.getFechaAsignacion(),
+                    true,
+                    documento.getPrioridad(),
+                    documento.getHoras()
+            );
+            list.add(drecord);
+        }
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
@@ -618,25 +654,40 @@ public class DocumentoService {
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        Page<DocumentoAsignadoRecord> page = documentoRepository.findByPersonaAsignada(key, persona, pageable);
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
+        
+        Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
 
-        List<DocumentoAsignadoResponseRecord> list = page.getContent().stream()
-                .map(item ->
-                        new DocumentoAsignadoResponseRecord(
-                                item.id(),
-                                item.carpetaId(),
-                                item.expediente(),
-                                esOficialMayor ? item.folioDocumento() : item.folioCarpeta(),
-                                (item.tipoDocumento() != null && item.tipoCarpeta()!= TipoCarpeta.PIEZA) ? item.tipoDocumento().name() : item.tipoCarpeta().name(),
-                                item.concepto().getNombre(),
-                                item.fechaTurnado(),
-                                item.fechaTurnado().plusDays(item.concepto().getDias()),
-                                item.estatus().name(),
-                                item.observaciones()
-                        ))
-                .toList();
-
+        List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
+        for (Movimiento mov : page.getContent()) {
+          
+            Documento documento = mov.getDocumento();
+            if (mov.getCarpeta() != null && !mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
+                documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
+            }
+            if (mov.getCarpeta() != null && mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
+                documento = documentoRepository.findByCarpetaIdAndRutaIsNull(mov.getCarpeta().getId());
+            }
+            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
+           
+           
+            DocumentoAsignadoResponseRecord documentoGridRecord =
+                    new DocumentoAsignadoResponseRecord(
+                            documento.getId(),
+                            carpeta.getId(),
+                            carpeta.getExpediente(),
+                            (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getFolio() : carpeta.getFolio(),
+                            StringUtils.capitalize(
+                                (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? 
+                                    documento.getTipoDocumento().name().toLowerCase() : 
+                                    carpeta.getTipoCarpeta().name().toLowerCase()),
+                            documento.getConcepto().getNombre(),
+                            mov.getFechaAsignacion(),
+                            mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()),
+                            StringUtils.capitalize((documento.getTipoDocumento() != null) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
+                            "");
+            list.add(documentoGridRecord);
+        }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -661,6 +712,8 @@ public class DocumentoService {
                         .setEstatus(EstadoCarpeta.TURNADO);
                 documento.setConcepto(getConceptoByTipoCarpetaDocumento(documento.getTipoDocumento(), null));
                 documento = documentoRepository.save(documento);
+                movimiento.setConcepto(documento.getConcepto().getNombre());
+                movimiento.setDuracion(documento.getConcepto().getDias().toString() +"d");
                 movimiento.setDocumento(documento);
                 movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
             } else {
@@ -674,6 +727,8 @@ public class DocumentoService {
                 documentoRepository.save(documento2);
 
                 carpeta = carpetaRepository.save(carpeta);
+                movimiento.setConcepto(documento2.getConcepto().getNombre());
+                movimiento.setDuracion(documento2.getConcepto().getDias().toString() +"d");
                 movimiento.setCarpeta(carpeta);
                 movimiento.setJuzgado(carpeta.getJuzgado());
             }
@@ -832,10 +887,10 @@ public class DocumentoService {
         );
     }
 
-    private void addAnexoExtra(List<AnexoRecepcionRecord> anexos, Documento documento){
-        if(documento.getCarpeta().getTipoJuicio().getMateria().getNombre().equals("LABORAL")){
+    private void addAnexoExtra(List<AnexoRecepcionRecord> anexos, Documento documento) {
+        if (documento.getCarpeta().getTipoJuicio().getMateria().getNombre().equals("LABORAL")) {
             Optional<AnexoRecepcionRecord> anexo = anexos.stream().filter(it -> it.nombre().equalsIgnoreCase("Constancia de no conciliación")).findFirst();
-            if(!anexo.isPresent()){
+            if (anexo.isEmpty()) {
                 Anexo entity = new Anexo();
                 entity.setNombre("Constancia de no conciliación");
                 entity.setDocumento(documento);
@@ -857,14 +912,14 @@ public class DocumentoService {
         LocalDate fechaEmision = null;
         LocalDate fechaEntrega = null;
         String asunto = "";
-        EstadoAcuse estadoAcuse = null;
+        String estadoAcuse = null;
         String rutaAcuse = "";
 
         if (documentoDetalle != null) {
             fechaEmision = documentoDetalle.getFechaEmision();
             fechaEntrega = documentoDetalle.getFechaEntrega();
             asunto = documentoDetalle.getAsunto();
-            estadoAcuse = documentoDetalle.getEstado();
+            estadoAcuse = documentoDetalle.getEstado().getEtiqueta();
             rutaAcuse = documentoDetalle.getRuta();
         }
 
@@ -929,7 +984,8 @@ public class DocumentoService {
                         item.fechaEmision(),
                         item.fechaEntrega(),
                         item.bandAcuse(),
-                        item.bandDigitalizado()
+                        item.bandDigitalizado(),
+                        item.tamanioPapel()
                 ))
                 .toList();
 
@@ -962,6 +1018,8 @@ public class DocumentoService {
         Documento documento = documentoRepository.findById(record.idDocumentoRecepcion())
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId" + record.idDocumentoRecepcion()));
         documento.setConcepto(concepto);
+        String duration = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
+
         Persona persona = personaService.getAuditor();
         if (documento.getTipoDocumento() != null) { //Documento
             documento.setEstatus(EstadoCarpeta.ASIGNADO);
@@ -974,8 +1032,7 @@ public class DocumentoService {
             carpetaRepository.save(carpeta);
             documento = null;
         }
-
-        Movimiento movimiento = movimientoService.createMovimento(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name());
+        Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, documento, persona, null, EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration);
 
         return new MovimientoPersonalJuzgadoRecord(
                 record.idDocumentoRecepcion(),
@@ -1058,16 +1115,13 @@ public class DocumentoService {
 
             documento.setConcepto(concepto);
             documento.setPrioridad(record.prioridad());
-            documento.setHoras(record.horas());
-            if (documento.getEstatus() == null) {
-                carpeta.setEstatus(EstadoCarpeta.TURNADO);
-            } else {
+            float toDays = record.horas() / 24;
+            if (toDays != (float) concepto.getDias())
+                documento.setHoras(record.horas());
+            if (documento.getTipoDocumento() != null) {
                 documento.setEstatus(EstadoCarpeta.TURNADO);
-            }
-            if (documento.getPersona() == null) {
-                carpeta.setPersona(personalJuzgado);
             } else {
-                documento.setPersona(personalJuzgado);
+                carpeta.setEstatus(EstadoCarpeta.TURNADO);
             }
 
             documentoRepository.save(documento);
@@ -1075,7 +1129,9 @@ public class DocumentoService {
 
             Persona persona = personaService.getAuditor();
 
-            Movimiento movimiento = movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.TURNADO.name());
+            String duracion = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
+            Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
+                    EstadoCarpeta.TURNADO.name(), StringUtils.capitalize(concepto.getNombre().toLowerCase()), personalJuzgado, duracion);
 
             MovimientoPersonalJuzgadoRecord resultado = new MovimientoPersonalJuzgadoRecord(
                     carpeta.getId(),
@@ -1138,11 +1194,11 @@ public class DocumentoService {
         }
     }
 
-    public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord){
+    public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord) {
         Persona persona = personaService.getAuditor();
         DocumentoData data = new DocumentoData();
         Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
-                .orElseThrow(()->new NotFoundException("La Carpeta no existe","Carpeta"));
+                .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "Carpeta"));
         Integer folio = documentoFoliosService.getFolio(TipoDocumento.AMPARO, persona.getJuzgado(), null);
 
         data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
@@ -1151,18 +1207,19 @@ public class DocumentoService {
         data.setAmparoTribunalId(amparoRecord.tribunalId());
         data.setAmparoSalaId(amparoRecord.salaId());
         data.setAmparoSentido(amparoRecord.sentidoAmparo());
-        data.setAmparoSentidoImpugnacion(amparoRecord.impugnacionAmparo());
+        data.setAmparoSentidoImpugnacion(amparoRecord.sentidoImpugnacion());
         data.setAmparoTipo(amparoRecord.tipoAmparo());
+        data.setAmparoFechaTermino(amparoRecord.fechaTermino());
 
         Documento amparo = new Documento()
-        .setCarpeta(carpeta)
-        .setData(data)
-        .setFolio(String.valueOf(folio))
-        .setEstatus(EstadoCarpeta.ASIGNADO)
-        .setFechaAsignacion(LocalDateTime.now())
-        .setTipoDocumento(TipoDocumento.AMPARO)
-        .setPersona(persona)
-        .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
+                .setCarpeta(carpeta)
+                .setData(data)
+                .setFolio(String.valueOf(folio))
+                .setEstatus(EstadoCarpeta.ASIGNADO)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setTipoDocumento(TipoDocumento.AMPARO)
+                .setPersona(persona)
+                .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
 
         documentoRepository.save(amparo);
 
@@ -1219,10 +1276,10 @@ public class DocumentoService {
     public ExhortoResponseRecord getExhortoById(Integer id) {
         Documento documento = documentoRepository.findById(id).orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, id.toString()));
         List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(id);
-        return new ExhortoResponseRecord( anexos, documento.getData().getExhortoObservaciones() , documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
+        return new ExhortoResponseRecord(anexos, documento.getData().getExhortoObservaciones(), documento.getData().getExhortoProcedencia(), documento.getCarpeta().getTipoJuicio().getNombre());
     }
 
-    public DocPromocionInfoRecord getInfoPromocion(Integer docId){
+    public DocPromocionInfoRecord getInfoPromocion(Integer docId) {
         Documento doc = documentoRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + docId));
 
@@ -1243,5 +1300,103 @@ public class DocumentoService {
                 anexos
         );
     }
-}
 
+    @Transactional
+    public DocumentoPromocionResponseRecord createExhortoSalida(DocumentoExhortoSalidaRecord docExhortoSalidaRecord, MultipartFile multipartFile) {
+        Carpeta carpeta = carpetaRepository.findById(docExhortoSalidaRecord.carpetaId())
+                .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "Carpeta"));
+        Persona auditor = personaService.getAuditor();
+        DocumentoData data = new DocumentoData();
+        data.setTramite(docExhortoSalidaRecord.tramite())
+                .setDestino(docExhortoSalidaRecord.destino())
+                .setExhortoObservaciones(docExhortoSalidaRecord.observaciones())
+                .setFechaEntrega(docExhortoSalidaRecord.fechaEntrega())
+                .setFechaDevolucion(docExhortoSalidaRecord.fechaDevolucion());
+        Documento documento = new Documento();
+        documento.setData(data)
+                .setCarpeta(carpeta)
+                .setPersona(auditor)
+                .setFolio(getFolio("ES"))
+                .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
+        documento = documentoRepository.save(documento);
+        if (multipartFile != null) {
+            digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        }
+        movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
+        return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+    }
+
+    public DocumentoPromocionResponseRecord adjuntarPromocion(Integer documentoId){
+        Documento documento = documentoRepository.findById(documentoId).orElseThrow(()->new NotFoundException("La promoción no existe","documentoId"));
+
+        if (documento.getEstatus()==EstadoCarpeta.ASIGNADO){
+            documento.setEstatus(EstadoCarpeta.INTEGRADO);
+            documentoRepository.save(documento);
+
+            return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
+        }
+
+        throw new ConflictException("No se puede integrar la promoción");
+    }
+
+    @Transactional
+    public void saveSentenciaPublica(Integer idDocumento, MultipartFile multipartFile) {
+        Persona auditor = personaService.getAuditor();
+
+        Documento docSentencia = documentoRepository.findById(idDocumento)
+                .orElseThrow(()->new NotFoundException(DOC_NOT_FOUND, idDocumento.toString()));
+
+        Documento docSentenciaPublica= new Documento();
+        docSentenciaPublica
+                .setCarpeta(docSentencia.getCarpeta())
+                .setPersona(auditor)
+                .setTipoDocumento(TipoDocumento.SENTENCIA_PUBLICA)
+                .setAcuerdoRespuesta(docSentencia);
+        docSentenciaPublica = documentoRepository.save(docSentenciaPublica);
+
+        digitalizacionService.guardarArchivo(multipartFile, docSentenciaPublica.getId());
+    }
+
+    public AmparoGetRecord getAmparoById(Integer id) {
+        Documento documento = documentoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+        
+        Carpeta carpeta = carpetaRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Documento no encontrado con id: " + id));
+            
+        Integer carpetaId = carpeta.getId();
+        DocumentoData data = documento.getData(); 
+        
+        return new AmparoGetRecord(
+            carpetaId,
+            data.getAmparoTipo(),
+            data.getAmparoFechaPresentacion(),    
+            data.getAmparoFechaTermino(),         
+            data.getAmparoImpugnacion(),          
+            data.getAmparoSentido(),              
+            data.getAmparoSentidoImpugnacion(),   
+            data.getAmparoQuejoso(),              
+            data.getAmparoTribunalId(),           
+            data.getAmparoSalaId()
+        );
+    }
+
+    public void updateAmparoData(Integer id, AmparoUpdateRecord amparoUpdateRecord) {
+        Documento documento = documentoRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Documento not found with id: " + id));
+        
+        DocumentoData data = documento.getData();
+        
+        data.setAmparoFechaPresentacion(amparoUpdateRecord.fechaPresentacion());
+        data.setAmparoFechaTermino(amparoUpdateRecord.fechaTermino());
+        data.setAmparoImpugnacion(amparoUpdateRecord.impugnacion());
+        data.setAmparoSentido(amparoUpdateRecord.sentidoAmparo());
+        data.setAmparoSentidoImpugnacion(amparoUpdateRecord.sentidoImpugnacion());
+        data.setAmparoQuejoso(amparoUpdateRecord.quejoso());
+        data.setAmparoTribunalId(amparoUpdateRecord.tribunalId());
+        data.setAmparoSalaId(amparoUpdateRecord.salaId());
+        data.setAmparoTipo(amparoUpdateRecord.tipoAmparo());
+       
+        documentoRepository.save(documento);
+    }
+}

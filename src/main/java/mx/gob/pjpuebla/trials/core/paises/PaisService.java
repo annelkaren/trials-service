@@ -20,7 +20,7 @@ public class PaisService {
     public List<PaisRecord> getAll() {
         List<Pais> paisList = paisRepository.findAll();
         return paisList.stream()
-                .map(p -> new PaisRecord(p.getNombreComun(), p.getKey(), p.getId().toString()))
+                .map(p -> new PaisRecord(p.getNombreComun(), p.getKey(), p.getId().toString(), p.getId()))
                 .sorted(Comparator.comparing(PaisRecord::nombre)).toList();
     }
 

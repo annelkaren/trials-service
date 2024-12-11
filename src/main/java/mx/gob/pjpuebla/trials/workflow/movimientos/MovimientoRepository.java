@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import java.util.List;
 import java.util.UUID;
 
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -72,6 +73,45 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 FROM Movimiento m
                 LEFT JOIN m.carpeta c
                 LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                JOIN FETCH m.persona p
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                    (c IS NOT NULL AND c.estatus = :estado)
+                    OR (d IS NOT NULL AND d.estatus = :estado)
+                )
+                AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                )
+                AND m.estado = :motivos
+                AND m.destino = :personaId
+                AND (
+                    (c IS NOT NULL AND jc.id = :juzgadoId)
+                    OR (d IS NOT NULL AND jcd.id = :juzgadoId)
+                )
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
+                    OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                )
+            """)
+    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key, String motivos, Persona personaId);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
                 LEFT JOIN jc.materia mat
                 LEFT JOIN m.documento d
                 LEFT JOIN d.carpeta cd
@@ -103,8 +143,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 LEFT JOIN m.juzgado j
                 LEFT JOIN m.oficialia o
                 WHERE (
-                    (c IS NOT NULL AND c.estatus IN (0))
-                    OR (d IS NOT NULL AND d.estatus IN (0))
+                    (c IS NOT NULL AND c.estatus IN (0,12))
+                    OR (d IS NOT NULL AND d.estatus IN (0,12))
                 )
                  AND m.fechaAsignacion = (
                     SELECT MAX(m2.fechaAsignacion)
@@ -113,13 +153,14 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
                 )
-                AND m.estado IN ('CAPTURA')
+                AND m.estado IN ('CAPTURA','EDICION')
                 AND ( o.id = :oficialiaId OR j.id = :juzgadoId )
                 AND (
                     LOWER(c.folio) LIKE %:key%
                     OR LOWER(d.folio) LIKE %:key%
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(c.juzgado.nombre) LIKE %:key%
                 )
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable);
@@ -127,4 +168,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
     Movimiento findFirstByDocumentoIdOrderByIdAsc(Integer carpetaId);
+
+    List<Movimiento> findByCarpetaIdAndEstadoInOrderByIdAsc(Integer carpetaId, List<String> estados);
 }

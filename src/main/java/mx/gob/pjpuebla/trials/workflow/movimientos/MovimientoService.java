@@ -4,8 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -41,11 +40,23 @@ public class MovimientoService {
         return movimiento;
     }
 
-    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones, String motivo) {
+    public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado, String observaciones, String recomendaciones, String motivo, String concepto, String duracion) {
         Persona personaAuditor = personaService.getAuditor();
         Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, motivo, estado)
                 .setObservaciones(observaciones)
-                .setRecomendaciones(recomendaciones);
+                .setRecomendaciones(recomendaciones)
+                .setConcepto(concepto)
+                .setDuracion(duracion);
+
+        movimiento = movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
+    public Movimiento createMovimentoTurnado(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, String concepto, Persona destino, String duracion) {
+        Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado)
+                .setConcepto(concepto)
+                .setDestino(destino)
+                .setDuracion(duracion);
         movimiento = movimientoRepository.save(movimiento);
         return movimiento;
     }
@@ -64,6 +75,10 @@ public class MovimientoService {
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos) {
         return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos);
+    }
+
+    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key, String motivos, Persona personaId) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {
@@ -97,5 +112,30 @@ public class MovimientoService {
             return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre() : movimiento.getJuzgado().getNombre();
         }
         return "";
+    }
+
+    public List<TurnadoMovimientoRecord> getTurnadoMovimientos(Integer carpetaId) {
+        List<TurnadoMovimientoRecord> movimientoRecords = new ArrayList<>();
+        List<Movimiento> list = movimientoRepository.findByCarpetaIdAndEstadoInOrderByIdAsc(carpetaId,
+                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.ASIGNADO.name(), EstadoCarpeta.CAPTURA.name()));
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getEstado().equals(EstadoCarpeta.TURNADO.name()) &&
+                    (i+1)<list.size() && list.get(i + 1).getEstado().equals(EstadoCarpeta.ASIGNADO.name())) {
+                Movimiento origen = list.get(i);
+                Movimiento destino = list.get(i+1);
+                TurnadoMovimientoRecord record = new TurnadoMovimientoRecord(
+                        (origen.getUuid() != null) ? list.get(0).getOficialia().getNombre() : origen.getPersona().getNombre() + " " + origen.getPersona().getApellidoPaterno(),
+                        destino.getPersona().getNombre() + " " + destino.getPersona().getApellidoPaterno(),
+                        origen.getFechaAsignacion().toLocalDate(),
+                        destino.getFechaAsignacion().toLocalDate(),
+                        origen.getConcepto(),
+                        destino.getConcepto(),
+                        (origen.getDuracion().endsWith("h"))? origen.getDuracion().replace("h", " horas"):origen.getDuracion().replace("d","")
+                );
+                movimientoRecords.add(record);
+            }
+        }
+        Collections.reverse(movimientoRecords);
+        return movimientoRecords;
     }
 }

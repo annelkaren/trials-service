@@ -14,5 +14,7 @@ public record DocumentoGridRecord(
         LocalDateTime fechaRegistro,
         SelloEstatus selloEstatus,
         EstadoCarpeta estatus,
-        boolean hasFile) {
+        boolean hasFile,
+        String organoJurisdiccional
+        ) {
 }

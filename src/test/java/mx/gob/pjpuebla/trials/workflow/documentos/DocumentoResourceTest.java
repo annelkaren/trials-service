@@ -5,8 +5,12 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
@@ -27,12 +31,15 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_PDF;
@@ -59,8 +66,18 @@ class DocumentoResourceTest {
     @MockBean
     private OficioService oficioService;
 
+    @MockBean
+    private DocumentoRepository documentoRepository;
+
+    @MockBean
+    private CarpetaRepository carpetaRepository;
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
 
     @Value("classpath:jasper/OficioCarta.jasper")
@@ -95,7 +112,7 @@ class DocumentoResourceTest {
                 demanda.getCarpeta().getExpediente(),
                 "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
                 EstadoCarpeta.CAPTURA,
-                true);
+                true, "Juzgado 1");
 
         given(documentoService.getAll(any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
@@ -212,7 +229,7 @@ class DocumentoResourceTest {
         String materiaNombre = "MERCANTIL";
 
         DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true);
+                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1");
 
         given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
@@ -404,7 +421,8 @@ class DocumentoResourceTest {
                 LocalDate.now(),
                 LocalDate.now(),
                 false,
-                false
+                false,
+                'C'
         );
         given(documentoService.getAllOficios(any(), any()))
                 .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));
@@ -567,5 +585,147 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void createExhortoSalida() throws Exception {
+        String documentoExhortoSalidaRecordJson = """
+            {
+                "carpetaId": "1",
+                "destino": "Juzgado 1",
+                "tramite": "Nombre del exhorto",
+                "observaciones": "Sin observaciones",
+                "fechaEntrega": "2024-01-01",
+                "fechaDevolucion": "2024-01-02"
+            }
+        """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile documentoExhortoSalidaRecord = new MockMultipartFile(
+                "documentoExhortoSalida",
+                "documentoExhortoSalida",
+                "application/json",
+                documentoExhortoSalidaRecordJson.getBytes()
+        );
+        DocumentoPromocionResponseRecord expectedResponse = new DocumentoPromocionResponseRecord(1, "12345", TipoDocumento.EXHORTO_SALIDA);
+        given(documentoService.createExhortoSalida(any(DocumentoExhortoSalidaRecord.class), any(MultipartFile.class)))
+                .willReturn(expectedResponse);
+        mockMvc.perform(multipart("/api/workflow/exhorto/salida")
+                        .file(file)
+                        .file(documentoExhortoSalidaRecord)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("12345"))
+                .andExpect(jsonPath("$.tipoDocumento").value(TipoDocumento.EXHORTO_SALIDA.name()));
+    }
+
+    @Test
+    void testAdjuntarPromocion() throws Exception{
+        DocumentoPromocionResponseRecord responseRecord = new DocumentoPromocionResponseRecord(10,"1", TipoDocumento.PROMOCION);
+
+        given(documentoService.adjuntarPromocion(anyInt())).willReturn(responseRecord);
+
+        mockMvc.perform(post("/api/workflow/documentos/promocion/10/adjuntar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    void saveSentenciaPublica() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/workflow/documentos/sentencia/publica/" + 1)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAmparoById_Found() throws Exception {
+        Documento documento = new Documento();
+        documento.setId(1);
+
+        DocumentoData data = new DocumentoData();
+        data.setAmparoTipo("AmparoTipo");
+        data.setAmparoFechaPresentacion(LocalDate.of(2022, 1, 1));
+        data.setAmparoFechaTermino(LocalDate.of(2022, 12, 31));
+        data.setAmparoImpugnacion(1);
+        data.setAmparoSentido("Sentido");
+        data.setAmparoSentidoImpugnacion("Sentido de impugnación");
+        data.setAmparoQuejoso("Quejoso");
+        data.setAmparoTribunalId(123);
+        data.setAmparoSalaId(456);
+        
+        Carpeta carpeta = new Carpeta();
+        carpeta.setId(52);
+        documento.setCarpeta(carpeta);
+    
+        documento.setData(data);
+    
+        given(documentoService.getAmparoById(1)).willReturn(new AmparoGetRecord(
+            carpeta.getId(),
+            data.getAmparoTipo(),
+            data.getAmparoFechaPresentacion(),
+            data.getAmparoFechaTermino(),
+            data.getAmparoImpugnacion(),
+            data.getAmparoSentido(),
+            data.getAmparoSentidoImpugnacion(),
+            data.getAmparoQuejoso(),
+            data.getAmparoTribunalId(),
+            data.getAmparoSalaId()
+        ));
+    
+        mockMvc.perform(get("/api/workflow/documentos/amparo/{id}", 1)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()) // Verifica que sea un 200 OK
+                .andExpect(jsonPath("$.carpetaId").value(52)) // Verifica el id de la carpeta en la respuesta
+                .andExpect(jsonPath("$.tipoAmparo").value("AmparoTipo"));
+    }
+
+    @Test
+    void getAmparoById_NotFound() throws Exception {
+        given(documentoService.getAmparoById(1)).willReturn(null);
+
+        mockMvc.perform(
+                get("/api/documentos/amparo/1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void updateAmparoData_Success() throws Exception {
+        AmparoUpdateRecord amparoUpdate = new AmparoUpdateRecord(
+                LocalDate.of(2024, 12, 8),
+                LocalDate.of(2025, 12, 8),
+                1,
+                "Sentido de amparo",
+                "Sentido de impugnacion",
+                "Juan Perez",
+                2,
+                3,
+                "Amparo Directo"
+        );
+    
+        doNothing().when(documentoService).updateAmparoData(1, amparoUpdate);
+    
+        mockMvc.perform(
+                put("/api/workflow/documentos/amparo/update/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(amparoUpdate)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Documento actualizado con éxito"));
+    }
 
 }

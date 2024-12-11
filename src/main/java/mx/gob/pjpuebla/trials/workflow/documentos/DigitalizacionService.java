@@ -50,6 +50,9 @@ import java.util.UUID;
  * EXHORTO (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}
  * </p>
+ * SENTENCIA PUBLICA (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
+ * </p>
  */
 @Slf4j
 @Service
@@ -78,12 +81,21 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : null;
+        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
             return manejarOficio(documento, year, juzgado, oficialia);
+        }
+
+        if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
+            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
+        }
+
+        // Revisar la ruta para los documentos de una pieza
+        if (carpeta.getTipoCarpeta()==TipoCarpeta.PIEZA){
+            carpeta = carpeta.getCarpetaPadre();
         }
 
         return manejarCarpeta(carpeta, year, juzgado);
@@ -179,7 +191,6 @@ public class DigitalizacionService {
         String tipoOficio = documento.getData().getTipoOficio();
 
         if ("Administrativo".equals(tipoOficio)) {
-
             return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
@@ -246,13 +257,14 @@ public class DigitalizacionService {
      */
     private String obtenerJuzgado(Documento documento) {
         Persona persona = personaService.getAuditor();
+        String nombreCentroTrabajo = "";
 
-        if (persona.getJuzgado() == null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.OFICIO)) {
-            return null;
+        if(persona.getJuzgado() == null && persona.getOficialia()!=null){
+            nombreCentroTrabajo = persona.getOficialia().getNombre();
         }
 
-        return (documento.getCarpeta() == null ? persona.getJuzgado().getNombre()
-                : documento.getCarpeta().getJuzgado().getNombre()).replaceAll(" ", "");
+        return (documento.getCarpeta() == null ? nombreCentroTrabajo
+                : documento.getCarpeta().getJuzgado().getNombre()).replace(" ", "");
     }
 
     /**
