@@ -13,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -22,7 +21,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
@@ -65,9 +63,6 @@ public class Institucion implements Serializable, Auditable {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Domicilio domicilio;
 
-    @JoinColumn(name = "FN_DISTRITO", referencedColumnName = "PN_ID", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Distrito distrito;
 
     @Size(max = 30)
     @Column(name = "S_TIPO_INSTITUCION")

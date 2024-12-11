@@ -56,25 +56,20 @@ class InstitucionServiceTest {
     InstitucionService mockInstitucionService;
 
     private Institucion institucion;
-    private InstitucionRecord institucionRecord;
     private InstitucionRecordResponse institucionRecordResponse;
-    private Distrito distrito;
     private Domicilio domicilio;
 
     @BeforeEach
     public void setUp() {
         institucion = InstitucionSetUp.createInstitucion(Estado.ACTIVE);
-        institucionRecord = InstitucionSetUp.createInstitucionRecord();
         institucionRecordResponse = InstitucionSetUp.createInstitucionRecordResponse();
 
-        distrito = DistritoSetUp.createDistrito();
         domicilio = DomicilioSetUp.createDomicilio();
     }
 
 
     @Test
     void getAll_return_page() {
-        institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
 
         List<Institucion> listPage = Collections.singletonList(institucion);
@@ -131,11 +126,8 @@ class InstitucionServiceTest {
     void create() {
         given(mockInstitucionRepository.findByNombre(institucion.getNombre()))
                 .willReturn(Optional.empty());
-        institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
 
-        given(mockDistritoRepository.findById(distrito.getId()))
-                .willReturn(Optional.of(distrito));
         given(mockDomicilioRepository.save(domicilio))
                 .willReturn(domicilio);
         given(mockInstitucionRepository.save(institucion))
@@ -149,11 +141,7 @@ class InstitucionServiceTest {
     @Test
     void update_success() {
 
-        institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
-
-        given(mockDistritoRepository.findById(distrito.getId()))
-                .willReturn(Optional.of(distrito));
 
         given(mockDomicilioRepository.save(domicilio))
                 .willReturn(domicilio);
@@ -168,12 +156,8 @@ class InstitucionServiceTest {
 
     @Test
     void update_return_optimistic_exception() {
-        institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
         institucion.setVersion(8);
-
-        given(mockDistritoRepository.findById(distrito.getId()))
-                .willReturn(Optional.of(distrito));
 
         given(mockDomicilioRepository.save(domicilio))
                 .willReturn(domicilio);
@@ -212,7 +196,6 @@ class InstitucionServiceTest {
 
     @Test
     void getAllByEstadoAutocomplete_return_page() {
-        institucion.setDistrito(distrito);
         institucion.setDomicilio(domicilio);
         institucion.setEstado(Estado.ACTIVE);
 

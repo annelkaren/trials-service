@@ -7,9 +7,10 @@ import java.io.Serializable;
 @Data
 @Table(name = "TBL_DOCUMENTO_CONTENIDO")
 public class DocumentoContenido implements Serializable {
+
     @Id
-    @SequenceGenerator(name = "idDocContenido", sequenceName = "SEQ_DOC_CONTENIDO_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocContenido")
+    @SequenceGenerator(name = "idDocContenido", sequenceName = "SEQ_DOC_CONTENIDO_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -140,4 +140,13 @@ class SalaRepositoryTest extends AuditConfigTest {
         assertThat(salas).isPresent();
     }
 
+    @Test
+    void testFindByJuzgadoAndNombreContainingIgnoreCase() {
+        Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(juzgado).isNotNull();
+        List<Sala> result = salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "");
+        assertThat(result).isNotNull();
+    }
+
+
 }

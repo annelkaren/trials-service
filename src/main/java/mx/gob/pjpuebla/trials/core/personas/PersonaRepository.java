@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -54,15 +55,32 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<Persona> findByUsuarioAndJuzgadoIdAndEstadoIn(String usuario, Integer juzgadoId, List<Estado> estados);
 
     @Query("""
-            SELECT p FROM Persona p
-            WHERE CASE
-                WHEN p.juzgado IS NULL AND p.oficialia IS NULL THEN 1
-                WHEN :oficialiaId IS NOT NULL AND p.oficialia.id = :oficialiaId THEN 1
-                WHEN :juzgadoId IS NOT NULL AND p.juzgado.id = :juzgadoId THEN 1
-                ELSE 0
-            END = 1
-            """)
-    Page<Persona> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
+    SELECT p FROM Persona p
+    LEFT JOIN p.oficialia o
+    LEFT JOIN p.juzgado j
+    WHERE (
+        :searchTerm IS NULL OR
+        LOWER(TRANSLATE(p.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(p.apellidoPaterno, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(p.apellidoMaterno, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(p.correoElectronico, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(j.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(o.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) OR
+        LOWER(TRANSLATE(p.celular, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) LIKE LOWER(TRANSLATE(CONCAT('%', :searchTerm, '%'), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN'))
+    )
+    AND (
+        CASE
+            WHEN :oficialiaId IS NOT NULL AND p.oficialia.id = :oficialiaId THEN true
+            WHEN :juzgadoId IS NOT NULL AND p.juzgado.id = :juzgadoId THEN true
+            ELSE true
+        END
+    )
+""")
+    Page<Persona> findByCentroTrabajoAndSearch(
+            @Param("searchTerm") String searchTerm,
+            @Param("oficialiaId") Integer oficialiaId,
+            @Param("juzgadoId") Integer juzgadoId,
+            Pageable pageable);
 
-    Page<Persona> findByJuzgadoId(Integer juzgadoId, Pageable pageable);
+    List<Persona> findByJuzgadoId(Integer juzgadoId);
 }

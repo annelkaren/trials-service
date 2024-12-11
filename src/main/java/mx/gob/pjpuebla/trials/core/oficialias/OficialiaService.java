@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -116,6 +119,10 @@ public class OficialiaService {
         }
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
+        Optional<Oficialia> test = oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre());
+        if (test.isPresent() && !Objects.equals(test.get().getId(), oficialia.getId())) {
+            throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
+        }
         try {
             Oficialia existingOficialia = oficialiaRepository.findById(oficialia.getId())
                     .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId"));
@@ -167,15 +174,15 @@ public class OficialiaService {
 
 
     @Transactional(readOnly = true)
-    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(Pageable pageable) {
-        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(pageable);
-
-        return new PageImpl<>(oficialias.stream().map(o -> 
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(String searchQuery, Pageable pageable) {
+        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(searchQuery , pageable);
+        
+        return new PageImpl<>(oficialias.stream().map(o ->
             new OficialiaMateriaRecord(
                 o.getId(), 
                 o.getNombre(), 
                 o.getEstado(), 
-                String.join(", ", o.getMaterias().stream().map(m->m.getNombre()).toList()), 
+                String.join(", ", o.getMaterias().stream().map(m-> StringUtils.capitalize(m.getNombre().toLowerCase())).toList()),
                 o.getMaterias().stream().map(m->m.getId()).toArray(), 
                 o.getSede().getId(), 
                 o.getTipoOficialia().getNombre(), 

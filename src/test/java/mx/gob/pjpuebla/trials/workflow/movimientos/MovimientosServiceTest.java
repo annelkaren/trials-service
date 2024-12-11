@@ -22,7 +22,7 @@ import org.mockito.Mock;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,22 +34,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Arrays;
-import java.util.UUID;
+import java.util.*;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+
 @ExtendWith(MockitoExtension.class)
 class MovimientosServiceTest {
 
     @Mock
     MovimientoRepository movimientoRepository;
-    
     @Mock
     PersonaService personaService;
     @Mock
     DocumentoRepository documentoRepository;
-
     @Mock
     CarpetaRepository carpetaRepository;
 

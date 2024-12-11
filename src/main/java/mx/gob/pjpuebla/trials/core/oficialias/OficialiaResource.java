@@ -20,9 +20,10 @@ public class OficialiaResource {
     public Page<OficialiaMateriaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "searchQuery", required = false) String searchQuery,
             @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId
     ) {
-        return this.oficialiaService.getAllByOficialiaMateria(pageable);
+        return this.oficialiaService.getAllByOficialiaMateria(searchQuery, pageable);
     }
 
     @GetMapping("/{id}")

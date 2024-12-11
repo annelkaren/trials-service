@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.personadetalle;
 
 
+import mx.gob.pjpuebla.trials.core.paises.Pais;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_CARPETAS.sql",
         "/scripts/INSERT_TIPO_PARTES.sql",
         "/scripts/INSERT_PERSONAS_DOCUMENTOS.sql",
+        "/scripts/INSERT_PAISES.sql",
         "/scripts/INSERT_PERSONADETALLE.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
@@ -67,8 +69,9 @@ class PersonaDetalleRepositoryTest extends AuditConfigTest {
     void findDistritoJuzgadoByDocumentoId(){
         Optional<PersonaDetalle> entity = personaDetalleRepository.findByPersonaDocumentoId(1);
         assertThat(entity).isNotNull();
-        assertThat(entity.get().getPaisNacimiento()).isEqualTo("México");
+        Pais pais = entity.get().getPaisNacimiento();
+        String name = pais.getNombreComun();
+        assertThat(name).isEqualTo("México");
         assertThat(entity.get().getRfc()).isEqualTo("ABC1234567890");
-    }
-
+    }     
 }

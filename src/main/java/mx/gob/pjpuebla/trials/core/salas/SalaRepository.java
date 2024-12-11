@@ -48,6 +48,24 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
             """)
     List<SalaRecord> findByAllEstado(List<Estado> estados);
 
+    @Query("""
+        SELECT
+           new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
+           s.id,
+           s.nombre,
+           juez.nombre || " " || juez.apellidoPaterno || " " || juez.apellidoMaterno,
+           j.nombre,
+           new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal),
+           s.estado
+       )
+       FROM Sala s
+       LEFT JOIN s.juez juez
+       LEFT JOIN s.juzgado j
+       LEFT JOIN s.bloque b
+       WHERE s.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE AND j.id = :juzgadoId
+       """)
+List<SalaRecord> findByJuzgado(Integer juzgadoId);
+
     long countByJuzgadoId(int juzgadoId);
 
     List<Sala> findAllByJuezId(Long id);
@@ -76,5 +94,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 and a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE)
             """)
     Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
+
+    List<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre);
  
 }

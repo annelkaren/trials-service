@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
@@ -48,6 +49,7 @@ public class SalaService {
     private final TipoPartesRepository tipoPartesRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final EventoService eventoService;
+    private final PersonaService personaService;
     private static final Integer TIEMPO_ESPERA_AUDIENCIA =  3;
 
     @Transactional(readOnly = true)
@@ -73,6 +75,13 @@ public class SalaService {
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
 
+    }
+
+    public List<SalaRecord> getAllByJuzgado(){
+        //Traemos las salas relacionadas al juzgado de la persona logueda.
+        Integer juzgadoId = personaService.getAuditor().getJuzgado().getId();
+
+        return salaRepository.findByJuzgado(juzgadoId);
     }
 
     @Transactional(readOnly = true)
@@ -264,6 +273,28 @@ public class SalaService {
             return Boolean.TRUE;
 
         return Boolean.FALSE;
+    }
+
+    @Transactional(readOnly = true)
+    public List<SalaRecord> getAllbyJuzgado(String nombre, Integer idAudiencia) {
+
+        Audiencia audiencia = audienciaRepository.findById(idAudiencia)
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        Juzgado juzgado = audiencia.getCarpeta().getJuzgado();
+
+        List<Sala> salas = salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, nombre);
+
+        return salas.stream()
+                .map(sala -> new SalaRecord(
+                        sala.getId(),
+                        sala.getNombre(),
+                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno() : ""),
+                        sala.getJuzgado().getNombre(),
+                        new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
+                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
+                        sala.getEstado()))
+                .toList();
     }
 
 }

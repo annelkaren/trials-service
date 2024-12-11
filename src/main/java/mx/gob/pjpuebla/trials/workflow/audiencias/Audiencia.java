@@ -29,6 +29,7 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -41,8 +42,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 public class Audiencia implements  Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudiencia")
+    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
@@ -73,6 +74,9 @@ public class Audiencia implements  Serializable, Auditable {
     @Column(name="T_HORA_FIN")
     private LocalDateTime fin;
 
+    @Column(name = "S_DESCRIPCION")
+    private String descripcion;
+
     @NotNull
     @Enumerated
     @Column(name="N_ESTATUS_AUDIENCIA")
@@ -93,6 +97,13 @@ public class Audiencia implements  Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO")
     private Estado estado;
+
+    @Enumerated
+    @Column(name="N_MOTIVO_RETRASO")
+    private CatalogoMotivosRetrasoAudiencias motivoRetrasoAudiencias;
+
+    @Column(name = "S_RESULTADOS_DESAHOGO")
+    private String resultadosDesahogo;
 
     @Accessors(chain = false)
     @Embedded

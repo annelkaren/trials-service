@@ -7,22 +7,27 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.util.List;
@@ -226,5 +231,49 @@ public class DocumentoResource {
         return ResponseEntity.ok(editDocumento);
     }
 
+    @PostMapping(value = "/exhorto/salida", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DocumentoPromocionResponseRecord createExhortoSalida(
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart("documentoExhortoSalida") String documentoExhortoSalidaRecordJson
+    ) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        DocumentoExhortoSalidaRecord documentoExhortoSalidaRecord =
+                objectMapper.readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
+        return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
+    }
 
-}
+    @PostMapping(value = "/documentos/promocion/{promocionId}/adjuntar")
+    public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId){
+        return documentoService.adjuntarPromocion(promocionId);
+    }
+    
+    @PostMapping(value = "/documentos/sentencia/publica/{docId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void saveSentenciaPublica(
+            @RequestPart("file") MultipartFile file,
+            @PathVariable("docId")  Integer docId
+    ){
+        documentoService.saveSentenciaPublica(docId, file);
+    }
+
+    @GetMapping("/documentos/amparo/{id}") 
+    public ResponseEntity<AmparoGetRecord> getAmparoById(@PathVariable Integer id) {
+        AmparoGetRecord amparoRecord = documentoService.getAmparoById(id);
+        if (amparoRecord == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(amparoRecord);
+    }
+
+    @PutMapping("/documentos/amparo/update/{id}")
+    public ResponseEntity<String> updateAmparoData(@PathVariable Integer id, @RequestBody AmparoUpdateRecord amparoUpdate) {
+        try {
+            documentoService.updateAmparoData(id, amparoUpdate);
+            return ResponseEntity.ok("Documento actualizado con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Documento no encontrado con ID: " + id);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el documento");
+        }
+    }
+} 

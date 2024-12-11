@@ -5,10 +5,9 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
+import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
@@ -29,16 +28,20 @@ import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -49,6 +52,8 @@ public class AudienciaService {
     private final BloqueRepository bloqueRepository;
     private final EtiquetaRepository etiquetaRepository;
     private final PersonaService personaService;
+    private final TipoAudienciaRepository tipoAudienciaRepository;
+    private final CarpetaRepository carpetaRepository;
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -70,16 +75,22 @@ public class AudienciaService {
 
     public ExtraAudienciaSelloRecord getAudienciaAndSalaAndDomicilio(Documento documento) {
         String nombreJuez = "";
-        AudienciaOralidadFamiliarRecord audienciaOralidadFamiliarRcord =
-                audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(documento.getCarpeta().getId());
+        AudienciaOralidadFamiliarRecord audienciaOralidadFamiliarRcord = audienciaRepository
+                .getJuzAndSalaAndAudienciaByIdcarpeta(documento.getCarpeta().getId());
 
-        String fechaFormateada = (audienciaOralidadFamiliarRcord != null) ?
-                audienciaOralidadFamiliarRcord.fechaAudiencia().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+        String fechaFormateada = (audienciaOralidadFamiliarRcord != null)
+                ? audienciaOralidadFamiliarRcord.fechaAudiencia()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                : "";
 
         if (audienciaOralidadFamiliarRcord == null) {
             audienciaOralidadFamiliarRcord = new AudienciaOralidadFamiliarRecord("", "", "", "", "", LocalDateTime.MIN);
         } else {
-            nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " " + audienciaOralidadFamiliarRcord.apellidoPaterno() + " " + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null ? audienciaOralidadFamiliarRcord.apellidoMaterno() : "");
+            nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " "
+                    + audienciaOralidadFamiliarRcord.apellidoPaterno() + " "
+                    + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null
+                            ? audienciaOralidadFamiliarRcord.apellidoMaterno()
+                            : "");
         }
 
         String calle = Optional.of(documento)
@@ -96,8 +107,7 @@ public class AudienciaService {
                 audienciaOralidadFamiliarRcord.nombreSala(),
                 audienciaOralidadFamiliarRcord.nombreTipoJuicio(),
                 fechaFormateada,
-                label
-        );
+                label);
     }
 
     public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(String key, Pageable pageable) {
@@ -109,7 +119,8 @@ public class AudienciaService {
 
         List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
                 .map(item -> {
-                    String nombreCompleto = item.getSala().getJuez().getNombre() + " " + item.getSala().getJuez().getApellidoPaterno();
+                    String nombreCompleto = item.getSala().getJuez().getNombre() + " "
+                            + item.getSala().getJuez().getApellidoPaterno();
 
                     if (item.getSala().getJuez().getApellidoMaterno() != null) {
                         nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
@@ -122,7 +133,8 @@ public class AudienciaService {
                             item.getCarpeta().getExpediente(),
                             item.getSala().getNombre(),
                             item.getFechaAudiencia(),
-                            item.getEstatusAudiencia()
+                            item.getEstatusAudiencia(),
+                            juzgado.getId()
                     );
                 })
                 .toList();
@@ -158,5 +170,133 @@ public class AudienciaService {
         } catch (DataIntegrityViolationException ex) {
             throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
         }
+    }
+
+    public AudienciasResponseRecord createAudiencia(AudienciaSaveRecord audiencia) {
+
+        // TODO: AGREGAR VALIDACIÓN DE LA AGENDA ANTES DE EJECUTAR EL GUARDADO
+
+        // Obtenemos sala:
+        Sala sala = salaRepository.findById(audiencia.salaId())
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        // obtenemos el tipo de audiencias:
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        // Obtenemos carpeta:
+        Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
+                .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));
+        
+        //Transformacion de fecha hora para empatar con el tipo de dato de la entidad
+        LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
+
+        Audiencia audienciaNew = new Audiencia()
+                .setFechaAudiencia(fechaHora)
+                .setSala(sala)
+                .setInicio(fechaHora)
+                .setFin(fechaHora.plusMinutes(audiencia.duracion()))
+                .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
+                .setTipoAudiencia(tipoAudiencia)
+                .setCarpeta(carpeta)
+                .setEstado(Estado.ACTIVE)
+                .setDescripcion(audiencia.descripcion());
+
+        audienciaRepository.save(audienciaNew);
+
+        return new AudienciasResponseRecord(audienciaNew.getId(), EstatusAudiencia.PROGRAMADA);
+    }
+
+    public List<String> getEstatusAudiencias() {
+        return Arrays.stream(EstatusAudiencia.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+    }
+
+    public void setHoraAudiencias(Integer id, LocalDateTime hora, Boolean isInicio) {
+        try {
+            Audiencia audiencia = audienciaRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+
+            if(isInicio) {
+                audiencia.setInicio(hora);
+                audienciaRepository.save(audiencia);
+            } else {
+                audiencia.setFin(hora);
+                audienciaRepository.save(audiencia);
+            }
+
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
+        }
+    }
+
+    public void audienciaTabGeneral (AudienciaTabGeneralRecord audienciaTab) {
+
+        Audiencia audiencia = audienciaRepository.findById(audienciaTab.idAudiencia())
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audienciaTab.idTipoAudiencia())
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        Sala sala = salaRepository.findById(audienciaTab.idSala())
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        audiencia.setTipoAudiencia(tipoAudiencia);
+        audiencia.setSala(sala);
+        audiencia.setEstatusAudiencia(audienciaTab.estatusAudiencia());
+
+        if(audienciaTab.motivoRetraso() != null){
+            audiencia.setMotivoRetrasoAudiencias(audienciaTab.motivoRetraso());
+        }
+
+        if(audienciaTab.resultadoDesahogo() != null){
+            audiencia.setResultadosDesahogo(audienciaTab.resultadoDesahogo());
+        }
+
+        if(audienciaTab.actores() == null){
+            audiencia.setAsisteActor(Asistencia.SI);
+            audiencia.setAsisteDemandano(Asistencia.SI);
+        } else {
+            if(Objects.equals(audienciaTab.actores(), "ACTOR")){
+                audiencia.setAsisteActor(Asistencia.NO);
+            } else if (Objects.equals(audienciaTab.actores(), "DEMANDADO")) {
+                audiencia.setAsisteDemandano(Asistencia.NO);
+            } else if (Objects.equals(audienciaTab.actores(), "AMBOS")) {
+                audiencia.setAsisteActor(Asistencia.NO);
+                audiencia.setAsisteDemandano(Asistencia.NO);
+            }
+        }
+        audienciaRepository.save(audiencia);
+    }
+
+    public AudienciasResponseRecord reprogramarAudiencia(ReprogramarAudienciaRecord audiencia) {
+        Audiencia audienciaReprogramar = audienciaRepository.findById(audiencia.audienciaId())
+                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+
+        Sala sala = salaRepository.findById(audiencia.salaId())
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
+                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+
+        Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
+
+        LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
+
+        audienciaReprogramar.setFechaAudiencia(fechaHora);
+        audienciaReprogramar.setSala(sala);
+        audienciaReprogramar.setInicio(fechaHora);
+        audienciaReprogramar.setFin(fechaHora.plusMinutes(audiencia.duracion()));
+        audienciaReprogramar.setEstatusAudiencia(EstatusAudiencia.DIFERIDA);
+        audienciaReprogramar.setTipoAudiencia(tipoAudiencia);
+        audienciaReprogramar.setCarpeta(carpeta);
+        audienciaReprogramar.setEstado(Estado.ACTIVE);
+        audienciaReprogramar.setDescripcion(audiencia.descripcion());
+
+        audienciaRepository.save(audienciaReprogramar);
+
+        return new AudienciasResponseRecord(audienciaReprogramar.getId(), EstatusAudiencia.DIFERIDA);
     }
 }

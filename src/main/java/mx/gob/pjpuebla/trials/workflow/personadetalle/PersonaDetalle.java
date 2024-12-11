@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.escolaridades.Escolaridad;
 import mx.gob.pjpuebla.trials.core.lenguasindigenas.LenguaIndigena;
 import mx.gob.pjpuebla.trials.core.nacionalidades.Nacionalidad;
+import mx.gob.pjpuebla.trials.core.paises.Pais;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 
 @Data
@@ -47,6 +48,10 @@ public class PersonaDetalle implements Serializable {
     @JoinColumn(name = "FN_DOMICILIO")
     private Domicilio domicilio;
 
+    @ManyToOne
+    @JoinColumn(name = "FN_EN_REPRESENTACION_DE")
+    private PersonaDocumento enRepresentacionDe;
+
     @Column(name = "S_SEXO")
     private String sexo;
 
@@ -54,8 +59,9 @@ public class PersonaDetalle implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date fechaNacimiento;
 
-    @Column(name = "S_PAIS_NACIMIENTO")
-    private String paisNacimiento;
+    @ManyToOne
+    @JoinColumn(name = "FN_PAIS_NACIMIENTO")
+    private Pais paisNacimiento;
 
     @Column(name = "S_MUNICIPIO_NACIMIENTO")
     private String municipioNacimiento;
@@ -66,20 +72,20 @@ public class PersonaDetalle implements Serializable {
     @Column(name = "N_EDAD")
     private Integer edad;
 
-    @Column(name = "N_TIPO_DOMICILIO")
-    private Integer tipoDomicilio;
+    @Column(name = "S_TIPO_DOMICILIO")
+    private String tipoDomicilio;
 
     @Column(name = "S_RFC", length = 13)
     private String rfc;
 
-    @Column(name = "N_DISCAPACIDAD")
-    private Integer discapacidad;
+    @Column(name = "S_DISCAPACIDAD")
+    private String discapacidad;
 
-    @Column(name = "N_ESTADO_CIVIL")
-    private Integer estadoCivil;
+    @Column(name = "S_ESTADO_CIVIL")
+    private String estadoCivil;
 
-    @Column(name = "N_CONDICION_MIGRATORIA")
-    private Integer condicionMigratoria;
+    @Column(name = "S_CONDICION_MIGRATORIA")
+    private String condicionMigratoria;
 
     @Column(name = "B_HABLA_ESPANOL")
     private Boolean hablaEspanol;
@@ -87,20 +93,20 @@ public class PersonaDetalle implements Serializable {
     @Column(name = "S_LENGUA_EXTRANJERA")
     private String lenguaExtranjera;
 
-    @Column(name = "N_GRUPO_VULNERABLE")
-    private Integer grupoVulnerable;
+    @Column(name = "S_GRUPO_VULNERABLE")
+    private String grupoVulnerable;
 
     @Column(name = "B_SABE_LEER_ESCRIBIR")
     private Boolean sabeLeerEscribir;
 
-    @Column(name = "N_PROFESION_OFICIO")
-    private Integer profesionOficio;
+    @Column(name = "S_PROFESION_OFICIO")
+    private String profesionOficio;
 
-    @Column(name = "N_INGRESO_MENSUAL_NETO")
-    private Integer ingresoMensualNeto;
+    @Column(name = "S_INGRESO_MENSUAL_NETO")
+    private String ingresoMensualNeto;
 
-    @Column(name = "N_FRECUENCIA_INGRESO")
-    private Integer frecuenciaIngreso;
+    @Column(name = "S_FRECUENCIA_INGRESO")
+    private String frecuenciaIngreso;
 
     @Column(name = "S_LUGAR_TRABAJO")
     private String lugarTrabajo;
@@ -129,10 +135,37 @@ public class PersonaDetalle implements Serializable {
     @Column(name = "S_CEDULA", length = 13)
     private String cedula;
 
-    @Column(name = "N_TIPO_DEFENSOR")  //ENUM
-    private Integer tipoDefensor;
+    @Column(name = "S_TIPO_DEFENSOR")  //ENUM
+    private String tipoDefensor;
 
     @Column(name = "S_ADSCRIPCION")
     private String adscripcion;
+
+    @Column(name = "B_RECIBE_PERCEPCIONES")
+    private Boolean recibePercepciones;
+
+    @Column(name = "B_HABLA_LENGUA_INDIGENA")
+    private Boolean hablaLenguaIndigena;
+
+    @Column(name = "B_PERTENECE_GRUPO_VULNERABLE")
+    private Boolean perteneceGrupoVulnerable;
+
+    @Column(name = "B_TIENE_BIENES")
+    private Boolean tieneBienes;
+
+    @Column(name = "B_TIENE_SENIAS_PARTICULARES")
+    private Boolean tieneSeniasParticulares;
+
+    @Column(name = "B_PERTENECE_GRUPO_ETNICO")
+    private Boolean perteneceGrupoEtnico;
+
+    @Column(name = "B_TIENE_RELIGION")
+    private Boolean tieneReligion;
+
+    @Column(name = "B_TIENE_DEPENDIENTES_ECONOMICOS")
+    private Boolean tieneDependientes;
+
+    @Column(name = "B_HABLA_LENGUA_EXTRANJERA")
+    private Boolean hablaLenguaExtranjera;
 
 }

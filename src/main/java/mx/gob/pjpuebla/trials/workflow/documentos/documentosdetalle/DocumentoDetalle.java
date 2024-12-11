@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
+import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
@@ -14,8 +16,8 @@ import java.time.LocalDate;
 @Table(name = "TBL_DOCUMENTO_DETALLE")
 public class DocumentoDetalle implements Serializable {
     @Id
-    @SequenceGenerator(name = "idDocDetalle", sequenceName = "SEQ_DOC_DETALLE_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocDetalle")
+    @SequenceGenerator(name = "idDocDetalle", sequenceName = "SEQ_DOC_DETALLE_ID")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
@@ -48,6 +50,16 @@ public class DocumentoDetalle implements Serializable {
 
     @Column(name="S_ETAPA_PROCESAL")
     private String etapaProcesal;
+
+    @Column(name="N_TIPO_SENTENCIA")
+    private TipoSentencia tipoSentencia;
+
+    @Column(name = "N_TIPO_RESOLUCION")
+    private TipoResolucion tipoResolucion;
+
+    @Size(max=600)
+    @Column(name = "S_EXTRACTO_SENTENCIA")
+    private String extractoSentencia;
 
     @Size(max = 150)
     @Column(name = "S_RESUMEN")

@@ -21,7 +21,7 @@ public class DocumentoContenidoSetUp {
                   1,
                    LocalDate.now(), 
                    EstadoCarpeta.ASIGNADO,
-                   EstadoAcuse.CREADO,
+                   "CREADO",
                  "asunto prueba",
                     'c',
                   'S',
