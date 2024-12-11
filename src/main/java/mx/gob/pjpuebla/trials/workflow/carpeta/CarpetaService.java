@@ -38,6 +38,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -76,6 +77,7 @@ public class CarpetaService {
     private final EtapaProcesalRepository etapaProcesalRepository;
     private final RubroRepository rubroRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final MovimientoRepository movimientoRepository;
 
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
@@ -613,7 +615,9 @@ public class CarpetaService {
             throw new ConflictException("No se puede actualizar el estado de la Pieza");
         }
 
-        // TODO agregar validación para cancelar o integrar la Pieza
+        if (estadoPieza == EstadoCarpeta.CANCELADO && validaCancelacionPieza(pieza.getId(), pieza.getAudit().getFechaAlta())==Boolean.FALSE){
+            throw new ConflictException("No es posible la cancelación, fue turnada o tiene documentos publicados");
+        }
 
         List<Documento> documentos = documentoRepository.findByCarpetaId(piezaId);
 
@@ -680,5 +684,18 @@ public class CarpetaService {
                 documentoDetalle.getTipoResolucion().name(),
                 documentoDetalle.getFechaResolucion()
         );
+    }
+
+    public Boolean validaCancelacionPieza(Integer piezaId, LocalDateTime fechaRegistro){
+        //Buscar movimientos
+        Integer movimientos = movimientoRepository.countByCarpetaId(piezaId);
+        Integer numDocumentos = documentoRepository.countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(piezaId, TipoDocumento.ACUERDO, fechaRegistro);
+
+        if(movimientos>1 || numDocumentos>0){
+                return Boolean.FALSE;
+        }
+
+        return Boolean.TRUE;
+
     }
 }

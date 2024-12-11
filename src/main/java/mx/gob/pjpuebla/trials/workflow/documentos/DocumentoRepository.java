@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -310,5 +311,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
               AND c.juzgado.id = :juzgadoId
         """)
     Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento, Integer juzgadoId);
+
+    Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento, LocalDateTime fechaAlta);
 
 }
