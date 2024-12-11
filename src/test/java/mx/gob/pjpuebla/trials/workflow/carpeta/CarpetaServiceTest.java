@@ -35,6 +35,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
@@ -856,6 +857,8 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
         List<Documento> documentos = Collections.singletonList(documento);
 
+        Audit audit = new Audit(LocalDateTime.now(), LocalDateTime.now(), "1", "1");
+
         Carpeta pieza = new Carpeta()
                 .setId(5)
                 .setExpediente(expediente)
@@ -863,6 +866,8 @@ class CarpetaServiceTest {
                 .setTipoPieza(tipoPieza)
                 .setTipoCarpeta(TipoCarpeta.PIEZA);
 
+        pieza.setAudit(audit);
+                
         PiezaRecordResponse response;
 
         given(carpetaRepository.findById(any())).willReturn(Optional.of(pieza));
@@ -941,5 +946,18 @@ class CarpetaServiceTest {
                 .hasFieldOrPropertyWithValue("sentencia", documentoDetalle.getTipoSentencia().name())
                 .hasFieldOrPropertyWithValue("resolucion", documentoDetalle.getTipoResolucion().name())
                 .hasFieldOrPropertyWithValue("fechaResolucion", documentoDetalle.getFechaResolucion());
+    }
+
+    @Test
+    void validaCancelacionPieza(){
+
+        Integer piezaId = 1;
+        LocalDateTime fecha = LocalDateTime.now();
+        given(movimientoRepository.countByCarpetaId(anyInt())).willReturn(1);
+        given(documentoRepository.countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(piezaId, TipoDocumento.ACUERDO, fecha)).willReturn(0);
+
+        Boolean result = target.validaCancelacionPieza(piezaId, fecha);
+
+        assertThat(result).isTrue();
     }
 }
