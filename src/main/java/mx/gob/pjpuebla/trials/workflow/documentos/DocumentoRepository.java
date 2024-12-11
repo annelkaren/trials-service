@@ -259,7 +259,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
             pd.id,
             concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
-            :tipoParte,
+            tp.nombre,
             pd.tipoNotificacion )
             FROM PersonaDocumento pd
             JOIN pd.tipoPartes tp
