@@ -586,7 +586,7 @@ public class DocumentoService {
                     folio,
                     documento.getCarpeta().getExpediente(),
                     tipoEntrada,
-                    movimiento.getPersona().getNombre(),
+                    movimiento.getPersona().getNombre() + " " + movimiento.getPersona().getApellidoPaterno() + " " + ((movimiento.getPersona().getApellidoMaterno() != null) ? movimiento.getPersona().getApellidoMaterno() : ""),
                     concepto,
                     movimiento.getFechaAsignacion(),
                     true,

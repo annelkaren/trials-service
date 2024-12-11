@@ -35,8 +35,8 @@ public class ListaEstradoService {
 
             String nombreCompleto =
                     (le.getPersona().getNombre() != null ? le.getPersona().getNombre() : "") +
-                            (le.getPersona().getApellidoMaterno() != null ? le.getPersona().getApellidoMaterno() : "") +
-                            (le.getPersona().getApellidoPaterno() != null ? le.getPersona().getApellidoPaterno() : "");
+                            (le.getPersona().getApellidoMaterno() != null ? " " + le.getPersona().getApellidoMaterno() : "") +
+                            (le.getPersona().getApellidoPaterno() != null ? " " + le.getPersona().getApellidoPaterno() : "");
 
             return new ListaEstradoRecord(
                     le.getId(),

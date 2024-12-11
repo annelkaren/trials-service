@@ -2,12 +2,10 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -138,6 +136,7 @@ public class MovimientoService {
                 movimientoRecords.add(record);
             }
         }
+        Collections.reverse(movimientoRecords);
         return movimientoRecords;
     }
 }

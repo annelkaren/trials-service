@@ -39,10 +39,6 @@ public class Notificacion implements Serializable {
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoNotificacion estadoNotificacion;
 
-    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Carpeta carpeta;
-
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento documento;

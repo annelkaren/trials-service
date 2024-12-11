@@ -272,7 +272,8 @@ public class PersonaService {
 
         for (Persona item : personasDelJuzgado) {
             if (roleService.hasRole(item.getUsuario(), "ADMINISTRADOR_JUZGADO") ||
-                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO")) {
+                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO")
+            || persona.getUsuario().equals(item.getUsuario())) {
                 list.add(item);
             }
         }

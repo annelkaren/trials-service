@@ -81,7 +81,7 @@ public class NotificacionService {
 
                     return new NotificacionRecord(
                             notificacion.getId(),
-                            notificacion.getCarpeta().getExpediente(),
+                            notificacion.getDocumento().getCarpeta().getExpediente(),
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
