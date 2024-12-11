@@ -3,11 +3,29 @@ package mx.gob.pjpuebla.trials.workflow.listaestrados;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
+import mx.gob.pjpuebla.trials.error.ErrorRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.Notificacion;
+import net.sf.jasperreports.engine.JRException;
+import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -16,6 +34,9 @@ public class ListaEstradoService {
 
     private final ListaEstradoRepository listaEstradoRepository;
     private final NotificacionRepository notificacionRepository;
+    private final PersonaService personaService;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final ListaEstradoGenerator generator;
 
     @Transactional(readOnly = true)
     public Page<ListaEstradoRecord> findAllByListaEstradoId(Integer listaEstrado, String searchQuery, Pageable pageable) {
@@ -47,6 +68,50 @@ public class ListaEstradoService {
         });
     }
 
+    public ResponseEntity<Object> getReporteListaEstrados(Integer id) {
+        List<Notificacion> notificacionList = notificacionRepository.getNotificacionByTipo(id);
+        if (notificacionList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND_404)
+                    .body(new ErrorRecord("ListaEstrados","No hay registros"));
+        }
 
+        Persona persona = personaService.getAuditor();
+        String nombreCentroTrabajo;
+        if(persona.getJuzgado() != null){
+            nombreCentroTrabajo = persona.getJuzgado().getNombre();
+        } else {
+            nombreCentroTrabajo = persona.getOficialia().getNombre();
+        }
 
+        List<ListaEstradoDTO> listaEstradosDTO = notificacionList.stream()
+                .map(notificacion -> {
+                    String juzgado = nombreCentroTrabajo != null ? nombreCentroTrabajo : "";
+                    String diaPublicado = LocalDate.now().toString();
+                    String asunto = "EXP." + notificacion.getCarpeta().getExpediente()
+                            + "\n" + notificacion.getCarpeta().getTipoJuicio().getNombre()
+                            + "\n" + "***** VS *****";
+                    String nombresRubros = notificacion.getCarpeta().getRubros().stream()
+                            .map(Rubro::getNombre)
+                            .collect(Collectors.joining(", "));
+                    DocumentoDetalle doc = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
+                    String notificacionDetalle = "Auto de fecha " + (doc.getFechaResolucion() != null ? doc.getFechaResolucion().toString() : "")
+                            + "\n" + nombresRubros;
+                    return new ListaEstradoDTO(juzgado, asunto, notificacionDetalle, diaPublicado);
+                })
+                .collect(Collectors.toList());
+
+        //Armado de pdf
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("reporte", "notificaciones_" + UUID.randomUUID() + ".pdf");
+
+            byte[] reporte = generator.getReporteListaEstrados(listaEstradosDTO);
+
+            return ResponseEntity.ok().headers(headers).body(reporte);
+        }catch (IOException | JRException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                    .body(new ErrorRecord("ListaSalida", e.getMessage()));
+        }
+    }
 }

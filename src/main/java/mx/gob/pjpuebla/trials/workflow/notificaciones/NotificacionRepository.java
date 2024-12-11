@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -40,8 +41,10 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
             """)
     Optional<DocumentoDetalleRecord> findDocumentoDetalleByDocumentoId(@Param("documentoId") Integer documentoId);
 
-
     @Query("SELECT COUNT(n) FROM Notificacion n WHERE n.listaEstrado.id = :listaEstradoId")
     long countNotificacionesByListaEstradoId(@Param("listaEstradoId") Integer listaEstradoId);
+
+    @Query("SELECT n FROM Notificacion n WHERE n.listaEstrado.id = :listaEstradoId")
+    List<Notificacion> getNotificacionByTipo(@Param("listaEstradoId") Integer listaEstradoId);
 
 }

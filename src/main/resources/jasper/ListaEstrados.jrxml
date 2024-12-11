@@ -1,0 +1,74 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.0  -->
+<jasperReport name="listaEstrado" language="java" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="71deff9a-c0d0-4a88-b48c-a45ceab0d611">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="p_image_background" class="java.lang.String">
+		<defaultValueExpression><![CDATA["escudo.png"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="logotipoHeder" class="java.lang.String">
+		<defaultValueExpression><![CDATA["header.jpg"]]></defaultValueExpression>
+	</parameter>
+	<query language="sql"><![CDATA[]]></query>
+	<field name="juzgado" class="java.lang.String"/>
+	<field name="asunto" class="java.lang.String"/>
+	<field name="notificacion" class="java.lang.String"/>
+	<field name="diaPublicado" class="java.lang.String"/>
+	<group name="GroupTipoDoc">
+		<groupHeader>
+			<band height="32">
+				<element kind="staticText" uuid="eb26c825-49b5-4128-a6f5-1c994f7daf15" x="0" y="5" width="66" height="20" bold="true">
+					<text><![CDATA[]]></text>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</element>
+				<element kind="staticText" uuid="a98520f3-0c22-4b8f-929f-c42797436c4d" x="70" y="5" width="210" height="20" bold="true">
+					<text><![CDATA[ASUNTO]]></text>
+				</element>
+				<element kind="staticText" uuid="4f3fdbb7-ba64-4eed-bcd0-5194d8c7feaf" x="260" y="5" width="300" height="20" bold="true">
+					<text><![CDATA[NOTIFICACION]]></text>
+				</element>
+			</band>
+		</groupHeader>
+	</group>
+	<background height="752" splitType="Stretch">
+		<element kind="image" uuid="5fc193da-0315-4259-a5ae-74425033a774" x="66" y="156" width="440" height="440">
+			<expression><![CDATA[$P{p_image_background}]]></expression>
+		</element>
+	</background>
+	<title height="2" splitType="Stretch"/>
+	<pageHeader height="1" splitType="Stretch"/>
+	<columnHeader height="207" splitType="Stretch">
+		<element kind="image" uuid="5c1e1cf8-9295-4b17-96b5-e22c6dd5f913" x="11" y="7" width="539" height="100" linkType="None" linkTarget="Self" hImageAlign="Center" vImageAlign="Middle">
+			<expression><![CDATA[$P{logotipoHeder}]]></expression>
+		</element>
+		<element kind="textField" uuid="87d74fd7-12b4-4856-ae93-863c24de0011" x="50" y="111" width="460" height="30" fontSize="16.0" bold="true" hTextAlign="Center">
+			<expression><![CDATA["PODER JUDICIAL DEL ESTADO DE PUEBLA"]]></expression>
+		</element>
+		<element kind="textField" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac" x="50" y="141" width="460" height="30" fontSize="16.0" bold="true" hTextAlign="Center">
+			<expression><![CDATA[$F{juzgado}]]></expression>
+		</element>
+		<element kind="textField" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a" x="0" y="171" width="570" height="28" hTextAlign="Center" vTextAlign="Justified">
+			<expression><![CDATA["LISTA DE NOTIFICACIONES QUE SE FIJA A LAS OCHO HORAS DEL DÍA " + $F{diaPublicado} + " EN EL JUZGADO"]]></expression>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="60" splitType="Stretch">
+			<element kind="textField" uuid="ca594da8-75f6-4d70-89e0-1b12f0b0c308" stretchType="ElementGroupBottom" x="20" y="0" width="46" height="60">
+				<expression><![CDATA[$V{REPORT_COUNT}]]></expression>
+			</element>
+			<element kind="textField" uuid="bfc23c9a-e68e-48c9-891a-afa642fb21a6" stretchType="ElementGroupBottom" x="70" y="0" width="190" height="60">
+				<expression><![CDATA[$F{asunto}]]></expression>
+			</element>
+			<element kind="textField" uuid="1db699f0-7ba8-456b-9fd8-415b10a3c4f4" stretchType="ElementGroupBottom" x="260" y="0" width="300" height="60">
+				<expression><![CDATA[$F{notificacion}]]></expression>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="40" splitType="Stretch">
+		<element kind="textField" uuid="750d0b1f-4ebd-4ed2-bac3-4c0dc686d67d" x="180" y="10" width="100" height="30" hTextAlign="Right">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="be3acd79-da09-4409-b4b8-181a40fb2aa0" x="280" y="10" width="100" height="30" evaluationTime="Report" hTextAlign="Left">
+			<expression><![CDATA[" de " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+	<summary height="42" splitType="Stretch"/>
+</jasperReport>
