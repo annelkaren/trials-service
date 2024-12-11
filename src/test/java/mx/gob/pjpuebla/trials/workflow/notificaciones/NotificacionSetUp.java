@@ -34,7 +34,6 @@ public class NotificacionSetUp {
                 .setNotas("Notas audiencia")
                 .setTipoNotificacion(TipoNotificacion.ESTRADO)
                 .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
-                .setCarpeta(CarpetaSetUp.create())
                 .setDocumento(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
 
     }

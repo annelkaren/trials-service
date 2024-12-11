@@ -337,6 +337,7 @@ class PersonaServiceTest extends SetupServiceTest {
     @Test
     void findAllByCentroTrabajo(){
         Jwt mockJwt = Mockito.mock(Jwt.class);
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38df");
         when(mockJwt.getSubject()).thenReturn(validPersona.getUsuario());
 
         Page<Persona> page = new PageImpl<>(List.of(validPersona));
