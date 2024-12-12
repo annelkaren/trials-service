@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.documentoDetalle;
+package mx.gob.pjpuebla.trials.workflow.documentos.documentodetalle;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;

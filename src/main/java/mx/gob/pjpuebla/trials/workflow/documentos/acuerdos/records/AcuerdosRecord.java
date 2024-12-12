@@ -1,5 +1,6 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records;
+package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -12,4 +13,4 @@ public record AcuerdosRecord(
    EstadoCarpeta estatus,
    String extractoSentencia,
    TipoDocumento tipoDocumento
-) { }
+) implements Serializable { }

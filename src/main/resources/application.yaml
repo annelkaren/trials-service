@@ -73,3 +73,8 @@ keycloak:
 
 app:
   root-folder: /opt/pjp/files
+
+inegi:
+  url: https://gaia.inegi.org.mx/wscatgeo
+  states-path: /mgee
+  mun-path: /mgem/

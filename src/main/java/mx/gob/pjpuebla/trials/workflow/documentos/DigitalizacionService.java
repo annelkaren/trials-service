@@ -81,7 +81,7 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado == null ? personaService.getAuditor().getOficialia().getNombre().replaceAll(" ", "") : juzgado;
+        String oficialia = juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento

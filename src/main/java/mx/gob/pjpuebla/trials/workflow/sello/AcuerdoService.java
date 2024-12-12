@@ -10,10 +10,8 @@ import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
-import net.sf.jasperreports.engine.JRException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +25,9 @@ import java.io.StringReader;
 @RequiredArgsConstructor
 public class AcuerdoService {
 
-    private final DigitalizacionService digitalizacionService;
     private final DocumentoContenidoService documentoContenidoService;
 
-    public byte[] getAcuerdoPdf(Integer documentoId) throws JRException, IOException, WriterException {
+    public byte[] getAcuerdoPdf(Integer documentoId) throws IOException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document(PageSize.LETTER, 65.0F, 65.0F, 60.0F, 36.0F);

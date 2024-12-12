@@ -123,7 +123,7 @@ public class MovimientoService {
                     (i+1)<list.size() && list.get(i + 1).getEstado().equals(EstadoCarpeta.ASIGNADO.name())) {
                 Movimiento origen = list.get(i);
                 Movimiento destino = list.get(i+1);
-                TurnadoMovimientoRecord record = new TurnadoMovimientoRecord(
+                TurnadoMovimientoRecord turnadoMovimientoRecord = new TurnadoMovimientoRecord(
                         (origen.getUuid() != null) ? list.get(0).getOficialia().getNombre() : origen.getPersona().getNombre() + " " + origen.getPersona().getApellidoPaterno(),
                         destino.getPersona().getNombre() + " " + destino.getPersona().getApellidoPaterno(),
                         origen.getFechaAsignacion().toLocalDate(),
@@ -132,7 +132,7 @@ public class MovimientoService {
                         destino.getConcepto(),
                         (origen.getDuracion().endsWith("h"))? origen.getDuracion().replace("h", " horas"):origen.getDuracion().replace("d","")
                 );
-                movimientoRecords.add(record);
+                movimientoRecords.add(turnadoMovimientoRecord);
             }
         }
         Collections.reverse(movimientoRecords);

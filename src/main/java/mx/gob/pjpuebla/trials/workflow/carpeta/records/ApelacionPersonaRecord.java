@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
+import java.io.Serializable;
+
 public record ApelacionPersonaRecord(
         String nombre,
         String apellidoPaterno,
@@ -7,5 +9,5 @@ public record ApelacionPersonaRecord(
         String pseudonimo,
         String tipoPersona,
         Integer tipoPartes
-) {
+) implements Serializable {
 }

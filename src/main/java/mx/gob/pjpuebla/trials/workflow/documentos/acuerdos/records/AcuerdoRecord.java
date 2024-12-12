@@ -1,5 +1,6 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records;
+package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,4 +16,4 @@ public record AcuerdoRecord(
     Character tamanioPapel,
     String textoEditor,
     String resumen
-) {}
+) implements Serializable {}

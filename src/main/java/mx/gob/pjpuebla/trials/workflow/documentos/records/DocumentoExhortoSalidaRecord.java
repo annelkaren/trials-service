@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 public record DocumentoExhortoSalidaRecord(
@@ -9,5 +10,5 @@ public record DocumentoExhortoSalidaRecord(
         String observaciones,
         LocalDate fechaEntrega,
         LocalDate fechaDevolucion
-) {
+) implements Serializable {
 }

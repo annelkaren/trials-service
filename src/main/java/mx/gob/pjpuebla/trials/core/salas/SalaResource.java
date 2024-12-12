@@ -55,10 +55,10 @@ public class SalaResource {
     }
 
     @GetMapping("/juzgado/{idAudiencia}")
-    public List<SalaRecord> getAllbyJuzgado(
+    public List<SalaRecord> getSalasByJuzgado(
             @RequestParam(value = "nombre", required = false) String nombre,
             @PathVariable Integer idAudiencia) {
-        return this.salaService.getAllbyJuzgado(nombre, idAudiencia);
+        return this.salaService.getSalasByJuzgado(nombre, idAudiencia);
     }
 
 

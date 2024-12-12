@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias.record;
 
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record AudienciasGeneralesResponseRecord(
@@ -13,5 +14,5 @@ public record AudienciasGeneralesResponseRecord(
         LocalDateTime fechaHora,
         EstatusAudiencia estatus,
         Integer juzgado
-) {
+) implements Serializable {
 }

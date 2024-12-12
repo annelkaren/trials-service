@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoDetalleCarpetaResponse(
@@ -13,5 +14,5 @@ public record DocumentoDetalleCarpetaResponse(
         Boolean asignado,
         String estatus,
         String observaciones
-) {
+) implements Serializable {
 }

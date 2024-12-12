@@ -7,6 +7,10 @@ import java.util.List;
 
 public class SearchLikeEnum {
 
+    //Private constructor to hide the implicit public one
+    private SearchLikeEnum() {
+    }
+
     public static List<Estado> searchByEstadoEnum(String key) {
         List<Estado> estados = new ArrayList<>();
         if (!key.isEmpty()) {

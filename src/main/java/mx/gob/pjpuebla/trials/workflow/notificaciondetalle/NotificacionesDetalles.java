@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.notificacionesDetalles;
+package mx.gob.pjpuebla.trials.workflow.notificaciondetalle;
 
 import java.io.Serializable;
 

@@ -144,8 +144,8 @@ public class DocumentoResource {
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
-    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(@RequestBody PersonalJuzgadoRecord record) {
-        return this.documentoService.movimientoPersonalJuzgado(record);
+    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(@RequestBody PersonalJuzgadoRecord personalJuzgadoRecord) {
+        return this.documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
     }
 
     @GetMapping("/bandeja/asignados")

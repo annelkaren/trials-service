@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
@@ -19,7 +20,7 @@ public record DocumentoAsignadoRecord(
     LocalDateTime fechaTurnado,
     EstadoCarpeta estatus,
     String observaciones
-) {
+) implements Serializable {
 
 }
 

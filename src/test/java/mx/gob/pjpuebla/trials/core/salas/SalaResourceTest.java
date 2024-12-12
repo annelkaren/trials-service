@@ -122,7 +122,7 @@ class SalaResourceTest {
 
     @Test
     void getAllbyJuzgado_success() throws Exception {
-        given(mockSalaService.getAllbyJuzgado(any(String.class), anyInt()))
+        given(mockSalaService.getSalasByJuzgado(any(String.class), anyInt()))
                 .willReturn(Collections.singletonList(salaRecord));
 
         mockMvc.perform(

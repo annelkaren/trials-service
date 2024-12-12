@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,7 +67,7 @@ public class TipoPartesService {
 
         return tiposPartes.stream()
         .map(tipoParte -> new TipoPartesRecord(tipoParte.getId(), tipoParte.getNombre(), tipoJuicio.getNombre()))
-        .collect(Collectors.toList());
+        .toList();
     }
 
     public List<TipoPartesRecord> getTiposPartesByCarpetaId(Integer carpetaId) {
@@ -84,6 +83,6 @@ public class TipoPartesService {
                     tipoParte.getNombre(),
                     tipoParte.getTipoJuicio() != null ? tipoParte.getTipoJuicio().getNombre() : null 
             ))
-            .collect(Collectors.toList());
+            .toList();
     }
 }

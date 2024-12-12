@@ -53,7 +53,7 @@ public class SelloCaratulaService {
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
-        parameters.put("codigoQR", expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte
+        parameters.put("codigoQR", expendienteYear[0]);
         parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
         parameters.put("isExhorto", isExhorto); // es un Exhorto

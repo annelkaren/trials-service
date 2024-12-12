@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.notificaciones.DTO;
+package mx.gob.pjpuebla.trials.workflow.notificaciones.records;
 
 import lombok.Data;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;

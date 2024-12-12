@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos;
+package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,17 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
-
-
-
 
 @RequiredArgsConstructor
 @RestController
@@ -44,20 +41,20 @@ public class AcuerdosResource {
 
     @PostMapping("/documentos/crearAcuerdo")
     public DocumentoGenericRecord crearAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
-        
+
         return acuerdosService.save(acuerdo);
     }
 
     @GetMapping("/documentos/obtenerAcuerdos/{carpetaId}")
     public Page<AcuerdosRecord> obtenerAcuerdosYsentencias(
-        @PageableDefault(size = 20) Pageable pageable,
-        @PathVariable Integer carpetaId){
+            @PageableDefault(size = 20) Pageable pageable,
+            @PathVariable Integer carpetaId) {
 
-            return acuerdosService.getAcuerdos(carpetaId, pageable);
+        return acuerdosService.getAcuerdos(carpetaId, pageable);
     }
 
     @PostMapping("/documentos/publicarAcuerdo")
-    public AcuerdoRecord publicarAcuerdo(@RequestBody AcuerdoRecord acuerdo){
+    public AcuerdoRecord publicarAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
         return acuerdosService.publicarAcuerdo(acuerdo);
     }
 
@@ -70,11 +67,11 @@ public class AcuerdosResource {
     public List<AcuerdoPromocionesRecord> obtenerPromociones(
             @PathVariable Integer carpetaId,
             @PathVariable(required = false) String documentoId,
-            @PathVariable String tipoDocumento){
+            @PathVariable String tipoDocumento) {
 
-            Integer documentoIdParsed = "null".equalsIgnoreCase(documentoId) ? null : Integer.valueOf(documentoId);
+        Integer documentoIdParsed = "null".equalsIgnoreCase(documentoId) ? null : Integer.valueOf(documentoId);
 
-            return acuerdosService.obtenerPromociones(carpetaId, documentoIdParsed, tipoDocumento);
+        return acuerdosService.obtenerPromociones(carpetaId, documentoIdParsed, tipoDocumento);
     }
 
     @GetMapping("/documentos/obtenerAcuerdo/{acuerdoId}")
@@ -97,7 +94,7 @@ public class AcuerdosResource {
     }
 
     @GetMapping(value = "/documentos/acuerdos/{acuerdoId}/promociones")
-    public List<AcuerdoPromocionesRecord> getPromocionesAcuerdos(@PathVariable Integer acuerdoId){
+    public List<AcuerdoPromocionesRecord> getPromocionesAcuerdos(@PathVariable Integer acuerdoId) {
         return acuerdosService.findPromocionesByAcuerdo(acuerdoId);
     }
 

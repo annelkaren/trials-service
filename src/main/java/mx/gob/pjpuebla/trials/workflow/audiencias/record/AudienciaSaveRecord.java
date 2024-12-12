@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias.record;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -12,4 +13,4 @@ public record AudienciaSaveRecord(
     Integer duracion,
     String descripcion
 
-) {}
+) implements Serializable {}
