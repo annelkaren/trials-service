@@ -1,4 +1,6 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records;
+package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records;
+
+import java.io.Serializable;
 
 public record AcuerdoPromocionesRecord(
     Integer id,
@@ -6,4 +8,4 @@ public record AcuerdoPromocionesRecord(
     String nombreArchivo,
     String recomendacion,
     Integer seleccionado
-) {}
+) implements Serializable {}

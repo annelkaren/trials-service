@@ -6,5 +6,5 @@ import java.util.List;
 public record AnexoRecord (
         List<String> anexos,
         String motivoEdita
-)implements Serializable {
+) implements Serializable {
 }

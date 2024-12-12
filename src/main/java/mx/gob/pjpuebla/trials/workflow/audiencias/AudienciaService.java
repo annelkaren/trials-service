@@ -41,12 +41,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
 @Service
 public class AudienciaService {
+
+    private String salaNotFoundMessage = "Sala no encontrada";
+    private String audienciaNotFoundMessage = "Audiencia no encontrada";
+    private String tipoAudienciaNotFoundMessage = "Tipo audiencia no encontrada";
     private final AudienciaRepository audienciaRepository;
     private final SalaRepository salaRepository;
     private final BloqueRepository bloqueRepository;
@@ -57,7 +60,7 @@ public class AudienciaService {
 
     public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
         Sala sala = salaRepository.findById(salaAudienciaRecord.id())
-                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException(salaNotFoundMessage, "" + salaAudienciaRecord.id()));
         Bloque bloque = bloqueRepository.findById(salaAudienciaRecord.bloqueId())
                 .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "BloqueId"));
 
@@ -80,7 +83,7 @@ public class AudienciaService {
 
         String fechaFormateada = (audienciaOralidadFamiliarRcord != null)
                 ? audienciaOralidadFamiliarRcord.fechaAudiencia()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 : "";
 
         if (audienciaOralidadFamiliarRcord == null) {
@@ -89,8 +92,8 @@ public class AudienciaService {
             nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " "
                     + audienciaOralidadFamiliarRcord.apellidoPaterno() + " "
                     + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null
-                            ? audienciaOralidadFamiliarRcord.apellidoMaterno()
-                            : "");
+                    ? audienciaOralidadFamiliarRcord.apellidoMaterno()
+                    : "");
         }
 
         String calle = Optional.of(documento)
@@ -145,11 +148,11 @@ public class AudienciaService {
     public void deleteAudiencia(Integer id) {
         try {
             Audiencia audiencia = audienciaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+                    .orElseThrow(() -> new IllegalArgumentException(audienciaNotFoundMessage));
             audiencia.setEstado(Estado.DELETED);
             audienciaRepository.save(audiencia);
         } catch (DataIntegrityViolationException ex) {
-            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "audienciaId" + id);
+            throw new ConstraintViolationException(Messages.CONSTRAINT_ERROR, "" + id);
         }
     }
 
@@ -162,7 +165,7 @@ public class AudienciaService {
     public void diferirAudiencia(Integer id) {
         try {
             Audiencia audiencia = audienciaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+                    .orElseThrow(() -> new IllegalArgumentException(audienciaNotFoundMessage));
 
             audiencia.setFechaAudiencia(null);
             audiencia.setEstatusAudiencia(EstatusAudiencia.DIFERIDA);
@@ -178,16 +181,16 @@ public class AudienciaService {
 
         // Obtenemos sala:
         Sala sala = salaRepository.findById(audiencia.salaId())
-                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException(salaNotFoundMessage, "" + audiencia.salaId()));
 
         // obtenemos el tipo de audiencias:
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
-                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+                .orElseThrow(() -> new NotFoundException(tipoAudienciaNotFoundMessage, "" + audiencia.tipoAudiencia()));
 
         // Obtenemos carpeta:
         Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));
-        
+
         //Transformacion de fecha hora para empatar con el tipo de dato de la entidad
         LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
 
@@ -210,15 +213,15 @@ public class AudienciaService {
     public List<String> getEstatusAudiencias() {
         return Arrays.stream(EstatusAudiencia.values())
                 .map(Enum::name)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public void setHoraAudiencias(Integer id, LocalDateTime hora, Boolean isInicio) {
+    public void setHoraAudiencias(Integer id, LocalDateTime hora, boolean isInicio) {
         try {
             Audiencia audiencia = audienciaRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Audiencia no encontrada"));
+                    .orElseThrow(() -> new IllegalArgumentException(audienciaNotFoundMessage));
 
-            if(isInicio) {
+            if (isInicio) {
                 audiencia.setInicio(hora);
                 audienciaRepository.save(audiencia);
             } else {
@@ -231,34 +234,34 @@ public class AudienciaService {
         }
     }
 
-    public void audienciaTabGeneral (AudienciaTabGeneralRecord audienciaTab) {
+    public void audienciaTabGeneral(AudienciaTabGeneralRecord audienciaTab) {
 
         Audiencia audiencia = audienciaRepository.findById(audienciaTab.idAudiencia())
-                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+                .orElseThrow(() -> new NotFoundException(audienciaNotFoundMessage, "AudienciaId"));
 
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audienciaTab.idTipoAudiencia())
-                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+                .orElseThrow(() -> new NotFoundException(tipoAudienciaNotFoundMessage, "tipoAudienciaId"));
 
         Sala sala = salaRepository.findById(audienciaTab.idSala())
-                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException(salaNotFoundMessage, "SalaId"));
 
         audiencia.setTipoAudiencia(tipoAudiencia);
         audiencia.setSala(sala);
         audiencia.setEstatusAudiencia(audienciaTab.estatusAudiencia());
 
-        if(audienciaTab.motivoRetraso() != null){
+        if (audienciaTab.motivoRetraso() != null) {
             audiencia.setMotivoRetrasoAudiencias(audienciaTab.motivoRetraso());
         }
 
-        if(audienciaTab.resultadoDesahogo() != null){
+        if (audienciaTab.resultadoDesahogo() != null) {
             audiencia.setResultadosDesahogo(audienciaTab.resultadoDesahogo());
         }
 
-        if(audienciaTab.actores() == null){
+        if (audienciaTab.actores() == null) {
             audiencia.setAsisteActor(Asistencia.SI);
             audiencia.setAsisteDemandano(Asistencia.SI);
         } else {
-            if(Objects.equals(audienciaTab.actores(), "ACTOR")){
+            if (Objects.equals(audienciaTab.actores(), "ACTOR")) {
                 audiencia.setAsisteActor(Asistencia.NO);
             } else if (Objects.equals(audienciaTab.actores(), "DEMANDADO")) {
                 audiencia.setAsisteDemandano(Asistencia.NO);
@@ -272,13 +275,13 @@ public class AudienciaService {
 
     public AudienciasResponseRecord reprogramarAudiencia(ReprogramarAudienciaRecord audiencia) {
         Audiencia audienciaReprogramar = audienciaRepository.findById(audiencia.audienciaId())
-                .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));
+                .orElseThrow(() -> new NotFoundException(audienciaNotFoundMessage, "AudienciaId"));
 
         Sala sala = salaRepository.findById(audiencia.salaId())
-                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "SalaId"));
+                .orElseThrow(() -> new NotFoundException(salaNotFoundMessage, "SalaId"));
 
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(audiencia.tipoAudiencia())
-                .orElseThrow(() -> new NotFoundException("Tipo audiencia no encontrada", "tipoAudienciaId"));
+                .orElseThrow(() -> new NotFoundException(tipoAudienciaNotFoundMessage, "tipoAudienciaId"));
 
         Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));

@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
+import java.io.Serializable;
+
 public record PersonaDocumentoItemRecord(
         String nombre,
         String apellidoPaterno,
@@ -11,5 +13,5 @@ public record PersonaDocumentoItemRecord(
         String ine,
         String domicilio,
         String celular,
-        String correoElectronico) {
+        String correoElectronico) implements Serializable {
 }

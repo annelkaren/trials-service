@@ -98,7 +98,7 @@ public class ListaEstradoService {
                             + "\n" + nombresRubros;
                     return new ListaEstradoDTO(juzgado, asunto, notificacionDetalle, diaPublicado);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         //Armado de pdf
         try{

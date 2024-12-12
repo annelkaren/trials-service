@@ -516,6 +516,6 @@ public class PersonaDetalleService {
                 tipo.name(),
                 tipo.getTipoNotificacion() 
         ))
-        .collect(Collectors.toList());
+        .toList();
     }
 }

@@ -79,6 +79,8 @@ public class CarpetaService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final MovimientoRepository movimientoRepository;
 
+    private String actorLabel = "Actor";
+    private String demandadoLabel = "Demandado";
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
@@ -100,8 +102,8 @@ public class CarpetaService {
 
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
-        String actor = getNombrePersonaByIdAndParte(carpeta.getId(), "Actor");
-        String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), "Demandado");
+        String actor = getNombrePersonaByIdAndParte(carpeta.getId(), actorLabel);
+        String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), demandadoLabel);
         return new CarpetaResponseRecord(carpeta.getId(), actor, demandado);
     }
 
@@ -337,7 +339,7 @@ public class CarpetaService {
         }
         return agrupadoPorTipo.entrySet().stream()
                 .map(entry -> new ParticipantesRecord(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord){
@@ -644,8 +646,8 @@ public class CarpetaService {
         Page<Carpeta> carpetas = carpetaRepository.findByJuzgado(juzgado, key, pageable);
 
         return carpetas.map(carpeta -> {
-            String actor = getNombrePersonaByIdAndParte(carpeta.getId(), "Actor");
-            String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), "Demandado");
+            String actor = getNombrePersonaByIdAndParte(carpeta.getId(), actorLabel);
+            String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), demandadoLabel);
 
             return new LibroGobiernoRecord(
                     carpeta.getId(),
@@ -671,8 +673,8 @@ public class CarpetaService {
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                 .orElseThrow(() -> new NotFoundException("Detalle documento no encontrado", documento.getId().toString()));
 
-        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
-        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), actorLabel);
+        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), demandadoLabel);
         return new SentenciaPublicaResponseRecord(
                 documento.getCarpeta().getId(),
                 documento.getId(),

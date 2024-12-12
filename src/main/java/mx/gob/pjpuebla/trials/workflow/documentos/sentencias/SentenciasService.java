@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.Sentencias;
+package mx.gob.pjpuebla.trials.workflow.documentos.sentencias;
 
 import java.time.LocalDate;
 
@@ -10,8 +10,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Sentencias.records.SentenciaRecordSave;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.sentencias.records.SentenciaRecordSave;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -81,14 +81,14 @@ public class SentenciasService {
 
                 DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
                                 .orElseThrow(() -> new NotFoundException("Documento contenido no encontrado",
-                                                "documentoId"));
+                                                String.valueOf(acuerdoId)));
 
                 DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
                                 .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
-                                                "documentoId"));
+                                                String.valueOf(acuerdoId)));
 
                 Documento documento = documentoRepository.findById(acuerdoId)
-                                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId"));
+                                .orElseThrow(() -> new NotFoundException("Documento no encontrado", String.valueOf(acuerdoId)));
 
                 // Actualizamos el estatus de documento a publicado esperando definirlo:
                 documento.setEstatus(EstadoCarpeta.PUBLICADO);

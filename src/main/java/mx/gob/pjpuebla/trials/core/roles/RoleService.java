@@ -21,6 +21,7 @@ import java.util.*;
 @Transactional
 public class RoleService {
 
+    private String centroTrabajoKey = "centro-trabajo";
     private final AuditorAware<Jwt> auditorAware;
     private final KeycloakSecurityUtil keycloakSecurityUtil;
 
@@ -123,12 +124,12 @@ public class RoleService {
                 .filter(r -> r.getAttributes() != null)
                 .filter(r -> r.getAttributes().containsKey("client-role"))
                 .filter(r -> r.getAttributes().get("client-role").contains("true"))
-                .filter(r -> r.getAttributes().containsKey("centro-trabajo")).toList();
+                .filter(r -> r.getAttributes().containsKey(centroTrabajoKey)).toList();
 
         if (!tipoCentroTrabajo.isEmpty() && !tipoCentroTrabajo.equalsIgnoreCase("undefined")) {
             temporalList.stream()
-                    .filter(r -> r.getAttributes().get("centro-trabajo").contains(tipoCentroTrabajo)
-                            || r.getAttributes().get("centro-trabajo").contains("-"))
+                    .filter(r -> r.getAttributes().get(centroTrabajoKey).contains(tipoCentroTrabajo)
+                            || r.getAttributes().get(centroTrabajoKey).contains("-"))
                     .forEach(r -> roles.add(mapRole(r)));
         } else {
             temporalList.forEach(r -> roles.add(mapRole(r)));

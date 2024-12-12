@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 

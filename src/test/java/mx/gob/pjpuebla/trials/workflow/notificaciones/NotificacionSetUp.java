@@ -1,14 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
-import mx.gob.pjpuebla.trials.core.estados.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
@@ -16,10 +13,6 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class NotificacionSetUp {

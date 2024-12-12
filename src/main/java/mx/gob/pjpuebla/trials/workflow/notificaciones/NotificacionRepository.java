@@ -16,7 +16,6 @@ import java.util.Optional;
 @Repository
 public interface NotificacionRepository extends JpaRepository<Notificacion, Integer> {
 
-
     @Query("""
             SELECT c
             FROM Notificacion c

@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
 
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
