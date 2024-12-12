@@ -21,7 +21,7 @@ import java.util.*;
 @Transactional
 public class RoleService {
 
-    private String centroTrabajoKey = "centro-trabajo";
+    private static final String CENTRO_TRABAJO_KEY = "centro-trabajo";
     private final AuditorAware<Jwt> auditorAware;
     private final KeycloakSecurityUtil keycloakSecurityUtil;
 
@@ -84,7 +84,7 @@ public class RoleService {
 
     public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion) {
         List<RoleRepresentation> roles = new ArrayList<>();
-        List<RoleRepresentation> filteredList = new ArrayList<>();
+        List<RoleRepresentation> filteredList;
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> allRoles = keycloak.realm(realm).roles().list(false);
         try {
@@ -124,12 +124,12 @@ public class RoleService {
                 .filter(r -> r.getAttributes() != null)
                 .filter(r -> r.getAttributes().containsKey("client-role"))
                 .filter(r -> r.getAttributes().get("client-role").contains("true"))
-                .filter(r -> r.getAttributes().containsKey(centroTrabajoKey)).toList();
+                .filter(r -> r.getAttributes().containsKey(CENTRO_TRABAJO_KEY)).toList();
 
         if (!tipoCentroTrabajo.isEmpty() && !tipoCentroTrabajo.equalsIgnoreCase("undefined")) {
             temporalList.stream()
-                    .filter(r -> r.getAttributes().get(centroTrabajoKey).contains(tipoCentroTrabajo)
-                            || r.getAttributes().get(centroTrabajoKey).contains("-"))
+                    .filter(r -> r.getAttributes().get(CENTRO_TRABAJO_KEY).contains(tipoCentroTrabajo)
+                            || r.getAttributes().get(CENTRO_TRABAJO_KEY).contains("-"))
                     .forEach(r -> roles.add(mapRole(r)));
         } else {
             temporalList.forEach(r -> roles.add(mapRole(r)));

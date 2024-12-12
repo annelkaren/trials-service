@@ -46,7 +46,7 @@ import java.util.*;
 @Service
 public class JuzgadoService {
 
-    private String juzgadoNotFoundMessage = "Juzgado no encontrado";
+    private static final String JUZGADO_NOT_FOUND = "Juzgado no encontrado";
     private final JuzgadoRepository juzgadoRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final SedeRepository sedeRepository;
@@ -91,7 +91,7 @@ public class JuzgadoService {
     public JuzgadoRecord findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         Juzgado juzgado = juzgadoRepository.findByIdAndEstadoIn(id, estados)
-                .orElseThrow(() -> new NotFoundException(juzgadoNotFoundMessage, "juzgadoId"));
+                .orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, "juzgadoId"));
         List<TipoJuicioRecord> tipoJuicios = juzgado.getTipoJuicios().stream()
                 .map(tj -> new TipoJuicioRecord(
                         tj.getId(),
@@ -165,7 +165,7 @@ public class JuzgadoService {
         try {
             juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId()).orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId()).orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException(juzgadoNotFoundMessage, "juzgadoId"));
+            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, "juzgadoId"));
 
             List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
             List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
@@ -321,7 +321,7 @@ public class JuzgadoService {
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {
         Estado estado = Estado.values()[status];
         Juzgado juzgado = juzgadoRepository.findById(id).
-                orElseThrow(() -> new NotFoundException(juzgadoNotFoundMessage, id.toString()));
+                orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, id.toString()));
         juzgado.setEstado(estado);
         juzgadoRepository.save(juzgado);
 

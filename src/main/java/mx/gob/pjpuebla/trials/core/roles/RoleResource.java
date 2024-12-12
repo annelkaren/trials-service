@@ -29,7 +29,7 @@ public class RoleResource {
         if (userId.isEmpty() || userId.equalsIgnoreCase("undefined")) {
             return getAll();
         }
-        Boolean flag = Boolean.valueOf(isEdicion);
+        boolean flag = Boolean.valueOf(isEdicion);
         return roleService.getAllAvailablesByUserId(userId, tipoCentroTrabajo, flag);
     }
 }
