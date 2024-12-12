@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.documentoDetalle;
+package mx.gob.pjpuebla.trials.workflow.documentos.documentodetalle;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.records.DocumentoDetalleRecord;

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.documentoContenido;
+package mx.gob.pjpuebla.trials.workflow.documentos.documentocontenido;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

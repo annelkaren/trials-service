@@ -183,7 +183,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     //colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord(
             doc.id,
            CASE
                 WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
@@ -239,7 +239,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("documentoId") Integer documentoId);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord(
             doc.id,
             dd.fechaPublicacion,
             dd.resumen,
@@ -254,7 +254,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Page<AcuerdosRecord> findAllAcuerdosYSentenciasByCarpeta(Integer carpetaId, Pageable pageable);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord(
             pd.id,
             concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
             tp.nombre,
