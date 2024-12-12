@@ -44,10 +44,10 @@ class MenuServiceTest {
     @BeforeEach
     public void setUp() {
         menus = new ArrayList<>();
-        Menu menu = new Menu().setId(1).setNombre("Catálogo").setLink("").setOrder(1).setRoles("ADMINISTRADOR");
+        Menu menu = new Menu().setId(1).setNombre("Catálogo").setLink("").setOrder(1).setRoles("ADMINISTRADOR_SISTEMA");
         Menu menu1 = new Menu().setId(2).setNombre("Bandeja").setLink("").setOrder(2);
         Menu menu2 = new Menu().setId(3).setNombre("Sedes").setLink("/api/core/sedes").setOrder(1)
-                .setParent(1).setRoles("ADMINISTRADOR");;
+                .setParent(1).setRoles("ADMINISTRADOR_SISTEMA");;
         menus.add(menu);
         menus.add(menu1);
         menus.add(menu2);
@@ -55,7 +55,7 @@ class MenuServiceTest {
 
     @Test
     void get_menu_by_user() {
-        RoleRecord roleRecord = new RoleRecord("ADMINISTRADOR", "ADMINISTRADOR");
+        RoleRecord roleRecord = new RoleRecord("ADMINISTRADOR_SISTEMA", "ADMINISTRADOR_SISTEMA");
         given(personaService.getAuditor()).willReturn(PersonaSetUp.createPersona());
         given(roleService.getRolesByUserId(any())).willReturn(List.of(roleRecord));
         given(menuRepository.findMenus(any())).willReturn(menus);
