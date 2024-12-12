@@ -37,9 +37,9 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 @Transactional
 public class AcuerdosService {
 
-    private String documentoDetalleNotFound = "Documento detalle no encontrado";
-    private String documentoContenidoNotFound = "Documento contenido no encontrado";
-    private String documentoNotFound = "Documento no encontrado";
+    private String DOC_DETALL_NOT_FOUND = "Documento detalle no encontrado";
+    private String DOC_CONT_NOT_FOUND = "Documento contenido no encontrado";
+    private String DOC_NOT_FOUND = "Documento no encontrado";
     private final CarpetaRepository carpetaRepository;
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
@@ -125,15 +125,15 @@ public class AcuerdosService {
         Integer acuerdoId = acuerdo.acuerdoId() != null ? acuerdo.acuerdoId() : save(acuerdo).id();
 
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(acuerdoId)
-                .orElseThrow(() -> new NotFoundException(documentoContenidoNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_CONT_NOT_FOUND,
                         String.valueOf(acuerdoId)));
 
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
-                .orElseThrow(() -> new NotFoundException(documentoDetalleNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_DETALL_NOT_FOUND,
                         String.valueOf(acuerdoId)));
 
         Documento documento = documentoRepository.findById(acuerdoId)
-                .orElseThrow(() -> new NotFoundException(documentoNotFound, String.valueOf(acuerdoId)));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, String.valueOf(acuerdoId)));
 
         // Actualizamos el estatus de documento a publicado esperando definirlo:
         documento.setEstatus(EstadoCarpeta.PUBLICADO);
@@ -157,14 +157,14 @@ public class AcuerdosService {
     public Object getAcuerdoOSentencia(Integer documentoId) {
 
         Documento documento = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException(documentoNotFound, "documentoId"));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId"));
 
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId)
-                .orElseThrow(() -> new NotFoundException(documentoDetalleNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_DETALL_NOT_FOUND,
                         "documentoDetalleId"));
 
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)
-                .orElseThrow(() -> new NotFoundException(documentoContenidoNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_CONT_NOT_FOUND,
                         "documentoContenidoId"));
 
         List<AcuerdoPromocionesRecord> promociones;
@@ -208,15 +208,15 @@ public class AcuerdosService {
     public DocumentoGenericRecord update(AcuerdoRecord acuerdo) {
 
         Documento documento = documentoRepository.findById(acuerdo.acuerdoId())
-                .orElseThrow(() -> new NotFoundException(documentoNotFound, "documentoId"));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, "documentoId"));
 
         DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdo.acuerdoId())
-                .orElseThrow(() -> new NotFoundException(documentoDetalleNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_DETALL_NOT_FOUND,
                         "documentoDetalleId"));
 
         DocumentoContenido documentoContenido = documentoContenidoRepository
                 .findByDocumentoId(acuerdo.acuerdoId())
-                .orElseThrow(() -> new NotFoundException(documentoContenidoNotFound,
+                .orElseThrow(() -> new NotFoundException(DOC_CONT_NOT_FOUND,
                         "documentoContenidoId"));
 
         // Actualizar datos del documento:

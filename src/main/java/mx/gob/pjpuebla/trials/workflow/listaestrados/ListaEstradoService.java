@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -93,7 +95,8 @@ public class ListaEstradoService {
                     String nombresRubros = notificacion.getDocumento().getCarpeta().getRubros().stream()
                             .map(Rubro::getNombre)
                             .collect(Collectors.joining(", "));
-                    DocumentoDetalle doc = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
+                    DocumentoDetalle doc = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId())
+                            .orElseThrow(() -> new NotFoundException("Documento no encontrado", String.valueOf(notificacion.getDocumento().getId())));
                     String notificacionDetalle = "Auto de fecha " + (doc.getFechaResolucion() != null ? doc.getFechaResolucion().toString() : "")
                             + "\n" + nombresRubros;
                     return new ListaEstradoDTO(juzgado, asunto, notificacionDetalle, diaPublicado);
