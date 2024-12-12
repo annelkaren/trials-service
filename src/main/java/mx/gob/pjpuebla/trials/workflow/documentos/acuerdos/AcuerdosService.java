@@ -37,9 +37,9 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 @Transactional
 public class AcuerdosService {
 
-    private String DOC_DETALL_NOT_FOUND = "Documento detalle no encontrado";
-    private String DOC_CONT_NOT_FOUND = "Documento contenido no encontrado";
-    private String DOC_NOT_FOUND = "Documento no encontrado";
+    private static final String DOC_DETALL_NOT_FOUND = "Documento detalle no encontrado";
+    private static final String DOC_CONT_NOT_FOUND = "Documento contenido no encontrado";
+    private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private final CarpetaRepository carpetaRepository;
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
