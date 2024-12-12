@@ -205,7 +205,7 @@ public class PersonaService {
         nombre = (nombre != null) ? nombre.toLowerCase() : "";
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
-        if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR")) {
+        if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR_SISTEMA")) {
             List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
 
             List<Oficialia> oficialias = oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
@@ -290,7 +290,7 @@ public class PersonaService {
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {
-        boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR"));
+        boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR_SISTEMA"));
         if (hasAdminRole && (
                 (persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
                         || (persona.getOficialia() != null && persona.getOficialia().getId() != null))) {

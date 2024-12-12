@@ -109,10 +109,10 @@ public class RoleService {
 
     private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> roles) {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
-        boolean isAdminsystem = hasRole(jwt.getSubject(), "ADMINISTRADOR");
+        boolean isAdminsystem = hasRole(jwt.getSubject(), "ADMINISTRADOR_SISTEMA");
         if (!isAdminsystem) {
             return roles.stream()
-                    .filter(role -> !role.getName().equalsIgnoreCase("ADMINISTRADOR"))
+                    .filter(role -> !role.getName().equalsIgnoreCase("ADMINISTRADOR_SISTEMA"))
                     .toList();
         }
         return roles;
