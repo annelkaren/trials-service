@@ -23,10 +23,10 @@ public class EstadosResource {
     @Value("${inegi.url}")
     private String getInegiPath;
 
-    @Value("${inegi.states}")
+    @Value("${inegi.states-path}")
     private String getStatesPath;
 
-    @Value("${inegi.mun}")
+    @Value("${inegi.mun-path}")
     private String getMunPath;
 
     @GetMapping
