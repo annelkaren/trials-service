@@ -1377,6 +1377,7 @@ class DocumentoServiceTest {
     void create_demandaAntiguas() {
 
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        Concepto concepto = new Concepto();
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
 
@@ -1404,6 +1405,8 @@ class DocumentoServiceTest {
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
         given(digitalizacionService.guardarArchivo(any(), any()))
                 .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo", "archivo.pdf"));
+        concepto.setId(1).setNombre("Distribución");
+        given(conceptoRepository.findByNombre("Distribución")).willReturn(Optional.of(concepto));
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
         MockMultipartFile multipartFile = new MockMultipartFile(
                 "file",

@@ -1255,6 +1255,8 @@ public class DocumentoService {
         carpeta = carpetaRepository.save(carpeta);
 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
+        Concepto concepto = conceptoRepository.findByNombre("Distribución").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND,"Distribución"));
+        documento.setConcepto(concepto);
         documento.setCarpeta(carpeta);
         documento.setFechaAsignacion(null);
         documento.setPersona(null);
