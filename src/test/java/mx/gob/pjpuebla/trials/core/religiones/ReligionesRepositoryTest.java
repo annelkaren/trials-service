@@ -31,6 +31,6 @@ class ReligionesRepositoryTest extends AuditConfigTest {
     void findAllByidReligion() {
         List<ReligionesRecord> entity = religionesRepository.findAllByidReligion("Católico");
         assertThat(entity).isNotEmpty();
-        assertThat(entity.get(0).NombreReligion()).isEqualTo("Católico Apostólico Romano");
+        assertThat(entity.get(0).nombreReligion()).isEqualTo("Católico Apostólico Romano");
     }
 }
