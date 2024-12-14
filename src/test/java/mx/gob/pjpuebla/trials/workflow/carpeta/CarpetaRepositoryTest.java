@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -162,7 +163,8 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         Juzgado juzgado = JuzgadoSetUp.createJuzgado();
         juzgado.setId(51);
 
-        Page<Carpeta> result = carpetaRepository.findByJuzgado(juzgado, "000001/2024", Pageable.ofSize(10));
+        List<Juzgado> juzgados = Collections.singletonList(juzgado);
+        Page<Carpeta> result = carpetaRepository.findByJuzgado(juzgados, "000001/2024", Pageable.ofSize(10));
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isNotEmpty();
