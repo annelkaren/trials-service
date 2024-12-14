@@ -39,7 +39,7 @@ class ReligionesServiceTest {
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).idReligion());
-        assertEquals("Católica", result.get(0).NombreReligion());
+        assertEquals("Católica", result.get(0).nombreReligion());
     }
 
 }
