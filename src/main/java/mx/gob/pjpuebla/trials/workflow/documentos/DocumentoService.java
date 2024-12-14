@@ -316,11 +316,17 @@ public class DocumentoService {
         personaDocumentoRepository.save(entity);
     }
 
-    public DocumentoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita) {
+    public DocumentoRecord editarAnexos(Integer documentoId, List<String> nuevosAnexos, String motivoEdita, String procedencia) {
 
         Documento documento = documentoRepository.findById(documentoId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
         documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
+
+        if(documento.getData() != null && procedencia != null){
+            if(documento.getData().getExhortoProcedencia() != null) {
+                documento.setData(documento.getData().setExhortoProcedencia(procedencia));
+            }
+        }
 
         List<Anexo> anexosActuales = anexoRepository.findAllByDocumentoId(documentoId);
         anexosActuales.stream()

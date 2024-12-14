@@ -149,11 +149,13 @@ class DocumentoResourceTest {
 
         AnexoRecord anexoRecord = new AnexoRecord(
                 Arrays.asList("Anexo1", "Anexo2"),
-                "Motivo de edición");
+                "Motivo de edición",
+                "procedencia1"
+        );
 
         DocumentoRecord documentoRecord = new DocumentoRecord(1, "000001/2024", TipoCarpeta.DEMANDA);
 
-        given(documentoService.editarAnexos(any(Integer.class), any(), any()))
+        given(documentoService.editarAnexos(any(Integer.class), any(), any(), any()))
                 .willReturn(documentoRecord);
 
         mockMvc.perform(
@@ -171,7 +173,7 @@ class DocumentoResourceTest {
 
         DocumentoRecord documentRecord = new DocumentoRecord(1, "000005/2024", TipoCarpeta.DEMANDA);
 
-        given(documentoService.editarAnexos(1, anexos, "ejemplo"))
+        given(documentoService.editarAnexos(1, anexos, "ejemplo", ""))
                 .willReturn(documentRecord);
 
         mockMvc.perform(
