@@ -355,6 +355,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1").setSelloEstatus(SelloEstatus.VALIDO);
+        demanda.setData(new DocumentoData().setExhortoProcedencia("Otra procedencia"));
 
         List<String> nuevosAnexos = Arrays.asList("INE", "Acta de nacimiento");
         String motivoEdita = "Corrección";
@@ -365,7 +366,7 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(demanda.getId())).willReturn(Optional.of(demanda));
         given(anexoRepository.findAllByDocumentoId(demanda.getId())).willReturn(anexosActuales);
 
-        DocumentoRecord result = documentoService.editarAnexos(demanda.getId(), nuevosAnexos, motivoEdita);
+        DocumentoRecord result = documentoService.editarAnexos(demanda.getId(), nuevosAnexos, motivoEdita, "Procedencia 1");
 
         verify(documentoRepository).save(demanda);
         verify(anexoRepository).delete(anexosActuales.get(1));
@@ -386,7 +387,7 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita));
+                () -> documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita, ""));
 
         assertThat(exception.getMessage()).contains("Documento no encontrado");
     }
@@ -1377,6 +1378,7 @@ class DocumentoServiceTest {
     void create_demandaAntiguas() {
 
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        Concepto concepto = new Concepto();
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
 
@@ -1404,6 +1406,8 @@ class DocumentoServiceTest {
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
         given(digitalizacionService.guardarArchivo(any(), any()))
                 .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo", "archivo.pdf"));
+        concepto.setId(1).setNombre("Distribución");
+        given(conceptoRepository.findByNombre("Distribución")).willReturn(Optional.of(concepto));
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
         MockMultipartFile multipartFile = new MockMultipartFile(
                 "file",

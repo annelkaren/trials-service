@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
@@ -78,6 +79,7 @@ public class CarpetaService {
     private final RubroRepository rubroRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final MovimientoRepository movimientoRepository;
+    private final JuzgadoRepository juzgadoRepository;
 
     private static final String ACTOR_LABEL = "Actor";
     private static final String DEMANDADO_LABEL = "Demandado";
@@ -641,9 +643,19 @@ public class CarpetaService {
     public Page<LibroGobiernoRecord> libroDeGobierno(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
         Persona persona = personaService.getAuditor();
-        Juzgado juzgado = persona.getJuzgado();
 
-        Page<Carpeta> carpetas = carpetaRepository.findByJuzgado(juzgado, key, pageable);
+        Page<Carpeta> carpetas;
+
+        if (persona.getJuzgado() != null) {
+            List<Juzgado> juzgado = Collections.singletonList(persona.getJuzgado());
+            carpetas = carpetaRepository.findByJuzgado(juzgado, key, pageable);
+        } else {
+            Integer oficialiaId = persona.getOficialia().getId();
+            List<Estado> estados = List.of(Estado.ACTIVE);
+            List<Juzgado> juzgados = juzgadoRepository.findByOficialiaIdAndEstadoIn(oficialiaId, estados);
+
+            carpetas = carpetaRepository.findByJuzgado(juzgados, key, pageable);
+        }
 
         return carpetas.map(carpeta -> {
             String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
