@@ -23,12 +23,8 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -347,7 +343,7 @@ class JuzgadoServiceTest {
         TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
         NotFoundException exceptionDemanda = assertThrows(
                 NotFoundException.class,
-                () -> juzgadoService.getJuzgado(tipoJuicio, tipoDemanda)
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoDemanda, null)
         );
         assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
 
@@ -356,14 +352,14 @@ class JuzgadoServiceTest {
         tipoJuicio.setMateria(materiaFamiliar);
         NotFoundException exceptionApelacion = assertThrows(
                 NotFoundException.class,
-                () -> juzgadoService.getJuzgado(tipoJuicio, tipoApelacion)
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoApelacion, null)
         );
         assertThat(exceptionApelacion.getMessage()).contains("No hay sala disponible para asignar.");
 
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         NotFoundException exceptionExhorto = assertThrows(
                 NotFoundException.class,
-                () -> juzgadoService.getJuzgado(tipoJuicio, tipoExhorto)
+                () -> juzgadoService.getJuzgado(tipoJuicio, tipoExhorto, null)
         );
         assertThat(exceptionExhorto.getMessage()).contains("No se encontró un Juzgado de la materia");
     }
@@ -376,7 +372,7 @@ class JuzgadoServiceTest {
         List<Juzgado> juzgadoDemanda = Collections.singletonList(juzgado);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoDemanda);
         TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
-        Juzgado resultJuzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, tipoDemanda);
+        Juzgado resultJuzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, tipoDemanda, null);
 
         assertThat(resultJuzgadoDemanda).isEqualTo(juzgado);
 
@@ -384,7 +380,7 @@ class JuzgadoServiceTest {
         Juzgado juzgadoSegundaInstancia = juzgado.setInstanciaJuzgado(InstanciaJuzgado.SEGUNDA_INSTANCIA);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoApelacion);
         TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
-        Juzgado resultJuzgadoApelacion = juzgadoService.getJuzgado(tipoJuicio, tipoApelacion);
+        Juzgado resultJuzgadoApelacion = juzgadoService.getJuzgado(tipoJuicio, tipoApelacion, null);
 
         assertThat(resultJuzgadoApelacion).isEqualTo(juzgadoSegundaInstancia);
 
@@ -392,7 +388,7 @@ class JuzgadoServiceTest {
         Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.NO_APLICA);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(juzgadoExhorto);
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
-        Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto);
+        Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto, null);
 
         assertThat(resultJuzgadoExhorto).isEqualTo(juzgadoNoAplica);
     }

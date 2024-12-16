@@ -134,4 +134,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             WHERE f.instanciaJuzgado=:instanciaJuzgado
             """)
     List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado);
+
+    @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj WHERE oj.oficialiaId = :oficialiaId")
+    List<Juzgado> findJuzgadoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 }
