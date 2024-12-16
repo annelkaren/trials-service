@@ -4,13 +4,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
+
+import java.io.Serializable;
 
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_RELIGIONES")
-public class Religiones {
+public class Religiones implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idReligiones")
