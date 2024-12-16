@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Date;
 import java.time.LocalDateTime;
 
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +67,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             )
             """)
     Page<Audiencia> findByJuzgado(@Param("juzgado") Juzgado juzgado, @Param("key") String key, Pageable pageable);
+
+    List<Audiencia> findBySalaAndInicioGreaterThanEqual(Sala sala, Date inicio);
 }
+

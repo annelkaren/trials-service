@@ -35,6 +35,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 
+import java.util.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -83,7 +84,7 @@ public class AudienciaService {
 
         String fechaFormateada = (audienciaOralidadFamiliarRcord != null)
                 ? audienciaOralidadFamiliarRcord.fechaAudiencia()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 : "";
 
         if (audienciaOralidadFamiliarRcord == null) {
@@ -92,8 +93,8 @@ public class AudienciaService {
             nombreJuez = audienciaOralidadFamiliarRcord.nombreJuez() + " "
                     + audienciaOralidadFamiliarRcord.apellidoPaterno() + " "
                     + (audienciaOralidadFamiliarRcord.apellidoMaterno() != null
-                    ? audienciaOralidadFamiliarRcord.apellidoMaterno()
-                    : "");
+                            ? audienciaOralidadFamiliarRcord.apellidoMaterno()
+                            : "");
         }
 
         String calle = Optional.of(documento)
@@ -137,8 +138,7 @@ public class AudienciaService {
                             item.getSala().getNombre(),
                             item.getFechaAudiencia(),
                             item.getEstatusAudiencia(),
-                            juzgado.getId()
-                    );
+                            juzgado.getId());
                 })
                 .toList();
 
@@ -191,7 +191,7 @@ public class AudienciaService {
         Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
                 .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));
 
-        //Transformacion de fecha hora para empatar con el tipo de dato de la entidad
+        // Transformacion de fecha hora para empatar con el tipo de dato de la entidad
         LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
 
         Audiencia audienciaNew = new Audiencia()
@@ -301,5 +301,19 @@ public class AudienciaService {
         audienciaRepository.save(audienciaReprogramar);
 
         return new AudienciasResponseRecord(audienciaReprogramar.getId(), EstatusAudiencia.DIFERIDA);
+    }
+
+    public List<AudienciaAgendaRecord> getAgendaSala(Integer salaId) {
+        Sala sala = salaRepository.findById(salaId)
+                .orElseThrow(() -> new NotFoundException(SALA_NOT_FOUND, "SalaId"));
+
+        List<Audiencia> audiencia = audienciaRepository.findBySalaAndInicioGreaterThanEqual(sala, new Date());
+
+        return audiencia.stream()
+                .map(aud -> new AudienciaAgendaRecord(
+                        aud.getInicio(),
+                        aud.getFin(),
+                        aud.getTipoAudiencia().getNombre()))
+                .toList();
     }
 }

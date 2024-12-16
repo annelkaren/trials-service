@@ -11,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -66,5 +69,11 @@ public class AudienciaResource {
     public AudienciasResponseRecord reprogramarAudiencia(@RequestBody ReprogramarAudienciaRecord audiencia) {
         return this.audienciaService.reprogramarAudiencia(audiencia);
     }
+
+    @GetMapping("/audiencias/getAgenda/{salaId}")
+    public List<AudienciaAgendaRecord> getAgenda(@PathVariable Integer salaId) {
+        return this.audienciaService.getAgendaSala(salaId);
+    }
+    
 
 }
