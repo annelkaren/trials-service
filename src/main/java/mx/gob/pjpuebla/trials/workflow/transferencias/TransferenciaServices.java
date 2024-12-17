@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.transferencias;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -11,7 +12,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
-import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaRecord;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaRecordResponse;
 import org.springframework.data.domain.Pageable;
@@ -110,7 +110,7 @@ public class TransferenciaServices {
         List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
 
         List<DocumentoAsignadoResponseRecord> transferidos = asignaciones.stream().map(
-                (a)-> new DocumentoAsignadoResponseRecord(
+                a -> new DocumentoAsignadoResponseRecord(
                         a.getCarpeta().getId(),
                         a.getCarpeta().getId(),
                         a.getCarpeta().getExpediente(),
@@ -132,5 +132,36 @@ public class TransferenciaServices {
                 transferencia.getUuid().toString(),
                 transferencia.getEstatus().name());
     }
+
+    public TransferenciaRecordResponse getTransferenciaByPersonaEntregaId(Integer personaEntregaId){
+        Transferencia transferencia = transferenciaRepository.findByPersonaEntregaIdAndEstatus(personaEntregaId, EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe","personaEntregaId"));
+        Persona persona = personaRepository.findById(personaEntregaId.longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
+
+        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
+
+        List<DocumentoAsignadoResponseRecord> transferidos = asignaciones.stream().map(
+                a -> new DocumentoAsignadoResponseRecord(
+                        a.getCarpeta().getId(),
+                        a.getCarpeta().getId(),
+                        a.getCarpeta().getExpediente(),
+                        a.getCarpeta().getFolio(),
+                        a.getMotivo(),
+                        a.getConcepto(),
+                        a.getFechaAsignacion(),
+                        a.getFechaAsignacion().plusDays(Long.parseLong(a.getDuracion())),
+                        a.getEstado(),
+                        a.getObservaciones()
+                )).toList();
+
+        return new TransferenciaRecordResponse(transferencia.getId(),
+                transferencia.getEntregaId().intValue(),
+                null,
+                null,
+                transferencia.getTotalExpediente(),
+                transferidos,
+                null,
+                transferencia.getEstatus().name());
+    }
+
 
 }
