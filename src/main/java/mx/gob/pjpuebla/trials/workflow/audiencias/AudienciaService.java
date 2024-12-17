@@ -310,9 +310,6 @@ public class AudienciaService {
         }
 
         public List<AudienciaAgendaRecord> getAgendaSala(Integer salaId) {
-                
-                return audienciaRepository
-                        .findBySalaIdAndFechaAudiencia(salaId, new Date());
-
+                return audienciaRepository.findBySalaIdAndFechaAudiencia(salaId, new Date());
         }
 }

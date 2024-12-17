@@ -7,7 +7,9 @@ INSERT INTO tbl_audiencias (
     fn_carpeta, 
     fn_bloque, 
     fn_tipo_audiencia, 
-    n_estado
+    n_estado,
+    t_hora_inicio,
+    t_hora_fin
 ) VALUES (
     1,            
     0,             
@@ -17,5 +19,7 @@ INSERT INTO tbl_audiencias (
     1,            
     1,             
     8,
-    0      
+    0,
+    '2024-10-04T10:10:10',
+    '2024-10-04T14:10:10'    
 );

@@ -42,8 +42,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,6 +56,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -360,6 +363,34 @@ class AudienciaServiceTest {
         assertEquals(1, response.audienciaId());
         assertEquals(EstatusAudiencia.DIFERIDA, response.estatus());
     }
+
+    @Test
+    void getAgendaSala() {
+        List<AudienciaAgendaRecord> audienciaAgendaRecord = List.of(AudienciaSetUp.createAudienciaAgendaRecord());
+        
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+        .willReturn(audienciaAgendaRecord);
+    
+
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+
+        assertNotNull(response);
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+
+    @Test
+    void getAgendaSalaNotExistData() {
+       
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+            .willReturn(Collections.emptyList());
+    
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+    
+        assertTrue(response.isEmpty());
+    
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+    
 
 
 }

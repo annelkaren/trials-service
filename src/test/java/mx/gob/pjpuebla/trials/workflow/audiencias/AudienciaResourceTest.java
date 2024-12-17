@@ -137,4 +137,14 @@ class AudienciaResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void getAgenda() throws Exception {
+        mockMvc.perform(
+                get("/api/workflow/audiencias/getAgenda/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+
+
 }
