@@ -35,6 +35,7 @@ class EscolaridadServiceTest {
         escolaridad = EscolaridadSetUp.createEscolaridad();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void getAll_return_page() {
         List<Escolaridad> listPage = Collections.singletonList(escolaridad);

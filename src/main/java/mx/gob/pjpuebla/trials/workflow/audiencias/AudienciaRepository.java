@@ -8,14 +8,12 @@ import java.time.LocalDateTime;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 
-import org.apache.james.mime4j.dom.datetime.DateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import org.springframework.data.repository.query.Param;

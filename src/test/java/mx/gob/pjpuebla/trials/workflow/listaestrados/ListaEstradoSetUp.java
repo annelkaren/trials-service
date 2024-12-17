@@ -1,8 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.listaestrados;
 
-import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
-import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 
 import java.time.LocalDateTime;
 

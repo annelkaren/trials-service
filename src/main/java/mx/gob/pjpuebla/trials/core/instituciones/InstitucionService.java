@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.error.ConflictException;
@@ -31,7 +30,6 @@ public class InstitucionService {
 
     private final InstitucionRepository institucionRepository;
     private final DomicilioRepository domicilioRepository;
-    private final DistritoRepository distritoRepository;
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
