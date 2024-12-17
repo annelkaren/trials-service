@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 @Service
@@ -308,9 +310,9 @@ public class AudienciaService {
         }
 
         public List<AudienciaAgendaRecord> getAgendaSala(Integer salaId) {
-
+                
                 return audienciaRepository
-                        .findBySalaIdAndFechaAudiencia(salaId, LocalDateTime.now());
+                        .findBySalaIdAndFechaAudiencia(salaId, new Date());
 
         }
 }

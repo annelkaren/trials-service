@@ -77,8 +77,9 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             a.fin,
             a.tipoAudiencia.nombre)
             FROM Audiencia a
-            WHERE a.sala.id = :salaId AND a.fechaAudiencia >= :fechaAudiencia
+            JOIN a.sala s
+            WHERE s.id = :salaId AND CAST(a.fechaAudiencia AS date) >= :fechaAudiencia
             """)
-    List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, LocalDateTime fechaAudiencia);
+    List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, Date fechaAudiencia);
 }
 
