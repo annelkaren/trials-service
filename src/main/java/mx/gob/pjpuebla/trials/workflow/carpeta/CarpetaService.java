@@ -460,7 +460,8 @@ public class CarpetaService {
                 carpetaDetalle.getSolicitudAudiencia()!=null ? carpetaDetalle.getSolicitudAudiencia().name() : null,
                 carpetaDetalle.getFechaPresentacionImputado()!=null ? carpetaDetalle.getFechaPresentacionImputado().format(pattern) : null,
                 carpetaDetalle.getTipoJuicio()!=null ? carpetaDetalle.getTipoJuicio().getId() : null,
-                carpetaDetalle.getTipoJuicio()!=null ? carpetaDetalle.getTipoJuicio().getNombre() : null
+                carpetaDetalle.getTipoJuicio()!=null ? carpetaDetalle.getTipoJuicio().getNombre() : null,
+                carpetaDetalle.getCujus()
         );
     }
 
@@ -540,7 +541,8 @@ public class CarpetaService {
                 .setLugarDisposicion(detalle.lugarDisposicion())
                 .setPresentacionImputado(detalle.presentacionImputado())
                 .setSolicitudAudiencia(detalle.solicitudAudiencia())
-                .setFechaPresentacionImputado(detalle.fechaPresentacionImputado()!=null ? (LocalDateTime.parse(detalle.fechaPresentacionImputado(), pattern)):null);
+                .setFechaPresentacionImputado(detalle.fechaPresentacionImputado()!=null ? (LocalDateTime.parse(detalle.fechaPresentacionImputado(), pattern)):null)
+                .setCujus(detalle.cujus());
 
         carpetaDetalleRepository.save(carpetaDetalle);
         documentoRepository.save(documento);
@@ -660,6 +662,7 @@ public class CarpetaService {
         return carpetas.map(carpeta -> {
             String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
             String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
+            CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
 
             return new LibroGobiernoRecord(
                     carpeta.getId(),
@@ -668,7 +671,8 @@ public class CarpetaService {
                     carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre() : "Sin Tipo de Juicio",
                     actor,
                     demandado,
-                    carpeta.getPersona().equals(persona) && carpeta.getEstatus()==EstadoCarpeta.ASIGNADO
+                    carpeta.getPersona().equals(persona) && carpeta.getEstatus()==EstadoCarpeta.ASIGNADO,
+                    carpetaDetalle.getCujus() != null ? carpetaDetalle.getCujus() : ""
             );
         });
     }

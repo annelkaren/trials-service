@@ -10,6 +10,7 @@ public record LibroGobiernoRecord(
         String tipoJuicio,
         String actor,
         String demandado,
-        Boolean asignado
+        Boolean asignado,
+        String cujus
 ) implements Serializable {
 }

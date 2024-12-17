@@ -257,6 +257,7 @@ class CarpetaResourceTest {
                 "",
                 "",
                 0,
+                "",
                 ""
         );
 
@@ -314,7 +315,8 @@ class CarpetaResourceTest {
                 "",
                 1,
                 etapaProcesalRecord,
-                rubroList
+                rubroList,
+                ""
         );
 
         mockMvc.perform(post("/api/workflow/carpeta/expediente/detalle/1")
@@ -403,7 +405,16 @@ class CarpetaResourceTest {
 
     @Test
     void testGetLibroDeGobierno_Success() throws Exception {
-        List<LibroGobiernoRecord> libroGobiernoRecords = List.of(new LibroGobiernoRecord(1, "000001/2024", LocalDateTime.now(), "Oralidad familiar", "Actor", "Demandado", Boolean.TRUE));
+        List<LibroGobiernoRecord> libroGobiernoRecords = List.of(new LibroGobiernoRecord(
+                1,
+                "000001/2024",
+                LocalDateTime.now(),
+                "Oralidad familiar",
+                "Actor",
+                "Demandado",
+                Boolean.TRUE,
+                ""
+        ));
         Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
         when(mockCarpetaService.libroDeGobierno(anyString(), any(Pageable.class)))

@@ -748,7 +748,8 @@ class CarpetaServiceTest {
                 List.of(
                         new RubroRecord(1, "Rubro1"),
                         new RubroRecord(2, "Rubro2")
-                )
+                ),
+                ""
         );
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
@@ -890,6 +891,11 @@ class CarpetaServiceTest {
         List<Carpeta> carpetas = List.of(CarpetaSetUp.create().setPersona(persona));
         Page<Carpeta> carpetaPage = new PageImpl<>(carpetas, PageRequest.of(0, 10), carpetas.size());
 
+        CarpetaDetalle carpetaDetalle = new CarpetaDetalle()
+                .setId(1)
+                .setCujus("Saul Perez")
+                .setTipoJuicio(tipoJuicio);
+
         given(personaService.getAuditor()).willReturn(persona);
         given(carpetaRepository.findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10))))
                 .willReturn(carpetaPage);
@@ -899,6 +905,8 @@ class CarpetaServiceTest {
         given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
                 .willReturn(demandado);
 
+        given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
+
         Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
 
         assertThat(result).isNotNull();
@@ -907,6 +915,7 @@ class CarpetaServiceTest {
         verify(carpetaRepository).findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10)));
         verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any());
         verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
+        verify(carpetaDetalleRepository, times(1)).findByCarpetaId(any());
     }
 
     @Test
