@@ -225,8 +225,7 @@ class CarpetaResourceTest {
 
     @Test
     void getInfoExpedienteDetalle() throws Exception {
-        EtapaProcesalRecord etapaProcesalRecord = new EtapaProcesalRecord(1, "Etapa 1");
-
+       
         InfoExpedienteDetalleRecord infoExpedienteRecord = new InfoExpedienteDetalleRecord(
                 "determinacion 1",
                 "01/01/2000 01:00:00",
@@ -344,7 +343,6 @@ class CarpetaResourceTest {
    @Test
     void testPutAdjuntarPieza() throws Exception{
         PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
-        TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
         PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD", EstadoCarpeta.ASIGNADO);
 
         given(mockCarpetaService.adjuntarPiezaDocumentos(any(), any())).willReturn(pieza);

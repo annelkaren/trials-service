@@ -845,7 +845,6 @@ class CarpetaServiceTest {
 
     @Test
     void acoplarPiezaExpediente(){
-        Integer carpetaPadreId = 1;
 
         TipoPieza tipoPieza = new TipoPieza()
                 .setId(1)

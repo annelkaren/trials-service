@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
@@ -66,5 +67,11 @@ public class AudienciaResource {
     public AudienciasResponseRecord reprogramarAudiencia(@RequestBody ReprogramarAudienciaRecord audiencia) {
         return this.audienciaService.reprogramarAudiencia(audiencia);
     }
+
+    @GetMapping("/audiencias/getAgenda/{salaId}")
+    public List<AudienciaAgendaRecord> getAgenda(@PathVariable Integer salaId) {
+        return this.audienciaService.getAgendaSala(salaId);
+    }
+    
 
 }

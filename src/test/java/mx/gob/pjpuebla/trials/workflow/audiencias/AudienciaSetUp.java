@@ -58,4 +58,8 @@ public class AudienciaSetUp {
     public static ReprogramarAudienciaRecord createReprogramarAudienciaRecord(){
         return new ReprogramarAudienciaRecord(51,51, 1, 1,  LocalDate.now(), LocalTime.now(), 12, "descripcion");
     }
+
+    public static AudienciaAgendaRecord createAudienciaAgendaRecord(){
+        return new AudienciaAgendaRecord(LocalDateTime.now(), LocalDateTime.now(), "Audiencia prueba");
+    }
 }

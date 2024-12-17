@@ -44,6 +44,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -360,6 +361,34 @@ class AudienciaServiceTest {
         assertEquals(1, response.audienciaId());
         assertEquals(EstatusAudiencia.DIFERIDA, response.estatus());
     }
+
+    @Test
+    void getAgendaSala() {
+        List<AudienciaAgendaRecord> audienciaAgendaRecord = List.of(AudienciaSetUp.createAudienciaAgendaRecord());
+        
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+        .willReturn(audienciaAgendaRecord);
+    
+
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+
+        assertNotNull(response);
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+
+    @Test
+    void getAgendaSalaNotExistData() {
+       
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+            .willReturn(Collections.emptyList());
+    
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+    
+        assertTrue(response.isEmpty());
+    
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+    
 
 
 }

@@ -9,7 +9,6 @@ import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
 import net.sf.jasperreports.engine.JRException;
@@ -25,7 +24,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OficioService {
 
-    private final DigitalizacionService digitalizacionService;
     private final DocumentoContenidoService documentoContenidoService;
     private final AcuerdoService acuerdoService;
 

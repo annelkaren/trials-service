@@ -35,6 +35,7 @@ class EstadoCivilServiceTest {
         validEstadoCivil = createEstadoCivil();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void getAll_return_list() {
         List<EstadoCivil> listPage = Collections.singletonList(validEstadoCivil);
