@@ -51,7 +51,7 @@ public class DocumentoResource {
 
     @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
     public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
-        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita());
+        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita(), anexoRecord.procedencia());
     }
 
     @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

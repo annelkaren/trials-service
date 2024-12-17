@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -87,5 +88,4 @@ public class JuzgadoResource {
     public List<JuzgadoRecordItem> getJuzgadoActual() {
         return Collections.singletonList(this.juzgadoService.getJuzgadoActual());
     }
-
 }
