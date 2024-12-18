@@ -104,24 +104,12 @@ public class TransferenciaServices {
     }
 
     public TransferenciaRecordResponse getTransferencia(String uuid){
-        Transferencia transferencia = transferenciaRepository.findByUuuid(UUID.fromString(uuid)).orElseThrow(()-> new NotFoundException("La transferencia no existe","UUID"));
+        Transferencia transferencia = transferenciaRepository.findByUuid(UUID.fromString(uuid)).orElseThrow(()-> new NotFoundException("La transferencia no existe","UUID"));
         Persona persona = personaRepository.findById(transferencia.getRecibeId()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
 
         List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
 
-        List<DocumentoAsignadoResponseRecord> transferidos = asignaciones.stream().map(
-                a -> new DocumentoAsignadoResponseRecord(
-                        a.getCarpeta().getId(),
-                        a.getCarpeta().getId(),
-                        a.getCarpeta().getExpediente(),
-                        a.getCarpeta().getFolio(),
-                        a.getMotivo(),
-                        a.getConcepto(),
-                        a.getFechaAsignacion(),
-                        a.getFechaAsignacion().plusDays(Long.parseLong(a.getDuracion())),
-                        a.getEstado(),
-                        a.getObservaciones()
-                )).toList();
+        List<DocumentoAsignadoResponseRecord> transferidos = transferenciaAsignados(asignaciones);
 
         return new TransferenciaRecordResponse(transferencia.getId(),
                 transferencia.getEntregaId().intValue(),
@@ -134,12 +122,25 @@ public class TransferenciaServices {
     }
 
     public TransferenciaRecordResponse getTransferenciaByPersonaEntregaId(Integer personaEntregaId){
-        Transferencia transferencia = transferenciaRepository.findByPersonaEntregaIdAndEstatus(personaEntregaId, EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe","personaEntregaId"));
+        Transferencia transferencia = transferenciaRepository.findByEntregaIdAndEstatus(personaEntregaId, EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe","personaEntregaId"));
         Persona persona = personaRepository.findById(personaEntregaId.longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
 
         List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
 
-        List<DocumentoAsignadoResponseRecord> transferidos = asignaciones.stream().map(
+        List<DocumentoAsignadoResponseRecord> transferidos = transferenciaAsignados(asignaciones);
+
+        return new TransferenciaRecordResponse(transferencia.getId(),
+                transferencia.getEntregaId().intValue(),
+                null,
+                null,
+                transferencia.getTotalExpediente(),
+                transferidos,
+                null,
+                transferencia.getEstatus().name());
+    }
+
+    private List<DocumentoAsignadoResponseRecord> transferenciaAsignados(List<Movimiento> asignaciones){
+        return asignaciones.stream().map(
                 a -> new DocumentoAsignadoResponseRecord(
                         a.getCarpeta().getId(),
                         a.getCarpeta().getId(),
@@ -152,16 +153,6 @@ public class TransferenciaServices {
                         a.getEstado(),
                         a.getObservaciones()
                 )).toList();
-
-        return new TransferenciaRecordResponse(transferencia.getId(),
-                transferencia.getEntregaId().intValue(),
-                null,
-                null,
-                transferencia.getTotalExpediente(),
-                transferidos,
-                null,
-                transferencia.getEstatus().name());
     }
-
 
 }

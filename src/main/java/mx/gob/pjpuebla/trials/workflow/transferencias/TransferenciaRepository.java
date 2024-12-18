@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface TransferenciaRepository extends JpaRepository<Transferencia, Integer> {
-    Optional<Transferencia> findByUuuid(UUID uuid);
+    Optional<Transferencia> findByUuid(UUID uuid);
 
-    Optional<Transferencia> findByPersonaEntregaIdAndEstatus(Integer personaEntregaId, EstadoTransferencia estatus);
+    Optional<Transferencia> findByEntregaIdAndEstatus(Integer entregaId, EstadoTransferencia estatus);
 }

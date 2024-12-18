@@ -13,8 +13,13 @@ import org.springframework.web.bind.annotation.*;
 public class TransferenciaResource {
     private final TransferenciaServices transferenciaServices;
 
+    @GetMapping("/{personaEntregaId}")
+    public TransferenciaRecordResponse getTransferencia(@PathVariable Integer personaEntregaId){
+        return transferenciaServices.getTransferenciaByPersonaEntregaId(personaEntregaId);
+    }
+
     @GetMapping("/{uuid}")
-    public TransferenciaRecordResponse getTransferencia(@PathVariable String uuid){
+    public TransferenciaRecordResponse getFileTransferencia(@PathVariable String uuid){
         return transferenciaServices.getTransferencia(uuid);
     }
 
