@@ -258,6 +258,7 @@ public class AcuerdosService {
         return promociones.stream()
                 .map(p -> new AcuerdoPromocionesRecord(p.getId(),
                         (p.getTipoDocumento() == null) ? "Demanda Inicial"
+                                : p.getTipoDocumento() == TipoDocumento.ACUERDO ? "Acuerdo "
                                 : "Promoción " + p.getFolio(),
                         p.getRuta(), "", null))
                 .toList();
