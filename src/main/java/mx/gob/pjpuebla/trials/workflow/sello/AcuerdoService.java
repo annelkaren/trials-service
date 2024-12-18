@@ -30,7 +30,9 @@ public class AcuerdoService {
     public byte[] getAcuerdoPdf(Integer documentoId) throws IOException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.LETTER, 65.0F, 65.0F, 60.0F, 36.0F);
+        Rectangle pageSize = documentoContenido.getTamanioPapel() == 'o' ? PageSize.LEGAL : PageSize.LETTER;
+
+        Document document = new Document(pageSize, 65.0F, 65.0F, 60.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
         pdf.setPageEvent(new PdfPageEventHelper() {
