@@ -228,7 +228,7 @@ public class JuzgadoService {
         return null;
     }
 
-    public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta) {
+    public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
 
         InstanciaJuzgado instanciaJuzgado;
 
@@ -252,6 +252,13 @@ public class JuzgadoService {
             }
 
         }
+
+        if (juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
+            juzgados = new ArrayList<>(juzgadosRelacionados);         
+            if (juzgados.isEmpty()) {
+                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
+            }
+        } 
 
         int rand = RANDOM.nextInt(juzgados.size());
         return juzgados.get(rand);

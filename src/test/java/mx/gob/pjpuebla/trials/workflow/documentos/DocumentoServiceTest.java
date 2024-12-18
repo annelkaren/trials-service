@@ -221,30 +221,44 @@ class DocumentoServiceTest {
 
     @Test
     void create_demanda() {
-
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+    
+        Persona personaMock = mock(Persona.class);
+        Oficialia oficialiaMock = mock(Oficialia.class);
+        given(personaMock.getOficialia()).willReturn(oficialiaMock);
+        given(personaService.getAuditor()).willReturn(personaMock);
+        given(oficialiaMock.getId()).willReturn(1);
 
+        Juzgado juzgadoMock = mock(Juzgado.class);
+     
+        List<Juzgado> juzgadosRelacionados = Arrays.asList(juzgadoMock);
+        given(juzgadoRepository.findJuzgadoByOficialiaId(oficialiaMock.getId())).willReturn(juzgadosRelacionados);
+        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgadoMock);
+        
+        TipoPartes actorParte = mock(TipoPartes.class);
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actorParte));
         given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
+    
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+    
         given(documentoRepository.save(any())).willReturn(demanda);
-        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
-
+    
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(),
                 TipoCarpeta.DEMANDA);
-
         DocumentoRecord response = documentoService.createDemanda(recordRequest);
+    
         assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
                 .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
     }
-
+    
+    
     @Test
     void update_status_success() {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
@@ -324,9 +338,9 @@ class DocumentoServiceTest {
         for (Documento documento : documentos) {
             TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
 
-            given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+            given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
 
-            juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta);
+            juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta, null);
             assertThat(juzgado).isNotNull();
 
             for (int i = 0; i < invocaciones; i++) {
@@ -558,7 +572,7 @@ class DocumentoServiceTest {
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
 
         given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
 
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);

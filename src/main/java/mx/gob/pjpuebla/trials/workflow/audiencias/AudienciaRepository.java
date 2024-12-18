@@ -1,9 +1,13 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Date;
 import java.time.LocalDateTime;
 
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -64,4 +68,16 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             )
             """)
     Page<Audiencia> findByJuzgado(@Param("juzgado") Juzgado juzgado, @Param("key") String key, Pageable pageable);
+    
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord(
+            a.inicio,
+            a.fin,
+            a.tipoAudiencia.nombre)
+            FROM Audiencia a
+            JOIN a.sala s
+            WHERE s.id = :salaId AND CAST(a.fechaAudiencia AS date) >= :fechaAudiencia
+            """)
+    List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, Date fechaAudiencia);
 }
+

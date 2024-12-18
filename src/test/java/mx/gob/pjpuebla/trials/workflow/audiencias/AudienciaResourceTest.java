@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -108,7 +107,6 @@ class AudienciaResourceTest {
 
     @Test
     void setHoraAudiencias() throws Exception {
-        SetHorasRecord setHorasRecord = new SetHorasRecord(1, LocalDateTime.now(), true);
 
         mockMvc.perform(post("/api/workflow/audiencias/horaInicio")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -136,5 +134,15 @@ class AudienciaResourceTest {
                         .content(ResourceUtilTest.asJsonString(AudienciaSetUp.createReprogramarAudienciaRecord())))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void getAgenda() throws Exception {
+        mockMvc.perform(
+                get("/api/workflow/audiencias/getAgenda/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+
 
 }

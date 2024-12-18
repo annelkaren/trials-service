@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -24,7 +23,6 @@ public class SelloCaratulaService {
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DocumentoRepository documentoRepository;
-    private final JuzgadoRepository juzgadoRepository;
     @Value("classpath:jasper/CaratulaReport.jasper")
     private Resource caratula;
     private Boolean isExhorto;
