@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
