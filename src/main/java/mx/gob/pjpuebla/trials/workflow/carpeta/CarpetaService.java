@@ -403,7 +403,7 @@ public class CarpetaService {
                     setPieza(pieza.getExpediente()).
                     setEstadoPieza(EstadoCarpeta.ASIGNADO));
             documentoRepository.save(documento);
-            movimientoService.createMovimento(null, documento, persona, "Asignar a Pieza", EstadoCarpeta.ASIGNADO.name());
+            movimientoService.createMovimento(null, documento, persona, "Asignar a pieza", EstadoCarpeta.ASIGNADO.name());
         }
 
         Documento documento = documentoRepository.findById(documentos.stream().findFirst().orElseThrow()).orElseThrow();

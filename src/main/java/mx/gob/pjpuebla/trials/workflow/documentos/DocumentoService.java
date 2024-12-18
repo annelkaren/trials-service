@@ -685,26 +685,26 @@ public class DocumentoService {
             if (mov.getCarpeta() != null && !mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
                 documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
             }
-            if (mov.getCarpeta() != null && mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
+            /*if (mov.getCarpeta() != null && mov.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
                 documento = documentoRepository.findByCarpetaIdAndRutaIsNull(mov.getCarpeta().getId());
-            }
+            }*/
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
 
 
             DocumentoAsignadoResponseRecord documentoGridRecord =
                     new DocumentoAsignadoResponseRecord(
-                            documento.getId(),
+                            (documento != null) ? documento.getId(): null,
                             carpeta.getId(),
                             carpeta.getExpediente(),
-                            (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ? documento.getFolio() : carpeta.getFolio(),
+                            (documento != null && documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
                             StringUtils.capitalize(
-                                    (documento.getTipoDocumento() != null && !carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) ?
+                                    (documento != null && documento.getTipoDocumento() != null) ?
                                             documento.getTipoDocumento().name().toLowerCase() :
                                             carpeta.getTipoCarpeta().name().toLowerCase()),
-                            documento.getConcepto().getNombre(),
+                            (documento!=null)?documento.getConcepto().getNombre():"",
                             mov.getFechaAsignacion(),
-                            mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()),
-                            StringUtils.capitalize((documento.getTipoDocumento() != null) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
+                            (documento!=null)?mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()):null,
+                            StringUtils.capitalize((documento != null && documento.getTipoDocumento() != null) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
                             "");
             list.add(documentoGridRecord);
         }
@@ -1176,13 +1176,13 @@ public class DocumentoService {
         totalAsignados = asignados.getSize();
 
         for (DocumentoAsignadoResponseRecord asignado : asignados) {
-            if (asignado.fechaTermino().isAfter(LocalDateTime.now())) {
+            /*if (asignado.fechaTermino().isAfter(LocalDateTime.now())) {
                 terminoRebasado++;
             } else if (asignado.fechaTermino().isAfter(LocalDateTime.now().plusDays(1))) {
                 termino24horas++;
             } else {
                 termino3dias++;
-            }
+            }*/
 
         }
 
