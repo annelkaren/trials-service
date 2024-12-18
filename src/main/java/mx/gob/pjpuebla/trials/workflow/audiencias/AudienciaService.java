@@ -7,12 +7,15 @@ import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Asistencia;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudiencia;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -43,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional
@@ -60,6 +64,8 @@ public class AudienciaService {
         private final PersonaService personaService;
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final CarpetaRepository carpetaRepository;
+        private final PersonaDocumentoRepository personaDocumentoRepository;
+        private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
 
         public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
                 Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -126,25 +132,46 @@ public class AudienciaService {
                 Page<Audiencia> page = audienciaRepository.findByJuzgado(juzgado, key, pageable);
 
                 List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
-                                .map(item -> {
-                                        String nombreCompleto = item.getSala().getJuez().getNombre() + " "
-                                                        + item.getSala().getJuez().getApellidoPaterno();
+                        .map(item -> {
+                                String nombreCompleto = item.getSala().getJuez().getNombre() + " "
+                                        + item.getSala().getJuez().getApellidoPaterno();
 
-                                        if (item.getSala().getJuez().getApellidoMaterno() != null) {
-                                                nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
-                                        }
+                                if (item.getSala().getJuez().getApellidoMaterno() != null) {
+                                        nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
+                                }
 
-                                        return new AudienciasGeneralesResponseRecord(
-                                                        item.getId(),
-                                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
-                                                        nombreCompleto,
-                                                        item.getCarpeta().getExpediente(),
-                                                        item.getSala().getNombre(),
-                                                        item.getFechaAudiencia(),
-                                                        item.getEstatusAudiencia(),
-                                                        juzgado.getId());
-                                })
-                                .toList();
+                                List<AsistenciaPersonaDocumento> personasDocumento = personaDocumentoRepository.findByCarpetaId(item.getCarpeta().getId())
+                                        .stream()
+                                        .map(pd -> {
+                                                AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
+                                                        .findByPersonaDocumentoIdAndAudienciaId(pd.getId(), item.getId());
+
+                                                return new AsistenciaPersonaDocumento(
+                                                        pd.getId(),
+                                                        pd.getNombre(),
+                                                        pd.getApellidoPaterno(),
+                                                        pd.getApellidoMaterno(),
+                                                        pd.getRol().name(),
+                                                        pd.getTipoPartes().getNombre(),
+                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getAsistencia() : null,
+                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getDocumentoIdentificacion().getName() : null
+                                                );
+                                        })
+                                        .collect(Collectors.toList());
+
+                                return new AudienciasGeneralesResponseRecord(
+                                        item.getId(),
+                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
+                                        nombreCompleto,
+                                        item.getCarpeta().getExpediente(),
+                                        item.getSala().getNombre(),
+                                        item.getFechaAudiencia(),
+                                        item.getEstatusAudiencia(),
+                                        juzgado.getId(),
+                                        personasDocumento
+                                );
+                        })
+                        .toList();
 
                 return new PageImpl<>(list, pageable, page.getTotalElements());
         }
