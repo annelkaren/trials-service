@@ -253,7 +253,9 @@ public class NotificacionService {
 
             //ENVIO DE NOTIFICACION SI EL TIPO DE NOTIFICACION ES CORREO ELECTRONICO:
             if(notif.getTipoNotificacion().equals(TipoNotificacion.CORREO_ELECTRONICO)){
-                String email = "";
+                String email = persona.getCorreoNotificacion() != null && !persona.getCorreoNotificacion().isBlank() 
+                ? persona.getCorreoNotificacion() 
+                : persona.getCorreoElectronico();
                 String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoPaterno();
                 String numCarpeta = documento.getCarpeta().getExpediente();
                 String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
