@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -31,8 +32,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -46,6 +51,7 @@ public class NotificacionService {
     private final ListaEstradoRepository listaEstradoRepository;
     private final DocumentoRepository documentoRepository;
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
+    private final EmailService emailService;
 
     public Page<NotificacionRecord> getAllNotificaciones(String tipo, String estado, Pageable pageable) {
         tipo = (tipo != null) ? tipo.toLowerCase() : "";
@@ -244,6 +250,17 @@ public class NotificacionService {
                     .setNotificacion(notif)
                     .setPersonaDocumento(persona);
             detalles.add(detalle);
+
+            //ENVIO DE NOTIFICACION SI EL TIPO DE NOTIFICACION ES CORREO ELECTRONICO:
+            if(notif.getTipoNotificacion().equals(TipoNotificacion.CORREO_ELECTRONICO)){
+                String email = "";
+                String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoPaterno();
+                String numCarpeta = documento.getCarpeta().getExpediente();
+                String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
+                String tipoDocumento = documento.getTipoDocumento().name();
+
+                sendNotificacion(email, nombreParticipante, numCarpeta, nombreJuzgado, tipoDocumento);
+            }
         }
 
         // Guardar todos los detalles en un solo paso
@@ -252,5 +269,24 @@ public class NotificacionService {
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
+    }
+
+    private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado, String tipoDocumento){
+        Map<String, Object> sendEmail = new HashMap<>();
+
+        sendEmail.put("nombreParticipante", nombreParticipante);
+        sendEmail.put("numCarpeta", numCarpeta);
+        sendEmail.put("nombreJuzgado", nombreJuzgado);
+        sendEmail.put("tipoDocumento", tipoDocumento);
+    
+        emailService.sendMail(
+            List.of(email),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            "Notificación pendiente",
+            "NotificacionParticipantes.ftl",
+            sendEmail);
+
+        return true;
     }
 }
