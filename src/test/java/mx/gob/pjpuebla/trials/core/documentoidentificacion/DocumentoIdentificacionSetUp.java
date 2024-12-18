@@ -9,6 +9,18 @@ public class DocumentoIdentificacionSetUp {
 
     private DocumentoIdentificacionSetUp(){}
 
+    public static DocumentoIdentificacion createDocIdentificacion() {
+        DocumentoIdentificacion documentoIdentificacion = new DocumentoIdentificacion()
+                .setId(1)
+                .setName("Gafete Institucional defensoría pública")
+                .setVersion(0);
+        documentoIdentificacion.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(),
+                "6b13785f-d213-4585-a76b-437ffe57c9c7",
+                "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+
+        return documentoIdentificacion;
+    }
+
     public static List<DocumentoIdentificacion> createIdentificaciones() {
         DocumentoIdentificacion documentoIdentificacion1 = new DocumentoIdentificacion()
                 .setId(1)
