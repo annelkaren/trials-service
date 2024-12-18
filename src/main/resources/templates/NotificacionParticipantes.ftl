@@ -79,7 +79,7 @@
 
         <p>Por favor, ingresa al portal a la brevedad para revisar los detalles de estas notificaciones y realizar las acciones necesarias.</p>
         <p>⚠️ Importante: Algunas de estas notificaciones pueden requerir una acción urgente. Te recomendamos revisarlas lo antes posible para evitar contratiempos.</p>
-        <p>Puedes acceder al portal a través del siguiente enlace: <a href="http://187.190.62.102/acuerdos/login" target="_blank">http://187.190.62.102/acuerdos/login</a> </p>
+        <p>Puedes acceder al portal a través del siguiente enlace: <a href="${portalNotificaciones}" target="_blank">${portalNotificaciones}</a> </p>
         
         <div class="footer">
             <p><strong>Mensaje de privacidad: </strong></p>

@@ -23,6 +23,7 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +43,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class NotificacionService {
+
+    @Value("${app.portal-notificaciones}")
+    private String portalNotificaciones; // Ruta raíz de la digitalización
 
     private final NotificacionRepository notificacionRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
@@ -280,6 +283,7 @@ public class NotificacionService {
         sendEmail.put("numCarpeta", numCarpeta);
         sendEmail.put("nombreJuzgado", nombreJuzgado);
         sendEmail.put("tipoDocumento", tipoDocumento);
+        sendEmail.put("portalNotificaciones", portalNotificaciones);
     
         emailService.sendMail(
             List.of(email),
