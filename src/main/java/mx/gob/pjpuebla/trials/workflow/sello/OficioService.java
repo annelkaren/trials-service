@@ -27,10 +27,12 @@ public class OficioService {
     private final DocumentoContenidoService documentoContenidoService;
     private final AcuerdoService acuerdoService;
 
-    public byte[] getOficio(Integer oficioId) throws JRException, IOException, WriterException {
+    public byte[] getOficio(Integer oficioId) throws IOException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(oficioId);
+        Rectangle pageSize = documentoContenido.getTamanioPapel() == 'o' ? PageSize.LEGAL : PageSize.LETTER;
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.LETTER, 65.0F, 65.0F, 120.0F, 36.0F);
+        Document document = new Document(pageSize, 65.0F, 65.0F, 120.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
         pdf.setPageEvent(new PdfPageEventHelper() {
