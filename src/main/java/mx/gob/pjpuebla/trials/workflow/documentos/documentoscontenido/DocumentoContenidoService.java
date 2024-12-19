@@ -129,7 +129,7 @@ public class DocumentoContenidoService {
 
     public Integer publicarCancelarOficio(Integer documentoId, Character oficioPublicado) {
         //Actualizamos documento: 
-        Documento doc = documentoRepository.findById(documentoId).orElseThrow( () -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " ));
+        Documento doc = documentoRepository.findById(documentoId).orElseThrow( () -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " +  documentoId));
         doc.setEstatus(EstadoCarpeta.PUBLICADO);
         documentoRepository.save(doc);
 
