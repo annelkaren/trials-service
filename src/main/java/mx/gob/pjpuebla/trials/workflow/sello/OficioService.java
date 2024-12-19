@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
-import net.sf.jasperreports.engine.JRException;
+
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 

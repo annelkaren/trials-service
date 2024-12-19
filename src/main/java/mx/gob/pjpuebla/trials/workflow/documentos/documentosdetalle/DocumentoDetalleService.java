@@ -32,7 +32,7 @@ public class DocumentoDetalleService {
 
 
 
-        if (docDetalle != null) {
+        if (docDetalle != null && doc != null) {
             docDetalle.setRuta(documento.file().getOriginalFilename());
             docDetalle.setEstado(documento.estado());
             docDetalle.setComentario(documento.comentario());
