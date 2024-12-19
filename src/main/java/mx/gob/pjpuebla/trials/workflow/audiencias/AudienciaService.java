@@ -348,6 +348,20 @@ public class AudienciaService {
                 return audienciaRepository.findBySalaIdAndFechaAudiencia(salaId, new Date());
         }
 
+        public boolean validarDisponibilidad(ValidarDisponibilidadRequestRecord request) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+                String fechaHoraStr = request.fecha() + "T" + request.hora();
+                LocalDateTime fechaInicio = LocalDateTime.parse(fechaHoraStr, formatter);
+                LocalDateTime fechaFin = fechaInicio.plusMinutes(request.duracion());
+                return !audienciaRepository.existeConflicto(
+                        request.salaId(),
+                        fechaInicio,
+                        fechaFin
+                );
+        }
+
+
         public void guardarArchivo(MultipartFile file, Integer audienciaId) {
                 this.basePath = rootFolder + "/digitalizacion/";
 

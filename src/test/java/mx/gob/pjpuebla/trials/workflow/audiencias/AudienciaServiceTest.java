@@ -437,6 +437,10 @@ class AudienciaServiceTest {
         verify(audienciaRepository).save(any(Audiencia.class));
     }
 
+
+
+
+
     @Test
     void testGetActaMinima() throws IOException {
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
@@ -450,4 +454,45 @@ class AudienciaServiceTest {
         byte[] resultado = audienciaService.getAudienciaDocumento(audiencia.getId());
         assertNotNull(resultado);
     }
+
+    @Test
+    void validarDisponibilidad_sinConflictos_ShouldReturnTrue() {
+        String fecha = "2024-12-20";
+        String hora = "10:00:00";
+        int duracion = 60;
+        long salaId = 1L;
+
+        ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(salaId,fecha, hora, duracion);
+
+        LocalDateTime fechaInicio = LocalDateTime.parse(fecha + "T" + hora);
+        LocalDateTime fechaFin = fechaInicio.plusMinutes(duracion);
+
+        when(audienciaRepository.existeConflicto(salaId, fechaInicio, fechaFin)).thenReturn(false);
+
+        boolean resultado = audienciaService.validarDisponibilidad(request);
+
+        assertTrue(resultado);
+        verify(audienciaRepository).existeConflicto(salaId, fechaInicio, fechaFin);
+    }
+
+    @Test
+    void validarDisponibilidad_conConflictos_shouldReturnFalse() {
+        String fecha = "2024-12-20";
+        String hora = "10:00:00";
+        int duracion = 60;
+        long salaId = 1L;
+
+        ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(salaId, fecha, hora, duracion);
+
+        LocalDateTime fechaInicio = LocalDateTime.parse(fecha + "T" + hora);
+        LocalDateTime fechaFin = fechaInicio.plusMinutes(duracion);
+
+        when(audienciaRepository.existeConflicto(salaId, fechaInicio, fechaFin)).thenReturn(true);
+
+        boolean resultado = audienciaService.validarDisponibilidad(request);
+
+        assertFalse(resultado);
+        verify(audienciaRepository).existeConflicto(salaId, fechaInicio, fechaFin);
+    }
+
 }

@@ -95,5 +95,14 @@ public class AudienciaResource {
         return this.audienciaService.getAgendaSala(salaId);
     }
     
+    @PostMapping("/audiencias/validarDisponibilidad")
+    public ResponseEntity<String> validarDisponibilidad(@RequestBody ValidarDisponibilidadRequestRecord request) {
+        boolean disponible = audienciaService.validarDisponibilidad(request);
 
+        if (!disponible) {
+            return ResponseEntity.badRequest().body("Audiencia en conflicto");
+        }
+
+        return ResponseEntity.ok("La sala está disponible");
+    }
 }
