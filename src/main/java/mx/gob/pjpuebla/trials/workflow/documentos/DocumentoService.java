@@ -211,7 +211,7 @@ public class DocumentoService {
         Oficialia oficialia = persona.getOficialia();
         if (oficialia == null) {
             throw new NotFoundException("La persona no está relacionada con ninguna oficialía", "persona.getOficialia()");
-        }   
+        }
         List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId());
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
@@ -340,8 +340,8 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + documentoId));
         documento.getCarpeta().setSelloEstatus(SelloEstatus.NO_VALIDO);
 
-        if(documento.getData() != null && procedencia != null){
-            if(documento.getData().getExhortoProcedencia() != null) {
+        if (documento.getData() != null && procedencia != null) {
+            if (documento.getData().getExhortoProcedencia() != null) {
                 documento.setData(documento.getData().setExhortoProcedencia(procedencia));
             }
         }
@@ -604,7 +604,12 @@ public class DocumentoService {
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
             String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
-            String concepto = documento.getConcepto().getNombre();
+            String concepto;
+            if (documento.getTipoDocumento().equals(TipoDocumento.PROMOCION)) {
+                concepto = documento.getConcepto().getNombre();
+            } else {
+                concepto = documento.getCarpeta().getConcepto().getNombre();
+            }
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
@@ -615,7 +620,7 @@ public class DocumentoService {
                     movimiento.getFechaAsignacion(),
                     true,
                     documento.getPrioridad(),
-                    documento.getHoras()
+                    documento.getCarpeta().getHoras()
             );
             list.add(drecord);
         }
@@ -637,7 +642,12 @@ public class DocumentoService {
             String folio = (documento.getTipoDocumento() == null) ? documento.getCarpeta().getFolio() : documento.getFolio();
             String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
-            String concepto = documento.getConcepto().getNombre();
+            String concepto;
+            if (documento.getTipoDocumento().equals(TipoDocumento.PROMOCION)) {
+                concepto = documento.getConcepto().getNombre();
+            } else {
+                concepto = documento.getCarpeta().getConcepto().getNombre();
+            }
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
                     documento.getId(),
                     folio,
@@ -648,7 +658,7 @@ public class DocumentoService {
                     movimiento.getFechaAsignacion(),
                     (Boolean) map.get(IS_INTERNO),
                     documento.getPrioridad(),
-                    documento.getHoras()
+                    documento.getCarpeta().getHoras()
             );
             list.add(drecord);
         }
@@ -693,7 +703,7 @@ public class DocumentoService {
 
             DocumentoAsignadoResponseRecord documentoGridRecord =
                     new DocumentoAsignadoResponseRecord(
-                            (documento != null) ? documento.getId(): null,
+                            (documento != null) ? documento.getId() : null,
                             carpeta.getId(),
                             carpeta.getExpediente(),
                             (documento != null && documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
@@ -701,9 +711,9 @@ public class DocumentoService {
                                     (documento != null && documento.getTipoDocumento() != null) ?
                                             documento.getTipoDocumento().name().toLowerCase() :
                                             carpeta.getTipoCarpeta().name().toLowerCase()),
-                            (documento!=null)?documento.getConcepto().getNombre():"",
+                            (documento != null) ? documento.getCarpeta().getConcepto().getNombre() : "",
                             mov.getFechaAsignacion(),
-                            (documento!=null)?mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()):null,
+                            (documento != null) ? mov.getFechaAsignacion().plusDays(documento.getCarpeta().getConcepto().getDias()) : null,
                             StringUtils.capitalize((documento != null && documento.getTipoDocumento() != null) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
                             "");
             list.add(documentoGridRecord);
@@ -740,15 +750,12 @@ public class DocumentoService {
                 Carpeta carpeta = mov.getCarpeta();
                 carpeta.setFechaAsignacion(LocalDateTime.now())
                         .setPersona(persona)
+                        .setConcepto(getConceptoByTipoCarpetaDocumento(null, carpeta.getTipoCarpeta()))
                         .setEstatus(EstadoCarpeta.TURNADO);
 
-                Documento documento2 = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
-                documento2.setConcepto(getConceptoByTipoCarpetaDocumento(null, carpeta.getTipoCarpeta()));
-                documentoRepository.save(documento2);
-
                 carpeta = carpetaRepository.save(carpeta);
-                movimiento.setConcepto(documento2.getConcepto().getNombre());
-                movimiento.setDuracion(documento2.getConcepto().getDias().toString() + "d");
+                movimiento.setConcepto(carpeta.getConcepto().getNombre());
+                movimiento.setDuracion(carpeta.getConcepto().getDias().toString() + "d");
                 movimiento.setCarpeta(carpeta);
                 movimiento.setJuzgado(carpeta.getJuzgado());
             }
@@ -1037,8 +1044,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "conceptoId" + personalJuzgadoRecord.idConcepto()));
         Documento documento = documentoRepository.findById(personalJuzgadoRecord.idDocumentoRecepcion())
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, String.valueOf(personalJuzgadoRecord.idDocumentoRecepcion())));
-        documento.setConcepto(concepto);
-        String duration = (documento.getHoras() != null && documento.getHoras() > 0) ? documento.getHoras() + "h" : concepto.getDias().toString() + "d";
+        String duration = (documento.getCarpeta().getHoras() != null && documento.getCarpeta().getHoras() > 0) ? documento.getCarpeta().getHoras() + "h" : concepto.getDias().toString() + "d";
 
         Persona persona = personaService.getAuditor();
         if (documento.getTipoDocumento() != null) { //Documento
@@ -1047,6 +1053,7 @@ public class DocumentoService {
         } else { //Carpeta
             carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
                     .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId" + personalJuzgadoRecord.idDocumentoRecepcion()));
+            carpeta.setConcepto(concepto);
             carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
             carpeta.setPersona(persona);
             carpetaRepository.save(carpeta);
@@ -1133,11 +1140,11 @@ public class DocumentoService {
             Carpeta carpeta = carpetaRepository.findById(documento.getCarpeta().getId())
                     .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId" + documento.getCarpeta().getId()));
 
-            documento.setConcepto(concepto);
+            carpeta.setConcepto(concepto);
             documento.setPrioridad(item.prioridad());
             float toDays = (float) item.horas() / 24;
             if (toDays != (float) concepto.getDias())
-                documento.setHoras(item.horas());
+                documento.getCarpeta().setHoras(item.horas());
             if (documento.getTipoDocumento() != null) {
                 documento.setEstatus(EstadoCarpeta.TURNADO);
             } else {
@@ -1149,7 +1156,7 @@ public class DocumentoService {
 
             Persona persona = personaService.getAuditor();
 
-            String duracion = (documento.getHoras() != null && documento.getHoras() > 0) ? documento.getHoras() + "h" : concepto.getDias().toString() + "d";
+            String duracion = (documento.getCarpeta().getHoras() != null && documento.getCarpeta().getHoras() > 0) ? documento.getCarpeta().getHoras() + "h" : concepto.getDias().toString() + "d";
             Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
                     EstadoCarpeta.TURNADO.name(), StringUtils.capitalize(concepto.getNombre().toLowerCase()), personalJuzgado, duracion);
 
@@ -1276,11 +1283,11 @@ public class DocumentoService {
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
         carpeta.setPersona(persona);
+        Concepto concepto = conceptoRepository.findByNombre("Distribución").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Distribución"));
+        carpeta.setConcepto(concepto);
         carpeta = carpetaRepository.save(carpeta);
 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name());
-        Concepto concepto = conceptoRepository.findByNombre("Distribución").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND,"Distribución"));
-        documento.setConcepto(concepto);
         documento.setCarpeta(carpeta);
         documento.setFechaAsignacion(null);
         documento.setPersona(null);

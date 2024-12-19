@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
@@ -56,6 +57,13 @@ public class Carpeta implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoCarpeta estatus;
+
+    @Column(name = "N_HORAS")
+    private Integer horas;
+
+    @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Concepto concepto;
 
     @NotNull
     @Enumerated
