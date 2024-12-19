@@ -19,6 +19,7 @@ import jakarta.persistence.Version;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
@@ -104,6 +105,11 @@ public class Audiencia implements  Serializable, Auditable {
 
     @Column(name = "S_RESULTADOS_DESAHOGO")
     private String resultadosDesahogo;
+
+    @Size(max = 255)
+    @Column(name = "S_RUTA")
+    private String ruta;
+
 
     @Accessors(chain = false)
     @Embedded

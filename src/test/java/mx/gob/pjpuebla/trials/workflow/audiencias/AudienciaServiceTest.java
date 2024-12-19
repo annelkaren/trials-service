@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
 import mx.gob.pjpuebla.trials.core.documentoidentificacion.DocumentoIdentificacionSetUp;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
@@ -26,6 +27,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
@@ -44,7 +46,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -418,7 +422,38 @@ class AudienciaServiceTest {
         assertTrue(response.isEmpty());
     
         verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
-    }  
+    }
+    @Test
+    void testGuardarArchivo(){
+        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
+        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
+        audiencia.setId(1);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+
+        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
+        audienciaService.guardarArchivo(fileMock, audiencia.getId());
+
+        verify(audienciaRepository).findById(audiencia.getId());
+        verify(audienciaRepository).save(any(Audiencia.class));
+    }
+
+
+
+
+
+    @Test
+    void testGetActaMinima() throws IOException {
+        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
+        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
+        audiencia.setId(1);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+
+        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
+        audienciaService.guardarArchivo(fileMock, audiencia.getId());
+
+        byte[] resultado = audienciaService.getAudienciaDocumento(audiencia.getId());
+        assertNotNull(resultado);
+    }
 
     @Test
     void validarDisponibilidad_sinConflictos_ShouldReturnTrue() {
