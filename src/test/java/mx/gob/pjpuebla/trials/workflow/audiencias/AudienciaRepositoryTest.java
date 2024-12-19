@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamili
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 
 @DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -130,5 +132,35 @@ class AudienciaRepositoryTest extends AuditConfigTest {
 
         assertThat(response.size()).isGreaterThan(0); // Confirmar que contiene al menos un elemento
 
+    }
+
+    @Test
+    void existeConflicto_ReturnsTrueWhenConflictExists() {
+        AudienciaRepository audienciaRepository = Mockito.mock(AudienciaRepository.class);
+        Long salaId = 1L;
+        LocalDateTime inicio = LocalDateTime.of(2024, 12, 18, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2024, 12, 18, 11, 0);
+
+        Mockito.when(audienciaRepository.existeConflicto(eq(salaId), eq(inicio), eq(fin))).thenReturn(true);
+
+        boolean resultado = audienciaRepository.existeConflicto(salaId, inicio, fin);
+
+        assertThat(resultado).isTrue();
+        Mockito.verify(audienciaRepository).existeConflicto(eq(salaId), eq(inicio), eq(fin));
+    }
+    
+    @Test
+    void existeConflicto_ReturnsFalseWhenNoConflict() {
+        AudienciaRepository audienciaRepository = Mockito.mock(AudienciaRepository.class);
+
+        Long salaId = 1L;
+        LocalDateTime inicio = LocalDateTime.of(2024, 12, 18, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2024, 12, 18, 11, 0);
+
+        Mockito.when(audienciaRepository.existeConflicto(eq(salaId), eq(inicio), eq(fin))).thenReturn(false);
+        boolean resultado = audienciaRepository.existeConflicto(salaId, inicio, fin);
+        assertThat(resultado).isFalse();
+
+        Mockito.verify(audienciaRepository).existeConflicto(eq(salaId), eq(inicio), eq(fin));
     }
 }

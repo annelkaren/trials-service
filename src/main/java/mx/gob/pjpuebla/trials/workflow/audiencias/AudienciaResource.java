@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -73,5 +74,14 @@ public class AudienciaResource {
         return this.audienciaService.getAgendaSala(salaId);
     }
     
+    @PostMapping("/audiencias/validarDisponibilidad")
+    public ResponseEntity<String> validarDisponibilidad(@RequestBody ValidarDisponibilidadRequestRecord request) {
+        boolean disponible = audienciaService.validarDisponibilidad(request);
 
+        if (!disponible) {
+            return ResponseEntity.badRequest().body("Audiencia en conflicto");
+        }
+
+        return ResponseEntity.ok("La sala está disponible");
+    }
 }

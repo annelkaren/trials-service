@@ -143,6 +143,33 @@ class AudienciaResourceTest {
                 .andExpect(status().isOk());
     }
 
+        @Test
+        void validarDisponibilidad_success() throws Exception {
+                ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(
+                        1L,"2024-12-20", "10:00:00", 60
+                );
 
+                when(audienciaService.validarDisponibilidad(request)).thenReturn(true);
+
+                mockMvc.perform(post("/api/workflow/audiencias/validarDisponibilidad")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(request)))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("La sala está disponible"));
+        }
+
+        @Test
+        void validarDisponibilidad_conflict() throws Exception {
+                ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(
+                        1L, "2024-12-20", "10:00:00", 60
+                );
+
+                when(audienciaService.validarDisponibilidad(request)).thenReturn(false);
+                mockMvc.perform(post("/api/workflow/audiencias/validarDisponibilidad")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(request)))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Audiencia en conflicto"));
+        }
 
 }

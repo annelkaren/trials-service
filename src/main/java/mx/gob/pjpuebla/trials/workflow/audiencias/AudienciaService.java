@@ -338,4 +338,17 @@ public class AudienciaService {
         public List<AudienciaAgendaRecord> getAgendaSala(Integer salaId) {
                 return audienciaRepository.findBySalaIdAndFechaAudiencia(salaId, new Date());
         }
-}
+        
+        public boolean validarDisponibilidad(ValidarDisponibilidadRequestRecord request) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                
+                String fechaHoraStr = request.fecha() + "T" + request.hora();
+                LocalDateTime fechaInicio = LocalDateTime.parse(fechaHoraStr, formatter);
+                LocalDateTime fechaFin = fechaInicio.plusMinutes(request.duracion());
+                return !audienciaRepository.existeConflicto(
+                        request.salaId(),
+                        fechaInicio,
+                        fechaFin
+                );
+        }
+} 
