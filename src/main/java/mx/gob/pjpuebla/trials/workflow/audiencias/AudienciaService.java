@@ -373,7 +373,7 @@ public class AudienciaService {
                                 "Error al guardar el archivo en el servidor", e);
                 }
 
-                audiencia.setRuta(rutaArchivo.resolve(nombreUnicoArchivo).toString());
+                audiencia.setRuta(nombreUnicoArchivo);
                 audienciaRepository.save(audiencia);
 
                 new DigitalizacionRecord(audiencia.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
@@ -396,9 +396,8 @@ public class AudienciaService {
                 this.basePath = this.rootFolder + "/digitalizacion/";
 
                 Audiencia audiencia = audienciaRepository.findById(audienciaId).orElse(null);
-
-                String rutaAudiencia = audiencia.getRuta();
-                Path rutaArchivo = Paths.get(rutaAudiencia);
+            assert audiencia != null;
+            Path rutaArchivo = crearDirectorio(audiencia).resolve(audiencia.getRuta());
 
                 if (Files.exists(rutaArchivo)) {
                         return Files.readAllBytes(rutaArchivo);
@@ -419,7 +418,7 @@ public class AudienciaService {
                 String numero = expediente.substring(0, expediente.length() - 4);
                 numero = String.format("%06d", Integer.parseInt(numero));
                 String juzgado = obtenerJuzgado(audiencia);
-                return Paths.get(basePath, numero + "/" + year, juzgado, "actaminima", audiencia.getId().toString());
+                return Paths.get(basePath,  year, juzgado, numero, "actaminima");
         }
 
         private String obtenerJuzgado(Audiencia audiencia) {
