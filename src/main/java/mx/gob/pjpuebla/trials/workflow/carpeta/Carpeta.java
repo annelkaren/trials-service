@@ -15,10 +15,7 @@ import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 
 import java.io.Serializable;
@@ -60,6 +57,10 @@ public class Carpeta implements Serializable, Auditable {
 
     @Column(name = "N_HORAS")
     private Integer horas;
+
+    @Enumerated
+    @Column(name = "N_PRIORIDAD")
+    private Prioridad prioridad;
 
     @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

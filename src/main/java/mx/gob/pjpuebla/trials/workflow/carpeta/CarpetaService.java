@@ -274,17 +274,17 @@ public class CarpetaService {
 
 
     public InfoExpedienteRecord getInfoExpediente(Integer docId) {
-        Documento documento = documentoRepository.findById(docId)
+        Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
 
         //Obtiene nombre de rubros
-        List<RubroRecord> rubros = documento.getCarpeta().getRubros().stream()
+        List<RubroRecord> rubros = carpeta.getRubros().stream()
                 .map(rubro -> new RubroRecord(rubro.getId(), rubro.getNombre()))
                 .sorted(Comparator.comparing(RubroRecord::name))
                 .toList();
 
         //Obtiene nombre de procedimientos dados los rubros
-        String tipoProcedimiento = documento.getCarpeta().getRubros().stream()
+        String tipoProcedimiento = carpeta.getRubros().stream()
                 .map(Rubro::getProcedimiento)
                 .filter(Objects::nonNull)
                 .map(Procedimiento::getNombre)
@@ -293,26 +293,26 @@ public class CarpetaService {
                 .collect(Collectors.joining(", "));
 
         //Obtiene los participantes del expediente
-        List<PersonaDataRecord> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(documento.getCarpeta().getId());
+        List<PersonaDataRecord> apelacionRecordResponseList = personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(carpeta.getId());
 
-        //Obtiene el nombre del juez
-        ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
+        //Obtiene el nombre del juez TODO.obtener nombre del juez
+        //ExtraAudienciaSelloRecord extraAudienciaSelloRecord = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
         EtapaProcesalRecord etapaProcesalRecord = null;
 
-        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(documento.getCarpeta().getId());
+        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
         if (optionalCarpetaEtapas.isPresent()) {
             CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
             etapaProcesalRecord = new EtapaProcesalRecord(carpetaEtapas.getEtapaProcesal().getId(), carpetaEtapas.getEtapaProcesal().getNombre());
         }
 
         return new InfoExpedienteRecord(
-                documento.getCarpeta().getExpediente(),
-                documento.getCarpeta().getTipoJuicio().getNombre(), //TODO mapear de forma correcta expediente tipo PENAL
-                documento.getCarpeta().getTipoJuicio().getId(), //TODO mapear de forma correcta expediente tipo PENAL
-                extraAudienciaSelloRecord.nombreJuez(),
+                carpeta.getExpediente(),
+                carpeta.getTipoJuicio().getNombre(), //TODO mapear de forma correcta expediente tipo PENAL
+                carpeta.getTipoJuicio().getId(), //TODO mapear de forma correcta expediente tipo PENAL
+                "", //extraAudienciaSelloRecord.nombreJuez(),
                 LocalDateTime.now().format(pattern), //TODO añadir fecha presentación
                 "Asunto de penal desde Backend", //TODO añadir asunto para expediente tipo PENAL
                 tipoProcedimiento,
@@ -320,11 +320,11 @@ public class CarpetaService {
                 etapaProcesalRecord,
                 getParticipantes(apelacionRecordResponseList),
                 null, //TODO añadir razón de devolución
-                documento.getCarpeta().getJuzgado().getMateria().getNombre(),
-                documento.getCarpeta().getJuzgado().getMateria().getId(),
-                documento.getCarpeta().getTipoJuicio().getTipoSistema()!=null ? documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null,
-                documento.getCarpeta().getJuzgado().getNombre(),
-                (documento.getCarpeta().getTipoPieza() != null) ? documento.getCarpeta().getTipoPieza().getTipo() : null
+                carpeta.getJuzgado().getMateria().getNombre(),
+                carpeta.getJuzgado().getMateria().getId(),
+                carpeta.getTipoJuicio().getTipoSistema()!=null ? carpeta.getTipoJuicio().getTipoSistema().getNombre() : null,
+                carpeta.getJuzgado().getNombre(),
+                (carpeta.getTipoPieza() != null) ? carpeta.getTipoPieza().getTipo() : null
         );
     }
 
@@ -415,29 +415,29 @@ public class CarpetaService {
     public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-        Documento documento = documentoRepository.findById(docId)
+        Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
 
-        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
 
-        String nombre = documento.getCarpeta().getPersona().getNombre() + " " +
-                (documento.getCarpeta().getPersona().getApellidoPaterno()!=null ? documento.getCarpeta().getPersona().getApellidoPaterno() + " " : "")  +
-                (documento.getCarpeta().getPersona().getApellidoMaterno()!=null ? documento.getCarpeta().getPersona().getApellidoMaterno() : "") + ", ";
+        String nombre = carpeta.getPersona().getNombre() + " " +
+                (carpeta.getPersona().getApellidoPaterno()!=null ? carpeta.getPersona().getApellidoPaterno() + " " : "")  +
+                (carpeta.getPersona().getApellidoMaterno()!=null ? carpeta.getPersona().getApellidoMaterno() : "") + ", ";
 
-        String rol = (documento.getCarpeta().getPersona().getOcupacion()!=null ? documento.getCarpeta().getPersona().getOcupacion() + ", " : "");
+        String rol = (carpeta.getPersona().getOcupacion()!=null ? carpeta.getPersona().getOcupacion() + ", " : "");
 
-        String ubicacion = documento.getCarpeta().getPersona().getJuzgado() != null ?
-                documento.getCarpeta().getPersona().getJuzgado().getNombre() : documento.getCarpeta().getPersona().getOficialia().getNombre();
+        String ubicacion = carpeta.getPersona().getJuzgado() != null ?
+                carpeta.getPersona().getJuzgado().getNombre() : carpeta.getPersona().getOficialia().getNombre();
 
         return new InfoExpedienteDetalleRecord(
-                documento.getCarpeta().getDeterminacionJurisdiccional()!=null ? documento.getCarpeta().getDeterminacionJurisdiccional().name() : null,
+                carpeta.getDeterminacionJurisdiccional()!=null ? carpeta.getDeterminacionJurisdiccional().name() : null,
                 carpetaDetalle.getFechaAdmision()!=null ? carpetaDetalle.getFechaAdmision().format(pattern) : null,
                 carpetaDetalle.getFechaDesechado()!=null ? carpetaDetalle.getFechaDesechado().format(pattern) : null,
                 nombre + rol + ubicacion,
                 carpetaDetalle.getAsunto(),
                 null,
                 carpetaDetalle.getObservaciones(),
-                documento.getCarpeta().getSentencia()!=null ? documento.getCarpeta().getSentencia().name() : null,
+                carpeta.getSentencia()!=null ? carpeta.getSentencia().name() : null,
                 carpetaDetalle.getPromovente(),
                 carpetaDetalle.getNumeroCarpetaInvestigacion(),
                 carpetaDetalle.getNumeroOficio(),
