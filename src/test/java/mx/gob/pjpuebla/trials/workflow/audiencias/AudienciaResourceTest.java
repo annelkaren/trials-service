@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -143,6 +144,58 @@ class AudienciaResourceTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void audienciaDigitalizacionActaMinima_success() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test.pdf",
+                "application/pdf",
+                "Este es un archivo de prueba".getBytes()
+        );
 
+
+        mockMvc.perform(multipart("/api/workflow/audiencias/tabGeneral/1")
+                        .file(file)
+                        .param("audienciaId", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getFile_success() throws Exception {
+        byte[] pdfContent = "Contenido de prueba del archivo PDF".getBytes();
+        given(audienciaService.getAudienciaDocumento(1)).willReturn(pdfContent);
+
+        mockMvc.perform(get("/api/workflow/audiencias/tabGeneral/1"))
+                .andExpect(status().isOk());
+    }
+
+        @Test
+        void validarDisponibilidad_success() throws Exception {
+                ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(
+                        1L,"2024-12-20", "10:00:00", 60
+                );
+
+                when(audienciaService.validarDisponibilidad(request)).thenReturn(true);
+
+                mockMvc.perform(post("/api/workflow/audiencias/validarDisponibilidad")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(request)))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("La sala está disponible"));
+        }
+
+        @Test
+        void validarDisponibilidad_conflict() throws Exception {
+                ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(
+                        1L, "2024-12-20", "10:00:00", 60
+                );
+
+                when(audienciaService.validarDisponibilidad(request)).thenReturn(false);
+                mockMvc.perform(post("/api/workflow/audiencias/validarDisponibilidad")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(request)))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Audiencia en conflicto"));
+        }
 
 }

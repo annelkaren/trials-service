@@ -79,5 +79,17 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             WHERE s.id = :salaId AND CAST(a.fechaAudiencia AS date) >= :fechaAudiencia
             """)
     List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, Date fechaAudiencia);
-}
+
+    @Query("""
+        SELECT COUNT(a) > 0
+        FROM Audiencia a
+        WHERE a.sala.id = :salaId
+          AND (
+            (:inicio BETWEEN a.inicio AND a.fin)
+            OR (:fin BETWEEN a.inicio AND a.fin)
+            OR (a.inicio BETWEEN :inicio AND :fin)
+          )
+    """)
+    boolean existeConflicto(Long salaId, LocalDateTime inicio, LocalDateTime fin);
+} 
 
