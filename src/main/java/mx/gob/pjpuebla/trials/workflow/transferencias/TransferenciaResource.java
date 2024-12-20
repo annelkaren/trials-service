@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/workflow/transferencia")
+@RequestMapping("/api/workflow/transferencias")
 @SecurityRequirement(name = "Keycloak")
 public class TransferenciaResource {
     private final TransferenciaServices transferenciaServices;
@@ -18,7 +18,7 @@ public class TransferenciaResource {
         return transferenciaServices.getTransferenciaByPersonaEntregaId(personaEntregaId);
     }
 
-    @GetMapping("/{uuid}")
+    @GetMapping("/download/{uuid}")
     public TransferenciaRecordResponse getFileTransferencia(@PathVariable String uuid){
         return transferenciaServices.getTransferencia(uuid);
     }

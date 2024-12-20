@@ -3,17 +3,22 @@ package mx.gob.pjpuebla.trials.workflow.transferencias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoTransferencia;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
 @Data
+@Entity
+@EntityListeners(AuditListener.class)
 @Table(name="TBL_TRANSFERENCIAS")
-public class Transferencia {
+public class Transferencia implements Serializable, Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTransferencia")
     @SequenceGenerator(name="idTransferencia", sequenceName = "SEQ_TRANSFERENCIA_ID")
@@ -32,7 +37,8 @@ public class Transferencia {
     private Long autorizaId;
 
     @NotNull
-    @Column(name = "FN_JUZGADO")
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @OneToOne(fetch = FetchType.LAZY)
     private Juzgado juzgado;
 
     @Column(name = "T_FECHA_TRANSFERENCIA")
@@ -51,6 +57,7 @@ public class Transferencia {
     @Column(name = "S_UUID_MOVIMIENTO")
     private UUID uuid;
 
+    @Accessors(chain = false)
     @Embedded
     private Audit audit;
 

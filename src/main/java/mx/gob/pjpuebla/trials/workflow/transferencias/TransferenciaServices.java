@@ -32,28 +32,29 @@ public class TransferenciaServices {
     private final DocumentoRepository documentoRepository;
     private final MovimientoRepository movimientoRepository;
 
-    public TransferenciaRecordResponse create(TransferenciaRecord record){
+    public TransferenciaRecordResponse create(TransferenciaRecord recordTransferencia){
         Persona auditor = personaService.getAuditor();
-        Persona personaEntrega = personaRepository.findById(record.personaEntregaId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe", "personaEntregaId"));
+        Persona personaEntrega = personaRepository.findById(recordTransferencia.personaEntregaId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe", "personaEntregaId"));
 
         Transferencia transferencia = new Transferencia();
 
         transferencia.setEntregaId(personaEntrega.getId());
+        transferencia.setRecibeId(null);
         transferencia.setAutorizaId(auditor.getId());
         transferencia.setEstatus(EstadoTransferencia.AUTORIZADO);
         transferencia.setJuzgado(personaEntrega.getJuzgado());
         transferencia.setTotalExpediente(0);
 
-        transferencia = transferenciaRepository.save(transferencia);
+        Transferencia result = transferenciaRepository.save(transferencia);
 
-        return  new TransferenciaRecordResponse(transferencia.getId(),
-                transferencia.getEntregaId().intValue(),
+        return  new TransferenciaRecordResponse(result.getId(),
+                result.getEntregaId().intValue(),
                 null,
                 null,
                 0,
                 null,
                 null,
-                transferencia.getEstatus().name());
+                result.getEstatus().name());
 
     }
 
@@ -64,7 +65,7 @@ public class TransferenciaServices {
         UUID uuid = UUID.randomUUID();
         LocalDateTime fechaTransferencia = LocalDateTime.now();
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, personaRecibe.getJuzgado().getId(), personaRecibe, Boolean.FALSE, Pageable.unpaged()).getContent();
+        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("%", personaRecibe.getJuzgado().getId(), personaRecibe, Boolean.TRUE, Pageable.unpaged()).getContent();
 
         for(Movimiento asignacion : asignaciones){
             Movimiento movimiento = new Movimiento()
