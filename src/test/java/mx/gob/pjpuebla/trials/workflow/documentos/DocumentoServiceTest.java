@@ -1128,7 +1128,7 @@ class DocumentoServiceTest {
                 .setPersona(persona)
                 .setOficialia(null)
                 .setJuzgado(juzgado);
-        String duration = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
+        String duration = (documento.getCarpeta().getHoras() != null && documento.getCarpeta().getHoras() > 0)?documento.getCarpeta().getHoras() +"h":concepto.getDias().toString()+"d";
 
         when(conceptoRepository.findById(personalJuzgadoRecord.idConcepto())).thenReturn(Optional.of(concepto));
         when(documentoRepository.findById(personalJuzgadoRecord.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
