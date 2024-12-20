@@ -3,14 +3,18 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
@@ -46,9 +50,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,6 +70,9 @@ class NotificacionServiceTest {
     @Mock
     private DocumentoRepository documentoRepository;
 
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
+
     @InjectMocks
     private NotificacionService notificacionService;
 
@@ -88,18 +92,49 @@ class NotificacionServiceTest {
 
     @Test
     void getNotificacionPorTipoEstrado() {
-
+        // Mock de Pageable
         Pageable pageable = PageRequest.of(0, 10);
+        
+        // Mock de Carpeta
+        Carpeta carpeta = new Carpeta();
+        carpeta.setExpediente("EXP-123");
+    
+        // Mock de Documento
+        Documento documento = new Documento();
+        documento.setCarpeta(carpeta); // Aseguramos que no sea null
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+    
+        // Mock de Notificacion
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+    
+        // Mock del repositorio
         Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
-        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
-                .thenReturn(notificacionPage);
+        when(notificacionRepository.getNotificacionByTipo(
+                TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
+            .thenReturn(notificacionPage);
+    
+        // Mock del DocumentoDetalleRepository
+        DocumentoDetalle docDetalle = new DocumentoDetalle();
+        docDetalle.setExtractoSentencia("Extracto de la sentencia de prueba.");
+        when(documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()))
+            .thenReturn(Optional.of(docDetalle));
+    
+        // Llamada al servicio
         Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", "PENDIENTE_DE_ASIGNAR", pageable);
-
+    
+        // Verificaciones
         assertEquals(1, result.getTotalElements());
-        NotificacionRecord notificacionrecord = result.getContent().get(0);
-        assertEquals(notificacion.getNotas(), notificacionrecord.notas());
-        assertEquals(notificacion.getTipoNotificacion(), notificacionrecord.tipo());
+        NotificacionRecord notificacionRecord = result.getContent().get(0);
+        assertEquals(notificacion.getNotas(), notificacionRecord.notas());
+        assertEquals(notificacion.getTipoNotificacion(), notificacionRecord.tipo());
+        assertEquals("Extracto de la sentencia de prueba.".substring(0, 25), notificacionRecord.concepto().get(0));
     }
+    
+
 
     @Test
     void getInvalid() {
