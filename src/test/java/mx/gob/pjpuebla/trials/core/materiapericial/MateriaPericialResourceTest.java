@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.materialpericial;
+package mx.gob.pjpuebla.trials.core.materiapericial;
 
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,30 +18,30 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(MaterialPericialResource.class)
+@WebMvcTest(MateriaPericialResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-class MaterialPericialResourceTest {
+class MateriaPericialResourceTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private MaterialPericialService materialPericialService;
+    private MateriaPericialService materiaPericialService;
 
-    private MaterialPericial materialPericial;
+    private MateriaPericial materiaPericial;
 
     @BeforeEach
     void setUp() {
-        materialPericial = MaterialPericialSetUp.createMaterialPericial();
+        materiaPericial = MateriaPericialSetUp.createMateriaPericial();
     }
 
     @Test
     void getll_success() throws Exception {
         String nombre = "Documentoscopía y Grafoscopía";
-        when(materialPericialService.getallMaterialParicial(nombre.toLowerCase()))
-                .thenReturn(List.of(materialPericial));
-        mockMvc.perform(get("/api/core/materialpericial")
+        when(materiaPericialService.getallMateriaParicial(nombre.toLowerCase()))
+                .thenReturn(List.of(materiaPericial));
+        mockMvc.perform(get("/api/core/materiapericial")
                         .param("nombre", nombre)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.materialpericial;
+package mx.gob.pjpuebla.trials.core.materiapericial;
 
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
@@ -16,20 +16,20 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
-        "/scripts/INSERT_MATERIAL_PERICIAL.sql"
+        "/scripts/INSERT_MATERIA_PERICIAL.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
-        "/scripts/DELETE_MATERIAL_PERICIAL.sql"
+        "/scripts/DELETE_MATERIA_PERICIAL.sql"
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-class MaterialPericialRepositoryTest extends AuditConfigTest {
+class MateriaPericialRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private MaterialPericialRepository materialPericialRepository;
+    private MateriaPericialRepository materiaPericialRepository;
 
     @Test
     void testGetAllMateriaPericial() {
         String nombre = "documento";
-        List<MaterialPericial> results = materialPericialRepository.getAllMateriaPericial(nombre);
+        List<MateriaPericial> results = materiaPericialRepository.getAllMateriaPericial(nombre);
 
         assertThat(results).isNotEmpty();
         assertThat(results).hasSizeGreaterThan(0);

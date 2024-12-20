@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.materialpericial;
+package mx.gob.pjpuebla.trials.core.materiapericial;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/core")
 @SecurityRequirement(name = "Keycloak")
-public class MaterialPericialResource {
+public class MateriaPericialResource {
 
-    private final MaterialPericialService materialPericialService;
+    private final MateriaPericialService materialPericialService;
 
 
-    @GetMapping(value = "/materialpericial", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MaterialPericial> getMaterialPericialList(@RequestParam(value = "nombre", required = false) String nombre) {
-        return materialPericialService.getallMaterialParicial(nombre);
+    @GetMapping(value = "/materiapericial", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<MateriaPericial> getMateriaPericialList(@RequestParam(value = "nombre", required = false) String nombre) {
+        return materialPericialService.getallMateriaParicial(nombre);
     }
 }

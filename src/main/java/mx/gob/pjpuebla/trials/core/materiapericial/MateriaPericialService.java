@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.materialpericial;
+package mx.gob.pjpuebla.trials.core.materiapericial;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,12 +7,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MaterialPericialService {
+public class MateriaPericialService {
 
-    private final MaterialPericialRepository materialPericialRepository;
+    private final MateriaPericialRepository materialPericialRepository;
 
 
-    public List<MaterialPericial> getallMaterialParicial(String nombre) {
+    public List<MateriaPericial> getallMateriaParicial(String nombre) {
         nombre = (nombre != null) ? nombre.toLowerCase() : "";
         return materialPericialRepository.getAllMateriaPericial(nombre);
     }
