@@ -1,0 +1,1 @@
+INSERT INTO TBL_MATERIA_PERICIAL (PN_ID, S_NOMBRE) VALUES (1, 'Documentoscopía y Grafoscopía');
