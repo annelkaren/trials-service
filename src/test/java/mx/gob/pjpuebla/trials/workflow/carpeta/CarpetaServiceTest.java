@@ -334,7 +334,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
-        documento.setConcepto(concepto);
+        documento.getCarpeta().setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -367,7 +367,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
-        documento.setConcepto(concepto);
+        documento.getCarpeta().setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);

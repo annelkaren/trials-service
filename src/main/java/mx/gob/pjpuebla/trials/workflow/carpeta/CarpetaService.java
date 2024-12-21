@@ -471,14 +471,14 @@ public class CarpetaService {
     ) {
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-        Documento documento = documentoRepository.findById(docId)
+        Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
-        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(docId);
 
         //TODO editar fase para PENAL
         //TODO editar juez en caso penal
 
-        documento.getCarpeta().setDeterminacionJurisdiccional(detalle.determinacion()!=null ? detalle.determinacion() : CatalogoDeterminacionJurisdiccional.PRESENTACION);
+        carpeta.setDeterminacionJurisdiccional(detalle.determinacion()!=null ? detalle.determinacion() : CatalogoDeterminacionJurisdiccional.PRESENTACION);
 
         //edita tipo juicio
         TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
@@ -490,25 +490,25 @@ public class CarpetaService {
                         .orElseThrow(() -> new IllegalArgumentException("Rubro no encontrado con id: " + rubroRecord.id())))
                 .collect(Collectors.toSet());
 
-        documento.getCarpeta().setRubros(rubros);
+        carpeta.setRubros(rubros);
 
         //edita etapa procesal
         EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
                 .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada", detalle.etapaProcesal().id().toString()));
-        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(documento.getCarpeta().getId());
+        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
         if (optionalCarpetaEtapas.isPresent()) {
             CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
             //Si el registro Etapa Procesal mas reciente no coincide con el obtenido de detalle registra la nueva etapa procesal
             if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
                 carpetaEtapasRepository.save( new CarpetaEtapas()
-                        .setCarpeta(documento.getCarpeta())
+                        .setCarpeta(carpeta)
                         .setFechaRegistro(LocalDateTime.now())
                         .setEtapaProcesal(etapaProcesalDetalle)
                 );
             }
         }else{
             carpetaEtapasRepository.save( new CarpetaEtapas()
-                    .setCarpeta(documento.getCarpeta())
+                    .setCarpeta(carpeta)
                     .setFechaRegistro(LocalDateTime.now())
                     .setEtapaProcesal(etapaProcesalDetalle)
             );
@@ -545,7 +545,7 @@ public class CarpetaService {
                 .setCujus(detalle.cujus());
 
         carpetaDetalleRepository.save(carpetaDetalle);
-        documentoRepository.save(documento);
+        carpetaRepository.save(carpeta);
     }
 
     public List<PiezaRecordResponse> getPiezas(Integer documentoId){
