@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoTransferencia;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Transactional
@@ -31,6 +33,7 @@ public class TransferenciaServices {
     private final PersonaRepository personaRepository;
     private final DocumentoRepository documentoRepository;
     private final MovimientoRepository movimientoRepository;
+    private final DocumentoService documentoService;
 
     public TransferenciaRecordResponse create(TransferenciaRecord recordTransferencia){
         Persona auditor = personaService.getAuditor();
@@ -65,7 +68,7 @@ public class TransferenciaServices {
         UUID uuid = UUID.randomUUID();
         LocalDateTime fechaTransferencia = LocalDateTime.now();
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("%", personaRecibe.getJuzgado().getId(), personaRecibe, Boolean.TRUE, Pageable.unpaged()).getContent();
+        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("", personaRecibe.getJuzgado().getId(), personaRecibe, Boolean.TRUE, Pageable.unpaged()).getContent();
 
         for(Movimiento asignacion : asignaciones){
             Movimiento movimiento = new Movimiento()
@@ -93,13 +96,18 @@ public class TransferenciaServices {
 
         transferencia = transferenciaRepository.save(transferencia);
 
-        return new TransferenciaRecordResponse(transferencia.getId(),
-                transferencia.getEntregaId().intValue(),
-                transferencia.getRecibeId().intValue(),
+        return new TransferenciaRecordResponse(
+                transferencia.getId(),
+                transferencia.getEntregaId(),
+                persona.getNombre() + " " + persona.getApellidoPaterno() + " " +persona.getApellidoMaterno(),
+                persona.getOcupacion(),
+                transferencia.getRecibeId(),
+                personaRecibe.isPresent()?personaRecibe.get().getNombre():"",
+                personaRecibe.isPresent()?personaRecibe.get().getOcupacion():"",
                 transferencia.getFechaTransferencia(),
                 transferencia.getTotalExpediente(),
-                null,
-                uuid.toString(),
+                transferidos,
+                transferencia.getUuid().toString(),
                 transferencia.getEstatus().name());
 
     }
@@ -107,14 +115,18 @@ public class TransferenciaServices {
     public TransferenciaRecordResponse getTransferencia(String uuid){
         Transferencia transferencia = transferenciaRepository.findByUuid(UUID.fromString(uuid)).orElseThrow(()-> new NotFoundException("La transferencia no existe","UUID"));
         Persona persona = personaRepository.findById(transferencia.getRecibeId()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
+        Optional<Persona> personaRecibe = personaRepository.findById(transferencia.getRecibeId());
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
+        List<DocumentoAsignadoResponseRecord> transferidos = documentoService.getAllAsignado(null, Pageable.unpaged()).getContent(); //documentoRepository.findByPersonaAsignada("", transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
 
-        List<DocumentoAsignadoResponseRecord> transferidos = transferenciaAsignados(asignaciones);
-
-        return new TransferenciaRecordResponse(transferencia.getId(),
-                transferencia.getEntregaId().intValue(),
-                transferencia.getRecibeId().intValue(),
+        return new TransferenciaRecordResponse(
+                transferencia.getId(),
+                transferencia.getEntregaId(),
+                persona.getNombre() + " " + persona.getApellidoPaterno() + " " +persona.getApellidoMaterno(),
+                persona.getOcupacion(),
+                transferencia.getRecibeId(),
+                personaRecibe.isPresent()?personaRecibe.get().getNombre():"",
+                personaRecibe.isPresent()?personaRecibe.get().getOcupacion():"",
                 transferencia.getFechaTransferencia(),
                 transferencia.getTotalExpediente(),
                 transferidos,
@@ -122,21 +134,26 @@ public class TransferenciaServices {
                 transferencia.getEstatus().name());
     }
 
-    public TransferenciaRecordResponse getTransferenciaByPersonaEntregaId(Integer personaEntregaId){
-        Transferencia transferencia = transferenciaRepository.findByEntregaIdAndEstatus(personaEntregaId, EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe","personaEntregaId"));
-        Persona persona = personaRepository.findById(personaEntregaId.longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
+    public TransferenciaRecordResponse getTransferenciaByPersonaEntrega(){
+        Persona persona = personaService.getAuditor();
+        Transferencia transferencia = transferenciaRepository.findByEntregaIdAndEstatus(persona.getId().intValue(), EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe","personaEntregaId"));
+        Optional<Persona> personaRecibe = personaRepository.findById(transferencia.getRecibeId());
+        List<DocumentoAsignadoResponseRecord> transferidos = documentoService.getAllAsignado(null, Pageable.unpaged()).getContent(); //documentoRepository.findByPersonaAsignada("", transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada(null, transferencia.getJuzgado().getId(), persona, Boolean.FALSE, Pageable.unpaged()).getContent();
+        // List<DocumentoAsignadoResponseRecord> transferidos = transferenciaAsignados(asignaciones);
 
-        List<DocumentoAsignadoResponseRecord> transferidos = transferenciaAsignados(asignaciones);
-
-        return new TransferenciaRecordResponse(transferencia.getId(),
-                transferencia.getEntregaId().intValue(),
-                null,
-                null,
+        return new TransferenciaRecordResponse(
+                transferencia.getId(),
+                transferencia.getEntregaId(),
+                persona.getNombre() + " " + persona.getApellidoPaterno() + " " +persona.getApellidoMaterno(),
+                persona.getOcupacion(),
+                transferencia.getRecibeId(),
+                personaRecibe.isPresent()?personaRecibe.get().getNombre():"",
+                personaRecibe.isPresent()?personaRecibe.get().getOcupacion():"",
+                transferencia.getFechaTransferencia(),
                 transferencia.getTotalExpediente(),
                 transferidos,
-                null,
+                transferencia.getUuid().toString(),
                 transferencia.getEstatus().name());
     }
 
@@ -150,7 +167,7 @@ public class TransferenciaServices {
                         a.getMotivo(),
                         a.getConcepto(),
                         a.getFechaAsignacion(),
-                        a.getFechaAsignacion().plusDays(Long.parseLong(a.getDuracion())),
+                        a.getFechaAsignacion().plusDays(1),
                         a.getEstado(),
                         a.getObservaciones()
                 )).toList();

@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 public class TransferenciaResource {
     private final TransferenciaServices transferenciaServices;
 
-    @GetMapping("/{personaEntregaId}")
-    public TransferenciaRecordResponse getTransferencia(@PathVariable Integer personaEntregaId){
-        return transferenciaServices.getTransferenciaByPersonaEntregaId(personaEntregaId);
+    @GetMapping("/registro")
+    public TransferenciaRecordResponse getTransferencia(){
+        return transferenciaServices.getTransferenciaByPersonaEntrega();
     }
 
     @GetMapping("/download/{uuid}")

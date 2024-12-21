@@ -6,8 +6,12 @@ import java.time.LocalDateTime;
 
 public record TransferenciaRecordResponse(
         Integer id,
-        Integer personaEntregaId,
-        Integer personaRecibeId,
+        Long personaEntregaId,
+        String personaEntrega,
+        String personaEntregaPuesto,
+        Long personaRecibeId,
+        String personaRecibe,
+        String personaRecibePuesto,
         LocalDateTime fechaTransferencia,
         Integer totalExpedientes,
         List<DocumentoAsignadoResponseRecord> expedientes,
