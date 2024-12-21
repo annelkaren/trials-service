@@ -40,12 +40,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -120,7 +122,7 @@ class AudienciaServiceTest {
         persona = PersonaSetUp.createPersona();
         documento = DocumentoSetUp.create_data(tipoJuicio);
         tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
-
+        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
     }
 
     @Test
@@ -437,17 +439,12 @@ class AudienciaServiceTest {
         verify(audienciaRepository).save(any(Audiencia.class));
     }
 
-
-
-
-
     @Test
     void testGetActaMinima() throws IOException {
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
         audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
         audiencia.setId(1);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
-
         given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
         audienciaService.guardarArchivo(fileMock, audiencia.getId());
 
