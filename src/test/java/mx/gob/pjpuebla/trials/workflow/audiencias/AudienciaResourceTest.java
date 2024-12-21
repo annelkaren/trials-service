@@ -1,12 +1,17 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,11 +20,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,6 +43,12 @@ class AudienciaResourceTest {
 
     @MockBean
     private AudienciaService audienciaService;
+
+    @MockBean
+    private JuzgadoRepository juzgadoRepository;
+
+    @MockBean
+    private EventoService eventoService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -163,6 +177,8 @@ class AudienciaResourceTest {
     @Test
     void getFile_success() throws Exception {
         byte[] pdfContent = "Contenido de prueba del archivo PDF".getBytes();
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
         given(audienciaService.getAudienciaDocumento(1)).willReturn(pdfContent);
 
         mockMvc.perform(get("/api/workflow/audiencias/tabGeneral/1"))
@@ -196,6 +212,27 @@ class AudienciaResourceTest {
                                 .content(ResourceUtilTest.asJsonString(request)))
                         .andExpect(status().isBadRequest())
                         .andExpect(content().string("Audiencia en conflicto"));
+        }
+
+        @Test
+        void esDiaInhabil_success() throws Exception {
+
+        LocalDate fecha = LocalDate.of(2024, 12, 20);
+        Integer juzgadoId = 1;
+        Boolean esInhabil = true;
+
+        Juzgado juzgado = new Juzgado();
+        juzgado.setId(juzgadoId);
+
+        given(juzgadoRepository.findById(juzgadoId)).willReturn(Optional.of(juzgado));
+        given(eventoService.esDiaInHabil(fecha, juzgado, null)).willReturn(esInhabil);
+
+        mockMvc.perform(get("/api/workflow/audiencias/getDiaInhabil")
+                        .param("fecha", fecha.toString())
+                        .param("juzgadoId", juzgadoId.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
         }
 
 }

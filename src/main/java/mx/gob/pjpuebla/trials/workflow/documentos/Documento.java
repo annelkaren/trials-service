@@ -12,7 +12,6 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
@@ -75,13 +74,6 @@ public class Documento implements Serializable, Auditable {
     @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Concepto concepto;
-
-    @Enumerated
-    @Column(name = "N_PRIORIDAD")
-    private Prioridad prioridad;
-
-    @Column(name = "N_HORAS")
-    private Integer horas;
 
     @JoinColumn(name = "FN_DOCUMENTO_RELACIONADO", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
