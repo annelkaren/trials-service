@@ -96,12 +96,11 @@ class NotificacionServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         
         // Mock de Carpeta
-        Carpeta carpeta = new Carpeta();
-        carpeta.setExpediente("EXP-123");
+        Carpeta carpeta = CarpetaSetUp.create();
     
         // Mock de Documento
         Documento documento = new Documento();
-        documento.setCarpeta(carpeta); // Aseguramos que no sea null
+        documento.setCarpeta(carpeta); 
         documento.setTipoDocumento(TipoDocumento.SENTENCIA);
     
         // Mock de Notificacion
