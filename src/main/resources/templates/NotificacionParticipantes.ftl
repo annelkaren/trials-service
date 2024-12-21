@@ -71,7 +71,7 @@
         <div class="info-section">
             <p><strong> Estimado/a ${nombreParticipante}: </strong></p>
 
-            <p>Te informamos que tienes una <strong>notificación pendiente</strong> en el Sistema Electrónico de Control y Gestión Judicial relacionadas con el expediente ${numCarpeta} perteneciente al juzgado ${nombreJuzgado}  </p>
+            <p>Te informamos que tienes una <strong>notificación pendiente</strong> en el Sistema Electrónico de Control y Gestión Judicial relacionada con el expediente ${numCarpeta} perteneciente al juzgado ${nombreJuzgado}  </p>
             <ul>
                 <li><strong>Tipo de notificación: ${tipoDocumento} </strong></li>
             </ul>

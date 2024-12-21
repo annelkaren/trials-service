@@ -230,7 +230,7 @@ public class AudienciaService {
 
                 // Obtenemos carpeta:
                 Carpeta carpeta = carpetaRepository.findById(audiencia.carpetaId())
-                                .orElseThrow(() -> new NotFoundException("Caroeta no encontrada", "carpetaId"));
+                                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId"));
 
                 // Transformacion de fecha hora para empatar con el tipo de dato de la entidad
                 LocalDateTime fechaHora = LocalDateTime.of(audiencia.fecha(), audiencia.hora());
