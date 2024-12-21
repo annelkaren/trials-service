@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.audiencias;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
@@ -19,9 +23,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,6 +43,12 @@ class AudienciaResourceTest {
 
     @MockBean
     private AudienciaService audienciaService;
+
+    @MockBean
+    private JuzgadoRepository juzgadoRepository;
+
+    @MockBean
+    private EventoService eventoService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -200,6 +212,27 @@ class AudienciaResourceTest {
                                 .content(ResourceUtilTest.asJsonString(request)))
                         .andExpect(status().isBadRequest())
                         .andExpect(content().string("Audiencia en conflicto"));
+        }
+
+        @Test
+        void esDiaInhabil_success() throws Exception {
+
+        LocalDate fecha = LocalDate.of(2024, 12, 20);
+        Integer juzgadoId = 1;
+        Boolean esInhabil = true;
+
+        Juzgado juzgado = new Juzgado();
+        juzgado.setId(juzgadoId);
+
+        given(juzgadoRepository.findById(juzgadoId)).willReturn(Optional.of(juzgado));
+        given(eventoService.esDiaInHabil(fecha, juzgado, null)).willReturn(esInhabil);
+
+        mockMvc.perform(get("/api/workflow/audiencias/getDiaInhabil")
+                        .param("fecha", fecha.toString())
+                        .param("juzgadoId", juzgadoId.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
         }
 
 }
