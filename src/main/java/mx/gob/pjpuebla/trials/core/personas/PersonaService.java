@@ -227,15 +227,12 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre,String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
-
-        if (usuario.getJuzgado() == null && usuario.getOficialia() == null) { //Admin de sistema
-            return getAll(new Persona().setNombre(nombre), pageable);
-        }
-
+        boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
         Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
                 searchQuery,
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
+                adminSistema,
                 pageable
         );
 
