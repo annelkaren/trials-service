@@ -3,14 +3,18 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
@@ -46,9 +50,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,13 +70,14 @@ class NotificacionServiceTest {
     @Mock
     private DocumentoRepository documentoRepository;
 
+    @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
+
     @InjectMocks
     private NotificacionService notificacionService;
 
-
     private Carpeta carpeta;
     private Notificacion notificacion;
-
 
     @Mock
     private PersonaDocumentoRepository personaDocumentoRepository;
@@ -88,17 +90,46 @@ class NotificacionServiceTest {
 
     @Test
     void getNotificacionPorTipoEstrado() {
-
+        // Mock de Pageable
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
-        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
-                .thenReturn(notificacionPage);
-        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", "PENDIENTE_DE_ASIGNAR", pageable);
 
+        // Mock de Carpeta
+        Carpeta carpeta = CarpetaSetUp.create();
+
+        // Mock de Documento
+        Documento documento = new Documento();
+        documento.setCarpeta(carpeta);
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+
+        // Mock de Notificacion
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+
+        // Mock del repositorio
+        Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
+        when(notificacionRepository.getNotificacionByTipo(
+                TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
+                .thenReturn(notificacionPage);
+
+        // Mock del DocumentoDetalleRepository
+        DocumentoDetalle docDetalle = new DocumentoDetalle();
+        docDetalle.setExtractoSentencia("Extracto de la sentencia de prueba.");
+        when(documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()))
+                .thenReturn(Optional.of(docDetalle));
+
+        // Llamada al servicio
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", "PENDIENTE_DE_ASIGNAR",
+                pageable);
+
+        // Verificaciones
         assertEquals(1, result.getTotalElements());
-        NotificacionRecord notificacionrecord = result.getContent().get(0);
-        assertEquals(notificacion.getNotas(), notificacionrecord.notas());
-        assertEquals(notificacion.getTipoNotificacion(), notificacionrecord.tipo());
+        NotificacionRecord notificacionRecord = result.getContent().get(0);
+        assertEquals(notificacion.getNotas(), notificacionRecord.notas());
+        assertEquals(notificacion.getTipoNotificacion(), notificacionRecord.tipo());
+        assertEquals("Extracto de la sentencia de prueba.".substring(0, 25), notificacionRecord.concepto().get(0));
     }
 
     @Test
@@ -111,19 +142,49 @@ class NotificacionServiceTest {
 
     @Test
     void getAll() {
+        // Configuración del Pageable
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
-        List<String> rubros = List.of("Primer rubro", "Segundo rubro", "Tercer rubro");
-        when(notificacionRepository.getNotificacionByTipo(TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
-                .thenReturn(notificacionPage);
 
-        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(null, null, pageable);
+        // Mock de Documento
+        Documento documento = new Documento();
+        documento.setId(1);
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+        documento.setCarpeta(carpeta);
+
+        // Mock de DocumentoDetalle
+        DocumentoDetalle documentoDetalle = new DocumentoDetalle();
+        documentoDetalle.setExtractoSentencia("Este es el extracto de la sentencia");
+
+        // Mock de Notificacion
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+
+        // Mock del repositorio de Notificaciones
+        Page<Notificacion> notificacionesPage = new PageImpl<>(List.of(notificacion), pageable, 1);
+        when(notificacionRepository.getNotificacionByTipo(
+                TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
+                .thenReturn(notificacionesPage);
+
+        // Mock del repositorio de DocumentoDetalle
+        when(documentoDetalleRepository.findByDocumentoId(1)).thenReturn(Optional.of(documentoDetalle));
+
+        // Llamada al método que se está probando
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(
+                "ESTRADO", "PENDIENTE_DE_ASIGNAR", pageable);
+
+        // Verificaciones
+        assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        List<String> formattedRubros = notificacionService.formatConcepto(rubros);
 
-        assertEquals(2, formattedRubros.size());
-        assertEquals("Primer rubro", formattedRubros.get(0));
-        assertEquals(" y 2 más", formattedRubros.get(1));
+        NotificacionRecord record = result.getContent().get(0);
+        assertEquals(1, record.id());
+        assertEquals("000001/2024", record.expediente());
+        assertEquals("Este es el extracto de la sentencia".substring(0, 25), record.concepto().get(0));
+        assertEquals("Notas de prueba", record.notas());
+        assertEquals(TipoNotificacion.ESTRADO, record.tipo());
     }
 
     @Test
@@ -185,45 +246,44 @@ class NotificacionServiceTest {
         assertEquals("PersonaDocumento no encontrado para el ID: 99", exception.getMessage());
     }
 
-@Test
-void createRegistroNotificacion() {
-    NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
-    List<Integer> personaIds = List.of(1, 2, 3);
+    @Test
+    void createRegistroNotificacion() {
+        NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
+        List<Integer> personaIds = List.of(1, 2, 3);
 
-    List<PersonaDocumento> personasMock = List.of(
-            PersonasDocumentosSetUp.createPersonasDocumentos(),
-            PersonasDocumentosSetUp.createPersonasDocumentos(),
-            PersonasDocumentosSetUp.createPersonasDocumentos());
+        List<PersonaDocumento> personasMock = List.of(
+                PersonasDocumentosSetUp.createPersonasDocumentos(),
+                PersonasDocumentosSetUp.createPersonasDocumentos(),
+                PersonasDocumentosSetUp.createPersonasDocumentos());
 
-    List<NotificacionesDetalles> detalles = List.of(
-            NotificacionSetUp.createNotificacionDetalles(),
-            NotificacionSetUp.createNotificacionDetalles(),
-            NotificacionSetUp.createNotificacionDetalles());
+        List<NotificacionesDetalles> detalles = List.of(
+                NotificacionSetUp.createNotificacionDetalles(),
+                NotificacionSetUp.createNotificacionDetalles(),
+                NotificacionSetUp.createNotificacionDetalles());
 
-    // Simular la búsqueda del documento
-    given(documentoRepository.findById(anyInt()))
-            .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
+        // Simular la búsqueda del documento
+        given(documentoRepository.findById(anyInt()))
+                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
 
-    // Simular que se guarda la notificación y se le asigna un ID
-    Notificacion notificacionMock = NotificacionSetUp.createNotificacion().setId(1); // Asignar un ID mock
-    given(notificacionRepository.save(any(Notificacion.class)))
-            .willReturn(notificacionMock);  // Retornar la notificación mock con ID
+        // Simular que se guarda la notificación y se le asigna un ID
+        Notificacion notificacionMock = NotificacionSetUp.createNotificacion().setId(1); // Asignar un ID mock
+        given(notificacionRepository.save(any(Notificacion.class)))
+                .willReturn(notificacionMock); // Retornar la notificación mock con ID
 
-    // Simular la búsqueda de personas
-    given(personaDocumentoRepository.findAllById(personaIds)).willReturn(personasMock);
+        // Simular la búsqueda de personas
+        given(personaDocumentoRepository.findAllById(personaIds)).willReturn(personasMock);
 
-    // Simular el guardado de los detalles
-    lenient().when(notificacionesDetallesRepository.saveAll(anyList())).thenReturn(detalles);
+        // Simular el guardado de los detalles
+        lenient().when(notificacionesDetallesRepository.saveAll(anyList())).thenReturn(detalles);
 
-    // Ejecutar el método
-    NotificacionResponseRecord response = notificacionService.createRegistroNotificacion(notificacion);
+        // Ejecutar el método
+        NotificacionResponseRecord response = notificacionService.createRegistroNotificacion(notificacion);
 
-    // Validar el resultado
-    assertNotNull(response);
-    assertEquals(200, response.estatus());
-    assertTrue(response.mensaje().contains("Notificación creada con éxito"));
-}
-
+        // Validar el resultado
+        assertNotNull(response);
+        assertEquals(200, response.estatus());
+        assertTrue(response.mensaje().contains("Notificación creada con éxito"));
+    }
 
     @Test
     void createNotaNotificacion_Success() {
@@ -238,7 +298,6 @@ void createRegistroNotificacion() {
         assertEquals(nuevasNotas, notificacionExistente.getNotas());
         verify(notificacionRepository, times(1)).save(notificacionExistente);
     }
-
 
     @Test
     void createListaEstrado_Success() {
@@ -266,16 +325,12 @@ void createRegistroNotificacion() {
 
         when(notificacionRepository.findAllById(notificacionIds)).thenReturn(notificaciones);
 
-
         notificacionService.createListaEstrado(notificacionIds, fechaVencimiento);
         verify(listaEstradoRepository).save(any(ListaEstrado.class));
         verify(notificacionRepository).findAllById(notificacionIds);
 
-        assertTrue(notificaciones.stream().allMatch(n ->
-                n.getEstadoNotificacion() == EstadoNotificacion.ASIGNADO &&
-                        n.getListaEstrado().equals(listaEstradoMock)
-        ));
-
+        assertTrue(notificaciones.stream().allMatch(n -> n.getEstadoNotificacion() == EstadoNotificacion.ASIGNADO &&
+                n.getListaEstrado().equals(listaEstradoMock)));
 
         verify(notificacionRepository).saveAll(notificaciones);
     }
@@ -290,6 +345,5 @@ void createRegistroNotificacion() {
         assertEquals("Debe proporcionar al menos un ID de notificación.", exception.getMessage());
         verifyNoInteractions(personaService, listaEstradoRepository, notificacionRepository);
     }
-
 
 }
