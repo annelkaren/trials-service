@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import org.springframework.stereotype.Service;
@@ -19,29 +21,29 @@ import java.util.Optional;
 public class TipoAcuerdoService {
 
     private final TipoAcuerdoRepository tipoAcuerdoRepository;
-    private final DocumentoRepository documentoRepository;
+    private final CarpetaRepository carpetaRepository;
     private static final String MATERIA = "FAMILIAR";
 
-    public List<TipoAcuerdoRecord> findByDocumentoId(Integer documentoId) {
+    public List<TipoAcuerdoRecord> findByDocumentoId(Integer carpetaId) {
 
-        Documento documento = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", documentoId.toString()));
+        Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrado " , carpetaId.toString()));
 
         MateriaRecord materiaRecord = null;
         TipoSistemaRecord tipoSistemaRecord = null;
 
-        Integer documentoMateriaId = documento.getCarpeta().getTipoJuicio().getMateria().getId();
-        String documentoNombre = documento.getCarpeta().getTipoJuicio().getMateria().getNombre();
+        Integer documentoMateriaId = carpeta.getTipoJuicio().getMateria().getId();
+        String documentoNombre = carpeta.getTipoJuicio().getMateria().getNombre();
 
         if (documentoMateriaId != null && documentoNombre != null) {
             materiaRecord = new MateriaRecord(documentoMateriaId, documentoNombre);
         }
 
-        Integer documentoTipoSistemaId = documento.getCarpeta().getTipoJuicio().getTipoSistema() != null ?
-                documento.getCarpeta().getTipoJuicio().getTipoSistema().getId() : null;
+        Integer documentoTipoSistemaId = carpeta.getTipoJuicio().getTipoSistema() != null ?
+                carpeta.getTipoJuicio().getTipoSistema().getId() : null;
 
-        String documentoTipoSistemaNombre = documento.getCarpeta().getTipoJuicio().getTipoSistema() != null ?
-                documento.getCarpeta().getTipoJuicio().getTipoSistema().getNombre() : null;
+        String documentoTipoSistemaNombre = carpeta.getTipoJuicio().getTipoSistema() != null ?
+                carpeta.getTipoJuicio().getTipoSistema().getNombre() : null;
 
         if (documentoTipoSistemaId != null && documentoTipoSistemaNombre != null) {
             tipoSistemaRecord = new TipoSistemaRecord(documentoTipoSistemaId, documentoTipoSistemaNombre);
@@ -52,7 +54,7 @@ public class TipoAcuerdoService {
             if (tipoSistemaRecord != null) {
                 tipoAcuerdos = tipoAcuerdoRepository.findByMateriaIdAndTipoSistemaId(materiaRecord.id(), tipoSistemaRecord.id());
             } else {
-                throw new NotFoundException("Tipo de sistema no encontrado para materia 'FAMILIAR'", documentoId.toString());
+                throw new NotFoundException("Tipo de sistema no encontrado para materia 'FAMILIAR'", carpetaId.toString());
             }
         } else {
             if (materiaRecord != null) {
