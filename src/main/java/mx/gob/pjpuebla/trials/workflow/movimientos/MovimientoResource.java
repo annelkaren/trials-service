@@ -70,4 +70,6 @@ public class MovimientoResource {
     public List<TurnadoMovimientoRecord> turnadoList(@PathVariable("carpetaId") Integer carpetaId){
         return movimientoService.getTurnadoMovimientos(carpetaId);
     }
+
+
 }

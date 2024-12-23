@@ -16,6 +16,7 @@ public record TransferenciaRecordResponse(
         Integer totalExpedientes,
         List<DocumentoAsignadoResponseRecord> expedientes,
         String uuid,
-        String estatus
+        String estatus,
+        String observaciones
 ) {
 }

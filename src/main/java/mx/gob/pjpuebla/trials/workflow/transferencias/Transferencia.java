@@ -20,8 +20,8 @@ import java.util.UUID;
 @Table(name="TBL_TRANSFERENCIAS")
 public class Transferencia implements Serializable, Auditable {
     @Id
+    @SequenceGenerator(name="idTransferencia", sequenceName = "SEQ_TRANSFERENCIA_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTransferencia")
-    @SequenceGenerator(name="idTransferencia", sequenceName = "SEQ_TRANSFERENCIA_ID")
     @Column(name =  "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
+import mx.gob.pjpuebla.trials.workflow.transferencias.Transferencia;
 import org.springframework.stereotype.Component;
 
 import net.sf.jasperreports.engine.JRException;
@@ -43,6 +44,17 @@ public class MovimientoReporteGenerator {
             listaSalidaOF.getInputStream(),
                 parameters,
                 beanCollectionDataSource);
+    }
+
+    public byte[] getReporteTransferencia(Transferencia transferencia) throws JRException, IOException{
+        List<MovimientoSalidaDTO> movimientoSalidaDTOS = movimientos.stream().map(
+                MovimientoSalidaDTO::new
+        ).toList();
+
+        beanCollectionDataSource = new JRBeanCollectionDataSource(movimientoSalidaDTOS);
+
+        return JasperExportManager.exportReportToPdf(getJasperReport());
+
     }
 
 }

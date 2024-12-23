@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/workflow/transferencias")
 @SecurityRequirement(name = "Keycloak")
 public class TransferenciaResource {
-    private final TransferenciaServices transferenciaServices;
+    private final TransferenciaService transferenciaServices;
 
     @GetMapping("/registro")
     public TransferenciaRecordResponse getTransferencia(){
