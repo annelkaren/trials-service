@@ -12,6 +12,7 @@ public record TransferenciaRecordResponse(
         Long personaRecibeId,
         String personaRecibe,
         String personaRecibePuesto,
+        String juzgado,
         LocalDateTime fechaTransferencia,
         Integer totalExpedientes,
         List<DocumentoAsignadoResponseRecord> expedientes,
