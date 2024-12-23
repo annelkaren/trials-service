@@ -3,10 +3,10 @@ package mx.gob.pjpuebla.trials.workflow.listaestrados;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.error.ErrorRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
@@ -39,7 +39,8 @@ public class ListaEstradoService {
     private final ListaEstradoGenerator generator;
 
     @Transactional(readOnly = true)
-    public Page<ListaEstradoRecord> findAllByListaEstradoId(Integer listaEstrado, String searchQuery, Pageable pageable) {
+    public Page<ListaEstradoRecord> findAllByListaEstradoId(Integer listaEstrado, String searchQuery,
+            Pageable pageable) {
 
         Page<ListaEstrado> listaEstradoPage = listaEstradoRepository.findAllListaEstradoIdAndSearch(
                 searchQuery == null ? "" : searchQuery,
@@ -49,35 +50,33 @@ public class ListaEstradoService {
         return listaEstradoPage.map(le -> {
             // Inicializar la relación antes de serializar
             if (le.getPersona() != null) {
-                le.getPersona().getDomicilio();  // Forzamos la inicialización del domicilio si es necesario
+                le.getPersona().getDomicilio(); // Forzamos la inicialización del domicilio si es necesario
             }
 
             long noNotificaciones = notificacionRepository.countNotificacionesByListaEstradoId(le.getId());
 
-            String nombreCompleto =
-                    (le.getPersona().getNombre() != null ? le.getPersona().getNombre() : "") +
-                            (le.getPersona().getApellidoMaterno() != null ? " " + le.getPersona().getApellidoMaterno() : "") +
-                            (le.getPersona().getApellidoPaterno() != null ? " " + le.getPersona().getApellidoPaterno() : "");
+            String nombreCompleto = (le.getPersona().getNombre() != null ? le.getPersona().getNombre() : "") +
+                    (le.getPersona().getApellidoMaterno() != null ? " " + le.getPersona().getApellidoMaterno() : "") +
+                    (le.getPersona().getApellidoPaterno() != null ? " " + le.getPersona().getApellidoPaterno() : "");
 
             return new ListaEstradoRecord(
                     le.getId(),
                     le.getFechaAlta().toString(),
                     (int) noNotificaciones,
-                    nombreCompleto
-            );
+                    nombreCompleto);
         });
     }
 
     public ResponseEntity<Object> getReporteListaEstrados(Integer id) {
         List<Notificacion> notificacionList = notificacionRepository.getNotificacionByTipo(id);
-        if (notificacionList.isEmpty()){
+        if (notificacionList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND_404)
-                    .body(new ErrorRecord("ListaEstrados","No hay registros"));
+                    .body(new ErrorRecord("ListaEstrados", "No hay registros"));
         }
 
         Persona persona = personaService.getAuditor();
         String nombreCentroTrabajo;
-        if(persona.getJuzgado() != null){
+        if (persona.getJuzgado() != null) {
             nombreCentroTrabajo = persona.getJuzgado().getNombre();
         } else {
             nombreCentroTrabajo = persona.getOficialia().getNombre();
@@ -90,19 +89,39 @@ public class ListaEstradoService {
                     String asunto = "EXP." + notificacion.getDocumento().getCarpeta().getExpediente()
                             + "\n" + notificacion.getDocumento().getCarpeta().getTipoJuicio().getNombre()
                             + "\n" + "***** VS *****";
-                    String nombresRubros = notificacion.getDocumento().getCarpeta().getRubros().stream()
-                            .map(Rubro::getNombre)
-                            .collect(Collectors.joining(", "));
-                    DocumentoDetalle doc = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId())
-                            .orElseThrow(() -> new NotFoundException("Documento no encontrado", String.valueOf(notificacion.getDocumento().getId())));
-                    String notificacionDetalle = "Auto de fecha " + (doc.getFechaResolucion() != null ? doc.getFechaResolucion().toString() : "")
+
+                    // validamos si es de tipo sentencia o acuerdo he imprimimos o rubros o extracto
+                    // de sentencia
+                    String nombresRubros = "";
+                   
+                    if (notificacion.getDocumento().getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
+                       
+                        DocumentoDetalle docDetalle = documentoDetalleRepository
+                                .findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
+                        if (docDetalle != null) {
+                            nombresRubros = docDetalle.getExtractoSentencia();
+                        }
+                    } else {
+                       
+                        nombresRubros = notificacion.getDocumento().getData().getRubros().stream()
+                                .collect(Collectors.joining(", "));
+
+
+                    }
+
+                    DocumentoDetalle doc = documentoDetalleRepository
+                            .findByDocumentoId(notificacion.getDocumento().getId())
+                            .orElseThrow(() -> new NotFoundException("Documento no encontrado",
+                                    String.valueOf(notificacion.getDocumento().getId())));
+                    String notificacionDetalle = "Auto de fecha "
+                            + (doc.getFechaResolucion() != null ? doc.getFechaResolucion().toString() : "")
                             + "\n" + nombresRubros;
                     return new ListaEstradoDTO(juzgado, asunto, notificacionDetalle, diaPublicado);
                 })
                 .toList();
 
-        //Armado de pdf
-        try{
+        // Armado de pdf
+        try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("reporte", "notificaciones_" + UUID.randomUUID() + ".pdf");
@@ -110,7 +129,7 @@ public class ListaEstradoService {
             byte[] reporte = generator.getReporteListaEstrados(listaEstradosDTO);
 
             return ResponseEntity.ok().headers(headers).body(reporte);
-        }catch (IOException | JRException e){
+        } catch (IOException | JRException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .body(new ErrorRecord("ListaSalida", e.getMessage()));
         }

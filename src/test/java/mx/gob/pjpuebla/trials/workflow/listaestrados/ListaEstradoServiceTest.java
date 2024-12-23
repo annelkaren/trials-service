@@ -6,8 +6,6 @@ import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
-import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
@@ -16,10 +14,12 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.Notificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import net.sf.jasperreports.engine.JRException;
@@ -41,7 +41,6 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -116,14 +115,7 @@ class ListaEstradoServiceTest {
         Materia materia = MateriaSetUp.createMateria();
         TipoSistema tipoSistema = tipoSistemaRepository.save(TipoSistemaSetUp.createTipoSistema());
         TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
-        Rubro rubro1 = new Rubro()
-                .setId(1)
-                .setNombre("Rubro1")
-                .setProcedimiento(new Procedimiento().setId(1).setNombre("Procedimiento1"));
-        Rubro rubro2 = new Rubro()
-                .setId(2)
-                .setNombre("Rubro2")
-                .setProcedimiento(new Procedimiento().setId(2).setNombre("Procedimiento2"));
+        
         Carpeta carpeta = new Carpeta()
                 .setId(1)
                 .setVersion(1)
@@ -133,9 +125,15 @@ class ListaEstradoServiceTest {
                 .setTipoJuicio(tipoJuicio)
                 .setTipoCarpeta(TipoCarpeta.DEMANDA)
                 .setSelloEstatus(SelloEstatus.VALIDO)
-                .setJuzgado(JuzgadoSetUp.createJuzgado())
-                .setRubros(Set.of(rubro1, rubro2));
-        Documento documento = new Documento().setId(1).setCarpeta(carpeta);
+                .setJuzgado(JuzgadoSetUp.createJuzgado());
+        
+        DocumentoData docdata = new DocumentoData()
+            .setRubros(List.of("RUBRO1", "RUBRO2")); 
+        Documento documento = new Documento()
+            .setId(1)
+            .setCarpeta(carpeta)
+            .setTipoDocumento(TipoDocumento.ACUERDO)
+            .setData(docdata);
         List<Notificacion> notificacionList = List.of(new Notificacion().setDocumento(documento));
         Persona persona = new Persona();
         persona.setJuzgado(new Juzgado().setNombre("Juzgado Prueba"));
