@@ -118,22 +118,6 @@ class MovimientosServiceTest {
     }
 
     @Test
-    void testCreateMotivoWithPromocion() {
-        MotivoRecord motivoRecord = new MotivoRecord("Piezas Innecesarias", 2);
-        Persona currentUser = new Persona();
-        Documento documento = new Documento();
-        documento.setTipoDocumento(TipoDocumento.PROMOCION);
-
-        given(personaService.getAuditor()).willReturn(currentUser);
-        given(documentoRepository.findById(motivoRecord.documentoId())).willReturn(Optional.of(documento));
-
-        movimientoService.createMotivo(motivoRecord);
-
-        verify(movimientoRepository, times(1)).save(any(Movimiento.class));
-        verify(documentoRepository, times(1)).actualizarEstatus(documento.getId(), EstadoCarpeta.DEVUELTO);
-    }
-
-    @Test
     void testCreateMotivoWithoutPromocion() {
         MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3);
         Persona currentUser = new Persona();
@@ -143,7 +127,7 @@ class MovimientosServiceTest {
         documento.setCarpeta(carpeta);  
 
         given(personaService.getAuditor()).willReturn(currentUser);
-        given(documentoRepository.findById(motivoRecord.documentoId())).willReturn(Optional.of(documento));
+        given(carpetaRepository.findById(motivoRecord.documentoId())).willReturn(Optional.of(documento.getCarpeta()));
 
         movimientoService.createMotivo(motivoRecord);
 

@@ -49,14 +49,14 @@ stages:
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
 
-          - task: Cache@2
-            displayName: Qodana Cache
-            inputs:
-              key: '"$(Build.Repository.Name)" | "$(Build.SourceBranchName)" | "$(Build.SourceVersion)"'
-              path: '$(Agent.TempDirectory)/qodana/cache'
-              restoreKeys: |
-                "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
-                "$(Build.Repository.Name)"
+#          - task: Cache@2
+#            displayName: Qodana Cache
+#            inputs:
+#              key: '"$(Build.Repository.Name)" | "$(Build.SourceBranchName)" | "$(Build.SourceVersion)"'
+#              path: '$(Agent.TempDirectory)/qodana/cache'
+#              restoreKeys: |
+#                "$(Build.Repository.Name)" | "$(Build.SourceBranchName)"
+#                "$(Build.Repository.Name)"
 
           - task: QodanaScan@2024
             env:
