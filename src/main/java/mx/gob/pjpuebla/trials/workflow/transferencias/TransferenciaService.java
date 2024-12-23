@@ -15,7 +15,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoAsignadoResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
-import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaRecord;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaRecordResponse;
 import org.springframework.data.domain.Pageable;
@@ -57,10 +56,10 @@ public class TransferenciaService {
 
     }
 
-    public TransferenciaRecordResponse update(TransferenciaRecord record, Integer transferenciaId){
+    public TransferenciaRecordResponse update(TransferenciaRecord transferenciaRecord, Integer transferenciaId){
         Transferencia transferencia = transferenciaRepository.findById(transferenciaId).orElseThrow(()->new NotFoundException("La transferencia no existe","transferenciaId"));
-        Persona personaRecibe = personaRepository.findById(record.personaRecibeId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
-        Persona personaEntrega = personaRepository.findById(record.personaEntregaId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaEntregaId"));
+        Persona personaRecibe = personaRepository.findById(transferenciaRecord.personaRecibeId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
+        Persona personaEntrega = personaRepository.findById(transferenciaRecord.personaEntregaId().longValue()).orElseThrow(()-> new NotFoundException("La persona no existe","personaEntregaId"));
         UUID uuid = UUID.randomUUID();
         LocalDateTime fechaTransferencia = LocalDateTime.now();
 
@@ -75,7 +74,7 @@ public class TransferenciaService {
                     .setMotivo("TRANSFERENCIA")
                     .setFechaAsignacion(fechaTransferencia)
                     .setUuid(uuid)
-                    .setObservaciones(record.observaciones())
+                    .setObservaciones(transferenciaRecord.observaciones())
                     .setRecomendaciones(asignacion.getRecomendaciones())
                     .setEstado(EstadoCarpeta.TURNADO.name())
                     .setConcepto(asignacion.getConcepto())
@@ -92,7 +91,7 @@ public class TransferenciaService {
                 .setTotalExpediente(asignaciones.size())
                 .setUuid(uuid)
                 .setEstatus(EstadoTransferencia.CONCLUIDO)
-                .setObservaciones(record.observaciones())
+                .setObservaciones(transferenciaRecord.observaciones())
                 .setRecibeId(personaRecibe.getId());
 
 
@@ -137,6 +136,7 @@ public class TransferenciaService {
                 transferencia.getRecibeId(),
                 personaRecibe.map(value -> String.format("%s %s %s", value.getNombre(), value.getApellidoPaterno(), Objects.toString(value.getApellidoMaterno(), "")).trim()).orElse(""),
                 rolRecibe,
+                transferencia.getJuzgado().getNombre() + " del Distrito de " +transferencia.getJuzgado().getSede().getDistrito().getNombre(),
                 transferencia.getFechaTransferencia(),
                 transferencia.getTotalExpediente()==null? 0: transferencia.getTotalExpediente(),
                 transferidos,
