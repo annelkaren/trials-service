@@ -167,7 +167,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             LEFT JOIN doc.institucion ins
             LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
-            WHERE doc.tipoDocumento = %:tipoDocumento%
+            WHERE doc.tipoDocumento = :tipoDocumento
             AND (
                 lower(doc.folio) LIKE %:key% OR
                 lower(ins.nombre) LIKE %:key% OR

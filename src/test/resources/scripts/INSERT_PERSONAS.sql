@@ -4,3 +4,10 @@ INSERT INTO TBL_PERSONAS (PN_ID, N_VERSION, S_NOMBRES, S_APELLIDO_PATERNO, S_APE
                           FN_OFICIALIA, S_USUARIO)
 VALUES (1, 0, 'Juan', 'Perez', '', 'XXXX000000XXXXXX00', 'XXXX0000000X0', '1990-01-01', 1, 'Programador', 'juanperez@gmail.com',
             '', '', 0, 1, 1, 1, 51, null, '6b13785f-d213-4585-a76b-437ffe57c9c7');
+
+INSERT INTO TBL_PERSONAS (PN_ID, N_VERSION, S_NOMBRES, S_APELLIDO_PATERNO, S_APELLIDO_MATERNO, S_CURP,
+                          S_RFC, T_FECHA_NACIMIENTO, N_SEXO, S_OCUPACION, S_CORREO_ELECTRONICO, S_TELEFONO,
+                          S_CELULAR, N_ESTADO, FN_DOMICILIO, FN_ESCOLARIDAD, FN_ESTADO_CIVIL, FN_JUZGADO,
+                          FN_OFICIALIA, S_USUARIO)
+VALUES (2, 0, 'Juana', 'Perez', '', 'XXXX000000XXXXXX01', 'XXXX0000000X1', '1990-01-01', 1, 'Tester', 'juanaperez@gmail.com',
+'', '', 0, 2, 2, 2, 52, null, '1ad91e1f-00a5-4d5e-afef-3398d0d84dd8');

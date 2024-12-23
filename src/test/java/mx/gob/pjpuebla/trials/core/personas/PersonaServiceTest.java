@@ -29,6 +29,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -99,11 +100,15 @@ class PersonaServiceTest extends SetupServiceTest {
         validPersona.setDomicilio(validDomicilio);
     }
 
+    //@Disabled
     @Test
     void getAll_return_page() {
         List<Persona> listPage = Collections.singletonList(validPersona);
+        RoleRecord rol = new RoleRecord("1","TEST");
+
         given(mockPersonaRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        given(roleService.getRolesByUserId(any())).willReturn(List.of(rol));
         Page<PersonaRecordResponse> page = personaService.getAll(validPersona, PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
