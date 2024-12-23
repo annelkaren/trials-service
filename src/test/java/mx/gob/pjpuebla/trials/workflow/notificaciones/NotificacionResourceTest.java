@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
@@ -69,7 +70,7 @@ class NotificacionResourceTest {
         );
         List<String> concepto = Collections.singletonList("Audiencia");
 
-        notificacionRecord = new NotificacionRecord(1,"000001/2024",  concepto, "Notas Audiencia", TipoNotificacion.ESTRADO,  documentoDetalleRecord );
+        notificacionRecord = new NotificacionRecord(1,"000001/2024",  concepto, "Notas Audiencia", TipoNotificacion.ESTRADO,  documentoDetalleRecord, TipoDocumento.ACUERDO, 1, 1);
 
         when(notificacionService.getAllNotificaciones(anyString(), anyString(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(notificacionRecord)));

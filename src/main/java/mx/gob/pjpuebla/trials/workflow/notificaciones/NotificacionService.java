@@ -112,7 +112,10 @@ public class NotificacionService {
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
-                            documentoDetalleRecord.orElse(null));
+                            documentoDetalleRecord.orElse(null),
+                            notificacion.getDocumento().getTipoDocumento(),
+                            notificacion.getDocumento().getId(),
+                            notificacion.getDocumento().getCarpeta().getId());
                 })
                 .toList();
 
