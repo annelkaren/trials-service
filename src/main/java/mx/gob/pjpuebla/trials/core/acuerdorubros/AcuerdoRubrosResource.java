@@ -25,11 +25,11 @@ public class AcuerdoRubrosResource {
         return this.acuerdoRubrosService.findById(id);
     }
 
-    @GetMapping("/autocomplete/{idDocumento}")
+    @GetMapping("/autocomplete/{idCarpeta}")
     public Page<AcuerdoRubrosRecord> findDocumentoById(
-            @PathVariable Integer idDocumento,
+            @PathVariable Integer idCarpeta,
             @PageableDefault Pageable pageable,
             @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.acuerdoRubrosService.findRubrosByDocumentoId(idDocumento, pageable, nombre);
+        return this.acuerdoRubrosService.findRubrosByDocumentoId(idCarpeta, pageable, nombre);
     }
 }
