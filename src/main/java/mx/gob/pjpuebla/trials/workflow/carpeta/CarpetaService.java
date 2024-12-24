@@ -23,8 +23,6 @@ import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
@@ -70,7 +68,6 @@ public class CarpetaService {
     private final AnexoRepository anexoRepository;
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
-    private final AudienciaService audienciaService;
     private final TipoPiezaRepository tipoPiezaRepository;
     private final CarpetaDetalleRepository carpetaDetalleRepository;
     private final CarpetaEtapasRepository carpetaEtapasRepository;

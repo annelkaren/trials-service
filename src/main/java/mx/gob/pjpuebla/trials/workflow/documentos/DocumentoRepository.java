@@ -144,6 +144,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     OR LOWER(cd.folio) LIKE %:key%
                     OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
+                    OR CAST(m.uuid AS text) = :key
                 )
             """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
@@ -166,7 +167,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             LEFT JOIN doc.institucion ins
             LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
-            WHERE doc.tipoDocumento = %:tipoDocumento%
+            WHERE doc.tipoDocumento = :tipoDocumento
             AND (
                 lower(doc.folio) LIKE %:key% OR
                 lower(ins.nombre) LIKE %:key% OR

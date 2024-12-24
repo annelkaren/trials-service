@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
@@ -44,7 +45,10 @@ public class NotificacionSetUp {
                 rubros,
                 "Notas Audiencia",
                 TipoNotificacion.ESTRADO,
-                documentoDetalleRecord
+                documentoDetalleRecord,
+                TipoDocumento.ACUERDO,
+                1,
+                1
         );
 
     }

@@ -119,6 +119,8 @@ public class DocumentoService {
     private static final String CARPETA_NOT_FOUND = "Carpeta no encontrada";
     private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
+    private Optional<Persona> personaAsignada = Optional.empty() ;
+
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
@@ -632,13 +634,13 @@ public class DocumentoService {
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
             boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
             String folio = (isPromocion) ? documento.getFolio() : carpeta.getFolio();
-            String tipoEntrada = (isPromocion) ? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento) : etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
+            String tipoEntrada = (isPromocion)? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento): etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
-                    (isPromocion) ? documento.getId() : carpeta.getId(),
+                    (isPromocion) ? documento.getId():carpeta.getId(),
                     folio,
-                    (isPromocion) ? documento.getCarpeta().getExpediente() : carpeta.getExpediente(),
+                    (isPromocion) ? documento.getCarpeta().getExpediente(): carpeta.getExpediente(),
                     StringUtils.capitalize(tipoEntrada.toLowerCase()),
                     map.get("name").toString(),
                     concepto,
@@ -670,7 +672,7 @@ public class DocumentoService {
 
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        Persona persona = personaService.getAuditor();
+        Persona persona = personaAsignada.orElse(personaService.getAuditor());
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
         Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
@@ -698,6 +700,8 @@ public class DocumentoService {
                             (isPromocion) ? mov.getObservaciones() : getObservaciones(carpeta, mov.getObservaciones()));
             list.add(documentoGridRecord);
         }
+
+        personaAsignada = Optional.empty();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -711,6 +715,13 @@ public class DocumentoService {
             return promociones + " promociones nuevas";
         }
         return observaciones;
+    }
+
+    public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid){
+        personaAsignada = Optional.of(persona);
+        String key = Objects.toString(uuid, "");
+
+        return getAllAsignado(key, Pageable.unpaged()).getContent();
     }
 
     protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {

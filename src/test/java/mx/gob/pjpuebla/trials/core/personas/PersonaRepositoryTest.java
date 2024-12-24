@@ -1,9 +1,12 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -54,6 +57,9 @@ class PersonaRepositoryTest extends AuditConfigTest {
     private PersonaRepository personaRepository;
     private Persona persona = PersonaSetUp.createPersona();
 
+    @Mock
+    RoleService roleService;
+
     @Test
     void findByIdAndEstadoActive() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
@@ -92,7 +98,8 @@ class PersonaRepositoryTest extends AuditConfigTest {
         persona.setJuzgado(new Juzgado().setId(51));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
 
-        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(null, null,persona.getJuzgado().getId(), PageRequest.of(0, 20));
+        Mockito.when(roleService.hasRole(Mockito.any(), Mockito.eq("ADMINISTRADOR_SISTEMA"))).thenReturn(true);
+        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(null, null,persona.getJuzgado().getId(), true,PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty();
     }
