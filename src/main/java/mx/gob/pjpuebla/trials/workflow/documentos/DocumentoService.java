@@ -697,12 +697,24 @@ public class DocumentoService {
                             mov.getFechaAsignacion(),
                             (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()) : (carpeta.getConcepto() != null) ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias()) : null,//TODO. Validar si tiene horas sumar en lugar de dias, crear nuevo metodo
                             StringUtils.capitalize((isPromocion) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
-                            mov.getObservaciones());
+                            (isPromocion) ? mov.getObservaciones() : getObservaciones(carpeta, mov.getObservaciones()));
             list.add(documentoGridRecord);
         }
 
         personaAsignada = Optional.empty();
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    private String getObservaciones(Carpeta carpeta, String observaciones) {
+        if (carpeta.getPrioridad() != null && carpeta.getPrioridad().equals(Prioridad.URGENTE)) {
+            return StringUtils.capitalize(Prioridad.URGENTE.name().toLowerCase());
+        }
+        Integer promociones = documentoRepository.countByCarpetaIdAndTipoDocumentoAndEstatus(
+                carpeta.getId(), TipoDocumento.PROMOCION, EstadoCarpeta.INTEGRADO);
+        if (promociones > 0) {
+            return promociones + " promociones nuevas";
+        }
+        return observaciones;
     }
 
     public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid){
