@@ -7,8 +7,6 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +21,6 @@ import java.util.List;
 @Transactional
 public class AcuerdoRubrosService {
     private final AcuerdoRubrosRepository acuerdoRubrosRepository;
-    private final DocumentoRepository documentoRepository;
     private final CarpetaRepository carpetaRepository;
 
     @Transactional(readOnly = true)

@@ -36,8 +36,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -298,23 +301,23 @@ public class NotificacionService {
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
             String tipoDocumento) {
-        /*
-         * Map<String, Object> sendEmail = new HashMap<>();
-         * 
-         * sendEmail.put("nombreParticipante", nombreParticipante);
-         * sendEmail.put("numCarpeta", numCarpeta);
-         * sendEmail.put("nombreJuzgado", nombreJuzgado);
-         * sendEmail.put("tipoDocumento", tipoDocumento);
-         * sendEmail.put("portalNotificaciones", portalNotificaciones);
-         * 
-         * emailService.sendMail(
-         * List.of(email),
-         * Collections.emptyList(),
-         * Collections.emptyList(),
-         * "Notificación pendiente",
-         * "NotificacionParticipantes.ftl",
-         * sendEmail);
-         */
+        
+         Map<String, Object> sendEmail = new HashMap<>();
+         
+         sendEmail.put("nombreParticipante", nombreParticipante);
+         sendEmail.put("numCarpeta", numCarpeta);
+         sendEmail.put("nombreJuzgado", nombreJuzgado);
+         sendEmail.put("tipoDocumento", tipoDocumento);
+         sendEmail.put("portalNotificaciones", portalNotificaciones);
+         
+         emailService.sendMail(
+         List.of(email),
+         Collections.emptyList(),
+         Collections.emptyList(),
+         "Notificación pendiente",
+         "NotificacionParticipantes.ftl",
+         sendEmail);
+        
         return true;
     }
 }
