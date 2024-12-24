@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.menu;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -29,6 +30,7 @@ public class MenuService {
         List<MenuNode> newMenu = new ArrayList<>();
         Persona persona = personaService.getAuditor();
         Oficialia oficialia = persona.getOficialia();
+        Juzgado juzgado = persona.getJuzgado();
      
         List<RoleRecord> userRoles = roleService.getRolesByUserId(persona.getUsuario());
         String roles = userRoles.stream()
@@ -52,7 +54,8 @@ public class MenuService {
             }
         }
 
-        if (oficialia != null && oficialia.getEstado() == Estado.INACTIVE) {
+        if ((oficialia != null && oficialia.getEstado() == Estado.INACTIVE) || 
+            (juzgado != null && juzgado.getEstado() == Estado.INACTIVE)) {
             newMenu = newMenu.stream()
                     .filter(menuNode -> !"Registro".equalsIgnoreCase(menuNode.getName()))
                     .collect(Collectors.toList());

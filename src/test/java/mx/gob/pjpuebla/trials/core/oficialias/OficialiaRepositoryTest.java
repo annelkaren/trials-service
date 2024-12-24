@@ -60,4 +60,15 @@ class OficialiaRepositoryTest extends AuditConfigTest {
         assertThat(oficialia).isPresent();
         assertThat(oficialia.get().getNombre()).isEqualTo(nombreOficialia);
     }
+
+    @Test
+    void existsBySedeId() {
+        Integer sedeIdExistente = 51;
+        boolean existe = oficialiaRepository.existsBySedeId(sedeIdExistente);
+        assertThat(existe).isTrue();
+
+        Integer sedeIdInexistente = 99;
+        boolean noExiste = oficialiaRepository.existsBySedeId(sedeIdInexistente);
+        assertThat(noExiste).isFalse();
+    }
 }

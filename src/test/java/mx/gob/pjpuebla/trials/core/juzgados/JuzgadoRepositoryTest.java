@@ -96,4 +96,16 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
 
         assertThat(juzgadoRecordItemList).isNotNull().anyMatch(j->j.nombre().contains("Sala"));
     }
+
+    @Test
+    void existsBySedeId() {
+        Integer sedeIdExistente = 51;
+        boolean existe = juzgadoRepository.existsBySedeId(sedeIdExistente);
+        assertThat(existe).isTrue();
+
+        Integer sedeIdInexistente = 99;
+        boolean noExiste = juzgadoRepository.existsBySedeId(sedeIdInexistente);
+        assertThat(noExiste).isFalse();
+    }
+
 }
