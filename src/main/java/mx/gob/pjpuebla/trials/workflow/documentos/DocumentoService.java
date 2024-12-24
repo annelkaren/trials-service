@@ -119,6 +119,8 @@ public class DocumentoService {
     private static final String CARPETA_NOT_FOUND = "Carpeta no encontrada";
     private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
+    private Optional<Persona> personaAsignada = Optional.empty() ;
+
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
@@ -670,7 +672,7 @@ public class DocumentoService {
 
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        Persona persona = personaService.getAuditor();
+        Persona persona = personaAsignada.orElse(personaService.getAuditor());
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
         Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
@@ -698,7 +700,16 @@ public class DocumentoService {
                             mov.getObservaciones());
             list.add(documentoGridRecord);
         }
+
+        personaAsignada = Optional.empty();
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid){
+        personaAsignada = Optional.of(persona);
+        String key = Objects.toString(uuid, "");
+
+        return getAllAsignado(key, Pageable.unpaged()).getContent();
     }
 
     protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
