@@ -632,13 +632,13 @@ public class DocumentoService {
             Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
             boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
             String folio = (isPromocion) ? documento.getFolio() : carpeta.getFolio();
-            String tipoEntrada = (isPromocion)? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento): etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
+            String tipoEntrada = (isPromocion) ? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento) : etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
-                    (isPromocion) ? documento.getId():carpeta.getId(),
+                    (isPromocion) ? documento.getId() : carpeta.getId(),
                     folio,
-                    (isPromocion) ? documento.getCarpeta().getExpediente(): carpeta.getExpediente(),
+                    (isPromocion) ? documento.getCarpeta().getExpediente() : carpeta.getExpediente(),
                     StringUtils.capitalize(tipoEntrada.toLowerCase()),
                     map.get("name").toString(),
                     concepto,
@@ -695,10 +695,22 @@ public class DocumentoService {
                             mov.getFechaAsignacion(),
                             (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()) : (carpeta.getConcepto() != null) ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias()) : null,//TODO. Validar si tiene horas sumar en lugar de dias, crear nuevo metodo
                             StringUtils.capitalize((isPromocion) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
-                            mov.getObservaciones());
+                            (isPromocion) ? mov.getObservaciones() : getObservaciones(carpeta, mov.getObservaciones()));
             list.add(documentoGridRecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    private String getObservaciones(Carpeta carpeta, String observaciones) {
+        if (carpeta.getPrioridad() != null && carpeta.getPrioridad().equals(Prioridad.URGENTE)) {
+            return StringUtils.capitalize(Prioridad.URGENTE.name().toLowerCase());
+        }
+        Integer promociones = documentoRepository.countByCarpetaIdAndTipoDocumentoAndEstatus(
+                carpeta.getId(), TipoDocumento.PROMOCION, EstadoCarpeta.INTEGRADO);
+        if (promociones > 0) {
+            return promociones + " promociones nuevas";
+        }
+        return observaciones;
     }
 
     protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
