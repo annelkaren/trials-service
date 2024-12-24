@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
-import mx.gob.pjpuebla.trials.workflow.transferencias.Transferencia;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaDTO;
 import mx.gob.pjpuebla.trials.workflow.transferencias.records.TransferenciaRecordResponse;
 
