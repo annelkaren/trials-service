@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ import java.util.List;
 @Transactional
 public class AcuerdoRubrosService {
     private final AcuerdoRubrosRepository acuerdoRubrosRepository;
-    private final DocumentoRepository documentoRepository;
+    private final CarpetaRepository carpetaRepository;
 
     @Transactional(readOnly = true)
     public Page<AcuerdoRubrosRecord> getAll(Pageable pageable) {
@@ -46,20 +46,21 @@ public class AcuerdoRubrosService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AcuerdoRubrosRecord> findRubrosByDocumentoId(Integer id, Pageable pageable, String nombre) {
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId" + id));
+    public Page<AcuerdoRubrosRecord> findRubrosByDocumentoId(Integer carpetaId, Pageable pageable, String nombre) {
+        Carpeta carpeta = carpetaRepository.findById(carpetaId)
+            .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + carpetaId));;
+        
 
         TipoSistema tipoSistema = null;
         Materia materia = null;
 
-        if (documento.getCarpeta() != null && documento.getCarpeta().getTipoJuicio() != null) {
-            tipoSistema = documento.getCarpeta().getTipoJuicio().getTipoSistema();
-            materia = documento.getCarpeta().getTipoJuicio().getMateria();
+        if (carpeta != null && carpeta.getTipoJuicio() != null) {
+            tipoSistema = carpeta.getTipoJuicio().getTipoSistema();
+            materia = carpeta.getTipoJuicio().getMateria();
         }
 
         if (materia == null) {
-            throw new NotFoundException("Materia no encontrada para el documento", "documentoId" + id);
+            throw new NotFoundException("Materia no encontrada para la carpeta", "carpetaId" + carpetaId);
         }
 
         Page<AcuerdoRubros> acuerdoRubrosList;

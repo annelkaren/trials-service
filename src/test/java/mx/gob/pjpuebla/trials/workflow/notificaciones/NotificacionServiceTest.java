@@ -266,7 +266,7 @@ class NotificacionServiceTest {
                 .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())));
 
         // Simular que se guarda la notificación y se le asigna un ID
-        Notificacion notificacionMock = NotificacionSetUp.createNotificacion().setId(1); // Asignar un ID mock
+        Notificacion notificacionMock = NotificacionSetUp.createNotificacion().setId(1).setTipoNotificacion(TipoNotificacion.ESTRADO); // Asignar un ID mock
         given(notificacionRepository.save(any(Notificacion.class)))
                 .willReturn(notificacionMock); // Retornar la notificación mock con ID
 

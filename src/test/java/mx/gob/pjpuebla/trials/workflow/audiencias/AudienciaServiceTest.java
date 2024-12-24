@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -214,10 +213,7 @@ class AudienciaServiceTest {
         AsistenciaAudiencia asistenciaAudiencia = new AsistenciaAudiencia();
         asistenciaAudiencia.setAsistencia(Asistencia.SI);
         asistenciaAudiencia.setDocumentoIdentificacion(DocumentoIdentificacionSetUp.createDocIdentificacion());
-        AsistenciaPersonaDocumento asistenciaPersonaDocumento = new AsistenciaPersonaDocumento(
-                1, "Juan", "Pérez", "García", "Actor", "Parte", Asistencia.SI, "DNI"
-        );
-        List<AsistenciaPersonaDocumento> personasDocumento = Collections.singletonList(asistenciaPersonaDocumento);
+        
 
         PersonaDocumento personaDocumento = new PersonaDocumento();
         personaDocumento.setId(1);

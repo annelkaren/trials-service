@@ -19,9 +19,9 @@ public class TipoAcuerdoResource {
 
     private final TipoAcuerdoService tipoAcuerdoService;
 
-    @GetMapping(value = "/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<TipoAcuerdoRecord>> findByDocumentoId(@PathVariable Integer documentoId) {
-        List<TipoAcuerdoRecord> tipoAcuerdo = tipoAcuerdoService.findByDocumentoId(documentoId);
+    @GetMapping(value = "/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<TipoAcuerdoRecord>> findByDocumentoId(@PathVariable Integer carpetaId) {
+        List<TipoAcuerdoRecord> tipoAcuerdo = tipoAcuerdoService.findByDocumentoId(carpetaId);
         return ResponseEntity.ok(tipoAcuerdo);
     }
 

@@ -48,7 +48,6 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
@@ -591,13 +590,7 @@ class CarpetaServiceTest {
                 "TipoParte2",
                 Rol.PRINCIPAL
         );
-        ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
-                "Juez Perez",
-                "",
-                "",
-                "",
-                ""
-        );
+       
 
         given(carpetaRepository.findById(any())).willReturn(Optional.of(documento.getCarpeta()));
         given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))

@@ -36,8 +36,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -93,7 +96,8 @@ public class NotificacionService {
                         
                         DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
                         if(docDetalle != null){
-                            concepto = List.of(docDetalle.getExtractoSentencia().substring(0, 25));
+                            String extracto = docDetalle.getExtractoSentencia();
+                            concepto = List.of(extracto.substring(0, Math.min(extracto.length(), 25)));
                         }else{
                             concepto = List.of();
                         }
@@ -111,7 +115,10 @@ public class NotificacionService {
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
-                            documentoDetalleRecord.orElse(null));
+                            documentoDetalleRecord.orElse(null),
+                            notificacion.getDocumento().getTipoDocumento(),
+                            notificacion.getDocumento().getId(),
+                            notificacion.getDocumento().getCarpeta().getId());
                 })
                 .toList();
 
@@ -255,10 +262,11 @@ public class NotificacionService {
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
+            EstadoNotificacion estadoNotificacion = persona.getTipoNotificacion().equals(TipoNotificacion.CORREO_ELECTRONICO) ? EstadoNotificacion.POR_LEER : EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
 
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
-                    .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
+                    .setEstadoNotificacion(estadoNotificacion)
                     .setTipoNotificacion(persona.getTipoNotificacion())
                     .setDocumento(documento);
             notif = notificacionRepository.save(notif);
@@ -293,23 +301,23 @@ public class NotificacionService {
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
             String tipoDocumento) {
-        /*
-         * Map<String, Object> sendEmail = new HashMap<>();
-         * 
-         * sendEmail.put("nombreParticipante", nombreParticipante);
-         * sendEmail.put("numCarpeta", numCarpeta);
-         * sendEmail.put("nombreJuzgado", nombreJuzgado);
-         * sendEmail.put("tipoDocumento", tipoDocumento);
-         * sendEmail.put("portalNotificaciones", portalNotificaciones);
-         * 
-         * emailService.sendMail(
-         * List.of(email),
-         * Collections.emptyList(),
-         * Collections.emptyList(),
-         * "Notificación pendiente",
-         * "NotificacionParticipantes.ftl",
-         * sendEmail);
-         */
+        
+         Map<String, Object> sendEmail = new HashMap<>();
+         
+         sendEmail.put("nombreParticipante", nombreParticipante);
+         sendEmail.put("numCarpeta", numCarpeta);
+         sendEmail.put("nombreJuzgado", nombreJuzgado);
+         sendEmail.put("tipoDocumento", tipoDocumento);
+         sendEmail.put("portalNotificaciones", portalNotificaciones);
+         
+         emailService.sendMail(
+         List.of(email),
+         Collections.emptyList(),
+         Collections.emptyList(),
+         "Notificación pendiente",
+         "NotificacionParticipantes.ftl",
+         sendEmail);
+        
         return true;
     }
 }
