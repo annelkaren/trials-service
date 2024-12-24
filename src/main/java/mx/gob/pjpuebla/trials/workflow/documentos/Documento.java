@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 public class Documento implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idDocumento", sequenceName = "SEQ_DOCUMENTOS_ID")
+    @SequenceGenerator(name = "idDocumento", sequenceName = "SEQ_DOCUMENTOS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocumento")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

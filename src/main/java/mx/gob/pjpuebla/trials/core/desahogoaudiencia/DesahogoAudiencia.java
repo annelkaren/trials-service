@@ -13,8 +13,8 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 public class DesahogoAudiencia {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudiencia")
-    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_DESAHOGO_AUD_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDesahogoAudiencia")
+    @SequenceGenerator(name = "idDesahogoAudiencia", sequenceName = "SEQ_DESAHOGO_AUD_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

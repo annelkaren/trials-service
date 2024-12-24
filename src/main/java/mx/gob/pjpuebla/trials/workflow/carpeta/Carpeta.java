@@ -29,7 +29,7 @@ import java.util.Set;
 public class Carpeta implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idCarpeta", sequenceName = "SEQ_CARPETAS_ID")
+    @SequenceGenerator(name = "idCarpeta", sequenceName = "SEQ_CARPETAS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idCarpeta")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

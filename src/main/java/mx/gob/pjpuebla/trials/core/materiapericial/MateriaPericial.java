@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class MateriaPericial implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "idMateriaPericial", sequenceName = "SEQ_MATERIA_PERICIAL_ID")
+    @SequenceGenerator(name = "idMateriaPericial", sequenceName = "SEQ_MATERIA_PERICIAL_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idMateriaPericial")
     @Column(name = "PN_ID")
     private Integer id;

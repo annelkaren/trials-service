@@ -18,7 +18,7 @@ import java.io.Serializable;
 public class Notificacion implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "idNotificaciones", sequenceName = "SEQ_NOTIFICACIONES_ID")
+    @SequenceGenerator(name = "idNotificaciones", sequenceName = "SEQ_NOTIFICACIONES_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idNotificaciones")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

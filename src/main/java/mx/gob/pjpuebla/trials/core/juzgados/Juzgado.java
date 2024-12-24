@@ -27,7 +27,7 @@ public class Juzgado implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idJuzgado")
-    @SequenceGenerator(name = "idJuzgado", sequenceName = "SEQ_JUZGADOS_ID")
+    @SequenceGenerator(name = "idJuzgado", sequenceName = "SEQ_JUZGADOS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

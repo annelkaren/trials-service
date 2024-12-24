@@ -19,7 +19,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 public class PersonaDetalle implements Serializable {
     
     @Id
-    @SequenceGenerator(name = "idPersonaDetalle", sequenceName = "TRIALS.SEQ_PERSONADETALLE_ID")
+    @SequenceGenerator(name = "idPersonaDetalle", sequenceName = "TRIALS.SEQ_PERSONADETALLE_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idPersonaDetalle")
     @Column(name = "PN_ID")
     private Integer id;

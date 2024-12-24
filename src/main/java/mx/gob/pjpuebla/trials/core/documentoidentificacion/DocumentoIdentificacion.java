@@ -20,7 +20,7 @@ public class DocumentoIdentificacion implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idIdentificacion")
-    @SequenceGenerator(name = "idIdentificacion", sequenceName = "SEQ_DOCUMENTOS_IDENTIFICACION_ID")
+    @SequenceGenerator(name = "idIdentificacion", sequenceName = "SEQ_DOCUMENTOS_IDENTIFICACION_ID",  allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

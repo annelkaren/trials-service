@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class DocumentoDetalle implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocDetalle")
-    @SequenceGenerator(name = "idDocDetalle", sequenceName = "SEQ_DOC_DETALLE_ID")
+    @SequenceGenerator(name = "idDocDetalle", sequenceName = "SEQ_DOC_DETALLE_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "TBL_MOVIMIENTOS")
 public class Movimiento implements Serializable {
     @Id
-    @SequenceGenerator(name = "idMovimientos", sequenceName = "SEQ_MOVIMIENTOS_ID")
+    @SequenceGenerator(name = "idMovimientos", sequenceName = "SEQ_MOVIMIENTOS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idMovimientos")
     @Column(name =  "PN_ID", insertable = false, updatable = false)
     private Integer id;

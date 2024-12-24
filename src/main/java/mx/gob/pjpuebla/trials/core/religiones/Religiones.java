@@ -16,7 +16,7 @@ public class Religiones implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idReligiones")
-    @SequenceGenerator(name = "idReligiones", sequenceName = "SEQ_RELIGIONES_ID")
+    @SequenceGenerator(name = "idReligiones", sequenceName = "SEQ_RELIGIONES_ID",  allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
