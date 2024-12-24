@@ -12,7 +12,7 @@ public class Nacionalidad implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idNacionalidad")
-    @SequenceGenerator(name = "idNacionalidad", sequenceName = "SEQ_NACIONALIDADES_ID")
+    @SequenceGenerator(name = "idNacionalidad", sequenceName = "SEQ_NACIONALIDADES_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

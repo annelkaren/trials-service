@@ -26,7 +26,7 @@ public class Etiqueta implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipojuicioEtiquetas")
-    @SequenceGenerator(name = "idTipojuicioEtiquetas", sequenceName = "SEQ_TIPOJUICIO_ETIQUETAS_ID")
+    @SequenceGenerator(name = "idTipojuicioEtiquetas", sequenceName = "SEQ_TIPOJUICIO_ETIQUETAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

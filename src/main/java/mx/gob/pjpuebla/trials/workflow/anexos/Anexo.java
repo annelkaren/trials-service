@@ -20,7 +20,7 @@ import java.io.Serializable;
 public class Anexo implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idAnexo", sequenceName = "SEQ_ANEXOS_ID")
+    @SequenceGenerator(name = "idAnexo", sequenceName = "SEQ_ANEXOS_ID",  allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAnexo")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

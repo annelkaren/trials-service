@@ -12,7 +12,7 @@ public class LenguaIndigena implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idLenguasIndigenas")
-    @SequenceGenerator(name = "idLenguasIndigenas", sequenceName = "SEQ_LENGUAS_INDIGENAS_ID")
+    @SequenceGenerator(name = "idLenguasIndigenas", sequenceName = "SEQ_LENGUAS_INDIGENAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

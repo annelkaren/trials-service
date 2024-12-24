@@ -26,7 +26,7 @@ public class Escolaridad implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEscolaridad")
-    @SequenceGenerator(name = "idEscolaridad", sequenceName = "SEQ_ESCOLARIDADES_ID")
+    @SequenceGenerator(name = "idEscolaridad", sequenceName = "SEQ_ESCOLARIDADES_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -25,7 +25,7 @@ public class Oficialia implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idOficialia")
-    @SequenceGenerator(name = "idOficialia", sequenceName = "SEQ_OFICIALIAS_ID")
+    @SequenceGenerator(name = "idOficialia", sequenceName = "SEQ_OFICIALIAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

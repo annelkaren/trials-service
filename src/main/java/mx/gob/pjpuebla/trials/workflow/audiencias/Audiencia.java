@@ -44,7 +44,7 @@ public class Audiencia implements  Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudiencia")
-    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID")
+    @SequenceGenerator(name = "idAudiencia", sequenceName = "SEQ_AUDIENCIA_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

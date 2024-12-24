@@ -23,7 +23,7 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 public class Evento implements  Serializable, Auditable{
 
     @Id
-    @SequenceGenerator(name = "idEvento", sequenceName = "SEQ_EVENTOS_ID")
+    @SequenceGenerator(name = "idEvento", sequenceName = "SEQ_EVENTOS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEvento")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

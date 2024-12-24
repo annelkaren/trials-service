@@ -25,7 +25,7 @@ import java.io.Serializable;
 public class PersonaDocumento implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idPersonasDocumentos", sequenceName = "SEQ_PERSONAS_DOCUMENTOS_ID")
+    @SequenceGenerator(name = "idPersonasDocumentos", sequenceName = "SEQ_PERSONAS_DOCUMENTOS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idPersonasDocumentos")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

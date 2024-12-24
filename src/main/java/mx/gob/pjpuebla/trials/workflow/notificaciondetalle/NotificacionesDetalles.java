@@ -22,7 +22,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 public class NotificacionesDetalles implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "idNotificacionesDetalles", sequenceName = "SEQ_NOTIFICACIONES_DETALLES_ID")
+    @SequenceGenerator(name = "idNotificacionesDetalles", sequenceName = "SEQ_NOTIFICACIONES_DETALLES_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idNotificacionesDetalles")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;

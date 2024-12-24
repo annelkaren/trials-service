@@ -36,7 +36,7 @@ public class EtapaProcesal implements Serializable, Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEtapaProcesal")
-    @SequenceGenerator(name = "idEtapaProcesal", sequenceName = "SEQ_ETAPA_PROCESAL_ID")
+    @SequenceGenerator(name = "idEtapaProcesal", sequenceName = "SEQ_ETAPA_PROCESAL_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

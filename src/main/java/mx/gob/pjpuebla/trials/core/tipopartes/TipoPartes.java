@@ -20,7 +20,7 @@ public class TipoPartes implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoParte")
-    @SequenceGenerator(name = "idTipoParte", sequenceName = "SEQ_TIPO_PARTES_ID")
+    @SequenceGenerator(name = "idTipoParte", sequenceName = "SEQ_TIPO_PARTES_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
