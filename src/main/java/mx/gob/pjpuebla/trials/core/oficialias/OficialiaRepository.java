@@ -93,4 +93,6 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
     );
 
     Optional<Oficialia> findByNombreIgnoreCase(String nombre);
+    
+    boolean existsBySedeId(Integer sedeId);
 }
