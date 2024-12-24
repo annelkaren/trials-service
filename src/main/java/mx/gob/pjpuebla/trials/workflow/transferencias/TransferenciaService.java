@@ -52,7 +52,7 @@ public class TransferenciaService {
 
         Transferencia result = transferenciaRepository.save(transferencia);
 
-        return createRecordResponse(result, personaEntrega, Optional.empty());
+        return createRecordResponse(result, personaEntrega, null);
 
     }
 
@@ -97,7 +97,7 @@ public class TransferenciaService {
 
         Transferencia result = transferenciaRepository.save(transferencia);
 
-        return createRecordResponse(result, personaEntrega, Optional.of(personaRecibe));
+        return createRecordResponse(result, personaEntrega, personaRecibe);
     }
 
     public TransferenciaRecordResponse getTransferencia(String uuid){
@@ -106,7 +106,7 @@ public class TransferenciaService {
         Persona persona = personaRepository.findById(transferencia.getEntregaId()).orElseThrow(()-> new NotFoundException("La persona no existe","personaEntregaId"));
         Persona personaRecibe = personaRepository.findById(transferencia.getRecibeId()).orElseThrow(()-> new NotFoundException("La persona no existe","personaRecibeId"));
 
-        return createRecordResponse(transferencia, persona, Optional.of(personaRecibe));
+        return createRecordResponse(transferencia, persona, personaRecibe);
     }
 
     public TransferenciaRecordResponse getTransferenciaByPersonaEntrega(){
@@ -115,11 +115,12 @@ public class TransferenciaService {
         Transferencia transferencia = transferenciaRepository.findByEntregaIdAndEstatus(persona.getId().intValue(), EstadoTransferencia.AUTORIZADO).orElseThrow(()-> new NotFoundException("La transferencia no existe o fue completada","personaEntregaId"));
         Optional<Persona> personaRecibe = personaRepository.findById(transferencia.getRecibeId()!=null? transferencia.getRecibeId() : 0);
 
-        return createRecordResponse(transferencia, persona, personaRecibe);
+        return createRecordResponse(transferencia, persona, personaRecibe.orElse(null));
     }
 
-    private TransferenciaRecordResponse createRecordResponse(Transferencia transferencia, Persona personaEntrega, Optional<Persona> personaRecibe){
+    private TransferenciaRecordResponse createRecordResponse(Transferencia transferencia, Persona personaEntrega, Persona personaRecibeTmp){
         List<DocumentoAsignadoResponseRecord> transferidos = documentoService.getAllAsignado(personaEntrega, null);
+        Optional<Persona> personaRecibe = personaRecibeTmp!=null?Optional.of(personaRecibeTmp):Optional.empty();
 
         if (transferencia.getEstatus()==EstadoTransferencia.CONCLUIDO){
             transferidos = documentoService.getAllAsignado(personaRecibe.orElse(null), transferencia.getUuid().toString());
