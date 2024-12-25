@@ -221,30 +221,44 @@ class DocumentoServiceTest {
 
     @Test
     void create_demanda() {
-
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+    
+        Persona personaMock = mock(Persona.class);
+        Oficialia oficialiaMock = mock(Oficialia.class);
+        given(personaMock.getOficialia()).willReturn(oficialiaMock);
+        given(personaService.getAuditor()).willReturn(personaMock);
+        given(oficialiaMock.getId()).willReturn(1);
 
+        Juzgado juzgadoMock = mock(Juzgado.class);
+     
+        List<Juzgado> juzgadosRelacionados = Arrays.asList(juzgadoMock);
+        given(juzgadoRepository.findJuzgadoByOficialiaId(oficialiaMock.getId())).willReturn(juzgadosRelacionados);
+        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgadoMock);
+        
+        TipoPartes actorParte = mock(TipoPartes.class);
+        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actorParte));
         given(tipoJuicioRepository.findById(1)).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgado);
+    
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+    
         given(documentoRepository.save(any())).willReturn(demanda);
-        given(tipoPartesRepository.findByNombreAndTipoJuicioId(eq("Actor"), any())).willReturn(Optional.of(actor));
         given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
-
+    
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(),
                 TipoCarpeta.DEMANDA);
-
         DocumentoRecord response = documentoService.createDemanda(recordRequest);
+    
         assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
                 .hasFieldOrPropertyWithValue("tipoCarpeta", documentoRecord.tipoCarpeta());
     }
-
+    
+    
     @Test
     void update_status_success() {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
@@ -324,9 +338,9 @@ class DocumentoServiceTest {
         for (Documento documento : documentos) {
             TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
 
-            given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+            given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
 
-            juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta);
+            juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta, null);
             assertThat(juzgado).isNotNull();
 
             for (int i = 0; i < invocaciones; i++) {
@@ -355,6 +369,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         demanda.getCarpeta().setFolio("1").setSelloEstatus(SelloEstatus.VALIDO);
+        demanda.setData(new DocumentoData().setExhortoProcedencia("Otra procedencia"));
 
         List<String> nuevosAnexos = Arrays.asList("INE", "Acta de nacimiento");
         String motivoEdita = "Corrección";
@@ -365,7 +380,7 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(demanda.getId())).willReturn(Optional.of(demanda));
         given(anexoRepository.findAllByDocumentoId(demanda.getId())).willReturn(anexosActuales);
 
-        DocumentoRecord result = documentoService.editarAnexos(demanda.getId(), nuevosAnexos, motivoEdita);
+        DocumentoRecord result = documentoService.editarAnexos(demanda.getId(), nuevosAnexos, motivoEdita, "Procedencia 1");
 
         verify(documentoRepository).save(demanda);
         verify(anexoRepository).delete(anexosActuales.get(1));
@@ -386,7 +401,7 @@ class DocumentoServiceTest {
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita));
+                () -> documentoService.editarAnexos(documentoId, nuevosAnexos, motivoEdita, ""));
 
         assertThat(exception.getMessage()).contains("Documento no encontrado");
     }
@@ -551,13 +566,13 @@ class DocumentoServiceTest {
 
     @Test
     void create_exhorto() {
-        DocumentoExhortoRecord record = new DocumentoExhortoRecord("", "", Arrays.asList("1", "2"));
+        DocumentoExhortoRecord recordItem = new DocumentoExhortoRecord("", "", Arrays.asList("1", "2"));
         Documento exhorto = DocumentoSetUp.create(tipoJuicio);
         exhorto.getCarpeta().setFolio("1");
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
 
         given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class))).willReturn(juzgado);
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
 
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
@@ -568,7 +583,7 @@ class DocumentoServiceTest {
         DocumentoRecord documentoRecord = new DocumentoRecord(exhorto.getId(), exhorto.getCarpeta().getFolio(),
                 TipoCarpeta.EXHORTO);
 
-        DocumentoRecord response = documentoService.createExhorto(record);
+        DocumentoRecord response = documentoService.createExhorto(recordItem);
         assertThat(response).isOfAnyClassIn(DocumentoRecord.class)
                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                 .hasFieldOrPropertyWithValue("folio", documentoRecord.folio())
@@ -577,8 +592,8 @@ class DocumentoServiceTest {
 
     @Test
     void create_apelacion() {
-        TipoJuicio tipoJuicio = TipoJuicioSetUp.createTipoJuicio();
-        Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        TipoJuicio tipoJuicioItem = TipoJuicioSetUp.createTipoJuicio();
+        Documento demanda = DocumentoSetUp.create(tipoJuicioItem);
         Carpeta carpetaMock = CarpetaSetUp.create();
         demanda.setCarpeta(carpetaMock);
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.APELACION);
@@ -652,14 +667,14 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
-        demanda.setConcepto(concepto);
-        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
+        demanda.getCarpeta().setConcepto(concepto);
+        Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
         given(movimientoService.getOrigen(any(), any())).willReturn("OCP");
         given(personaService.getAuditor()).willReturn(persona);
         given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
-        given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Documento.class)))
+        given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Carpeta.class)))
                 .willReturn("Expediente");
 
         List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
@@ -817,7 +832,6 @@ class DocumentoServiceTest {
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
         given(carpetaRepository.save(any(Carpeta.class))).willReturn(carpeta);
         given(conceptoRepository.findByNombre(any())).willReturn(Optional.of(concepto));
-        given(documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(any(Integer.class))).willReturn(documento);
 
         List<Integer> idList = Arrays.asList(movimiento1.getId(), movimiento2.getId());
         Integer personaCarrito = Math.toIntExact(persona.getId());
@@ -826,7 +840,7 @@ class DocumentoServiceTest {
         verify(movimientoRepository).findAllById(idList);
         verify(personaRepository).findById(Long.valueOf(personaCarrito));
         verify(personaService).getAuditor();
-        verify(documentoRepository, times(2)).save(documento);
+        verify(documentoRepository, times(1)).save(documento);
         verify(carpetaRepository).save(carpeta);
         verify(movimientoRepository, times(2)).save(any(Movimiento.class));
     }
@@ -859,18 +873,21 @@ class DocumentoServiceTest {
 
     @Test
     void getIndicadores_success() {
+        Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
         Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
-        demanda.setConcepto(concepto);
-        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now());
+        demanda.getCarpeta().setConcepto(concepto);
+        Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
+                .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
+                .setPersona(persona);
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Page<Movimiento> page = new PageImpl<>(listPage);
 
-        Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+
         given(personaService.getAuditor()).willReturn(persona);
-        given(movimientoService.getAllBandejaRecepcion(any(), any(), any(), any(), any())).willReturn(page);
+        given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any())).willReturn(page);
 
         IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
@@ -995,7 +1012,7 @@ class DocumentoServiceTest {
         assertNotNull(doc, "El DocumentoRecepcionRecord no debe ser nulo");
         assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
         assertEquals("000001/2024", doc.expediente(), "El expediente del documento no es el esperado");
-        assertEquals(TipoDocumento.PROMOCION.name(), doc.tipoEntrada(), "El tipo de documento no es el esperado");
+        assertEquals(StringUtils.capitalize(TipoDocumento.PROMOCION.name().toLowerCase()), doc.tipoEntrada(), "El tipo de documento no es el esperado");
     }
 
 
@@ -1113,11 +1130,10 @@ class DocumentoServiceTest {
                 .setPersona(persona)
                 .setOficialia(null)
                 .setJuzgado(juzgado);
-        String duration = (documento.getHoras() != null && documento.getHoras() > 0)?documento.getHoras() +"h":concepto.getDias().toString()+"d";
+        String duration = (documento.getCarpeta().getHoras() != null && documento.getCarpeta().getHoras() > 0)?documento.getCarpeta().getHoras() +"h":concepto.getDias().toString()+"d";
 
         when(conceptoRepository.findById(personalJuzgadoRecord.idConcepto())).thenReturn(Optional.of(concepto));
-        when(documentoRepository.findById(personalJuzgadoRecord.idDocumentoRecepcion())).thenReturn(Optional.of(documento));
-        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(carpetaRepository.findById(any(Integer.class))).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
         when(movimientoService.createMovimentoTurnado(carpeta, null, persona, null, EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration)).thenReturn(movimiento);
 
@@ -1138,7 +1154,6 @@ class DocumentoServiceTest {
         List<AsignadoTurnadoRecord> records = Arrays.asList(record1, record2);
 
         Concepto concepto = ConceptoSetUp.createConcepto();
-        Documento documento = DocumentoSetUp.create(tipoJuicio);
         Carpeta carpeta = CarpetaSetUp.create();
         Persona persona = PersonaSetUp.createPersona()
                 .setJuzgado(juzgado);
@@ -1153,8 +1168,7 @@ class DocumentoServiceTest {
 
         when(personaRepository.findById(record1.idPersonalJuzgado().longValue())).thenReturn(Optional.of(persona));
         when(conceptoRepository.findById(record1.idConcepto())).thenReturn(Optional.of(concepto));
-        when(documentoRepository.findById(record1.idDocumentoAsignado())).thenReturn(Optional.of(documento));
-        when(carpetaRepository.findById(documento.getCarpeta().getId())).thenReturn(Optional.of(carpeta));
+        when(carpetaRepository.findById(any(Integer.class))).thenReturn(Optional.of(carpeta));
         when(personaService.getAuditor()).thenReturn(persona);
         when(movimientoService.createMovimentoTurnado(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(movimiento);
 
@@ -1377,6 +1391,7 @@ class DocumentoServiceTest {
     void create_demandaAntiguas() {
 
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
+        Concepto concepto = new Concepto();
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
 
@@ -1404,6 +1419,8 @@ class DocumentoServiceTest {
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
         given(digitalizacionService.guardarArchivo(any(), any()))
                 .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo", "archivo.pdf"));
+        concepto.setId(1).setNombre("Distribución");
+        given(conceptoRepository.findByNombre("Distribución")).willReturn(Optional.of(concepto));
         DocumentoRecord documentoRecord = new DocumentoRecord(demanda.getId(), demanda.getCarpeta().getFolio(), TipoCarpeta.DEMANDA);
         MockMultipartFile multipartFile = new MockMultipartFile(
                 "file",
@@ -1464,7 +1481,7 @@ class DocumentoServiceTest {
         documento.setId(10);
         documento.getCarpeta().setExpediente(pieza);
 
-        AmparoRecordResponse response = new AmparoRecordResponse(documento.getCarpeta().getId(), documento.getId(), pieza, LocalDateTime.now());
+        AmparoRecordResponse response;
 
         given(personaService.getAuditor()).willReturn(persona);
         given(carpetaRepository.findById(any())).willReturn(Optional.of(carpeta));

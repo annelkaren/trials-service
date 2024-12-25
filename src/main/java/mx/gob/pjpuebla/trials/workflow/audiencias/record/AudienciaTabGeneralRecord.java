@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.audiencias.record;
 import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 
+import java.io.Serializable;
+
 public record AudienciaTabGeneralRecord(
         Integer idAudiencia,
         Integer idTipoAudiencia,
@@ -11,5 +13,5 @@ public record AudienciaTabGeneralRecord(
         String resultadoDesahogo,
         String actores,
         EstatusAudiencia estatusAudiencia
-) {
+) implements Serializable {
 }

@@ -170,4 +170,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     Movimiento findFirstByDocumentoIdOrderByIdAsc(Integer carpetaId);
 
     List<Movimiento> findByCarpetaIdAndEstadoInOrderByIdAsc(Integer carpetaId, List<String> estados);
+
+    Integer countByCarpetaId(Integer carpetaId);
+
+    List<Movimiento> findByUuid(UUID uuid);
 }

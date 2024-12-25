@@ -296,7 +296,7 @@ class SalaServiceTest {
         given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
         given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "")).willReturn(Collections.singletonList(sala));
 
-        List<SalaRecord> result = salaService.getAllbyJuzgado("", 1);
+        List<SalaRecord> result = salaService.getSalasByJuzgado("", 1);
 
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);

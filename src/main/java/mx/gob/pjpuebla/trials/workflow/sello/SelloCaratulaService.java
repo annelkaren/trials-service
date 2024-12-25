@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -24,7 +23,6 @@ public class SelloCaratulaService {
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final DocumentoRepository documentoRepository;
-    private final JuzgadoRepository juzgadoRepository;
     @Value("classpath:jasper/CaratulaReport.jasper")
     private Resource caratula;
     private Boolean isExhorto;
@@ -53,7 +51,7 @@ public class SelloCaratulaService {
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
-        parameters.put("codigoQR", expendienteYear[0]);//TODO. Eliminar si no es requerido en el reporte
+        parameters.put("codigoQR", expendienteYear[0]);
         parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
         parameters.put("isExhorto", isExhorto); // es un Exhorto

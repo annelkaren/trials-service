@@ -113,13 +113,13 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     @Query("""
        SELECT c FROM Carpeta c
-       WHERE c.juzgado = :juzgado
+       WHERE c.juzgado IN :juzgados
        AND (
            :key IS NULL
            OR lower(c.expediente) LIKE %:key%
        )
        """)
-    Page<Carpeta> findByJuzgado(@Param("juzgado") Juzgado juzgado,
+    Page<Carpeta> findByJuzgado(@Param("juzgados") List<Juzgado> juzgados,
                                       @Param("key") String key,
                                       Pageable pageable);
 }

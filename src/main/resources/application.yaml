@@ -34,6 +34,7 @@ spring:
     username: annelkaren@gmail.com
     password: naaj eusw llhl rhti
 
+
   security:
     oauth2:
       resourceserver:
@@ -73,3 +74,9 @@ keycloak:
 
 app:
   root-folder: /opt/pjp/files
+  portal-notificaciones: http://187.190.62.102/acuerdos/login
+
+inegi:
+  url: https://gaia.inegi.org.mx/wscatgeo
+  states-path: /mgee
+  mun-path: /mgem/

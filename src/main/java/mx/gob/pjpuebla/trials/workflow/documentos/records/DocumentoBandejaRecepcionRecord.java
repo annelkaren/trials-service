@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
 import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoBandejaRecepcionRecord(
@@ -15,5 +16,5 @@ public record DocumentoBandejaRecepcionRecord(
         Boolean isInterno,
         Prioridad prioridad,
         Integer horas
-) {
+) implements Serializable {
 }

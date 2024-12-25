@@ -26,6 +26,7 @@ public class JuzgadoUpdateValidator implements Validator {
         if (target == null)
             return;
         Juzgado juzgado = (Juzgado) target;
-        Juzgado entity = juzgadoRepository.findById(juzgado.getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+        if (juzgadoRepository.findById(juzgado.getId()).isEmpty())
+            throw new NotFoundException("Juzgado no encontrado", "juzgadoId");
     }
 }

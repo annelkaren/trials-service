@@ -1,8 +1,6 @@
 package mx.gob.pjpuebla.trials.core.procedimientos;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaResource;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

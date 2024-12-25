@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum EstadoNotificacion {
     PENDIENTE_DE_ASIGNAR,
     ASIGNADO,
-    COMPLETADO
+    COMPLETADO,
+    POR_LEER
 }

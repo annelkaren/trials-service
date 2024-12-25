@@ -20,10 +20,10 @@ public class OficialiaJuzgado implements Serializable {
     private Integer juzgadoId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_OFICIALIA_ID", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID", insertable = false, updatable = false)
     private Oficialia oficialia;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_JUZGADO_ID", referencedColumnName = "PN_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID", insertable = false, updatable = false)
     private Juzgado juzgado;
 }

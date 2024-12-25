@@ -73,7 +73,8 @@ public class PersonaService {
                             persona.getCorreoElectronico(),
                             persona.getCelular(),
                             centroTrabajo,
-                            persona.getEstado().name()
+                            persona.getEstado().name(),
+                            roleService.getRolesByUserId(persona.getUsuario()).get(0).name()
                     );
                 })
                 .toList();
@@ -100,7 +101,7 @@ public class PersonaService {
         fillPersonaData(persona);
 
         persona = personaRepository.save(persona);
-        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "");
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "", "");
     }
 
     private boolean isValidAge(LocalDate date) {
@@ -141,7 +142,7 @@ public class PersonaService {
             fillPersonaData(persona);
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), rolesToSave);
-            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "");
+            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "", "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Persona.class.getSimpleName());
         }
@@ -205,7 +206,7 @@ public class PersonaService {
         nombre = (nombre != null) ? nombre.toLowerCase() : "";
         List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
 
-        if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR")) {
+        if (roleService.hasRole(currentUser.getUsuario(), "ADMINISTRADOR_SISTEMA")) {
             List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
 
             List<Oficialia> oficialias = oficialiaRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, nombre);
@@ -227,15 +228,12 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre,String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
-
-        if (usuario.getJuzgado() == null && usuario.getOficialia() == null) { //Admin de sistema
-            return getAll(new Persona().setNombre(nombre), pageable);
-        }
-
+        boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
         Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
                 searchQuery,
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
+                adminSistema,
                 pageable
         );
 
@@ -249,7 +247,8 @@ public class PersonaService {
                                 p.getCelular(),
                                 (p.getJuzgado() != null) ? p.getJuzgado().getNombre() :
                                         (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-",
-                                p.getEstado().name()
+                                p.getEstado().name(),
+                                ""
                         ))
                 .toList();
 
@@ -285,12 +284,13 @@ public class PersonaService {
                 p.getCorreoElectronico(),
                 p.getCelular(),
                 "",
-                ""
+                "",
+                roleService.getRolesByUserId(p.getUsuario()).get(0).name()
         )).toList();
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {
-        boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR"));
+        boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR_SISTEMA"));
         if (hasAdminRole && (
                 (persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
                         || (persona.getOficialia() != null && persona.getOficialia().getId() != null))) {

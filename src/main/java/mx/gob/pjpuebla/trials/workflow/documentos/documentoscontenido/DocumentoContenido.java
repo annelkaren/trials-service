@@ -10,7 +10,7 @@ public class DocumentoContenido implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDocContenido")
-    @SequenceGenerator(name = "idDocContenido", sequenceName = "SEQ_DOC_CONTENIDO_ID")
+    @SequenceGenerator(name = "idDocContenido", sequenceName = "SEQ_DOC_CONTENIDO_ID",  allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

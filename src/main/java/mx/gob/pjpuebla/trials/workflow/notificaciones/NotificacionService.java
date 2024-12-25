@@ -6,22 +6,27 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.DTO.NotificacionDto;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
-import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetalles;
-import mx.gob.pjpuebla.trials.workflow.notificacionesDetalles.NotificacionesDetallesRepository;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,13 +36,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class NotificacionService {
+
+    @Value("${app.portal-notificaciones}")
+    private String portalNotificaciones; // Ruta raíz de la digitalización
 
     private final NotificacionRepository notificacionRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
@@ -46,6 +57,8 @@ public class NotificacionService {
     private final ListaEstradoRepository listaEstradoRepository;
     private final DocumentoRepository documentoRepository;
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
+    private final EmailService emailService;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
 
     public Page<NotificacionRecord> getAllNotificaciones(String tipo, String estado, Pageable pageable) {
         tipo = (tipo != null) ? tipo.toLowerCase() : "";
@@ -67,17 +80,34 @@ public class NotificacionService {
                 return Page.empty(pageable);
             }
         }
-        Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, estadoNotificacion, pageable);
+        Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, estadoNotificacion,
+                pageable);
 
         List<NotificacionRecord> list = page.getContent().stream()
                 .map(notificacion -> {
                     Optional<DocumentoDetalleRecord> documentoDetalleRecord;
-                    documentoDetalleRecord = notificacionRepository.findDocumentoDetalleByDocumentoId(notificacion.getDocumento().getId());
+                    documentoDetalleRecord = notificacionRepository
+                            .findDocumentoDetalleByDocumentoId(notificacion.getDocumento().getId());
+                    List<String> concepto;
+                    // Validación adicional, si es sentencia se envia el extracto de sentencia por
+                    // el contrario se envian los rumbros en concepto.
 
-                    List<String> rubros = notificacion.getDocumento().getData() != null
-                            ? notificacion.getDocumento().getData().getRubros()
-                            : new ArrayList<>();
-                    List<String> concepto = formatConcepto(rubros);
+                    if (notificacion.getDocumento().getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
+                        
+                        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
+                        if(docDetalle != null){
+                            String extracto = docDetalle.getExtractoSentencia();
+                            concepto = List.of(extracto.substring(0, Math.min(extracto.length(), 25)));
+                        }else{
+                            concepto = List.of();
+                        }
+                        
+                    } else {
+                        List<String> rubros = notificacion.getDocumento().getData() != null
+                                ? notificacion.getDocumento().getData().getRubros()
+                                : new ArrayList<>();
+                        concepto = formatConcepto(rubros);
+                    }
 
                     return new NotificacionRecord(
                             notificacion.getId(),
@@ -85,14 +115,15 @@ public class NotificacionService {
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
-                            documentoDetalleRecord.orElse(null)
-                    );
+                            documentoDetalleRecord.orElse(null),
+                            notificacion.getDocumento().getTipoDocumento(),
+                            notificacion.getDocumento().getId(),
+                            notificacion.getDocumento().getCarpeta().getId());
                 })
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
-
 
     @Transactional
     @PostMapping
@@ -173,7 +204,7 @@ public class NotificacionService {
             throw new IllegalArgumentException("Debe proporcionar al menos un ID de notificación.");
         }
         Persona persona = personaService.getAuditor();
-      
+
         ListaEstrado listaEstrado = new ListaEstrado();
 
         listaEstrado.setPersona(persona);
@@ -192,7 +223,6 @@ public class NotificacionService {
 
     }
 
-
     public List<String> formatConcepto(List<String> rubros) {
         if (rubros == null || rubros.isEmpty()) {
             return new ArrayList<>();
@@ -210,7 +240,6 @@ public class NotificacionService {
         return result;
     }
 
-
     @Transactional
     public NotificacionResponseRecord createRegistroNotificacion(NotificacionSaveRecord notificacion) {
         // Validar existencia del documento
@@ -226,16 +255,18 @@ public class NotificacionService {
             List<Integer> noEncontrados = personaIds.stream()
                     .filter(id -> personas.stream().noneMatch(persona -> persona.getId().equals(id)))
                     .toList();
-            throw new NotFoundException("Error al obtener la lista de personas seleccionadas", "personaIds: " + noEncontrados);
+            throw new NotFoundException("Error al obtener la lista de personas seleccionadas",
+                    "personaIds: " + noEncontrados);
         }
 
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
+            EstadoNotificacion estadoNotificacion = persona.getTipoNotificacion().equals(TipoNotificacion.CORREO_ELECTRONICO) ? EstadoNotificacion.POR_LEER : EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
 
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
-                    .setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR)
+                    .setEstadoNotificacion(estadoNotificacion)
                     .setTipoNotificacion(persona.getTipoNotificacion())
                     .setDocumento(documento);
             notif = notificacionRepository.save(notif);
@@ -244,6 +275,20 @@ public class NotificacionService {
                     .setNotificacion(notif)
                     .setPersonaDocumento(persona);
             detalles.add(detalle);
+
+            // ENVIO DE NOTIFICACION SI EL TIPO DE NOTIFICACION ES CORREO ELECTRONICO:
+            if (notif.getTipoNotificacion().equals(TipoNotificacion.CORREO_ELECTRONICO)) {
+                String email = persona.getCorreoNotificacion() != null && !persona.getCorreoNotificacion().isBlank()
+                        ? persona.getCorreoNotificacion()
+                        : persona.getCorreoElectronico();
+                String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " "
+                        + persona.getApellidoPaterno();
+                String numCarpeta = documento.getCarpeta().getExpediente();
+                String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
+                String tipoDocumento = documento.getTipoDocumento().name();
+
+                sendNotificacion(email, nombreParticipante, numCarpeta, nombreJuzgado, tipoDocumento);
+            }
         }
 
         // Guardar todos los detalles en un solo paso
@@ -252,5 +297,27 @@ public class NotificacionService {
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
+    }
+
+    private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
+            String tipoDocumento) {
+        
+         Map<String, Object> sendEmail = new HashMap<>();
+         
+         sendEmail.put("nombreParticipante", nombreParticipante);
+         sendEmail.put("numCarpeta", numCarpeta);
+         sendEmail.put("nombreJuzgado", nombreJuzgado);
+         sendEmail.put("tipoDocumento", tipoDocumento);
+         sendEmail.put("portalNotificaciones", portalNotificaciones);
+         
+         emailService.sendMail(
+         List.of(email),
+         Collections.emptyList(),
+         Collections.emptyList(),
+         "Notificación pendiente",
+         "NotificacionParticipantes.ftl",
+         sendEmail);
+        
+        return true;
     }
 }

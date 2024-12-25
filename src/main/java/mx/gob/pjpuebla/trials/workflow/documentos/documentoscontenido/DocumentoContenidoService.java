@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido;
 
 import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoOficioDigital
 @Service
 public class DocumentoContenidoService {
 
+    private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private final DocumentoRepository documentoRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
@@ -27,10 +29,8 @@ public class DocumentoContenidoService {
     public DocumentoOficioDigitalizacionRecord getDataDocumentoDigitalizacion(Integer documentoId) {
         // Obtenemmos registro del documento
         Documento doc = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, String.valueOf(documentoId)));
         String expediente = doc.getCarpeta() != null ? doc.getCarpeta().getExpediente() : "";
-
-        // TODO: asignar vaiores cuando se tengan disponibles
 
         // Obtenemos texto del editor:
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)
@@ -83,7 +83,7 @@ public class DocumentoContenidoService {
 
     public Integer cancelarOficio(Integer documentoId) {
         Documento doc = documentoRepository.findById(documentoId)
-                .orElseThrow(() -> new NotFoundException("Documento no encontrado", "documentoId: " + documentoId));
+                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, String.valueOf(documentoId)));
 
         doc.setEstatus(EstadoCarpeta.CANCELADO);
         documentoRepository.save(doc);
@@ -94,10 +94,10 @@ public class DocumentoContenidoService {
     public DocumentoOficioDigitalizacionRecord updateDocumentoOficioDigitalizacion(
             DocumentoOficioDigitalizacionRecord oficio) {
         Documento doc = documentoRepository.findById(oficio.idOficio()).orElseThrow(
-                () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.idOficio()));
+                () -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " + oficio.idOficio()));
 
         Institucion institucion = institucionRepository.findById(oficio.dependencia()).orElseThrow(
-                () -> new NotFoundException("Documento no encontrado", "documentoId: " + oficio.dependencia()));
+                () -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " + oficio.dependencia()));
 
         doc.setInstitucion(institucion);
         documentoRepository.save(doc);
@@ -128,6 +128,10 @@ public class DocumentoContenidoService {
     }
 
     public Integer publicarCancelarOficio(Integer documentoId, Character oficioPublicado) {
+        //Actualizamos documento: 
+        Documento doc = documentoRepository.findById(documentoId).orElseThrow( () -> new NotFoundException(DOC_NOT_FOUND, "documentoId: " +  documentoId));
+        doc.setEstatus(EstadoCarpeta.PUBLICADO);
+        documentoRepository.save(doc);
 
         // Actualizamos o creamos la parte de documento contenido
         DocumentoContenido documentoContenido = documentoContenidoRepository.findByDocumentoId(documentoId)

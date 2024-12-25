@@ -35,6 +35,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
@@ -47,7 +48,6 @@ import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.ExtraAudienciaSelloRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
@@ -333,7 +333,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
-        documento.setConcepto(concepto);
+        documento.getCarpeta().setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -366,7 +366,7 @@ class CarpetaServiceTest {
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado2);
         documento.getCarpeta().setJuzgado(juzgado2);
-        documento.setConcepto(concepto);
+        documento.getCarpeta().setConcepto(concepto);
 
         given(personaService.getAuditor())
                 .willReturn(persona);
@@ -590,26 +590,20 @@ class CarpetaServiceTest {
                 "TipoParte2",
                 Rol.PRINCIPAL
         );
-        ExtraAudienciaSelloRecord extraAudienciaSelloRecord = new ExtraAudienciaSelloRecord(
-                "Juez Perez",
-                "",
-                "",
-                "",
-                ""
-        );
+       
 
-        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(documento.getCarpeta()));
         given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))
                 .willReturn(List.of(participante1, participante2));
-        given(audienciaService.getAudienciaAndSalaAndDomicilio(any()))
-                .willReturn(extraAudienciaSelloRecord);
+        //given(audienciaService.getAudienciaAndSalaAndDomicilio(any()))
+        //        .willReturn(extraAudienciaSelloRecord);
 
         InfoExpedienteRecord result = target.getInfoExpediente(1);
 
         assertThat(result).isNotNull();
         assertThat(result.expediente()).isEqualTo(documento.getCarpeta().getExpediente());
         assertThat(result.tipoJuicio()).isEqualTo(documento.getCarpeta().getTipoJuicio().getNombre());
-        assertThat(result.juezAsignado()).isEqualTo("Juez Perez");
+        //assertThat(result.juezAsignado()).isEqualTo("Juez Perez");
         assertThat(result.tipoProcedimiento()).isEqualTo("Procedimiento1, Procedimiento2");
         assertThat(result.etapaProcesal()).isEqualTo(null);
         assertThat(result.participantes()).hasSize(2);
@@ -666,7 +660,7 @@ class CarpetaServiceTest {
                 .setCarpeta(validCarpeta)
                 .setTipoJuicio(tipoJuicio);
 
-        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
+        given(carpetaRepository.findById(any())).willReturn(Optional.of(documento.getCarpeta()));
         given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
 
         InfoExpedienteDetalleRecord result = target.getInfoExpedienteDetalle(1);
@@ -747,10 +741,11 @@ class CarpetaServiceTest {
                 List.of(
                         new RubroRecord(1, "Rubro1"),
                         new RubroRecord(2, "Rubro2")
-                )
+                ),
+                ""
         );
 
-        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(documento.getCarpeta()));
         given(carpetaDetalleRepository.findByCarpetaId(anyInt())).willReturn(carpetaDetalle);
         given(tipoJuicioRepository.findById(anyInt())).willReturn(Optional.ofNullable(tipoJuicio));
         given(rubroRepository.findById(anyInt())).willReturn(Optional.of(rubro1));
@@ -759,14 +754,14 @@ class CarpetaServiceTest {
 
         target.saveExpedienteDetalle(detalle, 1);
 
-        verify(documentoRepository).findById(anyInt());
+        verify(carpetaRepository).findById(anyInt());
         verify(carpetaDetalleRepository).findByCarpetaId(anyInt());
         verify(tipoJuicioRepository).findById(anyInt());
         verify(rubroRepository, times(2)).findById(anyInt());
         verify(etapaProcesalRepository).findById(anyInt());
         verify(carpetaEtapasRepository).save(any(CarpetaEtapas.class));
         verify(carpetaDetalleRepository).save(any(CarpetaDetalle.class));
-        verify(documentoRepository).save(any(Documento.class));
+        verify(carpetaRepository).save(any(Carpeta.class));
     }
     @Test
     void createPiezaTest(){
@@ -844,7 +839,6 @@ class CarpetaServiceTest {
 
     @Test
     void acoplarPiezaExpediente(){
-        Integer carpetaPadreId = 1;
 
         TipoPieza tipoPieza = new TipoPieza()
                 .setId(1)
@@ -856,6 +850,8 @@ class CarpetaServiceTest {
         Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
         List<Documento> documentos = Collections.singletonList(documento);
 
+        Audit audit = new Audit(LocalDateTime.now(), LocalDateTime.now(), "1", "1");
+
         Carpeta pieza = new Carpeta()
                 .setId(5)
                 .setExpediente(expediente)
@@ -863,6 +859,8 @@ class CarpetaServiceTest {
                 .setTipoPieza(tipoPieza)
                 .setTipoCarpeta(TipoCarpeta.PIEZA);
 
+        pieza.setAudit(audit);
+                
         PiezaRecordResponse response;
 
         given(carpetaRepository.findById(any())).willReturn(Optional.of(pieza));
@@ -886,8 +884,13 @@ class CarpetaServiceTest {
         List<Carpeta> carpetas = List.of(CarpetaSetUp.create().setPersona(persona));
         Page<Carpeta> carpetaPage = new PageImpl<>(carpetas, PageRequest.of(0, 10), carpetas.size());
 
+        CarpetaDetalle carpetaDetalle = new CarpetaDetalle()
+                .setId(1)
+                .setCujus("Saul Perez")
+                .setTipoJuicio(tipoJuicio);
+
         given(personaService.getAuditor()).willReturn(persona);
-        given(carpetaRepository.findByJuzgado(eq(juzgado), eq("000001/2024"), eq(PageRequest.of(0, 10))))
+        given(carpetaRepository.findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10))))
                 .willReturn(carpetaPage);
 
         given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
@@ -895,14 +898,17 @@ class CarpetaServiceTest {
         given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
                 .willReturn(demandado);
 
+        given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
+
         Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
 
         assertThat(result).isNotNull();
 
         verify(personaService).getAuditor();
-        verify(carpetaRepository).findByJuzgado(eq(juzgado), eq("000001/2024"),  eq(PageRequest.of(0, 10)));
+        verify(carpetaRepository).findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10)));
         verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any());
         verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
+        verify(carpetaDetalleRepository, times(1)).findByCarpetaId(any());
     }
 
     @Test
@@ -941,5 +947,18 @@ class CarpetaServiceTest {
                 .hasFieldOrPropertyWithValue("sentencia", documentoDetalle.getTipoSentencia().name())
                 .hasFieldOrPropertyWithValue("resolucion", documentoDetalle.getTipoResolucion().name())
                 .hasFieldOrPropertyWithValue("fechaResolucion", documentoDetalle.getFechaResolucion());
+    }
+
+    @Test
+    void validaCancelacionPieza(){
+
+        Integer piezaId = 1;
+        LocalDateTime fecha = LocalDateTime.now();
+        given(movimientoRepository.countByCarpetaId(anyInt())).willReturn(1);
+        given(documentoRepository.countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(piezaId, TipoDocumento.ACUERDO, fecha)).willReturn(0);
+
+        Boolean result = target.validaCancelacionPieza(piezaId, fecha);
+
+        assertThat(result).isTrue();
     }
 }

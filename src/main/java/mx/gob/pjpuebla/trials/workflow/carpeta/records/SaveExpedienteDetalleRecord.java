@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
 import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -46,6 +47,7 @@ public record SaveExpedienteDetalleRecord(
         String domicilioMenorEdad,
         Integer tipoJuicioHijoId,
         EtapaProcesalRecord etapaProcesal,
-        List<RubroRecord> rubros
-) {
+        List<RubroRecord> rubros,
+        String cujus
+) implements Serializable {
 }

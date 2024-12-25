@@ -16,7 +16,7 @@ public class AcuerdoRubros implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAcuerdoRubros")
-    @SequenceGenerator(name="idAcuerdoRubros", sequenceName = "SEQ_ACUERDO_RUBROS_ID")
+    @SequenceGenerator(name="idAcuerdoRubros", sequenceName = "SEQ_ACUERDO_RUBROS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

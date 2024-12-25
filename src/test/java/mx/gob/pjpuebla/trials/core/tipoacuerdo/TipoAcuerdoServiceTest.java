@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -35,6 +36,9 @@ class TipoAcuerdoServiceTest {
     private DocumentoRepository documentoRepository;
 
     @Mock
+    private CarpetaRepository carpetaRepository;
+
+    @Mock
     private TipoAcuerdoRepository tipoAcuerdoRepository;
 
     @InjectMocks
@@ -60,12 +64,12 @@ class TipoAcuerdoServiceTest {
 
     @Test
     void testFindByDocumentoId_DocumentoNotFound() {
-        Integer documentoId = 1;
-        when(documentoRepository.findById(documentoId)).thenReturn(Optional.empty());
+        Integer carpetaId = 1;
+        when(carpetaRepository.findById(carpetaId)).thenReturn(Optional.empty());
         NotFoundException exception = assertThrows(NotFoundException.class, () ->
-                tipoAcuerdoService.findByDocumentoId(documentoId)
+                tipoAcuerdoService.findByDocumentoId(carpetaId)
         );
-        assertTrue(exception.getMessage().contains("Documento no encontrado"));
+        assertTrue(exception.getMessage().contains("Carpeta no encontrado"));
     }
 
     @Test
@@ -84,7 +88,7 @@ class TipoAcuerdoServiceTest {
         tipoAcuerdo.setMateria(materia);
         tipoAcuerdo.setTipoSistema(tipoSistema);
 
-        when(documentoRepository.findById(51)).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
         when(tipoAcuerdoRepository.findByMateriaIdAndTipoSistemaId(materia.getId(), tipoSistema.getId()))
                 .thenReturn(Collections.singletonList(tipoAcuerdo));
 
@@ -122,7 +126,7 @@ class TipoAcuerdoServiceTest {
         tipoAcuerdo2.setTipoSistema(tipoSistema);
 
 
-        when(documentoRepository.findById(51)).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
         when(tipoAcuerdoRepository.findByMateriaIdAndTipoSistemaId(materia.getId(), tipoSistema.getId()))
                 .thenReturn(Arrays.asList(tipoAcuerdo1, tipoAcuerdo2));
 
@@ -147,7 +151,7 @@ class TipoAcuerdoServiceTest {
         materia.setNombre("FAMILIAR");
         documento.getCarpeta().getTipoJuicio().setMateria(materia);
 
-        when(documentoRepository.findById(51)).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
         NotFoundException exception = assertThrows(NotFoundException.class, () ->
                 tipoAcuerdoService.findByDocumentoId(51)
         );
@@ -179,7 +183,7 @@ class TipoAcuerdoServiceTest {
         tipoAcuerdo2.setMateria(materia);
         tipoAcuerdo2.setTipoSistema(null);
 
-        when(documentoRepository.findById(51)).thenReturn(Optional.of(documento));
+        when(carpetaRepository.findById(51)).thenReturn(Optional.of(carpeta));
         when(tipoAcuerdoRepository.findByMateriaId(materia.getId()))
                 .thenReturn(Arrays.asList(tipoAcuerdo1, tipoAcuerdo2));
 

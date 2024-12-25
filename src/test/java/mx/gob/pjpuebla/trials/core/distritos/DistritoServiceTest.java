@@ -34,6 +34,7 @@ class DistritoServiceTest {
         distrito = DistritoSetUp.createDistrito();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void getAll_return_page() {
         List<Distrito> listPage = Collections.singletonList(distrito);

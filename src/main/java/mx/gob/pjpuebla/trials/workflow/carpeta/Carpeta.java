@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
@@ -14,10 +15,7 @@ import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
 
 import java.io.Serializable;
@@ -31,7 +29,7 @@ import java.util.Set;
 public class Carpeta implements Serializable, Auditable {
 
     @Id
-    @SequenceGenerator(name = "idCarpeta", sequenceName = "SEQ_CARPETAS_ID")
+    @SequenceGenerator(name = "idCarpeta", sequenceName = "SEQ_CARPETAS_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idCarpeta")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
@@ -56,6 +54,17 @@ public class Carpeta implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoCarpeta estatus;
+
+    @Column(name = "N_HORAS")
+    private Integer horas;
+
+    @Enumerated
+    @Column(name = "N_PRIORIDAD")
+    private Prioridad prioridad;
+
+    @JoinColumn(name = "FN_CONCEPTO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Concepto concepto;
 
     @NotNull
     @Enumerated

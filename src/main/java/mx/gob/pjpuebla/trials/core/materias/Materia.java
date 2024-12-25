@@ -20,7 +20,7 @@ public class Materia implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idMateria")
-    @SequenceGenerator(name = "idMateria", sequenceName = "SEQ_MATERIAS_ID")
+    @SequenceGenerator(name = "idMateria", sequenceName = "SEQ_MATERIAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

@@ -1,9 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -143,6 +144,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     OR LOWER(cd.folio) LIKE %:key%
                     OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
+                    OR CAST(m.uuid AS text) = :key
                 )
             """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
@@ -165,7 +167,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             LEFT JOIN doc.institucion ins
             LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
-            WHERE doc.tipoDocumento = %:tipoDocumento%
+            WHERE doc.tipoDocumento = :tipoDocumento
             AND (
                 lower(doc.folio) LIKE %:key% OR
                 lower(ins.nombre) LIKE %:key% OR
@@ -182,7 +184,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     //colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoPromocionesRecord(
+        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord(
             doc.id,
            CASE
                 WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
@@ -238,7 +240,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("documentoId") Integer documentoId);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdosRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord(
             doc.id,
             dd.fechaPublicacion,
             dd.resumen,
@@ -253,7 +255,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Page<AcuerdosRecord> findAllAcuerdosYSentenciasByCarpeta(Integer carpetaId, Pageable pageable);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.Acuerdos.records.AcuerdoNotificadosRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord(
             pd.id,
             concat(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno),
             tp.nombre,
@@ -311,4 +313,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         """)
     Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento, Integer juzgadoId);
 
+    Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento, LocalDateTime fechaAlta);
+
+    Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
 }
