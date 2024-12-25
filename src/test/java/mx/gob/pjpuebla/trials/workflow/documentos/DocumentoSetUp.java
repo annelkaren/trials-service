@@ -6,7 +6,6 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;

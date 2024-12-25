@@ -18,7 +18,7 @@ public class ListaEstrado implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idListaEstrado")
-    @SequenceGenerator(name = "idListaEstrado", sequenceName = "SEQ_LISTA_ESTRADOS_ID")
+    @SequenceGenerator(name = "idListaEstrado", sequenceName = "SEQ_LISTA_ESTRADOS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

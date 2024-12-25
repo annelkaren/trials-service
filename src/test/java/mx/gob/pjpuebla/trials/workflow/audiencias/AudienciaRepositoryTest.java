@@ -4,10 +4,12 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,10 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 
 @DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -108,5 +115,52 @@ class AudienciaRepositoryTest extends AuditConfigTest {
         juzgado.setEstado(Estado.ACTIVE);
         Page<Audiencia> audiencias = audienciaRepository.findByJuzgado(juzgado, null, PageRequest.of(0, 10));
         assertThat(audiencias).isNotEmpty();
+    }
+
+    @Test
+    void findBySalaIdAndFechaAudienciaTest() throws ParseException {
+        // Preparar fecha usando SimpleDateFormat
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date fechaAudiencia = sdf.parse("2024-10-04");
+
+        // Ejecutar método del repositorio
+        List<AudienciaAgendaRecord> response = audienciaRepository.findBySalaIdAndFechaAudiencia(1, fechaAudiencia);
+
+        // Aserciones
+        assertThat(response).isNotNull()
+                            .isNotEmpty(); // Verificar que la lista no esté vacía
+
+        assertThat(response.size()).isGreaterThan(0); // Confirmar que contiene al menos un elemento
+
+    }
+
+    @Test
+    void existeConflicto_ReturnsTrueWhenConflictExists() {
+        AudienciaRepository audienciaRepository = Mockito.mock(AudienciaRepository.class);
+        Long salaId = 1L;
+        LocalDateTime inicio = LocalDateTime.of(2024, 12, 18, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2024, 12, 18, 11, 0);
+
+        Mockito.when(audienciaRepository.existeConflicto(eq(salaId), eq(inicio), eq(fin))).thenReturn(true);
+
+        boolean resultado = audienciaRepository.existeConflicto(salaId, inicio, fin);
+
+        assertThat(resultado).isTrue();
+        Mockito.verify(audienciaRepository).existeConflicto(eq(salaId), eq(inicio), eq(fin));
+    }
+    
+    @Test
+    void existeConflicto_ReturnsFalseWhenNoConflict() {
+        AudienciaRepository audienciaRepository = Mockito.mock(AudienciaRepository.class);
+
+        Long salaId = 1L;
+        LocalDateTime inicio = LocalDateTime.of(2024, 12, 18, 10, 0);
+        LocalDateTime fin = LocalDateTime.of(2024, 12, 18, 11, 0);
+
+        Mockito.when(audienciaRepository.existeConflicto(eq(salaId), eq(inicio), eq(fin))).thenReturn(false);
+        boolean resultado = audienciaRepository.existeConflicto(salaId, inicio, fin);
+        assertThat(resultado).isFalse();
+
+        Mockito.verify(audienciaRepository).existeConflicto(eq(salaId), eq(inicio), eq(fin));
     }
 }

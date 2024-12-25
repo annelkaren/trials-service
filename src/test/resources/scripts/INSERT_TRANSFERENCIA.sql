@@ -1,0 +1,5 @@
+INSERT INTO TBL_TRANSFERENCIAS (pn_id,fn_persona_entrega,fn_persona_recibe,fn_persona_autoriza,fn_juzgado,t_fecha_transferencia,n_estatus,s_observaciones,n_total_expedientes,s_uuid_movimiento,t_fecha_alta,t_fecha_edita,s_usuario_alta,s_usuario_edita) VALUES
+	 (1, 1, NULL, 1, 51,'2024-12-23 18:23:34.158993', 0,'TEST', 0, NULL,'2024-12-23 18:22:55.33022','2024-12-23 18:23:34.274111','6b13785f-d213-4585-a76b-437ffe57c9c7','6f527032-cec2-48b4-a44c-68d67039e2cc');
+
+INSERT INTO TBL_TRANSFERENCIAS (pn_id,fn_persona_entrega,fn_persona_recibe,fn_persona_autoriza,fn_juzgado,t_fecha_transferencia,n_estatus,s_observaciones,n_total_expedientes,s_uuid_movimiento,t_fecha_alta,t_fecha_edita,s_usuario_alta,s_usuario_edita) VALUES
+	 (2, 2, NULL, 1, 52,'2024-12-23 20:44:29.495899',1,'TEST',4,'7d99ca8d-9418-4f19-9002-8171332afd81','2024-12-23 20:41:09.843268','2024-12-23 20:44:29.655175','6b13785f-d213-4585-a76b-437ffe57c9c7','4b7c43cb-bc04-456b-b880-6cbeb5404c3a');

@@ -16,7 +16,7 @@ public class CarpetaEtapas implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idCarpetaEtapas")
-    @SequenceGenerator(name = "idCarpetaEtapas", sequenceName = "SEQ_CARPETA_ETAPAS_ID")
+    @SequenceGenerator(name = "idCarpetaEtapas", sequenceName = "SEQ_CARPETA_ETAPAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

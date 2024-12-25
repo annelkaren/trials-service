@@ -19,7 +19,7 @@ public class TipoPieza implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idTipoPieza")
-    @SequenceGenerator(name = "idTipoPieza", sequenceName = "SEQ_TIPO_PIEZA_ID")
+    @SequenceGenerator(name = "idTipoPieza", sequenceName = "SEQ_TIPO_PIEZA_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

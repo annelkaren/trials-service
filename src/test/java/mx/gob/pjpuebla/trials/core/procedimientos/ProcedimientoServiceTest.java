@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.core.procedimientos;
 
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

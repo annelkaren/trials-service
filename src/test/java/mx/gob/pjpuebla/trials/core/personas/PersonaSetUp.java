@@ -47,6 +47,6 @@ public class PersonaSetUp {
     }
 
     public static PersonaRecordResponse createPersonaRecordResponse() {
-        return new PersonaRecordResponse(1L, "Juan Perez", "jp@mail.com", "111-111-1111", "Juzgado", "");
+        return new PersonaRecordResponse(1L, "Juan Perez", "jp@mail.com", "111-111-1111", "Juzgado", "", "");
     }
 }

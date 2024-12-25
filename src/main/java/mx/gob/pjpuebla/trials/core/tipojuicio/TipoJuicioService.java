@@ -18,8 +18,6 @@ import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 @Slf4j
 @Service
@@ -92,7 +90,7 @@ public class TipoJuicioService {
         List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
         return tipoJuicios.stream()
                 .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId) {

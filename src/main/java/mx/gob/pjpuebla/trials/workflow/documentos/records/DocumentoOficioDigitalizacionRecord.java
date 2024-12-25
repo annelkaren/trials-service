@@ -1,4 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -19,4 +20,4 @@ public record DocumentoOficioDigitalizacionRecord(
     String comentario,
     String textoEditor,
     String rutaAcuse
-) {}
+) implements Serializable {}

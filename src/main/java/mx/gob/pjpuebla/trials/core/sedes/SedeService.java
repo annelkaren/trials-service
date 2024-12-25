@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,8 @@ public class SedeService {
     private final SedeRepository sedeRepository;
     private final DistritoRepository distritoRepository;
     private final DomicilioService domicilioService;
+    private final JuzgadoRepository juzgadoRepository;
+    private final OficialiaRepository oficialiaRepository;
 
     @Transactional(readOnly = true)
     public Page<SedeDomicilioRecordResponse> getAll(Sede example, Pageable pageable) {
@@ -85,9 +91,14 @@ public class SedeService {
     }
 
     public void delete(Integer id) {
-        sedeRepository.deleteById(id);
-    }
-
-
+        if (juzgadoRepository.existsBySedeId(id) || oficialiaRepository.existsBySedeId(id)) {
+            throw new ConstraintViolationException(
+                "No se puede eliminar la sede porque está asociada a un juzgado / oficialía",
+                "sedeId"
+            );
+        } else {
+            sedeRepository.deleteById(id);
+        }
+    }   
 
 }

@@ -26,7 +26,7 @@ public class Persona implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idPersona")
-    @SequenceGenerator(name = "idPersona", sequenceName = "SEQ_PERSONAS_ID")
+    @SequenceGenerator(name = "idPersona", sequenceName = "SEQ_PERSONAS_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Long id;
 

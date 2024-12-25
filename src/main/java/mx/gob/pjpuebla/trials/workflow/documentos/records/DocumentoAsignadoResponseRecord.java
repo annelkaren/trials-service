@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoAsignadoResponseRecord(
@@ -13,6 +14,6 @@ public record DocumentoAsignadoResponseRecord(
     LocalDateTime fechaTermino,
     String estatus,
     String observaciones
-) {
+) implements Serializable {
     
 }

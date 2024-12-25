@@ -22,7 +22,7 @@ public class Sede implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idSede")
-    @SequenceGenerator(name = "idSede", sequenceName = "SEQ_SEDES_ID")
+    @SequenceGenerator(name = "idSede", sequenceName = "SEQ_SEDES_ID", allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

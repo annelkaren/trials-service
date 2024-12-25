@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
-import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,7 +21,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PersonaDocumentoResource.class)

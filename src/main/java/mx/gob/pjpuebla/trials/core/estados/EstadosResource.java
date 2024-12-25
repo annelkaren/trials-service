@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.estados;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,16 +20,21 @@ import java.util.List;
 @SecurityRequirement(name = "Keycloak")
 public class EstadosResource {
 
-    private static final String INEGI_PATH = "https://gaia.inegi.org.mx/wscatgeo";
-    private static final String STATES_PATH = "/mgee";
-    private static final String MUN_PATH = "/mgem/";
+    @Value("${inegi.url}")
+    private String getInegiPath;
+
+    @Value("${inegi.states-path}")
+    private String getStatesPath;
+
+    @Value("${inegi.mun-path}")
+    private String getMunPath;
 
     @GetMapping
     @Cacheable("estados")
     public List<Estado> getStates() {
         RestTemplate restTemplate = new RestTemplate();
         EstadoRecord response = restTemplate.getForObject(
-                INEGI_PATH + STATES_PATH, EstadoRecord.class, new HashMap<>());
+                getInegiPath + getStatesPath, EstadoRecord.class, new HashMap<>());
         return (response != null) ? response.datos() : new ArrayList<>();
     }
 
@@ -37,7 +43,7 @@ public class EstadosResource {
     public List<Municipio> getMunByState(@PathVariable String id) {
         RestTemplate restTemplate = new RestTemplate();
         MunicipioRecord response = restTemplate.getForObject(
-                INEGI_PATH + MUN_PATH + id, MunicipioRecord.class, new HashMap<>());
+                getInegiPath + getMunPath + id, MunicipioRecord.class, new HashMap<>());
         return (response != null && response.datos() != null) ? response.datos() : new ArrayList<>();
     }
 }

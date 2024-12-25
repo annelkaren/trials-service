@@ -3,7 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.bloques.BloqueSetUp;
+import mx.gob.pjpuebla.trials.core.documentoidentificacion.DocumentoIdentificacionSetUp;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
@@ -15,20 +17,24 @@ import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
-import mx.gob.pjpuebla.trials.util.enums.CatalogoMotivosRetrasoAudiencias;
-import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
+import mx.gob.pjpuebla.trials.util.enums.*;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudiencia;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,10 +46,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,6 +90,12 @@ class AudienciaServiceTest {
     @Mock
     private PersonaService personaService;
 
+    @Mock
+    private PersonaDocumentoRepository personaDocumentoRepository;
+
+    @Mock
+    private AsistenciaAudienciaRepository asistenciaAudienciaRepository;
+
     @InjectMocks
     private AudienciaService audienciaService;
 
@@ -105,7 +121,7 @@ class AudienciaServiceTest {
         persona = PersonaSetUp.createPersona();
         documento = DocumentoSetUp.create_data(tipoJuicio);
         tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
-
+        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
     }
 
     @Test
@@ -193,6 +209,24 @@ class AudienciaServiceTest {
 
         Carpeta carpeta = new Carpeta().setExpediente("000001/2024");
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(), sala, null, tipoAudiencia, carpeta);
+
+        AsistenciaAudiencia asistenciaAudiencia = new AsistenciaAudiencia();
+        asistenciaAudiencia.setAsistencia(Asistencia.SI);
+        asistenciaAudiencia.setDocumentoIdentificacion(DocumentoIdentificacionSetUp.createDocIdentificacion());
+        
+
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(1);
+        personaDocumento.setNombre("Juan");
+        personaDocumento.setApellidoPaterno("Pérez");
+        personaDocumento.setApellidoMaterno("García");
+        personaDocumento.setRol(Rol.PRINCIPAL);
+        personaDocumento.setTipoPartes(TipoPartesSetUp.createTipoPartes());
+
+        when(personaDocumentoRepository.findByCarpetaId(audiencia.getCarpeta().getId()))
+                .thenReturn(Collections.singletonList(personaDocumento));
+        when(asistenciaAudienciaRepository.findByPersonaDocumentoIdAndAudienciaId(eq(1), eq(audiencia.getId())))
+                .thenReturn(asistenciaAudiencia);
 
         List<Audiencia> audiencias = Collections.singletonList(audiencia);
         Page<Audiencia> pageAudiencias = new PageImpl<>(audiencias, PageRequest.of(0, 10), audiencias.size());
@@ -361,5 +395,97 @@ class AudienciaServiceTest {
         assertEquals(EstatusAudiencia.DIFERIDA, response.estatus());
     }
 
+    @Test
+    void getAgendaSala() {
+        List<AudienciaAgendaRecord> audienciaAgendaRecord = List.of(AudienciaSetUp.createAudienciaAgendaRecord());
+        
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+        .willReturn(audienciaAgendaRecord);
+    
+
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+
+        assertNotNull(response);
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+
+    @Test
+    void getAgendaSalaNotExistData() {
+       
+        given(audienciaRepository.findBySalaIdAndFechaAudiencia(eq(1), any(Date.class)))
+            .willReturn(Collections.emptyList());
+    
+        List<AudienciaAgendaRecord> response = audienciaService.getAgendaSala(1);
+    
+        assertTrue(response.isEmpty());
+    
+        verify(audienciaRepository).findBySalaIdAndFechaAudiencia(eq(1), any(Date.class));
+    }
+    @Test
+    void testGuardarArchivo(){
+        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
+        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
+        audiencia.setId(1);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+
+        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
+        audienciaService.guardarArchivo(fileMock, audiencia.getId());
+
+        verify(audienciaRepository).findById(audiencia.getId());
+        verify(audienciaRepository).save(any(Audiencia.class));
+    }
+
+    @Test
+    void testGetActaMinima() throws IOException {
+        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
+        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
+        audiencia.setId(1);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
+        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
+        audienciaService.guardarArchivo(fileMock, audiencia.getId());
+
+        byte[] resultado = audienciaService.getAudienciaDocumento(audiencia.getId());
+        assertNotNull(resultado);
+    }
+
+    @Test
+    void validarDisponibilidad_sinConflictos_ShouldReturnTrue() {
+        String fecha = "2024-12-20";
+        String hora = "10:00:00";
+        int duracion = 60;
+        long salaId = 1L;
+
+        ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(salaId,fecha, hora, duracion);
+
+        LocalDateTime fechaInicio = LocalDateTime.parse(fecha + "T" + hora);
+        LocalDateTime fechaFin = fechaInicio.plusMinutes(duracion);
+
+        when(audienciaRepository.existeConflicto(salaId, fechaInicio, fechaFin)).thenReturn(false);
+
+        boolean resultado = audienciaService.validarDisponibilidad(request);
+
+        assertTrue(resultado);
+        verify(audienciaRepository).existeConflicto(salaId, fechaInicio, fechaFin);
+    }
+
+    @Test
+    void validarDisponibilidad_conConflictos_shouldReturnFalse() {
+        String fecha = "2024-12-20";
+        String hora = "10:00:00";
+        int duracion = 60;
+        long salaId = 1L;
+
+        ValidarDisponibilidadRequestRecord request = new ValidarDisponibilidadRequestRecord(salaId, fecha, hora, duracion);
+
+        LocalDateTime fechaInicio = LocalDateTime.parse(fecha + "T" + hora);
+        LocalDateTime fechaFin = fechaInicio.plusMinutes(duracion);
+
+        when(audienciaRepository.existeConflicto(salaId, fechaInicio, fechaFin)).thenReturn(true);
+
+        boolean resultado = audienciaService.validarDisponibilidad(request);
+
+        assertFalse(resultado);
+        verify(audienciaRepository).existeConflicto(salaId, fechaInicio, fechaFin);
+    }
 
 }

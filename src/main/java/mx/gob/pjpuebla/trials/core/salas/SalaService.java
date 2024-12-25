@@ -276,7 +276,7 @@ public class SalaService {
     }
 
     @Transactional(readOnly = true)
-    public List<SalaRecord> getAllbyJuzgado(String nombre, Integer idAudiencia) {
+    public List<SalaRecord> getSalasByJuzgado(String nombre, Integer idAudiencia) {
 
         Audiencia audiencia = audienciaRepository.findById(idAudiencia)
                 .orElseThrow(() -> new NotFoundException("Audiencia no encontrada", "AudienciaId"));

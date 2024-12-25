@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -39,6 +40,9 @@ class AcuerdoRubrosServiceTest {
 
     @Mock
     private DocumentoRepository mockDocumentoRepository;
+
+    @Mock
+    private CarpetaRepository mockCarpetaRepository;
 
     @InjectMocks
     private AcuerdoRubrosService acuerdoRubrosService;
@@ -113,7 +117,7 @@ class AcuerdoRubrosServiceTest {
 
         List<AcuerdoRubros> acuerdoRubrosList = Collections.singletonList(acuerdoRubros);
 
-        given(mockDocumentoRepository.findById(51)).willReturn(Optional.of(documento));
+        given(mockCarpetaRepository.findById(51)).willReturn(Optional.of(carpeta));
 
         given(mockAcuerdoRubrosRepository.findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(materia, tipoSistema, "any", PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(acuerdoRubrosList, PageRequest.of(0, 10), acuerdoRubrosList.size()));

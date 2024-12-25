@@ -8,16 +8,19 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
+
+import java.io.Serializable;
 
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_DOCUMENTOS_IDENTIFICACION")
-public class DocumentoIdentificacion {
+public class DocumentoIdentificacion implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idIdentificacion")
-    @SequenceGenerator(name = "idIdentificacion", sequenceName = "SEQ_DOCUMENTOS_IDENTIFICACION_ID")
+    @SequenceGenerator(name = "idIdentificacion", sequenceName = "SEQ_DOCUMENTOS_IDENTIFICACION_ID",  allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 

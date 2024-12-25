@@ -20,7 +20,7 @@ public class Domicilio implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idDomicilio")
-    @SequenceGenerator(name = "idDomicilio", sequenceName = "SEQ_DOMICILIOS_ID")
+    @SequenceGenerator(name = "idDomicilio", sequenceName = "SEQ_DOMICILIOS_ID",  allocationSize = 1)
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Long id;
 

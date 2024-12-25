@@ -116,6 +116,9 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "T_FECHA_PRESENTACION_IMPUTADO")
     private LocalDateTime fechaPresentacionImputado;
 
+    @Column(name = "S_CUJUS")
+    private String cujus;
+
     @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoJuicio tipoJuicio;

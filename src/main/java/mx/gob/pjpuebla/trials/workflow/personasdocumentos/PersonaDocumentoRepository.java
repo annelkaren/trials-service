@@ -115,4 +115,6 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
     List<PersonaDataRecord> findPersonaDocumentoDataByCarpetaId(Integer carpetaId);
 
     List<PersonaDocumento> findByCarpetaIdAndRolAndTipoPartesNombre(Integer id, Rol rol, String parte);
+
+    List<PersonaDocumento> findByCarpetaId(Integer carpetaId);
 }

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -34,6 +35,7 @@ public record InfoExpedienteDetalleRecord(
         String solicitudAudiencia,
         String fechaPresentacionImputado,
         Integer tipoJuicioHijoId,
-        String tipoJuicioHijo
-) {
+        String tipoJuicioHijo,
+        String cujus
+) implements Serializable {
 }

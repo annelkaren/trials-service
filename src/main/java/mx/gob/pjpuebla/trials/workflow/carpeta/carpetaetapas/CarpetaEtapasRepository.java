@@ -17,7 +17,7 @@ public interface CarpetaEtapasRepository extends JpaRepository<CarpetaEtapas, In
             FROM CarpetaEtapas ce2
             WHERE ce2.carpeta.id = ce.carpeta.id
         )
-        AND ce.carpeta.id = %:carpetaId%
+        AND ce.carpeta.id = :carpetaId
     """)
     Optional<CarpetaEtapas> findByCarpetaId(Integer carpetaId);
 

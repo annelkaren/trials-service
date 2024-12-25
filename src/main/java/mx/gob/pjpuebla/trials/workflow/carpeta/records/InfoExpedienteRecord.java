@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 
+import java.io.Serializable;
 import java.util.List;
 
 public record InfoExpedienteRecord(
@@ -21,5 +22,5 @@ public record InfoExpedienteRecord(
         String tipoSistema,
         String juzgadoNombre,
         String tipoPieza
-) {
+) implements Serializable {
 }
