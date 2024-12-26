@@ -15,6 +15,7 @@ public class MovimientoSalidaDTO {
     private LocalDateTime fecha;
     private String juzgado;
     private String observaciones;
+    private String oficialia;
 
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
         String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
@@ -35,5 +36,6 @@ public class MovimientoSalidaDTO {
         this.setFecha(recordMovimiento.fecha());
         this.setJuzgado(recordMovimiento.juzgado());
         this.setObservaciones(observacionesTmp);
+        this.setOficialia(recordMovimiento.oficialia());
     }
 }
