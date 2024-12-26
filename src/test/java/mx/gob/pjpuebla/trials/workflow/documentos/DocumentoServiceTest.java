@@ -566,13 +566,26 @@ class DocumentoServiceTest {
 
     @Test
     void create_exhorto() {
+
+        Oficialia oficialia = new Oficialia();
+        oficialia.setId(1);
+    
+        Persona auditor = new Persona();
+        auditor.setId(1L);
+        auditor.setOficialia(oficialia);
+
         DocumentoExhortoRecord recordItem = new DocumentoExhortoRecord("", "", Arrays.asList("1", "2"));
         Documento exhorto = DocumentoSetUp.create(tipoJuicio);
         exhorto.getCarpeta().setFolio("1");
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
 
+        List<Juzgado> juzgadosRelacionadosExhorto = Arrays.asList(new Juzgado());
+        
+        given(personaService.getAuditor()).willReturn(auditor);
+        given(juzgadoRepository.findJuzgadoExhortoByOficialiaId(oficialia.getId())).willReturn(juzgadosRelacionadosExhorto);
+
         given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), any())).willReturn(juzgado);
 
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);

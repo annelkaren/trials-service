@@ -484,6 +484,12 @@ public class DocumentoService {
         Carpeta carpeta = new Carpeta();
         Documento documento = new Documento();
 
+        Oficialia oficialia = auditor.getOficialia();
+        if (oficialia == null) {
+            throw new NotFoundException("La persona no está relacionada con ninguna oficialía", "persona.getOficialia()");
+        }
+        List<Juzgado> juzgadosRelacionadosExhorto = juzgadoRepository.findJuzgadoExhortoByOficialiaId(oficialia.getId());
+
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setFolio(getFolio("E"));
         carpeta.setTipoCarpeta(TipoCarpeta.EXHORTO);
@@ -491,7 +497,7 @@ public class DocumentoService {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase("EXHORTO")
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado con nombre: Exhorto", "EXHORTO"));
         carpeta.setTipoJuicio(tipoJuicio);
-        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio, carpeta.getTipoCarpeta(), null));
+        carpeta.setJuzgado(juzgadoService.getJuzgado(tipoJuicio, carpeta.getTipoCarpeta(), juzgadosRelacionadosExhorto));
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
         carpeta.setFechaAsignacion(LocalDateTime.now());
