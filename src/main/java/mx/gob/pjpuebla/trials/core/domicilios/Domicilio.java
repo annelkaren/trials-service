@@ -80,4 +80,38 @@ public class Domicilio implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    public String getLineaDomicilio() {
+        StringBuilder sb = new StringBuilder();
+        if (calle != null) {
+            sb.append("Calle ").append(calle);
+        }
+        if (exterior != null) {
+            sb.append(", No. ").append(exterior);
+        }
+        if (interior != null && !interior.isBlank()) {
+            sb.append(", Interior ").append(interior);
+        }
+        if (colonia != null) {
+            sb.append(", Col. ").append(colonia);
+        }
+        if (localidad != null) {
+            sb.append(", ").append(localidad);
+        }
+        if (codigoPostal != null) {
+            sb.append(", C.P. ").append(codigoPostal);
+        }
+        if (municipio != null) {
+            sb.append(", ").append(municipio);
+        }
+        if (estadoRepublica != null) {
+            sb.append(", ").append(estadoRepublica);
+        }
+        if (paisResidencia != null && paisResidencia.getNombreComun() != null) {
+            sb.append(", ").append(paisResidencia.getNombreComun());
+        }else if(paisResidencia != null && paisResidencia.getNombreOficial() != null){
+            sb.append(", ").append(paisResidencia.getNombreOficial());
+        }
+        return sb.toString().trim();
+    }
+
 }
