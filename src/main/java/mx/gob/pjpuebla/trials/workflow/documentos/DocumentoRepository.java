@@ -316,4 +316,17 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento, LocalDateTime fechaAlta);
 
     Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
+    
+    @Query("""
+        SELECT d
+        FROM Documento d
+        JOIN DocumentoContenido dc ON dc.documento.id = d.id
+        JOIN d.carpeta c
+        WHERE dc.oficioPublicado = 'S'
+          AND c.id = :carpetaId
+          AND d.tipoDocumento = TipoDocumento.SENTENCIA
+        """)
+Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
+
+
 }
