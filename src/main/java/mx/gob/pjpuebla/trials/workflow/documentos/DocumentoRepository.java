@@ -322,7 +322,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         FROM Documento d
         JOIN DocumentoContenido dc ON dc.documento.id = d.id
         JOIN d.carpeta c
-        WHERE dc.oficioPublicado = 'S'
+        WHERE lower(dc.oficioPublicado) = 's'
           AND c.id = :carpetaId
           AND d.tipoDocumento = TipoDocumento.SENTENCIA
         """)

@@ -392,7 +392,7 @@ public class DocumentoService {
     /**
      * Devuelve un numero de folio
      *
-     * @param tipo E-exhorto, D-demanda, P-promocion.
+     * @param tipo E-exhorto, D-demanda, P-promocion, AP-Apelación.
      * @return string
      */
     private String getFolio(String tipo) {
@@ -405,6 +405,8 @@ public class DocumentoService {
                     documentoRepository.getNextValPromocion();
             case "ES" ->           // Case para exhorto salida
                     documentoRepository.getNextValExhortoSalida();
+            case "AP" -> 
+                    documentoRepository.getNextValApelacion();
             default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
         };
         return valNum.toString();
@@ -529,6 +531,7 @@ public class DocumentoService {
         Persona auditor = personaService.getAuditor();
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
+        
 
         Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
                 .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId: " + apelacionRecord.carpetaId()));
@@ -537,7 +540,7 @@ public class DocumentoService {
 
         carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
         carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), null));
-        carpeta.setFolio("1"); //TODO. ASIGNAR FOLIO CORRECTAMENTE
+        carpeta.setFolio(getFolio("AP")); 
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
         carpeta.setSelloEstatus(SelloEstatus.VALIDO);
@@ -553,6 +556,7 @@ public class DocumentoService {
         documento.setData(data);
         documento.setPersona(auditor);
         documento.setFechaAsignacion(LocalDateTime.now());
+        documento.setTipoDocumento(TipoDocumento.APELACION);
         documento = documentoRepository.save(documento);
 
         for (Anexo anexo : apelacionRecord.anexos()) {
