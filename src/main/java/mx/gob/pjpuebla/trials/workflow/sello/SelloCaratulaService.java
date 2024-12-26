@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.sello;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -55,6 +56,7 @@ public class SelloCaratulaService {
         parameters.put("logotipoHeder", "jasper/header.jpg");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
         parameters.put("isExhorto", isExhorto); // es un Exhorto
+        parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
 
         if (documento.getCarpeta().getTipoPieza()!= null){
