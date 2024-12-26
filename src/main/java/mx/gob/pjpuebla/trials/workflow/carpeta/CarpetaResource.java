@@ -30,7 +30,7 @@ public class CarpetaResource {
             @RequestParam String numExpediente,
             @RequestParam Integer year,
             @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId,
-            @RequestParam(required = false) Integer isApelacion) {
+            @RequestParam(required = false, defaultValue = "0") Integer isApelacion) {
 
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
                 numExpediente + "/" + year, juzgadoId, isApelacion);
