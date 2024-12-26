@@ -669,7 +669,7 @@ public class CarpetaService {
                     actor,
                     demandado,
                     carpeta.getPersona().equals(persona) && carpeta.getEstatus()==EstadoCarpeta.ASIGNADO,
-                    carpetaDetalle.getCujus() != null ? carpetaDetalle.getCujus() : ""
+                    carpetaDetalle != null ? Objects.toString(carpetaDetalle.getCujus(),"") : ""
             );
         });
     }
