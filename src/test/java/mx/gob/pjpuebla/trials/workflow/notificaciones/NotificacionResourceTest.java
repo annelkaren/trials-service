@@ -4,13 +4,8 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
 
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaResponse;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotaResponse;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,21 +21,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-
 
 @WebMvcTest(NotificacionResource.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -70,7 +63,20 @@ class NotificacionResourceTest {
         );
         List<String> concepto = Collections.singletonList("Audiencia");
 
-        notificacionRecord = new NotificacionRecord(1,"000001/2024",  concepto, "Notas Audiencia", TipoNotificacion.ESTRADO,  documentoDetalleRecord, TipoDocumento.ACUERDO, 1, 1);
+        notificacionRecord = new NotificacionRecord(
+                1,
+                "000001/2024",
+                concepto,
+                "Notas Audiencia",
+                TipoNotificacion.ESTRADO,
+                documentoDetalleRecord,
+                TipoDocumento.ACUERDO,
+                1,
+                1,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "Domicilio 1"
+        );
 
         when(notificacionService.getAllNotificaciones(anyString(), anyString(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Collections.singletonList(notificacionRecord)));
@@ -145,6 +151,30 @@ class NotificacionResourceTest {
             post("/api/workflow/documentos/enviarNotificacion")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceUtilTest.asJsonString(notificacion)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllNotificaciones() throws Exception {
+        NotificacionDetalleRecord notificacion = new NotificacionDetalleRecord(
+                "Actor","Juan Perez","Domicilio 1"
+        );
+
+        when(notificacionService.getNotificacionDetalle(anyInt()))
+                .thenReturn(notificacion);
+
+        mockMvc.perform(
+                        get("/api/workflow/bandeja/notificaciones/detalle/"+1)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateBatchNotificacionSalida() throws Exception {
+        mockMvc.perform(
+                        patch("/api/workflow/bandeja/notificaciones/EN_RUTA")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(Collections.singletonList(1))))
                 .andExpect(status().isOk());
     }
 

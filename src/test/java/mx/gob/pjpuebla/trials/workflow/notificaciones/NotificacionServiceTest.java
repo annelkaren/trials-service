@@ -2,10 +2,12 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
@@ -15,10 +17,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -120,6 +119,19 @@ class NotificacionServiceTest {
         when(documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()))
                 .thenReturn(Optional.of(docDetalle));
 
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1)
+                .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
+                .setNombre("Juan")
+                .setApellidoPaterno("Perez");
+
+        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
+                .setId(1)
+                .setNotificacion(notificacion)
+                .setPersonaDocumento(persona);
+        when(notificacionesDetallesRepository.findByNotificacionId(anyInt()))
+                .thenReturn(Optional.of(notificacionesDetalles));
+
         // Llamada al servicio
         Page<NotificacionRecord> result = notificacionService.getAllNotificaciones("ESTRADO", "PENDIENTE_DE_ASIGNAR",
                 pageable);
@@ -170,6 +182,19 @@ class NotificacionServiceTest {
 
         // Mock del repositorio de DocumentoDetalle
         when(documentoDetalleRepository.findByDocumentoId(1)).thenReturn(Optional.of(documentoDetalle));
+
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1)
+                .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
+                .setNombre("Juan")
+                .setApellidoPaterno("Perez");
+
+        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
+                .setId(1)
+                .setNotificacion(notificacion)
+                .setPersonaDocumento(persona);
+
+        when(notificacionesDetallesRepository.findByNotificacionId(any())).thenReturn(Optional.of(notificacionesDetalles));
 
         // Llamada al método que se está probando
         Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(
@@ -346,4 +371,68 @@ class NotificacionServiceTest {
         verifyNoInteractions(personaService, listaEstradoRepository, notificacionRepository);
     }
 
+    @Test
+    void getNotificacionDetalle() {
+        Documento documento = new Documento();
+        documento.setId(1);
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+        documento.setCarpeta(carpeta);
+
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1)
+                .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
+                .setNombre("Juan")
+                .setApellidoPaterno("Perez")
+                .setTipoPartes(new TipoPartes().setNombre("Actor"));
+
+        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
+                .setId(1)
+                .setNotificacion(notificacion)
+                .setPersonaDocumento(persona);
+
+        given(notificacionesDetallesRepository.findByNotificacionId(anyInt())).willReturn(Optional.of(notificacionesDetalles));
+
+        NotificacionDetalleRecord response = notificacionService.getNotificacionDetalle(1);
+
+        assertNotNull(response);
+        assertEquals(response.parte(), "Actor");
+        assertEquals(response.nombre(), "Juan Perez");
+        assertEquals(response.domicilio(), "Sin Domicilio");
+    }
+
+    @Test
+    void updateBatchNotificacionEnRuta() {
+        List<Integer> integerList = Collections.singletonList(1);
+        String estado = "EN_RUTA";
+
+        Documento documento = new Documento();
+        documento.setId(1);
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+        documento.setCarpeta(carpeta);
+
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1)
+                .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
+                .setNombre("Juan")
+                .setApellidoPaterno("Perez");
+
+        given(notificacionRepository.findAllById(any())).willReturn(Collections.singletonList(notificacion));
+
+        notificacionService.updateBatchNotificacionEnRuta(integerList, estado);
+
+        verify(notificacionRepository, times(1)).findAllById(integerList);
+        verify(notificacionRepository, times(1)).saveAll(Collections.singletonList(notificacion));
+    }
 }
