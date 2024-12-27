@@ -271,13 +271,17 @@ public class PersonaService {
 
         for (Persona item : personasDelJuzgado) {
             if (roleService.hasRole(item.getUsuario(), "ADMINISTRADOR_JUZGADO") ||
-                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO")
-            || persona.getUsuario().equals(item.getUsuario())) {
+                roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO") ||
+                persona.getUsuario().equals(item.getUsuario()) ||
+                roleService.getRolesByUserId(item.getUsuario()).isEmpty()
+                ) {
                 list.add(item);
             }
         }
+
         if (!list.isEmpty())
             personasDelJuzgado.removeAll(list);
+            
         return personasDelJuzgado.stream().map(p -> new PersonaRecordResponse(
                 p.getId(),
                 p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
