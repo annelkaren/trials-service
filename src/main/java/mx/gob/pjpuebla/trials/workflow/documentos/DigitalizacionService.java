@@ -111,7 +111,8 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) : generarNombreArchivo(null);
+        
+        String nombreUnicoArchivo = documento.getTipoDocumento() == null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name()) : generarNombreArchivo(documento.getTipoDocumento().name());
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -150,15 +151,12 @@ public class DigitalizacionService {
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
      *
-     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
+     * @param tipo El tipo de documento o carpeta para incluir en el nombre del
      *                    archivo.
      * @return Un nombre único generado para el archivo PDF.
      */
-    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
-        if (tipoCarpeta == null) {
-            return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
-        }
-        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    private String generarNombreArchivo(String tipo) {
+        return tipo + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
 
