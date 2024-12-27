@@ -93,6 +93,10 @@ public class DigitalizacionService {
             return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
 
+        if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
+            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],"audiencia"));
+        }
+
         // Revisar la ruta para los documentos de una pieza
         if (carpeta.getTipoCarpeta()==TipoCarpeta.PIEZA){
             carpeta = carpeta.getCarpetaPadre();

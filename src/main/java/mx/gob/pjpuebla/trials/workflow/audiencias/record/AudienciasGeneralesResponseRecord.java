@@ -11,6 +11,7 @@ public record AudienciasGeneralesResponseRecord(
         String tipoAudiencia,
         String juez,
         String numCarpeta,
+        Integer idCarpeta,
         String lugar,
         LocalDateTime fechaHora,
         EstatusAudiencia estatus,
