@@ -1,4 +1,4 @@
-<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 7.0.0-b478feaa9aab4375eba71de77b4ca138ad2f62aa  -->
 <jasperReport name="ListaSalidaOF" language="java" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="71deff9a-c0d0-4a88-b48c-a45ceab0d670">
 	<parameter name="p_image_background" class="java.lang.String">
 		<defaultValueExpression><![CDATA["escudo.png"]]></defaultValueExpression>
@@ -117,6 +117,9 @@
 		</element>
 		<element kind="textField" uuid="be3acd79-da09-4409-b4b8-181a40fb2aa0" x="280" y="10" width="100" height="30" evaluationTime="Report" hTextAlign="Left">
 			<expression><![CDATA[" de " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="6575c02f-cc4f-40b0-91d8-7b8b4ecf1c44" x="390" y="12" width="180" height="30" pattern="d 'de' MMMM 'de'  yyyy, hh:mm" hTextAlign="Right">
+			<expression><![CDATA[new java.util.Date()]]></expression>
 		</element>
 	</pageFooter>
 	<summary height="42" splitType="Stretch"/>
