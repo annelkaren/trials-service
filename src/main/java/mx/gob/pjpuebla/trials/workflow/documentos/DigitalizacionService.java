@@ -53,6 +53,10 @@ import java.util.UUID;
  * SENTENCIA PUBLICA (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
  * </p>
+ * </p>
+ * APELACION (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{SALA (JUZGADO)}/{TOCA(expediente)}/
+ * </p>
  */
 @Slf4j
 @Service
@@ -210,14 +214,17 @@ public class DigitalizacionService {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
-
+        String expediente;
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
-                String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
+                expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
+            case APELACION:
+                expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
+                return crearDirectorios(Paths.get(basePath, expediente));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
