@@ -1,13 +1,16 @@
 package mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.records.RegistrarAsistenciaAudienciaRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,5 +24,14 @@ public class AsistenciaAudienciaResource {
     public Page<AsistenciaAudienciaResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable) {
         return this.asistenciaAudienciaService.getAll(pageable);
+    }
+
+    @PostMapping(value = "/registrarasistencia", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AsistenciaAudiencia registrarAsistencia(
+            @RequestPart("registrarAsistenciaAudienciaRecord") String registrarAsistenciaAudienciaRecordJson,
+            @RequestPart("file") MultipartFile file) throws JsonProcessingException {
+
+         RegistrarAsistenciaAudienciaRecord asistenciaAudienciaRecord = new ObjectMapper().readValue(registrarAsistenciaAudienciaRecordJson, RegistrarAsistenciaAudienciaRecord.class);
+         return this.asistenciaAudienciaService.registrarAsistencia(asistenciaAudienciaRecord, file);
     }
 }
