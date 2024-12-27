@@ -46,7 +46,7 @@ public class AudienciaSetUp {
 
 
     public static AudienciasGeneralesResponseRecord createAudienciasGeneralesResponseRecord() {
-        return new AudienciasGeneralesResponseRecord(1, "Sentencia del incidente", "Juez 1", "000001/2024", "Sala 1", LocalDateTime.now(), EstatusAudiencia.PROGRAMADA, 1,
+        return new AudienciasGeneralesResponseRecord(1, "Sentencia del incidente", "Juez 1", "000001/2024", 1, "Sala 1", LocalDateTime.now(), EstatusAudiencia.PROGRAMADA, 1,
                 Collections.singletonList(new AsistenciaPersonaDocumento(1, "Jose", "Madero", "Avila", "PRINCIPAL", "Actor", Asistencia.SI, "VISA")));
     }
 
