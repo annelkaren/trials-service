@@ -135,7 +135,7 @@ public class DocumentoService {
             DocumentoGridRecord documentoGridRecord =
                     new DocumentoGridRecord(
                             documento.getId(),
-                            (documento.getTipoDocumento() != null) ? documento.getFolio() : carpeta.getFolio(),
+                            (documento.getTipoDocumento() != null && !Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION)) ? documento.getFolio() : carpeta.getFolio(),
                             carpeta.getExpediente(),
                             StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
                             (documento.getTipoDocumento() != null) ?
@@ -159,6 +159,7 @@ public class DocumentoService {
         TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
         TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
         Integer folio = (Integer) resultado[2];
+        
         Persona persona = personaService.getAuditor();
         Page<DocumentoSalidaRecord> page = documentoRepository.findByEstatusSalida(
                 key,
@@ -198,9 +199,10 @@ public class DocumentoService {
             documentoRepository.save(documento);
         }
         boolean isDocumento = documento.getTipoDocumento() != null;
+        boolean isApelacion = Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION);
         movimientoService.createMovimento(
-                isDocumento ? null : documento.getCarpeta(),
-                isDocumento ? documento : null,
+                isDocumento && !isApelacion ? null : documento.getCarpeta(),
+                isDocumento && !isApelacion ? documento : null,
                 personaService.getAuditor(),
                 null,
                 EstadoCarpeta.values()[status].name());
@@ -642,7 +644,7 @@ public class DocumentoService {
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
-                    (isPromocion) ? documento.getId():carpeta.getId(),
+                    documento.getId(), //(isPromocion) ? documento.getId():carpeta.getId(), TODO: prueba para corregir anexos en la bandeja de recepcion.
                     folio,
                     (isPromocion) ? documento.getCarpeta().getExpediente(): carpeta.getExpediente(),
                     StringUtils.capitalize(tipoEntrada.toLowerCase()),
@@ -653,6 +655,7 @@ public class DocumentoService {
                     null,
                     null
             );
+           
             list.add(drecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -778,7 +781,7 @@ public class DocumentoService {
         Concepto concepto = new Concepto();
         if (tipoDocumento == TipoDocumento.PROMOCION) {
             concepto = conceptoRepository.findByNombre(conceptoAdjun).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoAdjun));
-        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO) || tipoCarpeta == TipoCarpeta.PIEZA) {
+        } else if ((tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.EXHORTO || tipoCarpeta == TipoCarpeta.APELACION) || tipoCarpeta == TipoCarpeta.PIEZA) {
             concepto = conceptoRepository.findByNombre(conceptoDistri).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, conceptoDistri));
         }
         return concepto;
@@ -894,8 +897,9 @@ public class DocumentoService {
         return folio;
     }
 
+    //TODO : corregir metodo ya que se esta enviadno el id de la carpeta NO el del documento por ende truena.
     public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
-
+      
         Documento doc = documentoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
         List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
