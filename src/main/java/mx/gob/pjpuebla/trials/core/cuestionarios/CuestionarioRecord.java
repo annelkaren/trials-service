@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.cuestionarios;
 
 import mx.gob.pjpuebla.trials.util.enums.ListCuestionario;
-import mx.gob.pjpuebla.trials.util.enums.TipoDerechosHumanos;
 import mx.gob.pjpuebla.trials.util.enums.TipoPregunta;
 
 public record CuestionarioRecord(

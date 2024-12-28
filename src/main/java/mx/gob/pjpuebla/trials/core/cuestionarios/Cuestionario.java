@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.ListCuestionario;
-import mx.gob.pjpuebla.trials.util.enums.TipoDerechosHumanos;
 import mx.gob.pjpuebla.trials.util.enums.TipoPregunta;
 
 import java.io.Serializable;

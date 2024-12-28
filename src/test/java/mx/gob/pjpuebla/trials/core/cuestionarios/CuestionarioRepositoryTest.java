@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.core.cuestionarios;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.ListCuestionario;
-import mx.gob.pjpuebla.trials.util.enums.TipoPregunta;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
