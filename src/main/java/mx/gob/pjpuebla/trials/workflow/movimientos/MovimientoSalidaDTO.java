@@ -16,10 +16,11 @@ public class MovimientoSalidaDTO {
     private String juzgado;
     private String observaciones;
     private String oficialia;
+    private String responsable;
 
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
         String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
-        String tipo = (recordMovimiento.tipoDocumento() != null) ? recordMovimiento.tipoDocumento().name() : recordMovimiento.tipoCarpeta().name();
+        String tipo = (recordMovimiento.tipoDocumento() != null) ? recordMovimiento.tipoDocumento().getPlural() : recordMovimiento.tipoCarpeta().getPlural();
         String expedienteTmp = (recordMovimiento.expediente() != null) ? recordMovimiento.expediente() : recordMovimiento.expedienteDoc();
         String observacionesTmp = "";
 
@@ -37,5 +38,6 @@ public class MovimientoSalidaDTO {
         this.setJuzgado(recordMovimiento.juzgado());
         this.setObservaciones(observacionesTmp);
         this.setOficialia(recordMovimiento.oficialia());
+        this.setResponsable(recordMovimiento.responsable());
     }
 }

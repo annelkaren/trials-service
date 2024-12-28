@@ -18,7 +18,9 @@ public record MovimientoSalidaRecord(
     String documentoFolio,
     TipoDocumento tipoDocumento,
     String expedienteDoc,
-    String oficialia
+    String oficialia,
+    String responsable,
+    String observaciones
 ) implements Serializable {
 
 }

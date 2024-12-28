@@ -62,7 +62,7 @@ class MovimientosServiceTest {
         uuid = UUID.fromString(uuidMov);
         estadoCarpeta = EstadoCarpeta.TURNADO;
 
-        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null, null);
+        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null, null, null, null);
     }
 
     @Test

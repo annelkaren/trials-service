@@ -4,18 +4,20 @@ import lombok.Getter;
 
 @Getter
 public enum TipoDocumento {
-    PROMOCION("PROMOCIÓN"), 
-    OFICIO("OFICIO"),
-    ACUERDO("ACUERDO"),
-    AMPARO("AMPARO"),
-    EXHORTO_SALIDA("EXHORTO DE SALIDA"),
-    SENTENCIA("SENTENCIA"),
-    SENTENCIA_PUBLICA("SENTENCIA_PUBLICA"),
-    DOCUMENTO_IDENTIFICACION("DOCUMENTO_IDENTIFICACIÓN");
+    PROMOCION("Promoción","Promociones"), 
+    OFICIO("Oficio", "Oficios"),
+    ACUERDO("Acuerdo", "Acuerdos"),
+    AMPARO("Amparo", "Amparos"),
+    EXHORTO_SALIDA("Exhorto de salida","Exhortos de salida"),
+    SENTENCIA("Sentencia", "Sentencias"),
+    SENTENCIA_PUBLICA("Sentencia pública","Sentencias públicas"),
+    DOCUMENTO_IDENTIFICACION("Documento de identificación","Documentos de identificación");
 
     private final String etiqueta;
+    private final String plural;
 
-    TipoDocumento(String etiqueta) {
+    TipoDocumento(String etiqueta, String plural) {
         this.etiqueta = etiqueta;
+        this.plural = plural;
     }
 }
