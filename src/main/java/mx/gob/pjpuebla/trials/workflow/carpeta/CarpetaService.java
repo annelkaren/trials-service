@@ -182,22 +182,29 @@ public class CarpetaService {
         }
 
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
-        // exhorto o promoción.
-        if (documento.getTipoDocumento() == null) {
-            documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-            documento.getCarpeta().setPersona(persona);
-            carpetaRepository.save(documento.getCarpeta());
+        // exhorto o promoción y apelacion
+        if (documento.getTipoDocumento() == null || documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
+                documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
+                documento.getCarpeta().setPersona(persona);
+                carpetaRepository.save(documento.getCarpeta());
         } else {
-            documento.setEstatus(EstadoCarpeta.ASIGNADO);
-            documento.setPersona(persona);
+                documento.setEstatus(EstadoCarpeta.ASIGNADO);
+                documento.setPersona(persona);
         }
-
+            
+        // Verifica si la carpeta es de tipo APELACION y actualiza el documento en consecuencia
+        if (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
+                documento.setEstatus(EstadoCarpeta.ASIGNADO);
+                documento.setPersona(persona);
+        }
+            
+        // Guarda el documento una sola vez después de todas las actualizaciones
         documento = documentoRepository.save(documento);
 
         // Crear movimiento
         movimientoService.createMovimentoWithObservaciones(
-                (documento.getTipoDocumento() == null) ? documento.getCarpeta() : null,
-                (documento.getTipoDocumento() == null) ? null : documento,
+                (documento.getTipoDocumento() == null || Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION)) ? documento.getCarpeta() : null,
+                (documento.getTipoDocumento() == null || Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION)) ? null : documento,
                 EstadoCarpeta.ASIGNADO.name(),
                 docRecepcionMovimientosRecord.observaciones(),
                 docRecepcionMovimientosRecord.recomendaciones(),

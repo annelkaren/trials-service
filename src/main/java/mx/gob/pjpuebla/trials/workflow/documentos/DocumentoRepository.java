@@ -101,6 +101,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
 
+    Documento findByCarpetaIdAndTipoDocumento(Integer id, TipoDocumento tipoDocumento);
+
     Documento findByCarpetaIdAndRutaIsNull(Integer id);
 
     @Query("""

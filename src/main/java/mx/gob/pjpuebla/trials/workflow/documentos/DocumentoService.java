@@ -637,8 +637,10 @@ public class DocumentoService {
         List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();
         for (Movimiento movimiento : page.getContent()) {
             Carpeta carpeta = movimiento.getCarpeta();
-            Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+            Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta); // TODO: cambio en obtencion de documento para incluir apelación validar si es correcto el cambio (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+          
             boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
+            
             String folio = (isPromocion) ? documento.getFolio() : carpeta.getFolio();
             String tipoEntrada = (isPromocion)? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento): etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
@@ -660,6 +662,19 @@ public class DocumentoService {
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
+
+    private Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+        if (movimiento.getDocumento() != null) {
+            return movimiento.getDocumento();
+        }
+    
+        if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
+            return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+        }
+    
+        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), TipoDocumento.APELACION);
+    }
+    
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
         String origen = movimientoService.getOrigen(
@@ -897,7 +912,6 @@ public class DocumentoService {
         return folio;
     }
 
-    //TODO : corregir metodo ya que se esta enviadno el id de la carpeta NO el del documento por ende truena.
     public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
       
         Documento doc = documentoRepository.findById(id)
@@ -909,7 +923,7 @@ public class DocumentoService {
                 (doc.getTipoDocumento() != null) ? null : doc.getCarpeta().getId());
 
         return new DocumentoRecepcionRecord(
-                (doc.getTipoDocumento() != null) ? doc.getFolio() : doc.getCarpeta().getFolio(),
+                (doc.getTipoDocumento() != null && !Objects.equals(doc.getTipoDocumento(), TipoDocumento.APELACION)) ? doc.getFolio() : doc.getCarpeta().getFolio(),
                 doc.getCarpeta().getExpediente(),
                 StringUtils.capitalize((doc.getTipoDocumento() != null) ? doc.getTipoDocumento().name().toLowerCase() : doc.getCarpeta().getTipoCarpeta().name().toLowerCase()),
                 doc.getRuta(),
