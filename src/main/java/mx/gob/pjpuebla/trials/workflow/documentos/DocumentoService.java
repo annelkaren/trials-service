@@ -669,7 +669,7 @@ public class DocumentoService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    private Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+    protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
         if (movimiento.getDocumento() != null) {
             return movimiento.getDocumento();
         }
