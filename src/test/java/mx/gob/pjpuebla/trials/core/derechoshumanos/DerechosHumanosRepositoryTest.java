@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_DERECHOS.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
-        "/scripts/DELETE_DERECHOS.SQL",
+        "/scripts/DELETE_DERECHOS.sql",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class DerechosHumanosRepositoryTest extends AuditConfigTest {
 
