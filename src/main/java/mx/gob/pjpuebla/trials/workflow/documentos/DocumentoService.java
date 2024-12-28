@@ -652,7 +652,7 @@ public class DocumentoService {
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
-                    documento.getId(), //(isPromocion) ? documento.getId():carpeta.getId(), TODO: prueba para corregir anexos en la bandeja de recepcion.
+                    documento != null ? documento.getId() : null, //(isPromocion) ? documento.getId():carpeta.getId(), TODO: prueba para corregir anexos en la bandeja de recepcion.
                     folio,
                     (isPromocion) ? documento.getCarpeta().getExpediente(): carpeta.getExpediente(),
                     StringUtils.capitalize(tipoEntrada.toLowerCase()),

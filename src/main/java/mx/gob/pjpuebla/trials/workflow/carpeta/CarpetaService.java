@@ -104,7 +104,7 @@ public class CarpetaService {
 
         if (isApelacion == 1) {
             Optional<Documento> sentencia = getSentencia(carpeta.getId());
-            if (!sentencia.isPresent()) {
+            if (sentencia.isEmpty()) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "No se puede registrar a Apelación, no hay sentencia registrada.");
