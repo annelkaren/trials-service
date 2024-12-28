@@ -736,13 +736,15 @@ public class DocumentoService {
         List<Movimiento> movimientoList = movimientoRepository.findAllById(idList);
         Persona persona = personaRepository.findById(Long.valueOf(personaCarrito)).orElseThrow(() -> new NotFoundException("Persona no encontrada", "PersonaId: " + personaCarrito));
         Persona personaAuditor = personaService.getAuditor();
+        String nombrePersona = String.format("%s %s %s", persona.getNombre(), persona.getApellidoPaterno(), Objects.toString(persona.getApellidoMaterno(), ""));
 
         for (Movimiento mov : movimientoList) {
             Movimiento movimiento = new Movimiento()
                     .setFechaAsignacion(LocalDateTime.now())
                     .setEstado(EstadoCarpeta.TURNADO.name())
                     .setPersona(personaAuditor)
-                    .setUuid(uuid);
+                    .setUuid(uuid)
+                    .setObservaciones(nombrePersona);
 
             if (mov.getDocumento() != null) {
                 Documento documento = mov.getDocumento();
