@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
-        "/scripts/INSERT_DERECHOS.sql",
+        "/scripts/INSERT_DERECHO.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
-        "/scripts/DELETE_DERECHOS.SQL",
+        "/scripts/DELETE_DERECHO.SQL",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class DerechosHumanosRepositoryTest extends AuditConfigTest {
 
