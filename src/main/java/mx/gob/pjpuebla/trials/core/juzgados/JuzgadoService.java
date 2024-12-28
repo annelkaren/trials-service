@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -253,8 +254,21 @@ public class JuzgadoService {
 
         }
 
-        if (juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
-            juzgados = new ArrayList<>(juzgadosRelacionados);         
+        if (TipoCarpeta.EXHORTO.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {                        
+            List<Juzgado> juzgadosFiltrados = juzgados.stream()
+                    .filter(juzgadosRelacionados::contains)
+                    .collect(Collectors.toList());
+
+            if (!juzgadosFiltrados.isEmpty()) {
+                juzgados = juzgadosFiltrados;
+               
+            } else {
+                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
+            }
+        }
+
+        if (TipoCarpeta.DEMANDA.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
+            juzgados = new ArrayList<>(juzgadosRelacionados);      
             if (juzgados.isEmpty()) {
                 throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
             }

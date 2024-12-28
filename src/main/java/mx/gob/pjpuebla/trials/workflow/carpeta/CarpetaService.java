@@ -717,8 +717,9 @@ public class CarpetaService {
                     carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre() : "Sin Tipo de Juicio",
                     actor,
                     demandado,
-                    carpeta.getPersona().equals(persona) && carpeta.getEstatus() == EstadoCarpeta.ASIGNADO,
-                    carpetaDetalle.getCujus() != null ? carpetaDetalle.getCujus() : "");
+                    carpeta.getPersona().equals(persona) && carpeta.getEstatus()==EstadoCarpeta.ASIGNADO,
+                    carpetaDetalle != null ? Objects.toString(carpetaDetalle.getCujus(),"") : ""
+            );
         });
     }
 

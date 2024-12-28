@@ -173,6 +173,7 @@ public class AudienciaService {
                                         StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
                                         nombreCompleto,
                                         item.getCarpeta().getExpediente(),
+                                        item.getCarpeta().getId(),
                                         item.getSala().getNombre(),
                                         item.getFechaAudiencia(),
                                         item.getEstatusAudiencia(),

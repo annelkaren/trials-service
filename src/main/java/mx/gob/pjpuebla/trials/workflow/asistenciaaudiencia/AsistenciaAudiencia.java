@@ -28,10 +28,12 @@ public class AsistenciaAudiencia implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
+    @JsonIgnore
     @JoinColumn(name = "FN_PERSONA_DOCUMENTO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private PersonaDocumento personaDocumento;
 
+    @JsonIgnore
     @JoinColumn(name = "FN_AUDIENCIA", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Audiencia audiencia;
@@ -41,6 +43,7 @@ public class AsistenciaAudiencia implements Serializable, Auditable {
     @Column(name = "N_ASISTENCIA")
     private Asistencia asistencia;
 
+    @JsonIgnore
     @JoinColumn(name = "FN_DOCUMENTO_IDENTIFICACION", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private DocumentoIdentificacion documentoIdentificacion;

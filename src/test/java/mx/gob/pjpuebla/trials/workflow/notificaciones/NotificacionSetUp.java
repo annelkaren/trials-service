@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRe
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,7 +49,10 @@ public class NotificacionSetUp {
                 documentoDetalleRecord,
                 TipoDocumento.ACUERDO,
                 1,
-                1
+                1,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "Domicilio 1"
         );
 
     }
