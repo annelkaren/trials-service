@@ -50,7 +50,8 @@ public class ListaEstradoService {
         return listaEstradoPage.map(le -> {
             // Inicializar la relación antes de serializar
             if (le.getPersona() != null) {
-                le.getPersona().getDomicilio(); // Forzamos la inicialización del domicilio si es necesario
+                // Forzamos la inicialización del domicilio si es necesario
+                le.getPersona().getDomicilio(); // noinspection ResultOfMethodCallIgnored 
             }
 
             long noNotificaciones = notificacionRepository.countNotificacionesByListaEstradoId(le.getId());
@@ -103,8 +104,7 @@ public class ListaEstradoService {
                         }
                     } else {
                        
-                        nombresRubros = notificacion.getDocumento().getData().getRubros().stream()
-                                .collect(Collectors.joining(", "));
+                        nombresRubros = String.join(", ", notificacion.getDocumento().getData().getRubros());
 
 
                     }

@@ -85,12 +85,11 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
-            return manejarOficio(documento, year, juzgado, oficialia);
+            return manejarOficio(documento, year, juzgado, juzgado);
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
@@ -216,7 +215,7 @@ public class DigitalizacionService {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
-        String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);;
+        String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:

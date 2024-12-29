@@ -119,7 +119,7 @@ public class DocumentoService {
     private static final String CARPETA_NOT_FOUND = "Carpeta no encontrada";
     private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
-    private Optional<Persona> personaAsignada = Optional.empty() ;
+    private Persona personaAsignada = null ;
 
     @Transactional(readOnly = true)
     public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
@@ -700,7 +700,7 @@ public class DocumentoService {
 
     public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        Persona persona = personaAsignada.orElse(personaService.getAuditor());
+        Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
         boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
         Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable);
@@ -712,7 +712,7 @@ public class DocumentoService {
                 //TODO: SE COLOCA ESTA VALIDACION PARA EVITAR NULL POINTERS DEL SCAN DE QODANA, VERIFICAR SI SE PUEDE OPTIMIZAR ESTO.
                 continue;
             }
-            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
+            boolean isPromocion = (documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
 
             DocumentoAsignadoResponseRecord documentoGridRecord =
@@ -733,7 +733,7 @@ public class DocumentoService {
             list.add(documentoGridRecord);
         }
 
-        personaAsignada = Optional.empty();
+        personaAsignada = null;
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -750,7 +750,7 @@ public class DocumentoService {
     }
 
     public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid){
-        personaAsignada = Optional.of(persona);
+        personaAsignada = persona;
         String key = Objects.toString(uuid, "");
 
         return getAllAsignado(key, Pageable.unpaged()).getContent();
