@@ -11,8 +11,8 @@ public enum TipoDocumento {
     EXHORTO_SALIDA("Exhorto de salida","Exhortos de salida"),
     SENTENCIA("Sentencia", "Sentencias"),
     SENTENCIA_PUBLICA("Sentencia pública","Sentencias públicas"),
-    DOCUMENTO_IDENTIFICACION("Documento de identificación","Documentos de identificación");
-
+    DOCUMENTO_IDENTIFICACION("Documento de identificación","Documentos de identificación"),
+    APELACION("Apelación", "Apelaciones");
     private final String etiqueta;
     private final String plural;
 

@@ -53,6 +53,10 @@ import java.util.UUID;
  * SENTENCIA PUBLICA (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
  * </p>
+ * </p>
+ * APELACION (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{SALA (JUZGADO)}/{TOCA(expediente)}/
+ * </p>
  */
 @Slf4j
 @Service
@@ -81,12 +85,11 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
-            return manejarOficio(documento, year, juzgado, oficialia);
+            return manejarOficio(documento, year, juzgado, juzgado);
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
@@ -111,7 +114,8 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) : generarNombreArchivo(null);
+        
+        String nombreUnicoArchivo = documento.getTipoDocumento() == null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name()) : generarNombreArchivo(documento.getTipoDocumento().name());
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -150,15 +154,12 @@ public class DigitalizacionService {
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
      *
-     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
+     * @param tipo El tipo de documento o carpeta para incluir en el nombre del
      *                    archivo.
      * @return Un nombre único generado para el archivo PDF.
      */
-    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
-        if (tipoCarpeta == null) {
-            return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
-        }
-        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    private String generarNombreArchivo(String tipo) {
+        return tipo + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
 
@@ -214,14 +215,15 @@ public class DigitalizacionService {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
-
+        String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
-                String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
+            case APELACION:
+                return crearDirectorios(Paths.get(basePath, expediente));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
