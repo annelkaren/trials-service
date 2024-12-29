@@ -708,6 +708,10 @@ public class DocumentoService {
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = mov.getDocumento();
+            if (documento == null) {
+                //TODO: SE COLOCA ESTA VALIDACION PARA EVITAR NULL POINTERS DEL SCAN DE QODANA, VERIFICAR SI SE PUEDE OPTIMIZAR ESTO.
+                continue;
+            }
             boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
 
