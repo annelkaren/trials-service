@@ -19,7 +19,6 @@
 	<field name="numElementos" class="java.lang.String"/>
 	<field name="concepto" class="java.lang.String"/>
 	<field name="nota" class="java.lang.String"/>
-	<field name="comentario" class="java.lang.String"/>
 	<group name="GroupJuzgado" startNewPage="true">
 		<groupHeader>
 			<band height="48">
@@ -139,7 +138,6 @@
 				</box>
 			</element>
 			<element kind="textField" uuid="3fa1c4e5-2685-4c53-ad2b-39d7fe5f325a" x="500" y="0" width="200" height="20">
-				<expression><![CDATA[$F{comentario}]]></expression>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
