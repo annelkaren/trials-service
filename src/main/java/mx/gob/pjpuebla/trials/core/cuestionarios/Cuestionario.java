@@ -35,4 +35,5 @@ public class Cuestionario implements Serializable {
     @Max(Integer.MAX_VALUE)
     @Column(name = "N_TIPO")
     private TipoPregunta tipo;
+    
 }
