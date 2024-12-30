@@ -543,6 +543,12 @@ class DocumentoServiceTest {
         Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
         DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.OFICIO);
         Documento promocion = DocumentoSetUp.create(tipoJuicio);
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
         promocion.setData(documentoData);
         promocion.setFolio("");
         promocion.setTipoDocumento(TipoDocumento.PROMOCION);
@@ -555,7 +561,7 @@ class DocumentoServiceTest {
         List<String> anexos = List.of("Anexo1", "Anexo2");
         DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO,
                 anexos);
-        DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord);
+        DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord, multipartFile);
 
         assertThat(documentoResponse)
                 .isNotNull()

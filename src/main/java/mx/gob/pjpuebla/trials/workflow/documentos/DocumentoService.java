@@ -459,7 +459,7 @@ public class DocumentoService {
     }
 
     @Transactional
-    public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord) {
+    public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord, MultipartFile multipartFile) {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId())
                 .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, String.valueOf(documentoPromocionRecord.carpetaId())));
         Documento documento = new Documento();
@@ -476,6 +476,7 @@ public class DocumentoService {
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
         documento = documentoRepository.save(documento);
+        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
         addAnexos(documentoPromocionRecord.anexos(), documento);
         movimientoService.createMovimento(null, documento, documento.getPersona(), null, EstadoCarpeta.CAPTURA.name());
 
