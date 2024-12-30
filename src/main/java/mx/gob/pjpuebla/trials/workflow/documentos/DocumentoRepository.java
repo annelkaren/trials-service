@@ -101,6 +101,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     Documento findByCarpetaIdAndTipoDocumentoIsNull(Integer id);
 
+    Documento findByCarpetaIdAndTipoDocumento(Integer id, TipoDocumento tipoDocumento);
+
     Documento findByCarpetaIdAndRutaIsNull(Integer id);
 
     @Query("""
@@ -316,4 +318,17 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento, LocalDateTime fechaAlta);
 
     Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
+    
+    @Query("""
+        SELECT d
+        FROM Documento d
+        JOIN DocumentoContenido dc ON dc.documento.id = d.id
+        JOIN d.carpeta c
+        WHERE lower(dc.oficioPublicado) = 's'
+          AND c.id = :carpetaId
+          AND d.tipoDocumento = TipoDocumento.SENTENCIA
+        """)
+Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
+
+
 }

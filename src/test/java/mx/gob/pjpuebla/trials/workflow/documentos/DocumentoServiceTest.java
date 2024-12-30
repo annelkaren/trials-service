@@ -684,6 +684,7 @@ class DocumentoServiceTest {
         Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        given(documentoService.getDocumentoForRenderOficialMayor(movimiento, movimiento.getCarpeta())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
         given(movimientoService.getOrigen(any(), any())).willReturn("OCP");
         given(personaService.getAuditor()).willReturn(persona);
         given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
@@ -1550,7 +1551,7 @@ class DocumentoServiceTest {
         documento.setData(documentoData);
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
-        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any())).willReturn(carpetaResponseRecord);
+        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any(), any())).willReturn(carpetaResponseRecord);
         given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
 
         DocPromocionInfoRecord response = documentoService.getInfoPromocion(1);

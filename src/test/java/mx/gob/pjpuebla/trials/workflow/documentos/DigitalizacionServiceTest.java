@@ -139,7 +139,7 @@ class DigitalizacionServiceTest {
         Persona persona = PersonaSetUp.createPersona();
         
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
-        documento.getCarpeta().setExpediente("E000006");
+        documento.getCarpeta().setExpediente("E000006/2024");
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);

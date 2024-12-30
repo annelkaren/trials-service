@@ -11,4 +11,7 @@ public interface SecuenciaRepositoryCustom {
     Long getNextValPieza();
 
     Long getNextValExhortoSalida();
+
+    Long getNextValApelacion();
+    
 }
