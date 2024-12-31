@@ -51,13 +51,12 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
    @Query("""
         SELECT 
                 c.expediente,
-                d.data.rubros,
-                n.nota
+                d.data,
+                n.notas
        FROM Notificacion n
        JOIN n.documento d
        JOIN d.carpeta c
-       JOIN n.
-       WHERE n.estado = EstadoNotificacion.EN_RUTA AND n.tipoNotificacion = TipoNotificacion.DOMICILIO""")
+       WHERE n.estadoNotificacion = EstadoNotificacion.EN_RUTA AND n.tipoNotificacion = TipoNotificacion.DOMICILIO""")
    List<Object[]> findAllNotificacionesByEstadoEnRutaAndTipoNotificacionDomicilio();
 
 }
