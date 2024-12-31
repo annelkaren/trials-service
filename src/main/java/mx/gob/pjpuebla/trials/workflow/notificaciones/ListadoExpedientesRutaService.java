@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaExpedientesRutaDTO;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -17,6 +19,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +39,8 @@ public class ListadoExpedientesRutaService {
 
     private JRBeanCollectionDataSource beanCollectionDataSource;
     private NotificacionRepository notificacionRepository;
-
+    private PersonaService personaService;
+    private Integer numElementos;
 
     public byte[] exportToPdf() throws IOException, JRException {
         // Instancia de ObjectMapper para trabajar con JSON
@@ -69,15 +73,21 @@ public class ListadoExpedientesRutaService {
                     }
                 })
                 .collect(Collectors.toList()); // Recoger todos los DTOs en una lista
-
+            
+            numElementos = listaExpedenteRutaDTO.size();
             beanCollectionDataSource = new JRBeanCollectionDataSource(listaExpedenteRutaDTO); 
+        
+        
         // Aquí podrías proceder con el reporte (por ejemplo, usando JasperReports)
         return JasperExportManager.exportReportToPdf(getJasperReport(listaExpedientes));
     }
 
     private JasperPrint getJasperReport(Resource reporte) throws JRException, IOException {
         Map<String, Object> parameters = new HashMap<>();
-
+        Persona usuario = personaService.getAuditor();
+        parameters.put("fecha", new Date());
+        parameters.put("usuario", usuario.getNombre()  + " " + usuario.getApellidoPaterno() + " " + usuario.getApellidoMaterno());
+        parameters.put("numElementos", numElementos);
         parameters.put("p_image_background", "jasper/escudo.png");
 
         return JasperFillManager.fillReport(

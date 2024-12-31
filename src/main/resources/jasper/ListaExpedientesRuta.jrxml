@@ -12,24 +12,26 @@
 	<parameter name="p_image_background" class="java.lang.String">
 		<defaultValueExpression><![CDATA["escudo.png"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="fecha" class="java.util.Date">
+		<defaultValueExpression><![CDATA[NOW( )]]></defaultValueExpression>
+	</parameter>
+	<parameter name="usuario" class="java.lang.String"/>
+	<parameter name="numElementos" class="java.lang.Integer"/>
 	<query language="sql"><![CDATA[]]></query>
-	<field name="fecha" class="java.time.LocalDateTime"/>
 	<field name="expediente" class="java.lang.String"/>
-	<field name="usuario" class="java.lang.String"/>
-	<field name="numElementos" class="java.lang.String"/>
 	<field name="concepto" class="java.lang.String"/>
 	<field name="nota" class="java.lang.String"/>
 	<group name="GroupJuzgado" startNewPage="true">
 		<groupHeader>
 			<band height="48">
 				<element kind="textField" uuid="b09b4ef1-dbba-4895-bcee-be1cb24a82e6" x="0" y="15" width="220" height="30">
-					<expression><![CDATA["Fecha de creación " + $F{fecha}]]></expression>
+					<expression><![CDATA["Fecha de creación " + $P{fecha}]]></expression>
 				</element>
 				<element kind="textField" uuid="bed84661-722e-4df0-b11b-92af191207ef" x="283" y="18" width="209" height="30">
-					<expression><![CDATA["Usuario: " + $F{usuario}]]></expression>
+					<expression><![CDATA["Usuario: " + $P{usuario}]]></expression>
 				</element>
 				<element kind="textField" uuid="ea791d8c-73ec-4dfa-ba86-92a9e9a0ae0e" x="561" y="15" width="180" height="30">
-					<expression><![CDATA["No. de elementos: " + $F{numElementos}]]></expression>
+					<expression><![CDATA["No. de elementos: " + String.valueOf($P{numElementos})]]></expression>
 				</element>
 			</band>
 		</groupHeader>
