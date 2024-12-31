@@ -444,6 +444,10 @@ public class CarpetaService {
 
         CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
 
+        if (carpetaDetalle == null){
+                throw new NotFoundException("No hay registro del detalle de la carpeta", "docId");
+        }
+
         String nombre = carpeta.getPersona().getNombre() + " " +
                 (carpeta.getPersona().getApellidoPaterno() != null ? carpeta.getPersona().getApellidoPaterno() + " "
                         : "")
