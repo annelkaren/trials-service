@@ -79,7 +79,6 @@ class DocumentoResourceTest {
     private ObjectMapper objectMapper;
 
 
-
     @Value("classpath:jasper/OficioCarta.jasper")
     private Resource oficioCarta;
 
@@ -184,21 +183,43 @@ class DocumentoResourceTest {
 
     @Test
     void createPromocion() throws Exception {
-        List<String> anexos = List.of("Anexo1", "Anexo2");
-        DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1,
-                TipoPromocion.OFICIO, anexos);
+        String documentoPromocionRecord = """
+                    {
+                        "carpetaId": "1",
+                        "tipoPromocion": "OFICIO",
+                        "anexos": [
+                        "Anexo1",
+                        "Anexo2"
+                    ]
+                    }
+                """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-file.pdf",
+                "application/pdf",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile documentoPromocionSave = new MockMultipartFile(
+                "documentoPromocionRecord",
+                "documentoPromocionRecord",
+                "application/json",
+                documentoPromocionRecord.getBytes()
+        );
         DocumentoPromocionResponseRecord documentoPromocionResponseRecord = new DocumentoPromocionResponseRecord(
                 1, "1", TipoDocumento.PROMOCION);
 
-        given(documentoService.createPromocion(any()))
+        given(documentoService.createPromocion(any(), any()))
                 .willReturn(documentoPromocionResponseRecord);
-
-        mockMvc.perform(
-                        post("/api/workflow/documento/promocion")
-                                .content(ResourceUtilTest.asJsonString(documentoPromocionRecord))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mockMvc.perform(multipart("/api/workflow/documento/promocion")
+                        .file(file)
+                        .file(documentoPromocionSave)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.folio").value("1"))
+                .andExpect(jsonPath("$.tipoDocumento").value(TipoDocumento.PROMOCION.name()));
 
     }
 
@@ -478,29 +499,29 @@ class DocumentoResourceTest {
     void create_demanda_antigua() throws Exception {
 
         String documentoSaveRecordJson = """
-        {
-            "actor": {
-                "nombre": "Carlos",
-                "apellidoPaterno": "González",
-                "apellidoMaterno": "Hernández",
-                "pseudonimo": "carlitos",
-                "tipoPersona": "fisica",
-                "tipoParte": 1
-            },
-            "demandado": {
-                "nombre": "María",
-                "apellidoPaterno": "López",
-                "apellidoMaterno": "Ramírez",
-                "pseudonimo": "mary",
-                "tipoPersona": "fisica",
-                "tipoParte": 2
-            },
-            "anexos": [
-                "Anexo1",
-                "Anexo2"
-            ]
-        }
-    """;
+                    {
+                        "actor": {
+                            "nombre": "Carlos",
+                            "apellidoPaterno": "González",
+                            "apellidoMaterno": "Hernández",
+                            "pseudonimo": "carlitos",
+                            "tipoPersona": "fisica",
+                            "tipoParte": 1
+                        },
+                        "demandado": {
+                            "nombre": "María",
+                            "apellidoPaterno": "López",
+                            "apellidoMaterno": "Ramírez",
+                            "pseudonimo": "mary",
+                            "tipoPersona": "fisica",
+                            "tipoParte": 2
+                        },
+                        "anexos": [
+                            "Anexo1",
+                            "Anexo2"
+                        ]
+                    }
+                """;
 
 
         MockMultipartFile file = new MockMultipartFile(
@@ -536,7 +557,7 @@ class DocumentoResourceTest {
     }
 
     @Test
-    void crear_amparo() throws Exception{
+    void crear_amparo() throws Exception {
         String pieza = "000001/2024/AD01";
         AmparoRecordResponse amparoRecordResponse = new AmparoRecordResponse(1, 1, pieza, LocalDateTime.now());
 
@@ -561,7 +582,7 @@ class DocumentoResourceTest {
                 "demandado 1",
                 "ESCRITO",
                 anexos
-                );
+        );
 
         given(documentoService.getInfoPromocion(anyInt()))
                 .willReturn(docPromocionInfoRecord);
@@ -571,7 +592,6 @@ class DocumentoResourceTest {
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
-
 
 
     @Test
@@ -590,15 +610,15 @@ class DocumentoResourceTest {
     @Test
     void createExhortoSalida() throws Exception {
         String documentoExhortoSalidaRecordJson = """
-            {
-                "carpetaId": "1",
-                "destino": "Juzgado 1",
-                "tramite": "Nombre del exhorto",
-                "observaciones": "Sin observaciones",
-                "fechaEntrega": "2024-01-01",
-                "fechaDevolucion": "2024-01-02"
-            }
-        """;
+                    {
+                        "carpetaId": "1",
+                        "destino": "Juzgado 1",
+                        "tramite": "Nombre del exhorto",
+                        "observaciones": "Sin observaciones",
+                        "fechaEntrega": "2024-01-01",
+                        "fechaDevolucion": "2024-01-02"
+                    }
+                """;
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "test-file.pdf",
@@ -627,8 +647,8 @@ class DocumentoResourceTest {
     }
 
     @Test
-    void testAdjuntarPromocion() throws Exception{
-        DocumentoPromocionResponseRecord responseRecord = new DocumentoPromocionResponseRecord(10,"1", TipoDocumento.PROMOCION);
+    void testAdjuntarPromocion() throws Exception {
+        DocumentoPromocionResponseRecord responseRecord = new DocumentoPromocionResponseRecord(10, "1", TipoDocumento.PROMOCION);
 
         given(documentoService.adjuntarPromocion(anyInt())).willReturn(responseRecord);
 
@@ -668,28 +688,28 @@ class DocumentoResourceTest {
         data.setAmparoQuejoso("Quejoso");
         data.setAmparoTribunalId(123);
         data.setAmparoSalaId(456);
-        
+
         Carpeta carpeta = new Carpeta();
         carpeta.setId(52);
         documento.setCarpeta(carpeta);
-    
+
         documento.setData(data);
-    
+
         given(documentoService.getAmparoById(1)).willReturn(new AmparoGetRecord(
-            carpeta.getId(),
-            data.getAmparoTipo(),
-            data.getAmparoFechaPresentacion(),
-            data.getAmparoFechaTermino(),
-            data.getAmparoImpugnacion(),
-            data.getAmparoSentido(),
-            data.getAmparoSentidoImpugnacion(),
-            data.getAmparoQuejoso(),
-            data.getAmparoTribunalId(),
-            data.getAmparoSalaId()
+                carpeta.getId(),
+                data.getAmparoTipo(),
+                data.getAmparoFechaPresentacion(),
+                data.getAmparoFechaTermino(),
+                data.getAmparoImpugnacion(),
+                data.getAmparoSentido(),
+                data.getAmparoSentidoImpugnacion(),
+                data.getAmparoQuejoso(),
+                data.getAmparoTribunalId(),
+                data.getAmparoSalaId()
         ));
-    
+
         mockMvc.perform(get("/api/workflow/documentos/amparo/{id}", 1)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // Verifica que sea un 200 OK
                 .andExpect(jsonPath("$.carpetaId").value(52)) // Verifica el id de la carpeta en la respuesta
                 .andExpect(jsonPath("$.tipoAmparo").value("AmparoTipo"));
@@ -700,8 +720,8 @@ class DocumentoResourceTest {
         given(documentoService.getAmparoById(1)).willReturn(null);
 
         mockMvc.perform(
-                get("/api/documentos/amparo/1")
-                        .accept(MediaType.APPLICATION_JSON))
+                        get("/api/documentos/amparo/1")
+                                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -719,13 +739,13 @@ class DocumentoResourceTest {
                 3,
                 "Amparo Directo"
         );
-    
+
         doNothing().when(documentoService).updateAmparoData(1, amparoUpdate);
-    
+
         mockMvc.perform(
-                put("/api/workflow/documentos/amparo/update/{id}", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(amparoUpdate)))
+                        put("/api/workflow/documentos/amparo/update/{id}", 1)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(amparoUpdate)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Documento actualizado con éxito"));
     }
