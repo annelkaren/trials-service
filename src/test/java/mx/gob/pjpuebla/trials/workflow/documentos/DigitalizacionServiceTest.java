@@ -349,4 +349,25 @@ class DigitalizacionServiceTest {
             }
         }
     }
+
+    /**
+     * Prueba la creación de directorio para documentos de tipo "DOCUMENTO_IDENTIFICACION".
+     */
+    @Test
+    void testCreateDirectorio_Documento_Identificacion() {
+        Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        Persona persona = PersonaSetUp.createPersona();
+
+        documento.setTipoDocumento(TipoDocumento.DOCUMENTO_IDENTIFICACION);
+
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
+        given(personaService.getAuditor()).willReturn(persona);
+
+        digitalizacionService.setAudienciaId(1);
+        createdDirectory = digitalizacionService.crearDirectorio(documento);
+
+        assertNotNull(createdDirectory);
+        assertTrue(createdDirectory.toString().contains("/2024/JuzgadoTEST/000001/Audiencias/1/Asistencia"));
+    }
 }

@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Setter
 public class DigitalizacionService {
 
     @Value("${app.root-folder}")
@@ -72,6 +74,9 @@ public class DigitalizacionService {
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final String EXTENSION_ARCHIVO = ".pdf";
+
+    //Si se usa en mas métodos cambiar variable global por local.
+    private Integer audienciaId;
 
     /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
@@ -97,7 +102,7 @@ public class DigitalizacionService {
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
-            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],"audiencia"));
+            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],"Audiencias", this.audienciaId.toString() , "Asistencia"));
         }
 
         // Revisar la ruta para los documentos de una pieza
