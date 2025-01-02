@@ -17,17 +17,16 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
@@ -47,6 +46,9 @@ class NotificacionResourceTest {
     private NotificacionService notificacionService;
 
     private NotificacionRecord notificacionRecord;
+
+    @MockBean
+    private ListadoExpedientesRutaService listadoExpedientesRutaService;
 
     @BeforeEach
     void setUp() {
@@ -178,4 +180,17 @@ class NotificacionResourceTest {
                 .andExpect(status().isOk());
     }
 
+
+    @Test
+    void testGetFileListaExpedientes() throws Exception {
+        // Simulación de un PDF generado por el servicio
+        byte[] mockPdf = "mock-pdf-content".getBytes();
+
+        // Configuramos el mock para que retorne el contenido del PDF
+        when(listadoExpedientesRutaService.exportToPdf()).thenReturn(mockPdf);
+
+        // Simulamos la petición al endpoint y verificamos la respuesta
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/workflow/notificaciones/reporteListaExpedientes"))
+                .andExpect(status().isOk());
+    }
 }
