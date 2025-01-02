@@ -709,7 +709,8 @@ public class DocumentoService {
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = mov.getDocumento();
-            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
+            
+            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null &&  Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
 
             DocumentoAsignadoResponseRecord documentoGridRecord =

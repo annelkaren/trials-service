@@ -4,6 +4,7 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
+import net.sf.jasperreports.engine.JRException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,8 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
 
+import java.io.IOException;
 import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -22,6 +26,7 @@ import java.util.List;
 public class NotificacionResource {
 
     private final NotificacionService notificacionService;
+    private final ListadoExpedientesRutaService listadoExpedientesRutaService;
 
     @GetMapping(value = "/bandeja/notificaciones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<NotificacionRecord> getAllNotificaciones(@PageableDefault(size = 20) Pageable pageable,
@@ -65,6 +70,15 @@ public class NotificacionResource {
     public void updateBatchNotificacionSalida(@PathVariable String estado, @RequestBody List<Integer> ids) {
         notificacionService.updateBatchNotificacionEnRuta(ids, estado);
     }
+
+    @GetMapping("/notificaciones/reporteListaExpedientes")
+    public ResponseEntity<byte[]> getFileListaExpedientes() throws IOException, JRException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("listaExpedientes", "_.pdf");
+        return ResponseEntity.ok().headers(headers).body(listadoExpedientesRutaService.exportToPdf());
+    }
+    
 
 }
 
