@@ -457,7 +457,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.DEMANDA);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2025");
     }
 
     @Test
@@ -466,7 +466,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.EXHORTO);
-        assertThat(numExpediente).containsPattern("E[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("E[0-9]{6}/2025");
     }
 
     @Test
@@ -475,7 +475,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.APELACION);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2025");
     }
 
     @Test
@@ -484,7 +484,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.DESPACHO);
-        assertThat(numExpediente).containsPattern("D[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("D[0-9]{6}/2025");
     }
 
     @Test
@@ -493,7 +493,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.APELACION_MUNICIPAL);
-        assertThat(numExpediente).containsPattern("T[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("T[0-9]{6}/2025");
     }
 
     @Test
@@ -502,7 +502,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.AMPARO);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/2025");
     }
 
     @Test
