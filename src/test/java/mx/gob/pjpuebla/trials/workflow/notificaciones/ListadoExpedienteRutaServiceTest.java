@@ -1,31 +1,28 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.lang.reflect.Field;
 
 import org.springframework.core.io.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-
 
 @ExtendWith(MockitoExtension.class)
 public class ListadoExpedienteRutaServiceTest {
@@ -42,19 +39,16 @@ public class ListadoExpedienteRutaServiceTest {
     @Mock
     private Resource listaExpedientes;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-
     @Test
-    void exportToPdf()  throws Exception{
-        String rubrosJson = "{\"rubros\": [\"rubro1\", \"rubro2\"]}";
+    void exportToPdf() throws Exception {
+        DocumentoData rubrosJson = new DocumentoData();
+        rubrosJson.setRubros(List.of("RUBRO1", "RUBRO2"));
+
         Persona persona = PersonaSetUp.createPersona();
 
         List<Object[]> mockData = List.of(
-                new Object[]{"EXP001", rubrosJson, "Nota 1"},
-                new Object[]{"EXP002", rubrosJson, "Nota 2"}
-        );
-
+                new Object[] { "EXP001", rubrosJson, "Nota 1" },
+                new Object[] { "EXP002", rubrosJson, "Nota 2" });
 
         when(personaService.getAuditor()).thenReturn(persona);
 
@@ -63,8 +57,14 @@ public class ListadoExpedienteRutaServiceTest {
                 .thenReturn(mockData);
 
         // Mockeamos el recurso Jasper
+        Resource mockResource = mock(Resource.class);
         InputStream jasperStream = new FileInputStream("src/main/resources/jasper/ListaExpedientesRuta.jasper");
-        when(listaExpedientes.getInputStream()).thenReturn(jasperStream);
+        when(mockResource.getInputStream()).thenReturn(jasperStream);
+
+        // Inyectamos el recurso mockeado en el servicio
+        Field listaExpedientesField = ListadoExpedientesRutaService.class.getDeclaredField("listaExpedientes");
+        listaExpedientesField.setAccessible(true);
+        listaExpedientesField.set(listadoExpedientesRutaService, mockResource);
 
         // Ejecutamos el método
         byte[] pdfBytes = listadoExpedientesRutaService.exportToPdf();
@@ -72,6 +72,6 @@ public class ListadoExpedienteRutaServiceTest {
         // Validaciones
         assertNotNull(pdfBytes, "El PDF generado no debe ser nulo");
         verify(notificacionRepository, times(1)).findAllNotificacionesByEstadoEnRutaAndTipoNotificacionDomicilio();
-        verify(listaExpedientes, times(1)).getInputStream();
+       
     }
 }

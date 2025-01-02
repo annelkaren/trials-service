@@ -2,10 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -24,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -43,7 +38,6 @@ public class ListadoExpedientesRutaService {
 
     public byte[] exportToPdf() throws IOException, JRException {
         // Instancia de ObjectMapper para trabajar con JSON
-        ObjectMapper objectMapper = new ObjectMapper();
 
         List<ListaExpedientesRutaDTO> listaExpedenteRutaDTO = notificacionRepository
                 .findAllNotificacionesByEstadoEnRutaAndTipoNotificacionDomicilio()

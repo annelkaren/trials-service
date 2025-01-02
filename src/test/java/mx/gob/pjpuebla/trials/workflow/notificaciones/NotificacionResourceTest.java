@@ -27,7 +27,6 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.springframework.http.HttpHeaders;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
@@ -191,7 +190,7 @@ class NotificacionResourceTest {
         when(listadoExpedientesRutaService.exportToPdf()).thenReturn(mockPdf);
 
         // Simulamos la petición al endpoint y verificamos la respuesta
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/workflow/notificaciones/reporteListaExpedientes"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/workflow/notificaciones/reporteListaExpedientes"))
                 .andExpect(status().isOk());
     }
 }
