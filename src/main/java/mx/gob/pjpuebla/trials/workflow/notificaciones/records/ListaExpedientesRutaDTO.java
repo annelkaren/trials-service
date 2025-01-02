@@ -13,7 +13,6 @@ public class ListaExpedientesRutaDTO {
         this.expediente = expediente;
         this.concepto = concepto;
         this.nota = nota;
-
     }
 }
 

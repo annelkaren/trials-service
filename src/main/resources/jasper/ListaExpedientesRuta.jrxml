@@ -12,9 +12,7 @@
 	<parameter name="p_image_background" class="java.lang.String">
 		<defaultValueExpression><![CDATA["escudo.png"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="fecha" class="java.util.Date">
-		<defaultValueExpression><![CDATA[NOW( )]]></defaultValueExpression>
-	</parameter>
+	<parameter name="fecha" class="java.lang.String"/>
 	<parameter name="usuario" class="java.lang.String"/>
 	<parameter name="numElementos" class="java.lang.Integer"/>
 	<query language="sql"><![CDATA[]]></query>
@@ -94,8 +92,8 @@
 		</element>
 	</background>
 	<title splitType="Stretch"/>
-	<pageHeader height="55" splitType="Stretch">
-		<element kind="staticText" uuid="28fc1a87-a3a6-47e7-ada5-5e552898dd66" x="158" y="0" width="400" height="25" fontSize="19.0" bold="true" hTextAlign="Center">
+	<pageHeader height="94" splitType="Stretch">
+		<element kind="staticText" uuid="28fc1a87-a3a6-47e7-ada5-5e552898dd66" x="170" y="50" width="388" height="33" fontSize="19.0" bold="true" hTextAlign="Center">
 			<text><![CDATA[Lista de expedientes en ruta]]></text>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</element>
@@ -139,7 +137,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="3fa1c4e5-2685-4c53-ad2b-39d7fe5f325a" x="500" y="0" width="200" height="20">
+			<element kind="textField" uuid="3fa1c4e5-2685-4c53-ad2b-39d7fe5f325a" x="500" y="0" width="200" height="20" linkType="None" linkTarget="Self" blankWhenNull="true">
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -162,5 +160,4 @@
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
 	</pageFooter>
-	<summary height="42" splitType="Stretch"/>
 </jasperReport>

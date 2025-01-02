@@ -71,11 +71,11 @@ public class NotificacionResource {
         notificacionService.updateBatchNotificacionEnRuta(ids, estado);
     }
 
-    @PostMapping("/notificaciones/reporteListaExpedientes")
+    @GetMapping("/notificaciones/reporteListaExpedientes")
     public ResponseEntity<byte[]> getFileListaExpedientes() throws IOException, JRException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("caratula", "_.pdf");
+        headers.setContentDispositionFormData("listaExpedientes", "_.pdf");
         return ResponseEntity.ok().headers(headers).body(listadoExpedientesRutaService.exportToPdf());
     }
     
