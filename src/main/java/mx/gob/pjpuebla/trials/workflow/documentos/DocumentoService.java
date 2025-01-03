@@ -216,12 +216,15 @@ public class DocumentoService {
         if (oficialia == null) {
             throw new NotFoundException("La persona no está relacionada con ninguna oficialía", "persona.getOficialia()");
         }
-        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId());
+        
         Documento documento = new Documento();
         Carpeta carpeta = new Carpeta();
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, documentoRecord.tipoJuicioId().toString()));
         carpeta.setTipoJuicio(tipoJuicio);
+
+        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
+            .stream().filter(j->j.getTipoJuicios().contains(tipoJuicio)).toList();
 
         Juzgado juzgadoConexidad = juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio());
         if (juzgadoConexidad != null && !juzgadosRelacionados.contains(juzgadoConexidad)) {
