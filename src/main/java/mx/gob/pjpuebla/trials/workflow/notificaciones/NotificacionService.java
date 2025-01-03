@@ -359,4 +359,29 @@ public class NotificacionService {
 
         notificacionRepository.saveAll(notificaciones);
     }
+
+    @Transactional
+    public Page<AcuerdoNotificacionesRecord> acuerdoNotificaciones(Integer idNotificacion, Pageable pageable) {
+
+        Page<NotificacionesDetalles> notificacionesDetallesPage = notificacionesDetallesRepository
+                .findByNotificacionDocumentoId(idNotificacion, pageable);
+
+        if (notificacionesDetallesPage.isEmpty()) {
+            throw new NotFoundException("Notificacion Detalle no encontrado", "id");
+        }
+
+        return notificacionesDetallesPage.map(detalle -> new AcuerdoNotificacionesRecord(
+                detalle.getNotificacion().getId(),
+                detalle.getPersonaDocumento().getNombre() + " " +
+                        detalle.getPersonaDocumento().getApellidoPaterno() +
+                        (detalle.getPersonaDocumento().getApellidoMaterno() != null &&
+                                !detalle.getPersonaDocumento().getApellidoMaterno().isEmpty()
+                                ? " " + detalle.getPersonaDocumento().getApellidoMaterno()
+                                : ""),
+                detalle.getNotificacion().getTipoNotificacion(),
+                detalle.getNotificacion().getEstadoNotificacion(),
+                detalle.getNotificacion().getNotas()
+        ));
+    }
+
 }

@@ -78,6 +78,13 @@ public class NotificacionResource {
         headers.setContentDispositionFormData("listaExpedientes", "_.pdf");
         return ResponseEntity.ok().headers(headers).body(listadoExpedientesRutaService.exportToPdf());
     }
+
+    @GetMapping("/acuerdo/notificaciones/{idNotificacion}")
+    public Page<AcuerdoNotificacionesRecord> acuerdoNotificaciones(
+            @PathVariable Integer idNotificacion,
+            Pageable pageable) {
+        return this.notificacionService.acuerdoNotificaciones(idNotificacion, pageable);
+    }
     
 
 }
