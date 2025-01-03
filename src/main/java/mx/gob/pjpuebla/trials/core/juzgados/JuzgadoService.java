@@ -240,11 +240,17 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
 
-        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado, juzgadosRelacionados.stream().map(Juzgado::getId).toList());
+        if (juzgadosRelacionados.isEmpty()){
+            throw new NotFoundException("No hay juzgados relacionados a la Oficialia", "juzgadosRelacionados");
+        }
+
+        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
+                juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
-            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado, juzgadosRelacionados.stream().map(Juzgado::getId).toList());
+            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
+                    juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
             if (juzgados.isEmpty()){
                 if (TipoCarpeta.APELACION.name().equals(tipoCarpeta.name())) {
@@ -266,14 +272,14 @@ public class JuzgadoService {
             } else {
                 throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
             }
-        } */
+        }
 
         if (TipoCarpeta.DEMANDA.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
             juzgados = new ArrayList<>(juzgadosRelacionados);      
             if (juzgados.isEmpty()) {
                 throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
             }
-        } 
+        } */
 
         int rand = RANDOM.nextInt(juzgados.size());
         return juzgados.get(rand);
