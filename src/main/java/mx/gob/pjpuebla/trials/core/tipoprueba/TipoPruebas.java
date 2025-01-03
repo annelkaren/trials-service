@@ -26,10 +26,4 @@ public class TipoPruebas {
     @Column(name = "S_NOMBRE")
     private String nombre;
 
-    @Column(name = "S_DATO")
-    private String dato;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FN_PRUEBA_PADRE_ID", referencedColumnName = "PN_ID")
-    private MateriaPericial pruebaPadre;
 }

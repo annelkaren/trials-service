@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.tipoprueba;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
@@ -25,4 +26,14 @@ public class TipoPruebaResource {
                         .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/by-tipo-juicio/{carpetaId}")
+    public ResponseEntity<List<TipoPruebas>> getTipoPruebasByTipoJuicioId(@PathVariable Integer carpetaId) {
+        List<TipoPruebas> tipoPruebas = tipoPruebasService.getTipoPruebasByTipoJuicioId(carpetaId);
+        
+        if (tipoPruebas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(tipoPruebas);
+    }
 }
