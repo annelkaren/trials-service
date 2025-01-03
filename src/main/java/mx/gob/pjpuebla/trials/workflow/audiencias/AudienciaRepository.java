@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import org.springframework.data.repository.query.Param;
 
@@ -91,5 +92,9 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
           )
     """)
     boolean existeConflicto(Long salaId, LocalDateTime inicio, LocalDateTime fin);
+
+   
+    Audiencia findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia estatusAudiencia);
+
 } 
 

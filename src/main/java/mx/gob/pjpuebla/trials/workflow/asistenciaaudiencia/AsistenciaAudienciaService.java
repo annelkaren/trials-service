@@ -77,6 +77,7 @@ public class AsistenciaAudienciaService {
         documento.setTipoDocumento(TipoDocumento.DOCUMENTO_IDENTIFICACION);
         documentoRepository.save(documento);
 
+        digitalizacionService.setAudienciaId(asistenciaAudienciaRecord.idAudiencia());
         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
 
         Documento documentoRuta = documentoRepository.findById(documento.getId())

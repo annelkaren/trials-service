@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaExpedientesRutaDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +48,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     List<Notificacion> getNotificacionByTipo(@Param("listaEstradoId") Integer listaEstradoId);
 
    @Query("""
-        SELECT 
+        SELECT
                 c.expediente,
                 d.data,
                 n.notas

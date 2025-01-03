@@ -831,7 +831,7 @@ class CarpetaServiceTest {
         given(documentoRepository.findDocumentosByCarpeta(any())).willReturn(documentos);
         given(carpetaRepository.findPiezasByCarpetaPadreId(any(), any())).willReturn(piezas);
 
-        lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
+        lista = target.getAllDocumentosPiezas("TODAS PIEZAS", validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
 
         assertThat(lista).isNotEmpty();
 
