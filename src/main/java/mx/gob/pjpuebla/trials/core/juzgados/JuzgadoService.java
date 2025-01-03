@@ -265,26 +265,6 @@ public class JuzgadoService {
 
         }
 
-        /* if (TipoCarpeta.EXHORTO.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {                        
-            List<Juzgado> juzgadosFiltrados = juzgados.stream()
-                    .filter(juzgadosRelacionados::contains)
-                    .collect(Collectors.toList());
-
-            if (!juzgadosFiltrados.isEmpty()) {
-                juzgados = juzgadosFiltrados;
-               
-            } else {
-                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
-            }
-        }
-
-        if (TipoCarpeta.DEMANDA.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
-            juzgados = new ArrayList<>(juzgadosRelacionados);      
-            if (juzgados.isEmpty()) {
-                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
-            }
-        } */
-
         int rand = RANDOM.nextInt(juzgados.size());
         return juzgados.get(rand);
 

@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.core.tipoprueba;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
-import mx.gob.pjpuebla.trials.core.materiapericial.MateriaPericial;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 

@@ -46,7 +46,6 @@ import java.util.*;
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static mx.gob.pjpuebla.trials.util.Messages.OPTIMISTIC_LOCKING_ERROR;
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
-import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -339,10 +338,6 @@ class JuzgadoServiceTest {
         Materia materiaFamiliar = new Materia().setNombre("Familiar");
 
         tipoJuicio.setMateria(materiaFamiliar);
-
-        //given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(new ArrayList<>());
-        //given(juzgadoRepository.sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        //given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
 
         TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
         NotFoundException exceptionDemanda = assertThrows(
