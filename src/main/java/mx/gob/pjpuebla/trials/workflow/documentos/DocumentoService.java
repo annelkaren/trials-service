@@ -228,7 +228,7 @@ public class DocumentoService {
 
         Juzgado juzgadoConexidad = juzgadoService.getConexidadJuzgado(documentoRecord.actor(), documentoRecord.demandado(), carpeta.getTipoJuicio());
         if (juzgadoConexidad != null && !juzgadosRelacionados.contains(juzgadoConexidad)) {
-            throw new IllegalArgumentException("El juzgado asignado no está relacionado con la oficialía, juzgado conexidad");
+            throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía","juzgadoConexidad");
         }
         carpeta.setJuzgado(juzgadoConexidad);
         carpeta.setFolio(getFolio("D"));
@@ -237,7 +237,7 @@ public class DocumentoService {
         if (carpeta.getJuzgado() == null) {
             Juzgado juzgadoPorJuicio = juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
             if (!juzgadosRelacionados.contains(juzgadoPorJuicio)) {
-                throw new IllegalArgumentException("El juzgado asignado no está relacionado con la oficialía, juzgado tipo juicio");
+                throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía","juzgadoPorJuicio");
             }
             carpeta.setJuzgado(juzgadoPorJuicio);
         }

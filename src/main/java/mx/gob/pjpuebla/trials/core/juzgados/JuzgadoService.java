@@ -231,17 +231,21 @@ public class JuzgadoService {
     public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
 
         InstanciaJuzgado instanciaJuzgado;
+        String reason;
 
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
+            reason = "No hay sala disponible para asignar.";
         } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+            reason = "No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ";
         } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
+            reason = "No hay juzgados relacionados a la Oficialia";
         }
 
         if (juzgadosRelacionados.isEmpty()){
-            throw new NotFoundException("No hay juzgados relacionados a la Oficialia", "juzgadosRelacionados");
+            throw new NotFoundException(reason, "juzgadosRelacionados");
         }
 
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
@@ -254,9 +258,9 @@ public class JuzgadoService {
 
             if (juzgados.isEmpty()){
                 if (TipoCarpeta.APELACION.name().equals(tipoCarpeta.name())) {
-                    throw new NotFoundException("No hay sala disponible para asignar.", tipoJuicio.getNombre());
+                    throw new NotFoundException(reason, tipoJuicio.getNombre());
                 }
-                throw (new NotFoundException("No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ", tipoJuicio.getNombre()));
+                throw (new NotFoundException(reason, tipoJuicio.getNombre()));
             }
 
         }

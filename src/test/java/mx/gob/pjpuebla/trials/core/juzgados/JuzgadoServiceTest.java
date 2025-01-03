@@ -340,16 +340,16 @@ class JuzgadoServiceTest {
 
         tipoJuicio.setMateria(materiaFamiliar);
 
-        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(new ArrayList<>());
-        given(juzgadoRepository.sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
+        //given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(new ArrayList<>());
+        //given(juzgadoRepository.sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
+        //given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
 
         TipoCarpeta tipoDemanda = TipoCarpeta.DEMANDA;
         NotFoundException exceptionDemanda = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.getJuzgado(tipoJuicio, tipoDemanda, new ArrayList<>())
         );
-        assertThat(exceptionDemanda.getMessage()).contains("No se encontró un Juzgado de la materia");
+        assertThat(exceptionDemanda.getMessage()).contains("No hay juzgados relacionados a la Oficialia");
 
         TipoCarpeta tipoApelacion = TipoCarpeta.APELACION;
 
