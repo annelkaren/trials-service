@@ -179,6 +179,7 @@ public class AudienciaService {
                                         item.getFechaAudiencia(),
                                         item.getEstatusAudiencia(),
                                         juzgado.getId(),
+                                        item.getCarpeta().getTipoJuicio().getNombre(),
                                         personasDocumento
                                 );
                         })

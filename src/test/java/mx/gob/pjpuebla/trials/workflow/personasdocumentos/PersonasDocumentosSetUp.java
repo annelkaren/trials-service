@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesSetUp;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
@@ -27,6 +28,21 @@ public class PersonasDocumentosSetUp {
                 .setApellidoPaterno("Marcos")
                 .setApellidoMaterno("Leña")
                 .setPseudonimo("leños")
+                .setTipoNotificacion(TipoNotificacion.ESTRADO)
+                .setTipoPersona("fisica")
+                .setRol(Rol.PRINCIPAL);
+        personaDocumento.setAudit(new Audit(LocalDateTime.now(), LocalDateTime.now(), "6b13785f-d213-4585-a76b-437ffe57c9c7", "6b13785f-d213-4585-a76b-437ffe57c9c7"));
+        return personaDocumento;
+    }
+
+    public static PersonaDocumento createPersonasDocumentosTipoParte() {
+        PersonaDocumento personaDocumento = new PersonaDocumento()
+                .setId(21)
+                .setNombre("Alberto")
+                .setApellidoPaterno("Marcos")
+                .setApellidoMaterno("Leña")
+                .setPseudonimo("leños")
+                .setTipoPartes(TipoPartesSetUp.createTipoPartes())
                 .setTipoNotificacion(TipoNotificacion.ESTRADO)
                 .setTipoPersona("fisica")
                 .setRol(Rol.PRINCIPAL);

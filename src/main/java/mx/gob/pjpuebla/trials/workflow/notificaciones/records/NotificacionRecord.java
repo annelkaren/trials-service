@@ -21,6 +21,8 @@ public record NotificacionRecord(
         Integer carpetaId,
         LocalDateTime fechaSalida,
         LocalDateTime fechaNotificado,
-        String domicilio
+        String domicilio,
+        String nombrePersonaNotificado,
+        String parte
 ) implements Serializable {
 }

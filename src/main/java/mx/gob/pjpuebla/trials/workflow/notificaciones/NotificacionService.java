@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -26,19 +27,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotificacionService {
@@ -55,6 +58,10 @@ public class NotificacionService {
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
     private final EmailService emailService;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    @Value("${app.root-folder}")
+    private String rootFolder; // Ruta raíz de la digitalización
+    private String basePath; // Ruta base para la digitalización
+    private static final String EXTENSION_ARCHIVO = ".pdf";
 
     public Page<NotificacionRecord> getAllNotificaciones(String tipo, String estado, Pageable pageable) {
         tipo = (tipo != null) ? tipo.toLowerCase() : "";
@@ -123,7 +130,9 @@ public class NotificacionService {
                             notificacion.getDocumento().getCarpeta().getId(),
                             notificacion.getFechaSalida(),
                             notificacion.getFechaNotificado(),
-                            domicilio
+                            domicilio,
+                            notificacionesDetalles.getPersonaDocumento().getNombre(),
+                            notificacionesDetalles.getPersonaDocumento().getTipoPartes().getNombre()
                     );
                 })
                 .toList();
@@ -382,6 +391,62 @@ public class NotificacionService {
                 detalle.getNotificacion().getEstadoNotificacion(),
                 detalle.getNotificacion().getNotas()
         ));
+    }
+
+    @Transactional
+    public void digitalizarActaDomicilio(NotificacionActaRecord notificacionActaRecord, MultipartFile file){
+        this.basePath = rootFolder + "/digitalizacion/";
+        Notificacion notificacion = notificacionRepository.findById(notificacionActaRecord.id()).orElseThrow();
+        EstadoNotificacion estadoNotificacion = EstadoNotificacion.valueOf(notificacionActaRecord.estadoNotificacion());
+        notificacion.setEstadoNotificacion(estadoNotificacion);
+
+        Path rutaArchivo = crearDirectorio(notificacion);
+        String nombreUnicoArchivo = generarNombreArchivo();
+
+
+        try {
+            if (!Files.exists(rutaArchivo)) {
+                Files.createDirectories(rutaArchivo);
+            }
+
+            Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
+            log.info("Archivo cargado en el servidor con nombre: {}", nombreUnicoArchivo);
+
+        } catch (IOException e) {
+            log.error("Error al guardar el archivo: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al guardar el archivo en el servidor", e);
+        }
+        notificacion.setUrlDocumento(nombreUnicoArchivo);
+        notificacionRepository.save(notificacion);
+    }
+
+    public byte[] getActaDocumento(Integer notificacionId) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+
+        Notificacion notificacion = notificacionRepository.findById(notificacionId).orElse(null);
+        assert notificacion != null;
+        Path rutaArchivo = crearDirectorio(notificacion).resolve(notificacion.getUrlDocumento());
+
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo);
+        } else {
+            throw new IOException("El archivo relacionado con la audiencia " + notificacion.getId() + " no existe en el directorio");
+        }
+    }
+
+    private Path crearDirectorio(Notificacion notificacion) {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+        String expediente = notificacion.getDocumento().getCarpeta().getExpediente();
+        expediente = expediente.replace("/", "");
+        String numero = expediente.substring(0, expediente.length() - 4);
+        numero = String.format("%06d", Integer.parseInt(numero));
+        String juzgado = notificacion.getDocumento().getCarpeta().getJuzgado().getNombre();
+        return Paths.get(basePath,   juzgado, numero, "acuerdos", notificacion.getId().toString());
+    }
+
+    private String generarNombreArchivo() {
+        return "ActaPruebaa_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
 }

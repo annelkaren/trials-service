@@ -207,7 +207,7 @@ class AudienciaServiceTest {
             nombreCompletoJuez += " " + juez.getApellidoMaterno();
         }
 
-        Carpeta carpeta = new Carpeta().setExpediente("000001/2024");
+        Carpeta carpeta = new Carpeta().setExpediente("000001/2024").setTipoJuicio(TipoJuicioSetUp.createTipoJuicio());
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(), sala, null, tipoAudiencia, carpeta);
 
         AsistenciaAudiencia asistenciaAudiencia = new AsistenciaAudiencia();

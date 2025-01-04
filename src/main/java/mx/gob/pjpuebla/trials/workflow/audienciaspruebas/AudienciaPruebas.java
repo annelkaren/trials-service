@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.materiapericial.MateriaPericial;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebas;
+import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(name = "TBL_AUDIENCIAS_PRUEBAS", schema = "TRIALS")
-public class AudienciaPruebas {
+public class AudienciaPruebas implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idAudienciasPruebas")
@@ -17,15 +20,15 @@ public class AudienciaPruebas {
     @Column(name = "PN_ID", nullable = false)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)  // Cambio a EAGER
     @JoinColumn(name = "FN_AUDIENCIA", nullable = false)
     private Audiencia audiencia;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)  // Cambio a EAGER
     @JoinColumn(name = "FN_TIPO_PRUEBA", nullable = false)
     private TipoPruebas tipoPrueba;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)  // Cambio a EAGER
     @JoinColumn(name = "FN_MATERIA_PERICIAL")
     private MateriaPericial materiaPericial;
 
@@ -37,6 +40,9 @@ public class AudienciaPruebas {
 
     @Column(name = "S_ABSOLVENTE", length = 60)
     private String absolvente;
+
+    @Column(name = "N_DESISTIMIENTO_ADMISION", length = 60)
+    private DesistimientoAdmision desistimientoAdmision;
 
     @Column(name = "S_DESCRIPCION_DOCUMENTO", length = 150)
     private String descripcionDocumento;

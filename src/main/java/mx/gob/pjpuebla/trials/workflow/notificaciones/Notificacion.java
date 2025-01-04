@@ -51,4 +51,7 @@ public class Notificacion implements Serializable {
     @JoinColumn(name = "FN_LISTA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private ListaEstrado listaEstrado;
+
+    @Column(name = "S_URL_DOCUMENTO", length = 255)
+    private String urlDocumento;
 }
