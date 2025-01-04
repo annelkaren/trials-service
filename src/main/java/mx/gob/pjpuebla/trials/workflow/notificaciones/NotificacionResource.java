@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -93,10 +92,10 @@ public class NotificacionResource {
     @PostMapping(value = "/bandeja/notificaciones", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> digitalizarActaDomicilio(
             @RequestPart("notificacionActaJson") String notificacionActaJson,
-            @RequestPart("file") Optional<MultipartFile> file) throws JsonProcessingException {
+            @RequestPart("file") MultipartFile file) throws JsonProcessingException {
 
         NotificacionActaRecord notificacionActaRecord = new ObjectMapper().readValue(notificacionActaJson, NotificacionActaRecord.class);
-        notificacionService.digitalizarActaDomicilio(notificacionActaRecord, file.orElse(null));
+        notificacionService.digitalizarActaDomicilio(notificacionActaRecord, file);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 
 
-import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.AudienciaPruebaRequestRecord;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor

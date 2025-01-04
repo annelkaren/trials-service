@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.materiapericial.MateriaPericial;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebas;
@@ -50,6 +51,7 @@ public class AudienciaPruebas implements Serializable {
     @Column(name = "S_OBJETO", length = 70)
     private String objeto;
 
-    @Column(name = "S_URL_DOCUMENTO", length = 255)
+    @Size(max = 255)
+    @Column(name = "S_URL_DOCUMENTO")
     private String urlDocumento;
 }

@@ -52,6 +52,7 @@ public class Notificacion implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private ListaEstrado listaEstrado;
 
-    @Column(name = "S_URL_DOCUMENTO", length = 255)
+    @Size(max = 255)
+    @Column(name = "S_URL_DOCUMENTO")
     private String urlDocumento;
 }
