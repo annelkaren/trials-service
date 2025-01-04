@@ -231,7 +231,9 @@ class DocumentoServiceTest {
         given(personaService.getAuditor()).willReturn(personaMock);
         given(oficialiaMock.getId()).willReturn(1);
 
-        Juzgado juzgadoMock = mock(Juzgado.class);
+        Juzgado juzgadoMock = JuzgadoSetUp.createJuzgado();//mock(Juzgado.class);
+
+        juzgadoMock.setTipoJuicios(List.of(tipoJuicio));
      
         List<Juzgado> juzgadosRelacionados = Arrays.asList(juzgadoMock);
         given(juzgadoRepository.findJuzgadoByOficialiaId(oficialiaMock.getId())).willReturn(juzgadosRelacionados);

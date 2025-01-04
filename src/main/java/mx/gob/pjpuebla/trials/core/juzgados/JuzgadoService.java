@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -232,47 +231,39 @@ public class JuzgadoService {
     public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
 
         InstanciaJuzgado instanciaJuzgado;
+        String reason;
 
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
+            reason = "No hay sala disponible para asignar.";
         } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+            reason = "No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ";
         } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
+            reason = "No hay juzgados relacionados a la Oficialia";
         }
-        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
+
+        if (juzgadosRelacionados.isEmpty()){
+            throw new NotFoundException(reason, "juzgadosRelacionados");
+        }
+
+        List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
+                juzgadosRelacionados.stream().map(Juzgado::getId).toList());
+
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
-            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado);
+            juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
+                    juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
             if (juzgados.isEmpty()){
                 if (TipoCarpeta.APELACION.name().equals(tipoCarpeta.name())) {
-                    throw new NotFoundException("No hay sala disponible para asignar.", tipoJuicio.getNombre());
+                    throw new NotFoundException(reason, tipoJuicio.getNombre());
                 }
-                throw (new NotFoundException("No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ", tipoJuicio.getNombre()));
+                throw (new NotFoundException(reason, tipoJuicio.getNombre()));
             }
 
         }
-
-        if (TipoCarpeta.EXHORTO.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {                        
-            List<Juzgado> juzgadosFiltrados = juzgados.stream()
-                    .filter(juzgadosRelacionados::contains)
-                    .collect(Collectors.toList());
-
-            if (!juzgadosFiltrados.isEmpty()) {
-                juzgados = juzgadosFiltrados;
-               
-            } else {
-                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
-            }
-        }
-
-        if (TipoCarpeta.DEMANDA.equals(tipoCarpeta) && juzgadosRelacionados != null && !juzgadosRelacionados.isEmpty()) {
-            juzgados = new ArrayList<>(juzgadosRelacionados);      
-            if (juzgados.isEmpty()) {
-                throw new IllegalArgumentException("No hay juzgados disponibles relacionados con la oficialía.");
-            }
-        } 
 
         int rand = RANDOM.nextInt(juzgados.size());
         return juzgados.get(rand);
@@ -298,7 +289,7 @@ public class JuzgadoService {
 
         int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
         int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
-        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia, instanciaJuzgado).size();
+        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia, instanciaJuzgado, List.of(1)).size();
 
         if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
             juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
