@@ -3,6 +3,9 @@ package mx.gob.pjpuebla.trials.core.conceptos;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -13,13 +16,16 @@ import java.util.List;
 @Transactional
 public class ConceptoService {
     private final ConceptoRepository conceptoRepository;
+    private final CarpetaRepository carpetaRepository;
 
     @Transactional(readOnly = true)
-    public List<ConceptoRecordResponse> getAll(Integer tipoJuicioId) {
-      return conceptoRepository.findAllByTipoJuicio(tipoJuicioId).stream()
+    public List<ConceptoRecordResponse> getAll(Integer carpetaId) {
+      Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId"+carpetaId));
+
+      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Distribución", "Adjuntar")).stream()
                 .map(concepto -> new ConceptoRecordResponse(
                     concepto.getId(),
-                    concepto.getNombre(),
+                    concepto.getNombre().toUpperCase(),
                     concepto.getDias(),
                     concepto.getEstado()))
                 .toList();

@@ -7,9 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +14,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,7 +36,7 @@ class ConceptoServiceTest {
     void getAll_returns_page_when_data_exists() {
         List<Concepto> conceptosList = Collections.singletonList(concepto);
 
-        given(mockConceptoRepository.findAllByTipoJuicio(1))
+        given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(1, List.of("Adjuntar", "Distribución")))
                 .willReturn(conceptosList);
 
         List<ConceptoRecordResponse> response = conceptoService.getAll(1);

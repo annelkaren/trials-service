@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface ConceptoRepository extends JpaRepository<Concepto, Integer> {
     Optional<Concepto> findByNombre(String nombre);
 
-    List<Concepto> findAllByTipoJuicio(Integer tipoJuicioId);
+    List<Concepto> findAllByTipoJuicio_IdOrNombreIn(Integer tipoJuicioId, List<String> nombres);
 }

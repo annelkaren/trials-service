@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -38,6 +39,10 @@ public class Concepto implements Serializable, Auditable {
     @Max(Integer.MAX_VALUE)
     @Column(name = "N_DIAS")
     private Integer dias;
+
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TipoJuicio tipoJuicio;
 
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
