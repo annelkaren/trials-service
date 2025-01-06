@@ -16,6 +16,7 @@ public record AudienciasGeneralesResponseRecord(
         LocalDateTime fechaHora,
         EstatusAudiencia estatus,
         Integer juzgado,
+        String tipoJuicio,
         List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento
 ) implements Serializable {
 }

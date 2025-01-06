@@ -10,5 +10,6 @@ public enum EstadoNotificacion {
     POR_LEER,
     POR_NOTIFICAR,
     EN_RUTA,
-    NOTIFICADOS
+    NOTIFICADOS,
+    NO_NOTIFICACION
 }

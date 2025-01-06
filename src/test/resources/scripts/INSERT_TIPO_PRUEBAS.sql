@@ -1,0 +1,10 @@
+INSERT INTO TBL_TIPO_PRUEBAS (
+PN_ID,
+    FN_TIPO_JUICIO,
+    S_NOMBRE
+)
+VALUES (
+1,
+100,
+'Prueva'
+);

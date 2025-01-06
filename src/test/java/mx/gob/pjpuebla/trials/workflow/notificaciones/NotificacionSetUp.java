@@ -49,7 +49,9 @@ public class NotificacionSetUp {
                 1,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                "Domicilio 1"
+                "Domicilio 1",
+                "",
+                null
         );
 
     }

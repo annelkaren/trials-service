@@ -127,7 +127,8 @@ class NotificacionServiceTest {
         NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
                 .setId(1)
                 .setNotificacion(notificacion)
-                .setPersonaDocumento(persona);
+                .setPersonaDocumento(persona)
+                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());;
         when(notificacionesDetallesRepository.findByNotificacionId(anyInt()))
                 .thenReturn(Optional.of(notificacionesDetalles));
 
@@ -142,6 +143,9 @@ class NotificacionServiceTest {
         assertEquals(notificacion.getTipoNotificacion(), notificacionRecord.tipo());
         assertEquals("Extracto de la sentencia de prueba.".substring(0, 25), notificacionRecord.concepto().get(0));
     }
+
+    @Mock
+    private Pageable pageable;
 
     @Test
     void getInvalid() {
@@ -191,7 +195,8 @@ class NotificacionServiceTest {
         NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
                 .setId(1)
                 .setNotificacion(notificacion)
-                .setPersonaDocumento(persona);
+                .setPersonaDocumento(persona)
+                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());
 
         when(notificacionesDetallesRepository.findByNotificacionId(any())).thenReturn(Optional.of(notificacionesDetalles));
 
@@ -210,7 +215,68 @@ class NotificacionServiceTest {
         assertEquals("Notas de prueba", record.notas());
         assertEquals(TipoNotificacion.ESTRADO, record.tipo());
     }
+    @Test
+    void getAll_Notificaciones() {
+        // Mock the Pageable
+        pageable = PageRequest.of(0, 10);
 
+        // Mock Documento
+        Documento documento = new Documento();
+        documento.setId(1);
+        documento.setTipoDocumento(TipoDocumento.SENTENCIA);
+        Carpeta carpeta = new Carpeta();
+        carpeta.setExpediente("000001/2024");
+        documento.setCarpeta(carpeta);
+
+        // Mock DocumentoDetalle
+        DocumentoDetalle documentoDetalle = new DocumentoDetalle();
+        documentoDetalle.setExtractoSentencia("Este es el extracto de la sentencia");
+
+        // Mock Notificacion
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setDocumento(documento);
+        notificacion.setNotas("Notas de prueba");
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+
+        // Mock the Page of Notificaciones
+        Page<Notificacion> notificacionesPage = new PageImpl<>(List.of(notificacion), pageable, 1);
+        when(notificacionRepository.getNotificacionByTipo(
+                TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable))
+                .thenReturn(notificacionesPage);
+
+        // Mock DocumentoDetalleRepository
+        when(documentoDetalleRepository.findByDocumentoId(1)).thenReturn(Optional.of(documentoDetalle));
+
+        // Mock NotificacionesDetalles
+        PersonaDocumento persona = new PersonaDocumento();
+        persona.setId(1)
+                .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
+                .setNombre("Juan")
+                .setApellidoPaterno("Perez");
+
+        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
+                .setId(1)
+                .setNotificacion(notificacion)
+                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());;
+
+        when(notificacionesDetallesRepository.findByNotificacionId(any())).thenReturn(Optional.of(notificacionesDetalles));
+
+        // Call the service method
+        Page<NotificacionRecord> result = notificacionService.getAllNotificaciones(
+                "ESTRADO", "PENDIENTE_DE_ASIGNAR", pageable);
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+
+        NotificacionRecord record = result.getContent().get(0);
+        assertEquals(1, record.id());
+        assertEquals("000001/2024", record.expediente());
+        assertEquals("Este es el extracto de la sentencia".substring(0, 25), record.concepto().get(0));
+        assertEquals("Notas de prueba", record.notas());
+        assertEquals(TipoNotificacion.ESTRADO, record.tipo());
+    }
     @Test
     void create_withValidData_createsNotification() throws Exception {
         NotificacionDto notificacionDto = new NotificacionDto();
