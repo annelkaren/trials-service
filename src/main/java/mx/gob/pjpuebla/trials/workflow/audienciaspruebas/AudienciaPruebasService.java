@@ -1,6 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 
+import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
+import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +27,11 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -30,9 +41,14 @@ public class AudienciaPruebasService {
     private final TipoPruebasRepository tipoPruebaRepository;
     private final MateriaPericialRepository materiaPericialRepository;
     private final AudienciaPruebasRepository audienciaPruebaRepository;
+    private final AudienciaRepository audienciaRepository;
     private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
     private final AudienciaService audienciaService;
+
+    @Value("${app.root-folder}")
+    private String rootFolder; // Ruta raíz de la digitalización
+    private String basePath; // Ruta base para la digitalización
 
 
     @Transactional
@@ -73,4 +89,30 @@ public class AudienciaPruebasService {
         audienciaPrueba = audienciaPruebaRepository.save(audienciaPrueba);
         return audienciaPrueba;
     }
+
+    public  Page<DetallesPruebasRecord> getAudienciaPruebasByAudiencia(Integer idAudiencia, Pageable pageable){
+        return  audienciaPruebaRepository.getAllByAudiencia(idAudiencia,pageable);
+    }
+
+    public byte[] getAudienciaPurebasDocumento(Long audienciaId) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+
+        AudienciaPruebas audienciaPruebas = audienciaPruebaRepository.findById(audienciaId).orElse(null);
+        assert audienciaPruebas != null;
+        Path rutaArchivo =   Paths.get(audienciaPruebas.getUrlDocumento());
+
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo);
+        } else {
+            throw new IOException("El archivo relacionado con la audiencia " + audienciaPruebas.getId() + " no existe en el directorio");
+        }
+    }
+    public void pachDesistimientoAdmision(String desAdm, Integer id) {
+        AudienciaPruebas audienciaPruebas = audienciaPruebaRepository.findById(id.longValue()).orElseThrow(() -> new RuntimeException("Audiencia no encontrada"));
+        DesistimientoAdmision desistimientoAdmision = DesistimientoAdmision.valueOf(desAdm.split("=")[0]);
+
+        audienciaPruebas.setDesistimientoAdmision(desistimientoAdmision);
+        audienciaPruebaRepository.save(audienciaPruebas);
+    }
+
 }

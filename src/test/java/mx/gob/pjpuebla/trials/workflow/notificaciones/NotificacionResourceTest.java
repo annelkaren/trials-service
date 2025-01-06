@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
-import jakarta.ws.rs.core.MediaType;
+
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,10 +17,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,7 +81,9 @@ class NotificacionResourceTest {
                 1,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                "Domicilio 1"
+                "Domicilio 1",
+                "",
+                null
         );
 
         when(notificacionService.getAllNotificaciones(anyString(), anyString(), any(Pageable.class)))
@@ -206,4 +212,52 @@ class NotificacionResourceTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void digitalizarActaDomicilio_ShouldReturnOk() throws Exception {
+        // Preparar el objeto NotificacionActaRecord
+        NotificacionActaRecord notificacionActaRecord = new NotificacionActaRecord(1, "", "", "", "");
+        String notificacionActaJson = new ObjectMapper().writeValueAsString(notificacionActaRecord);
+
+        // Crear un archivo de prueba
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                "contenido del archivo de prueba".getBytes()
+        );
+
+        // Crear el multipart para el JSON
+        MockMultipartFile notificacionActaRequestPart = new MockMultipartFile(
+                "notificacionActaJson",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                notificacionActaJson.getBytes()
+        );
+
+        // Configurar el servicio mock para simular la digitalización
+        doNothing().when(notificacionService).digitalizarActaDomicilio(
+                Mockito.any(NotificacionActaRecord.class),
+                Mockito.any()
+        );
+
+        // Ejecutar la solicitud multipart
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/workflow/bandeja/notificaciones")
+                        .file(notificacionActaRequestPart)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                .andExpect(status().isOk());
+    }
+    @Test
+    void getFile_ShouldReturnPdfFile() throws Exception {
+        Integer notificacionId = 1;
+
+        byte[] pdfContent = "Contenido del PDF".getBytes();
+
+        when(notificacionService.getActaDocumento(notificacionId)).thenReturn(pdfContent);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/workflow/bandeja/notificaciones/{notificacionId}/file", notificacionId))
+                .andExpect(MockMvcResultMatchers.status().isOk());  }
+
+
 }

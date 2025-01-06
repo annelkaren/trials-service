@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -85,7 +88,26 @@ public class NotificacionResource {
             Pageable pageable) {
         return this.notificacionService.acuerdoNotificaciones(idNotificacion, pageable);
     }
-    
+
+    @PostMapping(value = "/bandeja/notificaciones", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> digitalizarActaDomicilio(
+            @RequestPart("notificacionActaJson") String notificacionActaJson,
+            @RequestPart("file") MultipartFile file) throws JsonProcessingException {
+
+        NotificacionActaRecord notificacionActaRecord = new ObjectMapper().readValue(notificacionActaJson, NotificacionActaRecord.class);
+        notificacionService.digitalizarActaDomicilio(notificacionActaRecord, file);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/bandeja/notificaciones/{notificacionId}/file", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFile(@PathVariable Integer notificacionId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acta", notificacionId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(notificacionService.getActaDocumento(notificacionId));
+    }
+
 
 }
 

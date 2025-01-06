@@ -5,11 +5,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
+import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import mx.gob.pjpuebla.trials.core.materiapericial.MateriaPericial;
@@ -25,6 +30,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
+import java.util.List;
 import java.util.Optional;
 
 class AudienciaPruebasServiceTest {
@@ -55,9 +61,59 @@ class AudienciaPruebasServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+
+    @Test
+    void testGetAudienciaPruebasByAudiencia() {
+        Integer idAudiencia = 1;
+        Pageable pageable = Pageable.unpaged();
+
+        DetallesPruebasRecord prueba1 = new DetallesPruebasRecord(
+                1,
+                "Juan Pérez",
+                "Pericial",
+                "Descripción de prueba pericial",
+                "Perito 1",
+                DesistimientoAdmision.ADMISION
+        );
+
+        DetallesPruebasRecord prueba2 = new DetallesPruebasRecord(
+                2,
+                "Ana Gómez",
+                "Testimonio",
+                "Descripción del testimonio",
+                "Testigo 1",
+                DesistimientoAdmision.DESISTIMIENTO
+        );
+
+        List<DetallesPruebasRecord> listaPruebas = List.of(prueba1, prueba2);
+        Page<DetallesPruebasRecord> pagePruebas = new PageImpl<>(listaPruebas);
+
+        when(audienciaPruebaRepository.getAllByAudiencia(idAudiencia, pageable)).thenReturn(pagePruebas);
+
+        Page<DetallesPruebasRecord> result = audienciaPruebasService.getAudienciaPruebasByAudiencia(idAudiencia, pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());  // Asegurarnos que se devuelvan 2 pruebas
+
+        DetallesPruebasRecord primeraPrueba = result.getContent().get(0);
+        assertEquals(1, primeraPrueba.idAudienciaPruebas());
+        assertEquals("Juan Pérez", primeraPrueba.asistente());
+        assertEquals("Pericial", primeraPrueba.tipoPrueba());
+        assertEquals("Descripción de prueba pericial", primeraPrueba.descripcion());
+        assertEquals("Perito 1", primeraPrueba.tipoPerito());
+        assertEquals(DesistimientoAdmision.ADMISION, primeraPrueba.desistimientoAdmision());
+
+        DetallesPruebasRecord segundaPrueba = result.getContent().get(1);
+        assertEquals(2, segundaPrueba.idAudienciaPruebas());
+        assertEquals("Ana Gómez", segundaPrueba.asistente());
+        assertEquals("Testimonio", segundaPrueba.tipoPrueba());
+        assertEquals("Descripción del testimonio", segundaPrueba.descripcion());
+        assertEquals("Testigo 1", segundaPrueba.tipoPerito());
+        assertEquals(DesistimientoAdmision.DESISTIMIENTO, segundaPrueba.desistimientoAdmision());
+    }
+
     @Test
     void testCreateAudienciaPrueba_WithValidInputs() {
-        // Preparar datos de prueba
          AudienciaPruebaRequestRecord requestRecord = new AudienciaPruebaRequestRecord(
             1,
             2,
@@ -104,5 +160,19 @@ class AudienciaPruebasServiceTest {
         verify(digitalizacionService).guardarArchivo(file, mockDocumento.getId());
         verify(audienciaPruebaRepository).save(any(AudienciaPruebas.class));
     }
+
+
+    @Test
+    void testPachDesistimientoAdmision_ShouldUpdateCorrectly() {
+        Integer id = 1;
+        String desAdm = "DESISTIMIENTO=someValue";  // Un valor que simula el desistimiento
+
+        AudienciaPruebas mockAudienciaPruebas = new AudienciaPruebas();
+        when(audienciaPruebaRepository.findById(anyLong())).thenReturn(Optional.of(mockAudienciaPruebas));
+
+        audienciaPruebasService.pachDesistimientoAdmision(desAdm, id);
+
+        assertEquals(DesistimientoAdmision.DESISTIMIENTO, mockAudienciaPruebas.getDesistimientoAdmision());
+        verify(audienciaPruebaRepository).save(mockAudienciaPruebas);  }
 }
 
