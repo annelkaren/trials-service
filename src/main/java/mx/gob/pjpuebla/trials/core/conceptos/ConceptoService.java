@@ -22,7 +22,7 @@ public class ConceptoService {
     public List<ConceptoRecordResponse> getAll(Integer carpetaId) {
       Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId"+carpetaId));
 
-      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Distribución", "Adjuntar")).stream()
+      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución")).stream()
                 .map(concepto -> new ConceptoRecordResponse(
                     concepto.getId(),
                     concepto.getNombre().toUpperCase(),

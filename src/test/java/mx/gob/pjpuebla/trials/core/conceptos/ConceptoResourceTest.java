@@ -10,15 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Collections;
 import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,8 +45,7 @@ class ConceptoResourceTest {
                 .willReturn(conceptosList);
 
         mockMvc.perform(
-                get("/api/core/conceptos")
-                        .param("nombre", "C")
+                get("/api/core/conceptos/carpetaId/1")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

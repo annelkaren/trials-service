@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.core.conceptos;
 
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +26,9 @@ class ConceptoServiceTest {
 
     @Mock
     private ConceptoRepository mockConceptoRepository;
+
+    @Mock
+    private CarpetaRepository carpetaRepository;
 
     @InjectMocks
     private ConceptoService conceptoService;
@@ -35,6 +43,10 @@ class ConceptoServiceTest {
     @Test
     void getAll_returns_page_when_data_exists() {
         List<Concepto> conceptosList = Collections.singletonList(concepto);
+        Carpeta carpeta = CarpetaSetUp.create();
+
+        given(carpetaRepository.findById(anyInt()))
+                .willReturn(Optional.of(carpeta));
 
         given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(1, List.of("Adjuntar", "Distribución")))
                 .willReturn(conceptosList);
@@ -44,7 +56,7 @@ class ConceptoServiceTest {
         assertThat(response)
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", concepto.getId())
-                .hasFieldOrPropertyWithValue("nombre", concepto.getNombre())
+                .hasFieldOrPropertyWithValue("nombre", "ADJUNTAR")
                 .hasFieldOrPropertyWithValue("dias", concepto.getDias())
                 .hasFieldOrPropertyWithValue("estado", concepto.getEstado());
     }
