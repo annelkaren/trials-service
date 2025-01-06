@@ -697,7 +697,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.getCarpeta().setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
@@ -845,7 +845,7 @@ class DocumentoServiceTest {
 
     @Test
     void send_to_bandeja_recepcion_success() {
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         Documento documento = DocumentoSetUp.create(tipoJuicio);
         documento.setConcepto(concepto);
         documento.getCarpeta().setFolio("1");
@@ -909,7 +909,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.getCarpeta().setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
                 .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
@@ -999,7 +999,7 @@ class DocumentoServiceTest {
         demanda.setTipoDocumento(TipoDocumento.PROMOCION);
         demanda.setEstatus(EstadoCarpeta.ASIGNADO);
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("ASIGNADO")
                 .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
