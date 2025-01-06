@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -43,8 +44,10 @@ class ConceptoResourceTest {
 
     @Test
     void getAll_success() throws Exception {
-        given(mockConceptoService.getAll(any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(conceptoRecordResponse)));
+        List<ConceptoRecordResponse> conceptosList = List.of(conceptoRecordResponse);
+
+        given(mockConceptoService.getAll(1))
+                .willReturn(conceptosList);
 
         mockMvc.perform(
                 get("/api/core/conceptos")

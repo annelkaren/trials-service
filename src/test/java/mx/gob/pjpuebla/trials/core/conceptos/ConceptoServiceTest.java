@@ -18,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,18 +39,18 @@ class ConceptoServiceTest {
 
     @Test
     void getAll_returns_page_when_data_exists() {
-        List<Concepto> listPage = Collections.singletonList(concepto);
-        given(mockConceptoRepository.findAll(any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+        List<Concepto> conceptosList = Collections.singletonList(concepto);
 
-        Page<ConceptoRecordResponse> page = conceptoService.getAll(PageRequest.of(0, listPage.size()));
+        given(mockConceptoRepository.findAllByTipoJuicio(1))
+                .willReturn(conceptosList);
 
-        assertThat(page.getContent())
+        List<ConceptoRecordResponse> response = conceptoService.getAll(1);
+
+        assertThat(response)
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", concepto.getId())
                 .hasFieldOrPropertyWithValue("nombre", concepto.getNombre())
                 .hasFieldOrPropertyWithValue("dias", concepto.getDias())
-                .hasFieldOrPropertyWithValue("tipoConcepto", concepto.getTipoConcepto())
                 .hasFieldOrPropertyWithValue("estado", concepto.getEstado());
     }
 
@@ -63,7 +64,6 @@ class ConceptoServiceTest {
                 .hasFieldOrPropertyWithValue("id", concepto.getId())
                 .hasFieldOrPropertyWithValue("nombre", concepto.getNombre())
                 .hasFieldOrPropertyWithValue("dias", concepto.getDias())
-                .hasFieldOrPropertyWithValue("tipoConcepto", concepto.getTipoConcepto())
                 .hasFieldOrPropertyWithValue("estado", concepto.getEstado());
     }
 
