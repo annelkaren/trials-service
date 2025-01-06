@@ -613,6 +613,14 @@ class DocumentoServiceTest {
 
     @Test
     void create_apelacion() {
+        Oficialia oficialia = new Oficialia();
+        oficialia.setId(1);
+
+        Persona auditor = new Persona();
+        auditor.setId(1L);
+        auditor.setOficialia(oficialia);
+        auditor.setJuzgado(new Juzgado().setId(1));
+
         TipoJuicio tipoJuicioItem = TipoJuicioSetUp.createTipoJuicio();
         Documento demanda = DocumentoSetUp.create(tipoJuicioItem);
         Carpeta carpetaMock = CarpetaSetUp.create();
@@ -620,6 +628,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.APELACION);
         TipoPartes tipoPartesMock = new TipoPartes();
 
+        given(personaService.getAuditor()).willReturn(auditor);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         lenient().when(carpetaRepository.findById(carpetaMock.getId())).thenReturn(Optional.of(carpetaMock));
@@ -630,6 +639,7 @@ class DocumentoServiceTest {
         given(tipoPartesRepository.findById(any())).willReturn(Optional.of(tipoPartesMock));
         given(anexoRepository.save(any())).willReturn(new Anexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
+        given(documentoFoliosService.getFolio(any(), any(), any())).willReturn(1);
         given(documentoRepository.save(any(Documento.class))).willReturn(demanda);
 
         ApelacionRecord apelacionRecord = CarpetaSetUp.apelacionRecord();

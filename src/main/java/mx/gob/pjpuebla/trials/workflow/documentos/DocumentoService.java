@@ -569,6 +569,11 @@ public class DocumentoService {
         documento.setPersona(auditor);
         documento.setFechaAsignacion(LocalDateTime.now());
         documento.setTipoDocumento(TipoDocumento.APELACION);
+
+        //Obtiene folio
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, auditor.getJuzgado(), auditor.getOficialia());
+        documento.setFolio(folio.toString());
+
         documento = documentoRepository.save(documento);
 
         for (Anexo anexo : apelacionRecord.anexos()) {
