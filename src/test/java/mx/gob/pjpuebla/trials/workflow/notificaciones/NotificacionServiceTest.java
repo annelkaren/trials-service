@@ -434,4 +434,40 @@ class NotificacionServiceTest {
         verify(notificacionRepository, times(1)).findAllById(integerList);
         verify(notificacionRepository, times(1)).saveAll(Collections.singletonList(notificacion));
     }
+
+    @Test
+    void acuerdoNotificaciones_success() {
+
+        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles();
+        notificacionesDetalles.setId(1);
+        Notificacion notificacion = new Notificacion();
+        notificacion.setId(1);
+        notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
+        notificacion.setEstadoNotificacion(EstadoNotificacion.PENDIENTE_DE_ASIGNAR);
+        notificacionesDetalles.setNotificacion(notificacion);
+
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+        personaDocumento.setId(1);
+        personaDocumento.setNombre("Juan");
+        personaDocumento.setApellidoPaterno("Perez");
+        personaDocumento.setApellidoMaterno("Lopez");
+        notificacionesDetalles.setPersonaDocumento(personaDocumento);
+
+        Page<NotificacionesDetalles> notificacionesDetallesPage = new PageImpl<>(List.of(notificacionesDetalles), PageRequest.of(0, 10), 1);
+
+        given(notificacionesDetallesRepository.findByNotificacionDocumentoId(anyInt(), any(Pageable.class)))
+                .willReturn(notificacionesDetallesPage);
+
+        Page<AcuerdoNotificacionesRecord> result = notificacionService.acuerdoNotificaciones(1, PageRequest.of(0, 10));
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        AcuerdoNotificacionesRecord record = result.getContent().get(0);
+        assertEquals(1, record.numAcuerdo());
+        assertEquals("Juan Perez Lopez", record.nombreDestinatario());
+        assertEquals(TipoNotificacion.ESTRADO, record.metodoNotificacion());
+        assertEquals(EstadoNotificacion.PENDIENTE_DE_ASIGNAR, record.estatus());
+        assertNull(record.comentarios());
+    }
+
 }

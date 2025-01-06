@@ -193,4 +193,17 @@ class NotificacionResourceTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/workflow/notificaciones/reporteListaExpedientes"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void acuerdoNotificaciones_success() throws Exception {
+        PageImpl<AcuerdoNotificacionesRecord> page = new PageImpl<>(Collections.singletonList(NotificacionSetUp.acuerdoNotificacionesRecord()));
+
+        when(notificacionService.acuerdoNotificaciones(eq(1), any(Pageable.class)))
+                .thenReturn(page);
+        mockMvc.perform(get("/api/workflow/acuerdo/notificaciones/{idNotificacion}", 1)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }
