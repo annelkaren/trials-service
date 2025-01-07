@@ -27,11 +27,14 @@ import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -370,5 +373,44 @@ class PersonaServiceTest extends SetupServiceTest {
 
         assertThat(response).isEmpty();
         assertThat(response).isEmpty();
+    }
+
+    @Test
+    void verifyIfUserExistsAndIsLitigante_success_isExternal() {
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38dd");
+        validPersona.setIsExternalUser(ExternalUser.YES);
+        given(usuarioService.findByUsernameAndRol(any(), any()))
+                .willReturn("9a8cbb8a-945c-4efa-9871-c66d730a38dd");
+        given(mockPersonaRepository.findByUsuario(any()))
+                .willReturn(Optional.of(validPersona));
+
+        boolean response = personaService.verifyIfUserExistsAndIsLitigante("test");
+        assert response == true;
+    }
+
+    @Test
+    void verifyIfUserExistsAndIsLitigante_success_isNotExternal() {
+        validPersona.setUsuario("9a8cbb8a-945c-4efa-9871-c66d730a38dd");
+        validPersona.setIsExternalUser(ExternalUser.NO);
+        given(usuarioService.findByUsernameAndRol(any(), any()))
+                .willReturn("9a8cbb8a-945c-4efa-9871-c66d730a38dd");
+        given(mockPersonaRepository.findByUsuario(any()))
+                .willReturn(Optional.of(validPersona));
+
+        boolean response = personaService.verifyIfUserExistsAndIsLitigante("test");
+        assert response == false;
+    }
+
+    @Test
+    void verifyIfUserExistsAndIsLitigante_NotFoundException() {
+        given(usuarioService.findByUsernameAndRol(any(), any()))
+                .willReturn("9a8cbb8a-945c-4efa-9871-c66d730a38dd");
+        given(mockPersonaRepository.findByUsuario(any())).willReturn(Optional.empty());
+
+        NotFoundException assertThrows = assertThrows(
+                NotFoundException.class,
+                () -> personaService.verifyIfUserExistsAndIsLitigante("test")
+        );
+        assertThat(assertThrows.getMessage()).contains("Persona no encontrada");
     }
 }

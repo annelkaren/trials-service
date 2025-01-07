@@ -194,4 +194,28 @@ class PersonaResourceTest {
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
+
+    @Test
+    void verifyIfUserExistsAndIsLitigante_error() throws Exception {
+        given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(true);
+
+        mockMvc.perform(
+                get("/api/core/personas/login")
+                        .param("username", "test")
+                        .param("password", "password")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void verifyIfUserExistsAndIsLitigante_error_isNotALitigante() throws Exception {
+        given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(false);
+
+        mockMvc.perform(
+                get("/api/core/personas/login")
+                        .param("username", "test")
+                        .param("password", "password")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isUnauthorized());
+    }
 }

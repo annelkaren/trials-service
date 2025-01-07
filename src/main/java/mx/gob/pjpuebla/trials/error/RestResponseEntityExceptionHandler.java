@@ -73,6 +73,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         ));
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    protected ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+        return Objects.requireNonNull(handleExceptionInternal(ex,
+                Collections.singleton(
+                        new ErrorRecord(ex.getField(), Optional.ofNullable(ex.getReason()).orElse(Messages.UNKNOWN_ERROR))
+                ),
+                new HttpHeaders(),
+                HttpStatus.UNAUTHORIZED,
+                request
+        ));
+    }
+
     @ExceptionHandler(InvalidVersionException.class)
     protected ResponseEntity<Object> handleInvalidVersionException(InvalidVersionException ex, WebRequest request) {
         return Objects.requireNonNull(handleExceptionInternal(ex,
