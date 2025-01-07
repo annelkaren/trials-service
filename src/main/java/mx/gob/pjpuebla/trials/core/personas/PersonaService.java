@@ -320,7 +320,7 @@ public class PersonaService {
         if (persona.isPresent()) {
             return persona.get().getIsExternalUser().equals(ExternalUser.YES);
         } else {
-            throw new NotFoundException("Persona no encontrada", username);
+            throw new NotFoundException(PERSON_NOT_FOUND, username);
         }
     }
 }

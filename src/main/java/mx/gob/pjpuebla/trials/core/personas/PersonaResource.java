@@ -23,14 +23,17 @@ import java.util.List;
 @SecurityRequirement(name = "Keycloak")
 public class PersonaResource {
 
-    private final PersonaService personaService;
     @Value("${keycloak.server-url}")
     private String serverUrl;
+
     @Value("${keycloak.client-id}")
     private String clientId;
+
     @Value("${keycloak.client-secret}")
     private String clientSecret;
+
     private final RestTemplate restTemplate;
+    private final PersonaService personaService;
 
     @GetMapping
     public Page<PersonaRecordResponse> getAll(

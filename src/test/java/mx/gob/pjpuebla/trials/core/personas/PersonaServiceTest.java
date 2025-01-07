@@ -30,11 +30,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -371,7 +368,6 @@ class PersonaServiceTest extends SetupServiceTest {
 
         List<PersonaRecordResponse> response = personaService.getPersonalTurnado();
 
-        assertThat(response).isEmpty();
         assertThat(response).isEmpty();
     }
 
