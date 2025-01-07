@@ -9,14 +9,18 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Collections;
@@ -24,6 +28,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,7 +39,8 @@ class PersonaResourceTest {
 
     @MockBean
     private PersonaService mockPersonaService;
-
+    @MockBean
+    private RestTemplate restTemplate;
     @Autowired
     private MockMvc mockMvc;
 
@@ -196,15 +202,23 @@ class PersonaResourceTest {
     }
 
     @Test
-    void verifyIfUserExistsAndIsLitigante_error() throws Exception {
+    void verifyIfUserExistsAndIsLitigante_success() throws Exception {
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("", HttpStatus.OK);
         given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(true);
+
+        when(restTemplate.exchange(
+                Mockito.anyString(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.<ParameterizedTypeReference<String>> any()))
+                .thenReturn(responseEntity);
 
         mockMvc.perform(
                 get("/api/core/personas/login")
                         .param("username", "test")
                         .param("password", "password")
                         .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isUnauthorized());
+        ).andExpect(status().isOk());
     }
 
     @Test

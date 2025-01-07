@@ -29,10 +29,11 @@ public class EstadosResource {
     @Value("${inegi.mun-path}")
     private String getMunPath;
 
+    private final RestTemplate restTemplate;
+
     @GetMapping
     @Cacheable("estados")
     public List<Estado> getStates() {
-        RestTemplate restTemplate = new RestTemplate();
         EstadoRecord response = restTemplate.getForObject(
                 getInegiPath + getStatesPath, EstadoRecord.class, new HashMap<>());
         return (response != null) ? response.datos() : new ArrayList<>();
@@ -41,7 +42,6 @@ public class EstadosResource {
     @GetMapping(value = "/{id}/municipios")
     @Cacheable(value = "municipios", key = "#id")
     public List<Municipio> getMunByState(@PathVariable String id) {
-        RestTemplate restTemplate = new RestTemplate();
         MunicipioRecord response = restTemplate.getForObject(
                 getInegiPath + getMunPath + id, MunicipioRecord.class, new HashMap<>());
         return (response != null && response.datos() != null) ? response.datos() : new ArrayList<>();

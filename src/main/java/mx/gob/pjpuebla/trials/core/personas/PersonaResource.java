@@ -30,6 +30,7 @@ public class PersonaResource {
     private String clientId;
     @Value("${keycloak.client-secret}")
     private String clientSecret;
+    private final RestTemplate restTemplate;
 
     @GetMapping
     public Page<PersonaRecordResponse> getAll(
@@ -87,7 +88,7 @@ public class PersonaResource {
             @RequestParam(value = "password") String password
     ) {
         if (personaService.verifyIfUserExistsAndIsLitigante(username)) { //inicia proceso de crear sesion
-            RestTemplate restTemplate = new RestTemplate();
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
