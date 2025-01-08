@@ -64,4 +64,15 @@ public class SecuenciaRepositoryCustomImpl implements SecuenciaRepositoryCustom 
             return null;
         }
     }
+
+    @Override
+    public Long getNextValApelacion(){
+        try {
+            Query query = entityManager.createNativeQuery("SELECT NEXTVAL('SEQ_APELACION_FOLIO')");
+            return ((Number) query.getSingleResult()).longValue();
+        } catch (Exception e) {
+            log.error("Error al obtener el siguiente valor de la secuencia de apelación", e);
+            return null;
+        }
+    }
 }

@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -173,10 +174,12 @@ public class AudienciaService {
                                         StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
                                         nombreCompleto,
                                         item.getCarpeta().getExpediente(),
+                                        item.getCarpeta().getId(),
                                         item.getSala().getNombre(),
                                         item.getFechaAudiencia(),
                                         item.getEstatusAudiencia(),
                                         juzgado.getId(),
+                                        item.getCarpeta().getTipoJuicio().getNombre(),
                                         personasDocumento
                                 );
                         })
@@ -438,4 +441,12 @@ public class AudienciaService {
         private String obtenerJuzgado(Audiencia audiencia) {
                 return audiencia.getCarpeta().getJuzgado().getNombre() != null ? audiencia.getCarpeta().getJuzgado().getNombre() : "Desconocido";
         }
+
+        public Audiencia obtenerUltimaAudienciaDesahogada() {
+        Audiencia audiencia = audienciaRepository.findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia.DESAHOGADA);
+        if (audiencia == null) {
+            throw new EntityNotFoundException("No se encontró una audiencia desahogada.");
+        }
+        return audiencia;
+    }
 }

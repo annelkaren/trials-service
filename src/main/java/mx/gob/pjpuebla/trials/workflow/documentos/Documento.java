@@ -44,7 +44,7 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "J_DATA", columnDefinition = "json")
     private DocumentoData data;
 
-    @Size(max = 50)
+    @Size(max = 250)
     @Column(name = "S_RUTA")
     private String ruta;
 

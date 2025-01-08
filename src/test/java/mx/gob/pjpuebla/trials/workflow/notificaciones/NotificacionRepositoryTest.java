@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.notificaciones;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,8 +45,10 @@ import static org.assertj.core.api.Assertions.assertThat;
         "/scripts/INSERT_DOCUMENTO_DETALLE.sql",
 
         "/scripts/INSERT_NOTIFICACIONES.sql",
+        "/scripts/INSERT_NOTIFICACIONES_DETALLES.sql",
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = {
+        "/scripts/DELETE_NOTIFICACIONES_DETALLES.sql",
         "/scripts/DELETE_NOTIFICACIONES.sql",
         "/scripts/DELETE_DOCUMENTO_DETALLE.sql",
         "/scripts/DELETE_DOCUMENTO_CONTENIDO.sql",
@@ -68,6 +74,9 @@ class NotificacionRepositoryTest extends AuditConfigTest {
     @Autowired
     private NotificacionRepository notificacionRepository;
 
+    @Autowired
+    private NotificacionesDetallesRepository notificacionesDetallesRepository;
+
     @Test
     void testGetNotificacionByTipo() {
 
@@ -85,10 +94,10 @@ class NotificacionRepositoryTest extends AuditConfigTest {
     @Test
     void testFindDocumentoDetalleByDocumentoId() {
         Integer documentoId = 6;
-        Optional<DocumentoDetalleRecord> result = notificacionRepository.findDocumentoDetalleByDocumentoId(documentoId);
-        assertThat(result).isPresent();
+        List<DocumentoDetalleRecord> result = notificacionRepository.findDocumentoDetalleByDocumentoId(documentoId);
+        assertThat(result).isNotEmpty();
 
-        DocumentoDetalleRecord documentoDetalleRecord = result.get();
+        DocumentoDetalleRecord documentoDetalleRecord = result.get(0);
 
         assertThat(documentoDetalleRecord.fechaResolucion()).isNotNull();
         assertThat(documentoDetalleRecord.fechaPublicacion()).isNotNull();
@@ -103,4 +112,22 @@ class NotificacionRepositoryTest extends AuditConfigTest {
         assertThat(count).isNotNegative();
     }
 
+    @Test
+    void testFindByNotificacionDocumentoId() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<NotificacionesDetalles> result = notificacionesDetallesRepository.findByNotificacionDocumentoId(6, pageable);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isNotEmpty();
+    }
+
+    @Test void testFindNotificacionesTurnado() {
+        Integer carpetaId = 1;
+        List<Notificacion> notificaciones = notificacionRepository.findNotificacionesTurnado(carpetaId);
+        assertThat(notificaciones)
+                .isNotNull()
+                .isNotEmpty()
+                .allMatch(notificacion ->
+                (notificacion.getTipoNotificacion() == TipoNotificacion.ESTRADO && notificacion.getEstadoNotificacion() != EstadoNotificacion.ASIGNADO)
+                        || (notificacion.getTipoNotificacion() == TipoNotificacion.DOMICILIO && notificacion.getEstadoNotificacion() != EstadoNotificacion.NOTIFICADOS));
+    }
 }

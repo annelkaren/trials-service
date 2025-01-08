@@ -40,8 +40,9 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             WHERE j.contadorAsignaciones < j.maxAsignacionesRonda
             AND j.materia = :materia AND j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
             AND j.instanciaJuzgado = :instanciaJuzgado
+            AND j.id in :juzgadosRelacionados
             """)
-    List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
+    List<Juzgado> findJuzgadosMenosAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado, List<Integer> juzgadosRelacionados);
 
     @Modifying(flushAutomatically = true)
     @Query("UPDATE Juzgado j SET j.contadorAsignaciones = j.contadorAsignaciones + 1 WHERE j.id = :juzgadoId")
@@ -140,5 +141,12 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
        "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.PRIMERA_INSTANCIA")
     List<Juzgado> findJuzgadoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 
+
     boolean existsBySedeId(Integer sedeId);
+
+    @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj " +
+       "WHERE oj.oficialiaId = :oficialiaId " +
+       "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.NO_APLICA")
+    List<Juzgado> findJuzgadoExhortoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
+
 }

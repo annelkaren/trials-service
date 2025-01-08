@@ -3,16 +3,14 @@ package mx.gob.pjpuebla.trials.core.conceptos;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.TipoConcepto;
 
 import java.io.Serializable;
 
@@ -42,14 +40,9 @@ public class Concepto implements Serializable, Auditable {
     @Column(name = "N_DIAS")
     private Integer dias;
 
-    @NotNull
-    @Enumerated
-    @Column(name = "N_TIPO_CONCEPTO", nullable = false)
-    private TipoConcepto tipoConcepto;
-
-    @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
-    private Juzgado juzgado;
+    private TipoJuicio tipoJuicio;
 
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)

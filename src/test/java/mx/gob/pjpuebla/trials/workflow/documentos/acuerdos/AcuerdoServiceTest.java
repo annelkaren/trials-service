@@ -12,6 +12,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -54,27 +57,31 @@ class AcuerdoServiceTest {
 
     @InjectMocks
     private AcuerdosService acuerdosService;
-    
     @Mock
     private DocumentoRepository documentoRepository;
-
     @Mock
     private DocumentoDetalleRepository documentoDetalleRepository;
-
     @Mock
     private DocumentoContenidoRepository documentoContenidoRepository;
-
     @Mock
     private CarpetaRepository carpetaRepository;
-
     @Mock
     private MovimientoService movimientoService;
-
     @Mock
     private PersonaService personaService;
+    @Mock
+    private DocumentoFoliosService documentoFoliosService;
 
     @Test
     void saveTest() {
+        Oficialia oficialia = new Oficialia();
+        oficialia.setId(1);
+
+        Persona auditor = new Persona();
+        auditor.setId(1L);
+        auditor.setOficialia(oficialia);
+        auditor.setJuzgado(new Juzgado().setId(1));
+
         AcuerdoRecord acuerdoRecord = AcuerdoRecordSetUp.create();
         Persona persona = PersonaSetUp.createPersona();
         Carpeta carpeta = CarpetaSetUp.create();
@@ -87,8 +94,10 @@ class AcuerdoServiceTest {
         doc.setTipoDocumento(TipoDocumento.ACUERDO);
         doc.setData(docData);
 
+        given(personaService.getAuditor()).willReturn(auditor);
         given(carpetaRepository.findById(acuerdoRecord.carpetaId())).willReturn(Optional.of(carpeta));
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(new Documento()));
+        given(documentoFoliosService.getFolio(any(), any(), any())).willReturn(1);
         given(documentoRepository.save(any(Documento.class))).willReturn(doc);
         given(documentoDetalleRepository.save(any(DocumentoDetalle.class))).willReturn(new DocumentoDetalle());
         given(documentoContenidoRepository.save(any(DocumentoContenido.class))).willReturn(new DocumentoContenido());

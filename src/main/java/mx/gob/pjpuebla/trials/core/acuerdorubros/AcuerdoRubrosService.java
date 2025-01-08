@@ -48,7 +48,7 @@ public class AcuerdoRubrosService {
     @Transactional(readOnly = true)
     public Page<AcuerdoRubrosRecord> findRubrosByDocumentoId(Integer carpetaId, Pageable pageable, String nombre) {
         Carpeta carpeta = carpetaRepository.findById(carpetaId)
-            .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + carpetaId));;
+            .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId" + carpetaId));
         
 
         TipoSistema tipoSistema = null;

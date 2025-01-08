@@ -1,27 +1,26 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
+import net.sf.jasperreports.engine.JRException;
 
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.ListaResponse;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotaResponse;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificacionResource {
 
     private final NotificacionService notificacionService;
+    private final ListadoExpedientesRutaService listadoExpedientesRutaService;
 
     @GetMapping(value = "/bandeja/notificaciones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<NotificacionRecord> getAllNotificaciones(@PageableDefault(size = 20) Pageable pageable,
@@ -38,6 +38,10 @@ public class NotificacionResource {
         return this.notificacionService.getAllNotificaciones(tipo, estado, pageable);
     }
 
+    @GetMapping(value = "/bandeja/notificaciones/detalle/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<NotificacionDetalleRecord> getNotificacionDetalle(@PathVariable Integer id) {
+        return ResponseEntity.ok(this.notificacionService.getNotificacionDetalle(id));
+    }
 
     @PostMapping(value = "/bandeja/notificaciones/createNota", produces = MediaType.APPLICATION_JSON_VALUE)
     public void createNotaNotificacion(@RequestBody NotaResponse notaResponse) {
@@ -61,8 +65,53 @@ public class NotificacionResource {
     }
 
     @PostMapping("/documentos/enviarNotificacion")
-    public NotificacionResponseRecord createRegistroNotificacion(@RequestBody NotificacionSaveRecord notificacion){
+    public NotificacionResponseRecord createRegistroNotificacion(@RequestBody NotificacionSaveRecord notificacion) {
         return notificacionService.createRegistroNotificacion(notificacion);
+    }
+
+    @PatchMapping("/bandeja/notificaciones/{estado}")
+    public void updateBatchNotificacionSalida(@PathVariable String estado, @RequestBody List<Integer> ids) {
+        notificacionService.updateBatchNotificacionEnRuta(ids, estado);
+    }
+
+    @GetMapping("/notificaciones/reporteListaExpedientes")
+    public ResponseEntity<byte[]> getFileListaExpedientes() throws IOException, JRException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("listaExpedientes", "_.pdf");
+        return ResponseEntity.ok().headers(headers).body(listadoExpedientesRutaService.exportToPdf());
+    }
+
+    @GetMapping("/acuerdo/notificaciones/{idNotificacion}")
+    public Page<AcuerdoNotificacionesRecord> acuerdoNotificaciones(
+            @PathVariable Integer idNotificacion,
+            Pageable pageable) {
+        return this.notificacionService.acuerdoNotificaciones(idNotificacion, pageable);
+    }
+
+    @PostMapping(value = "/bandeja/notificaciones", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> digitalizarActaDomicilio(
+            @RequestPart("notificacionActaJson") String notificacionActaJson,
+            @RequestPart("file") MultipartFile file) throws JsonProcessingException {
+
+        NotificacionActaRecord notificacionActaRecord = new ObjectMapper().readValue(notificacionActaJson, NotificacionActaRecord.class);
+        notificacionService.digitalizarActaDomicilio(notificacionActaRecord, file);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/bandeja/notificaciones/{notificacionId}/file", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFile(@PathVariable Integer notificacionId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acta", notificacionId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(notificacionService.getActaDocumento(notificacionId));
+    }
+
+    @GetMapping(value = "/bandeja/notificaciones/detalle/turnado", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Integer>> getNotificacionesTurnado(@RequestParam List<Integer> carpetaIds) {
+        List<Integer> carpetaIdsSinNotificaciones = notificacionService.notificacionesTurnado(carpetaIds);
+        return ResponseEntity.ok(carpetaIdsSinNotificaciones);
     }
 
 }

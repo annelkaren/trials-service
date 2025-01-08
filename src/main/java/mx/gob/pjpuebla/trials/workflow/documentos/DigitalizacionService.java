@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import lombok.Setter;
+import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -53,10 +56,15 @@ import java.util.UUID;
  * SENTENCIA PUBLICA (Debe de tener una carpeta):
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
  * </p>
+ * </p>
+ * APELACION (Debe de tener una carpeta):
+ * /opt/pjp/files/digitalizacion/{year}/{SALA (JUZGADO)}/{TOCA(expediente)}/
+ * </p>
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Setter
 public class DigitalizacionService {
 
     @Value("${app.root-folder}")
@@ -65,9 +73,13 @@ public class DigitalizacionService {
 
     private final PersonaService personaService; // Servicio de persona
     private final DocumentoRepository documentoRepository;
+    private final AudienciaService audienciaService;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final String EXTENSION_ARCHIVO = ".pdf";
+
+    //Si se usa en mas métodos cambiar variable global por local.
+    private Integer audienciaId;
 
     /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
@@ -81,17 +93,31 @@ public class DigitalizacionService {
 
         String year = obtenerYear(documento);
         String juzgado = obtenerJuzgado(documento);
-        String oficialia = juzgado;
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
         if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
-            return manejarOficio(documento, year, juzgado, oficialia);
+            return manejarOficio(documento, year, juzgado, juzgado);
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
             return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
+
+        if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
+            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],"Audiencias", this.audienciaId.toString() , "Asistencia"));
+        }
+
+        if (documento.getTipoDocumento() == TipoDocumento.PRUEBA_AUDIENCIA) {
+            //Solo mientras se define la audiencia a la que corresponde
+            Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
+            String numAudiencia = String.valueOf(audiencia.getId());
+
+            String ruta = construirRutaAudienciaPruebas(juzgado, carpeta.getExpediente(), numAudiencia);
+            Path path = Paths.get(basePath, ruta);
+            return crearDirectorios(path);
+        }
+
 
         // Revisar la ruta para los documentos de una pieza
         if (carpeta.getTipoCarpeta()==TipoCarpeta.PIEZA){
@@ -107,7 +133,8 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        String nombreUnicoArchivo = documento.getCarpeta() != null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta()) : generarNombreArchivo(null);
+        
+        String nombreUnicoArchivo = documento.getTipoDocumento() == null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name()) : generarNombreArchivo(documento.getTipoDocumento().name());
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -146,15 +173,12 @@ public class DigitalizacionService {
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
      *
-     * @param tipoCarpeta El tipo de carpeta para incluir en el nombre del
+     * @param tipo El tipo de documento o carpeta para incluir en el nombre del
      *                    archivo.
      * @return Un nombre único generado para el archivo PDF.
      */
-    private String generarNombreArchivo(TipoCarpeta tipoCarpeta) {
-        if (tipoCarpeta == null) {
-            return "Acuse" + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
-        }
-        return tipoCarpeta.name() + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    private String generarNombreArchivo(String tipo) {
+        return tipo + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
 
@@ -210,14 +234,15 @@ public class DigitalizacionService {
      */
     private Path manejarCarpeta(Carpeta carpeta, String year, String juzgado) {
         validateNotNull(carpeta, "El documento debe tener una carpeta asignada");
-
+        String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
-                String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
+            case APELACION:
+                return crearDirectorios(Paths.get(basePath, expediente));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
@@ -234,6 +259,10 @@ public class DigitalizacionService {
      */
     private String construirRutaExpediente(String year, String juzgado, String expediente) {
         return year + "/" + juzgado + "/" + expediente;
+    }
+
+    private String construirRutaAudienciaPruebas(String juzgado, String expediente, String numAudiencia) {
+        return "/" + juzgado + "/" + expediente + "/" + "audiencias" + "/" + numAudiencia + "/" + "pruebas";
     }
 
     /**

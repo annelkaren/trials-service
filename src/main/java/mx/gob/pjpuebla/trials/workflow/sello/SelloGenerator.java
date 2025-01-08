@@ -59,6 +59,7 @@ public class SelloGenerator {
     private Resource sello;
     boolean isPromocionOralidadExhorto;
     boolean isOralidadFamiliar;
+    boolean isApelacion;
     private String expedienteRelacionados;
     private final Set<String> expedientesSet = new HashSet<>();
 
@@ -86,9 +87,10 @@ public class SelloGenerator {
         String relacionExpediente = (expedienteRelacionados != null && !expedienteRelacionados.isEmpty()) ? expedienteRelacionados : "";
 
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
-        parameters.put("folio", (documento.getTipoDocumento() != null) ? documento.getFolio() : documento.getCarpeta().getFolio());
+        parameters.put("folio", getFolio(documento)); //TODO: VALIDAR FUNCION DE GET FOLIO SI ES CORRECTA.
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));
         parameters.put("cadenaVerificacion", verificationCode);
@@ -123,6 +125,16 @@ public class SelloGenerator {
                 sello.getInputStream(),
                 parameters,
                 new JREmptyDataSource());
+    }
+
+    private String getFolio(Documento documento){
+        if(documento.getTipoDocumento() != null ){
+            
+            if(documento.getTipoDocumento().equals(TipoDocumento.PROMOCION)){
+                return documento.getFolio();
+            }
+        }
+        return documento.getCarpeta().getFolio();
     }
 
     private String getCapturista() {

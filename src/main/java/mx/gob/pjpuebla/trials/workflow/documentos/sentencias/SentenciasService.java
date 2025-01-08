@@ -84,7 +84,7 @@ public class SentenciasService {
                                                 String.valueOf(acuerdoId)));
 
                 DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(acuerdoId)
-                                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
+                                .orElseThrow(() -> new NotFoundException("contrado",
                                                 String.valueOf(acuerdoId)));
 
                 Documento documento = documentoRepository.findById(acuerdoId)
@@ -112,7 +112,7 @@ public class SentenciasService {
 
                 DocumentoDetalle documentoDetalle = documentoDetalleRepository
                                 .findByDocumentoId(sentencia.sentenciaId())
-                                .orElseThrow(() -> new NotFoundException("Documento detalle no encontrado",
+                                .orElseThrow(() -> new NotFoundException("contrado",
                                                 "documentoDetalleId"));
 
                 DocumentoContenido documentoContenido = documentoContenidoRepository

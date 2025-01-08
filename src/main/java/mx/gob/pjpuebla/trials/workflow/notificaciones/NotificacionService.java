@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -16,13 +17,9 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstrado;
 import mx.gob.pjpuebla.trials.workflow.listaestrados.ListaEstradoRepository;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionDto;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
@@ -30,19 +27,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class NotificacionService {
@@ -59,6 +58,10 @@ public class NotificacionService {
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
     private final EmailService emailService;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    @Value("${app.root-folder}")
+    private String rootFolder; // Ruta raíz de la digitalización
+    private String basePath; // Ruta base para la digitalización
+    private static final String EXTENSION_ARCHIVO = ".pdf";
 
     public Page<NotificacionRecord> getAllNotificaciones(String tipo, String estado, Pageable pageable) {
         tipo = (tipo != null) ? tipo.toLowerCase() : "";
@@ -85,23 +88,23 @@ public class NotificacionService {
 
         List<NotificacionRecord> list = page.getContent().stream()
                 .map(notificacion -> {
-                    Optional<DocumentoDetalleRecord> documentoDetalleRecord;
-                    documentoDetalleRecord = notificacionRepository
+                    List<DocumentoDetalleRecord> documentoDetalleRecord = notificacionRepository
                             .findDocumentoDetalleByDocumentoId(notificacion.getDocumento().getId());
+                    DocumentoDetalleRecord documentoDetalle = documentoDetalleRecord.isEmpty() ? null : documentoDetalleRecord.get(0);
                     List<String> concepto;
                     // Validación adicional, si es sentencia se envia el extracto de sentencia por
                     // el contrario se envian los rumbros en concepto.
 
                     if (notificacion.getDocumento().getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
-                        
+
                         DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
-                        if(docDetalle != null){
+                        if (docDetalle != null) {
                             String extracto = docDetalle.getExtractoSentencia();
                             concepto = List.of(extracto.substring(0, Math.min(extracto.length(), 25)));
-                        }else{
+                        } else {
                             concepto = List.of();
                         }
-                        
+
                     } else {
                         List<String> rubros = notificacion.getDocumento().getData() != null
                                 ? notificacion.getDocumento().getData().getRubros()
@@ -109,20 +112,47 @@ public class NotificacionService {
                         concepto = formatConcepto(rubros);
                     }
 
+                    NotificacionesDetalles notificacionesDetalles = notificacionesDetallesRepository.findByNotificacionId(notificacion.getId())
+                            .orElseThrow(() -> new NotFoundException("Notificacion Detalle no encontrado", "id"));
+
+                    PersonaDocumento persona = notificacionesDetalles.getPersonaDocumento();
+                    String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio";
+
                     return new NotificacionRecord(
                             notificacion.getId(),
                             notificacion.getDocumento().getCarpeta().getExpediente(),
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
-                            documentoDetalleRecord.orElse(null),
+                            documentoDetalle,
                             notificacion.getDocumento().getTipoDocumento(),
                             notificacion.getDocumento().getId(),
-                            notificacion.getDocumento().getCarpeta().getId());
+                            notificacion.getDocumento().getCarpeta().getId(),
+                            notificacion.getFechaSalida(),
+                            notificacion.getFechaNotificado(),
+                            domicilio,
+                            notificacionesDetalles.getPersonaDocumento().getNombre(),
+                            notificacionesDetalles.getPersonaDocumento().getTipoPartes().getNombre()
+                    );
                 })
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public NotificacionDetalleRecord getNotificacionDetalle(Integer id) {
+        NotificacionesDetalles notificacionesDetalles = notificacionesDetallesRepository.findByNotificacionId(id)
+                .orElseThrow(() -> new NotFoundException("Notificacion Detalle no encontrado", "id"));
+
+        PersonaDocumento persona = notificacionesDetalles.getPersonaDocumento();
+        String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio";
+        String nombre = persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() == null ? "" : " " + persona.getApellidoMaterno());
+
+        return new NotificacionDetalleRecord(
+                persona.getTipoPartes().getNombre(),
+                nombre,
+                domicilio
+        );
     }
 
     @Transactional
@@ -300,24 +330,133 @@ public class NotificacionService {
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
-            String tipoDocumento) {
-        
-         Map<String, Object> sendEmail = new HashMap<>();
-         
-         sendEmail.put("nombreParticipante", nombreParticipante);
-         sendEmail.put("numCarpeta", numCarpeta);
-         sendEmail.put("nombreJuzgado", nombreJuzgado);
-         sendEmail.put("tipoDocumento", tipoDocumento);
-         sendEmail.put("portalNotificaciones", portalNotificaciones);
-         
-         emailService.sendMail(
-         List.of(email),
-         Collections.emptyList(),
-         Collections.emptyList(),
-         "Notificación pendiente",
-         "NotificacionParticipantes.ftl",
-         sendEmail);
-        
+                                     String tipoDocumento) {
+
+        Map<String, Object> sendEmail = new HashMap<>();
+
+        sendEmail.put("nombreParticipante", nombreParticipante);
+        sendEmail.put("numCarpeta", numCarpeta);
+        sendEmail.put("nombreJuzgado", nombreJuzgado);
+        sendEmail.put("tipoDocumento", tipoDocumento);
+        sendEmail.put("portalNotificaciones", portalNotificaciones);
+
+        emailService.sendMail(
+                List.of(email),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "Notificación pendiente",
+                "NotificacionParticipantes.ftl",
+                sendEmail);
+
         return true;
+    }
+
+    @Transactional
+    public void updateBatchNotificacionEnRuta(List<Integer> ids, String estado) {
+        LocalDateTime fecha = LocalDateTime.now();
+
+        List<Notificacion> notificaciones = notificacionRepository.findAllById(ids);
+
+        if (notificaciones.size() != ids.size()) {
+            throw new NotFoundException("Algunas notificaciones no fueron encontradas",
+                    "ids: " + ids);
+        }
+        notificaciones.forEach(notificacion -> {
+            notificacion.setFechaSalida(fecha)
+                    .setEstadoNotificacion(EstadoNotificacion.valueOf(estado));
+        });
+
+        notificacionRepository.saveAll(notificaciones);
+    }
+
+    @Transactional
+    public Page<AcuerdoNotificacionesRecord> acuerdoNotificaciones(Integer idNotificacion, Pageable pageable) {
+
+        Page<NotificacionesDetalles> notificacionesDetallesPage = notificacionesDetallesRepository
+                .findByNotificacionDocumentoId(idNotificacion, pageable);
+
+        if (notificacionesDetallesPage.isEmpty()) {
+            throw new NotFoundException("Notificacion Detalle no encontrado", "id");
+        }
+
+        return notificacionesDetallesPage.map(detalle -> new AcuerdoNotificacionesRecord(
+                detalle.getNotificacion().getId(),
+                detalle.getPersonaDocumento().getNombre() + " " +
+                        detalle.getPersonaDocumento().getApellidoPaterno() +
+                        (detalle.getPersonaDocumento().getApellidoMaterno() != null &&
+                                !detalle.getPersonaDocumento().getApellidoMaterno().isEmpty()
+                                ? " " + detalle.getPersonaDocumento().getApellidoMaterno()
+                                : ""),
+                detalle.getNotificacion().getTipoNotificacion(),
+                detalle.getNotificacion().getEstadoNotificacion(),
+                detalle.getNotificacion().getNotas()
+        ));
+    }
+
+    @Transactional
+    public void digitalizarActaDomicilio(NotificacionActaRecord notificacionActaRecord, MultipartFile file) {
+        this.basePath = rootFolder + "/digitalizacion/";
+        Notificacion notificacion = notificacionRepository.findById(notificacionActaRecord.id()).orElseThrow();
+        EstadoNotificacion estadoNotificacion = EstadoNotificacion.valueOf(notificacionActaRecord.estadoNotificacion());
+        notificacion.setEstadoNotificacion(estadoNotificacion);
+
+        Path rutaArchivo = crearDirectorio(notificacion);
+        String nombreUnicoArchivo = generarNombreArchivo();
+
+
+        try {
+            if (!Files.exists(rutaArchivo)) {
+                Files.createDirectories(rutaArchivo);
+            }
+
+            Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
+            log.info("Archivo cargado en el servidor con nombre: {}", nombreUnicoArchivo);
+
+        } catch (IOException e) {
+            log.error("Error al guardar el archivo: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al guardar el archivo en el servidor", e);
+        }
+        notificacion.setUrlDocumento(nombreUnicoArchivo);
+        notificacionRepository.save(notificacion);
+    }
+
+    public byte[] getActaDocumento(Integer notificacionId) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+
+        Notificacion notificacion = notificacionRepository.findById(notificacionId).orElse(null);
+        assert notificacion != null;
+        Path rutaArchivo = crearDirectorio(notificacion).resolve(notificacion.getUrlDocumento());
+
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo);
+        } else {
+            throw new IOException("El archivo relacionado con la audiencia " + notificacion.getId() + " no existe en el directorio");
+        }
+    }
+
+    private Path crearDirectorio(Notificacion notificacion) {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+        String expediente = notificacion.getDocumento().getCarpeta().getExpediente();
+        expediente = expediente.replace("/", "");
+        String numero = expediente.substring(0, expediente.length() - 4);
+        numero = String.format("%06d", Integer.parseInt(numero));
+        String juzgado = notificacion.getDocumento().getCarpeta().getJuzgado().getNombre();
+        return Paths.get(basePath, juzgado, numero, "acuerdos", notificacion.getId().toString());
+    }
+
+    private String generarNombreArchivo() {
+        return "ActaPruebaa_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
+    }
+
+    public List<Integer> notificacionesTurnado(List<Integer> carpetaIds) {
+        List<Integer> carpetaIdsSinNotificaciones = new ArrayList<>();
+        for (Integer carpetaId : carpetaIds) {
+            List<Notificacion> notificaciones = notificacionRepository.findNotificacionesTurnado(carpetaId);
+            if (notificaciones.isEmpty()) {
+                carpetaIdsSinNotificaciones.add(carpetaId);
+            }
+        }
+        return carpetaIdsSinNotificaciones;
     }
 }

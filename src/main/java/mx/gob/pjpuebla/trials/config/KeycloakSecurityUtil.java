@@ -12,7 +12,7 @@ public class KeycloakSecurityUtil {
     Keycloak keycloak;
 
     @Value("${keycloak.realm}")
-    private String realm;
+    public String realm;
 
     @Value("${keycloak.server-url}")
     private String serverUrl;

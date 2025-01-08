@@ -7,5 +7,9 @@ public enum EstadoNotificacion {
     PENDIENTE_DE_ASIGNAR,
     ASIGNADO,
     COMPLETADO,
-    POR_LEER
+    POR_LEER,
+    POR_NOTIFICAR,
+    EN_RUTA,
+    NOTIFICADOS,
+    NO_NOTIFICACION
 }

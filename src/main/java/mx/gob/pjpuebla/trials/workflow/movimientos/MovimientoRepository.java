@@ -19,14 +19,17 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             ("""
                     SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
                     m.uuid, c.tipoCarpeta, c.folio, c.expediente, m.fechaAsignacion, j.nombre, d.data,
-                    d.folio, d.tipoDocumento, cd.expediente)
+                    d.folio, d.tipoDocumento, cd.expediente, o.nombre,
+                    CONCAT(m.persona.nombre, ' ', m.persona.apellidoPaterno, ' ', COALESCE(m.persona.apellidoMaterno,'')) as responsable,
+                    m.observaciones)
                     FROM Movimiento m
                     LEFT JOIN Carpeta c on c = m.carpeta and c.estatus = :estadoCarpeta
                     LEFT JOIN Documento d on d = m.documento and d.estatus = :estadoCarpeta
                     LEFT JOIN Juzgado j on j = m.juzgado
                     LEFT JOIN Carpeta cd on cd = d.carpeta
+                    LEFT JOIN Oficialia o on o = m.persona.oficialia
                     WHERE m.uuid = :uuid
-                    ORDER BY j.id, c.tipoCarpeta, c.folio, d.folio
+                    ORDER BY j.id, c.tipoCarpeta, c.id, d.id
                     """)
     List<MovimientoSalidaRecord> getSalidas(UUID uuid, EstadoCarpeta estadoCarpeta);
 
