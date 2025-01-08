@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.Sexo;
 
 import java.io.Serializable;
@@ -106,6 +107,10 @@ public class Persona implements Serializable, Auditable {
 
     @Column(name = "S_USUARIO")
     private String usuario;
+
+    @Enumerated
+    @Column(name = "N_ES_EXTERNO", nullable = false)
+    private ExternalUser isExternalUser;
 
     @Accessors(chain = false)
     @Embedded

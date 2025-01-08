@@ -11,6 +11,10 @@
       "enforcement-mode": "DISABLED"
     },
     {
+      "path": "/api/core/personas/login/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
       "path": "/error",
       "enforcement-mode": "DISABLED"
     },
