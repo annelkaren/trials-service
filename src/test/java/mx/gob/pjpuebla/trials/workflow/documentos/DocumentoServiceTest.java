@@ -1756,4 +1756,83 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("amparoTipo", updateRecord.tipoAmparo());
      }
 
+    @Test
+    void generateNumExpedientePenal_CJP() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.CONTROL_JUDICIAL_PREVIO, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/CJP/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_CAI() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.CONTROL_ACTOS_INVESTIGACION, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/CAI/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_EXT() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.EXHORTO, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("EXT/[0-9]{6}/202[0-9]/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_JO() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.JUICIO_ORAL, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/JO/CENTRO-PONIENTE");
+    }
+
+    @Test
+    void generateNumExpedientePenal_EJE() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.EJECUCION, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/EJE/PUEBLA");
+    }
 }
