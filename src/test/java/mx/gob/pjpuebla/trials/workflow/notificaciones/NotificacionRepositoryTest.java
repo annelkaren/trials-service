@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,10 +94,10 @@ class NotificacionRepositoryTest extends AuditConfigTest {
     @Test
     void testFindDocumentoDetalleByDocumentoId() {
         Integer documentoId = 6;
-        Optional<DocumentoDetalleRecord> result = notificacionRepository.findDocumentoDetalleByDocumentoId(documentoId);
-        assertThat(result).isPresent();
+        List<DocumentoDetalleRecord> result = notificacionRepository.findDocumentoDetalleByDocumentoId(documentoId);
+        assertThat(result).isNotEmpty();
 
-        DocumentoDetalleRecord documentoDetalleRecord = result.get();
+        DocumentoDetalleRecord documentoDetalleRecord = result.get(0);
 
         assertThat(documentoDetalleRecord.fechaResolucion()).isNotNull();
         assertThat(documentoDetalleRecord.fechaPublicacion()).isNotNull();
@@ -119,5 +120,14 @@ class NotificacionRepositoryTest extends AuditConfigTest {
         assertThat(result.getContent()).isNotEmpty();
     }
 
-
+    @Test void testFindNotificacionesTurnado() {
+        Integer carpetaId = 1;
+        List<Notificacion> notificaciones = notificacionRepository.findNotificacionesTurnado(carpetaId);
+        assertThat(notificaciones)
+                .isNotNull()
+                .isNotEmpty()
+                .allMatch(notificacion ->
+                (notificacion.getTipoNotificacion() == TipoNotificacion.ESTRADO && notificacion.getEstadoNotificacion() != EstadoNotificacion.ASIGNADO)
+                        || (notificacion.getTipoNotificacion() == TipoNotificacion.DOMICILIO && notificacion.getEstadoNotificacion() != EstadoNotificacion.NOTIFICADOS));
+    }
 }

@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface NotificacionRepository extends JpaRepository<Notificacion, Integer> {
@@ -39,7 +38,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
             JOIN DocumentoDetalle dd ON dd.documento.id = d.id
             WHERE d.id = :documentoId
             """)
-    Optional<DocumentoDetalleRecord> findDocumentoDetalleByDocumentoId(@Param("documentoId") Integer documentoId);
+    List<DocumentoDetalleRecord> findDocumentoDetalleByDocumentoId(@Param("documentoId") Integer documentoId);
 
     @Query("SELECT COUNT(n) FROM Notificacion n WHERE n.listaEstrado.id = :listaEstradoId")
     long countNotificacionesByListaEstradoId(@Param("listaEstradoId") Integer listaEstradoId);
@@ -47,15 +46,26 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     @Query("SELECT n FROM Notificacion n WHERE n.listaEstrado.id = :listaEstradoId")
     List<Notificacion> getNotificacionByTipo(@Param("listaEstradoId") Integer listaEstradoId);
 
-   @Query("""
-        SELECT
-                c.expediente,
-                d.data,
-                n.notas
-       FROM Notificacion n
-       JOIN n.documento d
-       JOIN d.carpeta c
-       WHERE n.estadoNotificacion = EstadoNotificacion.EN_RUTA AND n.tipoNotificacion = TipoNotificacion.DOMICILIO""")
-   List<Object[]> findAllNotificacionesByEstadoEnRutaAndTipoNotificacionDomicilio();
+    @Query("""
+             SELECT
+                     c.expediente,
+                     d.data,
+                     n.notas
+            FROM Notificacion n
+            JOIN n.documento d
+            JOIN d.carpeta c
+            WHERE n.estadoNotificacion = EstadoNotificacion.EN_RUTA AND n.tipoNotificacion = TipoNotificacion.DOMICILIO""")
+    List<Object[]> findAllNotificacionesByEstadoEnRutaAndTipoNotificacionDomicilio();
 
+
+    @Query("""
+            SELECT n
+            FROM Notificacion n
+            JOIN n.documento d
+            JOIN d.carpeta c
+            WHERE c.id = :carpetaId
+            AND (n.tipoNotificacion = TipoNotificacion.ESTRADO  AND NOT n.estadoNotificacion = EstadoNotificacion.ASIGNADO )
+            OR (n.tipoNotificacion = TipoNotificacion.DOMICILIO AND NOT n.estadoNotificacion = EstadoNotificacion.NOTIFICADOS)
+            """)
+    List<Notificacion> findNotificacionesTurnado(@Param("carpetaId") Integer carpetaId);
 }
