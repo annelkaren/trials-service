@@ -65,7 +65,7 @@ public class NotificacionResource {
     }
 
     @PostMapping("/documentos/enviarNotificacion")
-    public NotificacionResponseRecord createRegistroNotificacion(@RequestBody NotificacionSaveRecord notificacion){
+    public NotificacionResponseRecord createRegistroNotificacion(@RequestBody NotificacionSaveRecord notificacion) {
         return notificacionService.createRegistroNotificacion(notificacion);
     }
 
@@ -108,6 +108,11 @@ public class NotificacionResource {
         return ResponseEntity.ok().headers(headers).body(notificacionService.getActaDocumento(notificacionId));
     }
 
+    @GetMapping(value = "/bandeja/notificaciones/detalle/turnado", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Integer>> getNotificacionesTurnado(@RequestParam List<Integer> carpetaIds) {
+        List<Integer> carpetaIdsSinNotificaciones = notificacionService.notificacionesTurnado(carpetaIds);
+        return ResponseEntity.ok(carpetaIdsSinNotificaciones);
+    }
 
 }
 

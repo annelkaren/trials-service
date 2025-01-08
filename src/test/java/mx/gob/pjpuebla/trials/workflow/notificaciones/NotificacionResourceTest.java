@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -56,7 +57,7 @@ class NotificacionResourceTest {
 
     @BeforeEach
     void setUp() {
-         notificacionRecord = NotificacionSetUp.createNotificacionRecord();
+        notificacionRecord = NotificacionSetUp.createNotificacionRecord();
     }
 
 
@@ -99,7 +100,7 @@ class NotificacionResourceTest {
     @Test
     void create_nota() throws Exception {
         doNothing().when(notificacionService).createNotaNotificacion(any(Integer.class), anyString());
-        NotaResponse notaResponse =  new NotaResponse(1, "nota nueva");
+        NotaResponse notaResponse = new NotaResponse(1, "nota nueva");
         String requestBody = new ObjectMapper().writeValueAsString(notaResponse);
 
         mockMvc.perform(post("/api/workflow/bandeja/notificaciones/createNota")
@@ -144,7 +145,7 @@ class NotificacionResourceTest {
         notificacionDto.setUsarCorreoRegistrado(true);
 
         doNothing().when(notificacionService).create(any(NotificacionDto.class));
-       
+
         mockMvc.perform(post("/api/workflow/notificaciones/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(notificacionDto)))
@@ -156,23 +157,23 @@ class NotificacionResourceTest {
         NotificacionSaveRecord notificacion = NotificacionSetUp.createNotificacionSaveRecord();
 
         mockMvc.perform(
-            post("/api/workflow/documentos/enviarNotificacion")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceUtilTest.asJsonString(notificacion)))
+                        post("/api/workflow/documentos/enviarNotificacion")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(ResourceUtilTest.asJsonString(notificacion)))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getAllNotificaciones() throws Exception {
         NotificacionDetalleRecord notificacion = new NotificacionDetalleRecord(
-                "Actor","Juan Perez","Domicilio 1"
+                "Actor", "Juan Perez", "Domicilio 1"
         );
 
         when(notificacionService.getNotificacionDetalle(anyInt()))
                 .thenReturn(notificacion);
 
         mockMvc.perform(
-                        get("/api/workflow/bandeja/notificaciones/detalle/"+1)
+                        get("/api/workflow/bandeja/notificaciones/detalle/" + 1)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -248,6 +249,7 @@ class NotificacionResourceTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isOk());
     }
+
     @Test
     void getFile_ShouldReturnPdfFile() throws Exception {
         Integer notificacionId = 1;
@@ -257,7 +259,22 @@ class NotificacionResourceTest {
         when(notificacionService.getActaDocumento(notificacionId)).thenReturn(pdfContent);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/workflow/bandeja/notificaciones/{notificacionId}/file", notificacionId))
-                .andExpect(MockMvcResultMatchers.status().isOk());  }
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
+    @Test
+    void getNotificacionesTurnado_success() throws Exception {
+
+        List<Integer> carpetaIdsSinNotificaciones = Arrays.asList(1, 3);
+        when(notificacionService.notificacionesTurnado(anyList()))
+                .thenReturn(carpetaIdsSinNotificaciones);
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/api/workflow/bandeja/notificaciones/detalle/turnado")
+                                .param("carpetaIds", "1,2,3")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0]").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1]").value(3));
+    }
 
 }

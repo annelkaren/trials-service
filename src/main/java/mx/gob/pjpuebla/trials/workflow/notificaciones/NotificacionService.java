@@ -88,9 +88,9 @@ public class NotificacionService {
 
         List<NotificacionRecord> list = page.getContent().stream()
                 .map(notificacion -> {
-                    Optional<DocumentoDetalleRecord> documentoDetalleRecord;
-                    documentoDetalleRecord = notificacionRepository
+                    List<DocumentoDetalleRecord> documentoDetalleRecord = notificacionRepository
                             .findDocumentoDetalleByDocumentoId(notificacion.getDocumento().getId());
+                    DocumentoDetalleRecord documentoDetalle = documentoDetalleRecord.isEmpty() ? null : documentoDetalleRecord.get(0);
                     List<String> concepto;
                     // Validación adicional, si es sentencia se envia el extracto de sentencia por
                     // el contrario se envian los rumbros en concepto.
@@ -98,10 +98,10 @@ public class NotificacionService {
                     if (notificacion.getDocumento().getTipoDocumento().equals(TipoDocumento.SENTENCIA)) {
 
                         DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(notificacion.getDocumento().getId()).orElse(null);
-                        if(docDetalle != null){
+                        if (docDetalle != null) {
                             String extracto = docDetalle.getExtractoSentencia();
                             concepto = List.of(extracto.substring(0, Math.min(extracto.length(), 25)));
-                        }else{
+                        } else {
                             concepto = List.of();
                         }
 
@@ -116,7 +116,7 @@ public class NotificacionService {
                             .orElseThrow(() -> new NotFoundException("Notificacion Detalle no encontrado", "id"));
 
                     PersonaDocumento persona = notificacionesDetalles.getPersonaDocumento();
-                    String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio" ;
+                    String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio";
 
                     return new NotificacionRecord(
                             notificacion.getId(),
@@ -124,7 +124,7 @@ public class NotificacionService {
                             concepto,
                             notificacion.getNotas(),
                             notificacion.getTipoNotificacion(),
-                            documentoDetalleRecord.orElse(null),
+                            documentoDetalle,
                             notificacion.getDocumento().getTipoDocumento(),
                             notificacion.getDocumento().getId(),
                             notificacion.getDocumento().getCarpeta().getId(),
@@ -145,7 +145,7 @@ public class NotificacionService {
                 .orElseThrow(() -> new NotFoundException("Notificacion Detalle no encontrado", "id"));
 
         PersonaDocumento persona = notificacionesDetalles.getPersonaDocumento();
-        String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio" ;
+        String domicilio = persona.getFnDomicilio() != null ? persona.getFnDomicilio().getLineaDomicilio() : "Sin Domicilio";
         String nombre = persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() == null ? "" : " " + persona.getApellidoMaterno());
 
         return new NotificacionDetalleRecord(
@@ -330,29 +330,29 @@ public class NotificacionService {
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
-            String tipoDocumento) {
+                                     String tipoDocumento) {
 
-         Map<String, Object> sendEmail = new HashMap<>();
+        Map<String, Object> sendEmail = new HashMap<>();
 
-         sendEmail.put("nombreParticipante", nombreParticipante);
-         sendEmail.put("numCarpeta", numCarpeta);
-         sendEmail.put("nombreJuzgado", nombreJuzgado);
-         sendEmail.put("tipoDocumento", tipoDocumento);
-         sendEmail.put("portalNotificaciones", portalNotificaciones);
+        sendEmail.put("nombreParticipante", nombreParticipante);
+        sendEmail.put("numCarpeta", numCarpeta);
+        sendEmail.put("nombreJuzgado", nombreJuzgado);
+        sendEmail.put("tipoDocumento", tipoDocumento);
+        sendEmail.put("portalNotificaciones", portalNotificaciones);
 
-         emailService.sendMail(
-         List.of(email),
-         Collections.emptyList(),
-         Collections.emptyList(),
-         "Notificación pendiente",
-         "NotificacionParticipantes.ftl",
-         sendEmail);
+        emailService.sendMail(
+                List.of(email),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                "Notificación pendiente",
+                "NotificacionParticipantes.ftl",
+                sendEmail);
 
         return true;
     }
 
     @Transactional
-    public void updateBatchNotificacionEnRuta(List<Integer> ids, String estado){
+    public void updateBatchNotificacionEnRuta(List<Integer> ids, String estado) {
         LocalDateTime fecha = LocalDateTime.now();
 
         List<Notificacion> notificaciones = notificacionRepository.findAllById(ids);
@@ -394,7 +394,7 @@ public class NotificacionService {
     }
 
     @Transactional
-    public void digitalizarActaDomicilio(NotificacionActaRecord notificacionActaRecord, MultipartFile file){
+    public void digitalizarActaDomicilio(NotificacionActaRecord notificacionActaRecord, MultipartFile file) {
         this.basePath = rootFolder + "/digitalizacion/";
         Notificacion notificacion = notificacionRepository.findById(notificacionActaRecord.id()).orElseThrow();
         EstadoNotificacion estadoNotificacion = EstadoNotificacion.valueOf(notificacionActaRecord.estadoNotificacion());
@@ -442,11 +442,21 @@ public class NotificacionService {
         String numero = expediente.substring(0, expediente.length() - 4);
         numero = String.format("%06d", Integer.parseInt(numero));
         String juzgado = notificacion.getDocumento().getCarpeta().getJuzgado().getNombre();
-        return Paths.get(basePath,   juzgado, numero, "acuerdos", notificacion.getId().toString());
+        return Paths.get(basePath, juzgado, numero, "acuerdos", notificacion.getId().toString());
     }
 
     private String generarNombreArchivo() {
         return "ActaPruebaa_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
 
+    public List<Integer> notificacionesTurnado(List<Integer> carpetaIds) {
+        List<Integer> carpetaIdsSinNotificaciones = new ArrayList<>();
+        for (Integer carpetaId : carpetaIds) {
+            List<Notificacion> notificaciones = notificacionRepository.findNotificacionesTurnado(carpetaId);
+            if (notificaciones.isEmpty()) {
+                carpetaIdsSinNotificaciones.add(carpetaId);
+            }
+        }
+        return carpetaIdsSinNotificaciones;
+    }
 }
