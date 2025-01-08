@@ -4,15 +4,13 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionResponseRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.notificaciones.records.*;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonasDocumentosSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.DocumentoDetalleRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.records.NotificacionRecord;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,7 +46,12 @@ public class NotificacionSetUp {
                 documentoDetalleRecord,
                 TipoDocumento.ACUERDO,
                 1,
-                1
+                1,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "Domicilio 1",
+                "",
+                null
         );
 
     }
@@ -66,5 +69,9 @@ public class NotificacionSetUp {
             .setId(1)
             .setNotificacion(createNotificacion())
             .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentos());
+    }
+
+    public static AcuerdoNotificacionesRecord acuerdoNotificacionesRecord() {
+        return new AcuerdoNotificacionesRecord(1,  "Alfredo Lopez", TipoNotificacion.CORREO_ELECTRONICO, EstadoNotificacion.ASIGNADO, "Ninguno");
     }
 }

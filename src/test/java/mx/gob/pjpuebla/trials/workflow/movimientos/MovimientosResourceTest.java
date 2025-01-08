@@ -35,7 +35,7 @@ import static org.mockito.BDDMockito.willThrow;
 @WebMvcTest(MovimientoResource.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
-public class MovimientosResourceTest {
+class MovimientosResourceTest {
     @MockBean
     MovimientoService movimientoService;
 
@@ -59,7 +59,7 @@ public class MovimientosResourceTest {
         uuid = UUID.fromString(uuidMov);
         estadoCarpeta = EstadoCarpeta.TURNADO;
 
-        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null);
+        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null, null, null, null);
     }
 
     @Test

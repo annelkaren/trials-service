@@ -1,4 +1,4 @@
-<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.0  -->
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
 <jasperReport name="newSello" language="java" pageWidth="612" pageHeight="792" orientation="Landscape" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="68de2dd3-5a61-46bf-a0bf-d1bb3b950c85">
 	<parameter name="nombreEntidad" class="java.lang.String"/>
 	<parameter name="nombreJuzgado" class="java.lang.String"/>
@@ -27,6 +27,7 @@
 	<parameter name="relacionExpediente" class="java.lang.String"/>
 	<parameter name="juez" class="java.lang.String"/>
 	<parameter name="isOralidad" class="java.lang.Boolean"/>
+	<parameter name="isApelacion" class="java.lang.Boolean"/>
 	<query language="sql"><![CDATA[]]></query>
 	<background height="600" splitType="Stretch">
 		<element kind="image" uuid="11874e22-3bae-4b92-8b8a-6a1920929dc7" x="213" y="166" width="240" height="220" hImageAlign="Left">
@@ -125,7 +126,7 @@
 			</element>
 			<element kind="textField" uuid="b55eaee4-f285-4315-b291-e0c7700758c9" x="209" y="44" width="58" height="18" markup="html" bold="false">
 				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Expediente:"]]></expression>
+				<expression><![CDATA[$P{isApelacion} ? "TOCA:" : "Expediente:"]]></expression>
 			</element>
 			<element kind="textField" uuid="bc7817e1-74ab-4ea1-bac6-ddcbc445cd8b" x="209" y="63" width="339" height="18" markup="html" bold="false">
 				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>

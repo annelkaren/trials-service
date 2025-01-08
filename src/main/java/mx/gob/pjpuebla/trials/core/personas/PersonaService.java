@@ -18,6 +18,7 @@ import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
@@ -96,6 +97,7 @@ public class PersonaService {
         List<String> rolesToSave = getNames(roles);
         validateAdminRole(rolesToSave, persona);
         persona.setUsuario(usuarioService.create(persona));
+        persona.setIsExternalUser(ExternalUser.NO);
         roleService.addRoles(persona.getUsuario(), rolesToSave);
 
         fillPersonaData(persona);
@@ -271,13 +273,17 @@ public class PersonaService {
 
         for (Persona item : personasDelJuzgado) {
             if (roleService.hasRole(item.getUsuario(), "ADMINISTRADOR_JUZGADO") ||
-                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO")
-            || persona.getUsuario().equals(item.getUsuario())) {
+                roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO") ||
+                persona.getUsuario().equals(item.getUsuario()) ||
+                roleService.getRolesByUserId(item.getUsuario()).isEmpty()
+                ) {
                 list.add(item);
             }
         }
+
         if (!list.isEmpty())
             personasDelJuzgado.removeAll(list);
+
         return personasDelJuzgado.stream().map(p -> new PersonaRecordResponse(
                 p.getId(),
                 p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
@@ -305,6 +311,16 @@ public class PersonaService {
                         && (persona.getOficialia() == null || persona.getOficialia().getId() == null))
                 && !rolesToSave.isEmpty()) {
             throw new ConflictException("Seleccione un centro de trabajo para asignar los roles correspondientes");
+        }
+    }
+
+    public boolean verifyIfUserExistsAndIsLitigante(String username) {
+        String usuario = usuarioService.findByUsernameAndRol(username, "LITIGANTE");
+        Optional<Persona> persona = personaRepository.findByUsuario(usuario);
+        if (persona.isPresent()) {
+            return persona.get().getIsExternalUser().equals(ExternalUser.YES);
+        } else {
+            throw new NotFoundException(PERSON_NOT_FOUND, username);
         }
     }
 }

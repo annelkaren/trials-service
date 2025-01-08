@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos;
 import java.time.LocalDate;
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -46,9 +47,11 @@ public class AcuerdosService {
     private final DocumentoContenidoRepository documentoContenidoRepository;
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
+    private final DocumentoFoliosService documentoFoliosService;
 
     @Transactional
     public DocumentoGenericRecord save(AcuerdoRecord acuerdo) {
+        Persona persona = personaService.getAuditor();
 
         // Buscamos carpeta principal
         Carpeta carpeta = carpetaRepository.findById(acuerdo.carpetaId())
@@ -58,12 +61,16 @@ public class AcuerdosService {
         DocumentoData docData = new DocumentoData();
         docData.setRubros(acuerdo.rubros());
 
+        //Obtiene folio
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, persona.getJuzgado(), persona.getOficialia());
+
         // Creamos el nuevo documento (acuerdo=
         Documento doc = new Documento();
         doc.setCarpeta(carpeta);
         doc.setTipoDocumento(TipoDocumento.ACUERDO);
         doc.setEstatus(EstadoCarpeta.CREADO);
         doc.setData(docData);
+        doc.setFolio(folio.toString());
         doc = documentoRepository.save(doc);
 
         // Creamos la información de documento detalle:
@@ -82,7 +89,6 @@ public class AcuerdosService {
         documentoContenidoRepository.save(docContenido);
 
         // insertar en movimientosService
-        Persona persona = personaService.getAuditor();
         movimientoService.createMovimento(null, doc, persona, null, EstadoCarpeta.CREADO.name());
 
         // Buscamos las propociones las cuales fueron marcadas para asociar el acuse:

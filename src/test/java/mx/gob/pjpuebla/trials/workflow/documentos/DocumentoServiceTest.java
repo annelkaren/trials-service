@@ -231,7 +231,9 @@ class DocumentoServiceTest {
         given(personaService.getAuditor()).willReturn(personaMock);
         given(oficialiaMock.getId()).willReturn(1);
 
-        Juzgado juzgadoMock = mock(Juzgado.class);
+        Juzgado juzgadoMock = JuzgadoSetUp.createJuzgado();//mock(Juzgado.class);
+
+        juzgadoMock.setTipoJuicios(List.of(tipoJuicio));
      
         List<Juzgado> juzgadosRelacionados = Arrays.asList(juzgadoMock);
         given(juzgadoRepository.findJuzgadoByOficialiaId(oficialiaMock.getId())).willReturn(juzgadosRelacionados);
@@ -457,7 +459,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.DEMANDA);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -466,7 +468,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.EXHORTO);
-        assertThat(numExpediente).containsPattern("E[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("E[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -475,7 +477,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.APELACION);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -484,7 +486,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.DESPACHO);
-        assertThat(numExpediente).containsPattern("D[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("D[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -493,7 +495,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.APELACION_MUNICIPAL);
-        assertThat(numExpediente).containsPattern("T[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("T[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -502,7 +504,7 @@ class DocumentoServiceTest {
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         String numExpediente = documentoService.generateNumExpediente(
                 juzgado, TipoCarpeta.AMPARO);
-        assertThat(numExpediente).containsPattern("[0-9]{6}/2024");
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]");
     }
 
     @Test
@@ -543,6 +545,12 @@ class DocumentoServiceTest {
         Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
         DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.OFICIO);
         Documento promocion = DocumentoSetUp.create(tipoJuicio);
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file",
+                "archivo.txt",
+                "text/plain",
+                "Contenido del archivo".getBytes(StandardCharsets.UTF_8)
+        );
         promocion.setData(documentoData);
         promocion.setFolio("");
         promocion.setTipoDocumento(TipoDocumento.PROMOCION);
@@ -555,7 +563,7 @@ class DocumentoServiceTest {
         List<String> anexos = List.of("Anexo1", "Anexo2");
         DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO,
                 anexos);
-        DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord);
+        DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord, multipartFile);
 
         assertThat(documentoResponse)
                 .isNotNull()
@@ -566,13 +574,26 @@ class DocumentoServiceTest {
 
     @Test
     void create_exhorto() {
+
+        Oficialia oficialia = new Oficialia();
+        oficialia.setId(1);
+    
+        Persona auditor = new Persona();
+        auditor.setId(1L);
+        auditor.setOficialia(oficialia);
+
         DocumentoExhortoRecord recordItem = new DocumentoExhortoRecord("", "", Arrays.asList("1", "2"));
         Documento exhorto = DocumentoSetUp.create(tipoJuicio);
         exhorto.getCarpeta().setFolio("1");
         exhorto.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
 
+        List<Juzgado> juzgadosRelacionadosExhorto = Arrays.asList(new Juzgado());
+        
+        given(personaService.getAuditor()).willReturn(auditor);
+        given(juzgadoRepository.findJuzgadoExhortoByOficialiaId(oficialia.getId())).willReturn(juzgadosRelacionadosExhorto);
+
         given(tipoJuicioRepository.findByNombreIgnoreCase(any())).willReturn(Optional.of(tipoJuicio));
-        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), eq(null))).willReturn(juzgado);
+        given(juzgadoService.getJuzgado(any(TipoJuicio.class), any(TipoCarpeta.class), any())).willReturn(juzgado);
 
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
@@ -592,6 +613,14 @@ class DocumentoServiceTest {
 
     @Test
     void create_apelacion() {
+        Oficialia oficialia = new Oficialia();
+        oficialia.setId(1);
+
+        Persona auditor = new Persona();
+        auditor.setId(1L);
+        auditor.setOficialia(oficialia);
+        auditor.setJuzgado(new Juzgado().setId(1));
+
         TipoJuicio tipoJuicioItem = TipoJuicioSetUp.createTipoJuicio();
         Documento demanda = DocumentoSetUp.create(tipoJuicioItem);
         Carpeta carpetaMock = CarpetaSetUp.create();
@@ -599,6 +628,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.APELACION);
         TipoPartes tipoPartesMock = new TipoPartes();
 
+        given(personaService.getAuditor()).willReturn(auditor);
         given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
         given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
         lenient().when(carpetaRepository.findById(carpetaMock.getId())).thenReturn(Optional.of(carpetaMock));
@@ -609,6 +639,7 @@ class DocumentoServiceTest {
         given(tipoPartesRepository.findById(any())).willReturn(Optional.of(tipoPartesMock));
         given(anexoRepository.save(any())).willReturn(new Anexo());
         given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
+        given(documentoFoliosService.getFolio(any(), any(), any())).willReturn(1);
         given(documentoRepository.save(any(Documento.class))).willReturn(demanda);
 
         ApelacionRecord apelacionRecord = CarpetaSetUp.apelacionRecord();
@@ -666,11 +697,12 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.getCarpeta().setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
         List<Movimiento> listPage = Collections.singletonList(movimiento);
         Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+        given(documentoService.getDocumentoForRenderOficialMayor(movimiento, movimiento.getCarpeta())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
         given(movimientoService.getOrigen(any(), any())).willReturn("OCP");
         given(personaService.getAuditor()).willReturn(persona);
         given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
@@ -813,7 +845,7 @@ class DocumentoServiceTest {
 
     @Test
     void send_to_bandeja_recepcion_success() {
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         Documento documento = DocumentoSetUp.create(tipoJuicio);
         documento.setConcepto(concepto);
         documento.getCarpeta().setFolio("1");
@@ -877,7 +909,7 @@ class DocumentoServiceTest {
         Documento demanda = DocumentoSetUp.create(tipoJuicio);
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.getCarpeta().setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
                 .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
@@ -967,7 +999,7 @@ class DocumentoServiceTest {
         demanda.setTipoDocumento(TipoDocumento.PROMOCION);
         demanda.setEstatus(EstadoCarpeta.ASIGNADO);
         demanda.getCarpeta().setJuzgado(juzgado);
-        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setTipoConcepto(TipoConcepto.GENERAL).setNombre("Distribución");
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Distribución");
         demanda.setConcepto(concepto);
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("ASIGNADO")
                 .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
@@ -1537,7 +1569,7 @@ class DocumentoServiceTest {
         documento.setData(documentoData);
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
-        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any())).willReturn(carpetaResponseRecord);
+        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any(), any())).willReturn(carpetaResponseRecord);
         given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
 
         DocPromocionInfoRecord response = documentoService.getInfoPromocion(1);
@@ -1724,4 +1756,83 @@ class DocumentoServiceTest {
                 .hasFieldOrPropertyWithValue("amparoTipo", updateRecord.tipoAmparo());
      }
 
+    @Test
+    void generateNumExpedientePenal_CJP() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.CONTROL_JUDICIAL_PREVIO, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/CJP/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_CAI() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.CONTROL_ACTOS_INVESTIGACION, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/CAI/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_EXT() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.EXHORTO, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("EXT/[0-9]{6}/202[0-9]/PUEBLA");
+    }
+
+    @Test
+    void generateNumExpedientePenal_JO() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.JUICIO_ORAL, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/JO/CENTRO-PONIENTE");
+    }
+
+    @Test
+    void generateNumExpedientePenal_EJE() {
+        Sede sede = new Sede().setId(1).setDistrito(
+                new Distrito().setId(1).setRegion("Centro-Poniente")
+        );
+        juzgadoFolios.getJuzgado().setNomenclatura("PUEBLA");
+        juzgadoFolios.getJuzgado().setSede(sede);
+
+        given(juzgadoService.getJuzgadoFolios(any(), any())).willReturn(juzgadoFolios);
+        given(juzgadoService.checkYearJuzgadoFolios(any())).willReturn(juzgadoFolios);
+
+        String numExpediente = documentoService.generateNumExpedientePenal(
+                TipoCausa.EJECUCION, juzgado, TipoCarpeta.DEMANDA);
+        assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/EJE/PUEBLA");
+    }
 }

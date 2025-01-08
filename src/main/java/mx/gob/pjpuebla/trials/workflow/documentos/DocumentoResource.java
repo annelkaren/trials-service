@@ -31,6 +31,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RequiredArgsConstructor
 @RestController
@@ -44,6 +46,7 @@ public class DocumentoResource {
     private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
 
+    private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
         return this.documentoService.createDemanda(documentoSaveRecord);
@@ -115,10 +118,12 @@ public class DocumentoResource {
         return documentoService.getAllHistorial(key, pageable);
     }
 
-    @PostMapping("/documento/promocion")
+    @PostMapping(value = "/documento/promocion",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoPromocionResponseRecord createPromocion(
-            @RequestBody DocumentoPromocionRecord documentoPromocionRecord) {
-        return this.documentoService.createPromocion(documentoPromocionRecord);
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson) throws JsonProcessingException   {
+        DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,DocumentoPromocionRecord.class);
+        return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 
     @GetMapping("/documento/promocion/{id}")

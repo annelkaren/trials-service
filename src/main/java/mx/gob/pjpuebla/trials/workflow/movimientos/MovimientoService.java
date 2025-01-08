@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 import java.util.*;
@@ -81,7 +82,7 @@ public class MovimientoService {
     public void createMotivo(MotivoRecord motivoRecord) {
         Persona currentUser = personaService.getAuditor();
         Carpeta carpeta = carpetaRepository.findById(motivoRecord.documentoId())
-                .orElse(null);
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId: " + motivoRecord.documentoId()));
         createMovimento(carpeta, null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
         carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
     }

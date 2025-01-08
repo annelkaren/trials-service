@@ -11,10 +11,12 @@ public record AudienciasGeneralesResponseRecord(
         String tipoAudiencia,
         String juez,
         String numCarpeta,
+        Integer idCarpeta,
         String lugar,
         LocalDateTime fechaHora,
         EstatusAudiencia estatus,
         Integer juzgado,
+        String tipoJuicio,
         List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento
 ) implements Serializable {
 }

@@ -2,15 +2,12 @@ package mx.gob.pjpuebla.trials.core.conceptos;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 @Slf4j
@@ -19,45 +16,26 @@ import java.util.List;
 @Transactional
 public class ConceptoService {
     private final ConceptoRepository conceptoRepository;
+    private final CarpetaRepository carpetaRepository;
 
     @Transactional(readOnly = true)
-    public Page<ConceptoRecordResponse> getAll(Pageable pageable) {
-        Page<Concepto> page = conceptoRepository.findAll(pageable);
-        List<ConceptoRecordResponse> list = page.getContent().stream()
-                .map(this::mapToRecordResponse)
-                .toList();
+    public List<ConceptoRecordResponse> getAll(Integer carpetaId) {
+      Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId"+carpetaId));
 
-        return new PageImpl<>(list, pageable, page.getTotalElements());
+      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución")).stream()
+                .map(concepto -> new ConceptoRecordResponse(
+                    concepto.getId(),
+                    concepto.getNombre().toUpperCase(),
+                    concepto.getDias(),
+                    concepto.getEstado()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public ConceptoRecordResponse findById(Integer id) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId"));
-        return mapToRecordResponse(concepto);
+        return new ConceptoRecordResponse(concepto.getId(), concepto.getNombre(), concepto.getDias(), concepto.getEstado());
     }
 
-    private ConceptoRecordResponse mapToRecordResponse(Concepto concepto) {
-        Juzgado juzgado = concepto.getJuzgado();
-        JuzgadoRecordItem juzgadoRecordItem = null;
-        concepto.setDias(concepto.getDias() * 24);
-        if (juzgado != null) {
-            String materiaNombre = (juzgado.getMateria() != null) ? juzgado.getMateria().getNombre() : null;
-            juzgadoRecordItem = new JuzgadoRecordItem(
-                    juzgado.getId(),
-                    juzgado.getNombre(),
-                    juzgado.getEstado(),
-                    materiaNombre
-            );
-        }
-
-        return new ConceptoRecordResponse(
-                concepto.getId(),
-                concepto.getNombre(),
-                concepto.getDias(),
-                concepto.getTipoConcepto(),
-                juzgadoRecordItem,
-                concepto.getEstado()
-        );
-    }
 }

@@ -193,7 +193,7 @@ class CarpetaServiceTest {
         given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
                 .willReturn(demandado);
 
-        CarpetaResponseRecord carpetaResponseRecord = target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
+        CarpetaResponseRecord carpetaResponseRecord = target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1, 0);
 
         assertThat(carpetaResponseRecord)
                 .isOfAnyClassIn(CarpetaResponseRecord.class)
@@ -206,7 +206,7 @@ class CarpetaServiceTest {
     void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
-                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1));
+                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1, 0));
         assertThat(assertThrows.getMessage()).contains("Carpeta no encontrada");
     }
 
@@ -831,7 +831,7 @@ class CarpetaServiceTest {
         given(documentoRepository.findDocumentosByCarpeta(any())).willReturn(documentos);
         given(carpetaRepository.findPiezasByCarpetaPadreId(any(), any())).willReturn(piezas);
 
-        lista = target.getAllDocumentosPiezas(null, validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
+        lista = target.getAllDocumentosPiezas("TODAS PIEZAS", validCarpeta.getId(), Pageable.ofSize(lista.getSize()));
 
         assertThat(lista).isNotEmpty();
 

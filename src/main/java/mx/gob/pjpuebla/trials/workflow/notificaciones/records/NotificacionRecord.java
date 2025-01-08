@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
-
-
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
-
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record NotificacionRecord(
@@ -20,6 +18,11 @@ public record NotificacionRecord(
         DocumentoDetalleRecord documentoDetalleRecord,
         TipoDocumento tipoDocumento,
         Integer documentoId,
-        Integer carpetaId
+        Integer carpetaId,
+        LocalDateTime fechaSalida,
+        LocalDateTime fechaNotificado,
+        String domicilio,
+        String nombrePersonaNotificado,
+        String parte
 ) implements Serializable {
 }

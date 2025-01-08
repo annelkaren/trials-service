@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,7 +23,6 @@ public class Notificacion implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idNotificaciones")
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
-
 
     @Size(max = 500)
     @Column(name = "S_NOTAS")
@@ -38,6 +38,12 @@ public class Notificacion implements Serializable {
     @Column(name = "N_ESTADO", nullable = false)
     private EstadoNotificacion estadoNotificacion;
 
+    @Column(name = "T_FECHA_SALIDA")
+    private LocalDateTime fechaSalida;
+
+    @Column(name = "T_FECHA_NOTIFICADO")
+    private LocalDateTime fechaNotificado;
+
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento documento;
@@ -45,4 +51,8 @@ public class Notificacion implements Serializable {
     @JoinColumn(name = "FN_LISTA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private ListaEstrado listaEstrado;
+
+    @Size(max = 255)
+    @Column(name = "S_URL_DOCUMENTO")
+    private String urlDocumento;
 }
