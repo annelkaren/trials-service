@@ -85,12 +85,11 @@ public class PersonaResource {
         return this.personaService.getPersonalTurnado();
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<String> loginAsLitigante(
-            @RequestParam(value = "username") String username,
-            @RequestParam(value = "password") String password
+    @PostMapping("/login")
+    public ResponseEntity<String> loginAsLitigante (
+            @RequestBody PersonaLoginRecord personaLoginRecord
     ) {
-        if (personaService.verifyIfUserExistsAndIsLitigante(username)) { //inicia proceso de crear sesion
+        if (personaService.verifyIfUserExistsAndIsLitigante(personaLoginRecord.username())) { //inicia proceso de crear sesion
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -99,8 +98,8 @@ public class PersonaResource {
             map.add("client_id", clientId);
             map.add("client_secret", clientSecret);
             map.add("grant_type", "password");
-            map.add("username", username);
-            map.add("password", password);
+            map.add("username", personaLoginRecord.username());
+            map.add("password", personaLoginRecord.password());
 
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
             try {
@@ -112,7 +111,7 @@ public class PersonaResource {
                 throw new UnauthorizedException("Credenciales inválidas. Por favor, inténtelo de nuevo.", "invalid_grant");
             }
         }
-        throw new UnauthorizedException("No tiene permiso para acceder a este portal", "".concat(username));
+        throw new UnauthorizedException("No tiene permiso para acceder a este portal", "".concat(personaLoginRecord.username()));
     }
 
 }

@@ -203,6 +203,7 @@ class PersonaResourceTest {
 
     @Test
     void verifyIfUserExistsAndIsLitigante_success() throws Exception {
+        PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
         ResponseEntity<String> responseEntity = new ResponseEntity<>("", HttpStatus.OK);
         given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(true);
 
@@ -214,21 +215,22 @@ class PersonaResourceTest {
                 .thenReturn(responseEntity);
 
         mockMvc.perform(
-                get("/api/core/personas/login")
-                        .param("username", "test")
-                        .param("password", "password")
+                post("/api/core/personas/login")
+                        .content(ResourceUtilTest.asJsonString(loginRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
 
     @Test
     void verifyIfUserExistsAndIsLitigante_error_isNotALitigante() throws Exception {
+        PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
         given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(false);
 
         mockMvc.perform(
-                get("/api/core/personas/login")
-                        .param("username", "test")
-                        .param("password", "password")
+                post("/api/core/personas/login")
+                        .content(ResourceUtilTest.asJsonString(loginRecord))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isUnauthorized());
     }
