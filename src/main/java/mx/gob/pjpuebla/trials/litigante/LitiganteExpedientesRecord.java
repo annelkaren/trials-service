@@ -9,6 +9,6 @@ public record LitiganteExpedientesRecord(
         String actorPrincipal,
         String demandadoPrincipal,
         String juzgado,
-        String notificacionesPendientes
+        Integer notificacionesPendientes
 ) implements Serializable {
 }

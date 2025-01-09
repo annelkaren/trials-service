@@ -4,6 +4,8 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PersonaDataRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -117,4 +119,13 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
     List<PersonaDocumento> findByCarpetaIdAndRolAndTipoPartesNombre(Integer id, Rol rol, String parte);
 
     List<PersonaDocumento> findByCarpetaId(Integer carpetaId);
+
+    @Query("""
+        SELECT pd
+        FROM PersonaDocumento pd
+        WHERE (lower(pd.correoElectronico) = :username
+        OR lower(pd.correoNotificacion) = :username)
+        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+        """)
+    Page<PersonaDocumento> findByUsername(String username, Pageable pageable);
 }

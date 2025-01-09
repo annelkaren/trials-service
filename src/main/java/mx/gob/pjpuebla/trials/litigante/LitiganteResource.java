@@ -18,7 +18,6 @@ public class LitiganteResource {
 
     @GetMapping("/expedientes")
     public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
-        //return this.litiganteService.findAllByCentroTrabajo(nombre, searchQuery, pageable);
-        return null;
+        return this.litiganteService.getExpedientesRelacionados(pageable);
     }
 }
