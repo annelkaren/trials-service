@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.Page;
@@ -22,23 +22,18 @@ public class LitiganteService {
 
     private final AuditorAware<Jwt> auditorAware;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final NotificacionesDetallesRepository notificacionesDetallesRepository;
 
     public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
-        Page<PersonaDocumento> page = personaDocumentoRepository.findByUsername(getLitiganteUsername(), pageable);
-
+        String username = getLitiganteUsername();
+        Page<LitiganteExpedientesRecord> page = personaDocumentoRepository.findByUsername(username, pageable);
         List<LitiganteExpedientesRecord> list = page.stream()
                 .map(pd ->
-                        new LitiganteExpedientesRecord(
-                                pd.getCarpeta().getExpediente(),
-                                pd.getCarpeta().getTipoJuicio().getMateria().getNombre(),
-                                pd.getCarpeta().getTipoJuicio().getNombre(),
-                               "",
-                                "",
-                                pd.getCarpeta().getJuzgado().getNombre(),
-                                0
-                        ))
+                        pd.additionalData(
+                                String.join(", ", personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Actor")),
+                                String.join(", ", personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Demandado")),
+                                notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(), username)))
                 .toList();
-
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 

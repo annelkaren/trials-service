@@ -263,7 +263,6 @@ public class PersonaService {
         return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 
-
     @Transactional(readOnly = true)
     public List<PersonaRecordResponse> getPersonalTurnado() {
         Persona persona = getAuditor();
@@ -323,11 +322,5 @@ public class PersonaService {
         } else {
             throw new NotFoundException(PERSON_NOT_FOUND, username);
         }
-    }
-
-    @Transactional(readOnly = true)
-    public Persona getLitigante() {
-        Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
-        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 }
