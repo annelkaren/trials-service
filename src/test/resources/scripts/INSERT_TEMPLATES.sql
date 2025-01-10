@@ -1,0 +1,20 @@
+INSERT INTO TBL_TEMPLATES (
+    PN_ID,
+    S_NOMBRE,
+    N_TIPO,
+    S_CONTENIDO,
+    FN_JUZGADO,
+    S_USUARIO_ALTA,
+    S_USUARIO_EDITA,
+    T_FECHA_ALTA,
+    T_FECHA_EDITA
+)
+VALUES (
+    1,
+    'Nombre del Template',
+    1,
+    'Contenido del Template',
+    52,
+    '6B13785F-D213-4585-A76B-437FFE57C9C7', '6B13785F-D213-4585-A76B-437FFE57C9C7',
+    '2024-09-26 17:41:42.357035', '2024-09-26 17:41:42.357035'
+);
