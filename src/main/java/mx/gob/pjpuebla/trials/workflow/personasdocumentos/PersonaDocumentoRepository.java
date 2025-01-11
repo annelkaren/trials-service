@@ -1,9 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
+import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PersonaDataRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -117,4 +120,31 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
     List<PersonaDocumento> findByCarpetaIdAndRolAndTipoPartesNombre(Integer id, Rol rol, String parte);
 
     List<PersonaDocumento> findByCarpetaId(Integer carpetaId);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
+         tj.nombre, "", "", juz.nombre, 0L)
+        FROM PersonaDocumento pd
+        JOIN pd.carpeta ca
+        JOIN ca.juzgado juz
+        JOIN ca.tipoJuicio tj
+        JOIN tj.materia ma
+        WHERE (lower(pd.correoElectronico) = :username
+        OR lower(pd.correoNotificacion) = :username)
+        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+        """)
+    Page<LitiganteExpedientesRecord> findByUsername(String username, Pageable pageable);
+
+    @Query("""
+        SELECT CONCAT(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno)
+        FROM PersonaDocumento pd
+        JOIN pd.carpeta ca
+        JOIN ca.tipoJuicio tj
+        JOIN pd.tipoPartes tp
+        WHERE pd.rol = mx.gob.pjpuebla.trials.util.enums.Rol.PRINCIPAL
+        and ca.id = :carpetaId and tp.nombre = :tipoParte
+        """)
+    List<String> findTipoPartePrincipalByCarpetaId(Integer carpetaId, String tipoParte);
+
+
 }

@@ -99,8 +99,7 @@ class PersonaServiceTest extends SetupServiceTest {
         validPersona.setJuzgado(juzgado);
         validPersona.setDomicilio(validDomicilio);
     }
-
-    //@Disabled
+    
     @Test
     void getAll_return_page() {
         List<Persona> listPage = Collections.singletonList(validPersona);
