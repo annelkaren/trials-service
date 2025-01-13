@@ -16,5 +16,6 @@ public enum EstadoCarpeta {
     PUBLICADO,
     NOTIFICADO,
     INTEGRADO,//Para indicar que una pieza fue integrada al expediente
-    EDICION
+    EDICION,
+    ARCHIVO_JUDICIAL
 }

@@ -37,11 +37,6 @@ import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
-import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
-import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
@@ -58,6 +53,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -85,7 +81,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -961,4 +956,53 @@ class CarpetaServiceTest {
 
         assertThat(result).isTrue();
     }
+
+    @Test
+    void actualizarEstadoTest() {
+
+        List<Integer> ids = Arrays.asList(1, 2, 3);
+        Carpeta carpeta1 = CarpetaSetUp.create(); 
+        carpeta1.setId(1);
+        Carpeta carpeta2 = CarpetaSetUp.create(); 
+        carpeta2.setId(2);
+        Carpeta carpeta3 = CarpetaSetUp.create(); 
+        carpeta3.setId(3);
+
+        given(carpetaRepository.findAllById(ids)).willReturn(Arrays.asList(carpeta1, carpeta2, carpeta3));
+
+        target.actualizarEstado(ids);
+
+        assertThat(carpeta1.getEstatus()).isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL);
+        assertThat(carpeta2.getEstatus()).isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL);
+        assertThat(carpeta3.getEstatus()).isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL);
+        verify(carpetaRepository, times(1)).saveAll(Arrays.asList(carpeta1, carpeta2, carpeta3));
+    }
+    
+  @Test
+void devolverArchivoJudicialTest() {
+    List<Integer> ids = Arrays.asList(1, 2);
+    Movimiento movimiento1 = new Movimiento();
+    movimiento1.setEstado("ARCHIVO_JUDICIAL");
+    Movimiento movimiento2 = new Movimiento();
+    movimiento2.setEstado("ASIGNADO");
+
+    Carpeta carpeta1 = new Carpeta();
+    carpeta1.setId(1);
+    Carpeta carpeta2 = new Carpeta();
+    carpeta2.setId(2);
+
+    given(movimientoRepository.findTopByCarpetaIdOrderByFechaAsignacionDesc(1)).willReturn(movimiento1);
+    given(movimientoRepository.findTopByCarpetaIdOrderByFechaAsignacionDesc(2)).willReturn(movimiento2);
+    given(carpetaRepository.findById(1)).willReturn(Optional.of(carpeta1));
+    given(carpetaRepository.findById(2)).willReturn(Optional.of(carpeta2));
+
+    target.devolverArchivoJudicial(ids);
+
+    assertThat(carpeta1.getEstatus()).isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL);
+    assertThat(carpeta2.getEstatus()).isEqualTo(EstadoCarpeta.ASIGNADO);
+
+    verify(movimientoRepository, times(2)).findTopByCarpetaIdOrderByFechaAsignacionDesc(anyInt());
+    verify(carpetaRepository, times(2)).findById(anyInt());
+    verify(carpetaRepository, times(2)).save(any(Carpeta.class));
+}
 }
