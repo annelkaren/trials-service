@@ -44,9 +44,6 @@ public class DocumentoData implements Serializable {
     private String destino;
     private LocalDate fechaEntrega;
     private LocalDate fechaDevolucion;
-    private String nombreProvente;
-    private String apellidoPaternoProvente;
-    private String apellidoMaternoProvente;
     private Integer numOficio;
     private Integer numCarpetaInv;
     private String lugarHecho;

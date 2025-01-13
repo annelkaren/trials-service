@@ -84,10 +84,11 @@ public class DocumentoService {
     public static final String ACTOR = "Actor";
     public static final String DEMANDADO = "Demandado";
     public static final String IS_INTERNO = "isInterno";
-    public static final String VICTIMA = "Victima";
-    public static final String IMPUTADO = "Imputado";
-    public static final String MINISTERIO = "Ministerio";
-    public static final string TERCERINVOLUCRADO = "Tercer involucrado";
+    public static final String VICTIMA = "Victimas";
+    public static final String IMPUTADO = "Imputados";
+    public static final String MINISTERIO = "Ministerio Publico";
+    public static final String TERCERINVOLUCRADO = "Tercer Involucrado";
+    public static final String PROMOVENTE = "Victimario - Promovente";
 
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
@@ -307,16 +308,13 @@ public class DocumentoService {
             .setSelloEstatus(SelloEstatus.VALIDO)
             .setFechaAsignacion(LocalDateTime.now())
             .setPersona(persona)
-            .setExpediente(generateNumExpedientePenal(null, null, null));
+            .setExpediente(generateNumExpedientePenal(null, null, null))
+            .setJuzgado(persona.getJuzgado());
 
-         // TODO: como seria la asignación de juzgaodo ?
         carpeta = carpetaRepository.save(carpeta);
 
         //Seteamos todos los datos exclusivos de penal: 
         DocumentoData data = new DocumentoData()
-            .setNombreProvente(demanda.nombreProvente())
-            .setApellidoPaternoProvente(demanda.apellidoPaternoProvente())
-            .setApellidoMaternoProvente(demanda.apellidoMaternoProvente())
             .setNumOficio(demanda.numOficio())
             .setNumCarpetaInv(demanda.numCarpetaInv())
             .setLugarHecho(demanda.lugarHecho())
@@ -335,6 +333,24 @@ public class DocumentoService {
             .setPersona(persona);
         documento = documentoRepository.save(documento);
 
+        //Creación de participantes :promovente, victima, imputado, ministerio y tercero involucrado: 
+        PersonaDocumentoItemRecord promovente = new PersonaDocumentoItemRecord(
+            demanda.nombreProvente(),
+            demanda.apellidoPaternoProvente(),
+            demanda.apellidoMaternoProvente(),
+            "",
+            "", 
+            3, 
+            "",
+            "",
+            "",
+            "",
+            ""
+        );
+
+        createPersonaDocumento(promovente, carpeta); // Creación del Promovente
+
+        //Creación de los demas participantes.
         final Carpeta carpetaFinal = carpeta; // carpeta final para usar en lamda
         List<List<PersonaDocumentoItemRecord>> participantes = List.of(
             demanda.victimas(),
@@ -347,9 +363,15 @@ public class DocumentoService {
             .flatMap(List::stream)
             .forEach(participante -> createPersonaDocumento(participante, carpetaFinal));
                 
+        
+        
+        // Creación de audiencia: 
+        DocumentoSaveRecord documentoAudiencia = new DocumentoSaveRecord(promovente, promovente, null, null, data)
+        crearAudienciaOralidad(null, carpetaFinal, tipoJuicio);
+
         //Creación del movimiento: 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
-       
+
         return new DocumentoGenericRecord(documento.getId(), null);
     }
 
@@ -394,21 +416,22 @@ public class DocumentoService {
         }
     }
 
-    //TODO : PROBAR METODO PARA PENAL
+    private void CrearAudienciaPenal(){
+        
+    }
+
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
 
         String tipoParte = switch(persona.tipoParte()){
             case 1 -> ACTOR;
             case 2 -> DEMANDADO;
-            case 3 -> VICTIMA;
-            case 4 -> IMPUTADO;
-            case 5 -> MINISTERIO;
-            case 6 -> TERCERINVOLUCRADO;
-            default -> throw new IlegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
+            case 3 -> PROMOVENTE;
+            case 4 -> VICTIMA;
+            case 5 -> IMPUTADO;
+            case 6 -> MINISTERIO;
+            case 7 -> TERCERINVOLUCRADO;
+            default -> throw new IllegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
         };
-        
-        
-
         
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
