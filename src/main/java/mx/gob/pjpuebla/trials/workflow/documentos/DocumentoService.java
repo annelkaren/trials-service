@@ -84,6 +84,11 @@ public class DocumentoService {
     public static final String ACTOR = "Actor";
     public static final String DEMANDADO = "Demandado";
     public static final String IS_INTERNO = "isInterno";
+    public static final String VICTIMA = "Victima";
+    public static final String IMPUTADO = "Imputado";
+    public static final String MINISTERIO = "Ministerio";
+    public static final string TERCERINVOLUCRADO = "Tercer involucrado";
+
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
     private final TipoJuicioRepository tipoJuicioRepository;
@@ -259,8 +264,8 @@ public class DocumentoService {
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
         documento.setCarpeta(carpeta);
-        // SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
 
+        // SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
         documento.setData(documentoRecord.general());
         documento.setFechaAsignacion(LocalDateTime.now());
         documento.setPersona(persona);
@@ -294,16 +299,58 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicio().toString()));
 
         // Definición de carpeta.
-        Carpeta carpeta = new Carpeta();
-        carpeta.setFolio(getFolio("D"));
-        carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-        carpeta.setEstatus(EstadoCarpeta.CAPTURA);
-        carpeta.setSelloEstatus(SelloEstatus.VALIDO);
-        carpeta.setFechaAsignacion(LocalDateTime.now());
-        carpeta.setPersona(persona);
+        Carpeta carpeta = new Carpeta()
+            .setFolio(getFolio("D"))
+            .setTipoCarpeta(TipoCarpeta.DEMANDA)
+            .setEstatus(EstadoCarpeta.CAPTURA)
+            .setTipoJuicio(tipoJuicio)
+            .setSelloEstatus(SelloEstatus.VALIDO)
+            .setFechaAsignacion(LocalDateTime.now())
+            .setPersona(persona)
+            .setExpediente(generateNumExpedientePenal(null, null, null));
 
-        // TODO: como seria la asignación de juzgaodo ?
+         // TODO: como seria la asignación de juzgaodo ?
+        carpeta = carpetaRepository.save(carpeta);
 
+        //Seteamos todos los datos exclusivos de penal: 
+        DocumentoData data = new DocumentoData()
+            .setNombreProvente(demanda.nombreProvente())
+            .setApellidoPaternoProvente(demanda.apellidoPaternoProvente())
+            .setApellidoMaternoProvente(demanda.apellidoMaternoProvente())
+            .setNumOficio(demanda.numOficio())
+            .setNumCarpetaInv(demanda.numCarpetaInv())
+            .setLugarHecho(demanda.lugarHecho())
+            .setFechaHecho(demanda.fechaHecho())
+            .setFechaPresentacion(demanda.fechaPresentacion())
+            .setHoraFormal(demanda.horaFormal())
+            .setHoraMaterial(demanda.horaMaterial())
+            .setLugarDisposicion(demanda.lugarDisposicion())
+            .setTipoSolAudiencia(demanda.tipoSolAudiencia());
+
+         // Creación del documento.
+        Documento documento = new Documento()
+            .setCarpeta(carpeta)
+            .setFechaAsignacion(LocalDateTime.now())
+            .setData(data)
+            .setPersona(persona);
+        documento = documentoRepository.save(documento);
+
+        final Carpeta carpetaFinal = carpeta; // carpeta final para usar en lamda
+        List<List<PersonaDocumentoItemRecord>> participantes = List.of(
+            demanda.victimas(),
+            demanda.imputados(),
+            demanda.ministerio(),
+            demanda.terceroInvolucrado()
+        );
+
+        participantes.stream()
+            .flatMap(List::stream)
+            .forEach(participante -> createPersonaDocumento(participante, carpetaFinal));
+                
+        //Creación del movimiento: 
+        movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
+       
+        return new DocumentoGenericRecord(documento.getId(), null);
     }
 
     private void crearAudienciaOralidad(DocumentoSaveRecord documentoRecord, Carpeta carpeta, TipoJuicio tpoJuicio) {
@@ -347,8 +394,22 @@ public class DocumentoService {
         }
     }
 
+    //TODO : PROBAR METODO PARA PENAL
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
-        String tipoParte = (persona.tipoParte().equals(1)) ? ACTOR : DEMANDADO;
+
+        String tipoParte = switch(persona.tipoParte()){
+            case 1 -> ACTOR;
+            case 2 -> DEMANDADO;
+            case 3 -> VICTIMA;
+            case 4 -> IMPUTADO;
+            case 5 -> MINISTERIO;
+            case 6 -> TERCERINVOLUCRADO;
+            default -> throw new IlegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
+        };
+        
+        
+
+        
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
