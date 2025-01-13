@@ -34,10 +34,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -535,5 +532,15 @@ class NotificacionServiceTest {
         assertEquals(EstadoNotificacion.PENDIENTE_DE_ASIGNAR, record.estatus());
         assertNull(record.comentarios());
     }
+
+    @Test public void testNotificacionesTurnado() {
+        List<Integer> carpetaIds = Arrays.asList(1, 2, 3);
+        when(notificacionRepository.findNotificacionesTurnado(1)).thenReturn(Collections.emptyList());
+        when(notificacionRepository.findNotificacionesTurnado(2)).thenReturn(Arrays.asList(new Notificacion()));
+        when(notificacionRepository.findNotificacionesTurnado(3)).thenReturn(Collections.emptyList()); // Call the method to test
+        List<Integer> result = notificacionService.notificacionesTurnado(carpetaIds); // Verify the result
+        assertEquals(Arrays.asList(1, 3), result);
+    }
+
 
 }

@@ -95,5 +95,9 @@ public class Juzgado implements Serializable, Auditable {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado", fetch = FetchType.LAZY)
     private List<JuzgadoFolios> juzgadoFolios;
+
+    @Size(max = 50)
+    @Column(name = "S_NOMENCLATURA")
+    private String nomenclatura;
 }
 

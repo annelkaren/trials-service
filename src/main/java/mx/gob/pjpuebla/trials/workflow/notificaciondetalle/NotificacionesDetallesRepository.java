@@ -21,4 +21,16 @@ public interface NotificacionesDetallesRepository extends JpaRepository<Notifica
             WHERE d.id = :documentoId
             """)
     Page<NotificacionesDetalles> findByNotificacionDocumentoId(@Param("documentoId") Integer documentoId, Pageable pageable);
+
+    @Query("""
+            SELECT count(nd)
+            FROM NotificacionesDetalles nd
+            JOIN nd.notificacion n
+            JOIN n.documento d
+            JOIN d.carpeta c
+            JOIN nd.personaDocumento pd
+            WHERE c.id = :carpetaId AND (pd.correoNotificacion = :email OR pd.correoElectronico = :email)
+            AND n.estadoNotificacion = mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion.POR_LEER
+            """)
+    Long countNotificacionesPorLeer(Integer carpetaId, String email);
 }

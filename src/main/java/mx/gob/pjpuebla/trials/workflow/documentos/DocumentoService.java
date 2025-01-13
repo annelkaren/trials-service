@@ -1472,4 +1472,49 @@ public class DocumentoService {
 
         documentoRepository.save(documento);
     }
+
+    /**
+     * Devuelve un numero de expediente para materia PENAL
+     *
+     * @param tipo devuelve resultado diferente dado el enum TipoCausa.
+     * @param juzgado sirve para obtener valor de la secuencia dado el juzgado.
+     * @param tipoCarpeta sirve para obtener valor de la secuencia el tipo de doc.
+     * @return string
+     */
+    public String generateNumExpedientePenal(TipoCausa tipo, Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+        JuzgadoFolios juzgadoFolios = juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta);
+        juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(juzgadoFolios);
+
+        String numExpediente = "";
+        switch (tipo){
+            case CONTROL_JUDICIAL_PREVIO:
+                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                        + "/" + juzgadoFolios.getYear() + "/CJP/" + juzgado.getNomenclatura().toUpperCase();
+                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+                break;
+            case CONTROL_ACTOS_INVESTIGACION:
+                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                        + "/" + juzgadoFolios.getYear() + "/CAI/" + juzgado.getNomenclatura().toUpperCase();
+                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+                break;
+            case EXHORTO:
+                numExpediente = "EXT/" + StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                        + "/" + juzgadoFolios.getYear() + "/" + juzgado.getNomenclatura().toUpperCase();
+                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+                break;
+            case JUICIO_ORAL:
+                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                        + "/" + juzgadoFolios.getYear() + "/JO/" + juzgado.getSede().getDistrito().getRegion().toUpperCase();
+                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+                break;
+            case EJECUCION:
+                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                        + "/" + juzgadoFolios.getYear() + "/EJE/" + juzgado.getNomenclatura().toUpperCase();
+                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+                break;
+            default:
+                numExpediente = null;
+        }
+        return numExpediente;
+    }
 }
