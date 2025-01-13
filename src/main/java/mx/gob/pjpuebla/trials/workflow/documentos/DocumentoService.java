@@ -368,7 +368,7 @@ public class DocumentoService {
         
         
         // Creación de audiencia: 
-        crearAudienciaPenal(demanda);
+        crearAudienciaPenal(demanda, carpeta);
        
         //Creación del movimiento: 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
@@ -417,24 +417,56 @@ public class DocumentoService {
         }
     }
 
-    private void crearAudienciaPenal(DocumentoCreateDemandaPenalRecord demanda){
+    private void crearAudienciaPenal(DocumentoCreateDemandaPenalRecord demanda, Carpeta carpeta){
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(demanda.tipoAudiencia())
             .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",  demanda.tipoAudiencia().toString()));
         
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
             .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",  demanda.tipoJuicio().toString()));
         
-        SalaAudienciaRecord salaAudienciaConexidad;
+        SalaAudienciaRecord salaAudienciaConexidad = null;
 
         for (PersonaDocumentoItemRecord victima : demanda.victimas()) {
             for (PersonaDocumentoItemRecord imputado : demanda.imputados()) {
-                salaAudienciaConexidad = salaService.asignarSalaConexidad(victima, imputado, tipoJuicio, tipoAudiencia);
+                PersonaDocumentoRecord victimaTemp = new PersonaDocumentoRecord(
+                    victima.nombre(),
+                    victima.apellidoPaterno(),
+                    victima.apellidoMaterno(),
+                    victima.pseudonimo(),
+                    victima.tipoPersona(),
+                    victima.curp(),
+                    victima.domicilio(),
+                    victima.celular(),
+                    victima.correoElectronico(),
+                    VICTIMA,
+                    victima.tipoParte(),
+                    carpeta.getId()
+                    );
+                PersonaDocumentoRecord imputadoTemp = new PersonaDocumentoRecord(
+                    imputado.nombre(),
+                    imputado.apellidoPaterno(),
+                    imputado.apellidoMaterno(),
+                    imputado.pseudonimo(),
+                    imputado.tipoPersona(),
+                    imputado.curp(),
+                    imputado.domicilio(),
+                    imputado.celular(),
+                    imputado.correoElectronico(),
+                    IMPUTADO,
+                    imputado.tipoParte(),
+                    carpeta.getId());
+
+                salaAudienciaConexidad = salaService.asignarSalaConexidad(victimaTemp, imputadoTemp, tipoJuicio, tipoAudiencia);
             }
         }
 
         if(salaAudienciaConexidad != null){
-            
-        }
+            audienciaService.create(salaAudienciaConexidad, tipoAudiencia, carpeta);
+        } else {
+            //Obtención de sala
+            SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
+            audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
+        } 
         
     }
 
