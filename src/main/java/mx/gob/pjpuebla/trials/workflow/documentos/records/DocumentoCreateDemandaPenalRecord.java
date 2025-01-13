@@ -18,6 +18,7 @@ public record DocumentoCreateDemandaPenalRecord(
     LocalTime horaMaterial,
     String lugarDisposicion,
     String tipoSolAudiencia,
+    Integer tipoAudiencia,
     List<String> anexos,
     List<PersonaDocumentoItemRecord> victimas,
     List<PersonaDocumentoItemRecord> imputados,

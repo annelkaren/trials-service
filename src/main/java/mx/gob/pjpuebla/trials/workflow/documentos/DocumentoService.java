@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
+import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
@@ -118,6 +119,7 @@ public class DocumentoService {
     private final CarpetaDetalleRepository carpetaDetalleRepository;
     private final PersonaDetalleRepository personaDetalleRepository;
     private final JuzgadoRepository juzgadoRepository;
+    private final TipoAudienciaRepository tipoAudienciaRepository;
 
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
@@ -366,9 +368,8 @@ public class DocumentoService {
         
         
         // Creación de audiencia: 
-        DocumentoSaveRecord documentoAudiencia = new DocumentoSaveRecord(promovente, promovente, null, null, data)
-        crearAudienciaOralidad(null, carpetaFinal, tipoJuicio);
-
+        crearAudienciaPenal(demanda);
+       
         //Creación del movimiento: 
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
@@ -416,7 +417,24 @@ public class DocumentoService {
         }
     }
 
-    private void CrearAudienciaPenal(){
+    private void crearAudienciaPenal(DocumentoCreateDemandaPenalRecord demanda){
+        TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(demanda.tipoAudiencia())
+            .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",  demanda.tipoAudiencia().toString()));
+        
+        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
+            .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",  demanda.tipoJuicio().toString()));
+        
+        SalaAudienciaRecord salaAudienciaConexidad;
+
+        for (PersonaDocumentoItemRecord victima : demanda.victimas()) {
+            for (PersonaDocumentoItemRecord imputado : demanda.imputados()) {
+                salaAudienciaConexidad = salaService.asignarSalaConexidad(victima, imputado, tipoJuicio, tipoAudiencia);
+            }
+        }
+
+        if(salaAudienciaConexidad != null){
+            
+        }
         
     }
 
