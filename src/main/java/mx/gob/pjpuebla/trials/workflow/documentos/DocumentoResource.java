@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -51,6 +54,12 @@ public class DocumentoResource {
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
         return this.documentoService.createDemanda(documentoSaveRecord);
     }
+
+    @PostMapping("crear/demandaPenal")
+    public DocumentoGenericRecord crearDemandaPenal(@RequestBody DocumentoCreateDemandaPenalRecord demanda) {
+        return this.documentoService.createDemandaPenal(demanda);
+    }
+    
 
     @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
     public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
