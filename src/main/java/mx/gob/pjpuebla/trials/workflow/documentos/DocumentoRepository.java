@@ -331,7 +331,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     @Query("""
-    SELECT doc 
+    SELECT doc
     FROM Documento doc
     JOIN doc.persona p
     WHERE LOWER(p.correoElectronico) = LOWER(:correo)

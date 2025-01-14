@@ -315,8 +315,6 @@ public class CarpetaService {
                 .findPersonaDocumentoDataByCarpetaId(carpeta.getId());
 
         // Obtiene el nombre del juez TODO.obtener nombre del juez
-        // ExtraAudienciaSelloRecord extraAudienciaSelloRecord =
-        // audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
