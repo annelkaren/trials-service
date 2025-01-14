@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -56,6 +57,14 @@ public class MovimientoService {
                 .setDestino(destino)
                 .setDuracion(duracion);
         movimiento = movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
+    public Movimiento createMovimentoWithConcepto(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, Concepto concepto) {
+        Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado);
+        movimiento.setConcepto(concepto.getNombre());
+        movimiento.setDuracion(concepto.getDias().toString() + "d");
+        movimiento = this.movimientoRepository.save(movimiento);
         return movimiento;
     }
 

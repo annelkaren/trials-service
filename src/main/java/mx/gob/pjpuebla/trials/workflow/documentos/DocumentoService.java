@@ -468,21 +468,24 @@ public class DocumentoService {
         Documento documento = new Documento();
         documento.setCarpeta(carpeta);
         documento.setFolio(getFolio("P"));
-        documento.setEstatus(EstadoCarpeta.CAPTURA);
-
         DocumentoData documentoData = new DocumentoData();
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
+        documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO))?EstadoCarpeta.TURNADO:EstadoCarpeta.ASIGNADO);
 
         documento.setData(documentoData);
         documento.setPersona(personaService.getAuditor());
         documento.setFechaAsignacion(LocalDateTime.now());
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        documento.setConcepto(conceptoRepository.findByNombre("Adjuntar").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar")));
 
         documento = documentoRepository.save(documento);
         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
         addAnexos(documentoPromocionRecord.anexos(), documento);
-        movimientoService.createMovimento(null, documento, documento.getPersona(), null, EstadoCarpeta.CAPTURA.name());
-
+        if(documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)){
+            movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null, EstadoCarpeta.SALIDA.name(), documento.getConcepto());
+        }else {
+            movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null, EstadoCarpeta.ASIGNADO.name(), documento.getConcepto());
+        }
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
 
