@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.litigante;
 
 import jakarta.ws.rs.core.MediaType;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,9 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,6 +34,8 @@ class LitiganteResourceTest {
     private MockMvc mockMvc;
     @MockBean
     private LitiganteService litiganteService;
+    @MockBean
+    private AcuerdoService acuerdoServicePdf;
 
     @Test
     void getExpedientesRelacionados() throws Exception {
@@ -41,6 +49,33 @@ class LitiganteResourceTest {
                 get("/api/litigante/expedientes")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAcuerdosSentencias() throws Exception {
+        List<DocumentoExpedienteRecord> derl = Collections.singletonList(new DocumentoExpedienteRecord(
+                123, "2025-01-11", "12:03:04", "/api/litigante/documento/123"));
+        List<AcuerdoSentenciaRecord> asrl = Collections.singletonList(
+                new AcuerdoSentenciaRecord("000001/2025", derl));
+        ExpedienteAutorizadoRecord expedienteAutorizadoRecord = new ExpedienteAutorizadoRecord(asrl);
+
+        given(litiganteService.getAcuerdosSentencias()).willReturn(expedienteAutorizadoRecord);
+
+        mockMvc.perform(get("/api/litigante/acuerdoSentencia")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void exportAcuerdoPdf() throws Exception {
+        Integer documentoId = 123;
+        byte[] mockPdf = new byte[]{1, 2, 3};
+
+        given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
+
+        mockMvc.perform(get("/api/litigante/documento/" + documentoId)
+                        .accept(APPLICATION_PDF))
+                .andExpect(status().isOk());
     }
 
 }

@@ -122,4 +122,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Page<Carpeta> findByJuzgado(@Param("juzgados") List<Juzgado> juzgados,
                                       @Param("key") String key,
                                       Pageable pageable);
+
+    Optional<Carpeta> findByExpedienteAndJuzgadoIdAndEstatus(String expediente, Integer juzgadoId, EstadoCarpeta estado);
 }

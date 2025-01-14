@@ -1562,7 +1562,7 @@ class DocumentoServiceTest {
         List<String> anexos = List.of("Anexo1", "Anexo2");
         Documento documento = DocumentoSetUp.create(tipoJuicio);
         CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
-                1, "actor 1", "demandado 1"
+                1, "actor 1", "demandado 1", null
         );
 
         DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.ESCRITO);

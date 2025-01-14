@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
@@ -135,5 +136,37 @@ public class CarpetaResource {
         SentenciaPublicaResponseRecord sentenciaResponse = carpetaService.getCarpetaByExpedienteAndSentencia(
                 numExpediente + "/" + year);
         return ResponseEntity.ok(sentenciaResponse);
+    }
+
+    @PostMapping("/actualizar-estado")
+    public ResponseEntity<String> actualizarEstado(@RequestBody List<Integer> ids) {
+        try {
+            carpetaService.actualizarEstado(ids);
+            return ResponseEntity.ok("Estados actualizados correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar los estados: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/expedientes")
+    public ResponseEntity<CarpetaResponseRecord> getCarpetaByExpedienteAndEstado(
+            @RequestParam String numExpediente,
+            @RequestParam Integer year,
+            @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId,
+            @RequestParam EstadoCarpeta estado) {
+
+        CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaByExpedienteAndEstado(
+                numExpediente + "/" + year, estado);
+        return ResponseEntity.ok(carpetaResponseRecord);
+    }
+
+    @PostMapping("/devolver/archivo-judicial")
+    public ResponseEntity<String> devolverCarpetas(@RequestBody List<Integer> ids) {
+        try {
+            carpetaService.devolverArchivoJudicial(ids);
+            return ResponseEntity.ok("Estados de carpetas actualizados correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar los estados: " + e.getMessage());
+        }
     }
 }
