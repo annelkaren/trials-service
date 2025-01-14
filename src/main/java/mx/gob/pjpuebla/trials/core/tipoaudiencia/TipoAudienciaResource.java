@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/tipoaudiencia")
@@ -41,4 +42,10 @@ public class TipoAudienciaResource {
             @RequestParam(value = "nombre", required = false) String nombre) {
         return this.tipoAudienciaService.getAll(pageable, nombre);
     }
+
+    @GetMapping("/materia/{materiaId}")
+    public List<TipoAudienciaRecord> getTipoAudienciaByMateria(@PathVariable Integer materiaId) {
+        return this.tipoAudienciaService.getTipoAudienciaByMateria(materiaId);
+    }
+    
 }

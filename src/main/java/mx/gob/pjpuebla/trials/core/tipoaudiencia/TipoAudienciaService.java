@@ -93,4 +93,8 @@ public class TipoAudienciaService {
                 ))
                 .toList();
     }
+
+    public List<TipoAudienciaRecord> getTipoAudienciaByMateria(Integer materiaId){
+        return tipoAudienciaRepository.findByMateria_id(materiaId);
+    }
 }
