@@ -1400,7 +1400,7 @@ public class DocumentoService {
         JuzgadoFolios juzgadoFolios = juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta);
         juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(juzgadoFolios);
 
-        String numExpediente = "";
+        String numExpediente;
         switch (tipo){
             case CONTROL_JUDICIAL_PREVIO:
                 numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
@@ -1428,7 +1428,7 @@ public class DocumentoService {
                 juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
                 break;
             default:
-                numExpediente = null;
+                numExpediente = "";
         }
         return numExpediente;
     }
