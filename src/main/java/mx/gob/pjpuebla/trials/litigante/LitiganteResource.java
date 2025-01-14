@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.litigante;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,5 +44,10 @@ public class LitiganteResource {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
         return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
+    }
+
+    @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
+        return litiganteService.getPromocionesLitigante(pageable);
     }
 }

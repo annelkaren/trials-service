@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
@@ -75,6 +77,17 @@ class LitiganteResourceTest {
 
         mockMvc.perform(get("/api/litigante/documento/" + documentoId)
                         .accept(APPLICATION_PDF))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getPromocionesLitigante() throws Exception {
+        PromocionAutorizadaRecord promocionRecord = new PromocionAutorizadaRecord(Collections.emptyList());
+        Page<PromocionAutorizadaRecord> promocionesPage = new PageImpl<>(Collections.singletonList(promocionRecord));
+
+        given(litiganteService.getPromocionesLitigante(any(Pageable.class))).willReturn(promocionesPage);
+        mockMvc.perform(get("/api/litigante/promociones")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,4 +149,20 @@ void testActualizacionAcuerdoRespuesta() {
         assertThat(promociones).isNotEmpty();
     }
 
+    @Test
+    void testFindPromocionesLitigante() {
+        String correo = "juanperez@gmail.com";
+        Page<Documento> promociones = documentoRepository.findPromocionesLitigante(correo, PageRequest.of(0, 10));
+        assertThat(promociones).isNotEmpty();
+    }
+
+    @Test
+    void testExistsByExpedienteAndAcuerdoAndAsociateCorreo() {
+        String expediente = "000003/2024/AM01";
+        String numeroAcuerdo = "3";
+        String correo = "juanperez@gmail.com";
+
+        boolean exists = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(expediente, numeroAcuerdo, correo);
+        assertThat(exists).isFalse();
+    }
 }
