@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciondetalle;
 
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -33,4 +35,20 @@ public interface NotificacionesDetallesRepository extends JpaRepository<Notifica
             AND n.estadoNotificacion = mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion.POR_LEER
             """)
     Long countNotificacionesPorLeer(Integer carpetaId, String email);
+
+    @Query("""
+            SELECT nd
+            FROM NotificacionesDetalles nd
+            JOIN nd.notificacion n
+            JOIN nd.personaDocumento pd
+            JOIN n.documento d
+            WHERE (LOWER(pd.correoElectronico) = LOWER(:username)
+                OR LOWER(pd.correoNotificacion) = LOWER(:username))
+            AND pd.tipoNotificacion = :tipoNotificacion
+            AND (d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.ACUERDO
+                OR d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.SENTENCIA)
+            """)
+    List<NotificacionesDetalles> getAllByUsername(
+            @Param("username") String username, @Param("tipoNotificacion") TipoNotificacion tipoNotificacion
+    );
 }
