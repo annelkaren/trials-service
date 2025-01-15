@@ -542,6 +542,7 @@ class DocumentoServiceTest {
 
     @Test
     void createPromocion() {
+        Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE).setNombre("Adjuntar");
         Carpeta carpeta = CarpetaSetUp.create(tipoJuicio, juzgado);
         DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.OFICIO);
         Documento promocion = DocumentoSetUp.create(tipoJuicio);
@@ -559,6 +560,7 @@ class DocumentoServiceTest {
         given(documentoRepository.save(any())).willReturn(promocion);
         given(documentoRepository.getNextValPromocion()).willReturn(1L);
         given(documentoRepository.getNextValPromocion()).willReturn(1L);
+        given(conceptoRepository.findByNombre(any())).willReturn(Optional.of(concepto));
 
         List<String> anexos = List.of("Anexo1", "Anexo2");
         DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO,
