@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
@@ -61,22 +62,25 @@ public class PersonaService {
         List<PersonaRecordResponse> list = page.getContent().stream()
                 .map(persona -> {
                     String centroTrabajo;
-                    if ((persona.getJuzgado() != null && persona.getJuzgado().getNombre() != null && !persona.getJuzgado().getNombre().isEmpty())) {
+                    if ((persona.getJuzgado() != null && persona.getJuzgado().getNombre() != null
+                            && !persona.getJuzgado().getNombre().isEmpty())) {
                         centroTrabajo = persona.getJuzgado().getNombre();
                     } else {
-                        if (persona.getOficialia() != null && persona.getOficialia().getNombre() != null && !persona.getOficialia().getNombre().isEmpty())
+                        if (persona.getOficialia() != null && persona.getOficialia().getNombre() != null
+                                && !persona.getOficialia().getNombre().isEmpty())
                             centroTrabajo = persona.getOficialia().getNombre();
-                        else centroTrabajo = "-";
+                        else
+                            centroTrabajo = "-";
                     }
                     return new PersonaRecordResponse(
                             persona.getId(),
-                            persona.getNombre() + " " + persona.getApellidoPaterno() + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""),
+                            persona.getNombre() + " " + persona.getApellidoPaterno()
+                                    + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""),
                             persona.getCorreoElectronico(),
                             persona.getCelular(),
                             centroTrabajo,
                             persona.getEstado().name(),
-                            roleService.getRolesByUserId(persona.getUsuario()).get(0).name()
-                    );
+                            roleService.getRolesByUserId(persona.getUsuario()).get(0).name());
                 })
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -103,7 +107,8 @@ public class PersonaService {
         fillPersonaData(persona);
 
         persona = personaRepository.save(persona);
-        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "", "");
+        return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(),
+                persona.getCelular(), "", "", "");
     }
 
     private boolean isValidAge(LocalDate date) {
@@ -144,7 +149,8 @@ public class PersonaService {
             fillPersonaData(persona);
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), rolesToSave);
-            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(), persona.getCelular(), "", "", "");
+            return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(),
+                    persona.getCelular(), "", "", "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Persona.class.getSimpleName());
         }
@@ -171,7 +177,8 @@ public class PersonaService {
         List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
         List<String> ids = usuarioService.findAllByRoles(roles);
         for (String id : ids) {
-            Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId, List.of(Estado.ACTIVE));
+            Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId,
+                    List.of(Estado.ACTIVE));
             if (juez.isPresent()) {
                 salas = salaRepository.findAllByJuezId(juez.get().getId());
                 if (salas.isEmpty()) {
@@ -183,6 +190,14 @@ public class PersonaService {
             }
         }
         return jueces;
+    }
+
+    @Transactional(readOnly = true)
+    public List<JuezRecord> findByJuzgadoOfPersonaLogueada() {
+        Persona persona = getAuditor();
+        Juzgado juzgado = persona.getJuzgado();
+        
+        return findAllJueces(juzgado.getId());
     }
 
     @Transactional(readOnly = true)
@@ -218,17 +233,19 @@ public class PersonaService {
             }
 
             for (Oficialia oficialia : oficialias) {
-                centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(), TipoCentroTrabajo.OFICIALIA_COMUN));
+                centrosTrabajo.add(new CentroTrabajoRecord(oficialia.getId(), oficialia.getNombre(),
+                        TipoCentroTrabajo.OFICIALIA_COMUN));
             }
         } else {
-            centrosTrabajo.add(new CentroTrabajoRecord(currentUser.getJuzgado().getId(), currentUser.getJuzgado().getNombre(), TipoCentroTrabajo.JUZGADO));
+            centrosTrabajo.add(new CentroTrabajoRecord(currentUser.getJuzgado().getId(),
+                    currentUser.getJuzgado().getNombre(), TipoCentroTrabajo.JUZGADO));
         }
 
         return centrosTrabajo;
     }
 
     @Transactional(readOnly = true)
-    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre,String searchQuery, Pageable pageable) {
+    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
         boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
         Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
@@ -236,22 +253,20 @@ public class PersonaService {
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
                 adminSistema,
-                pageable
-        );
+                pageable);
 
         List<PersonaRecordResponse> list = page.stream()
                 .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
-                .map(p ->
-                        new PersonaRecordResponse(
-                                p.getId(),
-                                p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
-                                p.getCorreoElectronico(),
-                                p.getCelular(),
-                                (p.getJuzgado() != null) ? p.getJuzgado().getNombre() :
-                                        (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-",
-                                p.getEstado().name(),
-                                ""
-                        ))
+                .map(p -> new PersonaRecordResponse(
+                        p.getId(),
+                        p.getNombre() + " " + p.getApellidoPaterno()
+                                + (p.getApellidoMaterno() == null ? "" : " " + p.getApellidoMaterno()),
+                        p.getCorreoElectronico(),
+                        p.getCelular(),
+                        (p.getJuzgado() != null) ? p.getJuzgado().getNombre()
+                                : (p.getOficialia() != null) ? p.getOficialia().getNombre() : "-",
+                        p.getEstado().name(),
+                        ""))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -260,7 +275,8 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
-        return personaRepository.findByUsuario(jwt.getSubject()).orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
+        return personaRepository.findByUsuario(jwt.getSubject())
+                .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 
     @Transactional(readOnly = true)
@@ -273,10 +289,9 @@ public class PersonaService {
 
         for (Persona item : personasDelJuzgado) {
             if (roleService.hasRole(item.getUsuario(), "ADMINISTRADOR_JUZGADO") ||
-                roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO") ||
-                persona.getUsuario().equals(item.getUsuario()) ||
-                roleService.getRolesByUserId(item.getUsuario()).isEmpty()
-                ) {
+                    roleService.hasRole(item.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO") ||
+                    persona.getUsuario().equals(item.getUsuario()) ||
+                    roleService.getRolesByUserId(item.getUsuario()).isEmpty()) {
                 list.add(item);
             }
         }
@@ -286,29 +301,27 @@ public class PersonaService {
 
         return personasDelJuzgado.stream().map(p -> new PersonaRecordResponse(
                 p.getId(),
-                p.getNombre() + " " + p.getApellidoPaterno() + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
+                p.getNombre() + " " + p.getApellidoPaterno()
+                        + (p.getApellidoMaterno() != null ? " " + p.getApellidoMaterno() : ""),
                 p.getCorreoElectronico(),
                 p.getCelular(),
                 "",
                 "",
-                roleService.getRolesByUserId(p.getUsuario()).get(0).name()
-        )).toList();
+                roleService.getRolesByUserId(p.getUsuario()).get(0).name())).toList();
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {
         boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR_SISTEMA"));
-        if (hasAdminRole && (
-                (persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
-                        || (persona.getOficialia() != null && persona.getOficialia().getId() != null))) {
+        if (hasAdminRole && ((persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
+                || (persona.getOficialia() != null && persona.getOficialia().getId() != null))) {
             throw new ConflictException("Un Administrador (sistema) no puede pertenecer a un centro de trabajo");
         }
         if (hasAdminRole && rolesToSave.size() > 1) {
             throw new ConflictException("Un Administrador (sistema) no puede tener más roles asociados");
         }
 
-        if (!hasAdminRole && (
-                (persona.getJuzgado() == null || persona.getJuzgado().getId() == null)
-                        && (persona.getOficialia() == null || persona.getOficialia().getId() == null))
+        if (!hasAdminRole && ((persona.getJuzgado() == null || persona.getJuzgado().getId() == null)
+                && (persona.getOficialia() == null || persona.getOficialia().getId() == null))
                 && !rolesToSave.isEmpty()) {
             throw new ConflictException("Seleccione un centro de trabajo para asignar los roles correspondientes");
         }
