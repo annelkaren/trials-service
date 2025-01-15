@@ -44,4 +44,10 @@ public class LitiganteResource {
         headers.setContentDispositionFormData("acuerdo", documentoId + "_Documento.pdf");
         return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
     }
+
+    @GetMapping("/audiencias")
+    public Page<LitiganteExpedienteListAudienciasRecord> getAudienciasByExpedienteRelacionados(Pageable pageable) {
+        return this.litiganteService.getExpedientesAudienciasRelacionados(pageable);
+    }
+
 }
