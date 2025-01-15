@@ -428,7 +428,7 @@ public class DocumentoService {
                 .orElseThrow(
                         () -> new NotFoundException("Tipo de juicio no encontrado", demanda.tipoJuicio().toString()));
 
-        if ("Enjuiciamiento".equals(demanda.tipoJuzgado())) {
+        if (TipoJuzgadoPenal.ENJUICIAMIENTO.equals(demanda.tipoJuzgado())) {
             // logica para asignar el juez que selecciono
             Persona juez = personaRepository.findById((long) demanda.juezId())
                     .orElseThrow(() -> new NotFoundException("Juez no encontrado", ""));

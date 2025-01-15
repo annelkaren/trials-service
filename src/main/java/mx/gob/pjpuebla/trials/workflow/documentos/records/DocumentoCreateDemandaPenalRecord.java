@@ -1,4 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
+import mx.gob.pjpuebla.trials.util.enums.TipoJuzgadoPenal;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,9 +10,9 @@ public record DocumentoCreateDemandaPenalRecord(
     String apellidoPaternoProvente,
     String apellidoMaternoProvente,
     Integer tipoJuicio,
-    String tipoJuzgado,
+    TipoJuzgadoPenal tipoJuzgado,
     Integer numOficio,
-    Integer numCarpetaInv,
+    String numCarpetaInv,
     String lugarHecho,
     LocalDate fechaHecho,
     LocalDate fechaPresentacion,
