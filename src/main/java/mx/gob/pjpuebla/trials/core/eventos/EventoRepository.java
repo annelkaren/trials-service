@@ -1,11 +1,14 @@
 package mx.gob.pjpuebla.trials.core.eventos;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -31,4 +34,13 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
             or case when e.oficialia is null then 1 when e.oficialia = :oficialia then 1 else 0 end = 1 )
             """)
     Optional<Evento> findEntreDiaInicioAndDiaFin(LocalDate fecha, Juzgado juzgado, Oficialia oficialia);
+
+    @Query("""
+        SELECT e FROM Evento e
+        WHERE e.oficialia IS NULL AND e.juzgado IS NULL
+        """)
+    Page<Evento> findEventosGenerales(Pageable pageable);
+
+    @Query("SELECT e FROM Evento e WHERE (:oficialia IS NULL OR e.oficialia = :oficialia) AND (:juzgado IS NULL OR e.juzgado = :juzgado)")
+    Page<Evento> findByOficialiaOrJuzgado(@Param("oficialia") Oficialia oficialia, @Param("juzgado") Juzgado juzgado, Pageable pageable);
 }
