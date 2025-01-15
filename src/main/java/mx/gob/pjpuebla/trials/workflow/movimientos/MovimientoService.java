@@ -62,8 +62,17 @@ public class MovimientoService {
 
     public Movimiento createMovimentoWithConcepto(Carpeta carpeta, Documento documento, Persona persona, String motivo, String estado, Concepto concepto) {
         Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado);
+        movimiento.setConcepto((concepto != null) ? concepto.getNombre() : null);
+        movimiento.setDuracion((concepto != null) ? concepto.getDias().toString() + "d" : null);
+        movimiento = this.movimientoRepository.save(movimiento);
+        return movimiento;
+    }
+
+    public Movimiento createMovimentoPromocionElectronica(Documento documento, Persona persona, String estado, Concepto concepto) {
+        Movimiento movimiento = createMovimiento(null, documento, persona, "", estado);
         movimiento.setConcepto(concepto.getNombre());
         movimiento.setDuracion(concepto.getDias().toString() + "d");
+        movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
         movimiento = this.movimientoRepository.save(movimiento);
         return movimiento;
     }

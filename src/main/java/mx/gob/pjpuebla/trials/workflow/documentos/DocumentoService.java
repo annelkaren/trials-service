@@ -465,25 +465,31 @@ public class DocumentoService {
         Carpeta carpeta = carpetaRepository.findById(documentoPromocionRecord.carpetaId())
                 .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, String.valueOf(documentoPromocionRecord.carpetaId())));
         Documento documento = new Documento();
+        Persona persona = personaService.getAuditor();
         documento.setCarpeta(carpeta);
         documento.setFolio(getFolio("P"));
         DocumentoData documentoData = new DocumentoData();
         documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
         documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) ? EstadoCarpeta.TURNADO : EstadoCarpeta.ASIGNADO);
-
+        if(persona.getOficialia() != null){
+            documento.setEstatus(EstadoCarpeta.CAPTURA);
+        } else{
+            documento.setConcepto(conceptoRepository.findByNombre("Adjuntar").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar")));
+            documento.setFechaAsignacion(LocalDateTime.now());
+        }
         documento.setData(documentoData);
-        documento.setPersona(personaService.getAuditor());
-        documento.setFechaAsignacion(LocalDateTime.now());
+        documento.setPersona(persona);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
-        documento.setConcepto(conceptoRepository.findByNombre("Adjuntar").orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar")));
 
         documento = documentoRepository.save(documento);
-        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        if(persona.getOficialia() == null) {
+            digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        }
         addAnexos(documentoPromocionRecord.anexos(), documento);
         if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
-            movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null, EstadoCarpeta.TURNADO.name(), documento.getConcepto());
+            movimientoService.createMovimentoPromocionElectronica(documento, documento.getPersona(), EstadoCarpeta.TURNADO.name(), documento.getConcepto());
         } else {
-            movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null, EstadoCarpeta.ASIGNADO.name(), documento.getConcepto());
+            movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null, documento.getEstatus().name(), documento.getConcepto());
         }
         return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(), documento.getTipoDocumento());
     }
