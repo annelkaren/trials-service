@@ -301,76 +301,78 @@ public class DocumentoService {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicio().toString()));
 
+        // OBTENER NUM EXPEDIENTE
+        String expediente = tipoJuicio.getTipoCausa() != null
+                ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), persona.getJuzgado(), TipoCarpeta.DEMANDA)
+                : null;
+
         // Definición de carpeta.
         Carpeta carpeta = new Carpeta()
-            .setFolio(getFolio("D"))
-            .setTipoCarpeta(TipoCarpeta.DEMANDA)
-            .setEstatus(EstadoCarpeta.CAPTURA)
-            .setTipoJuicio(tipoJuicio)
-            .setSelloEstatus(SelloEstatus.VALIDO)
-            .setFechaAsignacion(LocalDateTime.now())
-            .setPersona(persona)
-            .setExpediente(generateNumExpedientePenal(null, null, null))
-            .setJuzgado(persona.getJuzgado());
+                .setFolio(getFolio("D"))
+                .setTipoCarpeta(TipoCarpeta.DEMANDA)
+                .setEstatus(EstadoCarpeta.CAPTURA)
+                .setTipoJuicio(tipoJuicio)
+                .setSelloEstatus(SelloEstatus.VALIDO)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setPersona(persona)
+                .setExpediente(expediente)
+                .setJuzgado(persona.getJuzgado());
 
         carpeta = carpetaRepository.save(carpeta);
 
-        //Seteamos todos los datos exclusivos de penal: 
+        // Seteamos todos los datos exclusivos de penal:
         DocumentoData data = new DocumentoData()
-            .setNumOficio(demanda.numOficio())
-            .setNumCarpetaInv(demanda.numCarpetaInv())
-            .setLugarHecho(demanda.lugarHecho())
-            .setFechaHecho(demanda.fechaHecho())
-            .setFechaPresentacion(demanda.fechaPresentacion())
-            .setHoraFormal(demanda.horaFormal())
-            .setHoraMaterial(demanda.horaMaterial())
-            .setLugarDisposicion(demanda.lugarDisposicion())
-            .setTipoSolAudiencia(demanda.tipoSolAudiencia());
+                .setNumOficio(demanda.numOficio())
+                .setNumCarpetaInv(demanda.numCarpetaInv())
+                .setLugarHecho(demanda.lugarHecho())
+                .setFechaHecho(demanda.fechaHecho())
+                .setFechaPresentacion(demanda.fechaPresentacion())
+                .setHoraFormal(demanda.horaFormal())
+                .setHoraMaterial(demanda.horaMaterial())
+                .setLugarDisposicion(demanda.lugarDisposicion())
+                .setTipoSolAudiencia(demanda.tipoSolAudiencia());
 
-         // Creación del documento.
+        // Creación del documento.
         Documento documento = new Documento()
-            .setCarpeta(carpeta)
-            .setFechaAsignacion(LocalDateTime.now())
-            .setData(data)
-            .setPersona(persona);
+                .setCarpeta(carpeta)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setData(data)
+                .setPersona(persona);
         documento = documentoRepository.save(documento);
 
-        //Creación de participantes :promovente, victima, imputado, ministerio y tercero involucrado: 
+        // Creación de participantes :promovente, victima, imputado, ministerio y
+        // tercero involucrado:
         PersonaDocumentoItemRecord promovente = new PersonaDocumentoItemRecord(
-            demanda.nombreProvente(),
-            demanda.apellidoPaternoProvente(),
-            demanda.apellidoMaternoProvente(),
-            "",
-            "", 
-            3, 
-            "",
-            "",
-            "",
-            "",
-            ""
-        );
+                demanda.nombreProvente(),
+                demanda.apellidoPaternoProvente(),
+                demanda.apellidoMaternoProvente(),
+                "",
+                "",
+                3,
+                "",
+                "",
+                "",
+                "",
+                "");
 
         createPersonaDocumento(promovente, carpeta); // Creación del Promovente
 
-        //Creación de los demas participantes.
+        // Creación de los demas participantes.
         final Carpeta carpetaFinal = carpeta; // carpeta final para usar en lamda
         List<List<PersonaDocumentoItemRecord>> participantes = List.of(
-            demanda.victimas(),
-            demanda.imputados(),
-            demanda.ministerio(),
-            demanda.terceroInvolucrado()
-        );
+                demanda.victimas(),
+                demanda.imputados(),
+                demanda.ministerio(),
+                demanda.terceroInvolucrado());
 
         participantes.stream()
-            .flatMap(List::stream)
-            .forEach(participante -> createPersonaDocumento(participante, carpetaFinal));
-                
-        
-        
-        // Creación de audiencia: 
+                .flatMap(List::stream)
+                .forEach(participante -> createPersonaDocumento(participante, carpetaFinal));
+
+        // Creación de audiencia:
         crearAudienciaPenal(demanda, carpeta);
-       
-        //Creación del movimiento: 
+
+        // Creación del movimiento:
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
         return new DocumentoGenericRecord(documento.getId(), null);
@@ -417,62 +419,80 @@ public class DocumentoService {
         }
     }
 
-    private void crearAudienciaPenal(DocumentoCreateDemandaPenalRecord demanda, Carpeta carpeta){
+    private void crearAudienciaPenal(DocumentoCreateDemandaPenalRecord demanda, Carpeta carpeta) {
         TipoAudiencia tipoAudiencia = tipoAudienciaRepository.findById(demanda.tipoAudiencia())
-            .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",  demanda.tipoAudiencia().toString()));
-        
+                .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",
+                        demanda.tipoAudiencia().toString()));
+
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
-            .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",  demanda.tipoJuicio().toString()));
-        
-        SalaAudienciaRecord salaAudienciaConexidad = null;
+                .orElseThrow(
+                        () -> new NotFoundException("Tipo de juicio no encontrado", demanda.tipoJuicio().toString()));
 
-        for (PersonaDocumentoItemRecord victima : demanda.victimas()) {
-            for (PersonaDocumentoItemRecord imputado : demanda.imputados()) {
-                PersonaDocumentoRecord victimaTemp = new PersonaDocumentoRecord(
-                    victima.nombre(),
-                    victima.apellidoPaterno(),
-                    victima.apellidoMaterno(),
-                    victima.pseudonimo(),
-                    victima.tipoPersona(),
-                    victima.curp(),
-                    victima.domicilio(),
-                    victima.celular(),
-                    victima.correoElectronico(),
-                    VICTIMA,
-                    victima.tipoParte(),
-                    carpeta.getId()
-                    );
-                PersonaDocumentoRecord imputadoTemp = new PersonaDocumentoRecord(
-                    imputado.nombre(),
-                    imputado.apellidoPaterno(),
-                    imputado.apellidoMaterno(),
-                    imputado.pseudonimo(),
-                    imputado.tipoPersona(),
-                    imputado.curp(),
-                    imputado.domicilio(),
-                    imputado.celular(),
-                    imputado.correoElectronico(),
-                    IMPUTADO,
-                    imputado.tipoParte(),
-                    carpeta.getId());
+        if ("Enjuiciamiento".equals(demanda.tipoJuzgado())) {
+            // logica para asignar el juez que selecciono
+            Persona juez = personaRepository.findById((long) demanda.juezId())
+                    .orElseThrow(() -> new NotFoundException("Juez no encontrado", ""));
 
-                salaAudienciaConexidad = salaService.asignarSalaConexidad(victimaTemp, imputadoTemp, tipoJuicio, tipoAudiencia);
+            SalaAudienciaRecord salaAudiencia = salaService.asignarSala(juez.getJuzgado(), tipoAudiencia);
+
+            audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
+
+            return;
+        } else {
+            // Logica para asignar la sala de audiencia conforme al tipo de audiencia
+            // seccionado y al primer caso por conexidad, el segundo por carrucel.
+
+            SalaAudienciaRecord salaAudienciaConexidad = null;
+
+            for (PersonaDocumentoItemRecord victima : demanda.victimas()) {
+                for (PersonaDocumentoItemRecord imputado : demanda.imputados()) {
+                    PersonaDocumentoRecord victimaTemp = new PersonaDocumentoRecord(
+                            victima.nombre(),
+                            victima.apellidoPaterno(),
+                            victima.apellidoMaterno(),
+                            victima.pseudonimo(),
+                            victima.tipoPersona(),
+                            victima.curp(),
+                            victima.domicilio(),
+                            victima.celular(),
+                            victima.correoElectronico(),
+                            VICTIMA,
+                            victima.tipoParte(),
+                            carpeta.getId());
+                    PersonaDocumentoRecord imputadoTemp = new PersonaDocumentoRecord(
+                            imputado.nombre(),
+                            imputado.apellidoPaterno(),
+                            imputado.apellidoMaterno(),
+                            imputado.pseudonimo(),
+                            imputado.tipoPersona(),
+                            imputado.curp(),
+                            imputado.domicilio(),
+                            imputado.celular(),
+                            imputado.correoElectronico(),
+                            IMPUTADO,
+                            imputado.tipoParte(),
+                            carpeta.getId());
+
+                    salaAudienciaConexidad = salaService.asignarSalaConexidad(victimaTemp, imputadoTemp, tipoJuicio,
+                            tipoAudiencia);
+                }
             }
+
+            if (salaAudienciaConexidad != null) {
+                audienciaService.create(salaAudienciaConexidad, tipoAudiencia, carpeta);
+            } else {
+                // Obtención de sala
+                SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
+                audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
+            }
+
         }
 
-        if(salaAudienciaConexidad != null){
-            audienciaService.create(salaAudienciaConexidad, tipoAudiencia, carpeta);
-        } else {
-            //Obtención de sala
-            SalaAudienciaRecord salaAudiencia = salaService.asignarSala(carpeta.getJuzgado(), tipoAudiencia);
-            audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
-        } 
-        
     }
 
     private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
 
-        String tipoParte = switch(persona.tipoParte()){
+        String tipoParte = switch (persona.tipoParte()) {
             case 1 -> ACTOR;
             case 2 -> DEMANDADO;
             case 3 -> PROMOVENTE;
@@ -482,7 +502,7 @@ public class DocumentoService {
             case 7 -> TERCERINVOLUCRADO;
             default -> throw new IllegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
         };
-        
+
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
@@ -1608,47 +1628,63 @@ public class DocumentoService {
     }
 
     /**
-     * Devuelve un numero de expediente para materia PENAL
+     * Genera el número de expediente penal basado en el tipo de causa, juzgado y
+     * tipo de carpeta.
      *
-     * @param tipo devuelve resultado diferente dado el enum TipoCausa.
-     * @param juzgado sirve para obtener valor de la secuencia dado el juzgado.
-     * @param tipoCarpeta sirve para obtener valor de la secuencia el tipo de doc.
-     * @return string
+     * @param tipo        El tipo de causa (CONTROL_JUDICIAL_PREVIO, JUICIO_ORAL,
+     *                    etc.).
+     * @param juzgado     El juzgado asociado al expediente.
+     * @param tipoCarpeta El tipo de carpeta (puede afectar los folios del juzgado).
+     * @return El número de expediente generado en formato específico o {@code null}
+     *         si el tipo no es válido.
      */
     public String generateNumExpedientePenal(TipoCausa tipo, Juzgado juzgado, TipoCarpeta tipoCarpeta) {
-        JuzgadoFolios juzgadoFolios = juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta);
-        juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(juzgadoFolios);
+        // Obtiene y valida los folios del juzgado para el año actual
+        JuzgadoFolios juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(
+                juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta));
 
-        String numExpediente = "";
-        switch (tipo){
-            case CONTROL_JUDICIAL_PREVIO:
-                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/CJP/" + juzgado.getNomenclatura().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
-            case CONTROL_ACTOS_INVESTIGACION:
-                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/CAI/" + juzgado.getNomenclatura().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
-            case EXHORTO:
-                numExpediente = "EXT/" + StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/" + juzgado.getNomenclatura().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
-            case JUICIO_ORAL:
-                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/JO/" + juzgado.getSede().getDistrito().getRegion().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
-            case EJECUCION:
-                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/EJE/" + juzgado.getNomenclatura().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
-            default:
-                numExpediente = null;
+        // Construye la parte base del número de expediente
+        String baseNumExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                + "/" + juzgadoFolios.getYear()
+                + "/" + tipo.getIniciales();
+
+        // Obtiene el sufijo específico según el tipo de causa
+        String suffix = getNumExpedienteSuffix(tipo, juzgado);
+
+        // Si el sufijo es válido, incrementa el folio y retorna el número completo
+        if (suffix != null) {
+            juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+            return baseNumExpediente + suffix;
         }
-        return numExpediente;
+        return null; // Retorna null si no hay lógica para el tipo de causa
     }
+
+    /**
+     * Obtiene el sufijo del número de expediente según el tipo de causa y el
+     * juzgado.
+     *
+     * @param tipo    El tipo de causa (CONTROL_JUDICIAL_PREVIO, JUICIO_ORAL, etc.).
+     * @param juzgado El juzgado asociado al expediente.
+     * @return El sufijo correspondiente al tipo de causa o {@code null} si no se
+     *         encuentra definido.
+     */
+    private String getNumExpedienteSuffix(TipoCausa tipo, Juzgado juzgado) {
+        switch (tipo) {
+            case CONTROL_JUDICIAL_PREVIO:
+            case CONTROL_ACTOS_INVESTIGACION:
+            case EJECUCION:
+                // Los sufijos estándar que usan la nomenclatura del juzgado
+                return "/" + juzgado.getNomenclatura().toUpperCase();
+            case EXHORTO:
+                // Sufijo exclusivo para EXHORTO
+                return "/" + juzgado.getNomenclatura().toUpperCase();
+            case JUICIO_ORAL:
+                // Sufijo que incluye la región del distrito del juzgado
+                return "/" + juzgado.getSede().getDistrito().getRegion().toUpperCase();
+            default:
+                // Retorna null para tipos de causa no definidos
+                return null;
+        }
+    }
+
 }

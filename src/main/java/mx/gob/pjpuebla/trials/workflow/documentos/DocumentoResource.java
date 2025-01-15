@@ -55,7 +55,7 @@ public class DocumentoResource {
         return this.documentoService.createDemanda(documentoSaveRecord);
     }
 
-    @PostMapping("crear/demandaPenal")
+    @PostMapping("/crear/demandaPenal")
     public DocumentoGenericRecord crearDemandaPenal(@RequestBody DocumentoCreateDemandaPenalRecord demanda) {
         return this.documentoService.createDemandaPenal(demanda);
     }

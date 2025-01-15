@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCausa;
 
 import java.io.Serializable;
 
@@ -40,6 +41,10 @@ public class TipoJuicio implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
+
+    @Enumerated
+    @Column(name = "N_TIPO_CAUSA", nullable = false)
+    private TipoCausa tipoCausa;
 
     @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
