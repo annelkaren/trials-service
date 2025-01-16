@@ -88,7 +88,7 @@ public class DocumentoService {
     public static final String VICTIMA = "Victimas";
     public static final String IMPUTADO = "Imputados";
     public static final String MINISTERIO = "Ministerio Publico";
-    public static final String TERCERINVOLUCRADO = "Tercer Involucrado";
+    public static final String TERCERINVOLUCRADO = "Tercero Involucrado";
     public static final String PROMOVENTE = "Victimario - Promovente";
 
     private final DocumentoRepository documentoRepository;
@@ -298,10 +298,14 @@ public class DocumentoService {
         Persona persona = personaService.getAuditor();
 
         // Obtenemos el tipo de juicio para vincularlo con la carpeta:
-        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
-                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicio().toString()));
+        TipoJuicio tipoJuicioPadre = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
+                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicioPadre().toString()));
 
-        // OBTENER NUM EXPEDIENTE
+        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
+        .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicioPadre().toString()));
+        
+        // OBTENER NUM EXPEDIENTE CON BASE AL TIPO JUICIO SELECCIONADO
+
         String expediente = tipoJuicio.getTipoCausa() != null
                 ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), persona.getJuzgado(), TipoCarpeta.DEMANDA)
                 : null;
@@ -311,7 +315,7 @@ public class DocumentoService {
                 .setFolio(getFolio("D"))
                 .setTipoCarpeta(TipoCarpeta.DEMANDA)
                 .setEstatus(EstadoCarpeta.CAPTURA)
-                .setTipoJuicio(tipoJuicio)
+                .setTipoJuicio(tipoJuicioPadre)
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setFechaAsignacion(LocalDateTime.now())
                 .setPersona(persona)
@@ -424,9 +428,9 @@ public class DocumentoService {
                 .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",
                         demanda.tipoAudiencia().toString()));
 
-        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
+        TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
                 .orElseThrow(
-                        () -> new NotFoundException("Tipo de juicio no encontrado", demanda.tipoJuicio().toString()));
+                        () -> new NotFoundException("Tipo de juicio no encontrado", demanda.tipoJuicioPadre().toString()));
 
         if (TipoJuzgadoPenal.ENJUICIAMIENTO.equals(demanda.tipoJuzgado())) {
             // logica para asignar el juez que selecciono
@@ -502,7 +506,7 @@ public class DocumentoService {
             case 7 -> TERCERINVOLUCRADO;
             default -> throw new IllegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
         };
-
+      
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
@@ -1640,6 +1644,7 @@ public class DocumentoService {
      */
     public String generateNumExpedientePenal(TipoCausa tipo, Juzgado juzgado, TipoCarpeta tipoCarpeta) {
         // Obtiene y valida los folios del juzgado para el año actual
+      
         JuzgadoFolios juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(
                 juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta));
 

@@ -10,6 +10,7 @@ public record DocumentoCreateDemandaPenalRecord(
     String apellidoPaternoProvente,
     String apellidoMaternoProvente,
     Integer tipoJuicio,
+    Integer tipoJuicioPadre,
     TipoJuzgadoPenal tipoJuzgado,
     Integer numOficio,
     String numCarpetaInv,
