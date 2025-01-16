@@ -120,7 +120,7 @@ public class DocumentoResource {
 
     @PostMapping(value = "/documento/promocion",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoPromocionResponseRecord createPromocion(
-            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson) throws JsonProcessingException   {
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,DocumentoPromocionRecord.class);
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
