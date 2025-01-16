@@ -439,8 +439,6 @@ public class DocumentoService {
             SalaAudienciaRecord salaAudiencia = salaService.asignarSala(juez.getJuzgado(), tipoAudiencia);
 
             audienciaService.create(salaAudiencia, tipoAudiencia, carpeta);
-
-            return;
         } else {
             // Logica para asignar la sala de audiencia conforme al tipo de audiencia
             // seccionado y al primer caso por conexidad, el segundo por carrucel.
