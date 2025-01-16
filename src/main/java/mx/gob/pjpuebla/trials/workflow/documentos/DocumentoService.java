@@ -991,6 +991,7 @@ public class DocumentoService {
                                 ? item.asunto().substring(0, 30) + "..."
                                 : item.asunto(),
                         item.estatus(),
+                        item.estatus() != null ? item.estatus().getEtiqueta() : null,
                         item.fechaEmision(),
                         item.fechaEntrega(),
                         item.bandAcuse(),
