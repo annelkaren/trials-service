@@ -89,7 +89,7 @@ public class DocumentoService {
     public static final String IMPUTADO = "Imputados";
     public static final String MINISTERIO = "Ministerio Publico";
     public static final String TERCERINVOLUCRADO = "Tercero Involucrado";
-    public static final String PROMOVENTE = "Victimario - Promovente";
+    public static final String PROMOVENTE = "Promovente";
 
     private final DocumentoRepository documentoRepository;
     private final JuzgadoService juzgadoService;
