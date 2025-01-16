@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -51,4 +53,12 @@ public interface NotificacionesDetallesRepository extends JpaRepository<Notifica
     List<NotificacionesDetalles> getAllByUsername(
             @Param("username") String username, @Param("tipoNotificacion") TipoNotificacion tipoNotificacion
     );
+
+    @Query("""
+        SELECT nd.fechaConsulta
+        FROM NotificacionesDetalles nd
+        JOIN nd.notificacion n
+        WHERE n.documento = :documentoId
+        """)
+    LocalDateTime findFechaYHoraByDocumentoId(Documento documentoId);
 }

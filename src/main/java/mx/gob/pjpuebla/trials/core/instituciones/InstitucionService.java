@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -33,13 +34,29 @@ public class InstitucionService {
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
+        List<Institucion> instituciones = institucionRepository.findAll();
 
-        example.setNombre(StringUtils.stripAccents(example.getNombre()));
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        String nombreFiltro = example.getNombre() != null ? StringUtils.stripAccents(example.getNombre()).toLowerCase() : "";
 
-        Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
-        return getPageInstitucion(page, pageable);
+        List<Institucion> filtradas = instituciones.stream()
+                .filter(inst -> nombreFiltro.isEmpty() || StringUtils.stripAccents(inst.getNombre())
+                                .toLowerCase()
+                                .contains(nombreFiltro))
+                .toList();
+
+        List<InstitucionRecord> records = filtradas.stream()
+                .map(inst -> new InstitucionRecord(
+                        inst.getId(),
+                        inst.getNombre(),
+                        inst.getDomicilio().getDireccionInstitucion(),
+                        inst.getTelefono(),
+                        inst.getTipoInstitucion())
+                )
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(records, pageable, filtradas.size());
     }
 
 
