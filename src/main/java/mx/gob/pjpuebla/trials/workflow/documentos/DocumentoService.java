@@ -1660,6 +1660,10 @@ public class DocumentoService {
         // Si el sufijo es válido, incrementa el folio y retorna el número completo
         if (suffix != null) {
             juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+            if(tipo.getIniciales().equals("EXT")){
+                return tipo.getIniciales() + '/' + StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                + "/" + juzgadoFolios.getYear() + suffix;
+            }
             return baseNumExpediente + suffix;
         }
         return null; // Retorna null si no hay lógica para el tipo de causa
