@@ -43,7 +43,7 @@ public class TipoJuicio implements Serializable, Auditable {
     private Estado estado;
 
     @Enumerated
-    @Column(name = "N_TIPO_CAUSA", nullable = false)
+    @Column(name = "N_TIPO_CAUSA")
     private TipoCausa tipoCausa;
 
     @JoinColumn(name = "FN_TIPO_SISTEMA", referencedColumnName = "PN_ID")
