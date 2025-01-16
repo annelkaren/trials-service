@@ -1,12 +1,16 @@
 package mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
+import mx.gob.pjpuebla.trials.litigante.LitiganteExpedienteAudienciaRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -66,6 +70,12 @@ class AsistenciaAudienciaRepositoryTest extends AuditConfigTest {
     void testFindByPersonaDocumentoIdAndAudienciaId() {
         AsistenciaAudiencia resultado = asistenciaAudienciaRepository.findByPersonaDocumentoIdAndAudienciaId(1, 1);
         assertThat(resultado).isNotNull();
+    }
+
+    @Test
+    void  testgetAllAudicenciasByUser(){
+        List<LitiganteExpedienteAudienciaRecord> litiganteExpedienteAudienciaRecord = asistenciaAudienciaRepository.getAllAudicenciasByUser("example@example.com", Pageable.ofSize(2));
+        assertThat(litiganteExpedienteAudienciaRecord).isNotNull();
     }
 
 }

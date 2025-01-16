@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
@@ -90,5 +91,23 @@ class LitiganteResourceTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void getAudienciasByExpedienteRelacionados() throws Exception {
+        LitiganteExpedienteListAudienciasRecord litiganteExpedienteListAudienciasRecord = new LitiganteExpedienteListAudienciasRecord(
+                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
+                "Juzgado 5 Mercantil TEST",
+                Collections.singletonList(new AudienciasExpedienteRecord(100, "2025-01-13", "08:00:00", "2025-01-13", "08:30:00"))
+        );
+
+        given(litiganteService.getExpedientesAudienciasRelacionados(any(Pageable.class)))
+                .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedienteListAudienciasRecord)));
+
+        mockMvc.perform(
+                get("/api/litigante/audiencias")
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
+    }
+
 
 }

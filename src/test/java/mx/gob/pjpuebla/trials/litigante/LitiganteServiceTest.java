@@ -6,6 +6,8 @@ import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +48,8 @@ class LitiganteServiceTest extends SetupServiceTest {
     PersonaDocumentoRepository personaDocumentoRepository;
     @Mock
     NotificacionesDetallesRepository notificacionesDetallesRepository;
+    @Mock
+    AsistenciaAudienciaRepository asistenciaAudienciaRepository;
     @Mock
     NotificacionRepository notificacionRepository;
     @Mock
@@ -100,6 +105,29 @@ class LitiganteServiceTest extends SetupServiceTest {
         assertThat(documentoExpedienteResponse.fechaCompletado()).isEqualTo(LocalDateTime.now().toLocalDate().toString());
         assertThat(documentoExpedienteResponse.rutaArchivo()).isEqualTo("/api/litigante/documento/1");
     }
+
+    @Test
+    void getExpedientesAudienciasRelacionados() {
+        LitiganteExpedienteAudienciaRecord audienciaRecord = new LitiganteExpedienteAudienciaRecord(
+                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
+                "Juzgado 5 Mercantil TEST", 100,
+                LocalDateTime.parse("2025-01-13T08:00:00"), LocalDateTime.parse("2025-01-13T08:30:00")
+        );
+
+        given(asistenciaAudienciaRepository.getAllAudicenciasByUser(any(), any(PageRequest.class)))
+                .willReturn(List.of(audienciaRecord));
+
+        Page<LitiganteExpedienteListAudienciasRecord> page = litiganteService.getExpedientesAudienciasRelacionados(PageRequest.of(0, 10));
+
+        assertThat(page.getContent())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("numeroExpediente", "000001/2025")
+                .hasFieldOrPropertyWithValue("audiencias", List.of(new AudienciasExpedienteRecord(
+                        100, "2025-01-13", "08:00", "2025-01-13", "08:30"
+                )));
+    }
+
 
     @Test
     void getPromocionesLitigante() {

@@ -7,6 +7,8 @@ import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaR
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
@@ -39,6 +41,7 @@ public class LitiganteService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
     private final NotificacionRepository notificacionRepository;
+    private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
     private final DocumentoRepository documentoRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -109,6 +112,59 @@ public class LitiganteService {
 
         return new ExpedienteAutorizadoRecord(acuerdoSentenciaRecordList);
     }
+
+    public Page<LitiganteExpedienteListAudienciasRecord> getExpedientesAudienciasRelacionados(Pageable pageable) {
+        String username = getLitiganteUsername();
+        List<LitiganteExpedienteAudienciaRecord> list = asistenciaAudienciaRepository.getAllAudicenciasByUser(username, pageable);
+
+
+        Map<String, LitiganteExpedienteListAudienciasRecord> groupedAudiencias = new HashMap<>();
+
+        for (LitiganteExpedienteAudienciaRecord listAudienciaRecord : list) {
+
+            String key = listAudienciaRecord.id() + "-" + listAudienciaRecord.numeroExpediente();
+
+            String[] fechaHoraInicio = separarFechaYHora(listAudienciaRecord.fechaInicio().toString());
+            String fechaInicio = fechaHoraInicio[0];
+            String horaInicio = fechaHoraInicio[1];
+
+            String[] fechaHoraFin = separarFechaYHora(listAudienciaRecord.fechaFin().toString());
+            String fechaFin = fechaHoraFin[0];
+            String horaFin = fechaHoraFin[1];
+
+            AudienciasExpedienteRecord audienciaRecord = new AudienciasExpedienteRecord(
+                    listAudienciaRecord.numeroAudiencia(),
+                    fechaInicio,
+                    horaInicio,
+                    fechaFin,
+                    horaFin
+            );
+
+            if (groupedAudiencias.containsKey(key)) {
+                LitiganteExpedienteListAudienciasRecord existingRecord = groupedAudiencias.get(key);
+                existingRecord.audiencias().add(audienciaRecord);
+            } else {
+                groupedAudiencias.put(key, new LitiganteExpedienteListAudienciasRecord(
+                        listAudienciaRecord.id(),
+                        listAudienciaRecord.numeroExpediente(),
+                        listAudienciaRecord.materia(),
+                        listAudienciaRecord.tipoJuicio(),
+                        listAudienciaRecord.juzgado(),
+                        new ArrayList<>(List.of(audienciaRecord))
+                ));
+            }
+        }
+
+        List<LitiganteExpedienteListAudienciasRecord> result = new ArrayList<>(groupedAudiencias.values());
+        return new PageImpl<>(result, pageable, result.size());
+    }
+
+    private static String[] separarFechaYHora(String fechaHora) {
+        String[] partes = fechaHora.split("T");
+        return partes.length == 2 ? partes : new String[]{"", ""};
+    }
+
+
 
     public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
         String userName = getLitiganteUsername();

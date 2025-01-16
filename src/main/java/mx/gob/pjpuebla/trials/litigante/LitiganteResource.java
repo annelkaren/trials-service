@@ -46,6 +46,11 @@ public class LitiganteResource {
         return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdf(documentoId));
     }
 
+    @GetMapping("/audiencias")
+    public Page<LitiganteExpedienteListAudienciasRecord> getAudienciasByExpedienteRelacionados(Pageable pageable) {
+        return this.litiganteService.getExpedientesAudienciasRelacionados(pageable);
+    }
+
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
         return litiganteService.getPromocionesLitigante(pageable);
