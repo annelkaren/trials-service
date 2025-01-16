@@ -441,6 +441,7 @@ class DocumentoResourceTest {
                 "institucion1",
                 "asunto1",
                 EstadoCarpeta.CREADO,
+                EstadoCarpeta.CREADO.getEtiqueta(),
                 LocalDate.now(),
                 LocalDate.now(),
                 false,

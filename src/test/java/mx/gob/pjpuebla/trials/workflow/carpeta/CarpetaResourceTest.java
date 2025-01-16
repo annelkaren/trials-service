@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -448,6 +448,54 @@ class CarpetaResourceTest {
                                 .param("year", "2024")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testActualizarEstado_Success() throws Exception {
+        List<Integer> ids = Arrays.asList(1, 2, 3);
+
+        doNothing().when(mockCarpetaService).actualizarEstado(ids);
+
+        mockMvc.perform(post("/api/workflow/carpeta/actualizar-estado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[1, 2, 3]"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetCarpetaByExpedienteAndEstado_Success() throws Exception {
+        CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
+                1,
+                "Cecilia Reyes",
+                "Julio Tirado",
+                "laboral"
+        );
+
+        when(mockCarpetaService.getCarpetaByExpedienteAndEstado("000001/2024", EstadoCarpeta.CANCELADO))
+                .thenReturn(carpetaResponseRecord);
+
+        mockMvc.perform(get("/api/workflow/carpeta/expedientes")
+                        .param("numExpediente", "000001")
+                        .param("year", "2024")
+                        .param("estado", "CANCELADO")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idCarpeta").value(1))
+                .andExpect(jsonPath("$.actor").value("Cecilia Reyes"))
+                .andExpect(jsonPath("$.demandado").value("Julio Tirado"))
+                .andExpect(jsonPath("$.tipoJuicio").value("laboral"));
+    }
+
+    @Test
+    void testDevolverCarpetas_Success() throws Exception {
+        List<Integer> ids = List.of(1, 2, 3);
+
+        doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids);
+
+        mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[1, 2, 3]"))
                 .andExpect(status().isOk());
     }
 

@@ -43,10 +43,12 @@ public class Evento implements  Serializable, Auditable{
     @Column(name = "T_DIA_FIN")
     private LocalDate diaFin;
 
+    @JsonIgnore
     @JoinColumn(name = "FN_OFICIALIA", referencedColumnName = "PN_ID")
     @OneToOne
     private Oficialia oficialia;
 
+    @JsonIgnore
     @JoinColumn(name = "FN_JUZGADO", referencedColumnName = "PN_ID")
     @OneToOne
     private Juzgado juzgado;

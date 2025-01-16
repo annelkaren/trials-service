@@ -99,16 +99,19 @@ class JuzgadoServiceTest {
     @Test
     void getAll_return_page() {
         List<Juzgado> listPage = Collections.singletonList(juzgado);
-        given(juzgadoRepository.findAll(any(), any(), any(PageRequest.class)))
+        given(juzgadoRepository.findAll(any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<JuzgadoRecordItem> page = juzgadoService.getAll("", PageRequest.of(1, listPage.size()));
+
+        String key = "juzgadotest";
+        Page<JuzgadoRecordItem> page = juzgadoService.getAll(key, PageRequest.of(0, listPage.size()));
+
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", juzgado.getId())
                 .hasFieldOrPropertyWithValue("nombre", juzgado.getNombre())
                 .hasFieldOrPropertyWithValue("estado", juzgado.getEstado())
-                .hasFieldOrPropertyWithValue("materia", StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase()));
+                .hasFieldOrPropertyWithValue("materia", StringUtils.capitalize(StringUtils.stripAccents(juzgado.getMateria().getNombre()).toLowerCase()));
     }
 
     @Test

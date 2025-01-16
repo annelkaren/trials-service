@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -60,22 +61,21 @@ public class JuzgadoService {
 
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordItem> getAll(String key, Pageable pageable) {
-        key = (key != null) ? key.toLowerCase() : "";
-        List<Estado> status = SearchLikeEnum.searchByEstadoEnum(key);
-        if (status.isEmpty()) {
-            status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
-        } else {
-            key = "";
-        }
-        Page<Juzgado> page = juzgadoRepository.findAll(key, status, pageable);
+        String finalKey = (key != null) ? StringUtils.stripAccents(key).toLowerCase() : "";
 
+        Page<Juzgado> page = juzgadoRepository.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
         List<JuzgadoRecordItem> list = page.getContent().stream()
+                .filter(juzgado -> finalKey.isEmpty() || StringUtils.stripAccents(juzgado.getNombre())
+                        .toLowerCase()
+                        .contains(finalKey))
                 .map(juzgado -> new JuzgadoRecordItem(
                         juzgado.getId(),
                         juzgado.getNombre(),
                         juzgado.getEstado(),
-                        StringUtils.capitalize(juzgado.getMateria().getNombre().toLowerCase())
-                )).toList();
+                        StringUtils.capitalize(StringUtils.stripAccents(juzgado.getMateria().getNombre()).toLowerCase())
+                ))
+                .collect(Collectors.toList());
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
