@@ -71,16 +71,17 @@ class InstitucionServiceTest {
                 institucion.setDomicilio(domicilio);
 
                 List<Institucion> listPage = Collections.singletonList(institucion);
-                given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
-                                                listPage.size()));
-                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion,
-                                PageRequest.of(1, listPage.size()));
-                assertThat(page.getContent())
-                                .hasSize(1)
-                                .first().hasFieldOrPropertyWithValue("id", institucion.getId())
-                                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre());
+                given(mockInstitucionRepository.findAll()).willReturn(listPage);
 
+                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion, PageRequest.of(0, 1)); // Pagina de tamaño 1
+
+                assertThat(page.getContent())
+                        .hasSize(1)
+                        .first().hasFieldOrPropertyWithValue("id", institucion.getId())
+                        .hasFieldOrPropertyWithValue("nombre", institucion.getNombre())
+                        .hasFieldOrPropertyWithValue("domicilio", institucion.getDomicilio().getDireccionInstitucion())
+                        .hasFieldOrPropertyWithValue("telefono", institucion.getTelefono())
+                        .hasFieldOrPropertyWithValue("tipoInstitucion", institucion.getTipoInstitucion());
         }
 
         @Test
