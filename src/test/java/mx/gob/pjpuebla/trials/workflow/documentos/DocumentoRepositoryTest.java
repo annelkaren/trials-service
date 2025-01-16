@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
@@ -14,7 +15,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 @DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
@@ -146,5 +150,19 @@ void testActualizacionAcuerdoRespuesta() {
 
         assertThat(promociones).isNotEmpty();
     }
+    
+    @Test
+void testFindByCarpetaIdAndTipoDocumentoIn() {
+    Integer carpetaId = 1;
+    List<TipoDocumento> tiposDocumento = Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA);
+
+    List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(carpetaId, tiposDocumento);
+
+    assertNotNull(documentos);
+    assertEquals(1, documentos.size());
+
+    Documento documento1 = documentos.get(0);
+    assertEquals(TipoDocumento.ACUERDO, documento1.getTipoDocumento());
+}
 
 }

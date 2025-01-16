@@ -330,5 +330,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
         """)
 Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
+List<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento);
 
 }

@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +40,7 @@ class LitiganteResourceTest {
     @MockBean
     private AcuerdoService acuerdoServicePdf;
 
-    @Test
+    @Test 
     void getExpedientesRelacionados() throws Exception {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
@@ -96,5 +98,30 @@ class LitiganteResourceTest {
         ).andExpect(status().isOk());
     }
 
+        void getExpedienteDetails() throws Exception {
+                DocumentoResponseRecord documentoResponse = new DocumentoResponseRecord(
+                        "001",
+                        LocalDate.of(2025, 1, 1),
+                        LocalTime.of(10, 0, 0),
+                        "/archivos/documento-prueba.pdf"
+                );
+
+                ExpedienteResponseRecord expedienteResponse = new ExpedienteResponseRecord(
+                        "000001/2025", 
+                        "MERCANTIL", 
+                        "Juicio Ordinario Mercantil", 
+                        "Juzgado 5 Mercantil", 
+                        2L, 
+                        List.of(documentoResponse)
+                );
+
+                given(litiganteService.getExpedienteDetails()).willReturn(expedienteResponse);
+
+                mockMvc.perform(
+                        get("/api/litigante/acuerdos")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+        }
 
 }

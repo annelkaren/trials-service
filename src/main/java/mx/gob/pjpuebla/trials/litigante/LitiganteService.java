@@ -7,6 +7,9 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -19,11 +22,11 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,6 +43,7 @@ public class LitiganteService {
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private final DocumentoRepository documentoRepository;
 
     public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
         String username = getLitiganteUsername();
@@ -158,5 +162,40 @@ public class LitiganteService {
         return partes.length == 2 ? partes : new String[]{"", ""};
     }
 
+    public ExpedienteResponseRecord getExpedienteDetails() {
+        String username = getLitiganteUsername();
 
+        LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, Pageable.unpaged())
+            .getContent().stream().findFirst()
+            .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
+    
+        List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
+            carpeta.id(), 
+            Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA)
+        );
+        
+        List<DocumentoResponseRecord> documentoResponseRecords = documentos.stream()
+        .map(doc -> {
+            LocalDateTime fechaYHora = notificacionesDetallesRepository.findFechaYHoraByDocumentoId(doc);
+
+            return new DocumentoResponseRecord(
+                String.valueOf(doc.getId()),
+                fechaYHora.toLocalDate(),
+                fechaYHora.toLocalTime(),
+                "/api/litigante/documento/" + doc.getId()
+            );
+        })
+        .collect(Collectors.toList());
+
+        Long notificacionesPendientes = notificacionesDetallesRepository.countNotificacionesPorLeer(carpeta.id(), username);
+
+        return new ExpedienteResponseRecord(
+            carpeta.numeroExpediente(),
+            carpeta.materia(),
+            carpeta.tipoJuicio(),
+            carpeta.juzgado(),
+            notificacionesPendientes,
+            documentoResponseRecords
+        );
+    }
 }

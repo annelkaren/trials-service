@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PersonaDataRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -145,6 +146,5 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
         and ca.id = :carpetaId and tp.nombre = :tipoParte
         """)
     List<String> findTipoPartePrincipalByCarpetaId(Integer carpetaId, String tipoParte);
-
-
+     
 }
