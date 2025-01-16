@@ -1632,28 +1632,51 @@ public class DocumentoService {
         documentoRepository.save(documento);
     }
 
+
     /**
      * Genera el número de expediente penal basado en el tipo de causa, juzgado y
      * tipo de carpeta.
      *
-     * @param tipo devuelve resultado diferente dado el enum TipoCausa.
-     * @param juzgado sirve para obtener valor de la secuencia dado el juzgado.
-     * @param tipoCarpeta sirve para obtener valor de la secuencia el tipo de doc.
-     * @return string
+     * @param tipo        El tipo de causa (CONTROL_JUDICIAL_PREVIO, JUICIO_ORAL,
+     *                    etc.).
+     * @param juzgado     El juzgado asociado al expediente.
+     * @param tipoCarpeta El tipo de carpeta (puede afectar los folios del juzgado).
+     * @return El número de expediente generado en formato específico o {@code null}
+     *         si el tipo no es válido.
      */
     public String generateNumExpedientePenal(TipoCausa tipo, Juzgado juzgado, TipoCarpeta tipoCarpeta) {
         // Obtiene y valida los folios del juzgado para el año actual
-      
         JuzgadoFolios juzgadoFolios = juzgadoService.checkYearJuzgadoFolios(
                 juzgadoService.getJuzgadoFolios(juzgado, tipoCarpeta));
 
-        String numExpediente = "";
-        switch (tipo){
+        // Construye la parte base del número de expediente
+        String baseNumExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
+                + "/" + juzgadoFolios.getYear()
+                + "/" + tipo.getIniciales();
+
+        // Obtiene el sufijo específico según el tipo de causa
+        String suffix = getNumExpedienteSuffix(tipo, juzgado);
+
+        // Si el sufijo es válido, incrementa el folio y retorna el número completo
+        if (suffix != null) {
+            juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
+            return baseNumExpediente + suffix;
+        }
+        return null; // Retorna null si no hay lógica para el tipo de causa
+    }
+
+    /**
+     * Obtiene el sufijo del número de expediente según el tipo de causa y el
+     * juzgado.
+     *
+     * @param tipo    El tipo de causa (CONTROL_JUDICIAL_PREVIO, JUICIO_ORAL, etc.).
+     * @param juzgado El juzgado asociado al expediente.
+     * @return El sufijo correspondiente al tipo de causa o {@code null} si no se
+     *         encuentra definido.
+     */
+    private String getNumExpedienteSuffix(TipoCausa tipo, Juzgado juzgado) {
+        switch (tipo) {
             case CONTROL_JUDICIAL_PREVIO:
-                numExpediente = StringUtils.leftPad(juzgadoFolios.getValue().toString(), 6, '0')
-                        + "/" + juzgadoFolios.getYear() + "/CJP/" + juzgado.getNomenclatura().toUpperCase();
-                juzgadoService.increaseValueJuzgadoFolios(juzgadoFolios);
-                break;
             case CONTROL_ACTOS_INVESTIGACION:
             case EJECUCION:
                 // Los sufijos estándar que usan la nomenclatura del juzgado
@@ -1665,7 +1688,8 @@ public class DocumentoService {
                 // Sufijo que incluye la región del distrito del juzgado
                 return "/" + juzgado.getSede().getDistrito().getRegion().toUpperCase();
             default:
-                numExpediente = null;
+                // Retorna null para tipos de causa no definidos
+                return null;
         }
     }
 
