@@ -499,6 +499,7 @@ public class CarpetaService {
                 carpetaDetalle.getCujus());
     }
 
+
     public void saveExpedienteDetalle(
             SaveExpedienteDetalleRecord detalle,
             Integer docId) {
@@ -515,10 +516,14 @@ public class CarpetaService {
                 : CatalogoDeterminacionJurisdiccional.PRESENTACION);
 
         // edita tipo juicio
-        TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
-                .orElseThrow(
-                        () -> new NotFoundException("TipoJuicio no encontrado", detalle.tipoJuicioHijoId().toString()));
+        // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino no se hace nada
+        if (detalle.tipoJuicioHijoId() != null) {
+            TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
+                    .orElseThrow(
+                            () -> new NotFoundException("TipoJuicio no encontrado", detalle.tipoJuicioHijoId().toString()));
+            carpetaDetalle.setTipoJuicio(tipoJuicioHijo);
 
+        }
         // edita rubros
         Set<Rubro> rubros = detalle.rubros().stream()
                 .map(rubroRecord -> rubroRepository.findById(rubroRecord.id())
@@ -529,31 +534,33 @@ public class CarpetaService {
         carpeta.setRubros(rubros);
 
         // edita etapa procesal
-        EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
-                .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada",
-                        detalle.etapaProcesal().id().toString()));
-        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
-        if (optionalCarpetaEtapas.isPresent()) {
-            CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
-            // Si el registro Etapa Procesal mas reciente no coincide con el obtenido de
-            // detalle registra la nueva etapa procesal
-            if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
+        // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino no se hace nada
+        if (detalle.etapaProcesal() != null && detalle.etapaProcesal().id() != null) {
+            EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
+                    .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada",
+                            detalle.etapaProcesal().id().toString()));
+            Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
+            if (optionalCarpetaEtapas.isPresent()) {
+                CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
+                // Si el registro Etapa Procesal mas reciente no coincide con el obtenido de
+                // detalle registra la nueva etapa procesal
+                if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
+                    carpetaEtapasRepository.save(new CarpetaEtapas()
+                            .setCarpeta(carpeta)
+                            .setFechaRegistro(LocalDateTime.now())
+                            .setEtapaProcesal(etapaProcesalDetalle));
+                }
+            } else {
                 carpetaEtapasRepository.save(new CarpetaEtapas()
                         .setCarpeta(carpeta)
                         .setFechaRegistro(LocalDateTime.now())
                         .setEtapaProcesal(etapaProcesalDetalle));
             }
-        } else {
-            carpetaEtapasRepository.save(new CarpetaEtapas()
-                    .setCarpeta(carpeta)
-                    .setFechaRegistro(LocalDateTime.now())
-                    .setEtapaProcesal(etapaProcesalDetalle));
         }
 
         // TODO falta actualizar domicilios para Familiar Oralidad
 
         carpetaDetalle
-                .setTipoJuicio(tipoJuicioHijo)
                 .setAsunto(detalle.asunto())
                 .setObservaciones(detalle.observaciones())
                 .setPromovente(detalle.promovente())

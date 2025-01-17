@@ -937,28 +937,26 @@ public class DocumentoService {
         List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = mov.getDocumento();
-            
-            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null &&  Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
-            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
 
-            DocumentoAsignadoResponseRecord documentoGridRecord = new DocumentoAsignadoResponseRecord(
-                    (isPromocion) ? documento.getId() : null,
-                    carpeta.getId(),
-                    carpeta.getExpediente(),
-                    (isPromocion) ? documento.getFolio() : carpeta.getFolio(),
-                    StringUtils.capitalize(
-                            (isPromocion) ? documento.getTipoDocumento().name().toLowerCase()
-                                    : carpeta.getTipoCarpeta().name().toLowerCase()),
-                    (isPromocion) ? documento.getConcepto().getNombre()
-                            : (carpeta.getConcepto() != null) ? carpeta.getConcepto().getNombre() : "-",
-                    mov.getFechaAsignacion(),
-                    (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias())
-                            : (carpeta.getConcepto() != null)
-                                    ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias())
-                                    : null, // TODO. Validar si tiene horas sumar en lugar de dias, crear nuevo metodo
-                    StringUtils.capitalize((isPromocion) ? documento.getEstatus().name().toLowerCase()
-                            : carpeta.getEstatus().name().toLowerCase()),
-                    (isPromocion) ? mov.getObservaciones() : getObservaciones(carpeta, mov.getObservaciones()));
+            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
+            Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta() : documento != null ? documento.getCarpeta() : null;
+
+            assert carpeta != null;
+            DocumentoAsignadoResponseRecord documentoGridRecord =
+                    new DocumentoAsignadoResponseRecord(
+                            (isPromocion) ? documento.getId() : null,
+                            carpeta.getId(),
+                            carpeta.getExpediente(),
+                            (isPromocion) ? documento.getFolio() : carpeta.getFolio(),
+                            StringUtils.capitalize(
+                                    (isPromocion) ?
+                                            documento.getTipoDocumento().name().toLowerCase() :
+                                            carpeta.getTipoCarpeta().name().toLowerCase()),
+                            (isPromocion) ? documento.getConcepto().getNombre() : (carpeta.getConcepto() != null) ? carpeta.getConcepto().getNombre() : "-",
+                            mov.getFechaAsignacion(),
+                            (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias()) : (carpeta.getConcepto() != null) ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias()) : null,//TODO. Validar si tiene horas sumar en lugar de dias, crear nuevo metodo
+                            StringUtils.capitalize((isPromocion) ? documento.getEstatus().name().toLowerCase() : carpeta.getEstatus().name().toLowerCase()),
+                            (isPromocion) ? mov.getObservaciones() : getObservaciones(carpeta, mov.getObservaciones()));
             list.add(documentoGridRecord);
         }
 
