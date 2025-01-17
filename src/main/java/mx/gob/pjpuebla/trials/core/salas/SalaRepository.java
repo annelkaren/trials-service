@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+
 
 
 @Repository
@@ -96,5 +98,6 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
     Optional<Sala> checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala);
 
     List<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre);
- 
+    
+    Sala findByJuez(Persona juez);
 }

@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -43,5 +44,14 @@ public class DocumentoData implements Serializable {
     private String destino;
     private LocalDate fechaEntrega;
     private LocalDate fechaDevolucion;
+    private Integer numOficio;
+    private String numCarpetaInv;
+    private String lugarHecho;
+    private LocalDate fechaHecho;
+    private LocalDate fechaPresentacion;
+    private LocalTime horaFormal;
+    private LocalTime horaMaterial;
+    private String lugarDisposicion;
+    private String tipoSolAudiencia;
 }
 

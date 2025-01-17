@@ -53,6 +53,11 @@ public class PersonaResource {
         return this.personaService.findAllJueces(juzgadoId);
     }
 
+    @GetMapping("/jueces")
+    public List<JuezRecord> getJuecesByJuzgadoOfPersonaLogueada() {
+        return this.personaService.findByJuzgadoOfPersonaLogueada();
+    }
+
     @GetMapping("/encargadocarrito")
     public List<EncargadoCarritoRecord> getEncargadosCarrito() {
         return this.personaService.findAllEncargadosCarrito();

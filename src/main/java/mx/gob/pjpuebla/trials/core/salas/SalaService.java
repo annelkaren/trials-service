@@ -185,10 +185,11 @@ public class SalaService {
     }
 
     public SalaAudienciaRecord asignarSalaConexidad(PersonaDocumentoRecord actor, PersonaDocumentoRecord demandado, TipoJuicio tipoJuicio, TipoAudiencia tipoAudiencia){
-         List<Carpeta> carpetas = new ArrayList<>();
-        
-        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte()));
-        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte()));
+        List<Carpeta> carpetas = new ArrayList<>();
+        String nombreMateria = tipoJuicio.getMateria().getNombre();
+
+        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId(nombreMateria.equals("PENAL") ? "Victimas" : "Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId(nombreMateria.equals("PENAL")  ? "Imputados" :"Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte()));
 
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(

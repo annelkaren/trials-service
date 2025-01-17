@@ -41,7 +41,6 @@ public class AudienciaPruebasService {
     private final TipoPruebasRepository tipoPruebaRepository;
     private final MateriaPericialRepository materiaPericialRepository;
     private final AudienciaPruebasRepository audienciaPruebaRepository;
-    private final AudienciaRepository audienciaRepository;
     private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
     private final AudienciaService audienciaService;

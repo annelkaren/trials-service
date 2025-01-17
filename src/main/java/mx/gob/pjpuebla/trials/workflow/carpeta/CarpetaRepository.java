@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
@@ -124,4 +124,34 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                                       Pageable pageable);
 
     Optional<Carpeta> findByExpedienteAndJuzgadoIdAndEstatus(String expediente, Integer juzgadoId, EstadoCarpeta estado);
+
+
+
+    @Query(value = """
+      WITH jueces_penal AS (
+          SELECT DISTINCT p.id AS juez_id, p.nombre
+          FROM salas s
+          JOIN persona p ON s.juez_id = p.id
+          JOIN juzgado j ON s.juzgado_id = j.id
+          JOIN materia m ON j.materia_id = m.id
+          WHERE m.nombre = 'PENAL'
+      ),
+      ultimo_juez AS (
+          SELECT p.id AS juez_id
+          FROM audiencias a
+          JOIN salas s ON a.sala_id = s.id
+          JOIN persona p ON s.juez_id = p.id
+          JOIN juzgado j ON s.juzgado_id = j.id
+          JOIN materia m ON j.materia_id = m.id
+          WHERE m.nombre = 'PENAL'
+          ORDER BY a.id DESC
+          LIMIT 1
+      )
+      SELECT p.*
+      FROM jueces_penal p
+      LEFT JOIN ultimo_juez u ON p.juez_id > u.juez_id
+      ORDER BY p.juez_id ASC
+      LIMIT 1
+      """, nativeQuery = true)
+    Persona findSiguienteJuezPenal();
 }
