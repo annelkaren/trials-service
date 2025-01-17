@@ -734,8 +734,9 @@ public class DocumentoService {
             Documento documento = mov.getDocumento();
 
             boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
-            Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
+            Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta() : documento != null ? documento.getCarpeta() : null;
 
+            assert carpeta != null;
             DocumentoAsignadoResponseRecord documentoGridRecord =
                     new DocumentoAsignadoResponseRecord(
                             (isPromocion) ? documento.getId() : null,
