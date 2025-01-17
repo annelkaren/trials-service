@@ -1,13 +1,20 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.Notificacion;
@@ -45,6 +52,8 @@ class LitiganteServiceTest extends SetupServiceTest {
     AsistenciaAudienciaRepository asistenciaAudienciaRepository;
     @Mock
     NotificacionRepository notificacionRepository;
+    @Mock
+    DocumentoRepository documentoRepository;
     @InjectMocks
     LitiganteService litiganteService;
 
@@ -117,6 +126,48 @@ class LitiganteServiceTest extends SetupServiceTest {
                 .hasFieldOrPropertyWithValue("audiencias", List.of(new AudienciasExpedienteRecord(
                         100, "2025-01-13", "08:00", "2025-01-13", "08:30"
                 )));
+    }
+
+
+    @Test
+    void getPromocionesLitigante() {
+        Documento documento = new Documento();
+        documento.setFolio("12345");
+        documento.setRuta("ruta/documento");
+
+        Carpeta carpeta = new Carpeta();
+        carpeta.setExpediente("000001/2025");
+        carpeta.setJuzgado(JuzgadoSetUp.createJuzgado());
+        documento.setCarpeta(carpeta);
+
+        Persona persona = new Persona();
+        persona.setCorreoElectronico("correo@dominio.com");
+        documento.setPersona(persona);
+
+        Audit audit = new Audit();
+        audit.setFechaAlta(LocalDateTime.now());
+        documento.setAudit(audit);
+
+        Page<Documento> docPage = new PageImpl<>(Collections.singletonList(documento));
+
+        given(documentoRepository.findPromocionesLitigante(any(), any(PageRequest.class))).willReturn(docPage);
+        given(documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(any(), any(), any())).willReturn(true);
+
+        Page<PromocionAutorizadaRecord> promociones = litiganteService.getPromocionesLitigante(PageRequest.of(0, 10));
+
+        assertThat(promociones).isNotNull();
+        assertThat(promociones.getContent()).hasSize(1);
+
+        PromocionAutorizadaRecord promocion = promociones.getContent().get(0);
+        assertThat(promocion.expedienteAutorizado()).hasSize(1);
+        PromocionesLitiganteRecord promocionesLitigante = promocion.expedienteAutorizado().get(0);
+        assertThat(promocionesLitigante.numeroExpediente()).isEqualTo("000001/2025");
+        assertThat(promocionesLitigante.promocionesElectronicasLitigante()).hasSize(1);
+
+        PromocionesElectronicasLitigante promocionElectronica = promocionesLitigante.promocionesElectronicasLitigante().get(0);
+        assertThat(promocionElectronica.numeroPromocionE()).isEqualTo("12345");
+        assertThat(promocionElectronica.usuarioOrigen()).isEqualTo("correo@dominio.com");
+        assertThat(promocionElectronica.rutaArchivo()).isEqualTo("/opt/pjp/files/2025/JuzgadoTEST/000001/ruta/documento");
     }
 
 }

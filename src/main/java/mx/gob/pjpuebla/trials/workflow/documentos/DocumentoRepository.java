@@ -332,5 +332,25 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
 List<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento);
+    @Query("""
+    SELECT doc
+    FROM Documento doc
+    JOIN doc.persona p
+    WHERE LOWER(p.correoElectronico) = LOWER(:correo)
+    AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+""")
+    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, Pageable pageable);
+
+    @Query("""
+    SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END
+    FROM Documento doc
+    JOIN doc.persona p
+    WHERE doc.carpeta.expediente = :expediente
+    AND doc.folio = :numeroAcuerdo
+    AND LOWER(p.correoElectronico) = LOWER(:correo)
+""")
+    boolean existsByExpedienteAndAcuerdoAndAsociateCorreo(@Param("expediente") String expediente,
+                                                          @Param("numeroAcuerdo") String numeroAcuerdo,
+                                                          @Param("correo") String correo);
 
 }

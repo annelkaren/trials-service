@@ -3,13 +3,16 @@ package mx.gob.pjpuebla.trials.litigante;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
-import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -40,10 +43,10 @@ public class LitiganteService {
     private final NotificacionesDetallesRepository notificacionesDetallesRepository;
     private final NotificacionRepository notificacionRepository;
     private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
+    private final DocumentoRepository documentoRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private final DocumentoRepository documentoRepository;
 
     public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
         String username = getLitiganteUsername();
@@ -168,12 +171,12 @@ public class LitiganteService {
         LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, Pageable.unpaged())
             .getContent().stream().findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
-    
+
         List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
-            carpeta.id(), 
+            carpeta.id(),
             Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA)
         );
-        
+
         List<DocumentoResponseRecord> documentoResponseRecords = documentos.stream()
         .map(doc -> {
             LocalDateTime fechaYHora = notificacionesDetallesRepository.findFechaYHoraByDocumentoId(doc);
@@ -198,4 +201,42 @@ public class LitiganteService {
             documentoResponseRecords
         );
     }
+
+    public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
+        String userName = getLitiganteUsername();
+        Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, pageable);
+
+        return docPromociones.map(documento -> {
+            String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
+
+            String numeroExpediente = partesExpediente[0];
+            String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
+
+            boolean isValid = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(
+                    documento.getCarpeta().getExpediente(),
+                    documento.getFolio(),
+                    userName
+            );
+
+            if (!isValid) {
+                throw new IllegalStateException("El expediente y el acuerdo no están asociados al usuario.");
+            }
+
+            PromocionesElectronicasLitigante promocionElectronica = new PromocionesElectronicasLitigante(
+                    documento.getFolio(),
+                    documento.getPersona().getCorreoElectronico(),
+                    documento.getRuta(),
+                    documento.getAudit().getFechaAlta().toLocalDate(),
+                    documento.getAudit().getFechaAlta().toLocalTime(),
+                    "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/" + numeroExpediente + "/" + documento.getRuta()
+            );
+
+            PromocionesLitiganteRecord promocionesLitiganteRecord = new PromocionesLitiganteRecord(
+                    documento.getCarpeta().getExpediente(),
+                    List.of(promocionElectronica)
+            );
+            return new PromocionAutorizadaRecord(List.of(promocionesLitiganteRecord));
+        });
+    }
+
 }
