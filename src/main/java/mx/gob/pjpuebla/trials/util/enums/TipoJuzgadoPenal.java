@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum TipoJuzgadoPenal {
+    CONTROL("Control"),
     EJECUCION("Ejecución"),
     ENJUICIAMIENTO("Enjuiciamiento");
 

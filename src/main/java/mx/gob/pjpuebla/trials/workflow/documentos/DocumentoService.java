@@ -1676,6 +1676,7 @@ public class DocumentoService {
      */
     private String getNumExpedienteSuffix(TipoCausa tipo, Juzgado juzgado) {
         switch (tipo) {
+            case CARPETAS_JUDICIALES:
             case CONTROL_JUDICIAL_PREVIO:
             case CONTROL_ACTOS_INVESTIGACION:
             case EJECUCION:
