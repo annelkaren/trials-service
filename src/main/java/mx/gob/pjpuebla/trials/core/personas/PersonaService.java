@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -195,9 +196,16 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public List<JuezRecord> findByJuzgadoOfPersonaLogueada() {
         Persona persona = getAuditor();
-        Juzgado juzgado = persona.getJuzgado();
-        
-        return findAllJueces(juzgado.getId());
+
+        List<JuezRecord> juecesRecords = Optional.ofNullable(persona.getOficialia())
+                .map(Oficialia::getJuzgados)
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(juzgado -> juzgado.getMateria() != null && "PENAL".equals(juzgado.getMateria().getNombre()))
+                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream()) 
+                .toList();
+
+        return juecesRecords;
     }
 
     @Transactional(readOnly = true)
