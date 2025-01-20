@@ -30,8 +30,7 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
+
     @Column(name = "S_NOMBRES", nullable = false)
     private String nombre;
 
@@ -61,7 +60,6 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "S_EMAIL")
     private String correoElectronico;
 
-    @Pattern(regexp = "^\\d{10}$")
     @Column(name = "S_CELULAR")
     private String celular;
 
