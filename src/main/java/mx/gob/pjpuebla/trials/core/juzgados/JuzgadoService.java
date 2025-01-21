@@ -296,8 +296,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoFolios getJuzgadoFolios(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
-        System.out.println("EL FOLIO PARA JUZGADO : " + juzgado.getNombre());
-        System.out.println("DEL TIPO DE CARPETA: " + tipoCarpeta.getEtiqueta() + '\n');
+
         return juzgadoFoliosRepository.findByJuzgadoAndTipoCarpeta(juzgado, tipoCarpeta)
                 .orElseThrow(() -> new NotFoundException("juzgadoFolio no encontrado", "tipoCarpeta"));
     }
