@@ -2,9 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;

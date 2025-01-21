@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -203,15 +202,16 @@ public class PersonaService {
         Materia materia = materiaRepository.findById(materiaId)
             .orElseThrow(() -> new NotFoundException("Acuerdo rubro no encontrado", "acuerdoRubroId" + materiaId));
 
-        List<JuezRecord> juecesRecords = Optional.ofNullable(persona.getOficialia())
-                .map(Oficialia::getJuzgados)
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(juzgado -> materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream()) 
-                .toList();
-
-        return juecesRecords;
+            List<JuezRecord> juecesRecords = 
+            persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null 
+                    ? persona.getOficialia().getJuzgados().stream()
+                        .filter(juzgado -> juzgado.getMateria() != null 
+                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                        .toList()
+                    : Collections.emptyList();
+    
+    return juecesRecords;
     }
 
     @Transactional(readOnly = true)
