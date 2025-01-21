@@ -296,6 +296,13 @@ public class DocumentoService {
     public DocumentoGenericRecord createDemandaPenal(DocumentoCreateDemandaPenalRecord demanda) {
         Persona persona = personaService.getAuditor();
 
+        Oficialia oficialia = persona.getOficialia();
+        if (oficialia == null) {
+            throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
+                    "persona.getOficialia()");
+        }
+
+        
         // Obtenemos el tipo de juicio para vincularlo con la carpeta:
         TipoJuicio tipoJuicioPadre = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicioPadre().toString()));
