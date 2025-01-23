@@ -45,7 +45,7 @@ public class TipoPartesService {
     }
 
     public List<TipoPartesRecord> findByTipoJuicioId(Integer materiaId) {
-        List<TipoPartes> tipoPartes = tipoPartesRepository.findByTipoJuicioId(materiaId);
+        List<TipoPartes> tipoPartes = tipoPartesRepository.findByTipoJuicioIdAndNotPromovente(materiaId);
         return tipoPartes.stream().map(entity -> new TipoPartesRecord(entity.getId(), entity.getNombre(), entity.getTipoJuicio().getNombre())).toList();
     }
 
@@ -63,7 +63,7 @@ public class TipoPartesService {
             throw new NotFoundException("Tipo de juicio no encontrado", "El tipo de juicio es null");
         }
     
-        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioId(tipoJuicio.getId());
+        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioIdAndNotPromovente(tipoJuicio.getId());
 
         return tiposPartes.stream()
         .map(tipoParte -> new TipoPartesRecord(tipoParte.getId(), tipoParte.getNombre(), tipoJuicio.getNombre()))
@@ -72,7 +72,7 @@ public class TipoPartesService {
 
     public List<TipoPartesRecord> getTiposPartesByCarpetaId(Integer carpetaId) {
         Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
-        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioId(tipoJuicioId);
+        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioIdAndNotPromovente(tipoJuicioId);
 
         if (tipoJuicioId == null) {
             throw new NotFoundException("No se encontró el tipo de juicio para la carpeta ID ",carpetaId.toString());

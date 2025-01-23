@@ -62,7 +62,7 @@ public class TipoJuicioService {
     @Transactional(readOnly = true)
     public Page<TipoJuicioRecord> getAllActiveByCentroTrabajo(Pageable pageable) {
         Persona usuario = personaService.getAuditor();
-
+        
         Integer centroTrabajoId = usuario.getOficialia() != null ? usuario.getOficialia().getId() : usuario.getJuzgado().getId();
 
         if (centroTrabajoId == null) {
@@ -73,6 +73,7 @@ public class TipoJuicioService {
         Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null, pageable);
+                
         for (TipoJuicio tipoJuicio : page.getContent()) {
             if (!tipoJuicio.getMateria().getNombre().equalsIgnoreCase("exhorto")) {
                 TipoJuicioRecord tipoJuicioRecord = new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(),

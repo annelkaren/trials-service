@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -76,5 +78,23 @@ class EventoRepositoryTest extends AuditConfigTest {
         Optional<Evento> eventoInhabil = eventoRepository.findEntreDiaInicioAndDiaFin(diaFeriado, null, null);
 
         assertThat(eventoInhabil).isPresent().get().hasFieldOrPropertyWithValue("descripcion", "DIA INHABIL");
+    }
+
+    @Test
+    void findEventosGeneralesTest() {
+        Page<Evento> eventos = eventoRepository.findEventosGenerales(PageRequest.of(0, 10));
+        assertThat(eventos).isNotNull();
+        assertThat(eventos.getTotalElements()).isGreaterThan(0);
+    }
+
+    @Test
+    void findByOficialiaOrJuzgado() {
+        Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElseThrow();
+
+        Page<Evento> eventos = eventoRepository.findByOficialiaOrJuzgado(null, juzgado, PageRequest.of(0, 10));
+
+        assertThat(eventos).isNotNull();
+        assertThat(eventos.getTotalElements()).isGreaterThan(0);
+        assertThat(eventos.getContent().get(0).getJuzgado()).isEqualTo(juzgado);
     }
 }

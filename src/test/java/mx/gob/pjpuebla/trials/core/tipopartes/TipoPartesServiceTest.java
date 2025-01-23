@@ -99,7 +99,7 @@ class TipoPartesServiceTest {
 
     @Test
     void getByTipoJuicioId_return_tipoPartes() {
-        given(mockTipoPartesRepository.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId()))
+        given(mockTipoPartesRepository.findByTipoJuicioIdAndNotPromovente(validTipoPartes.getTipoJuicio().getId()))
                 .willReturn(Collections.singletonList(validTipoPartes));
 
         List<TipoPartesRecord> list = target.findByTipoJuicioId(validTipoPartes.getTipoJuicio().getId());
@@ -128,7 +128,7 @@ class TipoPartesServiceTest {
                 tipoPartes.setId(3);
                 tipoPartes.setNombre("Actor - Abogado litigante");
 
-                given(mockTipoPartesRepository.findByTipoJuicioId(2)).willReturn(Collections.singletonList(tipoPartes));
+                given(mockTipoPartesRepository.findByTipoJuicioIdAndNotPromovente(2)).willReturn(Collections.singletonList(tipoPartes));
 
                 List<TipoPartesRecord> result = target.getTipoPartesByDocumentoId(1);
 
@@ -188,7 +188,7 @@ class TipoPartesServiceTest {
         List<TipoPartes> tiposPartes = Arrays.asList(validTipoPartes);
 
         given(mockCarpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId)).willReturn(tipoJuicioId);
-        given(mockTipoPartesRepository.findByTipoJuicioId(tipoJuicioId)).willReturn(tiposPartes);
+        given(mockTipoPartesRepository.findByTipoJuicioIdAndNotPromovente(tipoJuicioId)).willReturn(tiposPartes);
 
         List<TipoPartesRecord> result = target.getTiposPartesByCarpetaId(carpetaId);
 

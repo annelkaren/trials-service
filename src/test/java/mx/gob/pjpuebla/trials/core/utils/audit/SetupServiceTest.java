@@ -30,6 +30,7 @@ public class SetupServiceTest {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", RandomStringUtils.random(20));
+        claims.put("preferred_username", RandomStringUtils.randomAlphabetic(5)+"@dev.dev");
 
         return new Jwt(RandomStringUtils.random(20), Instant.now(), Instant.now().plusMillis(9999), headers, claims);
     }
