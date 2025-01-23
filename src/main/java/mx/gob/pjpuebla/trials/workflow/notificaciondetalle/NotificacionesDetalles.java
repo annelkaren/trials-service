@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciondetalle;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,4 +35,11 @@ public class NotificacionesDetalles implements Serializable {
     @JoinColumn(name = "FN_PERSONA_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private PersonaDocumento personaDocumento;
+
+    @Column(name = "T_FECHA_CONSULTA")
+    private LocalDateTime fechaConsulta;
+
+    @Column(name = "T_FECHA_COMPLETADO")
+    private LocalDateTime fechaCompletado;
+
 }

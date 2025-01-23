@@ -114,4 +114,36 @@ public class Domicilio implements Serializable, Auditable {
         return sb.toString().trim();
     }
 
+    public String getDireccionInstitucion() {
+        StringBuilder sb = new StringBuilder();
+        if (calle != null) {
+            sb.append(calle).append(" ");
+        }
+        if (colonia != null) {
+            sb.append(colonia).append(" ");
+        }
+        if (exterior != null && !exterior.isBlank()) {
+            sb.append(exterior).append(" ");
+        }
+        if (interior != null && !interior.isBlank()) {
+            sb.append("Int. ").append(interior).append(" ");
+        }
+        if (estadoRepublica != null) {
+            sb.append(estadoRepublica).append(" ");
+        }
+        if (municipio != null) {
+            sb.append(municipio).append(" ");
+        }
+        if (localidad != null) {
+            sb.append(localidad).append(" ");
+        }
+        if (codigoPostal != null) {
+            sb.append(codigoPostal).append(" ");
+        }
+        if (referencia != null) {
+            sb.append("Ref: ").append(referencia);
+        }
+        return sb.toString().trim();
+    }
+
 }

@@ -5,10 +5,11 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,5 +27,38 @@ public class ConceptoResource {
     @GetMapping("/{id}")
     public ConceptoRecordResponse findById(@PathVariable Integer id) {
         return this.conceptoService.findById(id);
+    }
+
+    @GetMapping(value = "/registros", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ConceptoRecord> getallConceptos(
+            @PageableDefault(size = 25) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key
+    ) {
+        return conceptoService.getAllConceptos(pageable, key);
+    }
+
+    @PatchMapping("/{id}/status/{status}")
+    public ConceptoRecord updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
+        return conceptoService.updateStatus(id, status);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Integer id) {
+        conceptoService.delete(id);
+    }
+
+    @PostMapping
+    public ConceptoRecord create(@RequestBody Concepto concepto) {
+        return conceptoService.createConcepto(concepto);
+    }
+
+    @GetMapping("/conceptoJuicio/{id}")
+    public ConceptoRecordJuicio findByIdConceptoJuicio(@PathVariable Integer id) {
+        return this.conceptoService.findByConceptoById(id);
+    }
+
+    @PutMapping
+    public ConceptoRecord update(@RequestBody Concepto concepto) {
+        return conceptoService.updateConcepto(concepto);
     }
 }

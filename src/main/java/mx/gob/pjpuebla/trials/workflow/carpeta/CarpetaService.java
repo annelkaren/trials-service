@@ -37,6 +37,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -110,10 +111,11 @@ public class CarpetaService {
                         "No se puede registrar a Apelación, no hay sentencia registrada.");
             }
         }
-
+        
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
-        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado);
+        String tipoJuicio = carpeta.getTipoJuicio().getNombre();
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio);
     }
 
     private Optional<Documento> getSentencia(Integer carpetaId) {
@@ -313,8 +315,6 @@ public class CarpetaService {
                 .findPersonaDocumentoDataByCarpetaId(carpeta.getId());
 
         // Obtiene el nombre del juez TODO.obtener nombre del juez
-        // ExtraAudienciaSelloRecord extraAudienciaSelloRecord =
-        // audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
@@ -499,6 +499,7 @@ public class CarpetaService {
                 carpetaDetalle.getCujus());
     }
 
+
     public void saveExpedienteDetalle(
             SaveExpedienteDetalleRecord detalle,
             Integer docId) {
@@ -515,10 +516,14 @@ public class CarpetaService {
                 : CatalogoDeterminacionJurisdiccional.PRESENTACION);
 
         // edita tipo juicio
-        TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
-                .orElseThrow(
-                        () -> new NotFoundException("TipoJuicio no encontrado", detalle.tipoJuicioHijoId().toString()));
+        // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino no se hace nada
+        if (detalle.tipoJuicioHijoId() != null) {
+            TipoJuicio tipoJuicioHijo = tipoJuicioRepository.findById(detalle.tipoJuicioHijoId())
+                    .orElseThrow(
+                            () -> new NotFoundException("TipoJuicio no encontrado", detalle.tipoJuicioHijoId().toString()));
+            carpetaDetalle.setTipoJuicio(tipoJuicioHijo);
 
+        }
         // edita rubros
         Set<Rubro> rubros = detalle.rubros().stream()
                 .map(rubroRecord -> rubroRepository.findById(rubroRecord.id())
@@ -529,31 +534,33 @@ public class CarpetaService {
         carpeta.setRubros(rubros);
 
         // edita etapa procesal
-        EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
-                .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada",
-                        detalle.etapaProcesal().id().toString()));
-        Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
-        if (optionalCarpetaEtapas.isPresent()) {
-            CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
-            // Si el registro Etapa Procesal mas reciente no coincide con el obtenido de
-            // detalle registra la nueva etapa procesal
-            if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
+        // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino no se hace nada
+        if (detalle.etapaProcesal() != null && detalle.etapaProcesal().id() != null) {
+            EtapaProcesal etapaProcesalDetalle = etapaProcesalRepository.findById(detalle.etapaProcesal().id())
+                    .orElseThrow(() -> new NotFoundException("Etapa Procesal no encontrada",
+                            detalle.etapaProcesal().id().toString()));
+            Optional<CarpetaEtapas> optionalCarpetaEtapas = carpetaEtapasRepository.findByCarpetaId(carpeta.getId());
+            if (optionalCarpetaEtapas.isPresent()) {
+                CarpetaEtapas carpetaEtapas = optionalCarpetaEtapas.get();
+                // Si el registro Etapa Procesal mas reciente no coincide con el obtenido de
+                // detalle registra la nueva etapa procesal
+                if (!carpetaEtapas.getEtapaProcesal().getId().equals(etapaProcesalDetalle.getId())) {
+                    carpetaEtapasRepository.save(new CarpetaEtapas()
+                            .setCarpeta(carpeta)
+                            .setFechaRegistro(LocalDateTime.now())
+                            .setEtapaProcesal(etapaProcesalDetalle));
+                }
+            } else {
                 carpetaEtapasRepository.save(new CarpetaEtapas()
                         .setCarpeta(carpeta)
                         .setFechaRegistro(LocalDateTime.now())
                         .setEtapaProcesal(etapaProcesalDetalle));
             }
-        } else {
-            carpetaEtapasRepository.save(new CarpetaEtapas()
-                    .setCarpeta(carpeta)
-                    .setFechaRegistro(LocalDateTime.now())
-                    .setEtapaProcesal(etapaProcesalDetalle));
         }
 
         // TODO falta actualizar domicilios para Familiar Oralidad
 
         carpetaDetalle
-                .setTipoJuicio(tipoJuicioHijo)
                 .setAsunto(detalle.asunto())
                 .setObservaciones(detalle.observaciones())
                 .setPromovente(detalle.promovente())
@@ -772,4 +779,52 @@ public class CarpetaService {
         return Boolean.TRUE;
 
     }
+
+    @Transactional
+    public void actualizarEstado(List<Integer> ids) {
+        List<Carpeta> carpetas = carpetaRepository.findAllById(ids);
+        carpetas.forEach(carpeta -> carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL));
+        carpetaRepository.saveAll(carpetas);
+    }
+    
+    public CarpetaResponseRecord getCarpetaByExpedienteAndEstado(String expediente,
+        EstadoCarpeta estado) {
+    
+        Persona auditor = personaService.getAuditor();
+        if (auditor == null || auditor.getJuzgado() == null) {
+            throw new IllegalArgumentException("No se puede determinar el juzgado.");
+        }
+        Integer juzgadoId = auditor.getJuzgado().getId();
+    
+
+        Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoIdAndEstatus(expediente, juzgadoId, estado)
+            .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + juzgadoId));
+        
+        String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
+        String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
+        String tipoJuicio = carpeta.getTipoJuicio().getNombre();
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio);
+    }
+
+    public void devolverArchivoJudicial(List<Integer> ids) {
+        for (Integer id : ids) {
+            Movimiento ultimoMovimiento = movimientoRepository.findTopByCarpetaIdOrderByFechaAsignacionDesc(id);
+
+            if (ultimoMovimiento != null) {
+                EstadoCarpeta estado = EstadoCarpeta.valueOf(ultimoMovimiento.getEstado());
+                
+                Optional<Carpeta> carpetaOptional = carpetaRepository.findById(id);
+                if (carpetaOptional.isPresent()) {
+                    Carpeta carpeta = carpetaOptional.get();
+                    carpeta.setEstatus(estado);
+                    carpetaRepository.save(carpeta);
+                } else {
+                    throw new RuntimeException("Carpeta no encontrada con ID: " + id);
+                }
+            } else {
+                throw new RuntimeException("No se encontró movimiento para la carpeta con ID: " + id);
+            }
+        }
+    }
+    
 }

@@ -34,6 +34,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
@@ -51,6 +52,12 @@ public class DocumentoResource {
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
         return this.documentoService.createDemanda(documentoSaveRecord);
     }
+
+    @PostMapping("/crear/demandaPenal")
+    public DocumentoGenericRecord crearDemandaPenal(@RequestBody DocumentoCreateDemandaPenalRecord demanda) {
+        return this.documentoService.createDemandaPenal(demanda);
+    }
+    
 
     @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
     public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
@@ -120,7 +127,7 @@ public class DocumentoResource {
 
     @PostMapping(value = "/documento/promocion",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoPromocionResponseRecord createPromocion(
-            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson) throws JsonProcessingException   {
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,DocumentoPromocionRecord.class);
         return this.documentoService.createPromocion(documentoPromocionRecord, file);

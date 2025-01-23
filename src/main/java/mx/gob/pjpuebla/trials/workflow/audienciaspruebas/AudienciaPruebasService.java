@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 
 import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +40,6 @@ public class AudienciaPruebasService {
     private final TipoPruebasRepository tipoPruebaRepository;
     private final MateriaPericialRepository materiaPericialRepository;
     private final AudienciaPruebasRepository audienciaPruebaRepository;
-    private final AudienciaRepository audienciaRepository;
     private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
     private final AudienciaService audienciaService;

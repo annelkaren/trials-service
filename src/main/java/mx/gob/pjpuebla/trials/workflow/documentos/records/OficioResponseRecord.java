@@ -11,6 +11,7 @@ public record OficioResponseRecord(
         String dependencia,
         String asunto,
         EstadoCarpeta estatus,
+        String estatusEtiqueta,
         LocalDate fechaEmision,
         LocalDate fechaEntrega,
         Boolean bandAcuse,
