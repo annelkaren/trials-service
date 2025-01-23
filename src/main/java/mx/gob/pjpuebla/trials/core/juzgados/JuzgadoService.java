@@ -228,7 +228,6 @@ public class JuzgadoService {
     }
 
     public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
-
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
@@ -254,7 +253,7 @@ public class JuzgadoService {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                     juzgadosRelacionados.stream().map(Juzgado::getId).toList());
-
+        
             if (juzgados.isEmpty()){
                 if (TipoCarpeta.APELACION.name().equals(tipoCarpeta.name())) {
                     throw new NotFoundException(reason, tipoJuicio.getNombre());
@@ -265,6 +264,7 @@ public class JuzgadoService {
         }
 
         int rand = RANDOM.nextInt(juzgados.size());
+
         return juzgados.get(rand);
 
     }
