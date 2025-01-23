@@ -51,7 +51,6 @@ class EtapaProcesalServiceTest {
     void getEtapaProcesal_return_list2() {
         EtapaProcesalRecord etapaProcesalRecord = EtapaProcesalSetUp.createEtapaProcesalRecordCase2();
         List<EtapaProcesalRecord> listRecord = Collections.singletonList(etapaProcesalRecord);
-        System.out.println(listRecord);
 
         given(etapaProcesalRepository.getListEtapaProcesalByTipoJuicioAndProcedimiento(1,  null))
                 .willReturn(listRecord);
@@ -61,7 +60,6 @@ class EtapaProcesalServiceTest {
                 .willReturn(java.util.Optional.of(tipoJuicioSimulado));
 
         List<ListEtapaProcesalRecord> resultList = etapaProcesalService.getEtapaProcesal(1, 0);
-        System.out.println(resultList);
         assertNotNull(resultList);
         assertEquals(1, resultList.size());
     }

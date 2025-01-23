@@ -1843,7 +1843,6 @@ class DocumentoServiceTest {
 
         String numExpediente = documentoService.generateNumExpedientePenal(
                 TipoCausa.EXHORTO, juzgado, TipoCarpeta.DEMANDA);
-        System.out.println(numExpediente);
         assertThat(numExpediente).containsPattern("EXT/[0-9]{6}/202[0-9]/PUEBLA");
     }
 
