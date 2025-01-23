@@ -296,6 +296,13 @@ public class DocumentoService {
     public DocumentoGenericRecord createDemandaPenal(DocumentoCreateDemandaPenalRecord demanda) {
         Persona persona = personaService.getAuditor();
 
+        Oficialia oficialia = persona.getOficialia();
+        if (oficialia == null) {
+            throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
+                    "persona.getOficialia()");
+        }
+
+        
         // Obtenemos el tipo de juicio para vincularlo con la carpeta:
         TipoJuicio tipoJuicioPadre = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
                 .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicioPadre().toString()));
@@ -304,11 +311,16 @@ public class DocumentoService {
         .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND, demanda.tipoJuicioPadre().toString()));
         
         // OBTENER NUM EXPEDIENTE CON BASE AL TIPO JUICIO SELECCIONADO
+        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
+                .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicioPadre)).toList();
 
+        Juzgado juzgadoPorJuicio = juzgadoService.getJuzgado(tipoJuicioPadre, TipoCarpeta.DEMANDA, juzgadosRelacionados);
+        
         String expediente = tipoJuicio.getTipoCausa() != null
-                ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), persona.getJuzgado(), TipoCarpeta.DEMANDA)
+                ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), juzgadoPorJuicio, TipoCarpeta.DEMANDA)
                 : null;
-
+        System.out.println("Expediente: " + expediente);
+        
         // Definición de carpeta.
         Carpeta carpeta = new Carpeta()
                 .setFolio(getFolio("D"))
@@ -319,7 +331,7 @@ public class DocumentoService {
                 .setFechaAsignacion(LocalDateTime.now())
                 .setPersona(persona)
                 .setExpediente(expediente)
-                .setJuzgado(persona.getJuzgado());
+                .setJuzgado(juzgadoPorJuicio);
 
         carpeta = carpetaRepository.save(carpeta);
 
@@ -503,7 +515,7 @@ public class DocumentoService {
             case 7 -> TERCERINVOLUCRADO;
             default -> throw new IllegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
         };
-      
+
         PersonaDocumento entity = new PersonaDocumento();
         entity.setNombre(persona.nombre());
         entity.setApellidoPaterno(persona.apellidoPaterno());
@@ -1676,6 +1688,7 @@ public class DocumentoService {
      */
     private String getNumExpedienteSuffix(TipoCausa tipo, Juzgado juzgado) {
         switch (tipo) {
+            case CARPETAS_JUDICIALES:
             case CONTROL_JUDICIAL_PREVIO:
             case CONTROL_ACTOS_INVESTIGACION:
             case EJECUCION:

@@ -2,9 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
@@ -30,8 +27,7 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @NotBlank
-    @Size(min = 3, max = 50)
+
     @Column(name = "S_NOMBRES", nullable = false)
     private String nombre;
 
@@ -61,7 +57,6 @@ public class PersonaDocumento implements Serializable, Auditable {
     @Column(name = "S_EMAIL")
     private String correoElectronico;
 
-    @Pattern(regexp = "^\\d{10}$")
     @Column(name = "S_CELULAR")
     private String celular;
 

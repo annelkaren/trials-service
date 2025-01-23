@@ -296,6 +296,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoFolios getJuzgadoFolios(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+
         return juzgadoFoliosRepository.findByJuzgadoAndTipoCarpeta(juzgado, tipoCarpeta)
                 .orElseThrow(() -> new NotFoundException("juzgadoFolio no encontrado", "tipoCarpeta"));
     }

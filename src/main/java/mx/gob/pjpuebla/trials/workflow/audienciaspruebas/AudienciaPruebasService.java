@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 
 import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

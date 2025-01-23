@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
@@ -31,6 +32,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +50,7 @@ public class PersonaService {
     private final JuzgadoRepository juzgadoRepository;
     private final OficialiaRepository oficialiaRepository;
     private final UsuarioService usuarioService;
+    private final MateriaRepository materiaRepository;
     private final RoleService roleService;
     private final SalaRepository salaRepository;
     private static final String PERSON_NOT_FOUND = "Persona no encontrada";
@@ -193,11 +196,22 @@ public class PersonaService {
     }
 
     @Transactional(readOnly = true)
-    public List<JuezRecord> findByJuzgadoOfPersonaLogueada() {
+    public List<JuezRecord> findByOficialiaOfPersonaLogueada(Integer materiaId) {
         Persona persona = getAuditor();
-        Juzgado juzgado = persona.getJuzgado();
-        
-        return findAllJueces(juzgado.getId());
+
+        Materia materia = materiaRepository.findById(materiaId)
+            .orElseThrow(() -> new NotFoundException("Acuerdo rubro no encontrado", "acuerdoRubroId" + materiaId));
+
+            List<JuezRecord> juecesRecords = 
+            persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null 
+                    ? persona.getOficialia().getJuzgados().stream()
+                        .filter(juzgado -> juzgado.getMateria() != null 
+                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                        .toList()
+                    : Collections.emptyList();
+    
+    return juecesRecords;
     }
 
     @Transactional(readOnly = true)
