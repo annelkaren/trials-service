@@ -319,7 +319,6 @@ public class DocumentoService {
         String expediente = tipoJuicio.getTipoCausa() != null
                 ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), juzgadoPorJuicio, TipoCarpeta.DEMANDA)
                 : null;
-        System.out.println("Expediente: " + expediente);
         
         // Definición de carpeta.
         Carpeta carpeta = new Carpeta()
