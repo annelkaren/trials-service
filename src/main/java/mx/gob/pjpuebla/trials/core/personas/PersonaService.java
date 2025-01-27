@@ -147,6 +147,7 @@ public class PersonaService {
             if (!isValidAge(persona.getFechaNacimiento())) {
                 throw new ConflictException("El usuario debe ser mayor de edad");
             }
+            persona.setIsExternalUser(ExternalUser.NO);
             List<String> rolesToSave = getNames(roles);
             validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
