@@ -15,22 +15,33 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Integer> {
 
-    @Query
-            ("""
-                    SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
-                    m.uuid, c.tipoCarpeta, c.folio, c.expediente, m.fechaAsignacion, j.nombre, d.data,
-                    d.folio, d.tipoDocumento, cd.expediente, o.nombre,
-                    CONCAT(m.persona.nombre, ' ', m.persona.apellidoPaterno, ' ', COALESCE(m.persona.apellidoMaterno,'')) as responsable,
-                    m.observaciones)
-                    FROM Movimiento m
-                    LEFT JOIN Carpeta c on c = m.carpeta and c.estatus = :estadoCarpeta
-                    LEFT JOIN Documento d on d = m.documento and d.estatus = :estadoCarpeta
-                    LEFT JOIN Juzgado j on j = m.juzgado
-                    LEFT JOIN Carpeta cd on cd = d.carpeta
-                    LEFT JOIN Oficialia o on o = m.persona.oficialia
-                    WHERE m.uuid = :uuid
-                    ORDER BY j.id, c.tipoCarpeta, c.id, d.id
-                    """)
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
+                m.uuid,
+                c.tipoCarpeta,
+                c.folio,
+                c.expediente,
+                m.fechaAsignacion,
+                j.nombre,
+                d.data,
+                d.folio,
+                d.tipoDocumento,
+                cd.expediente,
+                o.nombre,
+                CONCAT(m.persona.nombre, ' ', m.persona.apellidoPaterno, ' ', COALESCE(m.persona.apellidoMaterno,'')) as responsable,
+                m.observaciones,
+                m.documento.id,
+                m.carpeta.id
+            )
+                        FROM Movimiento m
+                        LEFT JOIN Carpeta c on c = m.carpeta and c.estatus = :estadoCarpeta
+                        LEFT JOIN Documento d on d = m.documento and d.estatus = :estadoCarpeta
+                        LEFT JOIN Juzgado j on j = m.juzgado
+                        LEFT JOIN Carpeta cd on cd = d.carpeta
+                        LEFT JOIN Oficialia o on o = m.persona.oficialia
+                        WHERE m.uuid = :uuid
+                        ORDER BY j.id, c.tipoCarpeta, c.id, d.id
+                        """)
     List<MovimientoSalidaRecord> getSalidas(UUID uuid, EstadoCarpeta estadoCarpeta);
 
     @Query("""
@@ -69,7 +80,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
                 )
             """)
-    Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado, String key, List<String> motivos);
+    Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
+            String key, List<String> motivos);
 
     @Query("""
                 SELECT m
@@ -108,7 +120,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
                 )
             """)
-    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key, String motivos, Persona personaId);
+    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
+            String motivos, Persona personaId);
 
     @Query("""
                 SELECT m

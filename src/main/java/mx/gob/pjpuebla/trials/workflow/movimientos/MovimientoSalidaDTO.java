@@ -1,9 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,6 +19,7 @@ public class MovimientoSalidaDTO {
     private String observaciones;
     private String oficialia;
     private String responsable;
+    private String anexos;
 
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
         String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
@@ -30,6 +33,15 @@ public class MovimientoSalidaDTO {
             observacionesTmp = data.getExhortoObservaciones().isEmpty() ? "" : data.getExhortoObservaciones();
         }
 
+        //agregamos lo de anexos:
+        List<String> listAnexos = recordMovimiento.anexos()
+            .stream()
+            .map(anexos -> anexos.nombre())
+            .map(nombre -> "- " + nombre + "<br/>")
+            .toList();
+
+        String anexosString = listAnexos.isEmpty() ? "- Sin anexos" : String.join("", listAnexos); 
+
         this.setUuid(recordMovimiento.uuid());
         this.setTipoDocumento(tipo);
         this.setFolio(folioTmp);
@@ -39,5 +51,6 @@ public class MovimientoSalidaDTO {
         this.setObservaciones(observacionesTmp);
         this.setOficialia(recordMovimiento.oficialia());
         this.setResponsable(recordMovimiento.responsable());
+        this.setAnexos(anexosString);
     }
 }

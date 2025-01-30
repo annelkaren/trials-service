@@ -26,4 +26,20 @@ public interface AnexoRepository extends JpaRepository<Anexo, Integer> {
             """)
     List<AnexoRecepcionRecord> findAnexosByDocumentoId(@Param("documentoId") Integer documentoId);
 
+    @Query("""
+                SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord(
+                    a.id,
+                    a.nombre,
+                    a.estado
+                )
+                FROM Anexo a
+                WHERE a.documento.id = :documentoId
+                OR (:documentoId IS NULL AND a.documento.id IN (
+                    SELECT docCarpeta.id FROM Documento docCarpeta
+                    WHERE docCarpeta.carpeta.id = :carpetaId
+                ))
+            """)
+    List<AnexoBandejaRecepcionRecord> findAnexosByCarpetaIdOrDocumentoId(@Param("documentoId") Integer documentoId,
+            @Param("carpetaId") Integer carpetaId);
+
 }
