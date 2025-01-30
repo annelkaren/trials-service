@@ -7,6 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 public class MovimientoSalidaDTO {
@@ -22,25 +23,28 @@ public class MovimientoSalidaDTO {
     private String anexos;
 
     public MovimientoSalidaDTO(MovimientoSalidaRecord recordMovimiento) {
-        String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio() : recordMovimiento.folio();
-        String tipo = (recordMovimiento.tipoDocumento() != null) ? recordMovimiento.tipoDocumento().getPlural() : recordMovimiento.tipoCarpeta().getPlural();
-        String expedienteTmp = (recordMovimiento.expediente() != null) ? recordMovimiento.expediente() : recordMovimiento.expedienteDoc();
-        String observacionesTmp = "";
+        String folioTmp = (recordMovimiento.documentoFolio() != null) ? recordMovimiento.documentoFolio()
+                : recordMovimiento.folio();
+        String tipo = (recordMovimiento.tipoDocumento() != null) ? recordMovimiento.tipoDocumento().getPlural()
+                : recordMovimiento.tipoCarpeta().getPlural();
+        String expedienteTmp = (recordMovimiento.expediente() != null) ? recordMovimiento.expediente()
+                : recordMovimiento.expedienteDoc();
+        String observacionesTmp = "Sin observaciones.";
 
         DocumentoData data = (DocumentoData) recordMovimiento.data();
 
         if (data != null && data.getExhortoObservaciones() != null) {
-            observacionesTmp = data.getExhortoObservaciones().isEmpty() ? "" : data.getExhortoObservaciones();
+            observacionesTmp = data.getExhortoObservaciones().isEmpty() ? "Sin observaciones." : data.getExhortoObservaciones() + ".";
         }
 
-        //agregamos lo de anexos:
-        List<String> listAnexos = recordMovimiento.anexos()
-            .stream()
-            .map(anexos -> anexos.nombre())
-            .map(nombre -> "- " + nombre + "<br/>")
-            .toList();
-
-        String anexosString = listAnexos.isEmpty() ? "- Sin anexos" : String.join("", listAnexos); 
+        // agregamos lo de anexos:
+        String anexosString = recordMovimiento.anexos()
+                .stream()
+                .map(anexo -> anexo.nombre())
+                .collect(Collectors.collectingAndThen(
+                        Collectors.joining(", "),
+                        result -> result.isEmpty() ? "Sin anexos" : result + "."                                                              
+                ));
 
         this.setUuid(recordMovimiento.uuid());
         this.setTipoDocumento(tipo);
@@ -48,7 +52,7 @@ public class MovimientoSalidaDTO {
         this.setExpediente(expedienteTmp);
         this.setFecha(recordMovimiento.fecha());
         this.setJuzgado(recordMovimiento.juzgado());
-        this.setObservaciones(observacionesTmp);
+        this.setObservaciones(observacionesTmp + "<br/>");
         this.setOficialia(recordMovimiento.oficialia());
         this.setResponsable(recordMovimiento.responsable());
         this.setAnexos(anexosString);

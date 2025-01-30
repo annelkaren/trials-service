@@ -36,7 +36,7 @@ public interface AnexoRepository extends JpaRepository<Anexo, Integer> {
                 WHERE a.documento.id = :documentoId
                 OR (:documentoId IS NULL AND a.documento.id IN (
                     SELECT docCarpeta.id FROM Documento docCarpeta
-                    WHERE docCarpeta.carpeta.id = :carpetaId
+                    WHERE docCarpeta.carpeta.id = :carpetaId and docCarpeta.tipoDocumento is null
                 ))
             """)
     List<AnexoBandejaRecepcionRecord> findAnexosByCarpetaIdOrDocumentoId(@Param("documentoId") Integer documentoId,

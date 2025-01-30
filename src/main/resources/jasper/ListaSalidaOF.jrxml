@@ -36,7 +36,7 @@
 				<element kind="textField" uuid="42420912-c41c-4a01-9ae3-82d2fb8466fe" x="180" y="0" width="200" height="18" fontSize="12.0" bold="true" hTextAlign="Center">
 					<expression><![CDATA[$F{tipoDocumento}]]></expression>
 				</element>
-				<element kind="staticText" uuid="eb26c825-49b5-4128-a6f5-1c994f7daf15" x="0" y="25" width="130" height="20" bold="true">
+				<element kind="staticText" uuid="eb26c825-49b5-4128-a6f5-1c994f7daf15" x="0" y="25" width="110" height="20" bold="true">
 					<text><![CDATA[FOLIO]]></text>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<box>
@@ -46,7 +46,7 @@
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 				</element>
-				<element kind="staticText" uuid="a98520f3-0c22-4b8f-929f-c42797436c4d" x="130" y="25" width="150" height="20" bold="true">
+				<element kind="staticText" uuid="a98520f3-0c22-4b8f-929f-c42797436c4d" x="110" y="25" width="110" height="20" bold="true">
 					<text><![CDATA[EXPEDIENTE]]></text>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -55,17 +55,8 @@
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 				</element>
-				<element kind="staticText" uuid="4f3fdbb7-ba64-4eed-bcd0-5194d8c7feaf" x="410" y="25" width="160" height="20" bold="true">
-					<text><![CDATA[OBSERVACIONES]]></text>
-					<box>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-				</element>
-				<element kind="staticText" uuid="405d0a9a-f7c4-47d3-b842-84d8bc33a4a6" x="280" y="25" width="130" height="20" bold="true">
-					<text><![CDATA[Anexos]]></text>
+				<element kind="staticText" uuid="405d0a9a-f7c4-47d3-b842-84d8bc33a4a6" x="220" y="25" width="340" height="20" bold="true">
+					<text><![CDATA[Observaciones y anexos]]></text>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -105,7 +96,7 @@
 	</columnHeader>
 	<detail>
 		<band height="25" splitType="Stretch">
-			<element kind="textField" uuid="ca594da8-75f6-4d70-89e0-1b12f0b0c308" stretchType="ElementGroupHeight" x="0" y="0" width="130" height="20" textAdjust="StretchHeight">
+			<element kind="textField" uuid="ca594da8-75f6-4d70-89e0-1b12f0b0c308" stretchType="ElementGroupHeight" x="0" y="0" width="110" height="20" textAdjust="StretchHeight">
 				<expression><![CDATA[$F{folio}]]></expression>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -114,7 +105,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="bfc23c9a-e68e-48c9-891a-afa642fb21a6" stretchType="ElementGroupHeight" x="130" y="0" width="150" height="20" textAdjust="StretchHeight">
+			<element kind="textField" uuid="bfc23c9a-e68e-48c9-891a-afa642fb21a6" stretchType="ElementGroupHeight" x="110" y="0" width="110" height="20" textAdjust="StretchHeight">
 				<expression><![CDATA[$F{expediente}]]></expression>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -123,17 +114,9 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="1db699f0-7ba8-456b-9fd8-415b10a3c4f4" stretchType="ElementGroupHeight" x="410" y="0" width="160" height="20" textAdjust="StretchHeight">
-				<expression><![CDATA[$F{observaciones}]]></expression>
-				<box>
-					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-			</element>
-			<element kind="textField" uuid="ddf1d243-219a-4fa9-9366-204e6565ce2c" stretchType="ElementGroupHeight" x="280" y="0" width="130" height="20" markup="html" textAdjust="StretchHeight">
-				<expression><![CDATA[$F{anexos}]]></expression>
+			<element kind="textField" uuid="ddf1d243-219a-4fa9-9366-204e6565ce2c" stretchType="ElementGroupHeight" x="220" y="0" width="340" height="20" markup="html" textAdjust="StretchHeight">
+				<expression><![CDATA["<b>Observaciones :</b> " + $F{observaciones} + "\n" +
+"<b>Anexos:</b>" + $F{anexos}]]></expression>
 				<box>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>

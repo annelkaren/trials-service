@@ -36,13 +36,13 @@ public class MovimientoResource {
     public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid") String uuid) {
         
         List<MovimientoSalidaRecord> movimientos = movimientoService.getMovimientosSalida(uuid);
-                // Combinar movimientos con anexos
+        // Combinar movimientos con anexos
         List<MovimientoSalidaRecord> movimientosConAnexos = movimientos.stream()
                 .map(movimiento -> {
                     // Obtener los anexos relacionados con este movimiento
                     List<AnexoBandejaRecepcionRecord> anexos = anexoRepository.findAnexosByCarpetaIdOrDocumentoId(
-                            movimiento.documentoId(), // Suponiendo que tienes un método documento ID()
-                            movimiento.carpetaId()    // Suponiendo que tienes un método carpeta ID()
+                            movimiento.documentoId(), 
+                            movimiento.carpetaId()   
                     );
 
                     // Crear una nueva instancia de MovimientoSalidaRecord con los anexos
