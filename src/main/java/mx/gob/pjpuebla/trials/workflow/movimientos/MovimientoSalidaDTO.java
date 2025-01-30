@@ -1,11 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
-import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

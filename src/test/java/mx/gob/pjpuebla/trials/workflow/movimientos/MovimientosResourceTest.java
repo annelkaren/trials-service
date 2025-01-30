@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,9 @@ import org.springframework.http.MediaType;
 import mx.gob.pjpuebla.trials.util.enums.DevolucionMotivo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+
 import static org.mockito.BDDMockito.willThrow;
 
 
@@ -41,6 +45,9 @@ class MovimientosResourceTest {
 
     @MockBean
     MovimientoReporteGenerator generator;
+
+    @MockBean
+    AnexoRepository anexoRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,8 +65,8 @@ class MovimientosResourceTest {
         String uuidMov = "d8945bc4-af8e-4eb0-b742-7ee13beb43e0";
         uuid = UUID.fromString(uuidMov);
         estadoCarpeta = EstadoCarpeta.TURNADO;
-
-        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, null, null, null, null, null, null, null, null, null);
+        List<AnexoBandejaRecepcionRecord> anexos = new ArrayList<>();
+        movimiento = new MovimientoSalidaRecord(uuid, TipoCarpeta.DEMANDA, "1", "00001/2024", LocalDateTime.now(), "Juzgado 1", null, "dasd", null, "expediente", "nombre", "persona", "observacion", 1, null, anexos);
     }
 
     @Test
