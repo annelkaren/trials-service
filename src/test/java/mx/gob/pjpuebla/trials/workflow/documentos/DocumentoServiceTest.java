@@ -336,7 +336,7 @@ class DocumentoServiceTest {
         exhorto.getCarpeta().setFolio("3");
 
         Documento[] documentos = {demanda, apelacion, exhorto};
-
+        List<Juzgado> juzgadosSeleccionados = new ArrayList<>();
         for (Documento documento : documentos) {
             TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
 
@@ -344,25 +344,27 @@ class DocumentoServiceTest {
 
             juzgado = juzgadoService.getJuzgado(documento.getCarpeta().getTipoJuicio(), tipoCarpeta, null);
             assertThat(juzgado).isNotNull();
+        
+            
 
             for (int i = 0; i < invocaciones; i++) {
-                juzgadoService.actualizarCarga(juzgado, tipoCarpeta);
+                juzgadoService.actualizarCarga(juzgado, tipoCarpeta, juzgadosSeleccionados);
             }
 
-            juzgadoService.revisarCargaJuzgados(documento.getCarpeta().getTipoJuicio().getMateria(), tipoCarpeta);
+            juzgadoService.revisarCargaJuzgados(documento.getCarpeta().getTipoJuicio().getMateria(), tipoCarpeta, juzgadosSeleccionados);
         }
 
-        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.DEMANDA);
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.DEMANDA, juzgadosSeleccionados);
         verify(juzgadoService, times(1)).revisarCargaJuzgados(demanda.getCarpeta().getTipoJuicio().getMateria(),
-                TipoCarpeta.DEMANDA);
+                TipoCarpeta.DEMANDA,juzgadosSeleccionados);
 
-        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.APELACION);
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.APELACION, juzgadosSeleccionados);
         verify(juzgadoService, times(1)).revisarCargaJuzgados(apelacion.getCarpeta().getTipoJuicio().getMateria(),
-                TipoCarpeta.APELACION);
+                TipoCarpeta.APELACION, juzgadosSeleccionados);
 
-        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.EXHORTO);
+        verify(juzgadoService, times(invocaciones)).actualizarCarga(juzgado, TipoCarpeta.EXHORTO, juzgadosSeleccionados);
         verify(juzgadoService, times(1)).revisarCargaJuzgados(exhorto.getCarpeta().getTipoJuicio().getMateria(),
-                TipoCarpeta.EXHORTO);
+                TipoCarpeta.EXHORTO, juzgadosSeleccionados);
 
     }
 
