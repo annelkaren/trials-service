@@ -47,11 +47,7 @@ public class ListaEstradoService {
                 pageable);
 
         return listaEstradoPage.map(le -> {
-            // Inicializar la relación antes de serializar
-            if (le.getPersona() != null) {
-                // Forzamos la inicialización del domicilio si es necesario
-                le.getPersona().getDomicilio(); // noinspection ResultOfMethodCallIgnored 
-            }
+
 
             long noNotificaciones = notificacionRepository.countNotificacionesByListaEstradoId(le.getId());
 
