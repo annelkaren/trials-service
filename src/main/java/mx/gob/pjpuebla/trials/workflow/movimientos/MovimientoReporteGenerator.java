@@ -36,6 +36,7 @@ public class MovimientoReporteGenerator {
                 MovimientoSalidaDTO::new
         ).toList();
 
+        
         beanCollectionDataSource = new JRBeanCollectionDataSource(movimientoSalidaDTOS);
 
         return JasperExportManager.exportReportToPdf(getJasperReport(listaSalidaOF));
@@ -44,7 +45,7 @@ public class MovimientoReporteGenerator {
 
     private JasperPrint getJasperReport(Resource reporte) throws JRException, IOException{
         Map<String, Object> parameters = new HashMap<>();
-
+      
         parameters.put("p_image_background","jasper/escudo.png");
 
         return JasperFillManager.fillReport(

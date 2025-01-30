@@ -7,6 +7,11 @@ import java.util.stream.Collectors;
 
 import mx.gob.pjpuebla.trials.error.ErrorRecord;
 import mx.gob.pjpuebla.trials.util.enums.DevolucionMotivo;
+
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+
+
 import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,11 +30,43 @@ public class MovimientoResource {
 
     private final MovimientoService movimientoService;
     private final MovimientoReporteGenerator generator;
+    private final AnexoRepository anexoRepository;
 
     @GetMapping("/{uuid}")
     public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid") String uuid) {
+        
         List<MovimientoSalidaRecord> movimientos = movimientoService.getMovimientosSalida(uuid);
+        // Combinar movimientos con anexos
+        List<MovimientoSalidaRecord> movimientosConAnexos = movimientos.stream()
+                .map(movimiento -> {
+                    // Obtener los anexos relacionados con este movimiento
+                    List<AnexoBandejaRecepcionRecord> anexos = anexoRepository.findAnexosByCarpetaIdOrDocumentoId(
+                            movimiento.documentoId(), 
+                            movimiento.carpetaId()   
+                    );
 
+                    // Crear una nueva instancia de MovimientoSalidaRecord con los anexos
+                    return new MovimientoSalidaRecord(
+                            movimiento.uuid(),
+                            movimiento.tipoCarpeta(),
+                            movimiento.folio(),
+                            movimiento.expediente(),
+                            movimiento.fecha(),
+                            movimiento.juzgado(),
+                            movimiento.data(),
+                            movimiento.documentoFolio(),
+                            movimiento.tipoDocumento(),
+                            movimiento.expedienteDoc(),
+                            movimiento.oficialia(),
+                            movimiento.responsable(),
+                            movimiento.observaciones(),
+                            movimiento.documentoId(),
+                            movimiento.carpetaId(),
+                            anexos // Anexos obtenidos en la segunda consulta
+                    );
+                })
+                .collect(Collectors.toList());
+      
         HttpHeaders headers = new HttpHeaders();
 
         if (movimientos.isEmpty()){
@@ -40,7 +77,7 @@ public class MovimientoResource {
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("reporte", "salida_"+uuid + ".pdf");
 
-            byte[] reporte = generator.getReporteSalida(movimientos);
+            byte[] reporte = generator.getReporteSalida(movimientosConAnexos);
 
             return ResponseEntity.ok().headers(headers).body(reporte);
         }catch (IOException | JRException e){

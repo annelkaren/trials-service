@@ -300,7 +300,7 @@ class DocumentoServiceTest {
         demanda.getCarpeta().setFolio("1");
         demanda.getCarpeta().setJuzgado(juzgado);
         demanda.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
-        Movimiento movimiento = new Movimiento().setDocumento(demanda);
+        Movimiento movimiento = new Movimiento().setDocumento(demanda).setEstado("CAPTURA");
 
         List<Movimiento> listPage = Collections.singletonList(movimiento);
 
