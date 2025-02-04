@@ -141,6 +141,8 @@ public class DocumentoService {
             Documento documento = (mov.getDocumento() != null) ? mov.getDocumento()
                     : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(mov.getCarpeta().getId());
             Carpeta carpeta = (mov.getCarpeta() != null) ? mov.getCarpeta() : documento.getCarpeta();
+            String estaEnJuzgado = !(mov.getEstado().equals("CAPTURA") || mov.getEstado().equals("SALIDA")) ? "En juzgado" : "";
+            
             DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(
                     documento.getId(),
                     (documento.getTipoDocumento() != null
@@ -156,7 +158,9 @@ public class DocumentoService {
                     carpeta.getSelloEstatus(),
                     (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
                     (documento.getRuta() != null),
-                    documento.getCarpeta().getJuzgado().getNombre());
+                    documento.getCarpeta().getJuzgado().getNombre(),
+                    estaEnJuzgado
+                    );
             list.add(documentoGridRecord);
         }
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -649,6 +653,8 @@ public class DocumentoService {
                     : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(movimiento.getCarpeta().getId());
             Carpeta carpeta = documento.getCarpeta();
             String folio = (documento.getTipoDocumento() == null) ? carpeta.getFolio() : documento.getFolio();
+            String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA") || movimiento.getEstado().equals("SALIDA")) ? "En juzgado" : "";
+            
             DocumentoGridRecord drecord = new DocumentoGridRecord(
                     documento.getId(),
                     folio,
@@ -661,7 +667,8 @@ public class DocumentoService {
                     null,
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
                     false,
-                    "");
+                    "",
+                    estaEnJuzgado);
             listaDocumentoRecords.add(drecord);
         }
         return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
