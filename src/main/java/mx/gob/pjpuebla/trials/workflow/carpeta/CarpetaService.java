@@ -84,8 +84,7 @@ public class CarpetaService {
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
-    public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId,
-            Integer isApelacion) {
+    public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
         // Usar una variable auxiliar para la modificación de juzgadoId
         final Integer finalJuzgadoId;
 
@@ -102,15 +101,6 @@ public class CarpetaService {
 
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
-
-        if (isApelacion == 1) {
-            Optional<Documento> sentencia = getSentencia(carpeta.getId());
-            if (sentencia.isEmpty()) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "No se puede registrar a Apelación, no hay sentencia registrada.");
-            }
-        }
         
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
@@ -118,9 +108,16 @@ public class CarpetaService {
         return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio);
     }
 
-    private Optional<Documento> getSentencia(Integer carpetaId) {
-        return documentoRepository.findSentenciaPublicadaByCarpetaId(carpetaId);
+    public CarpetaResponseRecord verificaPosibleReasignacionDeExpediente(String expediente, Integer juzgadoId){
+        Optional<Juzgado> juzgado = juzgadoRepository.findByIdAndEstadoIn(juzgadoId, List.of(Estado.ACTIVE));
 
+        if(juzgado.isPresent() && juzgado.get().getEstado().equals(Estado.ACTIVE)){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "No es posible reasignar el expediente ya que el juzgado asociado sigue activo.");
+        }
+
+        return getCarpetaResponseByNumExpYearJuzgado(expediente, juzgadoId);
     }
 
     protected String getNombrePersonaByIdAndParte(Integer id, String parte) {

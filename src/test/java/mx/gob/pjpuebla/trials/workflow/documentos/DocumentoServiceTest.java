@@ -1611,7 +1611,7 @@ class DocumentoServiceTest {
         documento.setData(documentoData);
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
-        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any(), any())).willReturn(carpetaResponseRecord);
+        given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any())).willReturn(carpetaResponseRecord);
         given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
 
         DocPromocionInfoRecord response = documentoService.getInfoPromocion(1);

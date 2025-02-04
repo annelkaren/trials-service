@@ -69,7 +69,7 @@ class CarpetaResourceTest {
 
     @Test
     void getCarpetaById_success() throws Exception {
-        given(mockCarpetaService.getCarpetaResponseByNumExpYearJuzgado(anyString(), anyInt(), anyInt()))
+        given(mockCarpetaService.getCarpetaResponseByNumExpYearJuzgado(anyString(), anyInt()))
                 .willReturn(carpetaResponseRecord);
         mockMvc.perform(
                 get("/api/workflow/carpeta")
