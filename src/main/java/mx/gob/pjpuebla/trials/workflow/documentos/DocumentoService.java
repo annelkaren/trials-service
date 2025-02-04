@@ -388,7 +388,7 @@ public class DocumentoService {
 
         // Creación del movimiento:
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
-
+        carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
         return new DocumentoGenericRecord(documento.getId(), null);
     }
 

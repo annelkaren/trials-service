@@ -12,14 +12,14 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/core")
+@RequestMapping("/api/core/materiapericial")
 @SecurityRequirement(name = "Keycloak")
 public class MateriaPericialResource {
 
     private final MateriaPericialService materialPericialService;
 
 
-    @GetMapping(value = "/materiapericial", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MateriaPericial> getMateriaPericialList(@RequestParam(value = "nombre", required = false) String nombre) {
         return materialPericialService.getallMateriaParicial(nombre);
     }
