@@ -790,10 +790,13 @@ public class DocumentoService {
         .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
                 "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId()));
         
-        carpeta.setTipoJuicio(tipoJuicio);
+       
+        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findSalaByOficialiaId(oficialia.getId())
+                .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
 
+        carpeta.setTipoJuicio(tipoJuicio);
         carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
-        carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), null));
+        carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), juzgadosRelacionados));
         carpeta.setFolio(getFolio("AP"));
         carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
         carpeta.setEstatus(EstadoCarpeta.CAPTURA);
@@ -841,9 +844,7 @@ public class DocumentoService {
             personaDocumentoRepository.save(entity);
         }
 
-        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
-        .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
-
+        
         juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
         movimientoService.createMovimento(carpeta, documento, auditor, null, EstadoCarpeta.CAPTURA.name());
         return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
@@ -1544,7 +1545,7 @@ public class DocumentoService {
         String[] expediente = doc.getCarpeta().getExpediente().split("/");
 
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
-                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId(), 0);
+                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId());
 
         List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(docId);
 

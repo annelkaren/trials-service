@@ -231,6 +231,10 @@ public class JuzgadoService {
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
+        for (Juzgado juzgado : juzgadosRelacionados) {
+            System.out.println("JUZGADO SELECCIONADO: " + juzgado.getNombre());
+        }
+
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
@@ -248,6 +252,10 @@ public class JuzgadoService {
 
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                 juzgadosRelacionados.stream().map(Juzgado::getId).toList());
+
+         for (Juzgado juzgado : juzgados) {
+            System.out.println("NOMBRE DEL JUZGADO" + juzgado.getNombre());
+        }
 
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta, juzgadosRelacionados);
