@@ -791,7 +791,7 @@ public class DocumentoService {
                 "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId()));
         
        
-        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
+        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findSalaByOficialiaId(oficialia.getId())
                 .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
 
         carpeta.setTipoJuicio(tipoJuicio);
