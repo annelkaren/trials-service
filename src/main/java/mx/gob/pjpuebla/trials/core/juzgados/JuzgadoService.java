@@ -231,6 +231,10 @@ public class JuzgadoService {
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
+        for (Juzgado juzgado : juzgadosRelacionados) {
+            System.out.println("JUZGADO SELECCIONADO: " + juzgado.getNombre());
+        }
+
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
@@ -249,8 +253,12 @@ public class JuzgadoService {
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                 juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
+         for (Juzgado juzgado : juzgados) {
+            System.out.println("NOMBRE DEL JUZGADO" + juzgado.getNombre());
+        }
+
         if (juzgados.isEmpty()) {
-            revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta);
+            revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta, juzgadosRelacionados);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                     juzgadosRelacionados.stream().map(Juzgado::getId).toList());
         
@@ -269,12 +277,12 @@ public class JuzgadoService {
 
     }
 
-    public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
+    public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
-        revisarCargaJuzgados(juzgado.getMateria(), tipoCarpeta);
+        revisarCargaJuzgados(juzgado.getMateria(), tipoCarpeta, juzgadosRelacionados);
     }
 
-    public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta) {
+    public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
 
         InstanciaJuzgado instanciaJuzgado;
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
@@ -286,9 +294,11 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
 
+        List<Integer> idsJuzgadosRelacionados = juzgadosRelacionados.stream().map(juzgado -> juzgado.getId()).toList();
+
         int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
         int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
-        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia, instanciaJuzgado, List.of(1)).size();
+        int totalJuzgadosMenosAsignaciones = juzgadoRepository.findJuzgadosMenosAsignaciones(materia, instanciaJuzgado, idsJuzgadosRelacionados).size();
 
         if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
             juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);

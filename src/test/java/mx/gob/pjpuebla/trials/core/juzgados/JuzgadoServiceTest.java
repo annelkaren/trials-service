@@ -327,7 +327,8 @@ class JuzgadoServiceTest {
         Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignaciones(any(Materia.class), any(InstanciaJuzgado.class));
 
         TipoCarpeta tipoCarpeta = TipoCarpeta.DEMANDA;
-        juzgadoService.actualizarCarga(juzgado, tipoCarpeta);
+        List<Juzgado> juzgadosSeleccionados = new ArrayList<>();
+        juzgadoService.actualizarCarga(juzgado, tipoCarpeta, juzgadosSeleccionados);
 
         verify(juzgadoRepository, times(1)).sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class));
         verify(juzgadoRepository, times(1)).sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class));
