@@ -12,5 +12,6 @@ public record CarpetaResponseRecord(
         String tipoJuicio,
         List<String> victimas,
         List<String> imputados,
-        Estado estadoJuzgado
+        Estado estadoJuzgado,
+        String estadoCarpeta
 ) implements Serializable {}

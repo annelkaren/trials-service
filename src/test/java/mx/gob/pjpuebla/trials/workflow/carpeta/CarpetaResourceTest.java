@@ -472,6 +472,7 @@ class CarpetaResourceTest {
                 "laboral",
                 null,
                 null,
+                null,
                 null
         );
 

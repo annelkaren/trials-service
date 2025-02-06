@@ -129,7 +129,7 @@ public class CarpetaService {
                 .toList();
             }
 
-        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados, estadoJuzgado);
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados, estadoJuzgado, carpeta.getEstatus().getEtiqueta());
     }
 
     
@@ -814,7 +814,7 @@ public class CarpetaService {
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
         String tipoJuicio = carpeta.getTipoJuicio().getNombre();
-        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, null, null, carpeta.getJuzgado().getEstado());
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, null, null, carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta());
     }
 
     public void devolverArchivoJudicial(List<Integer> ids) {

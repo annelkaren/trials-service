@@ -53,5 +53,6 @@ public class DocumentoData implements Serializable {
     private LocalTime horaMaterial;
     private String lugarDisposicion;
     private String tipoSolAudiencia;
+    private Integer carpetaHistorica;
 }
 
