@@ -81,6 +81,8 @@ public class CarpetaService {
 
     private static final String ACTOR_LABEL = "Actor";
     private static final String DEMANDADO_LABEL = "Demandado";
+    private static final String VICTIMA_LABEL = "Victimas";
+    private static final String IMPUTADO_LABEL = "Imputados";
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
@@ -102,23 +104,35 @@ public class CarpetaService {
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
         
+                //validaciones nuevas para penal:
+        String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
+        Boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal") || nombreMateria.equals("Justicia para adolescentes");
+
+
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
         String tipoJuicio = carpeta.getTipoJuicio().getNombre();
-        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio);
+
+        List<String> victimas = null;
+        List<String> imputados = null;
+        Estado estadoJuzgado = carpeta.getJuzgado().getEstado();
+
+        if(isMateriaPenalOrJusticiaPA){
+                victimas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), VICTIMA_LABEL, List.of(Rol.PRINCIPAL))
+                .stream()
+                .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo() : persona.nombre() + " " + persona.apellidoPaterno() + " " + persona.apellidoPaterno() )
+                .toList();
+    
+                imputados = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), IMPUTADO_LABEL, List.of(Rol.PRINCIPAL))
+                .stream()
+                .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo() : persona.nombre() + " " + persona.apellidoPaterno() + " " + persona.apellidoPaterno() )
+                .toList();
+            }
+
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados, estadoJuzgado);
     }
 
-    public CarpetaResponseRecord verificaPosibleReasignacionDeExpediente(String expediente, Integer juzgadoId){
-        Optional<Juzgado> juzgado = juzgadoRepository.findByIdAndEstadoIn(juzgadoId, List.of(Estado.ACTIVE));
-
-        if(juzgado.isPresent() && juzgado.get().getEstado().equals(Estado.ACTIVE)){
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "No es posible reasignar el expediente ya que el juzgado asociado sigue activo.");
-        }
-
-        return getCarpetaResponseByNumExpYearJuzgado(expediente, juzgadoId);
-    }
+    
 
     protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
@@ -800,7 +814,7 @@ public class CarpetaService {
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
         String tipoJuicio = carpeta.getTipoJuicio().getNombre();
-        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio);
+        return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, null, null, carpeta.getJuzgado().getEstado());
     }
 
     public void devolverArchivoJudicial(List<Integer> ids) {

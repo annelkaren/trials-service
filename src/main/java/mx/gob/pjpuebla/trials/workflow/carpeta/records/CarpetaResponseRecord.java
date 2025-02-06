@@ -1,10 +1,16 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta.records;
 
 import java.io.Serializable;
+import java.util.List;
+
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 public record CarpetaResponseRecord(
         Integer idCarpeta,
         String actor,
         String demandado,
-        String tipoJuicio
+        String tipoJuicio,
+        List<String> victimas,
+        List<String> imputados,
+        Estado estadoJuzgado
 ) implements Serializable {}
