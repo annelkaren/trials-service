@@ -17,9 +17,12 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -44,6 +47,8 @@ public class ReasignacionExpedienteService {
     private final DocumentoRepository documentoRepository;
     private final MovimientoService movimientoService;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final AnexoRepository anexoRepository;
+        
 
     public ReasignacionExpedienteResponseRecord reasignarExpediente(Integer carpetaParentId) {
         Persona auditor = personaService.getAuditor();
@@ -57,6 +62,14 @@ public class ReasignacionExpedienteService {
         Carpeta carpetaParent = carpetaRepository.findById(carpetaParentId)
                 .orElseThrow(
                         () -> new NotFoundException("Carpeta parent no encontrada", "carpetaId: " + carpetaParentId));
+
+        Documento documentoParent = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaParentId);
+        Boolean expedienteReasignado = documentoParent.getData().getExpedienteReasignado();
+
+        if(expedienteReasignado){
+                throw new IllegalStateException("El expediente ya ha sido reasignado.");
+        }
+
 
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",
@@ -89,15 +102,29 @@ public class ReasignacionExpedienteService {
                 .setData(data)
                 .setPersona(auditor)
                 .setFechaAsignacion(LocalDateTime.now());
-        documento = documentoRepository.save(documento);
+        Documento documentoSaved = documentoRepository.save(documento);
 
-        // TODO: Como se obtendrean los anexos
-
+        //creación de personasDocumentos:
         List<PersonaDocumento> personaDocumentos = personaDocumentoRepository.findByCarpetaId(carpetaParentId);
-        personaDocumentos.forEach(personaDocumento -> personaDocumento.setCarpeta(carpetaSaved));
+        personaDocumentos.forEach(personaDocumento -> { personaDocumento.setCarpeta(carpetaSaved); personaDocumento.setId(null); } );
         
+        //creación de anexos:
+        List<Anexo> anexosCarpeta = anexoRepository.findAnexosByCarpetaIdOrDocumentoId(null, carpetaParentId)
+                .stream()
+                .map(anexo -> new Anexo()
+                        .setDocumento(documentoSaved)
+                        .setEstado(anexo.estado())
+                        .setNombre(anexo.nombre()))
+                .toList();
+        
+        anexoRepository.saveAll(anexosCarpeta);
+
         // Guardar todos los registros modificados de una sola vez
         personaDocumentoRepository.saveAll(personaDocumentos);
+
+        //Actualizanos jData del documento de la carpeta parent :
+        documentoParent.getData().setExpedienteReasignado(true);
+        documentoRepository.save(documentoParent);
 
         juzgadoService.actualizarCarga(carpetaNew.getJuzgado(), carpetaNew.getTipoCarpeta(), juzgadosRelacionados);
         movimientoService.createMovimento(carpetaNew, documento, auditor, null, EstadoCarpeta.CAPTURA.name());

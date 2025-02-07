@@ -54,5 +54,6 @@ public class DocumentoData implements Serializable {
     private String lugarDisposicion;
     private String tipoSolAudiencia;
     private Integer carpetaHistorica;
+    private Boolean expedienteReasignado;
 }
 

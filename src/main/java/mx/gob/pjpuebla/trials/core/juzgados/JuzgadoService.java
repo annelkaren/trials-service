@@ -340,6 +340,19 @@ public class JuzgadoService {
         return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo);
     }
 
+    @Transactional(readOnly = true)
+    public List<JuzgadoRecordItem> findbyEstadoActiveAndInactive() {
+        Persona personaLogueada = personaService.getAuditor();
+
+        String oficialia = personaLogueada.getOficialia() != null ? "Oficialia" : null;
+        Integer oficialiaId = personaLogueada.getOficialia() != null ? personaLogueada.getOficialia().getId() : null;
+        
+        String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : oficialia;
+        Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : oficialiaId;
+
+        return juzgadoRepository.findbyEstadoActiveAndInactive(centroTrabajo, idCentroTrabajo);
+    }
+
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {
         Estado estado = Estado.values()[status];
         Juzgado juzgado = juzgadoRepository.findById(id).
