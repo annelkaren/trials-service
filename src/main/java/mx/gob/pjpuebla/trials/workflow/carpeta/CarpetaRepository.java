@@ -31,6 +31,15 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Optional<Carpeta> findByExpedienteAndJuzgadoId(String expediente, Integer juzgadoId);
 
     @Query("""
+            SELECT c
+            FROM Carpeta c
+            WHERE c.expediente ilike :expediente%
+            AND c.expediente ilike %:nomenclatura
+            AND c.juzgado.id = :juzgadoId
+            """)
+    Optional<Carpeta> findByExpedienteAndJuzgadoIdPenal(String expediente, String nomenclatura, Integer juzgadoId);
+
+    @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
                     d.id,
                     c.folio,

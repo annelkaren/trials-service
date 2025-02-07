@@ -575,7 +575,8 @@ class CarpetaServiceTest {
                 "Pérez",
                 "Gómez",
                 "TipoParte1",
-                Rol.PRINCIPAL
+                Rol.PRINCIPAL,
+                ""
         );
         PersonaDataRecord participante2 = new PersonaDataRecord(
                 2,
@@ -583,7 +584,8 @@ class CarpetaServiceTest {
                 "López",
                 "Sánchez",
                 "TipoParte2",
-                Rol.PRINCIPAL
+                Rol.PRINCIPAL,
+                ""
         );
        
 
