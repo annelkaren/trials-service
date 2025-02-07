@@ -9,10 +9,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.reasignacionExpediente.records.ReasignacionExpedienteResponseRecord;
 
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-
-
 
 @RequiredArgsConstructor
 @RestController
