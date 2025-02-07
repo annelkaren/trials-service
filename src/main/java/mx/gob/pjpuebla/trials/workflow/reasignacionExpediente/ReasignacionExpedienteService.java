@@ -2,10 +2,10 @@ package mx.gob.pjpuebla.trials.workflow.reasignacionExpediente;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -17,7 +17,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -50,6 +49,7 @@ public class ReasignacionExpedienteService {
     private final AnexoRepository anexoRepository;
         
 
+    @Transactional
     public ReasignacionExpedienteResponseRecord reasignarExpediente(Integer carpetaParentId) {
         Persona auditor = personaService.getAuditor();
 
