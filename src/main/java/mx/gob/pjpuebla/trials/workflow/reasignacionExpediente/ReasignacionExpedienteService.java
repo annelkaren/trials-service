@@ -3,9 +3,10 @@ package mx.gob.pjpuebla.trials.workflow.reasignacionExpediente;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -64,10 +65,10 @@ public class ReasignacionExpedienteService {
                         () -> new NotFoundException("Carpeta parent no encontrada", "carpetaId: " + carpetaParentId));
 
         Documento documentoParent = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaParentId);
-        Boolean expedienteReasignado = documentoParent.getData().getExpedienteReasignado();
+        Boolean expedienteReasignado = documentoParent.getData().getExpedienteReasignado() != null ? documentoParent.getData().getExpedienteReasignado() : false;
 
         if(expedienteReasignado){
-                throw new IllegalStateException("El expediente ya ha sido reasignado.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El expediente ya ha sido reasignado.");
         }
 
 
@@ -105,9 +106,31 @@ public class ReasignacionExpedienteService {
         Documento documentoSaved = documentoRepository.save(documento);
 
         //creación de personasDocumentos:
-        List<PersonaDocumento> personaDocumentos = personaDocumentoRepository.findByCarpetaId(carpetaParentId);
-        personaDocumentos.forEach(personaDocumento -> { personaDocumento.setCarpeta(carpetaSaved); personaDocumento.setId(null); } );
+        List<PersonaDocumento> personaDocumentos = personaDocumentoRepository.findByCarpetaId(carpetaParentId)
+                .stream()
+                .map(personaDocumento -> new PersonaDocumento()
+                        .setNombre(personaDocumento.getNombre())
+                        .setApellidoPaterno(personaDocumento.getApellidoPaterno())
+                        .setApellidoMaterno(personaDocumento.getApellidoMaterno())
+                        .setPseudonimo(personaDocumento.getPseudonimo())
+                        .setTipoPersona(personaDocumento.getTipoPersona())
+                        .setRol(personaDocumento.getRol())
+                        .setIne(personaDocumento.getIne())
+                        .setCurp(personaDocumento.getCurp())
+                        .setCorreoElectronico(personaDocumento.getCorreoElectronico())
+                        .setCelular(personaDocumento.getCelular())
+                        .setCarpeta(carpetaSaved)
+                        .setDomicilio(personaDocumento.getDomicilio())
+                        .setTipoPartes(personaDocumento.getTipoPartes())
+                        .setTipoNotificacion(personaDocumento.getTipoNotificacion())
+                        .setCorreoNotificacion(personaDocumento.getCorreoNotificacion())
+                        .setDomicilio(personaDocumento.getDomicilio())
+                )
+                .toList();
         
+        // Guardar todos los registros modificados de una sola vez
+        personaDocumentoRepository.saveAll(personaDocumentos);
+
         //creación de anexos:
         List<Anexo> anexosCarpeta = anexoRepository.findAnexosByCarpetaIdOrDocumentoId(null, carpetaParentId)
                 .stream()
@@ -119,8 +142,7 @@ public class ReasignacionExpedienteService {
         
         anexoRepository.saveAll(anexosCarpeta);
 
-        // Guardar todos los registros modificados de una sola vez
-        personaDocumentoRepository.saveAll(personaDocumentos);
+        
 
         //Actualizanos jData del documento de la carpeta parent :
         documentoParent.getData().setExpedienteReasignado(true);

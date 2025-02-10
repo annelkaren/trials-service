@@ -104,7 +104,7 @@ public class CarpetaService {
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
         
-                //validaciones nuevas para penal:
+        //validaciones nuevas para penal:
         String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
         Boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal") || nombreMateria.equals("Justicia para adolescentes");
 
@@ -116,6 +116,7 @@ public class CarpetaService {
         List<String> victimas = null;
         List<String> imputados = null;
         Estado estadoJuzgado = carpeta.getJuzgado().getEstado();
+
 
         if(isMateriaPenalOrJusticiaPA){
                 victimas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), VICTIMA_LABEL, List.of(Rol.PRINCIPAL))
