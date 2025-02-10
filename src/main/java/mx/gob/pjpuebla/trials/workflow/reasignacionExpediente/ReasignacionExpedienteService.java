@@ -18,6 +18,7 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -32,6 +33,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.reasignacionExpediente.records.ReactivacionExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.reasignacionExpediente.records.ReasignacionExpedienteResponseRecord;
 
 @Transactional
@@ -153,6 +155,34 @@ public class ReasignacionExpedienteService {
 
         return new ReasignacionExpedienteResponseRecord(carpetaParentId, documento.getId(),
                 "Carpeta reasignada exitosamente");
+    }
+
+    public ReactivacionExpedienteRecord reactivacionExpediente(Integer carpetaId){
+        Carpeta carpeta = carpetaRepository.findById(carpetaId)
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId: " + carpetaId));
+
+        Documento documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaId);
+
+        Juzgado juzgado = carpeta.getJuzgado();
+
+        if(documento.getData().getExpedienteReasignado()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "No es posible reactivar el expediente ya que ha sido reasignado.");
+        }
+
+        if(!carpeta.getEstatus().equals(EstadoCarpeta.ARCHIVO_JUDICIAL)){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                 "No es posible reactivar el expediente si no se encuentra en archivo judicial.");
+        }
+
+        if(!juzgado.getEstado().equals(Estado.ACTIVE)){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                 "No es posible reactivar el expediente ya que el juzgado no se encuentra activo.");
+        }
+
+        carpeta.setEstatus(EstadoCarpeta.RECEPCION);
+
+        return new ReactivacionExpedienteRecord(carpetaId, "Se ha reactivado el expediente nuevamente.");
     }
 
 }

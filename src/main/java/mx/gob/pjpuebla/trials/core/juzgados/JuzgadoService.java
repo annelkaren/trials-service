@@ -231,10 +231,6 @@ public class JuzgadoService {
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
-        for (Juzgado juzgado : juzgadosRelacionados) {
-            System.out.println("JUZGADO SELECCIONADO: " + juzgado.getNombre());
-        }
-
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
