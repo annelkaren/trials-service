@@ -67,12 +67,14 @@ public class ReasignacionExpedienteService {
                         () -> new NotFoundException("Carpeta parent no encontrada", "carpetaId: " + carpetaParentId));
 
         Documento documentoParent = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaParentId);
-        Boolean expedienteReasignado = documentoParent.getData().getExpedienteReasignado() != null ? documentoParent.getData().getExpedienteReasignado() : false;
+        DocumentoData dataDocumentParent = documentoParent.getData();
+
+        Boolean expedienteReasignado = dataDocumentParent != null ? dataDocumentParent.getExpedienteReasignado() != null ? dataDocumentParent.getExpedienteReasignado() : false 
+                                                                  : false;
 
         if(expedienteReasignado){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El expediente ya ha sido reasignado.");
         }
-
 
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",
@@ -147,6 +149,10 @@ public class ReasignacionExpedienteService {
         
 
         //Actualizanos jData del documento de la carpeta parent :
+        if(dataDocumentParent == null){
+                documentoParent.setData(new DocumentoData());
+        }
+
         documentoParent.getData().setExpedienteReasignado(true);
         documentoRepository.save(documentoParent);
 
@@ -158,14 +164,19 @@ public class ReasignacionExpedienteService {
     }
 
     public ReactivacionExpedienteRecord reactivacionExpediente(Integer carpetaId){
+        Persona persona = personaService.getAuditor();
+
         Carpeta carpeta = carpetaRepository.findById(carpetaId)
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "carpetaId: " + carpetaId));
 
         Documento documento = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaId);
 
         Juzgado juzgado = carpeta.getJuzgado();
+        DocumentoData dataDocumentParent = documento.getData();
 
-        if(documento.getData().getExpedienteReasignado()){
+        Boolean expedienteReasignado = dataDocumentParent != null ? dataDocumentParent.getExpedienteReasignado() != null ? dataDocumentParent.getExpedienteReasignado() : false 
+                                                                  : false;
+        if(expedienteReasignado){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "No es posible reactivar el expediente ya que ha sido reasignado.");
         }
@@ -181,6 +192,7 @@ public class ReasignacionExpedienteService {
         }
 
         carpeta.setEstatus(EstadoCarpeta.RECEPCION);
+        movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.RECEPCION.name());
 
         return new ReactivacionExpedienteRecord(carpetaId, "Se ha reactivado el expediente nuevamente.");
     }
