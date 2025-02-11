@@ -27,7 +27,7 @@ public class ReasignacionExpedienteResource {
     @PostMapping("/reasignacionExpediente")
     public ReasignacionExpedienteResponseRecord reasignarExpediente(@RequestBody Map<String, Integer> data) {
         Integer carpetaParentId = data.get("carpetaParentId");
-
+        
         return reasignacionExpedienteService.reasignarExpediente(carpetaParentId);
     }
 

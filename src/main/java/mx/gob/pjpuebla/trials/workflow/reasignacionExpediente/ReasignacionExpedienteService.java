@@ -163,6 +163,7 @@ public class ReasignacionExpedienteService {
                 "Carpeta reasignada exitosamente");
     }
 
+    @Transactional
     public ReactivacionExpedienteRecord reactivacionExpediente(Integer carpetaId){
         Persona persona = personaService.getAuditor();
 
