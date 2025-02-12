@@ -125,7 +125,7 @@ public class RoleService {
                 .filter(r -> r.getAttributes().containsKey("client-role"))
                 .filter(r -> r.getAttributes().get("client-role").contains("true"))
                 .filter(r -> r.getAttributes().containsKey(CENTRO_TRABAJO_KEY)).toList();
-
+        
         if (!tipoCentroTrabajo.isEmpty() && !tipoCentroTrabajo.equalsIgnoreCase("undefined")) {
             temporalList.stream()
                     .filter(r -> r.getAttributes().get(CENTRO_TRABAJO_KEY).contains(tipoCentroTrabajo)
