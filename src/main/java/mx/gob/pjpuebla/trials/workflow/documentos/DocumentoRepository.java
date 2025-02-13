@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -185,57 +186,53 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("UPDATE Documento d SET d.estatus = :estado WHERE d.id = :documentoId")
     void actualizarEstatus(@Param("documentoId") Integer documentoId, @Param("estado") EstadoCarpeta estado);
 
-    //colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
+    // colocamos id al acerdo momentaneamente ya que no se genera actualmente folio
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord(
-            doc.id,
-           CASE
-                WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
-                WHEN doc.tipoDocumento IS NULL THEN 'Demanda inicial'
-                ELSE COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial')
-            END,
-            doc.ruta,
-            m.recomendaciones,
-            CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
-        )
-        FROM Documento doc
-        JOIN doc.carpeta carpeta
-        LEFT JOIN doc.concepto concepto
-        LEFT JOIN Movimiento m ON m.documento = doc
-        WHERE
-            (
-                (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR
-                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
-            )
-            AND (
-                (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL))
-                OR
-                (concepto.nombre = 'Adjuntar'
-                 OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
-                 OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL)
+                SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord(
+                    doc.id,
+                   CASE
+                        WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
+                        WHEN doc.tipoDocumento IS NULL THEN 'Demanda inicial'
+                        ELSE COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial')
+                    END,
+                    doc.ruta,
+                    m.recomendaciones,
+                    CASE WHEN doc.acuerdoRespuesta IS NOT NULL THEN 1 ELSE 0 END
                 )
-            )
-            AND (
-                ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
-                OR
-                (m.estado = 'ASIGNADO')
-            )
-            AND doc.carpeta.id = :carpetaId
-            AND
-            CASE
-                WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
-                WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
-                ELSE 0
-            END = 1
-    """)
+                FROM Documento doc
+                JOIN doc.carpeta carpeta
+                LEFT JOIN doc.concepto concepto
+                LEFT JOIN Movimiento m ON m.documento = doc
+                WHERE
+                    (
+                        (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR
+                        (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
+                    )
+                    AND (
+                        (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL))
+                        OR
+                        (concepto.nombre = 'Adjuntar'
+                         OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
+                         OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL)
+                        )
+                    )
+                    AND (
+                        ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
+                        OR
+                        (m.estado = 'ASIGNADO')
+                    )
+                    AND doc.carpeta.id = :carpetaId
+                    AND
+                    CASE
+                        WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
+                        WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
+                        ELSE 0
+                    END = 1
+            """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
-        @Param("carpetaId") Integer carpetaId,
-        @Param("documentoId") Integer documentoId,
-        @Param("tipoDocumento") String tipoDocumento);
-    
-    
-    
-
+            @Param("carpetaId") Integer carpetaId,
+            @Param("documentoId") Integer documentoId,
+            @Param("tipoDocumento") String tipoDocumento);
 
     @Modifying
     @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
@@ -307,52 +304,75 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     List<Documento> findByAcuerdoRespuestaId(Integer acuerdoId);
 
     @Query("""
-            SELECT d
-            FROM Carpeta c
-            JOIN Documento d ON d.carpeta.id = c.id
-            WHERE c.expediente = :expediente
-              AND d.tipoDocumento = :tipoDocumento
-              AND c.juzgado.id = :juzgadoId
-        """)
-    Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento, Integer juzgadoId);
+                SELECT d
+                FROM Carpeta c
+                JOIN Documento d ON d.carpeta.id = c.id
+                WHERE c.expediente = :expediente
+                  AND d.tipoDocumento = :tipoDocumento
+                  AND c.juzgado.id = :juzgadoId
+            """)
+    Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento,
+            Integer juzgadoId);
 
-    Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento, LocalDateTime fechaAlta);
+    Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento,
+            LocalDateTime fechaAlta);
 
     Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
-    
-    @Query("""
-        SELECT d
-        FROM Documento d
-        JOIN DocumentoContenido dc ON dc.documento.id = d.id
-        JOIN d.carpeta c
-        WHERE lower(dc.oficioPublicado) = 's'
-          AND c.id = :carpetaId
-          AND d.tipoDocumento = TipoDocumento.SENTENCIA
-        """)
-Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
-List<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento);
     @Query("""
-    SELECT doc
-    FROM Documento doc
-    JOIN doc.persona p
-    WHERE LOWER(p.correoElectronico) = LOWER(:correo)
-    AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
-""")
+            SELECT d
+            FROM Documento d
+            JOIN DocumentoContenido dc ON dc.documento.id = d.id
+            JOIN d.carpeta c
+            WHERE lower(dc.oficioPublicado) = 's'
+              AND c.id = :carpetaId
+              AND d.tipoDocumento = TipoDocumento.SENTENCIA
+            """)
+    Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
+
+    List<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento);
+
+    @Query("""
+                SELECT doc
+                FROM Documento doc
+                JOIN doc.persona p
+                WHERE LOWER(p.correoElectronico) = LOWER(:correo)
+                AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+            """)
     Page<Documento> findPromocionesLitigante(@Param("correo") String correo, Pageable pageable);
 
     @Query("""
-    SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END
-    FROM Documento doc
-    JOIN doc.persona p
-    WHERE doc.carpeta.expediente = :expediente
-    AND doc.folio = :numeroAcuerdo
-    AND LOWER(p.correoElectronico) = LOWER(:correo)
-""")
+                SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END
+                FROM Documento doc
+                JOIN doc.persona p
+                WHERE doc.carpeta.expediente = :expediente
+                AND doc.folio = :numeroAcuerdo
+                AND LOWER(p.correoElectronico) = LOWER(:correo)
+            """)
     boolean existsByExpedienteAndAcuerdoAndAsociateCorreo(@Param("expediente") String expediente,
-                                                          @Param("numeroAcuerdo") String numeroAcuerdo,
-                                                          @Param("correo") String correo);
+            @Param("numeroAcuerdo") String numeroAcuerdo,
+            @Param("correo") String correo);
 
-
+    @Query("""         
+                SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
+                    doc.id,
+                    'Salida',
+                    'Recepcion',
+                    'Origen',
+                    'mensajero',
+                    doc.estatus,
+                    doc.folio
+                )
+                FROM Documento doc
+                JOIN doc.institucion institucion
+                WHERE doc.tipoDocumento = TipoDocumento.OFICIO 
+                AND institucion.tipoInstitucion = 'Tribunal Federal'
+                AND doc.estatus = EstadoCarpeta.CREADO
+                AND (
+                        LOWER(doc.folio) LIKE %:key%
+                        OR LOWER(doc.folio) = ''
+                    )
+            """)
+    Page<BandejaEnviosRecord> findAllOficiosBandejaSalida(Pageable pageable, String key);
 
 }
