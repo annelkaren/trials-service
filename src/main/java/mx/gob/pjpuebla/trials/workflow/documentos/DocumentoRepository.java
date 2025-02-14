@@ -1,7 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -354,27 +354,15 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("correo") String correo);
 
     @Query("""         
-                SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
-                    doc.id,
-                    doc.folio
-                    institucion.nombre,
-                    juzgado.nombre,
-                    '',
-                    doc.estatus,
-                )
-                FROM Documento doc
-                JOIN doc.institucion institucion
-                JOIN doc.carpeta carpeta
-                JOIN carpeta.juzgado juzgado
-                JOIN 
+                SELECT documentoDetalle
+                FROM DocumentoDetalle documentoDetalle
+                JOIN documentoDetalle.documento doc
                 WHERE doc.tipoDocumento = TipoDocumento.OFICIO
-                AND doc.data.tipoOficio = 'JURISDICCIONAL'
-                AND doc.estatus = EstadoCarpeta.CREADO
                 AND (
-                        LOWER(doc.id) LIKE %:key%
-                        OR LOWER(doc.id) = ''
+                        CAST(doc.id AS string) LIKE %:key%
+                        OR :key = ''
                     )
             """)
-    Page<BandejaEnviosRecord> findAllOficiosBandejaSalida(Pageable pageable, String key);
+    List<DocumentoDetalle> findAllOficiosBandejaSalida(String key);
 
 }
