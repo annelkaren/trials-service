@@ -4,10 +4,10 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
 public record BandejaEnviosRecord(
     Integer documentoId,
-    String salida,
-    String recepcion,
+    String folio,
+    String destino,
     String origen, 
     String mensajero,
-    EstadoCarpeta estatus, 
-    String oficioFolio
+    EstadoCarpeta estatus
+    
 ) {}

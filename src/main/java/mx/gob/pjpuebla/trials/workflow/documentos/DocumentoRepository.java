@@ -356,21 +356,23 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""         
                 SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
                     doc.id,
-                    'Salida',
-                    'Recepcion',
-                    'Origen',
-                    'mensajero',
-                    doc.estatus,
                     doc.folio
+                    institucion.nombre,
+                    juzgado.nombre,
+                    '',
+                    doc.estatus,
                 )
                 FROM Documento doc
                 JOIN doc.institucion institucion
-                WHERE doc.tipoDocumento = TipoDocumento.OFICIO 
-                AND institucion.tipoInstitucion = 'Tribunal Federal'
+                JOIN doc.carpeta carpeta
+                JOIN carpeta.juzgado juzgado
+                JOIN 
+                WHERE doc.tipoDocumento = TipoDocumento.OFICIO
+                AND doc.data.tipoOficio = 'JURISDICCIONAL'
                 AND doc.estatus = EstadoCarpeta.CREADO
                 AND (
-                        LOWER(doc.folio) LIKE %:key%
-                        OR LOWER(doc.folio) = ''
+                        LOWER(doc.id) LIKE %:key%
+                        OR LOWER(doc.id) = ''
                     )
             """)
     Page<BandejaEnviosRecord> findAllOficiosBandejaSalida(Pageable pageable, String key);
