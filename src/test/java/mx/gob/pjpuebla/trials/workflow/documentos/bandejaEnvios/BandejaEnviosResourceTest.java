@@ -6,9 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,7 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+
+import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnvioRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosCambioEstatus;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord;
 
 @WebMvcTest(BandejaEnviosResource.class)
@@ -47,7 +50,8 @@ public class BandejaEnviosResourceTest {
     @Test
     public void testActualizarEstatusOficio() throws Exception {
         BandejaEnvioRecordResponse response = new BandejaEnvioRecordResponse(1, "OK");
-        when(bandejaEnviosService.actualizarEstatusOficio(1, 1)).thenReturn(response);
+        BandejaEnviosCambioEstatus data = new BandejaEnviosCambioEstatus(List.of(1), EstadoEnvio.ENVIADO, null);
+        when(bandejaEnviosService.actualizarEstatusOficio(data)).thenReturn(response);
 
         mockMvc.perform(patch("/api/workflow/bandejaEnvios/1/1"))
                 .andExpect(status().isOk());
