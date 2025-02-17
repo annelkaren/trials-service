@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -444,7 +445,7 @@ public class CarpetaService {
     }
 
     public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
@@ -510,7 +511,7 @@ public class CarpetaService {
     public void saveExpedienteDetalle(
             SaveExpedienteDetalleRecord detalle,
             Integer docId) {
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
@@ -594,7 +595,7 @@ public class CarpetaService {
                 .setPresentacionImputado(detalle.presentacionImputado())
                 .setSolicitudAudiencia(detalle.solicitudAudiencia())
                 .setFechaPresentacionImputado(detalle.fechaPresentacionImputado() != null
-                        ? (LocalDateTime.parse(detalle.fechaPresentacionImputado(), pattern))
+                        ? (LocalDate.parse(detalle.fechaPresentacionImputado(), pattern))
                         : null)
                 .setCujus(detalle.cujus());
 
