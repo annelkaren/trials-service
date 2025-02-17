@@ -390,6 +390,9 @@ public class DocumentoService {
         // Creación de audiencia:
         crearAudienciaPenal(demanda, carpeta);
 
+        //Creación de anexos:
+        addAnexos(demanda.anexos(), documento);
+
         // Creación del movimiento:
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
         setAndSaveCarpetaDetalle(documento, carpeta, promovente, tipoJuicio);
