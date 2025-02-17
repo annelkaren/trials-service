@@ -10,6 +10,7 @@ public record PersonaDataRecord(
         String apellidoPaterno,
         String apellidoMaterno,
         String tipoPartesNombre,
-        Rol rol
+        Rol rol,
+        String pseudonimo
 ) implements Serializable {
 }

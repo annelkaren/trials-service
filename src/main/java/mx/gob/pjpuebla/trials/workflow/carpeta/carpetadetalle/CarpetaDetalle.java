@@ -114,7 +114,7 @@ public class CarpetaDetalle implements Serializable {
     private SolicitudAudiencia solicitudAudiencia;
 
     @Column(name = "T_FECHA_PRESENTACION_IMPUTADO")
-    private LocalDateTime fechaPresentacionImputado;
+    private LocalDate fechaPresentacionImputado;
 
     @Column(name = "S_CUJUS")
     private String cujus;
