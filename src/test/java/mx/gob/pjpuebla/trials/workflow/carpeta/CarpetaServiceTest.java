@@ -10,6 +10,7 @@ import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
@@ -104,6 +105,8 @@ class CarpetaServiceTest {
     @Mock
     private DistritoRepository distritoRepository;
     @Mock
+    private JuzgadoRepository juzgadoRepository;
+    @Mock
     private DomicilioRepository domicilioRepository;
     @Mock
     private SedeRepository sedeRepository;
@@ -181,6 +184,9 @@ class CarpetaServiceTest {
 
     @Test
     void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
+        juzgado.setMateria(new Materia().setNombre("TEST"));
+        given(juzgadoRepository.findById(any()))
+                .willReturn(Optional.ofNullable(juzgado));
         given(carpetaRepository.findByExpedienteAndJuzgadoId(any(), any()))
                 .willReturn(Optional.ofNullable(validCarpeta));
         given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
@@ -202,7 +208,7 @@ class CarpetaServiceTest {
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1));
-        assertThat(assertThrows.getMessage()).contains("Carpeta no encontrada");
+        assertThat(assertThrows.getMessage()).contains("Juzgado no encontrado");
     }
 
     @Test
