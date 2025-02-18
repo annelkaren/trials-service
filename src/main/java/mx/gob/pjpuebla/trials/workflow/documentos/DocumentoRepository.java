@@ -375,16 +375,13 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND (
                     CAST(doc.id AS text) = :key OR :key = ''
                 )
-                AND (
-                    (:isOficialMayorJuzgado = true AND doc.estatus = 6 AND documentoDetalle.estadoEnvio IS NULL)
-                    OR
-                    (:isOficialMayorOficialia = true AND documentoDetalle.estadoEnvio IS NOT NULL)
-                )
+                AND (:isOficialMayorOficialia = true AND documentoDetalle.estadoEnvio IS NOT NULL
+                    OR :isOficialMayorOficialia = false
+                    )
                 AND juzgado IN :juzgados
             """)
     List<BandejaEnviosRecord> findAllOficiosBandejaSalida(
             @Param("key") String key,
-            @Param("isOficialMayorJuzgado") Boolean isOficialMayorJuzgado,
             @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
             @Param("juzgados") List<Juzgado> juzgados);
 

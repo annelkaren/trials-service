@@ -55,7 +55,7 @@ public class BandejaEnviosService {
         }
 
 
-        List<BandejaEnviosRecord> response = documentoRepository.findAllOficiosBandejaSalida(key, isOficialMayorJuzgadoOrAuxiliar, isOficialMayorOficialia, juzgados);
+        List<BandejaEnviosRecord> response = documentoRepository.findAllOficiosBandejaSalida(key, isOficialMayorOficialia, juzgados);
 
         return new PageImpl<>(response, pageable, response.size());
     }
