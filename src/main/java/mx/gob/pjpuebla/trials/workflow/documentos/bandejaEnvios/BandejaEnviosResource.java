@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnvioRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosCambioEstatus;
@@ -30,7 +30,8 @@ public class BandejaEnviosResource {
     }
 
     @PostMapping("/bandejaEnvios")
-    public BandejaEnvioRecordResponse actualizarEstatusOficio(@RequestBody @Valid BandejaEnviosCambioEstatus bandejaEnvios) {
+    public BandejaEnvioRecordResponse actualizarEstatusOficio(@RequestBody BandejaEnviosCambioEstatus bandejaEnvios) {
+     
         return bandejaEnviosService.actualizarEstatusOficio(bandejaEnvios);
     }
 

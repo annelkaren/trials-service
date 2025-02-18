@@ -11,8 +11,12 @@ import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaE
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 
@@ -31,40 +35,35 @@ public class BandejaEnviosService {
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final PersonaRepository personaRepository;
+    private final PersonaService personaService;
+    private final RoleService roleService;
 
     @Transactional(readOnly = true)
     public Page<BandejaEnviosRecord> getAllBandejaEnviados(String key, Pageable pageable) {
         key = (key != null) ? key.toLowerCase() : "";
-        List<BandejaEnviosRecord> response = List.of();
+        Persona persona = personaService.getAuditor();
+        List<Juzgado> juzgados = List.of();
 
-        List<DocumentoDetalle> records = documentoRepository.findAllOficiosBandejaSalida(key);
-        if (records.size() > 0) {
-            response = records.stream()
-                    .filter(doc -> doc.getDocumento().getData().getTipoOficio() != null
-                            && "Jurisdiccional".equals(doc.getDocumento().getData().getTipoOficio()))
-                    .map(doc -> {
-                        Documento documento = doc.getDocumento();
-                        return new BandejaEnviosRecord(
-                                documento.getId(),
-                                documento.getFolio(),
-                                documento.getInstitucion().getNombre(),
-                                documento.getCarpeta().getJuzgado().getNombre(),
-                                doc.getPersona() != null
-                                        ? doc.getPersona().getNombre() + " " + doc.getPersona().getApellidoPaterno()
-                                                + " " + doc.getPersona().getApellidoMaterno()
-                                        : "Sin asignar",
-                                documento.getEstatus().equals(EstadoCarpeta.CREADO) ? "CREADO"
-                                        : doc.getEstadoEnvio().getEtiqueta());
-                    })
-                    .collect(Collectors.toList());
+        Boolean isOficialMayorJuzgadoOrAuxiliar =  roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO") || roleService.hasRole(persona.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO"); 
+        Boolean isOficialMayorOficialia = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_OFICIALIA");
+
+        if(isOficialMayorJuzgadoOrAuxiliar){
+            juzgados = List.of(persona.getJuzgado());
+        }
+        if(isOficialMayorOficialia){
+            juzgados = persona.getOficialia().getJuzgados();
         }
 
-        return new PageImpl<>(response, pageable, records.size());
+
+        List<BandejaEnviosRecord> response = documentoRepository.findAllOficiosBandejaSalida(key, isOficialMayorJuzgadoOrAuxiliar, isOficialMayorOficialia, juzgados);
+
+        return new PageImpl<>(response, pageable, response.size());
     }
 
     public BandejaEnvioRecordResponse actualizarEstatusOficio(BandejaEnviosCambioEstatus bandejaEnvios) {
         Persona persona = null;
 
+        System.out.println(bandejaEnvios.estadoEnvio().name());
         if (!bandejaEnvios.estadoEnvio().equals(EstadoEnvio.ENVIADO)) {
             persona = personaRepository.findById((long) bandejaEnvios.mensajero()).orElse(null);
         }

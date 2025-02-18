@@ -1,10 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -353,16 +355,37 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("numeroAcuerdo") String numeroAcuerdo,
             @Param("correo") String correo);
 
-    @Query("""         
-                SELECT documentoDetalle
+    @Query("""
+                SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
+                    doc.id,
+                    doc.folio,
+                    institucion.nombre,
+                    juzgado.nombre,
+                    COALESCE(persona.nombre, 'Sin asignar'),
+                    doc.estatus,
+                    documentoDetalle.estadoEnvio
+                )
                 FROM DocumentoDetalle documentoDetalle
+                LEFT JOIN documentoDetalle.persona persona
                 JOIN documentoDetalle.documento doc
+                JOIN doc.institucion institucion
+                JOIN doc.carpeta carpeta
+                JOIN carpeta.juzgado juzgado
                 WHERE doc.tipoDocumento = TipoDocumento.OFICIO
                 AND (
-                        CAST(doc.id AS string) LIKE %:key%
-                        OR :key = ''
-                    )
+                    CAST(doc.id AS text) = :key OR :key = ''
+                )
+                AND (
+                    (:isOficialMayorJuzgado = true AND doc.estatus = 6 AND documentoDetalle.estadoEnvio IS NULL)
+                    OR
+                    (:isOficialMayorOficialia = true AND documentoDetalle.estadoEnvio IS NOT NULL)
+                )
+                AND juzgado IN :juzgados
             """)
-    List<DocumentoDetalle> findAllOficiosBandejaSalida(String key);
+    List<BandejaEnviosRecord> findAllOficiosBandejaSalida(
+            @Param("key") String key,
+            @Param("isOficialMayorJuzgado") Boolean isOficialMayorJuzgado,
+            @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
+            @Param("juzgados") List<Juzgado> juzgados);
 
 }
