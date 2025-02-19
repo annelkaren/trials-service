@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -101,8 +102,17 @@ public class CarpetaService {
             finalJuzgadoId = juzgadoId;
         }
 
-        Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
-                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
+        Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
+                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", expediente + " - " + finalJuzgadoId));
+        Carpeta carpeta;
+        if (juzgado.getMateria().getNombre().toLowerCase().contains("penal") || juzgado.getMateria().getNombre().toLowerCase().contains("justicia")) {
+            carpeta = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente, juzgado.getNomenclatura(), finalJuzgadoId)
+                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
+        } else {
+            carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
+                    .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + finalJuzgadoId));
+        }
+        
         
         //validaciones nuevas para penal:
         String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
@@ -198,20 +208,20 @@ public class CarpetaService {
         // actualizamos el estatus en carpeta o documento dependiendo de si es demanda,
         // exhorto o promoción y apelacion
         if (documento.getTipoDocumento() == null || documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
-                documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
-                documento.getCarpeta().setPersona(persona);
-                carpetaRepository.save(documento.getCarpeta());
+            documento.getCarpeta().setEstatus(EstadoCarpeta.ASIGNADO);
+            documento.getCarpeta().setPersona(persona);
+            carpetaRepository.save(documento.getCarpeta());
         } else {
-                documento.setEstatus(EstadoCarpeta.ASIGNADO);
-                documento.setPersona(persona);
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
+            documento.setPersona(persona);
         }
-            
+
         // Verifica si la carpeta es de tipo APELACION y actualiza el documento en consecuencia
         if (documento.getCarpeta().getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
-                documento.setEstatus(EstadoCarpeta.ASIGNADO);
-                documento.setPersona(persona);
+            documento.setEstatus(EstadoCarpeta.ASIGNADO);
+            documento.setPersona(persona);
         }
-            
+
         // Guarda el documento una sola vez después de todas las actualizaciones
         documento = documentoRepository.save(documento);
 
@@ -366,6 +376,9 @@ public class CarpetaService {
                     .of(participante.nombre(), participante.apellidoPaterno(), participante.apellidoMaterno())
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "));
+            if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
+                nombreCompleto = participante.pseudonimo();
+            }
             if (!nombreCompleto.isEmpty()) {
                 ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto,
                         participante.rol());
@@ -449,15 +462,15 @@ public class CarpetaService {
     }
 
     public InfoExpedienteDetalleRecord getInfoExpedienteDetalle(Integer docId) {
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
 
         CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
 
-        if (carpetaDetalle == null){
-                throw new NotFoundException("No hay registro del detalle de la carpeta", "docId");
+        if (carpetaDetalle == null) {
+            throw new NotFoundException("No hay registro del detalle de la carpeta", "docId");
         }
 
         String nombre = carpeta.getPersona().getNombre() + " " +
@@ -515,7 +528,7 @@ public class CarpetaService {
     public void saveExpedienteDetalle(
             SaveExpedienteDetalleRecord detalle,
             Integer docId) {
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         Carpeta carpeta = carpetaRepository.findById(docId)
                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
@@ -599,7 +612,7 @@ public class CarpetaService {
                 .setPresentacionImputado(detalle.presentacionImputado())
                 .setSolicitudAudiencia(detalle.solicitudAudiencia())
                 .setFechaPresentacionImputado(detalle.fechaPresentacionImputado() != null
-                        ? (LocalDateTime.parse(detalle.fechaPresentacionImputado(), pattern))
+                        ? (LocalDate.parse(detalle.fechaPresentacionImputado(), pattern))
                         : null)
                 .setCujus(detalle.cujus());
 
@@ -663,11 +676,11 @@ public class CarpetaService {
     }
 
     public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId,
-            Pageable pageable) {
+                                                                        Pageable pageable) {
         List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosCarpeta(key, carpetaId);
 
-        if(key != null && key.equals("TODAS PIEZAS")){
-            key="";
+        if (key != null && key.equals("TODAS PIEZAS")) {
+            key = "";
         }
         List<DocumentoDetalleCarpetaResponse> piezas = this.getAllPiezasCarpeta(key, carpetaId);
 
@@ -744,8 +757,8 @@ public class CarpetaService {
                     carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre() : "Sin Tipo de Juicio",
                     actor,
                     demandado,
-                    carpeta.getPersona().equals(persona) && carpeta.getEstatus()==EstadoCarpeta.ASIGNADO,
-                    carpetaDetalle != null ? Objects.toString(carpetaDetalle.getCujus(),"") : ""
+                    carpeta.getPersona().equals(persona) && carpeta.getEstatus() == EstadoCarpeta.ASIGNADO,
+                    carpetaDetalle != null ? Objects.toString(carpetaDetalle.getCujus(), "") : ""
             );
         });
     }
@@ -798,20 +811,20 @@ public class CarpetaService {
         carpetas.forEach(carpeta -> carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL));
         carpetaRepository.saveAll(carpetas);
     }
-    
+
     public CarpetaResponseRecord getCarpetaByExpedienteAndEstado(String expediente,
-        EstadoCarpeta estado) {
-    
+                                                                 EstadoCarpeta estado) {
+
         Persona auditor = personaService.getAuditor();
         if (auditor == null || auditor.getJuzgado() == null) {
             throw new IllegalArgumentException("No se puede determinar el juzgado.");
         }
         Integer juzgadoId = auditor.getJuzgado().getId();
-    
+
 
         Carpeta carpeta = carpetaRepository.findByExpedienteAndJuzgadoIdAndEstatus(expediente, juzgadoId, estado)
-            .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + juzgadoId));
-        
+                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", expediente + " - " + juzgadoId));
+
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
         String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
         String tipoJuicio = carpeta.getTipoJuicio().getNombre();
@@ -824,7 +837,7 @@ public class CarpetaService {
 
             if (ultimoMovimiento != null) {
                 EstadoCarpeta estado = EstadoCarpeta.valueOf(ultimoMovimiento.getEstado());
-                
+
                 Optional<Carpeta> carpetaOptional = carpetaRepository.findById(id);
                 if (carpetaOptional.isPresent()) {
                     Carpeta carpeta = carpetaOptional.get();
@@ -838,5 +851,5 @@ public class CarpetaService {
             }
         }
     }
-    
+
 }
