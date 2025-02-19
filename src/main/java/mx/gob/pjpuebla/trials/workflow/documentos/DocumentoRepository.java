@@ -379,6 +379,10 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     OR :isOficialMayorOficialia = false
                     )
                 AND juzgado IN :juzgados
+                AND (
+                        (:key = '' AND documentoDetalle.estadoEnvio IS NOT NULL) OR
+                        (:key != '') 
+                    )
             """)
     List<BandejaEnviosRecord> findAllOficiosBandejaSalida(
             @Param("key") String key,
