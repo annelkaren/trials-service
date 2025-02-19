@@ -13,11 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,7 +56,8 @@ import java.util.UUID;
  * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}
  * </p>
  * SENTENCIA PUBLICA (Debe de tener una carpeta):
- * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de sentencia}
+ * /opt/pjp/files/digitalizacion/{year}/{juzgado}/{expediente}/{tipo}/{número de
+ * sentencia}
  * </p>
  * </p>
  * APELACION (Debe de tener una carpeta):
@@ -73,18 +76,19 @@ public class DigitalizacionService {
 
     private final PersonaService personaService; // Servicio de persona
     private final DocumentoRepository documentoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final String EXTENSION_ARCHIVO = ".pdf";
 
-    //Si se usa en mas métodos cambiar variable global por local.
+    // Si se usa en mas métodos cambiar variable global por local.
     private Integer audienciaId;
 
     /**
      * Crea un directorio basado en el tipo de documento y la carpeta asociada.
      *
-     * @param documento El  documento el cual se quiere crear el directorio.
+     * @param documento El documento el cual se quiere crear el directorio.
      * @return La ruta del directorio creado.
      */
     public Path crearDirectorio(Documento documento) {
@@ -101,15 +105,19 @@ public class DigitalizacionService {
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
-            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
+            return crearDirectorios(
+                    Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],
+                            TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
-            return crearDirectorios(Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],"Audiencias", this.audienciaId.toString() , "Asistencia"));
+            return crearDirectorios(
+                    Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], "Audiencias",
+                            this.audienciaId.toString(), "Asistencia"));
         }
 
         if (documento.getTipoDocumento() == TipoDocumento.PRUEBA_AUDIENCIA) {
-            //Solo mientras se define la audiencia a la que corresponde
+            // Solo mientras se define la audiencia a la que corresponde
             Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
             String numAudiencia = String.valueOf(audiencia.getId());
 
@@ -118,9 +126,8 @@ public class DigitalizacionService {
             return crearDirectorios(path);
         }
 
-
         // Revisar la ruta para los documentos de una pieza
-        if (carpeta.getTipoCarpeta()==TipoCarpeta.PIEZA){
+        if (carpeta.getTipoCarpeta() == TipoCarpeta.PIEZA) {
             carpeta = carpeta.getCarpetaPadre();
         }
 
@@ -133,8 +140,21 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        
-        String nombreUnicoArchivo = documento.getTipoDocumento() == null ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name()) : generarNombreArchivo(documento.getTipoDocumento().name());
+        Boolean isOficio = documento.getTipoDocumento().equals(TipoDocumento.OFICIO);
+        String nombreUnicoArchivo = "";
+
+        if (isOficio) {
+            DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
+                    .orElse(null);
+            if (documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.DIGITALIZADO)) {
+                nombreUnicoArchivo = generarNombreArchivo("OFICIO_OCP");
+            }
+        } else {
+            nombreUnicoArchivo = documento.getTipoDocumento() == null
+                    ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name())
+                    : generarNombreArchivo(documento.getTipoDocumento().name());
+
+        }
 
         // Guardar el archivo y manejar posibles excepciones
         try {
@@ -150,7 +170,8 @@ public class DigitalizacionService {
         documento.setRuta(nombreUnicoArchivo);
         documentoRepository.save(documento);
 
-        return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+        return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
+                nombreUnicoArchivo);
     }
 
     public byte[] getDocumento(Integer documentoId) throws IOException {
@@ -174,13 +195,12 @@ public class DigitalizacionService {
      * UUID.
      *
      * @param tipo El tipo de documento o carpeta para incluir en el nombre del
-     *                    archivo.
+     *             archivo.
      * @return Un nombre único generado para el archivo PDF.
      */
     private String generarNombreArchivo(String tipo) {
         return tipo + "_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
     }
-
 
     /**
      * Valida las propiedades del archivo: que no esté vacío, que sea un PDF, y que
@@ -218,7 +238,8 @@ public class DigitalizacionService {
             return crearDirectorios(Paths.get(basePath, year, oficialia, "oficiosAdministrativos"));
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
-            return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
+            return crearDirectorios(
+                    Paths.get(basePath, construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
         }
 
         throw new IllegalArgumentException("Tipo de oficio no soportado: " + tipoOficio);
@@ -240,7 +261,8 @@ public class DigitalizacionService {
             case DEMANDA:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
-                return crearDirectorios(Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
+                return crearDirectorios(
+                        Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
             case APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             default:
@@ -288,7 +310,7 @@ public class DigitalizacionService {
         Persona persona = personaService.getAuditor();
         String nombreCentroTrabajo = "";
 
-        if(persona.getJuzgado() == null && persona.getOficialia()!=null){
+        if (persona.getJuzgado() == null && persona.getOficialia() != null) {
             nombreCentroTrabajo = persona.getOficialia().getNombre();
         }
 

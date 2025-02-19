@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnvioRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosCambioEstatus;
@@ -15,13 +15,10 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -34,6 +31,7 @@ public class BandejaEnviosService {
 
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final DigitalizacionService digitalizacionService;
     private final PersonaRepository personaRepository;
     private final PersonaService personaService;
     private final RoleService roleService;
@@ -63,9 +61,10 @@ public class BandejaEnviosService {
     public BandejaEnvioRecordResponse actualizarEstatusOficio(BandejaEnviosCambioEstatus bandejaEnvios) {
         Persona persona = null;
 
-        System.out.println(bandejaEnvios.estadoEnvio().name());
-        if (!bandejaEnvios.estadoEnvio().equals(EstadoEnvio.ENVIADO)) {
-            persona = personaRepository.findById((long) bandejaEnvios.mensajero()).orElse(null);
+        if (!bandejaEnvios.estadoEnvio().equals(EstadoEnvio.ENVIADO) ) {
+            persona = bandejaEnvios.mensajero() != null
+                ? personaRepository.findById((long) bandejaEnvios.mensajero()).orElse(null)
+                : null;
         }
 
         List<DocumentoDetalle> documentosDetalles = documentoDetalleRepository.findAllByDocumentoIdIn(bandejaEnvios.oficiosIds());
