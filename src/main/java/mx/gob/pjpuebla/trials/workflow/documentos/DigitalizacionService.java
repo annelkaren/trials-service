@@ -144,17 +144,23 @@ public class DigitalizacionService {
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
+            System.out.println("ENTRE AL OFICIO \n");
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
-            if (documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.DIGITALIZADO)) {
+            if (documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
                 nombreUnicoArchivo = generarNombreArchivo("OFICIO_OCP");
             }
-        } else {
+        }
+
+        if (nombreUnicoArchivo == "") {
             nombreUnicoArchivo = documento.getTipoDocumento() == null
                     ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name())
                     : generarNombreArchivo(documento.getTipoDocumento().name());
 
         }
+
+        System.out.println("EL NOMBRE DEL ARCHIVO ES: " + nombreUnicoArchivo);
+        System.out.println();
 
         // Guardar el archivo y manejar posibles excepciones
         try {

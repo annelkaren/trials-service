@@ -7,7 +7,7 @@ public enum EstadoEnvio {
     ENVIADO("Enviado a la OCP"),
     RECIBIDO("Recibido en OCP"),
     ENVIADO_DESTINO("Enviado al destino"),
-    RECIBIDO_DESTINO("Recibido en destino"),
+    RECIBIDO_DESTINO("Recibido en el destino"),
     DIGITALIZADO("Digitalizado");
 
 
