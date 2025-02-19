@@ -116,7 +116,7 @@ public class CarpetaService {
         
         //validaciones nuevas para penal:
         String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
-        Boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal") || nombreMateria.equals("Justicia para adolescentes");
+        boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal") || nombreMateria.equals("Justicia para adolescentes");
 
 
         String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
@@ -376,9 +376,11 @@ public class CarpetaService {
                     .of(participante.nombre(), participante.apellidoPaterno(), participante.apellidoMaterno())
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "));
-            if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
-                nombreCompleto = participante.pseudonimo();
-            }
+                
+                if (nombreCompleto.strip().isEmpty()) {
+                        nombreCompleto = participante.pseudonimo();
+                }
+                    
             if (!nombreCompleto.isEmpty()) {
                 ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(), nombreCompleto,
                         participante.rol());

@@ -69,8 +69,8 @@ public class ReasignacionExpedienteService {
         Documento documentoParent = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaParentId);
         DocumentoData dataDocumentParent = documentoParent.getData();
 
-        Boolean expedienteReasignado = dataDocumentParent != null ? dataDocumentParent.getExpedienteReasignado() != null ? dataDocumentParent.getExpedienteReasignado() : false 
-                                                                  : false;
+        boolean expedienteReasignado = dataDocumentParent != null && Boolean.TRUE.equals(dataDocumentParent.getExpedienteReasignado());
+
 
         if(expedienteReasignado){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El expediente ya ha sido reasignado.");
@@ -175,8 +175,8 @@ public class ReasignacionExpedienteService {
         Juzgado juzgado = carpeta.getJuzgado();
         DocumentoData dataDocumentParent = documento.getData();
 
-        Boolean expedienteReasignado = dataDocumentParent != null ? dataDocumentParent.getExpedienteReasignado() != null ? dataDocumentParent.getExpedienteReasignado() : false 
-                                                                  : false;
+        boolean expedienteReasignado = dataDocumentParent != null && Boolean.TRUE.equals(dataDocumentParent.getExpedienteReasignado());
+    
         if(expedienteReasignado){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "No es posible reactivar el expediente ya que ha sido reasignado.");
