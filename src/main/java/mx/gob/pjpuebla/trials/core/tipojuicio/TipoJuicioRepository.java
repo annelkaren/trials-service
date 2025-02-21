@@ -57,4 +57,6 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
 
     @Query(" SELECT tj FROM TipoJuicio tj WHERE tj.id = :idTipoSistema")
     Optional<TipoJuicio> getMateriaAndTipoSistemaById(@Param("idTipoSistema") Integer procedimientoId);
+
+    Optional<TipoJuicio> findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(String name);
 }

@@ -395,10 +395,30 @@ public class DocumentoService {
 
         // Creación del movimiento:
         movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
-
+        setAndSaveCarpetaDetalle(documento, carpeta, promovente, tipoJuicio);
         return new DocumentoGenericRecord(documento.getId(), null);
     }
 
+    private void setAndSaveCarpetaDetalle(Documento documento, Carpeta carpeta, PersonaDocumentoItemRecord promovente, TipoJuicio tipoJuicio){
+        CarpetaDetalle detalle = new CarpetaDetalle();
+        detalle.setTipoJuicio(tipoJuicioRepository.findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(tipoJuicio.getNombre()).get());
+        //setear promovente
+        String namePromovente = (promovente.pseudonimo() != null && !promovente.pseudonimo().isEmpty())
+                ? promovente.pseudonimo() : promovente.nombre() + " " + promovente.apellidoPaterno() +
+                ((promovente.apellidoMaterno() != null) ? " " + promovente.apellidoMaterno() : "");
+        //detalle.setTipoJuicio(documento.getData().getTiposJuicios());
+        detalle.setPromovente(namePromovente);
+        detalle.setNumeroCarpetaInvestigacion(documento.getData().getNumCarpetaInv());
+        detalle.setNumeroOficio(documento.getData().getNumOficio().toString());
+        detalle.setLugarHecho(documento.getData().getLugarHecho());
+        detalle.setFechaHecho(documento.getData().getFechaHecho());
+        detalle.setHoraFormal(documento.getData().getHoraFormal());
+        detalle.setHoraMaterial(documento.getData().getHoraMaterial());
+        detalle.setLugarDisposicion(documento.getData().getLugarDisposicion());
+        detalle.setFechaPresentacionImputado(documento.getData().getFechaPresentacion());
+        detalle.setCarpeta(carpeta);
+        carpetaDetalleRepository.save(detalle);
+    }
     private void crearAudienciaOralidad(DocumentoSaveRecord documentoRecord, Carpeta carpeta, TipoJuicio tpoJuicio) {
         TipoAudiencia tipoAudiencia = tipoAudienciaService.obtenerTipoAudiencia("Audiencia Inicial");
         PersonaDocumentoRecord actor = new PersonaDocumentoRecord(
@@ -610,7 +630,7 @@ public class DocumentoService {
      * @param tipo E-exhorto, D-demanda, P-promocion, AP-Apelación.
      * @return string
      */
-    private String getFolio(String tipo) {
+    public String getFolio(String tipo) {
         Long valNum = switch (tipo) {
             case "E" ->           // Case para exhorto
                     documentoRepository.getNextValExhorto();
