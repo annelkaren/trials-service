@@ -469,7 +469,11 @@ class CarpetaResourceTest {
                 1,
                 "Cecilia Reyes",
                 "Julio Tirado",
-                "laboral"
+                "laboral",
+                null,
+                null,
+                null,
+                null
         );
 
         when(mockCarpetaService.getCarpetaByExpedienteAndEstado("000001/2024", EstadoCarpeta.CANCELADO))

@@ -630,7 +630,7 @@ public class DocumentoService {
      * @param tipo E-exhorto, D-demanda, P-promocion, AP-Apelación.
      * @return string
      */
-    private String getFolio(String tipo) {
+    public String getFolio(String tipo) {
         Long valNum = switch (tipo) {
             case "E" ->           // Case para exhorto
                     documentoRepository.getNextValExhorto();

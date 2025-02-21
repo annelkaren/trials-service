@@ -231,10 +231,6 @@ public class JuzgadoService {
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
-        for (Juzgado juzgado : juzgadosRelacionados) {
-            System.out.println("JUZGADO SELECCIONADO: " + juzgado.getNombre());
-        }
-
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
@@ -338,6 +334,19 @@ public class JuzgadoService {
         Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : oficialiaId;
 
         return juzgadoRepository.findAllByEstadoAutocomplete(Estado.ACTIVE, key, centroTrabajo, idCentroTrabajo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JuzgadoRecordItem> findbyEstadoActiveAndInactive() {
+        Persona personaLogueada = personaService.getAuditor();
+
+        String oficialia = personaLogueada.getOficialia() != null ? "Oficialia" : null;
+        Integer oficialiaId = personaLogueada.getOficialia() != null ? personaLogueada.getOficialia().getId() : null;
+        
+        String centroTrabajo = personaLogueada.getJuzgado() != null ? "Juzgado" : oficialia;
+        Integer idCentroTrabajo = personaLogueada.getJuzgado() != null ? personaLogueada.getJuzgado().getId() : oficialiaId;
+
+        return juzgadoRepository.findbyEstadoActiveAndInactive(centroTrabajo, idCentroTrabajo);
     }
 
     public JuzgadoRecordItem updateStatus(Integer id, Integer status) {

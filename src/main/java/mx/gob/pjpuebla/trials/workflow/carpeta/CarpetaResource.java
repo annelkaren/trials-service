@@ -37,16 +37,6 @@ public class CarpetaResource {
         return ResponseEntity.ok(carpetaResponseRecord);
     }
 
-    @GetMapping("/reasignacionExpediente")
-    public ResponseEntity<CarpetaResponseRecord> verificaPosibleReasignacionDeExpediente(
-            @RequestParam String numExpediente,
-            @RequestParam Integer year,
-            @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId) {
-
-        CarpetaResponseRecord carpetaResponseRecord = carpetaService.verificaPosibleReasignacionDeExpediente(
-                numExpediente + "/" + year, juzgadoId);
-        return ResponseEntity.ok(carpetaResponseRecord);
-    }
 
     @GetMapping(value = "/personas/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {
