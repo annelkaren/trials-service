@@ -371,7 +371,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 JOIN doc.institucion institucion
                 JOIN doc.carpeta carpeta
                 JOIN carpeta.juzgado juzgado
-                WHERE doc.tipoDocumento = TipoDocumento.OFICIO
+                WHERE doc.tipoDocumento = TipoDocumento.OFICIO AND doc.estatus = 9
                 AND (
                     CAST(doc.id AS text) = :key OR :key = ''
                 )
@@ -381,7 +381,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND juzgado IN :juzgados
                 AND (
                         (:key = '' AND documentoDetalle.estadoEnvio IS NOT NULL) OR
-                        (:key != '') 
+                        (:key != '' ) 
                     )
             """)
     List<BandejaEnviosRecord> findAllOficiosBandejaSalida(
