@@ -140,27 +140,24 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        Boolean isOficio = documento.getTipoDocumento().equals(TipoDocumento.OFICIO);
+        boolean isOficio = documento.getTipoDocumento().equals(TipoDocumento.OFICIO);
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
-            System.out.println("ENTRE AL OFICIO \n");
+          
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
-            if (documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
+            if (documentoDetalle.getEstadoEnvio() != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
                 nombreUnicoArchivo = generarNombreArchivo("OFICIO_OCP");
             }
         }
 
-        if (nombreUnicoArchivo == "") {
+        if (nombreUnicoArchivo.equals("")) {
             nombreUnicoArchivo = documento.getTipoDocumento() == null
                     ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name())
                     : generarNombreArchivo(documento.getTipoDocumento().name());
 
         }
-
-        System.out.println("EL NOMBRE DEL ARCHIVO ES: " + nombreUnicoArchivo);
-        System.out.println();
 
         // Guardar el archivo y manejar posibles excepciones
         try {

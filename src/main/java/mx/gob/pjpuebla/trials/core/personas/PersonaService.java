@@ -350,7 +350,7 @@ public class PersonaService {
     }
 
     public List<PersonaRecordResponse> findAllMensajeros() {
-        List<String> roles = Arrays.asList("MENSAJERO");
+        List<String> roles =  List.of("MENSAJERO");
         List<String> ids = usuarioService.findAllByRoles(roles);
         List<PersonaRecordResponse> mensajeros = new ArrayList<>();
         for (String id : ids) {

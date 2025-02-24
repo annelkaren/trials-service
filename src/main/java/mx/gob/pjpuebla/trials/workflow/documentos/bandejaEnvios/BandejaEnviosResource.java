@@ -48,7 +48,7 @@ public class BandejaEnviosResource {
 
     @PostMapping("/bandejaEnvios/digitalizacion")
     public BandejaEnvioRecordResponse digitalizarAcuseOficioOCP(
-            @RequestParam(value = "file", required = true) MultipartFile file,
+            @RequestParam("file") MultipartFile file,
             @RequestParam("documentoId") Integer documentoId) {
         return bandejaEnviosService.digitalizarAcuseOficioOCP(file, documentoId);
     }

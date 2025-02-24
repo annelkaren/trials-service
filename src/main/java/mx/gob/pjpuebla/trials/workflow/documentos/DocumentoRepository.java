@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -381,7 +380,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND juzgado IN :juzgados
                 AND (
                         (:key = '' AND documentoDetalle.estadoEnvio IS NOT NULL) OR
-                        (:key != '' ) 
+                        (:key != '' )
                     )
             """)
     List<BandejaEnviosRecord> findAllOficiosBandejaSalida(

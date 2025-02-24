@@ -47,9 +47,9 @@ public class BandejaEnviosService {
         Persona persona = personaService.getAuditor();
         List<Juzgado> juzgados = List.of();
 
-        Boolean isOficialMayorJuzgadoOrAuxiliar = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO")
+        boolean isOficialMayorJuzgadoOrAuxiliar = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO")
                 || roleService.hasRole(persona.getUsuario(), "AUXILIAR_OFICIAL_MAYOR_JUZGADO");
-        Boolean isOficialMayorOficialia = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_OFICIALIA");
+        boolean isOficialMayorOficialia = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_OFICIALIA");
 
         if (isOficialMayorJuzgadoOrAuxiliar) {
             juzgados = List.of(persona.getJuzgado());
