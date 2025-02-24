@@ -30,13 +30,13 @@ public class CarpetaResource {
     public ResponseEntity<CarpetaResponseRecord> getCarpetaByExpedienteAndJuzgadoId(
             @RequestParam String numExpediente,
             @RequestParam Integer year,
-            @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId,
-            @RequestParam(required = false, defaultValue = "0") Integer isApelacion) {
+            @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId) {
 
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
-                numExpediente + "/" + year, juzgadoId, isApelacion);
+                numExpediente + "/" + year, juzgadoId);
         return ResponseEntity.ok(carpetaResponseRecord);
     }
+
 
     @GetMapping(value = "/personas/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {

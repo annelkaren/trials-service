@@ -147,6 +147,7 @@ public class PersonaService {
             if (!isValidAge(persona.getFechaNacimiento())) {
                 throw new ConflictException("El usuario debe ser mayor de edad");
             }
+            persona.setIsExternalUser(ExternalUser.NO);
             List<String> rolesToSave = getNames(roles);
             validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
@@ -200,18 +201,15 @@ public class PersonaService {
         Persona persona = getAuditor();
 
         Materia materia = materiaRepository.findById(materiaId)
-            .orElseThrow(() -> new NotFoundException("Acuerdo rubro no encontrado", "acuerdoRubroId" + materiaId));
+                .orElseThrow(() -> new NotFoundException("Acuerdo rubro no encontrado", "acuerdoRubroId" + materiaId));
 
-            List<JuezRecord> juecesRecords = 
-            persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null 
-                    ? persona.getOficialia().getJuzgados().stream()
-                        .filter(juzgado -> juzgado.getMateria() != null 
+        return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
+                ? persona.getOficialia().getJuzgados().stream()
+                        .filter(juzgado -> juzgado.getMateria() != null
                                 && materia.getNombre().equals(juzgado.getMateria().getNombre()))
                         .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
                         .toList()
-                    : Collections.emptyList();
-    
-    return juecesRecords;
+                : Collections.emptyList();
     }
 
     @Transactional(readOnly = true)

@@ -116,6 +116,28 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
         new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
         FROM Juzgado f
         LEFT JOIN f.materia m
+        WHERE f.estado IN (Estado.ACTIVE, Estado.INACTIVE)
+        AND (
+                (:centroTrabajo IS NULL AND :idCentroTrabajo IS NULL)
+             OR
+                ( :centroTrabajo = "Juzgado" AND f.id = :idCentroTrabajo)
+             OR ( :centroTrabajo = "Oficialia" AND f.id IN (
+                    SELECT oj.id FROM Oficialia o
+                    JOIN o.juzgados oj
+                    WHERE o.id = :idCentroTrabajo
+                ))
+            )
+        """)
+    List<JuzgadoRecordItem> findbyEstadoActiveAndInactive(
+            @Param("centroTrabajo") String centroTrabajo,
+            @Param("idCentroTrabajo" ) Integer idCentroTrabajo
+    );
+
+    @Query("""
+        SELECT
+        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+        FROM Juzgado f
+        LEFT JOIN f.materia m
         WHERE f.estado = :estado
         AND (lower(f.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)
         """)
@@ -141,6 +163,10 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
        "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.PRIMERA_INSTANCIA")
     List<Juzgado> findJuzgadoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 
+    @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj " +
+    "WHERE oj.oficialiaId = :oficialiaId " +
+    "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.SEGUNDA_INSTANCIA")
+ List<Juzgado> findSalaByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 
     boolean existsBySedeId(Integer sedeId);
 

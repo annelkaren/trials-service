@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ProcedimientoRepository extends JpaRepository<Procedimiento, Integer> {
     List<Procedimiento> findByTipoJuicioIdAndEstado(Integer id, Estado estado);
+
+    List<Procedimiento> findByTipoJuicioNombreAndEstado(String name, Estado estado);
 }

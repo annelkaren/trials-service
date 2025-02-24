@@ -16,6 +16,7 @@ public record DocumentoGridRecord(
         SelloEstatus selloEstatus,
         EstadoCarpeta estatus,
         boolean hasFile,
-        String organoJurisdiccional
+        String organoJurisdiccional,
+        String estaEnJuzgado
         ) implements Serializable {
 }
