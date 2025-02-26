@@ -56,7 +56,7 @@ public class RoleService {
         List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
 
         for (RoleRepresentation current : currentRoles) {
-            boolean isAnExistingRole = newRoles.stream().anyMatch(role -> role.equalsIgnoreCase(current.getName()));
+            boolean isAnExistingRole = newRoles.contains(current.getName());
             if (!isAnExistingRole && !current.getName().toLowerCase().contains("default")) {
                 rolesToRemove.add(current);
             }
@@ -119,29 +119,34 @@ public class RoleService {
 
     private boolean isPenal(String tipoCentroTrabajo, Integer centroTrabajoId) {
         if (tipoCentroTrabajo.equalsIgnoreCase("JUZGADO")) {
-            Optional<Juzgado> juzgado = juzgadoRepository.findById(centroTrabajoId);
-            return juzgado.get().getMateria().getNombre().equalsIgnoreCase(PENAL) ||
-                    juzgado.get().getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES);
+            Juzgado juzgado = juzgadoRepository.findById(centroTrabajoId).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", centroTrabajoId.toString()));
+            return juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL) ||
+                    juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES);
         }
         if (tipoCentroTrabajo.equalsIgnoreCase("OFICIALIA_COMUN")) {
-            Optional<Oficialia> oficialia = oficialiaRepository.findById(centroTrabajoId);
-            int count = 0;
-            for (Materia materia : oficialia.get().getMaterias()) {
-                if (materia.getNombre().equalsIgnoreCase(PENAL)
-                        || materia.getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
-                    count += 1;
-                }
-            }
-
-            for (Juzgado juzgado : oficialia.get().getJuzgados()) {
-                if (juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL)
-                        || juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
-                    count += 1;
-                }
-            }
-            return count == oficialia.get().getJuzgados().size() + oficialia.get().getMaterias().size();
+            Oficialia oficialia = oficialiaRepository.findById(centroTrabajoId).orElseThrow(() -> new NotFoundException("Oficialia no encontrada", centroTrabajoId.toString()));
+            int count = getCount(oficialia);
+            return count == oficialia.getJuzgados().size() + oficialia.getMaterias().size();
         }
         return false;
+    }
+
+    private static int getCount(Oficialia oficialia) {
+        int count = 0;
+        for (Materia materia : oficialia.getMaterias()) {
+            if (materia.getNombre().equalsIgnoreCase(PENAL)
+                    || materia.getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                count += 1;
+            }
+        }
+
+        for (Juzgado juzgado : oficialia.getJuzgados()) {
+            if (juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL)
+                    || juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> roles) {

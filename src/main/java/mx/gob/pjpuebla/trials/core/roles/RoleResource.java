@@ -34,7 +34,7 @@ public class RoleResource {
         if (!id.isEmpty() && !id.equalsIgnoreCase("undefined")) {
             centroTabajoId = Integer.parseInt(id);
         }
-        Boolean flag = Boolean.valueOf(isEdicion);
+        boolean flag = Boolean.parseBoolean(isEdicion);
         return roleService.getAllAvailablesByUserId(userId, tipoCentroTrabajo, flag, centroTabajoId);
     }
 }
