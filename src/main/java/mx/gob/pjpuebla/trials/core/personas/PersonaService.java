@@ -91,9 +91,19 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
+        String tipoCentroTrabajo = null;
+        Integer centroTrabajoId = null;
         PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "personaId"));
-        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
+        if (persona.juzgadoId() != null) {
+            tipoCentroTrabajo = "JUZGADO";
+            centroTrabajoId = persona.juzgadoId();
+        }
+        if (persona.oficialiaId() != null) {
+            tipoCentroTrabajo = "OFICIALIA_COMUN";
+            centroTrabajoId = persona.oficialiaId();
+        }
+        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario(), tipoCentroTrabajo, centroTrabajoId);
         return persona.withRoles(roles);
     }
 
@@ -205,10 +215,10 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                        .filter(juzgado -> juzgado.getMateria() != null
-                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                        .toList()
+                .filter(juzgado -> juzgado.getMateria() != null
+                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                .toList()
                 : Collections.emptyList();
     }
 

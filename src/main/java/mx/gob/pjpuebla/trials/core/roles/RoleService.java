@@ -81,6 +81,14 @@ public class RoleService {
         return roles;
     }
 
+    public List<RoleRecord> getRolesByUserId(String userId, String tipoCentroTrabajo, Integer centroTrabajoId) {
+        List<RoleRecord> roles = getRolesByUserId(userId);
+        if (isPenal(tipoCentroTrabajo, centroTrabajoId)) {
+            return renameRoles(roles);
+        }
+        return roles;
+    }
+
     public boolean hasRole(String userId, String role) {
         List<RoleRecord> roles = getRolesByUserId(userId);
         return roles.stream().anyMatch(current -> current.id().equalsIgnoreCase(role));
