@@ -91,7 +91,7 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
-        String tipoCentroTrabajo = null;
+        String tipoCentroTrabajo = "";
         Integer centroTrabajoId = null;
         PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "personaId"));
