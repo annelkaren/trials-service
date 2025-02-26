@@ -56,7 +56,7 @@ public class RoleService {
         List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
 
         for (RoleRepresentation current : currentRoles) {
-            boolean isAnExistingRole = newRoles.contains(current.getName());
+            boolean isAnExistingRole = newRoles.stream().anyMatch(role -> role.equalsIgnoreCase(current.getName()));
             if (!isAnExistingRole && !current.getName().toLowerCase().contains("default")) {
                 rolesToRemove.add(current);
             }
@@ -196,14 +196,14 @@ public class RoleService {
             defaultProps.load(new FileInputStream(defaultConfigPath));
             String[] array = {"OFICIAL_MAYOR_JUZGADO", "AUXILIAR_OFICIAL_MAYOR_JUZGADO", "SECRETARIO", "DILIGENCIARIO"};
             for (RoleRecord role : roles) {
-                boolean applyRename = Arrays.stream(array).anyMatch(role.id()::equals);
+                boolean applyRename = Arrays.asList(array).contains(role.id());
                 if (applyRename) {
                     newList.add(new RoleRecord(role.id(), defaultProps.get(role.id()).toString()));
                 } else {
                     newList.add(role);
                 }
             }
-        } catch (IOException e) {
+        } catch (NullPointerException | IOException e) {
             return roles;
         }
         return newList;
