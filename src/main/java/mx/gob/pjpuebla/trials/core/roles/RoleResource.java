@@ -21,15 +21,20 @@ public class RoleResource {
         return roleService.getAll();
     }
 
-    @GetMapping("/{userId}/{tipoCentroTrabajo}/{isEdicion}")
+    @GetMapping("/{userId}/{tipoCentroTrabajo}/{isEdicion}/{id}")
     public List<RoleRecord> getAllAvailablesByUserId(
             @PathVariable String userId,
             @PathVariable String tipoCentroTrabajo,
-            @PathVariable String isEdicion) {
+            @PathVariable String isEdicion,
+            @PathVariable String id) {
         if (userId.isEmpty() || userId.equalsIgnoreCase("undefined")) {
             return getAll();
         }
-        boolean flag = Boolean.valueOf(isEdicion);
-        return roleService.getAllAvailablesByUserId(userId, tipoCentroTrabajo, flag);
+        Integer centroTabajoId = null;
+        if (!id.isEmpty() && !id.equalsIgnoreCase("undefined")) {
+            centroTabajoId = Integer.parseInt(id);
+        }
+        Boolean flag = Boolean.valueOf(isEdicion);
+        return roleService.getAllAvailablesByUserId(userId, tipoCentroTrabajo, flag, centroTabajoId);
     }
 }

@@ -3,6 +3,11 @@ package mx.gob.pjpuebla.trials.core.roles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
@@ -13,6 +18,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -22,9 +29,12 @@ import java.util.*;
 public class RoleService {
 
     private static final String CENTRO_TRABAJO_KEY = "centro-trabajo";
+    private static final String JUSTICIA_ADOLESCENTES = "JUSTICIA PARA ADOLESCENTES";
+    private static final String PENAL = "PENAL";
     private final AuditorAware<Jwt> auditorAware;
     private final KeycloakSecurityUtil keycloakSecurityUtil;
-
+    private final JuzgadoRepository juzgadoRepository;
+    private final OficialiaRepository oficialiaRepository;
     @Value("${keycloak.realm}")
     private String realm;
 
@@ -79,10 +89,10 @@ public class RoleService {
     public List<RoleRecord> getAll() {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
-        return mapRoles(roles, "");
+        return mapRoles(roles, "", false);
     }
 
-    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion) {
+    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion, Integer centroTrabajoId) {
         List<RoleRepresentation> roles = new ArrayList<>();
         List<RoleRepresentation> filteredList;
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
@@ -101,10 +111,37 @@ public class RoleService {
             } else {
                 filteredList = excludeAdminRoleIfNotApply(allRoles);
             }
-            return mapRoles(filteredList, tipoCentroTrabajo);
+            return mapRoles(filteredList, tipoCentroTrabajo, isPenal(tipoCentroTrabajo, centroTrabajoId));
         } catch (Exception ex) {
             throw new NotFoundException("Usuario no encontrado en keycloak", "usuario");
         }
+    }
+
+    private boolean isPenal(String tipoCentroTrabajo, Integer centroTrabajoId) {
+        if (tipoCentroTrabajo.equalsIgnoreCase("JUZGADO")) {
+            Optional<Juzgado> juzgado = juzgadoRepository.findById(centroTrabajoId);
+            return juzgado.get().getMateria().getNombre().equalsIgnoreCase(PENAL) ||
+                    juzgado.get().getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES);
+        }
+        if (tipoCentroTrabajo.equalsIgnoreCase("OFICIALIA_COMUN")) {
+            Optional<Oficialia> oficialia = oficialiaRepository.findById(centroTrabajoId);
+            int count = 0;
+            for (Materia materia : oficialia.get().getMaterias()) {
+                if (materia.getNombre().equalsIgnoreCase(PENAL)
+                        || materia.getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                    count += 1;
+                }
+            }
+
+            for (Juzgado juzgado : oficialia.get().getJuzgados()) {
+                if (juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL)
+                        || juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                    count += 1;
+                }
+            }
+            return count == oficialia.get().getJuzgados().size() + oficialia.get().getMaterias().size();
+        }
+        return false;
     }
 
     private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> roles) {
@@ -118,7 +155,7 @@ public class RoleService {
         return roles;
     }
 
-    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations, String tipoCentroTrabajo) {
+    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations, String tipoCentroTrabajo, boolean isPenal) {
         List<RoleRecord> roles = new ArrayList<>();
         List<RoleRepresentation> temporalList = roleRepresentations.stream()
                 .filter(r -> r.getAttributes() != null)
@@ -135,10 +172,35 @@ public class RoleService {
             temporalList.forEach(r -> roles.add(mapRole(r)));
         }
         roles.sort(Comparator.comparing(RoleRecord::id));
+        if (isPenal) {
+            return renameRoles(roles);
+        }
         return roles;
     }
 
     private RoleRecord mapRole(RoleRepresentation roleRepresentation) {
         return new RoleRecord(roleRepresentation.getName(), roleRepresentation.getDescription());
+    }
+
+    private List<RoleRecord> renameRoles(List<RoleRecord> roles) {
+        List<RoleRecord> newList = new ArrayList<>();
+        try {
+            String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+            String defaultConfigPath = rootPath + "roles.properties";
+            Properties defaultProps = new Properties();
+            defaultProps.load(new FileInputStream(defaultConfigPath));
+            String[] array = {"OFICIAL_MAYOR_JUZGADO", "AUXILIAR_OFICIAL_MAYOR_JUZGADO", "SECRETARIO", "DILIGENCIARIO"};
+            for (RoleRecord role : roles) {
+                boolean applyRename = Arrays.stream(array).anyMatch(role.id()::equals);
+                if (applyRename) {
+                    newList.add(new RoleRecord(role.id(), defaultProps.get(role.id()).toString()));
+                } else {
+                    newList.add(role);
+                }
+            }
+        } catch (IOException e) {
+            return roles;
+        }
+        return newList;
     }
 }
