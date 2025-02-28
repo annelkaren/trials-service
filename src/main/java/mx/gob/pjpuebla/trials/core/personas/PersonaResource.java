@@ -119,4 +119,9 @@ public class PersonaResource {
         throw new UnauthorizedException("No tiene permiso para acceder a este portal", "".concat(personaLoginRecord.username()));
     }
 
+    @GetMapping("/mensajeros")
+    public List<PersonaRecordResponse> findAllMensajeros(){
+        return personaService.findAllMensajeros();
+    }
+
 }

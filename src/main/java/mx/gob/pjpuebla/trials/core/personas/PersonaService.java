@@ -358,4 +358,27 @@ public class PersonaService {
             throw new NotFoundException(PERSON_NOT_FOUND, username);
         }
     }
+
+    public List<PersonaRecordResponse> findAllMensajeros() {
+        List<String> roles =  List.of("MENSAJERO");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        List<PersonaRecordResponse> mensajeros = new ArrayList<>();
+        for (String id : ids) {
+            Optional<Persona> personaOptional = personaRepository.findByUsuario(id);
+
+            if (personaOptional.isPresent()) {
+                Persona persona = personaOptional.get();
+                if (persona.getEstado().equals(Estado.ACTIVE)) {
+                    String name = persona.getNombre() + " " + persona.getApellidoPaterno();
+                    name += ((persona.getApellidoPaterno() != null) ? " " + persona.getApellidoMaterno() : "");
+                    mensajeros.add(new PersonaRecordResponse(persona.getId(), name, persona.getCorreoElectronico(),
+                            persona.getCelular(), "", "", ""));
+                }
+
+            }
+        }
+
+        return mensajeros;
+    }
+
 }

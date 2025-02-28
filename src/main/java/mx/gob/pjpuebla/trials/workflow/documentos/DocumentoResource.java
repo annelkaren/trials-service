@@ -288,4 +288,5 @@ public class DocumentoResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el documento");
         }
     }
+
 } 

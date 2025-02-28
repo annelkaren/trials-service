@@ -52,11 +52,12 @@ public class LitiganteService {
         String username = getLitiganteUsername();
         Page<LitiganteExpedientesRecord> page = personaDocumentoRepository.findByUsername(username, pageable);
         List<LitiganteExpedientesRecord> list = page.stream()
-                .map(pd ->
-                        pd.additionalData(
-                                String.join(", ", personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Actor")),
-                                String.join(", ", personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Demandado")),
-                                notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(), username)))
+                .map(pd -> pd.additionalData(
+                        String.join(", ",
+                                personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Actor")),
+                        String.join(", ",
+                                personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Demandado")),
+                        notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(), username)))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -67,25 +68,25 @@ public class LitiganteService {
     }
 
     public ExpedienteAutorizadoRecord getAcuerdosSentencias() {
-        //Obtiene correo de persona litigante
+        // Obtiene correo de persona litigante
         String userName = getLitiganteUsername();
 
-        //Obtiene Notificaciones desde Notificaciones Detalles
+        // Obtiene Notificaciones desde Notificaciones Detalles
         List<NotificacionesDetalles> notificacionesDetallesList = notificacionesDetallesRepository.getAllByUsername(
                 userName,
                 TipoNotificacion.CORREO_ELECTRONICO);
         if (notificacionesDetallesList.isEmpty())
             throw new NotFoundException("Acuerdos-Sentencias no encontradas para el usuario", userName);
 
-        //Agrupa NotificacionesDetalles por numero de expediente
+        // Agrupa NotificacionesDetalles por numero de expediente
         Map<String, List<NotificacionesDetalles>> groupExpedientes = notificacionesDetallesList.stream()
                 .filter(nd -> nd.getNotificacion().getDocumento().getCarpeta() != null)
                 .collect(Collectors.groupingBy(nd -> nd.getNotificacion().getDocumento().getCarpeta().getExpediente()));
 
-        //Asigna fecha para actualizar campo consulta
+        // Asigna fecha para actualizar campo consulta
         LocalDateTime actual = LocalDateTime.now();
 
-        //Arma la lista para las notificaciones que sean de la persona registrada
+        // Arma la lista para las notificaciones que sean de la persona registrada
         List<AcuerdoSentenciaRecord> acuerdoSentenciaRecordList = new ArrayList<>();
         for (Map.Entry<String, List<NotificacionesDetalles>> entry : groupExpedientes.entrySet()) {
             List<NotificacionesDetalles> detallesPorExpediente = entry.getValue();
@@ -94,7 +95,8 @@ public class LitiganteService {
                         Integer documentoId = nd.getNotificacion().getDocumento().getId();
 
                         nd.setFechaConsulta(actual);
-                        if(nd.getFechaCompletado() == null) nd.setFechaCompletado(actual);
+                        if (nd.getFechaCompletado() == null)
+                            nd.setFechaCompletado(actual);
                         notificacionesDetallesRepository.save(nd);
 
                         nd.getNotificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO);
@@ -104,8 +106,7 @@ public class LitiganteService {
                                 documentoId,
                                 nd.getFechaCompletado() != null ? nd.getFechaCompletado().format(formatoFecha) : "",
                                 nd.getFechaCompletado() != null ? nd.getFechaCompletado().format(formatoTiempo) : "",
-                                "/api/litigante/documento/" + documentoId
-                        );
+                                "/api/litigante/documento/" + documentoId);
                     })
                     .collect(Collectors.toList());
             acuerdoSentenciaRecordList.add(new AcuerdoSentenciaRecord(entry.getKey(), documentoExpedienteRecordList));
@@ -116,34 +117,17 @@ public class LitiganteService {
 
     public Page<LitiganteExpedienteListAudienciasRecord> getExpedientesAudienciasRelacionados(Pageable pageable) {
         String username = getLitiganteUsername();
-        List<LitiganteExpedienteAudienciaRecord> list = asistenciaAudienciaRepository.getAllAudicenciasByUser(username, pageable);
-
+        List<LitiganteExpedienteAudienciaRecord> list = asistenciaAudienciaRepository.getAllAudicenciasByUser(username,
+                pageable);
 
         Map<String, LitiganteExpedienteListAudienciasRecord> groupedAudiencias = new HashMap<>();
 
         for (LitiganteExpedienteAudienciaRecord listAudienciaRecord : list) {
-
             String key = listAudienciaRecord.id() + "-" + listAudienciaRecord.numeroExpediente();
-
-            String[] fechaHoraInicio = separarFechaYHora(listAudienciaRecord.fechaInicio().toString());
-            String fechaInicio = fechaHoraInicio[0];
-            String horaInicio = fechaHoraInicio[1];
-
-            String[] fechaHoraFin = separarFechaYHora(listAudienciaRecord.fechaFin().toString());
-            String fechaFin = fechaHoraFin[0];
-            String horaFin = fechaHoraFin[1];
-
-            AudienciasExpedienteRecord audienciaRecord = new AudienciasExpedienteRecord(
-                    listAudienciaRecord.numeroAudiencia(),
-                    fechaInicio,
-                    horaInicio,
-                    fechaFin,
-                    horaFin
-            );
+            AudienciasExpedienteRecord audienciaRecord = crearAudienciaRecord(listAudienciaRecord);
 
             if (groupedAudiencias.containsKey(key)) {
-                LitiganteExpedienteListAudienciasRecord existingRecord = groupedAudiencias.get(key);
-                existingRecord.audiencias().add(audienciaRecord);
+                groupedAudiencias.get(key).audiencias().add(audienciaRecord);
             } else {
                 groupedAudiencias.put(key, new LitiganteExpedienteListAudienciasRecord(
                         listAudienciaRecord.id(),
@@ -151,8 +135,7 @@ public class LitiganteService {
                         listAudienciaRecord.materia(),
                         listAudienciaRecord.tipoJuicio(),
                         listAudienciaRecord.juzgado(),
-                        new ArrayList<>(List.of(audienciaRecord))
-                ));
+                        new ArrayList<>(List.of(audienciaRecord))));
             }
         }
 
@@ -160,46 +143,58 @@ public class LitiganteService {
         return new PageImpl<>(result, pageable, result.size());
     }
 
+    /**
+     * Extrae la lógica de creación de un AudienciasExpedienteRecord en un método
+     * separado para corregir Scan de Qodana.
+     */
+    private static AudienciasExpedienteRecord crearAudienciaRecord(LitiganteExpedienteAudienciaRecord record) {
+        String[] fechaHoraInicio = separarFechaYHora(record.fechaInicio().toString());
+        String[] fechaHoraFin = separarFechaYHora(record.fechaFin().toString());
+
+        return new AudienciasExpedienteRecord(
+                record.numeroAudiencia(),
+                fechaHoraInicio[0], fechaHoraInicio[1],
+                fechaHoraFin[0], fechaHoraFin[1]);
+    }
+
     private static String[] separarFechaYHora(String fechaHora) {
         String[] partes = fechaHora.split("T");
-        return partes.length == 2 ? partes : new String[]{"", ""};
+        return partes.length == 2 ? partes : new String[] { "", "" };
     }
 
     public ExpedienteResponseRecord getExpedienteDetails() {
         String username = getLitiganteUsername();
 
         LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, Pageable.unpaged())
-            .getContent().stream().findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
+                .getContent().stream().findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
 
         List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
-            carpeta.id(),
-            Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA)
-        );
+                carpeta.id(),
+                Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA));
 
         List<DocumentoResponseRecord> documentoResponseRecords = documentos.stream()
-        .map(doc -> {
-            LocalDateTime fechaYHora = notificacionesDetallesRepository.findFechaYHoraByDocumentoId(doc);
+                .map(doc -> {
+                    LocalDateTime fechaYHora = notificacionesDetallesRepository.findFechaYHoraByDocumentoId(doc);
 
-            return new DocumentoResponseRecord(
-                String.valueOf(doc.getId()),
-                fechaYHora.toLocalDate(),
-                fechaYHora.toLocalTime(),
-                "/api/litigante/documento/" + doc.getId()
-            );
-        })
-        .collect(Collectors.toList());
+                    return new DocumentoResponseRecord(
+                            String.valueOf(doc.getId()),
+                            fechaYHora.toLocalDate(),
+                            fechaYHora.toLocalTime(),
+                            "/api/litigante/documento/" + doc.getId());
+                })
+                .collect(Collectors.toList());
 
-        Long notificacionesPendientes = notificacionesDetallesRepository.countNotificacionesPorLeer(carpeta.id(), username);
+        Long notificacionesPendientes = notificacionesDetallesRepository.countNotificacionesPorLeer(carpeta.id(),
+                username);
 
         return new ExpedienteResponseRecord(
-            carpeta.numeroExpediente(),
-            carpeta.materia(),
-            carpeta.tipoJuicio(),
-            carpeta.juzgado(),
-            notificacionesPendientes,
-            documentoResponseRecords
-        );
+                carpeta.numeroExpediente(),
+                carpeta.materia(),
+                carpeta.tipoJuicio(),
+                carpeta.juzgado(),
+                notificacionesPendientes,
+                documentoResponseRecords);
     }
 
     public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
@@ -207,36 +202,41 @@ public class LitiganteService {
         Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, pageable);
 
         return docPromociones.map(documento -> {
-            String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
-
-            String numeroExpediente = partesExpediente[0];
-            String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
 
             boolean isValid = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(
                     documento.getCarpeta().getExpediente(),
                     documento.getFolio(),
-                    userName
-            );
+                    userName);
 
             if (!isValid) {
                 throw new IllegalStateException("El expediente y el acuerdo no están asociados al usuario.");
             }
 
-            PromocionesElectronicasLitigante promocionElectronica = new PromocionesElectronicasLitigante(
-                    documento.getFolio(),
-                    documento.getPersona().getCorreoElectronico(),
-                    documento.getRuta(),
-                    documento.getAudit().getFechaAlta().toLocalDate(),
-                    documento.getAudit().getFechaAlta().toLocalTime(),
-                    "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/" + numeroExpediente + "/" + documento.getRuta()
-            );
+            PromocionesElectronicasLitigante promocionElectronica = createPromocionElectronicaLitigante(documento);
 
             PromocionesLitiganteRecord promocionesLitiganteRecord = new PromocionesLitiganteRecord(
                     documento.getCarpeta().getExpediente(),
-                    List.of(promocionElectronica)
-            );
+                    List.of(promocionElectronica));
             return new PromocionAutorizadaRecord(List.of(promocionesLitiganteRecord));
         });
+    }
+
+    /*  SE CREA METODO PARA CORREGIR SCAN DE QODANA */
+    public PromocionesElectronicasLitigante createPromocionElectronicaLitigante(Documento documento) {
+        String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
+
+        String numeroExpediente = partesExpediente[0];
+        String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
+
+        return new PromocionesElectronicasLitigante(
+                documento.getFolio(),
+                documento.getPersona().getCorreoElectronico(),
+                documento.getRuta(),
+                documento.getAudit().getFechaAlta().toLocalDate(),
+                documento.getAudit().getFechaAlta().toLocalTime(),
+                "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/"
+                        + numeroExpediente + "/" + documento.getRuta());
+
     }
 
 }
