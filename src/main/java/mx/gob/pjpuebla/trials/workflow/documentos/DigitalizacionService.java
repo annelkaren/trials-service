@@ -262,12 +262,11 @@ public class DigitalizacionService {
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA:
+            case APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(
                         Paths.get(basePath, construirRutaExpediente(year, juzgado, carpeta.getExpediente())));
-            case APELACION:
-                return crearDirectorios(Paths.get(basePath, expediente));
             default:
                 log.warn("Tipo de carpeta desconocido: {}", carpeta.getTipoCarpeta());
                 throw new IllegalArgumentException("Tipo de carpeta no soportado");
