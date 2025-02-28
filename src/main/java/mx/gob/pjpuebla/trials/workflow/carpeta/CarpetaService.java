@@ -377,7 +377,7 @@ public class CarpetaService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(" "));
                 
-                if (nombreCompleto.strip().isEmpty()) {
+                if (nombreCompleto.isBlank()) {
                         nombreCompleto = participante.pseudonimo();
                 }
                     

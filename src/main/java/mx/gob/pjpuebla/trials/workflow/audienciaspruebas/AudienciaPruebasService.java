@@ -46,7 +46,6 @@ public class AudienciaPruebasService {
 
     @Value("${app.root-folder}")
     private String rootFolder; // Ruta raíz de la digitalización
-    private String basePath; // Ruta base para la digitalización
 
 
     @Transactional
@@ -93,8 +92,6 @@ public class AudienciaPruebasService {
     }
 
     public byte[] getAudienciaPurebasDocumento(Long audienciaId) throws IOException {
-        this.basePath = this.rootFolder + "/digitalizacion/";
-
         AudienciaPruebas audienciaPruebas = audienciaPruebaRepository.findById(audienciaId).orElse(null);
         assert audienciaPruebas != null;
         Path rutaArchivo =   Paths.get(audienciaPruebas.getUrlDocumento());
