@@ -401,7 +401,12 @@ public class DocumentoService {
 
     private void setAndSaveCarpetaDetalle(Documento documento, Carpeta carpeta, PersonaDocumentoItemRecord promovente, TipoJuicio tipoJuicio){
         CarpetaDetalle detalle = new CarpetaDetalle();
-        detalle.setTipoJuicio(tipoJuicioRepository.findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(tipoJuicio.getNombre()).get());
+        Optional<TipoJuicio> tipoJuicioOptional = tipoJuicioRepository.findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(tipoJuicio.getNombre());
+        TipoJuicio tipoJuicioAux = null;
+        if(tipoJuicioOptional.isPresent()){
+            tipoJuicioAux = tipoJuicioOptional.get();
+        }
+        detalle.setTipoJuicio(tipoJuicioAux);
         //setear promovente
         String namePromovente = (promovente.pseudonimo() != null && !promovente.pseudonimo().isEmpty())
                 ? promovente.pseudonimo() : promovente.nombre() + " " + promovente.apellidoPaterno() +
