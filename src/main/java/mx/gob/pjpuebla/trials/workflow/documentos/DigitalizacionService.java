@@ -147,7 +147,7 @@ public class DigitalizacionService {
           
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
-            if (documentoDetalle.getEstadoEnvio() != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
+            if (documentoDetalle != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
                 nombreUnicoArchivo = generarNombreArchivo("OFICIO_OCP");
             }
         }
