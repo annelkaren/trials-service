@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
+// LA ENTIDAD CONCEPTO EN FRONT END APARECE COMO 'MOTIVO DE TURNADO' POR SOLICITUD PERO EN BACKEND SE QUEDA COMO CONCEPTO.
 @Data
 @Entity
 @EntityListeners(AuditListener.class)
