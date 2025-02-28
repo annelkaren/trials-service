@@ -152,7 +152,7 @@ public class DigitalizacionService {
             }
         }
 
-        if (nombreUnicoArchivo.equals("")) {
+        if (nombreUnicoArchivo.isEmpty()) {
             nombreUnicoArchivo = documento.getTipoDocumento() == null
                     ? generarNombreArchivo(documento.getCarpeta().getTipoCarpeta().name())
                     : generarNombreArchivo(documento.getTipoDocumento().name());
