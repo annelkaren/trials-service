@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -100,23 +101,23 @@ public class DigitalizacionService {
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
-        if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO) ) {
             return manejarOficio(documento, year, juzgado, juzgado);
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.SENTENCIA_PUBLICA)) {
             return crearDirectorios(
                     Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],
                             TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.DOCUMENTO_IDENTIFICACION)) {
             return crearDirectorios(
                     Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], "Audiencias",
                             this.audienciaId.toString(), "Asistencia"));
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.PRUEBA_AUDIENCIA) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PRUEBA_AUDIENCIA)) {
             // Solo mientras se define la audiencia a la que corresponde
             Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
             String numAudiencia = String.valueOf(audiencia.getId());
@@ -140,7 +141,7 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        boolean isOficio = documento.getTipoDocumento().equals(TipoDocumento.OFICIO);
+        boolean isOficio =  Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO);
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
