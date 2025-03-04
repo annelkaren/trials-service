@@ -12,3 +12,13 @@ WHERE S_LINK = 'api/bandeja/oficios';
 UPDATE TRIALS.TBL_MENUS
 SET S_NOMBRE = 'Motivos de turnado'
 WHERE S_LINK = 'api/core/conceptos';
+
+-- corrección menu oara administrador del juzgado:
+UPDATE TRIALS.TBL_MENUS
+SET S_ROL = 'ADMINISTRADOR_SISTEMA'
+WHERE S_NOMBRE IN ('Sedes', 'Instituciones','Oficialías', 'Órgano jurisdiccional', 'Salas');
+
+-- Corrección menu para oficial mayor juzgado en menu.
+UPDATE TRIALS.TBL_MENUS
+SET S_ROL = 'OFICIAL_MAYOR_OFICIALIA,CAPTURISTA,DIGITALIZADOR,ENCARGADO_CARRITO,OFICIAL_MAYOR_JUZGADO'
+WHERE S_NOMBRE = 'Historial';
