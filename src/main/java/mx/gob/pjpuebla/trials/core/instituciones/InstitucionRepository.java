@@ -71,4 +71,31 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
 
     Optional<Institucion> findByNombre(String nombre);
 
+    @Query("""
+            SELECT
+                new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecord(
+                    i.id,
+                    i.nombre,
+                    CONCAT(
+                        d.calle, ' ',
+                        d.colonia, ' ',
+                        d.exterior,
+                        CASE WHEN d.interior IS NOT NULL THEN CONCAT(' Int. ', d.interior) ELSE '' END,
+                        ' ',
+                        d.estadoRepublica, ' ',
+                        d.municipio, ' ',
+                        d.localidad, ' ',
+                        d.codigoPostal,
+                        CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
+                    ),
+                    i.telefono,
+                    i.tipoInstitucion
+                )
+            FROM Institucion i
+            JOIN i.domicilio d
+            WHERE i.estado = Estado.ACTIVE
+            AND i.tipoInstitucion = :tipo
+            """)
+    List<InstitucionRecord> findByTipoInstitucion(@Param("tipo") String tipo);
+
 }
