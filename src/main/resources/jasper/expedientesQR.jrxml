@@ -1,0 +1,43 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="expedientesQR" language="java" columnCount="1" pageWidth="612" pageHeight="792" orientation="Landscape" columnWidth="596" leftMargin="8" rightMargin="8" topMargin="45" bottomMargin="39" uuid="f709cce7-751e-4e89-8970-772912632bdf">
+	<property name="com.jaspersoft.studio.unit." value="cm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="cm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="cm"/>
+	<query language="sql"><![CDATA[]]></query>
+	<field name="codigo1" class="java.lang.String"/>
+	<field name="codigo2" class="java.lang.String"/>
+	<field name="codigo3" class="java.lang.String"/>
+	<background splitType="Stretch"/>
+	<detail>
+		<band height="72" splitType="Stretch">
+			<element kind="component" uuid="b614745e-6e26-4bb6-812d-f8b5c259382b" x="0" y="0" width="189" height="72">
+				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
+					<codeExpression><![CDATA[$F{codigo1}]]></codeExpression>
+				</component>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<property name="com.jaspersoft.studio.unit.width" value="cm"/>
+				<property name="com.jaspersoft.studio.unit.margin" value="cm"/>
+			</element>
+			<element kind="component" uuid="5da1bcb1-9219-427d-ae91-f9b84498d86f" x="197" y="0" width="189" height="72">
+				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
+					<codeExpression><![CDATA[$F{codigo2}]]></codeExpression>
+				</component>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<property name="com.jaspersoft.studio.unit.width" value="cm"/>
+			</element>
+			<element kind="component" uuid="2fd26c86-4039-43e8-99fe-1bd7cf3ca9c9" x="394" y="0" width="189" height="72">
+				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
+					<codeExpression><![CDATA[$F{codigo3}]]></codeExpression>
+				</component>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="cm"/>
+		</band>
+	</detail>
+</jasperReport>
