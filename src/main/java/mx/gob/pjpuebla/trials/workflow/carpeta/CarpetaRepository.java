@@ -5,7 +5,6 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
-import mx.gob.pjpuebla.trials.workflow.generadorQR.GeneradorQRRecord;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -165,25 +164,32 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Persona findSiguienteJuezPenal();
 
     @Query(value = """
-            SELECT new mx.gob.pjpuebla.trials.workflow.generadorQR.GeneradorQRRecord(
+            SELECT 
                 CASE
-                    WHEN c.n_tipoCarpeta = 0 THEN 'D' || c.s_folio
-                    WHEN c.n_tipoCarpeta = 1 THEN 'E' || c.s_folio
-                    WHEN c.n_tipoCarpeta = 2 THEN 'A' || c.s_folio
-                    ELSE '' || c.n_folio
+                    WHEN c.n_tipo_carpeta = 0 THEN 'D' || c.s_folio
+                    WHEN c.n_tipo_carpeta = 1 THEN 'E' || c.s_folio
+                    WHEN c.n_tipo_carpeta = 2 THEN 'A' || c.s_folio
+                    ELSE '' || c.s_folio
                 END
-            )
+            
             FROM tbl_carpetas c
             WHERE CAST(
                     REGEXP_REPLACE(SPLIT_PART(c.s_expediente, '/', 1), '[^0-9]', '', 'g')
                     AS INTEGER
                   ) BETWEEN :expedienteMin AND :expedienteMax
               AND CAST(SPLIT_PART(c.s_expediente, '/', 2) AS INTEGER) = :year
+              AND c.fn_juzgado = :juzgadoId
+              AND c.n_tipo_carpeta = 0
+              order by CAST(
+                    REGEXP_REPLACE(SPLIT_PART(c.s_expediente, '/', 1), '[^0-9]', '', 'g')
+                    AS INTEGER
+                  )
             """, nativeQuery = true)
-    List<GeneradorQRRecord> findByExpMinAndExMaxAndYear(
+    List<String> findByExpMinAndExMaxAndYear(
             @Param("expedienteMin") Integer expedienteMin,
             @Param("expedienteMax") Integer expedienteMax,
             @Param("year") Integer year,
             @Param("juzgadoId") Integer juzgadoId);
+
 
 }
