@@ -48,9 +48,9 @@ public class LitiganteService {
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
+    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(String key, Pageable pageable) {
         String username = getLitiganteUsername();
-        Page<LitiganteExpedientesRecord> page = personaDocumentoRepository.findByUsername(username, pageable);
+        Page<LitiganteExpedientesRecord> page = personaDocumentoRepository.findByUsername(username, key, pageable);
         List<LitiganteExpedientesRecord> list = page.stream()
                 .map(pd -> pd.additionalData(
                         String.join(", ",
@@ -159,13 +159,13 @@ public class LitiganteService {
 
     private static String[] separarFechaYHora(String fechaHora) {
         String[] partes = fechaHora.split("T");
-        return partes.length == 2 ? partes : new String[] { "", "" };
+        return partes.length == 2 ? partes : new String[]{"", ""};
     }
 
     public ExpedienteResponseRecord getExpedienteDetails() {
         String username = getLitiganteUsername();
 
-        LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, Pageable.unpaged())
+        LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, "", Pageable.unpaged())
                 .getContent().stream().findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
 

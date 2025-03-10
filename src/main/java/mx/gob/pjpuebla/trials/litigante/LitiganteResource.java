@@ -7,15 +7,12 @@ import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaR
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -29,8 +26,11 @@ public class LitiganteResource {
     private final AcuerdoService acuerdoServicePdf;
 
     @GetMapping("/expedientes")
-    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
-        return this.litiganteService.getExpedientesRelacionados(pageable);
+    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(
+            @RequestParam String key,
+            Pageable pageable) {
+        key = (key != null) ? key : "";
+        return this.litiganteService.getExpedientesRelacionados(key, pageable);
     }
 
     @GetMapping(value = "/acuerdoSentencia", produces = MediaType.APPLICATION_JSON_VALUE)

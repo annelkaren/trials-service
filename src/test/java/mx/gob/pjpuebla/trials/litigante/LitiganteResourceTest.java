@@ -47,11 +47,12 @@ class LitiganteResourceTest {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
                 "", "", "Juzgado 5 Mercantil TEST", 0L);
-        given(litiganteService.getExpedientesRelacionados(any(Pageable.class)))
+        given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
 
         mockMvc.perform(
                 get("/api/litigante/expedientes")
+                        .param("key", "")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

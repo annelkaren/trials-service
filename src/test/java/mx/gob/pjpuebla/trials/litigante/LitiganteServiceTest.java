@@ -62,7 +62,7 @@ class LitiganteServiceTest extends SetupServiceTest {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
                 "", "", "Juzgado 5 Mercantil TEST", 0L);
-        given(personaDocumentoRepository.findByUsername(any(), any(PageRequest.class)))
+        given(personaDocumentoRepository.findByUsername(any(), any(), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(Arrays.asList(litiganteExpedientesRecord), PageRequest.of(0, 1), 1));
         given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
                 .willReturn(Arrays.asList("Julio Arenas", "Jorge Dominguez"));
@@ -70,7 +70,7 @@ class LitiganteServiceTest extends SetupServiceTest {
                 .willReturn(Arrays.asList("Romina Cervantes"));
         given(notificacionesDetallesRepository.countNotificacionesPorLeer(any(), any()))
                 .willReturn(3L);
-        Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados(PageRequest.of(1, 20));
+        Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("",PageRequest.of(1, 20));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()

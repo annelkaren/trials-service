@@ -140,7 +140,7 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        boolean isOficio = documento.getTipoDocumento().equals(TipoDocumento.OFICIO);
+        boolean isOficio = (documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.OFICIO));
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
