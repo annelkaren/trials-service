@@ -181,23 +181,23 @@
 			</element>
 			<element kind="component" uuid="a8c1f37b-9674-4174-a2e3-dbc9ea7db82e" x="0" y="639" width="189" height="69">
 				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$F{codigo26}]]></codeExpression>
+					<codeExpression><![CDATA[$F{codigo28}]]></codeExpression>
 				</component>
 				<property name="com.jaspersoft.studio.unit.height" value="cm"/>
 			</element>
 			<element kind="component" uuid="95c7631a-8d87-4631-899e-8373e8a2a464" x="197" y="568" width="189" height="72">
 				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$F{codigo27}]]></codeExpression>
+					<codeExpression><![CDATA[$F{codigo26}]]></codeExpression>
 				</component>
 			</element>
 			<element kind="component" uuid="d6a66742-3ae8-43de-aee0-53a16f8f7920" x="197" y="639" width="189" height="69">
 				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$F{codigo28}]]></codeExpression>
+					<codeExpression><![CDATA[$F{codigo29}]]></codeExpression>
 				</component>
 			</element>
 			<element kind="component" uuid="d75cf46c-64e0-47f4-901c-aaf81f040e1a" x="394" y="568" width="189" height="72">
 				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$F{codigo29}]]></codeExpression>
+					<codeExpression><![CDATA[$F{codigo27}]]></codeExpression>
 				</component>
 			</element>
 			<element kind="component" uuid="e2ea6a9b-648e-4f65-b243-486dc9c5acc3" x="394" y="639" width="189" height="69">
