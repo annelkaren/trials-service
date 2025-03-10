@@ -60,6 +60,11 @@ public class GeneradorQRService {
         List<String> expedientes = carpetaRepository.findByExpMinAndExMaxAndYear(
                 expMin, expMax, year, personaLogueada.getJuzgado().getId());
 
+        if (expedientes.isEmpty()) {
+            throw new NotFoundException("No existen expedientes con los criterios de busqueda.",
+                    "Exp min: " + expMin + " Exp. max: " + expMax + " Año: " + year);
+        }
+
         // Lista final de DTOs
         List<GeneradorQRDTO> generadorFinal = new ArrayList<>();
 
@@ -128,6 +133,11 @@ public class GeneradorQRService {
         Carpeta carpeta = carpetaRepository
                 .findByExpedienteAndJuzgadoId(expediente, personaLogueada.getJuzgado().getId())
                 .orElseThrow(() -> new NotFoundException("Expediente no encontrado", "expediente: " + expediente));
+
+        if (carpeta == null) {
+            throw new NotFoundException("No existen expedientes con los criterios de busqueda.",
+                    "Expediente " + expediente);
+        }
 
         // Obtener el código QR de la carpeta
         String codigo = getExpedienteCarpeta(carpeta);
