@@ -32,12 +32,15 @@ public class GeneradorQRResource {
         return ResponseEntity.ok().headers(headers).body(generadorQRService.getContinuityReport(expMin, expMax, year));
     }
 
-    @GetMapping("/generarQR/porCasilla/{expediente}/{casilla}")
-    public ResponseEntity<byte[]> getDocumentoQRByCastilla(@PathVariable String expediente, @PathVariable Integer casilla) throws JRException, IOException{
+    @GetMapping("/generarQR/porCasilla/{expediente}/{year}/{casilla}")
+    public ResponseEntity<byte[]> getDocumentoQRByCastilla(
+        @PathVariable String expediente,
+        @PathVariable Integer year, 
+        @PathVariable Integer casilla) throws JRException, IOException{
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("qr",  expediente);
         
-        return ResponseEntity.ok().headers(headers).body(generadorQRService.getReportByCoordinates(expediente, casilla));
+        return ResponseEntity.ok().headers(headers).body(generadorQRService.getReportByCoordinates(expediente + "/" + year, casilla));
     }
 }
