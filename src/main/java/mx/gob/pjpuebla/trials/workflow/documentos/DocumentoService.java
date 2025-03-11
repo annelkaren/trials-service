@@ -952,7 +952,7 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    true,
+                    (Boolean) map.get(IS_INTERNO),
                     null,
                     null
             );
@@ -986,7 +986,7 @@ public class DocumentoService {
 
         Map<String, Object> map = new HashMap<>();
         map.put(IS_INTERNO, false);
-
+        
         if (persona.getJuzgado() != null && Objects.equals(origen.toUpperCase(), persona.getJuzgado().getNombre().toUpperCase())) {
             map.put(IS_INTERNO, true);
         }
