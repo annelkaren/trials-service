@@ -921,13 +921,16 @@ public class DocumentoService {
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
             Persona currentUser) {
+
         Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                 pageable,
                 currentUser.getJuzgado().getId(),
                 Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                 key,
                 Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+
         List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();
+
         for (Movimiento movimiento : page.getContent()) {
             Carpeta carpeta = movimiento.getCarpeta();
             Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta); // TODO: cambio en obtencion de documento para incluir apelación validar si es correcto el cambio (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
@@ -938,6 +941,7 @@ public class DocumentoService {
             String tipoEntrada = (isPromocion)? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento): etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
             Map<String, Object> map = getOrigen(movimiento, currentUser);
             String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
+            
             DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
                     documento != null ? documento.getId() : null, // (isPromocion) ? documento.getId():carpeta.getId(),
                                                                   // TODO: prueba para corregir anexos en la bandeja de
@@ -948,13 +952,16 @@ public class DocumentoService {
                     map.get("name").toString(),
                     concepto,
                     movimiento.getFechaAsignacion(),
-                    (Boolean) map.get(IS_INTERNO),
+                    true,
                     null,
                     null
             );
            
+
             list.add(drecord);
         }
+
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -972,11 +979,14 @@ public class DocumentoService {
     
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
+
         String origen = movimientoService.getOrigen(
                 (movimiento.getDocumento() != null) ? movimiento.getDocumento().getId() : null,
                 (movimiento.getCarpeta() != null) ? movimiento.getCarpeta().getId() : null);
+
         Map<String, Object> map = new HashMap<>();
         map.put(IS_INTERNO, false);
+
         if (persona.getJuzgado() != null && Objects.equals(origen.toUpperCase(), persona.getJuzgado().getNombre().toUpperCase())) {
             map.put(IS_INTERNO, true);
         }
