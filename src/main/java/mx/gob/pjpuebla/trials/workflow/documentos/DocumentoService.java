@@ -1765,4 +1765,15 @@ public class DocumentoService {
         }
     }
 
+
+    @Transactional(readOnly = true)
+    public Page<DocumentoGridRecord> getBandejaDevueltosOCP(String key, Pageable pageable) {
+        key = (key != null) ? key.toLowerCase() : "";
+        Persona persona = personaService.getAuditor();
+        Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
+        Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
+    
+        return movimientoRepository.findDocumentosDevueltosOCP(key, juzgadoId, oficialiaId, pageable);
+    }
+
 }

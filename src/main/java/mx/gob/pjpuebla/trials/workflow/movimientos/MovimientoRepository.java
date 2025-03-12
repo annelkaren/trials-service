@@ -7,10 +7,12 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
 
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Integer> {
@@ -179,6 +181,45 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 )
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable);
+
+    @Query("""
+                SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord(
+                    COALESCE(d.id, 0),
+                    CASE
+                        WHEN d.tipoDocumento IS NOT NULL AND d.tipoDocumento <> 'APELACION' THEN d.folio
+                        ELSE c.folio
+                    END,
+                    c.expediente,
+                    INITCAP(LOWER(m.nombre)),
+                    CASE
+                        WHEN d.tipoDocumento IS NOT NULL THEN INITCAP(LOWER(d.tipoDocumento))
+                        ELSE INITCAP(LOWER(c.tipoCarpeta))
+                    END,
+                    d.audit.fechaAlta,
+                    c.selloEstatus,
+                    COALESCE(d.estatus, c.estatus),
+                    CASE WHEN d.ruta IS NOT NULL THEN TRUE ELSE FALSE END,
+                    j.nombre,
+                    'Devuelto'
+                )
+                FROM Movimiento mvo
+                JOIN mvo.carpeta c
+                JOIN c.juzgado j
+                JOIN j.materia m
+                LEFT JOIN Documento d ON d.carpeta.id = c.id
+                WHERE c.estatus = EstadoCarpeta.DEVUELTO_A_OFICIALIA
+                  AND (
+                       LOWER(c.folio) LIKE %:key% OR
+                       LOWER(c.expediente) LIKE %:key% OR
+                       LOWER(j.nombre) LIKE %:key%
+                  )
+                  AND (:juzgadoId IS NULL OR j.id = :juzgadoId)
+                  AND (:oficialiaId IS NULL OR c.oficialia.id = :oficialiaId)
+            """)
+    Page<DocumentoGridRecord> findDocumentosDevueltosOCP(@Param("key") String key,
+            @Param("juzgadoId") Integer juzgadoId,
+            @Param("oficialiaId") Integer oficialiaId,
+            Pageable pageable);
 
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
