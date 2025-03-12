@@ -337,10 +337,13 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 SELECT doc
                 FROM Documento doc
                 JOIN doc.persona p
+                JOIN doc.carpeta ca
+                JOIN ca.juzgado juz
                 WHERE LOWER(p.correoElectronico) = LOWER(:correo)
                 AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+                AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
             """)
-    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, Pageable pageable);
+    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key, Pageable pageable);
 
     @Query("""
                 SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END

@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.litigante;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +58,8 @@ public class LitiganteResource {
 
     }
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
-        return litiganteService.getPromocionesLitigante(pageable);
+    public Page<PromocionesLitiganteRecord> getPromocionesLitigante(@RequestParam String key, Pageable pageable) {
+        key = (key != null) ? key : "";
+        return litiganteService.getPromocionesLitigante(key, pageable);
     }
 }

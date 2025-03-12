@@ -170,7 +170,7 @@ void testFindByCarpetaIdAndTipoDocumentoIn() {
     @Test
     void testFindPromocionesLitigante() {
         String correo = "juanperez@gmail.com";
-        Page<Documento> promociones = documentoRepository.findPromocionesLitigante(correo, PageRequest.of(0, 10));
+        Page<Documento> promociones = documentoRepository.findPromocionesLitigante(correo, "", PageRequest.of(0, 10));
         assertThat(promociones).isNotEmpty();
     }
 

@@ -3,8 +3,6 @@ package mx.gob.pjpuebla.trials.litigante;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
@@ -197,46 +195,27 @@ public class LitiganteService {
                 documentoResponseRecords);
     }
 
-    public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
+    public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {
         String userName = getLitiganteUsername();
-        Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, pageable);
-
+        Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, key, pageable);
+        //TODO revisar paginador
         return docPromociones.map(documento -> {
+            String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
+            String numeroExpediente = partesExpediente[0];
+            String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
 
-            boolean isValid = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(
+            return new PromocionesLitiganteRecord(
+                    documento.getId(),
                     documento.getCarpeta().getExpediente(),
                     documento.getFolio(),
-                    userName);
-
-            if (!isValid) {
-                throw new IllegalStateException("El expediente y el acuerdo no están asociados al usuario.");
-            }
-
-            PromocionesElectronicasLitigante promocionElectronica = createPromocionElectronicaLitigante(documento);
-
-            PromocionesLitiganteRecord promocionesLitiganteRecord = new PromocionesLitiganteRecord(
-                    documento.getCarpeta().getExpediente(),
-                    List.of(promocionElectronica));
-            return new PromocionAutorizadaRecord(List.of(promocionesLitiganteRecord));
+                    documento.getPersona().getCorreoElectronico(),
+                    documento.getRuta(),
+                    documento.getAudit().getFechaAlta().toLocalDate(),
+                    documento.getAudit().getFechaAlta().toLocalTime(),
+                    "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/"
+                            + numeroExpediente + "/" + documento.getRuta(),
+                    documento.getCarpeta().getJuzgado().getNombre());
         });
-    }
-
-    /*  SE CREA METODO PARA CORREGIR SCAN DE QODANA */
-    public PromocionesElectronicasLitigante createPromocionElectronicaLitigante(Documento documento) {
-        String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
-
-        String numeroExpediente = partesExpediente[0];
-        String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
-
-        return new PromocionesElectronicasLitigante(
-                documento.getFolio(),
-                documento.getPersona().getCorreoElectronico(),
-                documento.getRuta(),
-                documento.getAudit().getFechaAlta().toLocalDate(),
-                documento.getAudit().getFechaAlta().toLocalTime(),
-                "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/"
-                        + numeroExpediente + "/" + documento.getRuta());
-
     }
 
 }
