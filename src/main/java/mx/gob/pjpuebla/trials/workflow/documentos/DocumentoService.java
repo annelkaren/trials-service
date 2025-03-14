@@ -1774,13 +1774,43 @@ public class DocumentoService {
 
 
     @Transactional(readOnly = true)
-    public Page<DocumentoGridRecord> getBandejaDevueltosOCP(String key, Pageable pageable) {
-        key = (key != null) ? key.toLowerCase() : "";
-        Persona persona = personaService.getAuditor();
-        Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
-        Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
-    
-        return movimientoRepository.findDocumentosDevueltosOCP(key, juzgadoId, oficialiaId, pageable);
+    public Page<DocumentoBandejaDevueltos> getBandejaDevueltosOCP(String key, Pageable pageable) {
+            key = (key != null) ? key.toLowerCase() : "";
+            Persona persona = personaService.getAuditor();
+            List<Juzgado> juzgados = persona.getOficialia().getJuzgados();
+
+            Page<Movimiento> page = movimientoRepository.getBandejaDevueltos(
+                            pageable,
+                            juzgados,
+                            EstadoCarpeta.DEVUELTO_A_OFICIALIA,
+                            key,
+                            EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
+
+            List<DocumentoBandejaDevueltos> list = page.getContent()
+                            .stream()
+                            .map(movimiento -> {
+                                    Carpeta carpeta = movimiento.getCarpeta();
+                                    String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
+                                    Persona p = movimiento.getPersona();
+                                    String nombre = p.getNombre() + " " + p.getApellidoPaterno() + " " + ((p.getApellidoMaterno() != null) ?  p.getApellidoMaterno() : "");
+                                    System.out.println("EL ID DEL MOVIMIENTO ES: " + movimiento.getId());
+                                    return new DocumentoBandejaDevueltos(
+                                                    carpeta.getId(),
+                                                    carpeta.getFolio(),
+                                                    carpeta.getExpediente(),
+                                                    tipoEntrada,
+                                                    nombre,
+                                                    carpeta.getConcepto().getNombre(),
+                                                    movimiento.getMotivo(),
+                                                    movimiento.getFechaAsignacion(),
+                                                    true,
+                                                    carpeta.getPrioridad(),
+                                                    carpeta.getHoras());
+                            }).toList();
+
+            return new PageImpl<>(list, pageable, page.getTotalElements());
+
     }
+
 
 }
