@@ -136,7 +136,7 @@ public class DocumentoService {
         Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
         Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
         Page<Movimiento> page = movimientoService.getAllBandejaEntrada(pageable, juzgadoId, oficialiaId, key);
-        
+
         List<DocumentoGridRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = (mov.getDocumento() != null) ? mov.getDocumento()
@@ -160,7 +160,8 @@ public class DocumentoService {
                     (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
                     (documento.getRuta() != null),
                     documento.getCarpeta().getJuzgado().getNombre(),
-                    estaEnJuzgado
+                    estaEnJuzgado,
+                    mov.getMotivo()
                     );
             list.add(documentoGridRecord);
         }
@@ -697,7 +698,8 @@ public class DocumentoService {
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
                     false,
                     "",
-                    estaEnJuzgado);
+                    estaEnJuzgado,
+                    movimiento.getMotivo());
             listaDocumentoRecords.add(drecord);
         }
         return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());

@@ -13,10 +13,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -77,6 +79,7 @@ public class DigitalizacionService {
 
     private final PersonaService personaService; // Servicio de persona
     private final DocumentoRepository documentoRepository;
+    private final CarpetaRepository carpetaRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
@@ -172,6 +175,15 @@ public class DigitalizacionService {
 
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         documento.setRuta(nombreUnicoArchivo);
+
+        //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
+        if(documento.getTipoDocumento() != null ){
+            documento.setEstatus(EstadoCarpeta.CAPTURA);
+        }else{
+            documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
+            carpetaRepository.save(documento.getCarpeta());
+        }
+
         documentoRepository.save(documento);
 
         return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
