@@ -136,6 +136,7 @@ public class DocumentoService {
         Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
         Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
         Page<Movimiento> page = movimientoService.getAllBandejaEntrada(pageable, juzgadoId, oficialiaId, key);
+        
         List<DocumentoGridRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = (mov.getDocumento() != null) ? mov.getDocumento()
@@ -1790,12 +1791,13 @@ public class DocumentoService {
                             .stream()
                             .map(movimiento -> {
                                     Carpeta carpeta = movimiento.getCarpeta();
+                                    Documento documento = movimiento.getDocumento();
                                     String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
                                     Persona p = movimiento.getPersona();
                                     String nombre = p.getNombre() + " " + p.getApellidoPaterno() + " " + ((p.getApellidoMaterno() != null) ?  p.getApellidoMaterno() : "");
-                                    System.out.println("EL ID DEL MOVIMIENTO ES: " + movimiento.getId());
                                     return new DocumentoBandejaDevueltos(
                                                     carpeta.getId(),
+                                                    documento != null ? documento.getId() : null,
                                                     carpeta.getFolio(),
                                                     carpeta.getExpediente(),
                                                     tipoEntrada,
@@ -1810,6 +1812,15 @@ public class DocumentoService {
 
             return new PageImpl<>(list, pageable, page.getTotalElements());
 
+    }
+
+    public void devolverABandejas(DevolucionBandejasRecord devolucion){
+        Persona persona =  personaService.getAuditor();
+        Carpeta carpeta = carpetaRepository.findById(devolucion.carpetaId()).orElse(null);
+        Documento documento = devolucion.documentoId() != null ? documentoRepository.findById(devolucion.documentoId()).orElse(null) : null;
+
+        movimientoService.createMovimento(carpeta, documento, persona, devolucion.motivoDevolucion(), devolucion.estado());
+        
     }
 
 

@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 
 public record DocumentoBandejaDevueltos(
     Integer carpetaId,
+    Integer documentoId,
     String folio,
     String expediente,
     String tipoEntrada,

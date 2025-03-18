@@ -163,8 +163,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 LEFT JOIN m.juzgado j
                 LEFT JOIN m.oficialia o
                 WHERE (
-                    (c IS NOT NULL AND c.estatus IN (0,12))
-                    OR (d IS NOT NULL AND d.estatus IN (0,12))
+                    (c IS NOT NULL AND c.estatus IN (0,14))
+                    OR (d IS NOT NULL AND d.estatus IN (0,14))
                 )
                  AND m.fechaAsignacion = (
                     SELECT MAX(m2.fechaAsignacion)

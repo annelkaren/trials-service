@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -301,5 +304,12 @@ public class DocumentoResource {
             @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getBandejaDevueltosOCP(key, pageable);
     }
+
+    @PostMapping("/devolver/bandejas")
+    public ResponseEntity<String> devolverABandejas(@RequestBody DevolucionBandejasRecord devolucion) {
+        this.documentoService.devolverABandejas(devolucion);
+        return ResponseEntity.ok("Devolución completa");
+    }
+    
 
 }
