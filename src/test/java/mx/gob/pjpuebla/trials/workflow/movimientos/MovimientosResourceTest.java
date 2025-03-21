@@ -96,7 +96,7 @@ class MovimientosResourceTest {
   
     @Test
     void crearMotivoExitosoTest() throws Exception {
-        MotivoRecord motivoRecord = new MotivoRecord("Error en en el numero de expediente", 1);
+        MotivoRecord motivoRecord = new MotivoRecord("Error en en el numero de expediente", 1, false);
 
         mockMvc.perform(post("/api/workflow/movimientos/turnado")
             .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ class MovimientosResourceTest {
 
     @Test
     void crearMotivoErrorTest() throws Exception {
-        MotivoRecord motivoRecord = new MotivoRecord("Error en el número de expediente", 1);
+        MotivoRecord motivoRecord = new MotivoRecord("Error en el número de expediente", 1, false);
 
         willThrow(new RuntimeException("Error al crear el motivo")).given(movimientoService).createMotivo(motivoRecord);
 

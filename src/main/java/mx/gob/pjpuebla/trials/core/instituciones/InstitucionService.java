@@ -128,4 +128,8 @@ public class InstitucionService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    public List<InstitucionRecord> findByTipoInstitucion(String tipo){
+        return institucionRepository.findByTipoInstitucion(tipo);
+    }
+
 }

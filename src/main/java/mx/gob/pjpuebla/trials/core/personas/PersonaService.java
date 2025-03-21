@@ -381,4 +381,19 @@ public class PersonaService {
         return mensajeros;
     }
 
+    public List<CentroTrabajoRecord> findCentroTrabajoByPersonCurrent() {
+        Persona persona = getAuditor();
+        List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
+        if (persona.getJuzgado() != null) {
+            centrosTrabajo.add(new CentroTrabajoRecord(persona.getJuzgado().getId(), persona.getJuzgado().getNombre(),
+                    TipoCentroTrabajo.JUZGADO));
+        }
+        if (persona.getOficialia() != null) {
+            centrosTrabajo.add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
+                    TipoCentroTrabajo.OFICIALIA_COMUN));
+        }
+
+        
+        return centrosTrabajo;
+    }
 }

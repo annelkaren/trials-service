@@ -136,6 +136,7 @@ public class DocumentoService {
         Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
         Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
         Page<Movimiento> page = movimientoService.getAllBandejaEntrada(pageable, juzgadoId, oficialiaId, key);
+
         List<DocumentoGridRecord> list = new ArrayList<>();
         for (Movimiento mov : page.getContent()) {
             Documento documento = (mov.getDocumento() != null) ? mov.getDocumento()
@@ -159,7 +160,8 @@ public class DocumentoService {
                     (documento.getTipoDocumento() != null) ? documento.getEstatus() : carpeta.getEstatus(),
                     (documento.getRuta() != null),
                     documento.getCarpeta().getJuzgado().getNombre(),
-                    estaEnJuzgado
+                    estaEnJuzgado,
+                    mov.getMotivo()
                     );
             list.add(documentoGridRecord);
         }
@@ -696,7 +698,8 @@ public class DocumentoService {
                     EstadoCarpeta.valueOf(movimiento.getEstado()),
                     false,
                     "",
-                    estaEnJuzgado);
+                    estaEnJuzgado,
+                    movimiento.getMotivo());
             listaDocumentoRecords.add(drecord);
         }
         return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
@@ -921,40 +924,54 @@ public class DocumentoService {
 
     private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
             Persona currentUser) {
+
         Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                 pageable,
                 currentUser.getJuzgado().getId(),
-                Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
+                List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                 key,
-                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
-        List<DocumentoBandejaRecepcionRecord> list = new ArrayList<>();
-        for (Movimiento movimiento : page.getContent()) {
-            Carpeta carpeta = movimiento.getCarpeta();
-            Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta); // TODO: cambio en obtencion de documento para incluir apelación validar si es correcto el cambio (movimiento.getDocumento() != null) ? movimiento.getDocumento() : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
-          
-            boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
-            
-            String folio = (isPromocion) ? documento.getFolio() : carpeta.getFolio();
-            String tipoEntrada = (isPromocion)? etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento): etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
-            Map<String, Object> map = getOrigen(movimiento, currentUser);
-            String concepto = (isPromocion) ? documento.getConcepto().getNombre() : carpeta.getConcepto().getNombre();
-            DocumentoBandejaRecepcionRecord drecord = new DocumentoBandejaRecepcionRecord(
-                    documento != null ? documento.getId() : null, // (isPromocion) ? documento.getId():carpeta.getId(),
-                                                                  // TODO: prueba para corregir anexos en la bandeja de
-                                                                  // recepcion.
-                    folio,
-                    (isPromocion) ? documento.getCarpeta().getExpediente() : carpeta.getExpediente(),
-                    StringUtils.capitalize(tipoEntrada.toLowerCase()),
-                    map.get("name").toString(),
-                    concepto,
-                    movimiento.getFechaAsignacion(),
-                    (Boolean) map.get(IS_INTERNO),
-                    null,
-                    null
-            );
-           
-            list.add(drecord);
-        }
+                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+
+        List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
+                .map(movimiento -> {
+                    Carpeta carpeta = movimiento.getCarpeta();
+                    Map<String, Object> map = getOrigen(movimiento, currentUser);
+                    Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta);
+        
+                    boolean isPromocion = (documento != null && documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION));
+                    String folio;
+                    String tipoEntrada;
+                    String concepto;
+                    String expediente;
+        
+                    if(isPromocion && documento != null){
+                        folio = documento.getFolio();
+                        tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", documento);
+                        concepto = documento.getConcepto().getNombre();
+                        expediente = documento.getCarpeta().getExpediente();
+                    }else{
+                        folio = carpeta.getFolio();
+                        tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
+                        concepto = carpeta.getConcepto().getNombre();
+                        expediente = carpeta.getExpediente();
+                    }
+        
+                    return  new DocumentoBandejaRecepcionRecord(
+                            documento != null ? documento.getId() : null, 
+                            folio,
+                            expediente,
+                            StringUtils.capitalize(tipoEntrada.toLowerCase()),
+                            map.get("name").toString(),
+                            concepto,
+                            movimiento.getFechaAsignacion(),
+                            (Boolean) map.get(IS_INTERNO),
+                            null,
+                            null
+                    );
+                
+                })
+                .toList();
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -972,11 +989,14 @@ public class DocumentoService {
     
 
     protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
+
         String origen = movimientoService.getOrigen(
                 (movimiento.getDocumento() != null) ? movimiento.getDocumento().getId() : null,
                 (movimiento.getCarpeta() != null) ? movimiento.getCarpeta().getId() : null);
+
         Map<String, Object> map = new HashMap<>();
         map.put(IS_INTERNO, false);
+        
         if (persona.getJuzgado() != null && Objects.equals(origen.toUpperCase(), persona.getJuzgado().getNombre().toUpperCase())) {
             map.put(IS_INTERNO, true);
         }
@@ -1754,5 +1774,56 @@ public class DocumentoService {
                 return null;
         }
     }
+
+
+    @Transactional(readOnly = true)
+    public Page<DocumentoBandejaDevueltos> getBandejaDevueltosOCP(String key, Pageable pageable) {
+            key = (key != null) ? key.toLowerCase() : "";
+            Persona persona = personaService.getAuditor();
+            List<Juzgado> juzgados = persona.getOficialia().getJuzgados();
+
+            Page<Movimiento> page = movimientoRepository.getBandejaDevueltos(
+                            pageable,
+                            juzgados,
+                            EstadoCarpeta.DEVUELTO_A_OFICIALIA,
+                            key,
+                            EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
+
+            List<DocumentoBandejaDevueltos> list = page.getContent()
+                            .stream()
+                            .map(movimiento -> {
+                                    Carpeta carpeta = movimiento.getCarpeta();
+                                    Documento documento = movimiento.getDocumento();
+                                    String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre", carpeta);
+                                    Persona p = movimiento.getPersona();
+                                    String nombre = p.getNombre() + " " + p.getApellidoPaterno() + " " + ((p.getApellidoMaterno() != null) ?  p.getApellidoMaterno() : "");
+                                    return new DocumentoBandejaDevueltos(
+                                                    carpeta.getId(),
+                                                    documento != null ? documento.getId() : null,
+                                                    carpeta.getFolio(),
+                                                    carpeta.getExpediente(),
+                                                    tipoEntrada,
+                                                    nombre,
+                                                    carpeta.getConcepto().getNombre(),
+                                                    movimiento.getMotivo(),
+                                                    movimiento.getFechaAsignacion(),
+                                                    true,
+                                                    carpeta.getPrioridad(),
+                                                    carpeta.getHoras());
+                            }).toList();
+
+            return new PageImpl<>(list, pageable, page.getTotalElements());
+
+    }
+
+    public void devolverABandejas(DevolucionBandejasRecord devolucion){
+        Persona persona =  personaService.getAuditor();
+        Carpeta carpeta = carpetaRepository.findById(devolucion.carpetaId()).orElse(null);
+        Documento documento = devolucion.documentoId() != null ? documentoRepository.findById(devolucion.documentoId()).orElse(null) : null;
+
+        movimientoService.createMovimento(carpeta, documento, persona, devolucion.motivoDevolucion(), devolucion.estado());
+        
+    }
+
 
 }

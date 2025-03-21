@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,27 +41,27 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Optional<Carpeta> findByExpedienteAndJuzgadoIdPenal(String expediente, String nomenclatura, Integer juzgadoId);
 
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
-                    d.id,
-                    c.folio,
-                    c.expediente,
-                    c.tipoCarpeta,
-                    d.ruta,
-                   null
-                )
-            FROM Documento d
-            JOIN d.carpeta c
-            WHERE d.id = :documentoId
-        """)
+                SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord(
+                        d.id,
+                        c.folio,
+                        c.expediente,
+                        c.tipoCarpeta,
+                        d.ruta,
+                       null
+                    )
+                FROM Documento d
+                JOIN d.carpeta c
+                WHERE d.id = :documentoId
+            """)
     BandejaRecepcionRecord findByDocumentoId(Integer documentoId);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord(
-            a.id, a.nombre, a.estado)
-        FROM Anexo a
-        JOIN a.documento d
-        WHERE d.id = :documentoId
-    """)
+                SELECT new mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord(
+                    a.id, a.nombre, a.estado)
+                FROM Anexo a
+                JOIN a.documento d
+                WHERE d.id = :documentoId
+            """)
     List<AnexoBandejaRecepcionRecord> findAnexosByDocumentoId(Integer documentoId);
 
     @Transactional
@@ -68,13 +69,12 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     @Query("UPDATE Carpeta c SET c.estatus = :estado WHERE c.id = :carpetaId")
     void actualizarEstatus(@Param("carpetaId") Integer carpetaId, @Param("estado") EstadoCarpeta estado);
 
-
     @Query("""
             SELECT COUNT(1)+1 FROM Carpeta c
             WHERE c.carpetaPadre.id=:carpetaId and c.tipoCarpeta=mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA and c.expediente like %:clavePieza%
             """)
     Integer getNumeroPieza(Integer carpetaId, String clavePieza);
-    
+
     @Query("""
             SELECT c.tipoJuicio.id
             FROM Carpeta c
@@ -121,46 +121,75 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     List<DocumentoDetalleCarpeta> findPiezasByCarpetaPadreId(String key, Integer carpetaPadreId);
 
     @Query("""
-       SELECT c FROM Carpeta c
-       WHERE c.juzgado IN :juzgados
-       AND (
-           :key IS NULL
-           OR lower(c.expediente) LIKE %:key%
-       )
-       """)
+            SELECT c FROM Carpeta c
+            WHERE c.juzgado IN :juzgados
+            AND (
+                :key IS NULL
+                OR lower(c.expediente) LIKE %:key%
+            )
+            """)
     Page<Carpeta> findByJuzgado(@Param("juzgados") List<Juzgado> juzgados,
-                                      @Param("key") String key,
-                                      Pageable pageable);
+            @Param("key") String key,
+            Pageable pageable);
 
-    Optional<Carpeta> findByExpedienteAndJuzgadoIdAndEstatus(String expediente, Integer juzgadoId, EstadoCarpeta estado);
-
-
+    Optional<Carpeta> findByExpedienteAndJuzgadoIdAndEstatus(String expediente, Integer juzgadoId,
+            EstadoCarpeta estado);
 
     @Query(value = """
-      WITH jueces_penal AS (
-          SELECT DISTINCT p.id AS juez_id, p.nombre
-          FROM salas s
-          JOIN persona p ON s.juez_id = p.id
-          JOIN juzgado j ON s.juzgado_id = j.id
-          JOIN materia m ON j.materia_id = m.id
-          WHERE m.nombre = 'PENAL'
-      ),
-      ultimo_juez AS (
-          SELECT p.id AS juez_id
-          FROM audiencias a
-          JOIN salas s ON a.sala_id = s.id
-          JOIN persona p ON s.juez_id = p.id
-          JOIN juzgado j ON s.juzgado_id = j.id
-          JOIN materia m ON j.materia_id = m.id
-          WHERE m.nombre = 'PENAL'
-          ORDER BY a.id DESC
-          LIMIT 1
-      )
-      SELECT p.*
-      FROM jueces_penal p
-      LEFT JOIN ultimo_juez u ON p.juez_id > u.juez_id
-      ORDER BY p.juez_id ASC
-      LIMIT 1
-      """, nativeQuery = true)
+            WITH jueces_penal AS (
+                SELECT DISTINCT p.id AS juez_id, p.nombre
+                FROM salas s
+                JOIN persona p ON s.juez_id = p.id
+                JOIN juzgado j ON s.juzgado_id = j.id
+                JOIN materia m ON j.materia_id = m.id
+                WHERE m.nombre = 'PENAL'
+            ),
+            ultimo_juez AS (
+                SELECT p.id AS juez_id
+                FROM audiencias a
+                JOIN salas s ON a.sala_id = s.id
+                JOIN persona p ON s.juez_id = p.id
+                JOIN juzgado j ON s.juzgado_id = j.id
+                JOIN materia m ON j.materia_id = m.id
+                WHERE m.nombre = 'PENAL'
+                ORDER BY a.id DESC
+                LIMIT 1
+            )
+            SELECT p.*
+            FROM jueces_penal p
+            LEFT JOIN ultimo_juez u ON p.juez_id > u.juez_id
+            ORDER BY p.juez_id ASC
+            LIMIT 1
+            """, nativeQuery = true)
     Persona findSiguienteJuezPenal();
+
+    @Query(value = """
+            SELECT 
+                CASE
+                    WHEN c.n_tipo_carpeta = 0 THEN 'D' || c.s_folio
+                    WHEN c.n_tipo_carpeta = 1 THEN 'E' || c.s_folio
+                    WHEN c.n_tipo_carpeta = 2 THEN 'A' || c.s_folio
+                    ELSE '' || c.s_folio
+                END
+            
+            FROM tbl_carpetas c
+            WHERE CAST(
+                    REGEXP_REPLACE(SPLIT_PART(c.s_expediente, '/', 1), '[^0-9]', '', 'g')
+                    AS INTEGER
+                  ) BETWEEN :expedienteMin AND :expedienteMax
+              AND CAST(SPLIT_PART(c.s_expediente, '/', 2) AS INTEGER) = :year
+              AND c.fn_juzgado = :juzgadoId
+              AND c.n_tipo_carpeta = 0
+              order by CAST(
+                    REGEXP_REPLACE(SPLIT_PART(c.s_expediente, '/', 1), '[^0-9]', '', 'g')
+                    AS INTEGER
+                  )
+            """, nativeQuery = true)
+    List<String> findByExpMinAndExMaxAndYear(
+            @Param("expedienteMin") Integer expedienteMin,
+            @Param("expedienteMax") Integer expedienteMax,
+            @Param("year") Integer year,
+            @Param("juzgadoId") Integer juzgadoId);
+
+
 }

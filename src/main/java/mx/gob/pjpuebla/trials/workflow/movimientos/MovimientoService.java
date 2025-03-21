@@ -110,8 +110,15 @@ public class MovimientoService {
         Carpeta carpeta = carpetaRepository.findById(motivoRecord.documentoId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
                         "carpetaId: " + motivoRecord.documentoId()));
-        createMovimento(carpeta, null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
-        carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+
+        if(motivoRecord.isInterno()){
+            createMovimento(carpeta, null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
+            carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+        }else{
+            createMovimento(carpeta, null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
+            carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO_A_OFICIALIA);
+        }
+       
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,

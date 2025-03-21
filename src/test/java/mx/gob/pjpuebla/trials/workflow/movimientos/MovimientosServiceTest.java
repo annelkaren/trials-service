@@ -118,7 +118,7 @@ class MovimientosServiceTest {
 
     @Test
     void testCreateMotivoWithoutPromocion() {
-        MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3);
+        MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3, true);
         Persona currentUser = new Persona();
         Carpeta carpeta = new Carpeta();
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);

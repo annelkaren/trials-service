@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
+import mx.gob.pjpuebla.trials.workflow.generadorQR.GeneradorQRRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -387,5 +388,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("key") String key,
             @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
             @Param("juzgados") List<Juzgado> juzgados);
+
 
 }
