@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RequiredArgsConstructor
@@ -161,9 +159,9 @@ public class DocumentoResource {
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
-    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(
-            @RequestBody PersonalJuzgadoRecord personalJuzgadoRecord) {
-        return this.documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
+    public List<MovimientoPersonalJuzgadoRecord> movimientoPersonalJuzgado(
+            @RequestBody List<PersonalJuzgadoRecord> personalJuzgadoRecord) {
+        return this.documentoService.movimientoPersonalJuzgadoList(personalJuzgadoRecord);
     }
 
     @GetMapping("/bandeja/asignados")
