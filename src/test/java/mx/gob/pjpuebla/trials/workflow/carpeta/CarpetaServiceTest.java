@@ -322,11 +322,13 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+        List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
+        new DocumentoRecepcionMovimientosRecord(
+                1,
                 anexos,
                 "Observacion 1",
                 "recomendacion 1"
-        );
+        ));
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
         Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
@@ -342,7 +344,7 @@ class CarpetaServiceTest {
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
 
-        DocumentoRecord response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
+        List<DocumentoRecord> response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord);
 
         assertThat(response).isNotNull();
 
@@ -356,11 +358,13 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+        List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of( 
+        new DocumentoRecepcionMovimientosRecord(
+                1,
                 anexos,
                 "Observacion 1",
                 "recomendacion 1"
-        );
+        ));
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
         Persona persona = PersonaSetUp.createPersona();
@@ -375,7 +379,7 @@ class CarpetaServiceTest {
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
         given(documentoRepository.save(any(Documento.class))).willReturn(documento);
 
-        DocumentoRecord response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
+        List<DocumentoRecord> response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord);
 
         assertThat(response).isNotNull();
 
@@ -388,11 +392,13 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+        List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
+         new DocumentoRecepcionMovimientosRecord(
+                1,
                 anexos,
                 "Observacion 1",
                 "recomendacion 1"
-        );
+        ));
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
@@ -404,7 +410,7 @@ class CarpetaServiceTest {
         given(anexoRepository.findById(1)).willReturn(Optional.empty());
         given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord));
 
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el anexo con id: " + 1 + "\"");
     }
@@ -414,11 +420,13 @@ class CarpetaServiceTest {
         Integer documentoId = 123;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
-        DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord = new DocumentoRecepcionMovimientosRecord(
+        List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
+        new DocumentoRecepcionMovimientosRecord(
+                1,
                 anexos,
                 "Observacion 1",
                 "recomendacion 1"
-        );
+        ));
         Persona persona = PersonaSetUp.createPersona();
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
@@ -427,7 +435,7 @@ class CarpetaServiceTest {
                 .willReturn(persona);
         given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId));
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord));
 
 
         assertThat(exception.getMessage()).isEqualTo("404 NOT_FOUND \"No se encontró el documento asociado al documentoId: " + documentoId + "\"");
