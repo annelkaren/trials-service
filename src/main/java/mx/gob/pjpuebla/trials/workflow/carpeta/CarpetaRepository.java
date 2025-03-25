@@ -164,7 +164,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Persona findSiguienteJuezPenal();
 
     @Query(value = """
-            SELECT 
+            SELECT
                 CASE
                     WHEN c.n_tipo_carpeta = 0 THEN 'D' || c.s_folio
                     WHEN c.n_tipo_carpeta = 1 THEN 'E' || c.s_folio

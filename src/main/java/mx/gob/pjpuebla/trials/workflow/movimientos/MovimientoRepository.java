@@ -8,14 +8,11 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGridRecord;
+
 
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Integer> {

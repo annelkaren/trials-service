@@ -12,7 +12,6 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
-import mx.gob.pjpuebla.trials.workflow.generadorQR.GeneradorQRRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
