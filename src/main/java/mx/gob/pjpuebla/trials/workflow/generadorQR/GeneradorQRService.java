@@ -185,7 +185,7 @@ public class GeneradorQRService {
             case DEMANDA -> "D" + folio;
             case EXHORTO -> "E" + folio;
             case AMPARO -> "A" + folio;
-            default -> "" + folio;
+            default -> folio;
         };
     }
 
