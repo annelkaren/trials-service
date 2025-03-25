@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.litigante;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -31,6 +33,11 @@ public class LitiganteResource {
             Pageable pageable) {
         key = (key != null) ? key : "";
         return this.litiganteService.getExpedientesRelacionados(key, pageable);
+    }
+
+    @GetMapping("/expedientes/autocomplete")
+    public List<LitiganteExpedientesRecord> getAllExpedientesRelacionados() {
+        return this.litiganteService.getAllExpedientesRelacionados();
     }
 
     @GetMapping(value = "/acuerdoSentencia", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,8 +62,8 @@ public class LitiganteResource {
     public ResponseEntity<ExpedienteResponseRecord> getExpedienteDetails(Pageable pageable) {
         ExpedienteResponseRecord expedienteResponse = litiganteService.getExpedienteDetails();
         return ResponseEntity.ok(expedienteResponse);
-
     }
+
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(@RequestParam String key, Pageable pageable) {
         key = (key != null) ? key : "";

@@ -46,6 +46,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
@@ -120,6 +122,7 @@ public class DocumentoService {
     private final PersonaDetalleRepository personaDetalleRepository;
     private final JuzgadoRepository juzgadoRepository;
     private final TipoAudienciaRepository tipoAudienciaRepository;
+    private final DocumentoContenidoRepository documentoContenidoRepository;
 
     private static final String DOC_NOT_FOUND = "Documento no encontrado";
     private static final String DOC_ID = "documentoId: ";
@@ -726,8 +729,16 @@ public class DocumentoService {
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
         documento = documentoRepository.save(documento);
-        if(persona.getOficialia() == null) {
+        if(persona.getOficialia() == null && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
             digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        }
+        if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)){//promoción desde el portal del litigante
+            DocumentoContenido contenido = new DocumentoContenido();
+            contenido.setDocumento(documento);
+            contenido.setTexto(documentoPromocionRecord.contenido());
+            contenido.setTamanioPapel('c');
+            contenido.setOficioPublicado('n');
+            documentoContenidoRepository.save(contenido);
         }
         addAnexos(documentoPromocionRecord.anexos(), documento);
         if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {

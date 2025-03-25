@@ -60,6 +60,11 @@ public class LitiganteService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    public List<LitiganteExpedientesRecord> getAllExpedientesRelacionados() {
+        String username = getLitiganteUsername();
+        return personaDocumentoRepository.findAllByUsername(username);
+    }
+
     private String getLitiganteUsername() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return jwt.getClaims().get("preferred_username").toString();
