@@ -130,7 +130,6 @@ class CarpetaResourceTest {
 
         @Test
         void testRecepcionAnexos_Success() throws Exception {
-                Integer documentoId = 123;
                 List<AnexoBandejaRecepcionRecord> anexos = List
                                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
                 List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
@@ -145,7 +144,7 @@ class CarpetaResourceTest {
                 when(mockCarpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord))
                                 .thenReturn(responseRecord);
 
-                mockMvc.perform(post("/api/workflow/carpeta/recepcion/" + documentoId)
+                mockMvc.perform(post("/api/workflow/carpeta/recepcion/")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(ResourceUtilTest.asJsonString(docRecepcionMovimientosRecord)))
                                 .andExpect(status().isOk());
