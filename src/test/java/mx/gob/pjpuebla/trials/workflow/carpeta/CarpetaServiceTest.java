@@ -319,7 +319,7 @@ class CarpetaServiceTest {
     @Test
     void actualizarInformacionAnexos_promocion_Success() {
         Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
-        Integer documentoId = 123;
+        Integer documentoId = 1;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
@@ -355,7 +355,7 @@ class CarpetaServiceTest {
     @Test
     void actualizarInformacionAnexos_Success() {
         Concepto concepto = new Concepto().setNombre("Adjuntar").setDias(1);
-        Integer documentoId = 123;
+        Integer documentoId = 1;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of( 
@@ -389,7 +389,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_AnexoNoEncontrado() {
-        Integer documentoId = 123;
+        Integer documentoId = 1;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
@@ -417,7 +417,7 @@ class CarpetaServiceTest {
 
     @Test
     void actualizarInformacionAnexos_DocumentoNoEncontrado() {
-        Integer documentoId = 123;
+        Integer documentoId = 1;
         List<AnexoBandejaRecepcionRecord> anexos = List
                 .of(new AnexoBandejaRecepcionRecord(1, "INE", EstadoAnexo.ASIGNADO));
         List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord = List.of(
@@ -431,9 +431,9 @@ class CarpetaServiceTest {
         Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
         persona.setJuzgado(juzgado1);
 
-        given(personaService.getAuditor())
-                .willReturn(persona);
-        given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
+        lenient().when(personaService.getAuditor())
+                .thenReturn(persona);
+        lenient().when(documentoRepository.findById(documentoId)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord));
 
