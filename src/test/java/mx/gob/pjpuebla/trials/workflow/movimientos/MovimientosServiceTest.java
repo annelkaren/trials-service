@@ -131,7 +131,7 @@ class MovimientosServiceTest {
         movimientoService.createMotivo(motivoRecord);
 
         verify(movimientoRepository, times(1)).save(any(Movimiento.class));
-        verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+        verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO_A_OFICIALIA);
     }
 
     @Test

@@ -4,5 +4,5 @@ import java.io.Serializable;
 public record MotivoRecord(
         String motivo,
         int documentoId,
-        boolean isInterno
+        boolean devueltoOficialia
 ) implements Serializable {}
