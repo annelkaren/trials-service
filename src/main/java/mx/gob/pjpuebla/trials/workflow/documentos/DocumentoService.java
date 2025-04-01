@@ -237,77 +237,49 @@ public class DocumentoService {
 
         public DocumentoRecord createDemanda(DocumentoSaveRecord documentoRecord) {
                 Persona persona = personaService.getAuditor();
-
                 Oficialia oficialia = persona.getOficialia();
-                if (oficialia == null) {
-                        throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
-                                        "persona.getOficialia()");
-                }
 
-                Documento documento = new Documento();
-                Carpeta carpeta = new Carpeta();
-                TipoJuicio tipoJuicio = tipoJuicioRepository.findById(documentoRecord.tipoJuicioId())
-                                .orElseThrow(
-                                                () -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
-                                                                documentoRecord.tipoJuicioId().toString()));
-                carpeta.setTipoJuicio(tipoJuicio);
+                validarOficialia(oficialia); // Lanza una excepción si la oficialia es null
 
-                List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
-                                .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
+                // Busca el tipoJuicio por id, si no lo encuentra lanza una excepción.
+                TipoJuicio tipoJuicio = getTipoJuicioById(documentoRecord.tipoJuicioId());
 
+                // Obtiene los juzgados relacionados con la oficialia.
+                List<Juzgado> juzgadosRelacionados = getJuzgadosRelacionados(oficialia.getId(), tipoJuicio);
+
+                // Obtiene conexidad de juzgados
                 Juzgado juzgadoConexidad = juzgadoService.getConexidadJuzgado(documentoRecord.actor(),
-                                documentoRecord.demandado(), carpeta.getTipoJuicio());
-                if (juzgadoConexidad != null && !juzgadosRelacionados.contains(juzgadoConexidad)) {
-                        throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
-                                        "juzgadoConexidad");
-                }
-                carpeta.setJuzgado(juzgadoConexidad);
-                carpeta.setFolio(getFolio("D"));
-                carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
+                                documentoRecord.demandado(), tipoJuicio);
 
-                if (carpeta.getJuzgado() == null) {
-                        Juzgado juzgadoPorJuicio = juzgadoService.getJuzgado(carpeta.getTipoJuicio(),
-                                        carpeta.getTipoCarpeta(),
-                                        juzgadosRelacionados);
-                        if (!juzgadosRelacionados.contains(juzgadoPorJuicio)) {
-                                throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
-                                                "juzgadoPorJuicio");
-                        }
-                        carpeta.setJuzgado(juzgadoPorJuicio);
-                }
+                // Evalua el juzgado que se le asignara a la carpeta dada conexidad o juzgados
+                // relacionados.
+                Juzgado juzgadoDemanda = getJuzgadoDemanda(juzgadoConexidad, juzgadosRelacionados, tipoJuicio);
 
-                carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.DEMANDA));
-                carpeta.setEstatus(EstadoCarpeta.CAPTURA);
-                carpeta.setSelloEstatus(SelloEstatus.VALIDO);
-                carpeta.setFechaAsignacion(LocalDateTime.now());
-                carpeta.setPersona(persona);
-                carpeta = carpetaRepository.save(carpeta);
-                movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
+                // Llama al metodo crear carpeta para la creacion de una carpeta dinamica.
+                Carpeta carpeta = crearCarpeta(tipoJuicio, juzgadoDemanda, getFolio("D"), TipoCarpeta.DEMANDA,
+                                generateNumExpediente(juzgadoDemanda, TipoCarpeta.DEMANDA), persona);
 
-                documento.setCarpeta(carpeta);
+                // Llama al metodo crear documento para la creación de un documento dinamico.
+                Documento documento = crearDocumento(carpeta, documentoRecord.general(), persona);
+                
+                //Llama metodo para crear anexos.
+                addAnexos(documentoRecord.anexos(), documento);
 
-                // SETEAMOS JSON - SOLO PARA DEMANDA FAMILIAR
-                documento.setData(documentoRecord.general());
-                documento.setFechaAsignacion(LocalDateTime.now());
-                documento.setPersona(persona);
-                documento = documentoRepository.save(documento);
+                // Logica cuando es demanda de tipo oralidad familiar.
+                handleOralidadFamiliarFlow(tipoJuicio, documentoRecord, carpeta, documento);
 
+                //Crea personas parte de una carpeta
                 createPersonaDocumento(documentoRecord.actor(), carpeta);
                 createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
-                addAnexos(documentoRecord.anexos(), documento);
-                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
-
-                // flujo para demanda de oralidad:
-                if ("FAMILIAR".contains(tipoJuicio.getMateria().getNombre().toUpperCase())
-                                && tipoJuicio.getNombre().toUpperCase().contains("ORAL")) {
-                        crearAudienciaOralidad(documentoRecord, carpeta, tipoJuicio);
-                        if (documentoRecord.general().getTieneAbogado() == 0) {
-                                sendEmailFamiliar(documentoRecord, documento, carpeta, tipoJuicio);
-                        }
-                }
-
+                //Crea una carpeta detalle.
                 carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
+
+                //Crea Movimiento.
+                movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
+                
+                //Actualiza carga de juzgados.
+                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);  
 
                 return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
                                 documento.getCarpeta().getTipoCarpeta());
@@ -315,47 +287,25 @@ public class DocumentoService {
 
         public DocumentoGenericRecord createDemandaPenal(DocumentoCreateDemandaPenalRecord demanda) {
                 Persona persona = personaService.getAuditor();
-
                 Oficialia oficialia = persona.getOficialia();
-                if (oficialia == null) {
-                        throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
-                                        "persona.getOficialia()");
-                }
+                validarOficialia(oficialia); // Lanza una excepción si la oficialia es null
 
-                // Obtenemos el tipo de juicio para vincularlo con la carpeta:
-                TipoJuicio tipoJuicioPadre = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
-                                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
-                                                demanda.tipoJuicioPadre().toString()));
+                // Busca el tipoJuicio por id, si no lo encuentra lanza una excepción.
+                TipoJuicio tipoJuicioPadre = getTipoJuicioById(demanda.tipoJuicioPadre()); 
+                TipoJuicio tipoJuicio = getTipoJuicioById(demanda.tipoJuicio());
 
-                TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicio())
-                                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
-                                                demanda.tipoJuicioPadre().toString()));
-
-                // OBTENER NUM EXPEDIENTE CON BASE AL TIPO JUICIO SELECCIONADO
-                List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
-                                .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicioPadre)).toList();
-
-                Juzgado juzgadoPorJuicio = juzgadoService.getJuzgado(tipoJuicioPadre, TipoCarpeta.DEMANDA,
-                                juzgadosRelacionados);
+                 // Obtiene los juzgados relacionados con la oficialia.
+                List<Juzgado> juzgadosRelacionados = getJuzgadosRelacionados(oficialia.getId(), tipoJuicio);
+                                                                                                            
+                Juzgado juzgadoPorJuicio = juzgadoService.getJuzgado(tipoJuicioPadre, TipoCarpeta.DEMANDA, juzgadosRelacionados);
 
                 String expediente = tipoJuicio.getTipoCausa() != null
-                                ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), juzgadoPorJuicio,
-                                                TipoCarpeta.DEMANDA)
+                                ? generateNumExpedientePenal(tipoJuicio.getTipoCausa(), juzgadoPorJuicio, TipoCarpeta.DEMANDA)
                                 : null;
 
                 // Definición de carpeta.
-                Carpeta carpeta = new Carpeta()
-                                .setFolio(getFolio("D"))
-                                .setTipoCarpeta(TipoCarpeta.DEMANDA)
-                                .setEstatus(EstadoCarpeta.CAPTURA)
-                                .setTipoJuicio(tipoJuicioPadre)
-                                .setSelloEstatus(SelloEstatus.VALIDO)
-                                .setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(persona)
-                                .setExpediente(expediente)
-                                .setJuzgado(juzgadoPorJuicio);
-
-                carpeta = carpetaRepository.save(carpeta);
+                Carpeta carpeta = crearCarpeta(tipoJuicio, juzgadoPorJuicio, getFolio("D"), TipoCarpeta.DEMANDA,
+                                expediente, persona);
 
                 // Seteamos todos los datos exclusivos de penal:
                 DocumentoData data = new DocumentoData()
@@ -370,13 +320,8 @@ public class DocumentoService {
                                 .setTipoSolAudiencia(demanda.tipoSolAudiencia());
 
                 // Creación del documento.
-                Documento documento = new Documento()
-                                .setCarpeta(carpeta)
-                                .setFechaAsignacion(LocalDateTime.now())
-                                .setData(data)
-                                .setPersona(persona);
-                documento = documentoRepository.save(documento);
-
+                Documento documento = crearDocumento(carpeta, data, persona);
+                
                 // Creación de participantes :promovente, victima, imputado, ministerio y
                 // tercero involucrado:
                 PersonaDocumentoItemRecord promovente = new PersonaDocumentoItemRecord(
@@ -499,10 +444,9 @@ public class DocumentoService {
                                 .orElseThrow(() -> new NotFoundException("Tipo de audiencia no encontrada",
                                                 demanda.tipoAudiencia().toString()));
 
-                TipoJuicio tipoJuicio = tipoJuicioRepository.findById(demanda.tipoJuicioPadre())
-                                .orElseThrow(
-                                                () -> new NotFoundException("Tipo de juicio no encontrado",
-                                                                demanda.tipoJuicioPadre().toString()));
+                TipoJuicio tipoJuicio = getTipoJuicioById(demanda.tipoJuicioPadre()); // Busca el tipoJuicio por id, si
+                                                                                      // no lo encuentra lanza una
+                                                                                      // excepción.
 
                 if (TipoJuzgadoPenal.ENJUICIAMIENTO.equals(demanda.tipoJuzgado())) {
                         // logica para asignar el juez que selecciono
@@ -794,43 +738,40 @@ public class DocumentoService {
         @Transactional
         public DocumentoRecord createExhorto(DocumentoExhortoRecord documentoExhortoRecord) {
                 Persona auditor = personaService.getAuditor();
-                Carpeta carpeta = new Carpeta();
-                Documento documento = new Documento();
-
                 Oficialia oficialia = auditor.getOficialia();
-                if (oficialia == null) {
-                        throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
-                                        "persona.getOficialia()");
-                }
+
+                validarOficialia(oficialia); // Lanza una excepción si la oficialia es null
+
                 List<Juzgado> juzgadosRelacionadosExhorto = juzgadoRepository
                                 .findJuzgadoExhortoByOficialiaId(oficialia.getId());
-
-                carpeta.setEstatus(EstadoCarpeta.CAPTURA);
-                carpeta.setFolio(getFolio("E"));
-                carpeta.setTipoCarpeta(TipoCarpeta.EXHORTO);
-
                 TipoJuicio tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase("EXHORTO")
-                                .orElseThrow(
-                                                () -> new NotFoundException(
-                                                                "Tipo de juicio no encontrado con nombre: Exhorto",
-                                                                "EXHORTO"));
-                carpeta.setTipoJuicio(tipoJuicio);
-                carpeta.setJuzgado(
-                                juzgadoService.getJuzgado(tipoJuicio, carpeta.getTipoCarpeta(),
-                                                juzgadosRelacionadosExhorto));
-                carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.EXHORTO));
-                carpeta.setSelloEstatus(SelloEstatus.VALIDO);
-                carpeta.setFechaAsignacion(LocalDateTime.now());
-                carpeta.setPersona(auditor);
+                                .orElseThrow(() -> new NotFoundException(
+                                                "Tipo de juicio no encontrado con nombre: Exhorto",
+                                                "EXHORTO"));
+                Juzgado juzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.EXHORTO,
+                                juzgadosRelacionadosExhorto);
+
+                Carpeta carpeta = new Carpeta()
+                                .setEstatus(EstadoCarpeta.CAPTURA)
+                                .setFolio(getFolio("E"))
+                                .setTipoCarpeta(TipoCarpeta.EXHORTO)
+                                .setTipoJuicio(tipoJuicio)
+                                .setJuzgado(juzgadoExhorto)
+                                .setExpediente(generateNumExpediente(juzgadoExhorto, TipoCarpeta.EXHORTO))
+                                .setSelloEstatus(SelloEstatus.VALIDO)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(auditor);
                 carpeta = carpetaRepository.save(carpeta);
 
-                DocumentoData data = new DocumentoData();
-                data.setExhortoObservaciones(documentoExhortoRecord.observaciones());
-                data.setExhortoProcedencia(documentoExhortoRecord.procedencia());
-                documento.setData(data);
-                documento.setCarpeta(carpeta);
-                documento.setPersona(auditor);
-                documento.setFechaAsignacion(LocalDateTime.now());
+                DocumentoData data = new DocumentoData()
+                                .setExhortoObservaciones(documentoExhortoRecord.observaciones())
+                                .setExhortoProcedencia(documentoExhortoRecord.procedencia());
+
+                Documento documento = new Documento()
+                                .setData(data)
+                                .setCarpeta(carpeta)
+                                .setPersona(auditor)
+                                .setFechaAsignacion(LocalDateTime.now());
                 documento = documentoRepository.save(documento);
 
                 addAnexos(documentoExhortoRecord.anexos(), documento);
@@ -859,10 +800,7 @@ public class DocumentoService {
                 Persona auditor = personaService.getAuditor();
 
                 Oficialia oficialia = auditor.getOficialia();
-                if (oficialia == null) {
-                        throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
-                                        "persona.getOficialia()");
-                }
+                validarOficialia(oficialia); // Lanza una excepción si la oficialia es null
 
                 Documento documento = new Documento();
                 Carpeta carpeta = new Carpeta();
@@ -872,9 +810,10 @@ public class DocumentoService {
                                                 () -> new NotFoundException(CARPETA_NOT_FOUND,
                                                                 "carpetaId: " + apelacionRecord.carpetaId()));
 
-                TipoJuicio tipoJuicio = tipoJuicioRepository.findById(carpetaParent.getTipoJuicio().getId())
-                                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
-                                                "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId()));
+                TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId()); // Busca el tipoJuicio
+                                                                                                  // por id, si no lo
+                                                                                                  // encuentra lanza una
+                                                                                                  // excepción.
 
                 List<Juzgado> juzgadosRelacionados = juzgadoRepository.findSalaByOficialiaId(oficialia.getId())
                                 .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
@@ -1968,4 +1907,78 @@ public class DocumentoService {
 
         }
 
+        private void validarOficialia(Oficialia oficialia) {
+                if (oficialia == null) {
+                        throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
+                                        "persona.getOficialia()");
+                }
+        }
+
+        private TipoJuicio getTipoJuicioById(Integer tipoJuicioId) {
+
+                return tipoJuicioRepository.findById(tipoJuicioId)
+                                .orElseThrow(() -> new NotFoundException(TIPO_JUICIO_NOT_FOUND,
+                                                tipoJuicioId.toString()));
+        }
+
+        private List<Juzgado> getJuzgadosRelacionados(Integer oficialiaId, TipoJuicio tipoJuicio) {
+                return juzgadoRepository.findJuzgadoByOficialiaIdAndTipoJuicio(oficialiaId, tipoJuicio.getId());
+        }
+
+        private Juzgado getJuzgadoDemanda(Juzgado juzgadoConexidad, List<Juzgado> juzgadosRelacionados,
+                        TipoJuicio tipoJuicio) {
+
+                if (juzgadoConexidad != null) {
+                        if (!juzgadosRelacionados.contains(juzgadoConexidad)) {
+                                throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
+                                                "juzgadoConexidad");
+                        }
+                        return juzgadoConexidad;
+                } else {
+                        Juzgado juzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.DEMANDA,
+                                        juzgadosRelacionados);
+                        if (!juzgadosRelacionados.contains(juzgadoDemanda)) {
+                                throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
+                                                "juzgadoPorJuicio");
+                        }
+                        return juzgadoDemanda;
+                }
+        }
+
+        private void handleOralidadFamiliarFlow(TipoJuicio tipoJuicio, DocumentoSaveRecord documentoRecord,
+                        Carpeta carpeta, Documento documento) {
+                if ("FAMILIAR".contains(tipoJuicio.getMateria().getNombre().toUpperCase())
+                                && tipoJuicio.getNombre().toUpperCase().contains("ORAL")) {
+                        crearAudienciaOralidad(documentoRecord, carpeta, tipoJuicio);
+                        if (documentoRecord.general().getTieneAbogado() == 0) {
+                                sendEmailFamiliar(documentoRecord, documento, carpeta, tipoJuicio);
+                        }
+                }
+        }
+
+        private Carpeta crearCarpeta(TipoJuicio tipoJuicio, Juzgado juzgado, String folio, TipoCarpeta tipoCarpeta,
+                        String expediente, Persona personaLogueada) {
+                Carpeta carpeta = new Carpeta()
+                                .setTipoJuicio(tipoJuicio)
+                                .setJuzgado(juzgado)
+                                .setFolio(folio)
+                                .setTipoCarpeta(tipoCarpeta)
+                                .setExpediente(expediente)
+                                .setEstatus(EstadoCarpeta.CAPTURA)
+                                .setSelloEstatus(SelloEstatus.VALIDO)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(personaLogueada);
+
+                return carpetaRepository.save(carpeta);
+        }
+
+        private Documento crearDocumento(Carpeta carpeta, DocumentoData documentoData, Persona persona) {
+                Documento documento = new Documento()
+                                .setCarpeta(carpeta)
+                                .setData(documentoData)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona);
+
+                return documentoRepository.save(documento);
+        }
 }

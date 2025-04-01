@@ -236,7 +236,7 @@ class DocumentoServiceTest {
         juzgadoMock.setTipoJuicios(List.of(tipoJuicio));
 
         List<Juzgado> juzgadosRelacionados = Arrays.asList(juzgadoMock);
-        given(juzgadoRepository.findJuzgadoByOficialiaId(oficialiaMock.getId())).willReturn(juzgadosRelacionados);
+        given(juzgadoRepository.findJuzgadoByOficialiaIdAndTipoJuicio(oficialiaMock.getId(), tipoJuicio.getId())).willReturn(juzgadosRelacionados);
         given(juzgadoService.getConexidadJuzgado(any(), any(), any())).willReturn(juzgadoMock);
 
         TipoPartes actorParte = mock(TipoPartes.class);
