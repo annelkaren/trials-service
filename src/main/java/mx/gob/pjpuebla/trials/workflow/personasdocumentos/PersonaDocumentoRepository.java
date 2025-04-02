@@ -174,6 +174,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
         WHERE (lower(pd.correoElectronico) = :username
         OR lower(pd.correoNotificacion) = :username)
         AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+        GROUP BY (ca.id, ca.expediente, juz.nombre)
         ORDER BY juz.nombre, ca.expediente
         """)
     List<LitiganteExpedientesRecord> findAllByUsername(String username);

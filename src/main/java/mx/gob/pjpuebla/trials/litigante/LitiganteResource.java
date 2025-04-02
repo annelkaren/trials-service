@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +42,7 @@ public class LitiganteResource {
     }
 
     @GetMapping(value = "/acuerdoSentencia", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ExpedienteAutorizadoRecord getAcuerdosSentencias(){
+    public ExpedienteAutorizadoRecord getAcuerdosSentencias() {
         return litiganteService.getAcuerdosSentencias();
     }
 
@@ -58,8 +59,8 @@ public class LitiganteResource {
         return this.litiganteService.getExpedientesAudienciasRelacionados(pageable);
     }
 
-    @GetMapping("/acuerdos")
-    public ResponseEntity<ExpedienteResponseRecord> getExpedienteDetails(Pageable pageable) {
+    @GetMapping("/acuerdos/{carpetaId}")
+    public ResponseEntity<ExpedienteResponseRecord> getExpedienteDetails(Pageable pageable, @PathVariable Integer carpetaId) {
         ExpedienteResponseRecord expedienteResponse = litiganteService.getExpedienteDetails();
         return ResponseEntity.ok(expedienteResponse);
     }
