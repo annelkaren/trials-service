@@ -2,25 +2,29 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
-import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jwt.Jwt;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
@@ -42,6 +46,7 @@ public class LitiganteService {
     private final NotificacionRepository notificacionRepository;
     private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
     private final DocumentoRepository documentoRepository;
+    private final DocumentoContenidoRepository documentoContenidoRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -223,4 +228,11 @@ public class LitiganteService {
         });
     }
 
+    public DocumentoPromocionRecord getPromocionById(Integer promocionId) {
+        Documento promocion = documentoRepository.findById(promocionId)
+                .orElseThrow(() -> new NotFoundException("Promoción no encontrada", promocionId.toString()));
+        DocumentoContenido contenido = documentoContenidoRepository.findByDocumentoId(promocionId)
+                .orElseThrow(() -> new NotFoundException("Documento no encontrada", promocionId.toString()));
+        return new DocumentoPromocionRecord(promocion.getCarpeta().getId(), TipoPromocion.CORREO_ELECTRONICO, null, contenido.getTexto());
+    }
 }
