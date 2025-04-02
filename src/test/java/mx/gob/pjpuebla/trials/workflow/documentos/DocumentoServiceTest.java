@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.persistence.EntityNotFoundException;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
@@ -26,8 +28,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;

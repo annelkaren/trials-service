@@ -1,5 +1,10 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;

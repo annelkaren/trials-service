@@ -1,12 +1,12 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.sedes;
+package mx.gob.pjpuebla.trials.core.catalogos.sedes.records;
 
 public record SedeDomiciliosRecord(
         Integer sedeId,

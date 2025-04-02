@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
@@ -10,9 +13,6 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
-import mx.gob.pjpuebla.trials.core.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRecordResponse;
-import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
