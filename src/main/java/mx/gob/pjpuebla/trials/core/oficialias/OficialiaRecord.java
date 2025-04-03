@@ -2,7 +2,7 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 

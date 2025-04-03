@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
@@ -23,6 +21,8 @@ import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;

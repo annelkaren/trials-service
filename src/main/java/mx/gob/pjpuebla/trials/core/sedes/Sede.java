@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.catalogos.sedes;
+package mx.gob.pjpuebla.trials.core.sedes;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;

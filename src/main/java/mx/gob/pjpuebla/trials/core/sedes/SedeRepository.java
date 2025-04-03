@@ -1,8 +1,8 @@
-package mx.gob.pjpuebla.trials.core.catalogos.sedes;
+package mx.gob.pjpuebla.trials.core.sedes;
 
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +30,7 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
      */
     @Query("""
             SELECT
-            new mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord(s.id, s.version, s.nombre, s.estado, s.tipo, s.telefono, s.extension,
+            new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord(s.id, s.version, s.nombre, s.estado, s.tipo, s.telefono, s.extension,
             new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
             new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia))
@@ -48,7 +48,7 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
      * @return Un {@link Page} de {@link SedeDomiciliosRecord} con los resultados de la consulta.
      */
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord(
+            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord(
                 s.id,  s.nombre, d.calle,d.interior, d.exterior, d.colonia, d.codigoPostal, d.municipio,d.estadoRepublica,
                 d.referencia, d.localidad
             )
@@ -74,7 +74,7 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
      * @return Un {@link Page} de {@link SedeDomicilioRecordResponse} con los resultados de la consulta.
      */
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse(
+            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse(
                 s.id, s.nombre, s.estado,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
                     d.id, d.calle, d.exterior, d.interior,

@@ -1,15 +1,15 @@
-package mx.gob.pjpuebla.trials.core.catalogos.sedes;
+package mx.gob.pjpuebla.trials.core.sedes;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;

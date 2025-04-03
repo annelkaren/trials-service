@@ -1,15 +1,14 @@
-package mx.gob.pjpuebla.trials.core.instituciones;
+package mx.gob.pjpuebla.trials.core.sedes.records;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record InstitucionRecord(
+public record SedeRecordResponse(
         Integer id,
         String nombre,
-        String domicilio,
-        String telefono,
-        String tipoInstitucion
+        Estado estado
 ) implements Serializable {
 }

@@ -2,13 +2,13 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeRepository;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.sedes.Sede;
+import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRepository;

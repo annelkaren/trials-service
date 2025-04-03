@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.catalogos.sedes.records;
+package mx.gob.pjpuebla.trials.core.sedes.records;
 
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;

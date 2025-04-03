@@ -1,12 +1,12 @@
-package mx.gob.pjpuebla.trials.core.catalogos.sedes;
+package mx.gob.pjpuebla.trials.core.sedes;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

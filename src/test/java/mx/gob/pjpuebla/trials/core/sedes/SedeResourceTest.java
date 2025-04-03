@@ -1,16 +1,13 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
 import jakarta.ws.rs.core.MediaType;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.Sede;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeResource;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.SedeService;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomicilioRecordResponse;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeDomiciliosRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecord;
-import mx.gob.pjpuebla.trials.core.catalogos.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
