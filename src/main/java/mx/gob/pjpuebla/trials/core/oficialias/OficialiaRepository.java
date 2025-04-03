@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +17,7 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
 
     @Query("""
             SELECT
-            new mx.gob.pjpuebla.trials.core.oficialias.OficialiaRecord(o.id, o.version, o.nombre, o.responsable, o.estado,
+            new mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord(o.id, o.version, o.nombre, o.responsable, o.estado,
                 new mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord(t.id, t.nombre),
                 new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse(s.id, s.nombre, s.estado)
             )

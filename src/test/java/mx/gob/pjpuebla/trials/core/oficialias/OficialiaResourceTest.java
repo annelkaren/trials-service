@@ -11,6 +11,8 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;

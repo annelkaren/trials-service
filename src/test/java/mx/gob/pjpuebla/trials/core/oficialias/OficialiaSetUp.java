@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialia;

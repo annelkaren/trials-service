@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.oficialias;
+package mx.gob.pjpuebla.trials.core.oficialias.records;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

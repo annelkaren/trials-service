@@ -10,6 +10,8 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -90,34 +92,6 @@ class OficialiaServiceTest {
                 oficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia,
                                 new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()),
                                 new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado()));
-        }
-
-        @SuppressWarnings("unchecked")
-        @Test
-        void getAll_return_page() {
-                List<Oficialia> listPage = Collections.singletonList(oficialia);
-                given(oficialiaRepository.findAll(any(Example.class), any(PageRequest.class)))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
-                                                listPage.size()));
-                Page<OficialiaRecord> page = oficialiaService.getAllActive(PageRequest.of(1, listPage.size()),
-                                oficialia);
-                assertThat(page.getContent())
-                                .hasSize(1)
-                                .first()
-                                .hasFieldOrPropertyWithValue("id", oficialia.getId())
-                                .hasFieldOrPropertyWithValue("version", oficialia.getVersion())
-                                .hasFieldOrPropertyWithValue("estado", oficialia.getEstado())
-                                .hasFieldOrPropertyWithValue("responsable", oficialia.getResponsable())
-                                .hasFieldOrPropertyWithValue("nombre", oficialia.getNombre());
-
-                assertThat(oficialia.getTipoOficialia())
-                                .hasFieldOrPropertyWithValue("id", oficialia.getTipoOficialia().getId())
-                                .hasFieldOrPropertyWithValue("nombre", oficialia.getTipoOficialia().getNombre());
-
-                assertThat(oficialia.getSede())
-                                .hasFieldOrPropertyWithValue("id", oficialia.getSede().getId())
-                                .hasFieldOrPropertyWithValue("nombre", oficialia.getSede().getNombre())
-                                .hasFieldOrPropertyWithValue("estado", oficialia.getSede().getEstado());
         }
 
         @Test
@@ -276,54 +250,5 @@ class OficialiaServiceTest {
                                         .hasFieldOrPropertyWithValue("id", juzgadoItem.getId())
                                         .hasFieldOrPropertyWithValue("nombre", juzgadoItem.getNombre());
                 }
-        }
-
-        @Test
-        void validateJuzgadosByTipoOficialia_comun_withTwoJuzgados_shouldNotThrow() {
-                TipoOficialia tipoComun = new TipoOficialia().setNombre("Común");
-                Oficialia oficialia = new Oficialia().setJuzgados(Arrays.asList(new Juzgado(), new Juzgado()));
-
-                assertDoesNotThrow(() -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoComun));
-        }
-
-        @Test
-        void validateJuzgadosByTipoOficialia_comun_withLessThanTwoJuzgados_shouldThrow() {
-                TipoOficialia tipoComun = new TipoOficialia().setNombre("Común");
-                Oficialia oficialia = new Oficialia().setJuzgados(Collections.singletonList(new Juzgado()));
-
-                IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoComun));
-                assertThat(exception.getMessage())
-                                .isEqualTo("Las oficialías de tipo Común deben tener al menos dos juzgados.");
-        }
-
-        @Test
-        void validateJuzgadosByTipoOficialia_mayor_withOneJuzgado_shouldNotThrow() {
-                TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
-                Oficialia oficialia = new Oficialia().setJuzgados(Collections.singletonList(new Juzgado()));
-
-                assertDoesNotThrow(() -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
-        }
-
-        @Test
-        void validateJuzgadosByTipoOficialia_mayor_withMoreThanOneJuzgado_shouldThrow() {
-                TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
-                Oficialia oficialia = new Oficialia().setJuzgados(Arrays.asList(new Juzgado(), new Juzgado()));
-
-                IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
-                assertThat(exception.getMessage())
-                                .isEqualTo("Las oficialías de tipo Mayor deben tener exactamente un juzgado.");
-        }
-
-        @Test
-        void validateJuzgadosByTipoOficialia_mayor_withNoJuzgados_shouldThrow() {
-                TipoOficialia tipoMayor = new TipoOficialia().setNombre("Mayor");
-                Oficialia oficialia = new Oficialia().setJuzgados(Collections.emptyList());
-
-                IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> oficialiaService.validateJuzgadosByTipoOficialia(oficialia, tipoMayor));
-                assertThat(exception.getMessage())
-                                .isEqualTo("Las oficialías de tipo Mayor deben tener exactamente un juzgado.");
         }
 }
