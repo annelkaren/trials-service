@@ -123,4 +123,9 @@ public class PersonaResource {
         return personaService.findAllMensajeros();
     }
 
+    @GetMapping("/centroTrabajo/login")
+    public List<CentroTrabajoRecord> getCentroTrabajoPersonaLogueada() {
+        return personaService.findCentroTrabajoByPersonCurrent();
+    }
+
 }

@@ -13,10 +13,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -26,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -76,6 +79,7 @@ public class DigitalizacionService {
 
     private final PersonaService personaService; // Servicio de persona
     private final DocumentoRepository documentoRepository;
+    private final CarpetaRepository carpetaRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
@@ -100,23 +104,23 @@ public class DigitalizacionService {
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
-        if (documento.getTipoDocumento() == TipoDocumento.OFICIO) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO)) {
             return manejarOficio(documento, year, juzgado, juzgado);
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.SENTENCIA_PUBLICA) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.SENTENCIA_PUBLICA)) {
             return crearDirectorios(
                     Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0],
                             TipoDocumento.SENTENCIA_PUBLICA.getEtiqueta(), documento.getId().toString()));
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.DOCUMENTO_IDENTIFICACION) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.DOCUMENTO_IDENTIFICACION)) {
             return crearDirectorios(
                     Paths.get(basePath, year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0], "Audiencias",
                             this.audienciaId.toString(), "Asistencia"));
         }
 
-        if (documento.getTipoDocumento() == TipoDocumento.PRUEBA_AUDIENCIA) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PRUEBA_AUDIENCIA)) {
             // Solo mientras se define la audiencia a la que corresponde
             Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
             String numAudiencia = String.valueOf(audiencia.getId());
@@ -140,11 +144,11 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        boolean isOficio = (documento.getTipoDocumento() != null && documento.getTipoDocumento().equals(TipoDocumento.OFICIO));
+        boolean isOficio = Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO);
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
-          
+
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
             if (documentoDetalle != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
@@ -171,6 +175,15 @@ public class DigitalizacionService {
 
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         documento.setRuta(nombreUnicoArchivo);
+
+        //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
+        if (documento.getTipoDocumento() != null) {
+            documento.setEstatus(EstadoCarpeta.CAPTURA);
+        } else {
+            documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
+            carpetaRepository.save(documento.getCarpeta());
+        }
+
         documentoRepository.save(documento);
 
         return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
@@ -261,8 +274,8 @@ public class DigitalizacionService {
         String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
 
         switch (carpeta.getTipoCarpeta()) {
-            case DEMANDA:
-            case APELACION:
+            case DEMANDA,
+                APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(

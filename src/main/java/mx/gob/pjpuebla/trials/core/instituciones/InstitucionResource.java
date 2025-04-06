@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -63,8 +66,7 @@ public class InstitucionResource {
     }
 
     @GetMapping("/tribunales")
-    public Page<InstitucionRecord> getAllSalas(@RequestParam(value = "nombre", required = false) String nombre) {
-        Institucion example = new Institucion().setNombre(nombre).setTipoInstitucion("Tribunal Federal");
-        return this.institucionService.getAll(example, Pageable.unpaged());
+    public List<InstitucionRecord> getByTipoInstitucion() {
+        return this.institucionService.findByTipoInstitucion("Tribunal Federal");
     }
 }

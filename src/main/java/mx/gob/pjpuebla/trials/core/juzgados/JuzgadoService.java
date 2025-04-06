@@ -249,10 +249,6 @@ public class JuzgadoService {
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                 juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
-         for (Juzgado juzgado : juzgados) {
-            System.out.println("NOMBRE DEL JUZGADO" + juzgado.getNombre());
-        }
-
         if (juzgados.isEmpty()) {
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta, juzgadosRelacionados);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,

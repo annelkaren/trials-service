@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 
@@ -27,6 +29,7 @@ public class MovimientoService {
     private final MovimientoRepository movimientoRepository;
     private final CarpetaRepository carpetaRepository;
     private final PersonaService personaService;
+    private final RoleService roleService;
 
     public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid) {
         UUID uuidMov = UUID.fromString(uuid);
@@ -110,8 +113,24 @@ public class MovimientoService {
         Carpeta carpeta = carpetaRepository.findById(motivoRecord.documentoId())
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
                         "carpetaId: " + motivoRecord.documentoId()));
-        createMovimento(carpeta, null, currentUser, motivoRecord.motivo(), EstadoCarpeta.DEVUELTO.name());
-        carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+
+       
+        if (motivoRecord.devueltoOficialia()) {
+           
+            createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
+                    EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
+            carpetaRepository.actualizarEstatus(carpeta.getId(),
+                    EstadoCarpeta.DEVUELTO_A_OFICIALIA);
+           
+        } else {
+           
+            createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
+                    EstadoCarpeta.DEVUELTO.name());
+            carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+           
+        }
+
+
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
