@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.materias.Materia;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -13,6 +11,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
@@ -27,7 +27,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +46,7 @@ public class LitiganteService {
     private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
     private final DocumentoRepository documentoRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -170,39 +170,20 @@ public class LitiganteService {
         return partes.length == 2 ? partes : new String[]{"", ""};
     }
 
-    public ExpedienteResponseRecord getExpedienteDetails() {
-        String username = getLitiganteUsername();
-
-        LitiganteExpedientesRecord carpeta = personaDocumentoRepository.findByUsername(username, "", Pageable.unpaged())
-                .getContent().stream().findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Expediente no encontrado"));
-
-        List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
-                carpeta.id(),
-                Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA));
-
-        List<DocumentoResponseRecord> documentoResponseRecords = documentos.stream()
-                .map(doc -> {
-                    LocalDateTime fechaYHora = notificacionesDetallesRepository.findFechaYHoraByDocumentoId(doc);
-
-                    return new DocumentoResponseRecord(
-                            String.valueOf(doc.getId()),
-                            fechaYHora.toLocalDate(),
-                            fechaYHora.toLocalTime(),
-                            "/api/litigante/documento/" + doc.getId());
-                })
-                .collect(Collectors.toList());
-
-        Long notificacionesPendientes = notificacionesDetallesRepository.countNotificacionesPorLeer(carpeta.id(),
-                username);
-
-        return new ExpedienteResponseRecord(
-                carpeta.numeroExpediente(),
-                carpeta.materia(),
-                carpeta.tipoJuicio(),
-                carpeta.juzgado(),
-                notificacionesPendientes,
-                documentoResponseRecords);
+    public Page<DocumentoResponseRecord>  getExpedienteDetails(Integer carpetaId, Pageable pageable) {
+        Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
+                carpetaId,
+                Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA), pageable);
+        List<DocumentoResponseRecord> list = new ArrayList<>();
+        for(Documento doc: documentos.getContent()){
+            DocumentoDetalle detalle = documentoDetalleRepository.findByDocumentoId(doc.getId()).get();
+            list.add(new DocumentoResponseRecord(
+                    String.valueOf(doc.getId()),
+                    detalle.getFechaResolucion(),
+                    doc.getData().getRubros().toString().replace("[", "").replace("]",""),
+                    "/api/litigante/documento/" + doc.getId()));
+        }
+        return new PageImpl<>(list, pageable, documentos.getTotalElements());
     }
 
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {

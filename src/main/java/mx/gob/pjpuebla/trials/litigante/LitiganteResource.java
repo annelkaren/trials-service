@@ -59,9 +59,8 @@ public class LitiganteResource {
     }
 
     @GetMapping("/acuerdos/{carpetaId}")
-    public ResponseEntity<ExpedienteResponseRecord> getExpedienteDetails(Pageable pageable, @PathVariable Integer carpetaId) {
-        ExpedienteResponseRecord expedienteResponse = litiganteService.getExpedienteDetails();
-        return ResponseEntity.ok(expedienteResponse);
+    public Page<DocumentoResponseRecord> getExpedienteDetails(Pageable pageable, @PathVariable Integer carpetaId) {
+        return litiganteService.getExpedienteDetails(carpetaId, pageable);
     }
 
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
