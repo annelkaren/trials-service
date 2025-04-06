@@ -117,20 +117,11 @@ class LitiganteResourceTest {
                 DocumentoResponseRecord documentoResponse = new DocumentoResponseRecord(
                         "001",
                         LocalDate.of(2025, 1, 1),
-                        LocalTime.of(10, 0, 0),
+                        "",
                         "/archivos/documento-prueba.pdf"
                 );
 
-                ExpedienteResponseRecord expedienteResponse = new ExpedienteResponseRecord(
-                        "000001/2025", 
-                        "MERCANTIL", 
-                        "Juicio Ordinario Mercantil", 
-                        "Juzgado 5 Mercantil", 
-                        2L, 
-                        List.of(documentoResponse)
-                );
-
-                given(litiganteService.getExpedienteDetails()).willReturn(expedienteResponse);
+                given(litiganteService.getExpedienteDetails(any(Integer.class), any(Pageable.class))).willReturn(new PageImpl<>(Collections.singletonList(documentoResponse)));
 
                 mockMvc.perform(
                         get("/api/litigante/acuerdos")
