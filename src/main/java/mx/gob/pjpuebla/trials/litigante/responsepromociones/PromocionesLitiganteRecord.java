@@ -1,10 +1,18 @@
 package mx.gob.pjpuebla.trials.litigante.responsepromociones;
 
 import java.io.Serializable;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public record PromocionesLitiganteRecord(
+        Integer id,
         String numeroExpediente,
-        List<PromocionesElectronicasLitigante> promocionesElectronicasLitigante
+        String numeroPromocionE,
+        String usuarioOrigen,
+        String nombreArchivo,
+        LocalDate fechaSubida,
+        LocalTime horaSubida,
+        String rutaArchivo,
+        String juzgado
 ) implements Serializable {
 }

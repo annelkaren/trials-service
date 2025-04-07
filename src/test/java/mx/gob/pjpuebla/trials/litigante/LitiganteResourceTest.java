@@ -4,8 +4,8 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,11 +47,12 @@ class LitiganteResourceTest {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
                 "", "", "Juzgado 5 Mercantil TEST", 0L);
-        given(litiganteService.getExpedientesRelacionados(any(Pageable.class)))
+        given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
 
         mockMvc.perform(
                 get("/api/litigante/expedientes")
+                        .param("key", "")
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
@@ -85,11 +86,12 @@ class LitiganteResourceTest {
 
     @Test
     void getPromocionesLitigante() throws Exception {
-        PromocionAutorizadaRecord promocionRecord = new PromocionAutorizadaRecord(Collections.emptyList());
-        Page<PromocionAutorizadaRecord> promocionesPage = new PageImpl<>(Collections.singletonList(promocionRecord));
+        PromocionesLitiganteRecord promocionRecord = new PromocionesLitiganteRecord(0, "", "", "", "", null, null,"","");
+        Page<PromocionesLitiganteRecord> promocionesPage = new PageImpl<>(Collections.singletonList(promocionRecord));
 
-        given(litiganteService.getPromocionesLitigante(any(Pageable.class))).willReturn(promocionesPage);
+        given(litiganteService.getPromocionesLitigante(any(), any(Pageable.class))).willReturn(promocionesPage);
         mockMvc.perform(get("/api/litigante/promociones")
+                        .param("key", "")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -115,20 +117,11 @@ class LitiganteResourceTest {
                 DocumentoResponseRecord documentoResponse = new DocumentoResponseRecord(
                         "001",
                         LocalDate.of(2025, 1, 1),
-                        LocalTime.of(10, 0, 0),
+                        "",
                         "/archivos/documento-prueba.pdf"
                 );
 
-                ExpedienteResponseRecord expedienteResponse = new ExpedienteResponseRecord(
-                        "000001/2025", 
-                        "MERCANTIL", 
-                        "Juicio Ordinario Mercantil", 
-                        "Juzgado 5 Mercantil", 
-                        2L, 
-                        List.of(documentoResponse)
-                );
-
-                given(litiganteService.getExpedienteDetails()).willReturn(expedienteResponse);
+                given(litiganteService.getExpedienteDetails(any(Integer.class), any(Pageable.class))).willReturn(new PageImpl<>(Collections.singletonList(documentoResponse)));
 
                 mockMvc.perform(
                         get("/api/litigante/acuerdos")

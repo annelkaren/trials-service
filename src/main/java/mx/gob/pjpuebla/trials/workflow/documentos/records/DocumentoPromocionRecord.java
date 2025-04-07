@@ -9,6 +9,7 @@ public record DocumentoPromocionRecord(
 
         Integer carpetaId,
         TipoPromocion tipoPromocion,
-        List<String> anexos
+        List<String> anexos,
+        String contenido
 ) implements Serializable {
 }
