@@ -565,7 +565,7 @@ class DocumentoServiceTest {
 
         List<String> anexos = List.of("Anexo1", "Anexo2");
         DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.OFICIO,
-                anexos);
+                anexos, null);
         DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord, null);
 
         assertThat(documentoResponse)
@@ -603,7 +603,7 @@ class DocumentoServiceTest {
 
         List<String> anexos = List.of("Anexo1", "Anexo2");
         DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1, TipoPromocion.CORREO_ELECTRONICO,
-                anexos);
+                anexos, null);
         DocumentoPromocionResponseRecord documentoResponse = documentoService.createPromocion(documentoPromocionRecord, multipartFile);
 
         assertThat(documentoResponse)

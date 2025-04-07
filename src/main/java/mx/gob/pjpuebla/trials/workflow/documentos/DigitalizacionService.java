@@ -104,7 +104,7 @@ public class DigitalizacionService {
         Carpeta carpeta = documento.getCarpeta();
 
         // Manejo de tipos de documento
-        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO) ) {
+        if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO)) {
             return manejarOficio(documento, year, juzgado, juzgado);
         }
 
@@ -144,11 +144,11 @@ public class DigitalizacionService {
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
         validarArchivo(file);
         Path rutaArchivo = crearDirectorio(documento);
-        boolean isOficio =  Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO);
+        boolean isOficio = Objects.equals(documento.getTipoDocumento(), TipoDocumento.OFICIO);
         String nombreUnicoArchivo = "";
 
         if (isOficio) {
-          
+
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
             if (documentoDetalle != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
@@ -177,9 +177,9 @@ public class DigitalizacionService {
         documento.setRuta(nombreUnicoArchivo);
 
         //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
-        if(documento.getTipoDocumento() != null ){
+        if (documento.getTipoDocumento() != null) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
-        }else{
+        } else {
             documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
             carpetaRepository.save(documento.getCarpeta());
         }
@@ -274,8 +274,8 @@ public class DigitalizacionService {
         String expediente = construirRutaExpediente(year, juzgado, obtenerDatosExpediente(carpeta.getExpediente())[0]);
 
         switch (carpeta.getTipoCarpeta()) {
-            case DEMANDA:
-            case APELACION:
+            case DEMANDA,
+                APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(
