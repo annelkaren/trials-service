@@ -3,21 +3,20 @@ package mx.gob.pjpuebla.trials.litigante;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,12 +28,20 @@ public class LitiganteResource {
     private final AcuerdoService acuerdoServicePdf;
 
     @GetMapping("/expedientes")
-    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(Pageable pageable) {
-        return this.litiganteService.getExpedientesRelacionados(pageable);
+    public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(
+            @RequestParam String key,
+            Pageable pageable) {
+        key = (key != null) ? key : "";
+        return this.litiganteService.getExpedientesRelacionados(key, pageable);
+    }
+
+    @GetMapping("/expedientes/autocomplete")
+    public List<LitiganteExpedientesRecord> getAllExpedientesRelacionados() {
+        return this.litiganteService.getAllExpedientesRelacionados();
     }
 
     @GetMapping(value = "/acuerdoSentencia", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ExpedienteAutorizadoRecord getAcuerdosSentencias(){
+    public ExpedienteAutorizadoRecord getAcuerdosSentencias() {
         return litiganteService.getAcuerdosSentencias();
     }
 
@@ -51,14 +58,19 @@ public class LitiganteResource {
         return this.litiganteService.getExpedientesAudienciasRelacionados(pageable);
     }
 
-    @GetMapping("/acuerdos")
-    public ResponseEntity<ExpedienteResponseRecord> getExpedienteDetails(Pageable pageable) {
-        ExpedienteResponseRecord expedienteResponse = litiganteService.getExpedienteDetails();
-        return ResponseEntity.ok(expedienteResponse);
-
+    @GetMapping("/acuerdos/{carpetaId}")
+    public Page<DocumentoResponseRecord> getExpedienteDetails(Pageable pageable, @PathVariable Integer carpetaId) {
+        return litiganteService.getExpedienteDetails(carpetaId, pageable);
     }
+
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<PromocionAutorizadaRecord> getPromocionesLitigante(Pageable pageable) {
-        return litiganteService.getPromocionesLitigante(pageable);
+    public Page<PromocionesLitiganteRecord> getPromocionesLitigante(@RequestParam String key, Pageable pageable) {
+        key = (key != null) ? key : "";
+        return litiganteService.getPromocionesLitigante(key, pageable);
+    }
+
+    @GetMapping(value = "/promociones/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DocumentoPromocionRecord getPromocionById(@PathVariable Integer id) {
+        return litiganteService.getPromocionById(id);
     }
 }
