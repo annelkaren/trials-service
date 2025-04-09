@@ -386,10 +386,11 @@ public class NotificacionService {
 
         Page<NotificacionesDetalles> notificacionesDetallesPage = notificacionesDetallesRepository
                 .findByNotificacionDocumentoId(idNotificacion, pageable);
-
+        /*
         if (notificacionesDetallesPage.isEmpty()) {
             throw new NotFoundException("Notificacion Detalle no encontrado", "id");
         }
+         */
 
         return notificacionesDetallesPage.map(detalle -> new AcuerdoNotificacionesRecord(
                 detalle.getNotificacion().getId(),
