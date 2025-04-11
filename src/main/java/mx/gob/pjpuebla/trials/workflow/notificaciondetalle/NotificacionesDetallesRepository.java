@@ -50,9 +50,10 @@ public interface NotificacionesDetallesRepository extends JpaRepository<Notifica
             AND (d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.ACUERDO
                 OR d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.SENTENCIA)
             """)
-    List<NotificacionesDetalles> getAllByUsername(
+    Page<NotificacionesDetalles> getAllByUsername(
             @Param("username") String username,
-            @Param("tipoNotificacion") TipoNotificacion tipoNotificacion
+            @Param("tipoNotificacion") TipoNotificacion tipoNotificacion,
+            Pageable pageable
     );
 
     @Query("""
