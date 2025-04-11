@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -75,52 +76,35 @@ public class LitiganteService {
         return jwt.getClaims().get("preferred_username").toString();
     }
 
-    public ExpedienteAutorizadoRecord getAcuerdosSentencias() {
+    public Page<AcuerdoSentenciaRecord> getAcuerdosSentencias(Pageable pageable) {
         // Obtiene correo de persona litigante
         String userName = getLitiganteUsername();
 
         // Obtiene Notificaciones desde Notificaciones Detalles
-        List<NotificacionesDetalles> notificacionesDetallesList = notificacionesDetallesRepository.getAllByUsername(
+        Page<NotificacionesDetalles> page = notificacionesDetallesRepository.getAllByUsername(
                 userName,
-                TipoNotificacion.CORREO_ELECTRONICO);
-        if (notificacionesDetallesList.isEmpty())
-            throw new NotFoundException("Acuerdos-Sentencias no encontradas para el usuario", userName);
+                TipoNotificacion.CORREO_ELECTRONICO, pageable);
 
-        // Agrupa NotificacionesDetalles por numero de expediente
-        Map<String, List<NotificacionesDetalles>> groupExpedientes = notificacionesDetallesList.stream()
-                .filter(nd -> nd.getNotificacion().getDocumento().getCarpeta() != null)
-                .collect(Collectors.groupingBy(nd -> nd.getNotificacion().getDocumento().getCarpeta().getExpediente()));
+        List<AcuerdoSentenciaRecord> list = page.getContent().stream()
+                .map(notification -> new AcuerdoSentenciaRecord(
+                        notification.getId(),
+                        notification.getNotificacion().getDocumento().getCarpeta().getExpediente(),
+                        notification.getNotificacion().getFechaNotificado(),
+                        notification.getNotificacion().getDocumento().getCarpeta().getJuzgado().getNombre(),
+                        notification.getNotificacion().getDocumento().getId(),
+                        StringUtils.capitalize(notification.getNotificacion().getEstadoNotificacion().name().replace("_", " ").toLowerCase())
+                ))
+                .toList();
 
-        // Asigna fecha para actualizar campo consulta
-        LocalDateTime actual = LocalDateTime.now();
-
-        // Arma la lista para las notificaciones que sean de la persona registrada
-        List<AcuerdoSentenciaRecord> acuerdoSentenciaRecordList = new ArrayList<>();
-        for (Map.Entry<String, List<NotificacionesDetalles>> entry : groupExpedientes.entrySet()) {
-            List<NotificacionesDetalles> detallesPorExpediente = entry.getValue();
-            List<DocumentoExpedienteRecord> documentoExpedienteRecordList = detallesPorExpediente.stream()
-                    .map(nd -> {
-                        Integer documentoId = nd.getNotificacion().getDocumento().getId();
-
-                        nd.setFechaConsulta(actual);
-                        if (nd.getFechaCompletado() == null)
-                            nd.setFechaCompletado(actual);
-                        notificacionesDetallesRepository.save(nd);
-
-                        nd.getNotificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO);
-                        notificacionRepository.save(nd.getNotificacion());
-
-                        return new DocumentoExpedienteRecord(
-                                documentoId,
-                                nd.getFechaCompletado() != null ? nd.getFechaCompletado().format(formatoFecha) : "",
-                                nd.getFechaCompletado() != null ? nd.getFechaCompletado().format(formatoTiempo) : "",
-                                "/api/litigante/documento/" + documentoId);
-                    })
-                    .collect(Collectors.toList());
-            acuerdoSentenciaRecordList.add(new AcuerdoSentenciaRecord(entry.getKey(), documentoExpedienteRecordList));
+        for (NotificacionesDetalles item : page.getContent()) {
+            if (item.getNotificacion().getEstadoNotificacion().equals(EstadoNotificacion.POR_LEER)) {
+                item.setFechaCompletado(LocalDateTime.now());
+                item.getNotificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO);
+                notificacionesDetallesRepository.save(item);
+                notificacionRepository.save(item.getNotificacion());
+            }
         }
-
-        return new ExpedienteAutorizadoRecord(acuerdoSentenciaRecordList);
+        return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
     public Page<LitiganteExpedienteListAudienciasRecord> getExpedientesAudienciasRelacionados(Pageable pageable) {
@@ -170,17 +154,17 @@ public class LitiganteService {
         return partes.length == 2 ? partes : new String[]{"", ""};
     }
 
-    public Page<DocumentoResponseRecord>  getExpedienteDetails(Integer carpetaId, Pageable pageable) {
+    public Page<DocumentoResponseRecord> getExpedienteDetails(Integer carpetaId, Pageable pageable) {
         Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
                 carpetaId,
                 Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA), pageable);
         List<DocumentoResponseRecord> list = new ArrayList<>();
-        for(Documento doc: documentos.getContent()){
+        for (Documento doc : documentos.getContent()) {
             DocumentoDetalle detalle = documentoDetalleRepository.findByDocumentoId(doc.getId()).get();
             list.add(new DocumentoResponseRecord(
                     String.valueOf(doc.getId()),
                     detalle.getFechaResolucion(),
-                    doc.getData().getRubros().toString().replace("[", "").replace("]",""),
+                    doc.getData().getRubros().toString().replace("[", "").replace("]", ""),
                     "/api/litigante/documento/" + doc.getId()));
         }
         return new PageImpl<>(list, pageable, documentos.getTotalElements());

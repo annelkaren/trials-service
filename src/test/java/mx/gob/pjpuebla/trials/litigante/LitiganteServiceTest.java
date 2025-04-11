@@ -1,11 +1,11 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
@@ -81,27 +81,26 @@ class LitiganteServiceTest extends SetupServiceTest {
     void getAcuerdosSentencias() {
         NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
                 .setId(1)
-                .setNotificacion(new Notificacion().setId(1).setDocumento(
+                .setNotificacion(new Notificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO)
+                        .setFechaNotificado(LocalDateTime.now()).setId(1).setDocumento(
                         new Documento().setId(1).setCarpeta(
-                                new Carpeta().setId(1).setExpediente("000001/2025")
+                                new Carpeta().setId(1).setExpediente("000001/2025").setJuzgado(
+                                        new Juzgado().setNombre("Juzgado Mercantil")
+                                )
                         )
                 ));
 
-        given(notificacionesDetallesRepository.getAllByUsername(any(), any()))
-                .willReturn(Collections.singletonList(notificacionesDetalles));
+        given(notificacionesDetallesRepository.getAllByUsername(any(), any(), any()))
+                .willReturn(new PageImpl<>(Arrays.asList(notificacionesDetalles), PageRequest.of(0, 1), 1));
 
-        ExpedienteAutorizadoRecord result = litiganteService.getAcuerdosSentencias();
+        Page<AcuerdoSentenciaRecord> result = litiganteService.getAcuerdosSentencias(PageRequest.of(0, 10));
         assertThat(result).isNotNull();
-        assertThat(result.expedienteAutorizado()).hasSize(1);
+        assertThat(result.getContent()).hasSize(1);
 
-        AcuerdoSentenciaRecord acuerdoSentenciaResponse= result.expedienteAutorizado().get(0);
-        assertThat(acuerdoSentenciaResponse.documentoExpediente()).hasSize(1);
+        AcuerdoSentenciaRecord acuerdoSentenciaResponse= result.getContent().get(0);
         assertThat(acuerdoSentenciaResponse.numeroExpediente()).isEqualTo("000001/2025");
-
-        DocumentoExpedienteRecord documentoExpedienteResponse = acuerdoSentenciaResponse.documentoExpediente().get(0);
-        assertThat(documentoExpedienteResponse.numeroAcuerdo()).isEqualTo(1);
-        assertThat(documentoExpedienteResponse.fechaCompletado()).isEqualTo(LocalDateTime.now().toLocalDate().toString());
-        assertThat(documentoExpedienteResponse.rutaArchivo()).isEqualTo("/api/litigante/documento/1");
+        assertThat(acuerdoSentenciaResponse.documentoId()).isEqualTo(1);
+        assertThat(acuerdoSentenciaResponse.fechaNotificacion()).isEqualTo(notificacionesDetalles.getNotificacion().getFechaNotificado());
     }
 
     @Test

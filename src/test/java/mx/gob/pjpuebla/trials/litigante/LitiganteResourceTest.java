@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
@@ -20,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
@@ -59,13 +58,10 @@ class LitiganteResourceTest {
 
     @Test
     void getAcuerdosSentencias() throws Exception {
-        List<DocumentoExpedienteRecord> derl = Collections.singletonList(new DocumentoExpedienteRecord(
-                123, "2025-01-11", "12:03:04", "/api/litigante/documento/123"));
-        List<AcuerdoSentenciaRecord> asrl = Collections.singletonList(
-                new AcuerdoSentenciaRecord("000001/2025", derl));
-        ExpedienteAutorizadoRecord expedienteAutorizadoRecord = new ExpedienteAutorizadoRecord(asrl);
+        List<AcuerdoSentenciaRecord> list = Collections.singletonList(
+                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado"));
 
-        given(litiganteService.getAcuerdosSentencias()).willReturn(expedienteAutorizadoRecord);
+        given(litiganteService.getAcuerdosSentencias(any(Pageable.class))).willReturn(new PageImpl<>(list));
 
         mockMvc.perform(get("/api/litigante/acuerdoSentencia")
                         .accept(MediaType.APPLICATION_JSON))
