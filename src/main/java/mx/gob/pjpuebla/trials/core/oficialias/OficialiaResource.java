@@ -2,10 +2,12 @@ package mx.gob.pjpuebla.trials.core.oficialias;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
+import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecordResponse;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -16,13 +18,10 @@ public class OficialiaResource {
 
     private final OficialiaService oficialiaService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     public Page<OficialiaMateriaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "searchQuery", required = false) String searchQuery,
-            @RequestParam(value = "tipoOficialiaNombre", required = false) String tipoOficialiaId
-    ) {
+            @RequestParam(required = false) String searchQuery) {
         return this.oficialiaService.getAllByOficialiaMateria(searchQuery, pageable);
     }
 

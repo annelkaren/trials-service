@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 public class InstitucionSetUp {

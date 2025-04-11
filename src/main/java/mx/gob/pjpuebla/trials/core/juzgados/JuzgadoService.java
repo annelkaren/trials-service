@@ -250,6 +250,7 @@ public class JuzgadoService {
                 juzgadosRelacionados.stream().map(Juzgado::getId).toList());
 
         if (juzgados.isEmpty()) {
+
             revisarCargaJuzgados(tipoJuicio.getMateria(), tipoCarpeta, juzgadosRelacionados);
             juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(), instanciaJuzgado,
                     juzgadosRelacionados.stream().map(Juzgado::getId).toList());
