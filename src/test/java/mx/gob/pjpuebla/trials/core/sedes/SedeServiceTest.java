@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,27 +71,37 @@ class SedeServiceTest {
 
     @Test
     void getAll_return_page() {
-        List<Sede> listPage = Collections.singletonList(sedeDomicilio);
-        given(mockSedeRepository.findAll(any(Example.class), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-        Page<SedeDomicilioRecordResponse> page = sedeService.getAll(sedeDomicilio, PageRequest.of(1, listPage.size()));
-        assertThat(page.getContent())
-                .hasSize(1)
-                .first().hasFieldOrPropertyWithValue("id", sedeDomicilio.getId())
-                .hasFieldOrPropertyWithValue("nombre", sedeDomicilio.getNombre())
-                .hasFieldOrPropertyWithValue("estado", sedeDomicilio.getEstado());
+        Sede example = sede;
+        Pageable pageable = PageRequest.of(0, 10);
+        Long idDoimicilioRecord = (long) 1;
+        DomicilioRecord domRecord = new DomicilioRecord(idDoimicilioRecord, "calle", "exterior", "interior", "estadoRepublica", "municipio", "localidad", "Colonia", "Codigo postal", "Referencia");
 
-        assertThat(sedeDomicilio.getDomicilio())
-                .hasFieldOrPropertyWithValue("id", sedeDomicilio.getDomicilio().getId())
-                .hasFieldOrPropertyWithValue("calle", sedeDomicilio.getDomicilio().getCalle())
-                .hasFieldOrPropertyWithValue("exterior", sedeDomicilio.getDomicilio().getExterior())
-                .hasFieldOrPropertyWithValue("interior", sedeDomicilio.getDomicilio().getInterior())
-                .hasFieldOrPropertyWithValue("estadoRepublica", sedeDomicilio.getDomicilio().getEstadoRepublica())
-                .hasFieldOrPropertyWithValue("municipio", sedeDomicilio.getDomicilio().getMunicipio())
-                .hasFieldOrPropertyWithValue("localidad", sedeDomicilio.getDomicilio().getLocalidad())
-                .hasFieldOrPropertyWithValue("colonia", sedeDomicilio.getDomicilio().getColonia())
-                .hasFieldOrPropertyWithValue("codigoPostal", sedeDomicilio.getDomicilio().getCodigoPostal())
-                .hasFieldOrPropertyWithValue("referencia", sedeDomicilio.getDomicilio().getReferencia());
+        SedeDomicilioRecordResponse record = new SedeDomicilioRecordResponse(
+            1, 
+            "Sede", 
+            Estado.ACTIVE,
+            domRecord, 
+            "Telefono"
+        );
+
+        Page<SedeDomicilioRecordResponse> mockedPage = new PageImpl<>(
+                List.of(record),
+                pageable,
+                1
+            );
+
+         given(mockSedeRepository.findAllSedeDomicilioWithPagination(
+            anyString(),
+            any(Pageable.class)
+        )).willReturn(mockedPage);
+
+         // Act
+         Page<SedeDomicilioRecordResponse> result = sedeService.getAll(example, pageable);
+
+         // Assert
+         assertThat(result).isNotNull();
+         assertThat(result.getContent()).hasSize(1);
+         assertThat(result.getContent().get(0).nombre()).isEqualTo("Sede");
     }
 
     @Test

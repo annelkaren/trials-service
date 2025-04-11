@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -21,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -74,19 +77,36 @@ class InstitucionServiceTest {
         @Test
         void getAll_return_page() {
                 institucion.setDomicilio(domicilio);
+                InstitucionRecord record = new InstitucionRecord(
+                                1,
+                                "institución prueba",
+                                domicilio,
+                                "1234567894",
+                                null);
 
-                List<Institucion> listPage = Collections.singletonList(institucion);
-                given(mockInstitucionRepository.findAll()).willReturn(listPage);
+                Page<InstitucionRecord> pageMock = new PageImpl<>(
+                                List.of(record),
+                                PageRequest.of(0, 1),
+                                1);
 
-                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion, PageRequest.of(0, 1)); // Pagina de tamaño 1
+                Pageable pageable = PageRequest.of(0, 10);
+
+                given(mockInstitucionRepository.findAllInstituciones(
+                                anyString(), // nombre
+                                any(Pageable.class), // pageable
+                                anyList() // estados
+                )).willReturn(pageMock); // tu page de prueba
+
+                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion, pageable);
 
                 assertThat(page.getContent())
-                        .hasSize(1)
-                        .first().hasFieldOrPropertyWithValue("id", institucion.getId())
-                        .hasFieldOrPropertyWithValue("nombre", institucion.getNombre())
-                        .hasFieldOrPropertyWithValue("domicilio", institucion.getDomicilio().getDireccionInstitucion())
-                        .hasFieldOrPropertyWithValue("telefono", institucion.getTelefono())
-                        .hasFieldOrPropertyWithValue("tipoInstitucion", institucion.getTipoInstitucion());
+                                .hasSize(1)
+                                .first().hasFieldOrPropertyWithValue("id", institucion.getId())
+                                .hasFieldOrPropertyWithValue("nombre", institucion.getNombre())
+                                .hasFieldOrPropertyWithValue("domicilio",
+                                                institucion.getDomicilio().getDireccionInstitucion())
+                                .hasFieldOrPropertyWithValue("telefono", institucion.getTelefono())
+                                .hasFieldOrPropertyWithValue("tipoInstitucion", institucion.getTipoInstitucion());
         }
 
         @Test
@@ -204,38 +224,34 @@ class InstitucionServiceTest {
                 institucion.setDomicilio(domicilio);
                 institucion.setEstado(Estado.ACTIVE);
 
-                List<Institucion> listPage = Collections.singletonList(institucion);
+                InstitucionRecord record = new InstitucionRecord(
+                                1,
+                                "institución prueba",
+                                domicilio,
+                                "1234567894",
+                                "Pública");
 
-                given(mockInstitucionRepository.findAll(any(Example.class), any(PageRequest.class)))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
-                                                listPage.size()));
-                Page<InstitucionRecord> page = mockInstitucionService.getAllByEstadoAutocomplete(institucion,
-                                PageRequest.of(0, listPage.size()));
-                assertThat(page.getContent())
-                                .hasSize(1);
-                assertThat(page.getContent().get(0))
-                                .extracting("id", "nombre", "domicilio", "telefono")
-                                .containsExactly(
-                                                institucion.getId(),
-                                                institucion.getNombre(),
-                                                String.join(" ",
-                                                                domicilio.getCalle(),
-                                                                domicilio.getColonia(),
-                                                                domicilio.getExterior(),
-                                                                (domicilio.getInterior() != null && !domicilio
-                                                                                .getInterior().isEmpty()) ? "Int. "
-                                                                                                + domicilio.getInterior()
-                                                                                                : "",
-                                                                domicilio.getEstadoRepublica(),
-                                                                domicilio.getMunicipio(),
-                                                                domicilio.getLocalidad(),
-                                                                domicilio.getCodigoPostal(),
-                                                                (domicilio.getReferencia() != null && !domicilio
-                                                                                .getReferencia().isEmpty()) ? "Ref: "
-                                                                                                + domicilio.getReferencia()
-                                                                                                : "")
-                                                                .trim(),
-                                                institucion.getTelefono());
+                Page<InstitucionRecord> mockedPage = new PageImpl<>(
+                                List.of(record),
+                                PageRequest.of(0, 10),
+                                1);
+
+                Pageable pageable = PageRequest.of(0, 10);
+
+                // Act
+                given(mockInstitucionRepository.findAllInstituciones(
+                                anyString(),
+                                any(Pageable.class),
+                                anyList())).willReturn(mockedPage);
+
+                Page<InstitucionRecord> result = mockInstitucionService.getAllByEstadoAutocomplete(institucion,
+                                pageable);
+
+                // Assert
+                assertThat(result).isNotNull();
+                assertThat(result.getContent()).hasSize(1);
+                assertThat(result.getContent().get(0).nombre()).isEqualTo("institución prueba");
+
         }
 
 }
