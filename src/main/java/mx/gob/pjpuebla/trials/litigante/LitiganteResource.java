@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.http.HttpHeaders;

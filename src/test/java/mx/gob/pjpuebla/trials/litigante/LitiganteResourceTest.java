@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
