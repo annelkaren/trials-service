@@ -146,7 +146,7 @@ public class DocumentoService {
                                 .map(movimiento -> {
 
                                         Documento documento = defaultIfNull(movimiento.getDocumento(), documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
-                                                movimiento.getCarpeta().getId()));
+                                                movimiento.getCarpeta() != null ? movimiento.getCarpeta().getId() : movimiento.getDocumento().getCarpeta().getId()  ));
                                         Carpeta carpeta = defaultIfNull(movimiento.getCarpeta(), documento.getCarpeta());
                                         
                                         String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA") || movimiento.getEstado().equals("SALIDA"))
