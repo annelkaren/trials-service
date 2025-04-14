@@ -45,7 +45,6 @@ public class EmailService {
             }
             MimeMessage mm = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mm, true, "UTF-8");
-            helper.setFrom("notificaciones@pjpuebla.gob.mx");
             helper.setTo(to.toArray(new String[0]));
             helper.setCc(cc.toArray(new String[0]));
             helper.setBcc(bcc.toArray(new String[0]));

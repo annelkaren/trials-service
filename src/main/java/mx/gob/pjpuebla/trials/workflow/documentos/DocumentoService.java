@@ -1474,7 +1474,7 @@ public class DocumentoService {
                 sendEmail.put("anexos", anexosHtml.toString());
 
                 emailService.sendMail(
-                                List.of("annelkaren@gmail.com"), // TODO. reemplazar por dircifame@htsjpuebla.gob.mx
+                                List.of("no-reply@pjpuebla.gob.mx"),
                                 Collections.emptyList(),
                                 Collections.emptyList(),
                                 "Recepción de Asignación de Juicio",
