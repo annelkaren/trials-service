@@ -67,7 +67,7 @@ import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -83,6 +83,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class DocumentoService {
+
+         @Value("${spring.mail.correoDefensoria}")
+        private String correoDefensoria;
 
         public static final String ACTOR = "Actor";
         public static final String DEMANDADO = "Demandado";
@@ -1472,9 +1475,9 @@ public class DocumentoService {
                 }
                 anexosHtml.append("</ul>");
                 sendEmail.put("anexos", anexosHtml.toString());
-
+                
                 emailService.sendMail(
-                                List.of("no-reply@pjpuebla.gob.mx"),
+                                List.of(correoDefensoria),
                                 Collections.emptyList(),
                                 Collections.emptyList(),
                                 "Recepción de Asignación de Juicio",
