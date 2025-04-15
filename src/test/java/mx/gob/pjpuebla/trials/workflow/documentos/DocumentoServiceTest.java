@@ -90,6 +90,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -217,6 +218,7 @@ class DocumentoServiceTest {
                 juzgadoRepository.save(juzgado);
                 recordRequest = DocumentoSetUp.createDocumentoSaveRecord(tipoJuicio.getId());
 
+                ReflectionTestUtils.setField(documentoService, "correoDefensoria", "dircifame@htsjpuebla.gob.mx");
         }
 
         @Test
@@ -1336,7 +1338,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("annelkaren@gmail.com")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),
@@ -1395,7 +1397,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("annelkaren@gmail.com")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),
