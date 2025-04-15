@@ -950,7 +950,8 @@ public class DocumentoService {
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {
-                                        Carpeta carpeta = movimiento.getCarpeta();
+                                        Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta() : movimiento.getDocumento().getCarpeta();
+                                       
                                         Map<String, Object> map = getOrigen(movimiento, currentUser);
                                         Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta);
 
@@ -961,6 +962,7 @@ public class DocumentoService {
                                         String tipoEntrada;
                                         String concepto;
                                         String expediente;
+                                        Integer carpetaId;
 
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
@@ -969,6 +971,7 @@ public class DocumentoService {
                                                                 documento);
                                                 concepto = documento.getConcepto().getNombre();
                                                 expediente = documento.getCarpeta().getExpediente();
+                                                carpetaId = documento.getCarpeta().getId();
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
                                                 folio = carpeta.getFolio();
@@ -976,10 +979,11 @@ public class DocumentoService {
                                                                 carpeta);
                                                 concepto = carpeta.getConcepto().getNombre();
                                                 expediente = carpeta.getExpediente();
+                                                carpetaId = carpeta.getId();
                                         }
 
                                         return new DocumentoBandejaRecepcionRecord(
-                                                        documento != null ? documento.getId() : null,
+                                                        carpetaId,
                                                         folio,
                                                         expediente,
                                                         StringUtils.capitalize(tipoEntrada.toLowerCase()),
