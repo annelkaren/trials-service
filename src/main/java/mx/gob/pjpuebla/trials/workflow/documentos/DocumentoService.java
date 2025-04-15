@@ -84,7 +84,7 @@ import java.util.stream.Collectors;
 @Service
 public class DocumentoService {
 
-         @Value("${spring.mail.correoDefensoria}")
+        @Value("${spring.mail.correoDefensoria}")
         private String correoDefensoria;
 
         public static final String ACTOR = "Actor";
