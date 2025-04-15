@@ -1336,7 +1336,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("no-reply@pjpuebla.gob.mx")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),
@@ -1395,7 +1395,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("no-reply@pjpuebla.gob.mx")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),
