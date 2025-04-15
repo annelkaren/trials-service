@@ -676,37 +676,49 @@ public class DocumentoService {
                 Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
                 page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
 
-                List<DocumentoGridRecord> listaDocumentoRecords = new ArrayList<>();
-                for (Movimiento movimiento : page.getContent()) {
-                        Documento documento = (movimiento.getDocumento() != null) ? movimiento.getDocumento()
-                                        : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
-                                                        movimiento.getCarpeta().getId());
-                        Carpeta carpeta = documento.getCarpeta();
-                        String folio = (documento.getTipoDocumento() == null) ? carpeta.getFolio()
-                                        : documento.getFolio();
-                        String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                        || movimiento.getEstado().equals("SALIDA")) ? "En juzgado" : "";
+                List<DocumentoGridRecord> listaDocumentoRecords = page.getContent().stream()
+                                .map(movimiento -> {
+                                        Documento documento = (movimiento.getDocumento() != null)
+                                                        ? movimiento.getDocumento()
+                                                        : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
+                                                                        movimiento.getCarpeta().getId());
 
-                        DocumentoGridRecord drecord = new DocumentoGridRecord(
-                                        documento.getId(),
-                                        folio,
-                                        carpeta.getExpediente(),
-                                        StringUtils.capitalize(
-                                                        carpeta.getJuzgado().getMateria().getNombre().toLowerCase()),
-                                        (documento.getTipoDocumento() == null)
+                                        Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta()
+                                                        : documento.getCarpeta();
+
+                                        String folio = (documento.getTipoDocumento() == null)
+                                                        ? carpeta.getFolio()
+                                                        : documento.getFolio();
+
+                                        String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
+                                                        || movimiento.getEstado().equals("SALIDA"))
+                                                                        ? "En juzgado"
+                                                                        : "";
+
+                                        String materia = StringUtils.capitalize(
+                                                        carpeta.getJuzgado().getMateria().getNombre().toLowerCase());
+                                        String tipoEntrada = (documento.getTipoDocumento() == null)
                                                         ? StringUtils.capitalize(
                                                                         carpeta.getTipoCarpeta().name().toLowerCase())
                                                         : StringUtils.capitalize(documento.getTipoDocumento().name()
-                                                                        .toLowerCase()),
-                                        movimiento.getFechaAsignacion(),
-                                        null,
-                                        EstadoCarpeta.valueOf(movimiento.getEstado()),
-                                        false,
-                                        "",
-                                        estaEnJuzgado,
-                                        movimiento.getMotivo());
-                        listaDocumentoRecords.add(drecord);
-                }
+                                                                        .toLowerCase());
+
+                                        return new DocumentoGridRecord(
+                                                        documento.getId(),
+                                                        folio,
+                                                        carpeta.getExpediente(),
+                                                        materia,
+                                                        tipoEntrada,
+                                                        movimiento.getFechaAsignacion(),
+                                                        null,
+                                                        EstadoCarpeta.valueOf(movimiento.getEstado()),
+                                                        false,
+                                                        "",
+                                                        estaEnJuzgado,
+                                                        movimiento.getMotivo());
+
+                                }).toList();
+
                 return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
         }
 
