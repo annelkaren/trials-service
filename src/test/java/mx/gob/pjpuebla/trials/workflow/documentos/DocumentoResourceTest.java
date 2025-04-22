@@ -462,7 +462,7 @@ class DocumentoResourceTest {
     @Test
 void movimientoPersonalJuzgado_success() throws Exception {
     // Crear una lista de PersonalJuzgadoRecord
-    List<PersonalJuzgadoRecord> personalJuzgadoRecords = List.of(new PersonalJuzgadoRecord(51, 2));
+    List<PersonalJuzgadoRecord> personalJuzgadoRecords = List.of(new PersonalJuzgadoRecord(51, 2, TipoDocumento.PROMOCION, 3));
 
     // Configurar el mock para el servicio
     given(documentoService.movimientoPersonalJuzgadoList(personalJuzgadoRecords))

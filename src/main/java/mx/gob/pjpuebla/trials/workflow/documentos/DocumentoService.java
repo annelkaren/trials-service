@@ -938,6 +938,8 @@ public class DocumentoService {
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {
                                         Carpeta carpeta = movimiento.getCarpeta();
+                                        Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta);
+
                                         String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                         carpeta);
                                         String origen = movimiento.getPersona().getNombre() + " "
@@ -948,6 +950,7 @@ public class DocumentoService {
 
                                         return new DocumentoBandejaRecepcionRecord(
                                                         carpeta.getId(),
+                                                        documento.getId(),
                                                         carpeta.getFolio(),
                                                         carpeta.getExpediente(),
                                                         tipoEntrada,
@@ -1010,6 +1013,7 @@ public class DocumentoService {
 
                                         return new DocumentoBandejaRecepcionRecord(
                                                         carpetaId,
+                                                        documento.getId(),
                                                         folio,
                                                         expediente,
                                                         StringUtils.capitalize(tipoEntrada.toLowerCase()),
@@ -1314,6 +1318,7 @@ public class DocumentoService {
 
                 Documento doc = documentoRepository.findById(id)
                                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
+
                 List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
                 addAnexoExtra(anexosActuales, doc);
                 String origen = movimientoService.getOrigen(
@@ -1421,37 +1426,46 @@ public class DocumentoService {
                                 persona.getJuzgado().getNombre());
         }
 
-        public List<MovimientoPersonalJuzgadoRecord> movimientoPersonalJuzgadoList(
-                        List<PersonalJuzgadoRecord> personalJuzgadoRecords) {
+        public List<MovimientoPersonalJuzgadoRecord> movimientoPersonalJuzgadoList(List<PersonalJuzgadoRecord> personalJuzgadoRecords) {
+
                 Persona persona = personaService.getAuditor();
                 List<MovimientoPersonalJuzgadoRecord> movimientoPersonal = new ArrayList<>();
 
                 for (PersonalJuzgadoRecord p : personalJuzgadoRecords) {
-                        Concepto concepto = conceptoRepository.findById(p.idConcepto())
-                                        .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND,
+                        Concepto concepto = conceptoRepository.findById(p.idConcepto()).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND,
                                                         "conceptoId" + p.idConcepto()));
+                        Movimiento movimiento = null;
 
-                        Carpeta carpeta = carpetaRepository.findById(p.idDocumentoRecepcion())
-                                        .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
-                                                        "carpetaId" + p.idDocumentoRecepcion()));
+                        if (p.tipoDocumento().equals(TipoDocumento.PROMOCION)  || p.tipoDocumento().equals(TipoDocumento.APELACION)) {
+                                Carpeta carpeta = carpetaRepository.findById(p.idCarpetaRecepcion()).orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
+                                "carpetaId" + p.idCarpetaRecepcion()));
 
-                        carpeta.setConcepto(concepto);
-                        carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
-                        carpeta.setPersona(persona);
-                        carpetaRepository.save(carpeta);
+                                String duration = (carpeta.getHoras() != null && carpeta.getHoras() > 0)
+                                                ? carpeta.getHoras() + "h"
+                                                : concepto.getDias().toString() + "d";
+                                                
+                                carpeta.setConcepto(concepto);
+                                carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
+                                carpeta.setPersona(persona);
+                                carpetaRepository.save(carpeta);
+                                
+                                movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
+                                EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration);
 
-                        String duration = (carpeta.getHoras() != null && carpeta.getHoras() > 0)
-                                        ? carpeta.getHoras() + "h"
-                                        : concepto.getDias().toString() + "d";
+                        } else {
+                                Documento documento = documentoRepository.findById(p.idDocumentoRecepcion()).orElseThrow(() -> new NotFoundException("Documento no encontrado",
+                                                                "documento ID" + p.idDocumentoRecepcion()));
 
-                        Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
-                                        EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration);
+                                documento.setConcepto(concepto);
+                                documento.setEstatus(EstadoCarpeta.ASIGNADO);
+                                documentoRepository.save(documento);
 
-                        movimientoPersonal.add(new MovimientoPersonalJuzgadoRecord(
-                                        p.idDocumentoRecepcion(),
-                                        movimiento.getFechaAsignacion(),
-                                        persona.getNombre(),
-                                        movimiento.getMotivo(),
+                                movimiento = movimientoService.createMovimentoTurnado(null, documento, persona, null,
+                                EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, concepto.getDias().toString() + "d");
+                        }
+                       
+                        movimientoPersonal.add(new MovimientoPersonalJuzgadoRecord(p.idDocumentoRecepcion(),movimiento.getFechaAsignacion(),
+                                        persona.getNombre(), movimiento.getMotivo(),
                                         persona.getJuzgado().getNombre()));
                 }
 
