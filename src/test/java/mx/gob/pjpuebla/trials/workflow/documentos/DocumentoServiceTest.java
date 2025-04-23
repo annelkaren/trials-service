@@ -981,9 +981,12 @@ class DocumentoServiceTest {
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
                 demanda.getCarpeta().setConcepto(concepto);
-                Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
-                                .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(persona);
+                Movimiento movimiento = new Movimiento()
+                                .setCarpeta(demanda.getCarpeta())
+                                .setMotivo("RECEPCION")
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona)
+                                .setDocumento(demanda);
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
