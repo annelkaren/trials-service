@@ -29,7 +29,7 @@ public class EtiquetaService {
             return documento.getCarpeta().getTipoCarpeta().name();
         } else {
             return this.etiquetaRepository.findByTipoJuicioIdAndNombre(
-                    100, nombre).getValue().toUpperCase();
+                100, nombre).getValue().toUpperCase();
         }
     }
 

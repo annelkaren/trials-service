@@ -788,7 +788,7 @@ class DocumentoServiceTest {
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
-                                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                                .hasFieldOrPropertyWithValue("carpetaId", demanda.getId())
                                 .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
                                 .hasFieldOrPropertyWithValue("tipoEntrada", "Expediente")
                                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
@@ -981,9 +981,12 @@ class DocumentoServiceTest {
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
                 demanda.getCarpeta().setConcepto(concepto);
-                Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
-                                .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(persona);
+                Movimiento movimiento = new Movimiento()
+                                .setCarpeta(demanda.getCarpeta())
+                                .setMotivo("RECEPCION")
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona)
+                                .setDocumento(demanda);
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
@@ -1230,7 +1233,7 @@ class DocumentoServiceTest {
 
         @Test
         void movimientoPersonalJuzgado_success() {
-                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2);
+                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2, "DEMANDA", 3);
                 Concepto concepto = ConceptoSetUp.createConcepto();
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 Carpeta carpeta = CarpetaSetUp.create();
