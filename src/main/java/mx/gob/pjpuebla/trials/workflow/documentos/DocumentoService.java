@@ -67,7 +67,7 @@ import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -83,6 +83,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class DocumentoService {
+
+        @Value("${spring.mail.correoDefensoria}")
+        private String correoDefensoria;
 
         public static final String ACTOR = "Actor";
         public static final String DEMANDADO = "Demandado";
@@ -145,21 +148,13 @@ public class DocumentoService {
                                 .stream()
                                 .map(movimiento -> {
 
-                                        Documento documento = defaultIfNull(movimiento.getDocumento(),
-                                                        documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
-                                                                        movimiento.getCarpeta() != null 
-                                                                        ? movimiento.getCarpeta().getId() 
-                                                                        : movimiento.getDocumento().getCarpeta().getId()
-                                                        ));
-
-                                        Carpeta carpeta = defaultIfNull(movimiento.getCarpeta(),
-                                                        documento.getCarpeta());
-
-                                        String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA"))
-                                                                        ? "En juzgado"
-                                                                        : "";
-
+                                        Documento documento = defaultIfNull(movimiento.getDocumento(), documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
+                                                movimiento.getCarpeta() != null ? movimiento.getCarpeta().getId() : movimiento.getDocumento().getCarpeta().getId()  ));
+                                        Carpeta carpeta = defaultIfNull(movimiento.getCarpeta(), documento.getCarpeta());
+                                        
+                                        String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA") || movimiento.getEstado().equals("SALIDA"))
+                                                                        ? "En juzgado" : "";
+                                                                        
                                         TipoDocumento tipoDocumento = documento.getTipoDocumento();
                                         String folio = (tipoDocumento != null
                                                         && !Objects.equals(tipoDocumento, TipoDocumento.APELACION))
@@ -1520,9 +1515,9 @@ public class DocumentoService {
                 }
                 anexosHtml.append("</ul>");
                 sendEmail.put("anexos", anexosHtml.toString());
-
+                
                 emailService.sendMail(
-                                List.of("annelkaren@gmail.com"), // TODO. reemplazar por dircifame@htsjpuebla.gob.mx
+                                List.of(correoDefensoria),
                                 Collections.emptyList(),
                                 Collections.emptyList(),
                                 "Recepción de Asignación de Juicio",

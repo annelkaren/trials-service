@@ -32,6 +32,7 @@ spring:
       timeout: 5000
       writetimeout: 5000
     username: annelkaren@gmail.com
+    correoDefensoria: dircifame@htsjpuebla.gob.mx
     password: naaj eusw llhl rhti
 
 
