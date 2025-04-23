@@ -788,7 +788,7 @@ class DocumentoServiceTest {
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
-                                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                                .hasFieldOrPropertyWithValue("documentoId", demanda.getId())
                                 .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
                                 .hasFieldOrPropertyWithValue("tipoEntrada", "Expediente")
                                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
