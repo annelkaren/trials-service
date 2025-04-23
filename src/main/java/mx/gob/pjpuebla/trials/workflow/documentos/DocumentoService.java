@@ -147,7 +147,11 @@ public class DocumentoService {
 
                                         Documento documento = defaultIfNull(movimiento.getDocumento(),
                                                         documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
-                                                                        movimiento.getCarpeta().getId()));
+                                                                        movimiento.getCarpeta() != null 
+                                                                        ? movimiento.getCarpeta().getId() 
+                                                                        : movimiento.getDocumento().getCarpeta().getId()
+                                                        ));
+
                                         Carpeta carpeta = defaultIfNull(movimiento.getCarpeta(),
                                                         documento.getCarpeta());
 
