@@ -1228,7 +1228,7 @@ class DocumentoServiceTest {
 
         @Test
         void movimientoPersonalJuzgado_success() {
-                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2, TipoDocumento.PROMOCION, 3);
+                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2, "DEMANDA", 3);
                 Concepto concepto = ConceptoSetUp.createConcepto();
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 Carpeta carpeta = CarpetaSetUp.create();

@@ -1436,7 +1436,7 @@ public class DocumentoService {
                                                         "conceptoId" + p.idConcepto()));
                         Movimiento movimiento = null;
 
-                        if (p.tipoDocumento().equals(TipoDocumento.PROMOCION)  || p.tipoDocumento().equals(TipoDocumento.APELACION)) {
+                        if (p.tipoEntrada().equals("DEMANDA")  || p.tipoEntrada().equals("APELACION")) {
                                 Carpeta carpeta = carpetaRepository.findById(p.idCarpetaRecepcion()).orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
                                 "carpetaId" + p.idCarpetaRecepcion()));
 
