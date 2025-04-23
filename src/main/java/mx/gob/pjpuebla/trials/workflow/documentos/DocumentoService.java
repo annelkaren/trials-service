@@ -991,7 +991,7 @@ public class DocumentoService {
                                         String concepto;
                                         String expediente;
                                         Integer carpetaId;
-                                        Integer documentoId;
+                                        Integer documentoId = documento.getId();
 
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
@@ -1001,7 +1001,6 @@ public class DocumentoService {
                                                 concepto = documento.getConcepto().getNombre();
                                                 expediente = documento.getCarpeta().getExpediente();
                                                 carpetaId = documento.getCarpeta().getId();
-                                                documentoId = documento.getId();
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
                                                 folio = carpeta.getFolio();
@@ -1010,7 +1009,6 @@ public class DocumentoService {
                                                 concepto = carpeta.getConcepto().getNombre();
                                                 expediente = carpeta.getExpediente();
                                                 carpetaId = carpeta.getId();
-                                                documentoId = null;
                                         }
 
 
@@ -1439,7 +1437,7 @@ public class DocumentoService {
                         Concepto concepto = conceptoRepository.findById(p.idConcepto()).orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND,
                                                         "conceptoId" + p.idConcepto()));
                         Movimiento movimiento;
-                        
+
                         if (p.tipoEntrada().equals("DEMANDA")  || p.tipoEntrada().equals("APELACION")) {
                                 Carpeta carpeta = carpetaRepository.findById(p.idCarpetaRecepcion()).orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
                                 "carpetaId" + p.idCarpetaRecepcion()));
