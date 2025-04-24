@@ -90,6 +90,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -217,6 +218,7 @@ class DocumentoServiceTest {
                 juzgadoRepository.save(juzgado);
                 recordRequest = DocumentoSetUp.createDocumentoSaveRecord(tipoJuicio.getId());
 
+                ReflectionTestUtils.setField(documentoService, "correoDefensoria", "dircifame@htsjpuebla.gob.mx");
         }
 
         @Test
@@ -786,7 +788,7 @@ class DocumentoServiceTest {
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
-                                .hasFieldOrPropertyWithValue("id", demanda.getId())
+                                .hasFieldOrPropertyWithValue("carpetaId", demanda.getId())
                                 .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
                                 .hasFieldOrPropertyWithValue("tipoEntrada", "Expediente")
                                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
@@ -979,9 +981,12 @@ class DocumentoServiceTest {
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
                 demanda.getCarpeta().setConcepto(concepto);
-                Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta())
-                                .setMotivo("RECEPCION").setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(persona);
+                Movimiento movimiento = new Movimiento()
+                                .setCarpeta(demanda.getCarpeta())
+                                .setMotivo("RECEPCION")
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona)
+                                .setDocumento(demanda);
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
@@ -1228,7 +1233,7 @@ class DocumentoServiceTest {
 
         @Test
         void movimientoPersonalJuzgado_success() {
-                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2);
+                PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2, "DEMANDA", 3);
                 Concepto concepto = ConceptoSetUp.createConcepto();
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 Carpeta carpeta = CarpetaSetUp.create();
@@ -1336,7 +1341,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("annelkaren@gmail.com")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),
@@ -1395,7 +1400,7 @@ class DocumentoServiceTest {
                 documentoService.sendEmailFamiliar(documentoSaveRecord, documento, carpeta, tipoJuicio);
                 ArgumentCaptor<Map<String, Object>> sendEmailCaptor = ArgumentCaptor.forClass(Map.class);
                 verify(emailService).sendMail(
-                                eq(List.of("annelkaren@gmail.com")),
+                                eq(List.of("dircifame@htsjpuebla.gob.mx")),
                                 eq(Collections.emptyList()),
                                 eq(Collections.emptyList()),
                                 eq("Recepción de Asignación de Juicio"),

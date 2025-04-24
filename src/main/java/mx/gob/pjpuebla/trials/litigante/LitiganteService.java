@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor

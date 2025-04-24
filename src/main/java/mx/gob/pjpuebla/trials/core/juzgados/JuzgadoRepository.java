@@ -51,7 +51,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         @Modifying(flushAutomatically = true)
         @Query("""
-                        UPDATE Juzgado j 
+                        UPDATE Juzgado j
                         SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda
                         WHERE j.materia = :materia AND j.instanciaJuzgado = :instanciaJuzgado
                         """)

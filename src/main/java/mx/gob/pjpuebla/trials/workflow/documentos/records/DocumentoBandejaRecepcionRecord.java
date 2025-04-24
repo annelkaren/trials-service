@@ -6,7 +6,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoBandejaRecepcionRecord(
-        Integer id,
+        Integer carpetaId,
+        Integer documentoId,
         String folio,
         String expediente,
         String tipoEntrada,

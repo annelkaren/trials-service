@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import java.time.LocalDateTime;
 import java.util.Optional;
