@@ -33,7 +33,7 @@ public class MovimientoService {
 
     public List<MovimientoSalidaRecord> getMovimientosSalida(String uuid) {
         UUID uuidMov = UUID.fromString(uuid);
-        return movimientoRepository.getSalidas(uuidMov, EstadoCarpeta.TURNADO);
+        return movimientoRepository.getSalidas(uuidMov, EstadoCarpeta.RECEPCION);
     }
 
     public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo,
