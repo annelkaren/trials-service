@@ -1438,7 +1438,21 @@ public class DocumentoService {
                                                         "conceptoId" + p.idConcepto()));
                         Movimiento movimiento;
 
-                        if (p.tipoEntrada().equals("DEMANDA")  || p.tipoEntrada().equals("APELACION")) {
+                        if (p.tipoEntrada().equals("PROMOCION")) {
+
+                                Documento documento = documentoRepository.findById(p.idDocumentoRecepcion()).orElseThrow(() -> new NotFoundException("Documento no encontrado",
+                                "documento ID" + p.idDocumentoRecepcion()));
+
+                                documento.setConcepto(concepto);
+                                documento.setEstatus(EstadoCarpeta.ASIGNADO);
+                                documentoRepository.save(documento);
+
+                                movimiento = movimientoService.createMovimentoTurnado(null, documento, persona, null,
+                                EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, concepto.getDias().toString() + "d");
+
+                               
+
+                        } else {
                                 Carpeta carpeta = carpetaRepository.findById(p.idCarpetaRecepcion()).orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
                                 "carpetaId" + p.idCarpetaRecepcion()));
 
@@ -1453,17 +1467,6 @@ public class DocumentoService {
                                 
                                 movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
                                 EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, duration);
-
-                        } else {
-                                Documento documento = documentoRepository.findById(p.idDocumentoRecepcion()).orElseThrow(() -> new NotFoundException("Documento no encontrado",
-                                                                "documento ID" + p.idDocumentoRecepcion()));
-
-                                documento.setConcepto(concepto);
-                                documento.setEstatus(EstadoCarpeta.ASIGNADO);
-                                documentoRepository.save(documento);
-
-                                movimiento = movimientoService.createMovimentoTurnado(null, documento, persona, null,
-                                EstadoCarpeta.ASIGNADO.name(), concepto.getNombre(), null, concepto.getDias().toString() + "d");
                         }
                        
                         movimientoPersonal.add(new MovimientoPersonalJuzgadoRecord(p.idDocumentoRecepcion(),movimiento.getFechaAsignacion(),
