@@ -973,7 +973,8 @@ public class DocumentoService {
                                 currentUser.getJuzgado().getId(),
                                 List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                                 key,
-                                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+                                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
+                                currentUser);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {

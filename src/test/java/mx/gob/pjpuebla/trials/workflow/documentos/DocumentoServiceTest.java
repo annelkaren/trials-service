@@ -760,6 +760,7 @@ class DocumentoServiceTest {
         @Test
         void getAllBandejaRecepcion_return_page() {
                 Documento demanda = DocumentoSetUp.create(tipoJuicio);
+                
                 demanda.getCarpeta().setFolio("1");
                 demanda.getCarpeta().setJuzgado(juzgado);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
@@ -780,7 +781,7 @@ class DocumentoServiceTest {
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
                 given(movimientoService.getAllBandejaRecepcion(
                                 PageRequest.of(0, listPage.size()),
-                                juzgado.getId(), list, "", motivos))
+                                juzgado.getId(), list, "", motivos, persona))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
