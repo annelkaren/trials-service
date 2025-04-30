@@ -68,7 +68,7 @@ class MovimientosServiceTest {
     @Test
     void getMovimientosSalidasTest(){
         List<MovimientoSalidaRecord> movimientos = List.of(movimiento);
-
+        estadoCarpeta = EstadoCarpeta.RECEPCION;
         given(movimientoRepository.getSalidas(uuid, estadoCarpeta)).willReturn(movimientos);
 
         movimientos = movimientoService.getMovimientosSalida(uuid.toString());
@@ -105,14 +105,15 @@ class MovimientosServiceTest {
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
         List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
+        Persona persona = PersonaSetUp.createPersona();
         given(movimientoRepository.getAllBandejaRecepcion(
                 PageRequest.of(0, 1),
-                1, list, "", motivos))
+                1, list, "", motivos, persona))
                 .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
 
 
         Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos);
+                1, list, "", motivos, persona);
         assertThat(result.getSize()).isPositive();
     }
 

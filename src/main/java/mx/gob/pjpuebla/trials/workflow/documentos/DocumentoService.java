@@ -973,7 +973,8 @@ public class DocumentoService {
                                 currentUser.getJuzgado().getId(),
                                 List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                                 key,
-                                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()));
+                                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
+                                currentUser);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {
@@ -1153,7 +1154,7 @@ public class DocumentoService {
                 for (Movimiento mov : movimientoList) {
                         Movimiento movimiento = new Movimiento()
                                         .setFechaAsignacion(LocalDateTime.now())
-                                        .setEstado(EstadoCarpeta.TURNADO.name())
+                                        .setEstado(EstadoCarpeta.RECEPCION.name())
                                         .setPersona(personaAuditor)
                                         .setUuid(uuid)
                                         .setObservaciones(nombrePersona);
@@ -1162,7 +1163,7 @@ public class DocumentoService {
                                 Documento documento = mov.getDocumento();
                                 documento.setFechaAsignacion(LocalDateTime.now())
                                                 .setPersona(persona)
-                                                .setEstatus(EstadoCarpeta.TURNADO);
+                                                .setEstatus(EstadoCarpeta.RECEPCION);
                                 documento.setConcepto(
                                                 getConceptoByTipoCarpetaDocumento(documento.getTipoDocumento(), null));
                                 documento = documentoRepository.save(documento);
@@ -1176,7 +1177,7 @@ public class DocumentoService {
                                                 .setPersona(persona)
                                                 .setConcepto(getConceptoByTipoCarpetaDocumento(null,
                                                                 carpeta.getTipoCarpeta()))
-                                                .setEstatus(EstadoCarpeta.TURNADO);
+                                                .setEstatus(EstadoCarpeta.RECEPCION);
 
                                 carpeta = carpetaRepository.save(carpeta);
                                 movimiento.setConcepto(carpeta.getConcepto().getNombre());

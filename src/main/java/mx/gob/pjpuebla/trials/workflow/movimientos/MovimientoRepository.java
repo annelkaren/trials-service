@@ -64,14 +64,18 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     SELECT MAX(m2.fechaAsignacion)
                     FROM Movimiento m2
                     WHERE (
-                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                        ((m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                        (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                        AND (m2.estado != 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
+                     )
                 )
                 AND m.estado IN (:motivos)
+
                 AND (
                     (c IS NOT NULL AND jc.id = :juzgadoId)
                     OR (d IS NOT NULL AND jcd.id = :juzgadoId)
                 )
+               
                 AND (
                     LOWER(c.folio) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
@@ -82,7 +86,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 )
             """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-            String key, List<String> motivos);
+            String key, List<String> motivos, Persona personaId);
 
     @Query("""
                 SELECT m
