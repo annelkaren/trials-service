@@ -68,7 +68,7 @@ class MovimientosServiceTest {
     @Test
     void getMovimientosSalidasTest(){
         List<MovimientoSalidaRecord> movimientos = List.of(movimiento);
-
+        estadoCarpeta = EstadoCarpeta.RECEPCION;
         given(movimientoRepository.getSalidas(uuid, estadoCarpeta)).willReturn(movimientos);
 
         movimientos = movimientoService.getMovimientosSalida(uuid.toString());

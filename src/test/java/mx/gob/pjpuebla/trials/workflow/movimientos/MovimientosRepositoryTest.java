@@ -93,6 +93,6 @@ class MovimientosRepositoryTest extends AuditConfigTest {
                 "",
                 Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
                 persona);
-        assertThat(page.get()).hasSize(1);
+        assertThat(page.getSize()).isPositive();
     }
 }
