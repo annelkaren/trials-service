@@ -7,6 +7,8 @@ import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 import java.util.*;
 
@@ -134,8 +136,8 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
-            String key) {
-        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable);
+            String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio) {
+        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta, tipoDocumento, folio);
     }
 
     public String getOrigen(Integer documentoId, Integer carpetaId) {

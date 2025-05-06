@@ -317,7 +317,7 @@ class DocumentoServiceTest {
                 movimiento.setMotivo("Prueba");
 
                 Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
-                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq("")))
+                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), TipoCarpeta.DEMANDA, null, 3))
                                 .willReturn(movimientoPage);
 
                 // Act

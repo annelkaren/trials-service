@@ -138,11 +138,22 @@ public class DocumentoService {
         @Transactional(readOnly = true)
         public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
+                Object[] resultado = procesarTipoCarpeta(key);
+                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
+                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
+                Integer folioTemp = (Integer) resultado[2];                
 
                 Persona persona = personaService.getAuditor();
                 Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
                 Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
-                Page<Movimiento> page = movimientoService.getAllBandejaEntrada(pageable, juzgadoId, oficialiaId, key);
+                Page<Movimiento> page = movimientoService.getAllBandejaEntrada(
+                        pageable,
+                        juzgadoId,
+                        oficialiaId,
+                        key,
+                        tipoCarpetaNombre,
+                        tipoDocumentoNombre,
+                        folioTemp);
 
                 List<DocumentoGridRecord> list = page.getContent()
                                 .stream()
@@ -296,8 +307,7 @@ public class DocumentoService {
                 // Actualiza carga de juzgados.
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
 
-                return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
-                                documento.getCarpeta().getTipoCarpeta());
+                return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
         }
 
         public DocumentoGenericRecord createDemandaPenal(DocumentoCreateDemandaPenalRecord demanda) {
@@ -1208,13 +1218,13 @@ public class DocumentoService {
 
         public Object[] getQR(String folioDocumentoQR) {
                 String[] parte = folioDocumentoQR.split("-");
+
                 if (parte.length != 2) {
                         throw new IllegalArgumentException("El código QR tiene un formato inválido.");
                 }
 
                 String prefix = parte[0].trim();
                 int folio = Integer.parseInt(parte[1].trim());
-
                 return new Object[] { prefix, folio };
         }
 
@@ -1252,6 +1262,7 @@ public class DocumentoService {
                                         throw new IllegalArgumentException("El tipo de carpeta es desconocido");
                         }
                 }
+
 
                 return new Object[] { tipoCarpetaNombre, tipoDocumentoNombre, folio };
         }

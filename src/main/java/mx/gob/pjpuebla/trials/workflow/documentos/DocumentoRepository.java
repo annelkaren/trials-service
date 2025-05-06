@@ -73,7 +73,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             AND m.estado = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
              AND (
-                  ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                  ( 
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND doc.tipoDocumento = :tipoDocumento))
                    OR lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
                    OR lower(COALESCE(c.folio, doc.folio)) = lower(:key)
