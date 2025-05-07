@@ -992,7 +992,7 @@ class DocumentoServiceTest {
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
                 given(personaService.getAuditor()).willReturn(persona);
-                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any())).willReturn(page);
+                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(), any())).willReturn(page);
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 

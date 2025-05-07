@@ -947,7 +947,10 @@ public class DocumentoService {
                                 EstadoCarpeta.TURNADO,
                                 key,
                                 EstadoCarpeta.TURNADO.name(),
-                                currentUser);
+                                currentUser,
+                                tipoCarpetaNombre,
+                                tipoDocumentoNombre,
+                                folioTemp);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {
