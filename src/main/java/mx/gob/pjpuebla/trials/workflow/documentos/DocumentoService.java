@@ -929,13 +929,18 @@ public class DocumentoService {
         public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
+                Object[] resultado = procesarTipoCarpeta(key);
+                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
+                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
+                Integer folioTemp = (Integer) resultado[2];       
+
                 if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-                        return renderOficialMayorData(key, pageable, currentUser);
+                        return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp);
                 }
-                return renderData(key, pageable, currentUser);
+                return renderData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp);
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser) {
+        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp) {
                 Page<Movimiento> page = movimientoService.getBandejaRecepcion(
                                 pageable,
                                 currentUser.getJuzgado().getId(),
@@ -976,7 +981,7 @@ public class DocumentoService {
         }
 
         private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
-                        Persona currentUser) {
+                        Persona currentUser, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp) {
 
                 Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                                 pageable,
@@ -984,7 +989,10 @@ public class DocumentoService {
                                 List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                                 key,
                                 List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
-                                currentUser);
+                                currentUser,
+                                tipoCarpetaNombre,
+                                tipoDocumentoNombre,
+                                folioTemp);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {

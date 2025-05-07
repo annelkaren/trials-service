@@ -781,7 +781,7 @@ class DocumentoServiceTest {
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
                 given(movimientoService.getAllBandejaRecepcion(
                                 PageRequest.of(0, listPage.size()),
-                                juzgado.getId(), list, "", motivos, persona))
+                                juzgado.getId(), list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",

@@ -85,10 +85,14 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                    OR ( 
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
             """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-            String key, List<String> motivos, Persona personaId);
+            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+            TipoDocumento tipoDocumento, Integer folio);
 
     @Query("""
                 SELECT m
