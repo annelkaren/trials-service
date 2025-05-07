@@ -1079,7 +1079,7 @@ class DocumentoServiceTest {
                                 .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
 
-                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any()))
+                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any(), any(), any(), any()))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 given(personaService.getAuditor())

@@ -1094,21 +1094,27 @@ public class DocumentoService {
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
                 boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
-                Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(),
-                                persona,
-                                esOficialMayor, pageable);
+                Object[] resultado = procesarTipoCarpeta(key);
+                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
+                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
+                Integer folioTemp = (Integer) resultado[2];    
 
-                List<DocumentoAsignadoResponseRecord> list = new ArrayList<>();
-                for (Movimiento mov : page.getContent()) {
-                        Documento documento = mov.getDocumento();
+                Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(), persona, esOficialMayor, pageable, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp);
 
-                        boolean isPromocion = (documento != null && documento.getTipoDocumento() != null
-                                        && Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
-                        Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta()
-                                        : documento != null ? documento.getCarpeta() : null;
+                List<DocumentoAsignadoResponseRecord> list = page.getContent()
+                        .stream()
+                        .map(mov -> {
+                                Documento documento = mov.getDocumento();
 
-                        assert carpeta != null;
-                        DocumentoAsignadoResponseRecord documentoGridRecord = new DocumentoAsignadoResponseRecord(
+                                boolean isPromocion = (documento != null && documento.getTipoDocumento() != null
+                                                && Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION));
+
+                                Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta()
+                                                : documento != null ? documento.getCarpeta() : null;
+        
+                                assert carpeta != null;
+
+                                return new DocumentoAsignadoResponseRecord(
                                         (isPromocion) ? documento.getId() : null,
                                         carpeta.getId(),
                                         carpeta.getExpediente(),
@@ -1135,8 +1141,8 @@ public class DocumentoService {
                                                                         : carpeta.getEstatus().name().toLowerCase()),
                                         (isPromocion) ? mov.getObservaciones()
                                                         : getObservaciones(carpeta, mov.getObservaciones()));
-                        list.add(documentoGridRecord);
-                }
+                        })
+                        .toList();
 
                 personaAsignada = null;
                 return new PageImpl<>(list, pageable, page.getTotalElements());

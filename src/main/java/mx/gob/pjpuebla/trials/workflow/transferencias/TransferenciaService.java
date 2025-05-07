@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoTransferencia;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -63,7 +64,7 @@ public class TransferenciaService {
         UUID uuid = UUID.randomUUID();
         LocalDateTime fechaTransferencia = LocalDateTime.now();
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("", personaEntrega.getJuzgado().getId(), personaEntrega, Boolean.TRUE, Pageable.unpaged()).getContent();
+        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("", personaEntrega.getJuzgado().getId(), personaEntrega, Boolean.TRUE, Pageable.unpaged(), null, null, null).getContent();
 
         for(Movimiento asignacion : asignaciones){
             Movimiento movimiento = new Movimiento()
