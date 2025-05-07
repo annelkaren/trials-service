@@ -108,12 +108,12 @@ class MovimientosServiceTest {
         Persona persona = PersonaSetUp.createPersona();
         given(movimientoRepository.getAllBandejaRecepcion(
                 PageRequest.of(0, 1),
-                1, list, "", motivos, persona))
+                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3))
                 .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
 
 
         Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos, persona);
+                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3);
         assertThat(result.getSize()).isPositive();
     }
 
