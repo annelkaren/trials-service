@@ -85,7 +85,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
-                    OR ( 
+                    OR (
                     (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
@@ -129,7 +129,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
-                    OR ( 
+                    OR (
                     (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
@@ -192,7 +192,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
                     OR LOWER(c.juzgado.nombre) LIKE %:key%
-                    OR ( 
+                    OR (
                     (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
