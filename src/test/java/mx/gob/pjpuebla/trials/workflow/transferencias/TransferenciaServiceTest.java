@@ -99,7 +99,7 @@ class TransferenciaServiceTest {
         given(transferenciaRepository.findById(transferencia.getId())).willReturn(Optional.of(transferencia));
         given(personaRepository.findById(1L)).willReturn(Optional.of(personaEntrega));
         given(personaRepository.findById(2L)).willReturn(Optional.of(personaRecibe));
-        given(documentoRepository.findByPersonaAsignada("", juzgado.getId(), personaEntrega, true, Pageable.unpaged(), TipoCarpeta.DEMANDA, null, 1)).willReturn(page);
+        given(documentoRepository.findByPersonaAsignada("", juzgado.getId(), personaEntrega, true, Pageable.unpaged(), null, null, null)).willReturn(page);
         given(transferenciaRepository.save(any())).willReturn(result);
         given(roleService.getRolesByUserId(any())).willReturn(List.of(rol));
 
