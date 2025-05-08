@@ -73,7 +73,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             AND m.estado = 'SALIDA'
             AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
              AND (
-                  ((:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                  (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND doc.tipoDocumento = :tipoDocumento))
                    OR lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
                    OR lower(COALESCE(c.folio, doc.folio)) = lower(:key)
@@ -149,10 +150,13 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
                     OR CAST(m.uuid AS text) = :key
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
             """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
-            Pageable pageable);
+            Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(

@@ -317,7 +317,7 @@ class DocumentoServiceTest {
                 movimiento.setMotivo("Prueba");
 
                 Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
-                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq("")))
+                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(), any()))
                                 .willReturn(movimientoPage);
 
                 // Act
@@ -760,6 +760,7 @@ class DocumentoServiceTest {
         @Test
         void getAllBandejaRecepcion_return_page() {
                 Documento demanda = DocumentoSetUp.create(tipoJuicio);
+                
                 demanda.getCarpeta().setFolio("1");
                 demanda.getCarpeta().setJuzgado(juzgado);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
@@ -780,7 +781,7 @@ class DocumentoServiceTest {
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
                 given(movimientoService.getAllBandejaRecepcion(
                                 PageRequest.of(0, listPage.size()),
-                                juzgado.getId(), list, "", motivos))
+                                juzgado.getId(), list, "", motivos, persona, null, null, null))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
@@ -991,7 +992,7 @@ class DocumentoServiceTest {
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
                 given(personaService.getAuditor()).willReturn(persona);
-                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any())).willReturn(page);
+                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(), any())).willReturn(page);
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
@@ -1078,7 +1079,7 @@ class DocumentoServiceTest {
                                 .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
 
-                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any()))
+                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any(), any(), any(), any()))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 given(personaService.getAuditor())

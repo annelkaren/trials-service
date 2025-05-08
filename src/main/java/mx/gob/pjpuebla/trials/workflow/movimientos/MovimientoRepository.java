@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 
 @Repository
@@ -64,14 +66,18 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     SELECT MAX(m2.fechaAsignacion)
                     FROM Movimiento m2
                     WHERE (
-                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                        ((m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                        (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                        AND (m2.estado != 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
+                     )
                 )
                 AND m.estado IN (:motivos)
+
                 AND (
                     (c IS NOT NULL AND jc.id = :juzgadoId)
                     OR (d IS NOT NULL AND jcd.id = :juzgadoId)
                 )
+               
                 AND (
                     LOWER(c.folio) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
@@ -79,10 +85,14 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
             """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-            String key, List<String> motivos);
+            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+            TipoDocumento tipoDocumento, Integer folio);
 
     @Query("""
                 SELECT m
@@ -119,10 +129,14 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
                     OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
             """)
     Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-            String motivos, Persona personaId);
+            String motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+            TipoDocumento tipoDocumento, Integer folio);
 
     @Query("""
                 SELECT m
@@ -178,9 +192,12 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
                     OR LOWER(c.juzgado.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
             """)
-    Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable);
+    Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
 
 
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
