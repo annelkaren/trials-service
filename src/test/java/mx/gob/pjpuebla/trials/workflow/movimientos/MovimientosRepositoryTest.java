@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -92,7 +93,8 @@ class MovimientosRepositoryTest extends AuditConfigTest {
                 51, Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                 "",
                 Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
-                persona);
+                persona,
+                TipoCarpeta.DEMANDA, null, 3);
         assertThat(page.getSize()).isPositive();
     }
 }
