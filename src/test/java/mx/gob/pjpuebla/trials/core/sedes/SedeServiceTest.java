@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,9 @@ class SedeServiceTest {
 
     @Mock
     DomicilioRepository mockDomicilioRepository;
+
+    @Mock
+    DigitalizacionService mockDigitalizacionService;
 
     @InjectMocks
     SedeService sedeService;
@@ -109,7 +113,7 @@ class SedeServiceTest {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockSedeRepository.findByIdAndEstadoIn(sede.getId(), estados))
                 .willReturn(Optional.ofNullable(sedeRecord));
-
+        given(mockDigitalizacionService.getPhoto(any(), any())).willReturn("data:image/png;base64, iVBOR");
         SedeRecord result = sedeService.findById(sede.getId());
         assertThat(result).isOfAnyClassIn(SedeRecord.class)
                 .hasFieldOrPropertyWithValue("id", sede.getId())
@@ -136,7 +140,7 @@ class SedeServiceTest {
         given(mockSedeRepository.findByNombre(sede.getNombre())).willReturn(Optional.of(sede));
         ConflictException assertThrows = assertThrows(
         ConflictException.class,
-                () -> sedeService.create(sede)
+                () -> sedeService.create(sede, null)
         );
 
         assertThat(assertThrows.getMessage()).contains("No pueden existir 2 sedes con el mismo nombre");
@@ -155,7 +159,7 @@ class SedeServiceTest {
         given(mockSedeRepository.save(sede))
                 .willReturn(sede);
 
-        SedeRecordResponse response = sedeService.create(sede);
+        SedeRecordResponse response = sedeService.create(sede, null);
 
         assertThat(response).isOfAnyClassIn(SedeRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", sede.getId())
@@ -175,7 +179,7 @@ class SedeServiceTest {
         given(mockSedeRepository.save(sede))
                 .willReturn(sede);
 
-        SedeRecordResponse response = sedeService.update(sede);
+        SedeRecordResponse response = sedeService.update(sede, null);
 
         assertThat(response).isOfAnyClassIn(SedeRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", sede.getId())
@@ -196,7 +200,7 @@ class SedeServiceTest {
 
         InvalidVersionException assertThrows = assertThrows(
                 InvalidVersionException.class,
-                () -> sedeService.update(sede)
+                () -> sedeService.update(sede, null)
         );
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");

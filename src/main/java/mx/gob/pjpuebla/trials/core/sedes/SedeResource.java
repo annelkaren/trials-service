@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,15 +10,18 @@ import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Controlador REST para gestionar las sedes.
  * Proporciona operaciones para obtener, crear, actualizar y eliminar sedes.
- * 
+ *
  * <p>Este controlador requiere autenticación a través de Keycloak.</p>
  */
 @RequiredArgsConstructor
@@ -29,9 +34,9 @@ public class SedeResource {
 
     /**
      * Obtiene una lista paginada de sedes, con la opción de filtrar por nombre.
-     * 
+     *
      * @param pageable configuración de paginación (tamaño por defecto de 20)
-     * @param nombre (opcional) nombre de la sede a filtrar
+     * @param nombre   (opcional) nombre de la sede a filtrar
      * @return una página de {@link SedeDomicilioRecordResponse}
      */
     @GetMapping
@@ -43,7 +48,7 @@ public class SedeResource {
 
     /**
      * Obtiene una sede por su ID.
-     * 
+     *
      * @param id identificador de la sede
      * @return un objeto {@link SedeRecord} con la información de la sede
      */
@@ -54,29 +59,35 @@ public class SedeResource {
 
     /**
      * Crea una nueva sede.
-     * 
+     *
      * @param sede objeto {@link Sede} que contiene la información de la nueva sede
      * @return un {@link SedeRecordResponse} con la información de la sede creada
      */
-    @PostMapping
-    public SedeRecordResponse create(@RequestBody @Valid Sede sede) {
-        return this.sedeService.create(sede);
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SedeRecordResponse create(@RequestPart(value = "sede") String sede,
+                                     @RequestPart(value = "photo", required = false) MultipartFile photo)
+            throws JsonProcessingException {
+        Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
+        return this.sedeService.create(sedeMapper, photo);
     }
 
     /**
      * Actualiza una sede existente.
-     * 
+     *
      * @param sede objeto {@link Sede} con la información actualizada
      * @return un {@link SedeRecordResponse} con la información de la sede actualizada
      */
-    @PutMapping
-    public SedeRecordResponse update(@RequestBody @Valid Sede sede) {
-        return this.sedeService.update(sede);
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SedeRecordResponse update(@RequestPart(value = "sede") String sede,
+                                     @RequestPart(value = "photo", required = false) MultipartFile photo)
+            throws JsonProcessingException {
+        Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
+        return this.sedeService.update(sedeMapper, photo);
     }
 
     /**
      * Elimina una sede por su ID.
-     * 
+     *
      * @param id identificador de la sede a eliminar
      */
     @DeleteMapping("/{id}")
@@ -86,7 +97,7 @@ public class SedeResource {
 
     /**
      * Obtiene una lista paginada de todas las sedes junto con sus domicilios.
-     * 
+     *
      * @param pageable configuración de paginación (tamaño por defecto de 20)
      * @return una página de {@link SedeDomiciliosRecord}
      */
