@@ -419,7 +419,7 @@ public class DigitalizacionService {
      *
      * @param photo  imagen de la sede
      * @param sedeId identificador interno de la sede
-     * @return
+     * @return Nuevo objeto con ruta y nombre de la imagen guardada
      */
     public DigitalizacionRecord savePhoto(MultipartFile photo, Integer sedeId) {
         this.basePath = this.rootFolder + "/digitalizacion/sedes/";
@@ -437,9 +437,11 @@ public class DigitalizacionService {
         }
         //Eliminar archivos anteriores, solo puede existir una fotografía
         File[] allContents = Paths.get(basePath, sedeId.toString()).toFile().listFiles();
-        for (File file : allContents) {
-            if (!file.getName().equals(photoName)) {
-                file.delete();
+        if (allContents != null) {
+            for (File file : allContents) {
+                if (!file.getName().equals(photoName)) {
+                    file.delete();
+                }
             }
         }
         return new DigitalizacionRecord(sedeId, rutaArchivo.resolve(photoName).toString(),
@@ -451,7 +453,7 @@ public class DigitalizacionService {
      *
      * @param sedeId - identificador interno de la sede
      * @param name   - nombre de la imagen
-     * @return
+     * @return base64 de la imagen, si no existe se retorna vacio
      */
     public String getPhoto(Integer sedeId, String name) {
         this.basePath = this.rootFolder + "/digitalizacion/sedes/";
@@ -486,7 +488,7 @@ public class DigitalizacionService {
     /**
      * Método auxiliar que verifica si un directorio tiene elementos, si tiene los elimina
      *
-     * @param path
+     * @param path - ruta de la carpeta
      */
     private void deleteContent(Path path) {
         File[] allContents = path.toFile().listFiles();
