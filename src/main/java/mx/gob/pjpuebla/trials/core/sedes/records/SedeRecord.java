@@ -3,14 +3,10 @@ package mx.gob.pjpuebla.trials.core.sedes.records;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
-import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.Tipo;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
-import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record SedeRecord(

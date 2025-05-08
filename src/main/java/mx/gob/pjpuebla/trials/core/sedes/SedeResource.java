@@ -3,14 +3,12 @@ package mx.gob.pjpuebla.trials.core.sedes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -36,7 +34,7 @@ public class SedeResource {
      * Obtiene una lista paginada de sedes, con la opción de filtrar por nombre.
      *
      * @param pageable configuración de paginación (tamaño por defecto de 20)
-     * @param nombre   (opcional) nombre de la sede a filtrar
+     * @param nombre (opcional) nombre de la sede a filtrar
      * @return una página de {@link SedeDomicilioRecordResponse}
      */
     @GetMapping
