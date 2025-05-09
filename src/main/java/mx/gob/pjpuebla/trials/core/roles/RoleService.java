@@ -3,6 +3,11 @@ package mx.gob.pjpuebla.trials.core.roles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
@@ -13,6 +18,10 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 @Slf4j
@@ -22,9 +31,12 @@ import java.util.*;
 public class RoleService {
 
     private static final String CENTRO_TRABAJO_KEY = "centro-trabajo";
+    private static final String JUSTICIA_ADOLESCENTES = "JUSTICIA PARA ADOLESCENTES";
+    private static final String PENAL = "PENAL";
     private final AuditorAware<Jwt> auditorAware;
     private final KeycloakSecurityUtil keycloakSecurityUtil;
-
+    private final JuzgadoRepository juzgadoRepository;
+    private final OficialiaRepository oficialiaRepository;
     @Value("${keycloak.realm}")
     private String realm;
 
@@ -71,6 +83,14 @@ public class RoleService {
         return roles;
     }
 
+    public List<RoleRecord> getRolesByUserId(String userId, String tipoCentroTrabajo, Integer centroTrabajoId) {
+        List<RoleRecord> roles = getRolesByUserId(userId);
+        if (isPenal(tipoCentroTrabajo, centroTrabajoId)) {
+            return renameRoles(roles);
+        }
+        return roles;
+    }
+
     public boolean hasRole(String userId, String role) {
         List<RoleRecord> roles = getRolesByUserId(userId);
         return roles.stream().anyMatch(current -> current.id().equalsIgnoreCase(role));
@@ -79,10 +99,11 @@ public class RoleService {
     public List<RoleRecord> getAll() {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<RoleRepresentation> roles = keycloak.realm(realm).roles().list(false);
-        return mapRoles(roles, "");
+        return mapRoles(roles, "", false);
     }
 
-    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion) {
+    public List<RoleRecord> getAllAvailablesByUserId(String userId, String tipoCentroTrabajo, boolean isEdicion,
+            Integer centroTrabajoId) {
         List<RoleRepresentation> roles = new ArrayList<>();
         List<RoleRepresentation> filteredList;
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
@@ -92,7 +113,8 @@ public class RoleService {
             if (isEdicion) {
                 List<RoleRepresentation> currentRoles = userRepresentation.roles().realmLevel().listAll();
                 allRoles.forEach(role -> {
-                    boolean isAnExistingRole = currentRoles.stream().anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
+                    boolean isAnExistingRole = currentRoles.stream()
+                            .anyMatch(current -> role.getName().equalsIgnoreCase(current.getName()));
                     if (!isAnExistingRole) {
                         roles.add(role);
                     }
@@ -101,10 +123,44 @@ public class RoleService {
             } else {
                 filteredList = excludeAdminRoleIfNotApply(allRoles);
             }
-            return mapRoles(filteredList, tipoCentroTrabajo);
+            return mapRoles(filteredList, tipoCentroTrabajo, isPenal(tipoCentroTrabajo, centroTrabajoId));
         } catch (Exception ex) {
             throw new NotFoundException("Usuario no encontrado en keycloak", "usuario");
         }
+    }
+
+    private boolean isPenal(String tipoCentroTrabajo, Integer centroTrabajoId) {
+        if (tipoCentroTrabajo.equalsIgnoreCase("JUZGADO")) {
+            Juzgado juzgado = juzgadoRepository.findById(centroTrabajoId)
+                    .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", centroTrabajoId.toString()));
+            return juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL) ||
+                    juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES);
+        }
+        if (tipoCentroTrabajo.equalsIgnoreCase("OFICIALIA_COMUN")) {
+            Oficialia oficialia = oficialiaRepository.findById(centroTrabajoId)
+                    .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", centroTrabajoId.toString()));
+            int count = getCount(oficialia);
+            return count == oficialia.getJuzgados().size() + oficialia.getMaterias().size();
+        }
+        return false;
+    }
+
+    private static int getCount(Oficialia oficialia) {
+        int count = 0;
+        for (Materia materia : oficialia.getMaterias()) {
+            if (materia.getNombre().equalsIgnoreCase(PENAL)
+                    || materia.getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                count += 1;
+            }
+        }
+
+        for (Juzgado juzgado : oficialia.getJuzgados()) {
+            if (juzgado.getMateria().getNombre().equalsIgnoreCase(PENAL)
+                    || juzgado.getMateria().getNombre().equalsIgnoreCase(JUSTICIA_ADOLESCENTES)) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     private List<RoleRepresentation> excludeAdminRoleIfNotApply(List<RoleRepresentation> roles) {
@@ -118,7 +174,8 @@ public class RoleService {
         return roles;
     }
 
-    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations, String tipoCentroTrabajo) {
+    private List<RoleRecord> mapRoles(List<RoleRepresentation> roleRepresentations, String tipoCentroTrabajo,
+            boolean isPenal) {
         List<RoleRecord> roles = new ArrayList<>();
         List<RoleRepresentation> temporalList = roleRepresentations.stream()
                 .filter(r -> r.getAttributes() != null)
@@ -135,10 +192,55 @@ public class RoleService {
             temporalList.forEach(r -> roles.add(mapRole(r)));
         }
         roles.sort(Comparator.comparing(RoleRecord::id));
+        if (isPenal) {
+            return renameRoles(roles);
+        }
         return roles;
     }
 
     private RoleRecord mapRole(RoleRepresentation roleRepresentation) {
         return new RoleRecord(roleRepresentation.getName(), roleRepresentation.getDescription());
     }
+
+    /* restructuración de metodo para corregir Scan de QODANA */
+    private List<RoleRecord> renameRoles(List<RoleRecord> roles) {
+        List<RoleRecord> newList = new ArrayList<>();
+        try {
+            // Intentar obtener la ruta del archivo
+            URL rootPath = Thread.currentThread().getContextClassLoader().getResource("");
+            if (rootPath == null) {
+                throw new FileNotFoundException("El directorio raíz de recursos no se encontró.");
+            }
+            String defaultConfigPath = rootPath + "roles.properties";
+
+            // Cargar el archivo de propiedades
+            Properties defaultProps = new Properties();
+            try (FileInputStream inputStream = new FileInputStream(defaultConfigPath)) {
+                defaultProps.load(inputStream);
+            }
+
+            // Lista de roles a renombrar
+            String[] array = { "OFICIAL_MAYOR_JUZGADO", "AUXILIAR_OFICIAL_MAYOR_JUZGADO", "SECRETARIO",
+                    "DILIGENCIARIO" };
+            for (RoleRecord role : roles) {
+                boolean applyRename = Arrays.asList(array).contains(role.id());
+                if (applyRename) {
+                    String newName = defaultProps.getProperty(role.id());
+                    if (newName != null) {
+                        newList.add(new RoleRecord(role.id(), newName));
+                    } else {
+                        newList.add(role); // Si no se encuentra el nombre, mantener el original
+                    }
+                } else {
+                    newList.add(role); // Si el rol no está en la lista, mantener el original
+                }
+            }
+        } catch (IOException | NullPointerException e) {
+            // Aquí puedes añadir un log o manejar el error de forma que no detenga la
+            // ejecución
+            return roles; // Retornar los roles originales si hay un error
+        }
+        return newList;
+    }
+
 }

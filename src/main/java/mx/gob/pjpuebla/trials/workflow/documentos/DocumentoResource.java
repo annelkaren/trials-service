@@ -48,6 +48,7 @@ public class DocumentoResource {
     private final OficioService oficioService;
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
+
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
         return this.documentoService.createDemanda(documentoSaveRecord);
@@ -57,11 +58,11 @@ public class DocumentoResource {
     public DocumentoGenericRecord crearDemandaPenal(@RequestBody DocumentoCreateDemandaPenalRecord demanda) {
         return this.documentoService.createDemandaPenal(demanda);
     }
-    
 
     @PatchMapping(value = "/demanda/{id}/anexos", produces = MediaType.APPLICATION_JSON_VALUE)
     public DocumentoRecord editAnexos(@PathVariable Integer id, @RequestBody AnexoRecord anexoRecord) {
-        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita(), anexoRecord.procedencia());
+        return documentoService.editarAnexos(id, anexoRecord.anexos(), anexoRecord.motivoEdita(),
+                anexoRecord.procedencia());
     }
 
     @GetMapping(value = "/demanda/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -103,13 +104,13 @@ public class DocumentoResource {
 
     @GetMapping("/bandeja/entrada")
     public Page<DocumentoGridRecord> getAll(Pageable pageable,
-                                            @RequestParam(value = "key", required = false) String key) {
+            @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAll(key, pageable);
     }
 
     @GetMapping("/bandeja/salida")
     public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
-                                                                   @RequestParam(value = "key", required = false) String key) {
+            @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAllBandejaSalida(key, pageable);
     }
 
@@ -125,11 +126,13 @@ public class DocumentoResource {
         return documentoService.getAllHistorial(key, pageable);
     }
 
-    @PostMapping(value = "/documento/promocion",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/documento/promocion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoPromocionResponseRecord createPromocion(
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson) throws JsonProcessingException   {
-        DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,DocumentoPromocionRecord.class);
+            @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson)
+            throws JsonProcessingException {
+        DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,
+                DocumentoPromocionRecord.class);
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 
@@ -156,8 +159,9 @@ public class DocumentoResource {
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
-    public MovimientoPersonalJuzgadoRecord movimientoPersonalJuzgado(@RequestBody PersonalJuzgadoRecord personalJuzgadoRecord) {
-        return this.documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord);
+    public List<MovimientoPersonalJuzgadoRecord> movimientoPersonalJuzgado(
+            @RequestBody List<PersonalJuzgadoRecord> personalJuzgadoRecord) {
+        return this.documentoService.movimientoPersonalJuzgadoList(personalJuzgadoRecord);
     }
 
     @GetMapping("/bandeja/asignados")
@@ -168,13 +172,15 @@ public class DocumentoResource {
     }
 
     @PostMapping("/bandeja/asignados/movimiento")
-    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(@RequestBody @Valid List<AsignadoTurnadoRecord> records) {
+    public List<MovimientoPersonalJuzgadoRecord> turnadoPersonalJuzgado(
+            @RequestBody @Valid List<AsignadoTurnadoRecord> records) {
         return documentoService.turnadoPersonalJuzgado(records);
     }
 
     @PostMapping("/bandeja/salida")
     public String sendToBandejaRecepcion(@RequestBody @Valid SalidaSentToRecepcionRecord salidaSentToRecepcionRecord) {
-        return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(), salidaSentToRecepcionRecord.personaCarrito());
+        return this.documentoService.sendToBandejaRecepcion(salidaSentToRecepcionRecord.idList(),
+                salidaSentToRecepcionRecord.personaCarrito());
     }
 
     @GetMapping("/bandeja/oficios")
@@ -197,7 +203,7 @@ public class DocumentoResource {
 
     @GetMapping(value = "/documentos/indicadores", produces = MediaType.APPLICATION_JSON_VALUE)
     public IndicadoresRecord getIndicadores(@RequestParam Boolean isRecepcion) {
-        if (isRecepcion==Boolean.TRUE)
+        if (isRecepcion == Boolean.TRUE)
             return this.documentoService.getIndicadores();
 
         return this.documentoService.getIndicadoresAsignados();
@@ -209,7 +215,8 @@ public class DocumentoResource {
     }
 
     @GetMapping(value = "/documentos/oficio/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> exportOficioPdf(@PathVariable Integer oficioId) throws JRException, IOException, WriterException {
+    public ResponseEntity<byte[]> exportOficioPdf(@PathVariable Integer oficioId)
+            throws JRException, IOException, WriterException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("oficio", oficioId + "_documento.pdf");
@@ -221,19 +228,20 @@ public class DocumentoResource {
         this.documentoService.deleteAsignado(id);
     }
 
-    @PostMapping(value="/documentos/amparo")
+    @PostMapping(value = "/documentos/amparo")
     public AmparoRecordResponse crearAmparo(@RequestBody AmparoRecord amparoRecord) {
 
         return documentoService.createAmparo(amparoRecord);
 
     }
-    
+
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(
             @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,
             @RequestPart("file") MultipartFile file) throws JsonProcessingException {
 
-        DocumentoAntiguoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson, DocumentoAntiguoSaveRecord.class);
+        DocumentoAntiguoSaveRecord documentoSaveRecord = new ObjectMapper().readValue(documentoSaveRecordJson,
+                DocumentoAntiguoSaveRecord.class);
         return this.documentoService.createDemandaAntigua(documentoSaveRecord, file);
     }
 
@@ -246,29 +254,28 @@ public class DocumentoResource {
     @PostMapping(value = "/exhorto/salida", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoPromocionResponseRecord createExhortoSalida(
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestPart("documentoExhortoSalida") String documentoExhortoSalidaRecordJson
-    ) throws JsonProcessingException {
+            @RequestPart("documentoExhortoSalida") String documentoExhortoSalidaRecordJson)
+            throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        DocumentoExhortoSalidaRecord documentoExhortoSalidaRecord =
-                objectMapper.readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
+        DocumentoExhortoSalidaRecord documentoExhortoSalidaRecord = objectMapper
+                .readValue(documentoExhortoSalidaRecordJson, DocumentoExhortoSalidaRecord.class);
         return documentoService.createExhortoSalida(documentoExhortoSalidaRecord, file);
     }
 
     @PostMapping(value = "/documentos/promocion/{promocionId}/adjuntar")
-    public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId){
+    public DocumentoPromocionResponseRecord adjuntarPromocion(@PathVariable Integer promocionId) {
         return documentoService.adjuntarPromocion(promocionId);
     }
-    
+
     @PostMapping(value = "/documentos/sentencia/publica/{docId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void saveSentenciaPublica(
             @RequestPart("file") MultipartFile file,
-            @PathVariable("docId")  Integer docId
-    ){
+            @PathVariable("docId") Integer docId) {
         documentoService.saveSentenciaPublica(docId, file);
     }
 
-    @GetMapping("/documentos/amparo/{id}") 
+    @GetMapping("/documentos/amparo/{id}")
     public ResponseEntity<AmparoGetRecord> getAmparoById(@PathVariable Integer id) {
         AmparoGetRecord amparoRecord = documentoService.getAmparoById(id);
         if (amparoRecord == null) {
@@ -278,7 +285,8 @@ public class DocumentoResource {
     }
 
     @PutMapping("/documentos/amparo/update/{id}")
-    public ResponseEntity<String> updateAmparoData(@PathVariable Integer id, @RequestBody AmparoUpdateRecord amparoUpdate) {
+    public ResponseEntity<String> updateAmparoData(@PathVariable Integer id,
+            @RequestBody AmparoUpdateRecord amparoUpdate) {
         try {
             documentoService.updateAmparoData(id, amparoUpdate);
             return ResponseEntity.ok("Documento actualizado con éxito");
@@ -288,4 +296,18 @@ public class DocumentoResource {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el documento");
         }
     }
-} 
+
+    @GetMapping("/bandeja/devueltos/ocp")
+    public Page<DocumentoBandejaDevueltos> getBandejaDevueltosOCP(Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return this.documentoService.getBandejaDevueltosOCP(key, pageable);
+    }
+
+    @PostMapping("/devolver/bandejas")
+    public ResponseEntity<String> devolverABandejas(@RequestBody DevolucionBandejasRecord devolucion) {
+        this.documentoService.devolverABandejas(devolucion);
+        return ResponseEntity.ok("Devolución completa");
+    }
+    
+
+}

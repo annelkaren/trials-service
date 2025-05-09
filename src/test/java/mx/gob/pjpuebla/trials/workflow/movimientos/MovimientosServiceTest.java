@@ -68,7 +68,7 @@ class MovimientosServiceTest {
     @Test
     void getMovimientosSalidasTest(){
         List<MovimientoSalidaRecord> movimientos = List.of(movimiento);
-
+        estadoCarpeta = EstadoCarpeta.RECEPCION;
         given(movimientoRepository.getSalidas(uuid, estadoCarpeta)).willReturn(movimientos);
 
         movimientos = movimientoService.getMovimientosSalida(uuid.toString());
@@ -105,20 +105,21 @@ class MovimientosServiceTest {
         Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
         List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
         List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
+        Persona persona = PersonaSetUp.createPersona();
         given(movimientoRepository.getAllBandejaRecepcion(
                 PageRequest.of(0, 1),
-                1, list, "", motivos))
+                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3))
                 .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
 
 
         Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos);
+                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3);
         assertThat(result.getSize()).isPositive();
     }
 
     @Test
     void testCreateMotivoWithoutPromocion() {
-        MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3);
+        MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3, true);
         Persona currentUser = new Persona();
         Carpeta carpeta = new Carpeta();
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
@@ -131,7 +132,7 @@ class MovimientosServiceTest {
         movimientoService.createMotivo(motivoRecord);
 
         verify(movimientoRepository, times(1)).save(any(Movimiento.class));
-        verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+        verify(carpetaRepository, times(1)).actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO_A_OFICIALIA);
     }
 
     @Test

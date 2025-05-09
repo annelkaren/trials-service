@@ -7,5 +7,6 @@ import java.util.List;
 @Repository
 public interface DocumentoDetalleRepository extends JpaRepository<DocumentoDetalle, Integer> {
     List<DocumentoDetalle> findAllByDocumentoId(Integer documentoId);
+    List<DocumentoDetalle> findAllByDocumentoIdIn(List<Integer> documentoId);
     Optional<DocumentoDetalle> findByDocumentoId(Integer documentoId);
 }

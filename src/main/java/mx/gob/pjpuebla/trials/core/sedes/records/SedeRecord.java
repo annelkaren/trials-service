@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.sedes;
+package mx.gob.pjpuebla.trials.core.sedes.records;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
@@ -18,6 +18,16 @@ public record SedeRecord(
         String telefono,
         String extension,
         DistritoRecord distrito,
-        DomicilioRecord domicilio
+        DomicilioRecord domicilio,
+        String latitude,
+        String longitude,
+        String photo
 ) implements Serializable {
+
+    public SedeRecord withPhoto(String photo) {
+
+        return new SedeRecord(id(), version(), nombre(), estado(),
+                tipo(), telefono(), extension(), distrito(), domicilio(),
+                latitude(), longitude(), photo);
+    }
 }

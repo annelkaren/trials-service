@@ -96,7 +96,7 @@ public class ReasignacionExpedienteServiceTest {
                 when(carpetaRepository.findById(carpetaParentId)).thenReturn(Optional.of(carpetaParent));
                 when(documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpetaParentId)).thenReturn(documentoParent);
                 when(tipoJuicioRepository.findById(any())).thenReturn(Optional.of(new TipoJuicio()));
-                when(juzgadoRepository.findJuzgadoByOficialiaId(any())).thenReturn(List.of(JuzgadoSetUp.createJuzgado().setTipoJuicios(List.of(TipoJuicioSetUp.createTipoJuicio()))));
+                when(juzgadoRepository.findJuzgadoByOficialiaIdAndTipoJuicio(any(), any())).thenReturn(List.of(JuzgadoSetUp.createJuzgado().setTipoJuicios(List.of(TipoJuicioSetUp.createTipoJuicio()))));
                 when(juzgadoService.getJuzgado(any(), any(), any())).thenReturn(new Juzgado());
                 when(documentoService.getFolio(any())).thenReturn("Folio");
                 when(documentoService.generateNumExpediente(any(), any())).thenReturn("Expediente");

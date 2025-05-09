@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -50,8 +49,10 @@ public interface NotificacionesDetallesRepository extends JpaRepository<Notifica
             AND (d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.ACUERDO
                 OR d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.SENTENCIA)
             """)
-    List<NotificacionesDetalles> getAllByUsername(
-            @Param("username") String username, @Param("tipoNotificacion") TipoNotificacion tipoNotificacion
+    Page<NotificacionesDetalles> getAllByUsername(
+            @Param("username") String username,
+            @Param("tipoNotificacion") TipoNotificacion tipoNotificacion,
+            Pageable pageable
     );
 
     @Query("""

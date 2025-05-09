@@ -48,11 +48,10 @@ public class CarpetaResource {
         return this.carpetaService.getBandejaRecepcionByDocumentoId(documentoId);
     }
 
-    @PostMapping(value = "/recepcion/{documentoId}")
-    public DocumentoRecord recepcionAnexos(
-            @RequestBody DocumentoRecepcionMovimientosRecord docRecepcionMovimientosRecord,
-            @PathVariable Integer documentoId) {
-        return this.carpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord, documentoId);
+    @PostMapping(value = "/recepcion/")
+    public List<DocumentoRecord> recepcionAnexos(
+            @RequestBody List<DocumentoRecepcionMovimientosRecord> docRecepcionMovimientosRecord) {
+        return this.carpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord);
     }
 
     @GetMapping(value = "/enums/{catalogo}", produces = MediaType.APPLICATION_JSON_VALUE)

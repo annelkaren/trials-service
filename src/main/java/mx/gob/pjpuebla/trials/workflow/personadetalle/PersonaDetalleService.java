@@ -61,33 +61,8 @@ public class PersonaDetalleService {
         TipoPartes tipoParte = tipoPartesRepository.findById(tipoParteId)
             .orElseThrow(() -> new EntityNotFoundException("Tipo de partes no encontrado")); 
 
-        String nombreTipoParte = tipoParte.getNombre();
-        PersonaDocumento personaDocumento = new PersonaDocumento();
-        
-        if (personaDTO.getDatosGenerales().getNombres() != null && !personaDTO.getDatosGenerales().getNombres().isEmpty()) {
-            personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombres());
-        } else if (personaDTO.getDatosGenerales().getRazonSocial() != null && !personaDTO.getDatosGenerales().getRazonSocial().isEmpty()) {
-            personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
-        }
-
-        if(nombreTipoParte.equals("Actor") || nombreTipoParte.equals("Demandado")) {
-           personaDocumento.setRol( Rol.PRINCIPAL);
-        } else {
-            personaDocumento.setRol( Rol.SECUNDARIO);
-        }
-
-        personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
-        personaDocumento.setApellidoMaterno(personaDTO.getDatosGenerales().getApellidoMaterno());
-        personaDocumento.setPseudonimo(personaDTO.getDatosGenerales().getPseudonimo());
-        personaDocumento.setTipoPersona(personaDTO.getDatosGenerales().getTipoPersona());
-        personaDocumento.setCarpeta(carpeta);
-        personaDocumento.setTipoPartes(tipoParte);
-        personaDocumento.setCurp(personaDTO.getDatosGenerales().getCurp());
-        personaDocumento.setCelular(personaDTO.getDatosContacto().getTelefono());  
-        personaDocumento.setCorreoElectronico(personaDTO.getDatosContacto().getCorreoElectronico());
-        
-
-        
+       
+        PersonaDocumento personaDocumento = createPersonaDocumento(personaDTO, carpeta, tipoParte);
         Domicilio domicilio = new Domicilio();
         
         domicilio.setCalle(personaDTO.getDatosContacto().getCalle());
@@ -225,6 +200,36 @@ public class PersonaDetalleService {
         personaDetalleRepository.save(personaDetalle);
                
         return new PersonaDetalleRecord(personaDetalle.getId(),personaDocumento.getId(), domicilio.getId());
+    }
+
+    /*  Creación de metodo para corregir error de QODANA */
+    public PersonaDocumento createPersonaDocumento(PersonaDTO personaDTO, Carpeta carpeta, TipoPartes tipoParte){
+        PersonaDocumento personaDocumento = new PersonaDocumento();
+
+        String nombreTipoParte = tipoParte.getNombre();
+        if(nombreTipoParte.equals("Actor") || nombreTipoParte.equals("Demandado")) {
+            personaDocumento.setRol( Rol.PRINCIPAL);
+         } else {
+             personaDocumento.setRol( Rol.SECUNDARIO);
+         }
+
+         if (personaDTO.getDatosGenerales().getNombres() != null && !personaDTO.getDatosGenerales().getNombres().isEmpty()) {
+            personaDocumento.setNombre(personaDTO.getDatosGenerales().getNombres());
+        } else if (personaDTO.getDatosGenerales().getRazonSocial() != null && !personaDTO.getDatosGenerales().getRazonSocial().isEmpty()) {
+            personaDocumento.setNombre(personaDTO.getDatosGenerales().getRazonSocial());
+        }
+
+        personaDocumento.setApellidoPaterno(personaDTO.getDatosGenerales().getApellidoPaterno());
+        personaDocumento.setApellidoMaterno(personaDTO.getDatosGenerales().getApellidoMaterno());
+        personaDocumento.setPseudonimo(personaDTO.getDatosGenerales().getPseudonimo());
+        personaDocumento.setTipoPersona(personaDTO.getDatosGenerales().getTipoPersona());
+        personaDocumento.setCarpeta(carpeta);
+        personaDocumento.setTipoPartes(tipoParte);
+        personaDocumento.setCurp(personaDTO.getDatosGenerales().getCurp());
+        personaDocumento.setCelular(personaDTO.getDatosContacto().getTelefono());  
+        personaDocumento.setCorreoElectronico(personaDTO.getDatosContacto().getCorreoElectronico());
+
+        return personaDocumento;
     }
 
     public PersonaDTOGet getParticipante(Integer id){

@@ -197,7 +197,7 @@ class DigitalizacionServiceTest {
         
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
         long expectedFileSize = fileMock.getSize();
 
@@ -268,6 +268,7 @@ class DigitalizacionServiceTest {
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
@@ -293,7 +294,7 @@ class DigitalizacionServiceTest {
         Persona persona = PersonaSetUp.createPersona();
 
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));

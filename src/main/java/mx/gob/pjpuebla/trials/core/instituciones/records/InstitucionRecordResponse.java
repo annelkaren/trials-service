@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.core.instituciones;
+package mx.gob.pjpuebla.trials.core.instituciones.records;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;

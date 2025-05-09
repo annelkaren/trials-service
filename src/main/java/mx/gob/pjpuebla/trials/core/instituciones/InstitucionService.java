@@ -2,15 +2,10 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -34,29 +31,11 @@ public class InstitucionService {
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
-        List<Institucion> instituciones = institucionRepository.findAll();
-
+        // Definir el filtro de nombre si es necesario
         String nombreFiltro = example.getNombre() != null ? StringUtils.stripAccents(example.getNombre()).toLowerCase() : "";
-
-        List<Institucion> filtradas = instituciones.stream()
-                .filter(inst -> nombreFiltro.isEmpty() || StringUtils.stripAccents(inst.getNombre())
-                                .toLowerCase()
-                                .contains(nombreFiltro))
-                .toList();
-
-        List<InstitucionRecord> records = filtradas.stream()
-                .map(inst -> new InstitucionRecord(
-                        inst.getId(),
-                        inst.getNombre(),
-                        inst.getDomicilio().getDireccionInstitucion(),
-                        inst.getTelefono(),
-                        inst.getTipoInstitucion())
-                )
-                .skip(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(records, pageable, filtradas.size());
+    
+        // Llamar al repositorio con la consulta que ya hemos definido, pasando el filtro y el pageable
+        return institucionRepository.findAllInstituciones(nombreFiltro, pageable, List.of(Estado.ACTIVE, Estado.INACTIVE));
     }
 
 
@@ -96,36 +75,16 @@ public class InstitucionService {
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAllByEstadoAutocomplete(Institucion example, Pageable pageable) {
-
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-        example.setEstado(Estado.ACTIVE);
-
-        Page<Institucion> page = institucionRepository.findAll(Example.of(example, exampleMatcher), pageable);
-        return getPageInstitucion(page, pageable);
+        // Llamamos directamente a la consulta del repositorio con el filtro de nombre y estado
+        return institucionRepository.findAllInstituciones(
+                example.getNombre(),
+                pageable,
+                List.of(Estado.ACTIVE) // Filtramos solo las instituciones activas
+        );
     }
 
-    private Page<InstitucionRecord> getPageInstitucion(Page<Institucion> page, Pageable pageable) {
-        List<InstitucionRecord> list = page.getContent().stream()
-                .map(institucion -> new InstitucionRecord(
-                        institucion.getId(),
-                        institucion.getNombre(),
-                        String.join(" ",
-                                institucion.getDomicilio().getCalle(),
-                                institucion.getDomicilio().getColonia(),
-                                institucion.getDomicilio().getExterior(),
-                                (institucion.getDomicilio().getInterior() != null && !institucion.getDomicilio().getInterior().isEmpty()) ? "Int. " + institucion.getDomicilio().getInterior() : "",
-                                institucion.getDomicilio().getEstadoRepublica(),
-                                institucion.getDomicilio().getMunicipio(),
-                                institucion.getDomicilio().getLocalidad(),
-                                institucion.getDomicilio().getCodigoPostal(),
-                                (institucion.getDomicilio().getReferencia() != null && !institucion.getDomicilio().getReferencia().isEmpty()) ? "Ref: " + institucion.getDomicilio().getReferencia() : ""
-                        ).trim(),
-                        institucion.getTelefono(),
-                        institucion.getTipoInstitucion()
-                        ))
-                .toList();
-        return new PageImpl<>(list, pageable, page.getTotalElements());
+    public List<InstitucionRecord> findByTipoInstitucion(String tipo){
+        return institucionRepository.findByTipoInstitucion(tipo);
     }
 
 }

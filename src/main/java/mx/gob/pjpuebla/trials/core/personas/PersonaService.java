@@ -91,9 +91,19 @@ public class PersonaService {
 
     @Transactional(readOnly = true)
     public PersonaRecord findById(Long id) {
+        String tipoCentroTrabajo = "";
+        Integer centroTrabajoId = null;
         PersonaRecord persona = personaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "personaId"));
-        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario());
+        if (persona.juzgadoId() != null) {
+            tipoCentroTrabajo = "JUZGADO";
+            centroTrabajoId = persona.juzgadoId();
+        }
+        if (persona.oficialiaId() != null) {
+            tipoCentroTrabajo = "OFICIALIA_COMUN";
+            centroTrabajoId = persona.oficialiaId();
+        }
+        List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario(), tipoCentroTrabajo, centroTrabajoId);
         return persona.withRoles(roles);
     }
 
@@ -205,10 +215,10 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                        .filter(juzgado -> juzgado.getMateria() != null
-                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                        .toList()
+                .filter(juzgado -> juzgado.getMateria() != null
+                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                .toList()
                 : Collections.emptyList();
     }
 
@@ -347,5 +357,43 @@ public class PersonaService {
         } else {
             throw new NotFoundException(PERSON_NOT_FOUND, username);
         }
+    }
+
+    public List<PersonaRecordResponse> findAllMensajeros() {
+        List<String> roles =  List.of("MENSAJERO");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        List<PersonaRecordResponse> mensajeros = new ArrayList<>();
+        for (String id : ids) {
+            Optional<Persona> personaOptional = personaRepository.findByUsuario(id);
+
+            if (personaOptional.isPresent()) {
+                Persona persona = personaOptional.get();
+                if (persona.getEstado().equals(Estado.ACTIVE)) {
+                    String name = persona.getNombre() + " " + persona.getApellidoPaterno();
+                    name += ((persona.getApellidoPaterno() != null) ? " " + persona.getApellidoMaterno() : "");
+                    mensajeros.add(new PersonaRecordResponse(persona.getId(), name, persona.getCorreoElectronico(),
+                            persona.getCelular(), "", "", ""));
+                }
+
+            }
+        }
+
+        return mensajeros;
+    }
+
+    public List<CentroTrabajoRecord> findCentroTrabajoByPersonCurrent() {
+        Persona persona = getAuditor();
+        List<CentroTrabajoRecord> centrosTrabajo = new ArrayList<>();
+        if (persona.getJuzgado() != null) {
+            centrosTrabajo.add(new CentroTrabajoRecord(persona.getJuzgado().getId(), persona.getJuzgado().getNombre(),
+                    TipoCentroTrabajo.JUZGADO));
+        }
+        if (persona.getOficialia() != null) {
+            centrosTrabajo.add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
+                    TipoCentroTrabajo.OFICIALIA_COMUN));
+        }
+
+        
+        return centrosTrabajo;
     }
 }

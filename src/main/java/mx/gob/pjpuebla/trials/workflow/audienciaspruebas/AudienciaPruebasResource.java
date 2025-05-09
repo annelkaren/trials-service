@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.AudienciaPruebaRequestRecord;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,13 +37,15 @@ public class AudienciaPruebasResource {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createAudienciaPrueba(
             @RequestPart("audienciaPruebaRequest") String audienciaPruebaRequestJson,
-            @RequestPart("file") Optional<MultipartFile> file) throws JsonProcessingException {
-
+            @RequestPart(value = "file", required = false) MultipartFile file) throws JsonProcessingException {
+    
+        
         AudienciaPruebaRequestRecord audienciaPruebaRequest = new ObjectMapper().readValue(audienciaPruebaRequestJson, AudienciaPruebaRequestRecord.class);
-        audienciasPruebasService.createAudienciaPrueba(audienciaPruebaRequest, file.orElse(null));
+        audienciasPruebasService.createAudienciaPrueba(audienciaPruebaRequest, file);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    
 
     @GetMapping("/{id}")
     public Page<DetallesPruebasRecord> getAllByAudiencia(

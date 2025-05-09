@@ -10,13 +10,15 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Repository
 public interface InstitucionRepository extends JpaRepository<Institucion, Integer> {
 
     @Query("""
-                SELECT new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecordResponse(
+                SELECT new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse(
                     i.id,
                     i.version,
                     i.nombre,
@@ -45,7 +47,7 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
 
     @Query("""
             SELECT
-                new mx.gob.pjpuebla.trials.core.instituciones.InstitucionRecord(
+                new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord(
                     i.id,
                     i.nombre,
                     CONCAT(
@@ -70,5 +72,49 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
     Page<InstitucionRecord> findAllEstadoIn(@Param("estados") List<Estado> estados, Pageable pageable);
 
     Optional<Institucion> findByNombre(String nombre);
+
+    @Query("""
+            SELECT
+                new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord(
+                    i.id,
+                    i.nombre,
+                    CONCAT(
+                        d.calle, ' ',
+                        d.colonia, ' ',
+                        d.exterior,
+                        CASE WHEN d.interior IS NOT NULL THEN CONCAT(' Int. ', d.interior) ELSE '' END,
+                        ' ',
+                        d.estadoRepublica, ' ',
+                        d.municipio, ' ',
+                        d.localidad, ' ',
+                        d.codigoPostal,
+                        CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
+                    ),
+                    i.telefono,
+                    i.tipoInstitucion
+                )
+            FROM Institucion i
+            JOIN i.domicilio d
+            WHERE i.estado = Estado.ACTIVE
+            AND i.tipoInstitucion = :tipo
+            """)
+    List<InstitucionRecord> findByTipoInstitucion(@Param("tipo") String tipo);
+
+    @Query("""
+            SELECT
+                new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord(
+                i.id,
+                i.nombre,
+                d,
+                i.telefono,
+                i.tipoInstitucion
+                )
+            FROM Institucion i
+            JOIN i.domicilio d
+            WHERE (COALESCE(:nombre, '') = '' OR LOWER(i.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+            AND i.estado IN :estados
+            """)
+    Page<InstitucionRecord> findAllInstituciones(@Param("nombre") String nombre, 
+    Pageable pageable, List<Estado> estados);
 
 }

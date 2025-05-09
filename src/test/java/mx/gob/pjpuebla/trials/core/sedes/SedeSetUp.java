@@ -3,6 +3,10 @@ package mx.gob.pjpuebla.trials.core.sedes;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRecord;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.Tipo;
@@ -58,7 +62,8 @@ public class SedeSetUp {
                 Tipo.EXTERNO,
                 "", "",
                 new DistritoRecord(1, ""),
-                new DomicilioRecord(1L, "", "", "", "", "", "", "", "", ""));
+                new DomicilioRecord(1L, "", "", "", "", "", "", "", "", ""),
+                "19.233503026844463", "-98.23867360110482", "");
     }
 
     public  static SedeDomiciliosRecord createSedeDomiciliosRecord(Sede sede, Domicilio domicilio){
