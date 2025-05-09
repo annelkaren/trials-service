@@ -158,19 +158,19 @@ void testFindByCarpetaIdAndTipoDocumentoIn() {
     Integer carpetaId = 1;
     List<TipoDocumento> tiposDocumento = Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA);
 
-    List<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(carpetaId, tiposDocumento);
+    Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(carpetaId, tiposDocumento, PageRequest.of(0, 10));
 
     assertNotNull(documentos);
-    assertEquals(1, documentos.size());
+    assertEquals(1, documentos.getTotalElements());
 
-    Documento documento1 = documentos.get(0);
+    Documento documento1 = documentos.getContent().get(0);
     assertEquals(TipoDocumento.ACUERDO, documento1.getTipoDocumento());
 }
 
     @Test
     void testFindPromocionesLitigante() {
         String correo = "juanperez@gmail.com";
-        Page<Documento> promociones = documentoRepository.findPromocionesLitigante(correo, PageRequest.of(0, 10));
+        Page<Documento> promociones = documentoRepository.findPromocionesLitigante(correo, "", PageRequest.of(0, 10));
         assertThat(promociones).isNotEmpty();
     }
 

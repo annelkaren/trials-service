@@ -4,9 +4,12 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
-import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
@@ -104,39 +108,108 @@ class SedeResourceTest {
 
     @Test
     void create_success() throws Exception {
-        given(mockSedeService.create(SedeSetUp.createSede(Estado.ACTIVE)))
+        String sede = """
+                    {
+                        "id": "1",
+                        "version": "0",
+                        "nombre": "Sede Ejemplo",
+                        "latitude": "19.233503026844463",
+                        "longitude": "-98.23867360110482"
+                    }
+                """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "mifotografia.jpg",
+                "image/jpg",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile sedeSave = new MockMultipartFile(
+                "sede",
+                "sede",
+                "application/json",
+                sede.getBytes()
+        );
+
+        given(mockSedeService.create(SedeSetUp.createSede(Estado.ACTIVE), file))
                 .willReturn(sedeRecordResponse);
 
         mockMvc.perform(
-                post("/api/core/sedes")
-                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
-                        .contentType(MediaType.APPLICATION_JSON)
+                multipart("/api/core/sedes")
+                        .file(file)
+                        .file(sedeSave)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
 
     @Test
     void update_success() throws Exception {
-        given(mockSedeService.create(SedeSetUp.createSede(Estado.ACTIVE)))
+        String sede = """
+                    {
+                        "id": "1",
+                        "version": "0",
+                        "nombre": "Sede Ejemplo",
+                        "latitude": "19.233503026844463",
+                        "longitude": "-98.23867360110482"
+                    }
+                """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "mifotografia.jpg",
+                "image/jpg",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile sedeSave = new MockMultipartFile(
+                "sede",
+                "sede",
+                "application/json",
+                sede.getBytes()
+        );
+
+        given(mockSedeService.create(SedeSetUp.createSede(Estado.ACTIVE), file))
                 .willReturn(sedeRecordResponse);
 
         mockMvc.perform(
-                put("/api/core/sedes")
-                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
-                        .contentType(MediaType.APPLICATION_JSON)
+                multipart("/api/core/sedes")
+                        .file(file)
+                        .file(sedeSave)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }
 
     @Test
     void update_error() throws Exception {
-        given(mockSedeService.update(SedeSetUp.createSede(Estado.ACTIVE)))
+        String sede = """
+                    {
+                        "id": "1",
+                        "version": "0",
+                        "nombre": "Sede Ejemplo",
+                        "latitude": "19.233503026844463",
+                        "longitude": "-98.23867360110482"
+                    }
+                """;
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "mifotografia.jpg",
+                "image/jpg",
+                "Contenido del archivo".getBytes()
+        );
+        MockMultipartFile sedeSave = new MockMultipartFile(
+                "sede",
+                "sede",
+                "application/json",
+                sede.getBytes()
+        );
+
+        given(mockSedeService.update(SedeSetUp.createSede(Estado.ACTIVE), file))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
-                put("/api/core/sedes")
-                        .content(ResourceUtilTest.asJsonString(SedeSetUp.createSede(Estado.ACTIVE)))
-                        .contentType(MediaType.APPLICATION_JSON)
+                multipart("/api/core/sedes")
+                        .file(sedeSave)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
     }

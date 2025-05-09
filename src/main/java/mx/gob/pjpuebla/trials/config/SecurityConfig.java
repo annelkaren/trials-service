@@ -55,7 +55,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:3000",
+                "http://localhost:4000",
                 "http://127.0.0.1:3000",
+                "http://127.0.0.1:4000",
                 "https://*.pjptrials.link"
         ));
         configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));

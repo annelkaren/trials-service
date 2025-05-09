@@ -111,7 +111,7 @@ class DocumentoResourceTest {
                 demanda.getCarpeta().getExpediente(),
                 "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
                 EstadoCarpeta.CAPTURA,
-                true, "Juzgado 1", "");
+                true, "Juzgado 1", "", "");
 
         given(documentoService.getAll(any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
@@ -252,7 +252,7 @@ class DocumentoResourceTest {
         String materiaNombre = "MERCANTIL";
 
         DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "");
+                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "", "");
 
         given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
@@ -457,19 +457,26 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void movimientoPersonalJuzgado_success() throws Exception {
-        PersonalJuzgadoRecord personalJuzgadoRecord = new PersonalJuzgadoRecord(51, 2);
 
-        given(documentoService.movimientoPersonalJuzgado(personalJuzgadoRecord))
-                .willReturn(DocumentoSetUp.createMovimientoPersonalJuzgadoRecord());
-        mockMvc.perform(
-                        post("/api/workflow/bandeja/recepcion/movimiento")
-                                .content(ResourceUtilTest.asJsonString(personalJuzgadoRecord))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+
+    @Test
+void movimientoPersonalJuzgado_success() throws Exception {
+    // Crear una lista de PersonalJuzgadoRecord
+    List<PersonalJuzgadoRecord> personalJuzgadoRecords = List.of(new PersonalJuzgadoRecord(51, 2, "DEMANDA", 3));
+
+    // Configurar el mock para el servicio
+    given(documentoService.movimientoPersonalJuzgadoList(personalJuzgadoRecords))
+            .willReturn(List.of(DocumentoSetUp.createMovimientoPersonalJuzgadoRecord()));
+
+    // Realizar la petición POST
+    mockMvc.perform(
+                    post("/api/workflow/bandeja/recepcion/movimiento")
+                            .content(ResourceUtilTest.asJsonString(personalJuzgadoRecords)) // Ahora enviamos una lista
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+}
+
 
     @Test
     void turnadoPersonalJuzgado_success() throws Exception {

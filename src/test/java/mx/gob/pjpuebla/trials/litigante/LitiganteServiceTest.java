@@ -1,15 +1,13 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.utils.audit.SetupServiceTest;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.DocumentoExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExpedienteAutorizadoRecord;
+import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionAutorizadaRecord;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesElectronicasLitigante;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -62,7 +60,7 @@ class LitiganteServiceTest extends SetupServiceTest {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
                 "", "", "Juzgado 5 Mercantil TEST", 0L);
-        given(personaDocumentoRepository.findByUsername(any(), any(PageRequest.class)))
+        given(personaDocumentoRepository.findByUsername(any(), any(), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(Arrays.asList(litiganteExpedientesRecord), PageRequest.of(0, 1), 1));
         given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
                 .willReturn(Arrays.asList("Julio Arenas", "Jorge Dominguez"));
@@ -70,7 +68,7 @@ class LitiganteServiceTest extends SetupServiceTest {
                 .willReturn(Arrays.asList("Romina Cervantes"));
         given(notificacionesDetallesRepository.countNotificacionesPorLeer(any(), any()))
                 .willReturn(3L);
-        Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados(PageRequest.of(1, 20));
+        Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("",PageRequest.of(1, 20));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first()
@@ -83,27 +81,26 @@ class LitiganteServiceTest extends SetupServiceTest {
     void getAcuerdosSentencias() {
         NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
                 .setId(1)
-                .setNotificacion(new Notificacion().setId(1).setDocumento(
+                .setNotificacion(new Notificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO)
+                        .setFechaNotificado(LocalDateTime.now()).setId(1).setDocumento(
                         new Documento().setId(1).setCarpeta(
-                                new Carpeta().setId(1).setExpediente("000001/2025")
+                                new Carpeta().setId(1).setExpediente("000001/2025").setJuzgado(
+                                        new Juzgado().setNombre("Juzgado Mercantil")
+                                )
                         )
                 ));
 
-        given(notificacionesDetallesRepository.getAllByUsername(any(), any()))
-                .willReturn(Collections.singletonList(notificacionesDetalles));
+        given(notificacionesDetallesRepository.getAllByUsername(any(), any(), any()))
+                .willReturn(new PageImpl<>(Arrays.asList(notificacionesDetalles), PageRequest.of(0, 1), 1));
 
-        ExpedienteAutorizadoRecord result = litiganteService.getAcuerdosSentencias();
+        Page<AcuerdoSentenciaRecord> result = litiganteService.getAcuerdosSentencias(PageRequest.of(0, 10));
         assertThat(result).isNotNull();
-        assertThat(result.expedienteAutorizado()).hasSize(1);
+        assertThat(result.getContent()).hasSize(1);
 
-        AcuerdoSentenciaRecord acuerdoSentenciaResponse= result.expedienteAutorizado().get(0);
-        assertThat(acuerdoSentenciaResponse.documentoExpediente()).hasSize(1);
+        AcuerdoSentenciaRecord acuerdoSentenciaResponse= result.getContent().get(0);
         assertThat(acuerdoSentenciaResponse.numeroExpediente()).isEqualTo("000001/2025");
-
-        DocumentoExpedienteRecord documentoExpedienteResponse = acuerdoSentenciaResponse.documentoExpediente().get(0);
-        assertThat(documentoExpedienteResponse.numeroAcuerdo()).isEqualTo(1);
-        assertThat(documentoExpedienteResponse.fechaCompletado()).isEqualTo(LocalDateTime.now().toLocalDate().toString());
-        assertThat(documentoExpedienteResponse.rutaArchivo()).isEqualTo("/api/litigante/documento/1");
+        assertThat(acuerdoSentenciaResponse.documentoId()).isEqualTo(1);
+        assertThat(acuerdoSentenciaResponse.fechaNotificacion()).isEqualTo(notificacionesDetalles.getNotificacion().getFechaNotificado());
     }
 
     @Test
@@ -150,21 +147,14 @@ class LitiganteServiceTest extends SetupServiceTest {
 
         Page<Documento> docPage = new PageImpl<>(Collections.singletonList(documento));
 
-        given(documentoRepository.findPromocionesLitigante(any(), any(PageRequest.class))).willReturn(docPage);
-        given(documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(any(), any(), any())).willReturn(true);
+        given(documentoRepository.findPromocionesLitigante(any(), any(), any(PageRequest.class))).willReturn(docPage);
 
-        Page<PromocionAutorizadaRecord> promociones = litiganteService.getPromocionesLitigante(PageRequest.of(0, 10));
+        Page<PromocionesLitiganteRecord> promociones = litiganteService.getPromocionesLitigante("", PageRequest.of(0, 10));
 
         assertThat(promociones).isNotNull();
         assertThat(promociones.getContent()).hasSize(1);
 
-        PromocionAutorizadaRecord promocion = promociones.getContent().get(0);
-        assertThat(promocion.expedienteAutorizado()).hasSize(1);
-        PromocionesLitiganteRecord promocionesLitigante = promocion.expedienteAutorizado().get(0);
-        assertThat(promocionesLitigante.numeroExpediente()).isEqualTo("000001/2025");
-        assertThat(promocionesLitigante.promocionesElectronicasLitigante()).hasSize(1);
-
-        PromocionesElectronicasLitigante promocionElectronica = promocionesLitigante.promocionesElectronicasLitigante().get(0);
+        PromocionesLitiganteRecord promocionElectronica = promociones.getContent().get(0);
         assertThat(promocionElectronica.numeroPromocionE()).isEqualTo("12345");
         assertThat(promocionElectronica.usuarioOrigen()).isEqualTo("correo@dominio.com");
         assertThat(promocionElectronica.rutaArchivo()).isEqualTo("/opt/pjp/files/2025/JuzgadoTEST/000001/ruta/documento");

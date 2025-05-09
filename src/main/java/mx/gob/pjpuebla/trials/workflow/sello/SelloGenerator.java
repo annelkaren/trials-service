@@ -85,11 +85,13 @@ public class SelloGenerator {
         String expediente= updateExpedientePorTipoJuicio(documento);
         expedientesByDemandadoActor(demandado.nombre(), actor.nombre(), documento.getCarpeta().getTipoJuicio().getMateria().getId());
         String relacionExpediente = (expedienteRelacionados != null && !expedienteRelacionados.isEmpty()) ? expedienteRelacionados : "";
+        String juzgadoProcedencia = documento.getCarpeta().getJuzgado().getNombre();
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("expediente",expediente);
         parameters.put("fechaHoraRecepcion", date);
+        parameters.put("juzgadoProcedencia", juzgadoProcedencia);
         parameters.put("folio", getFolio(documento)); //TODO: VALIDAR FUNCION DE GET FOLIO SI ES CORRECTA.
         parameters.put("documentoFolio", tipoDocumentoFolio(documento));
         parameters.put("anexos", getStringAnexos(anexos));

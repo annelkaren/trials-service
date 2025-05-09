@@ -28,6 +28,7 @@
 	<parameter name="juez" class="java.lang.String"/>
 	<parameter name="isOralidad" class="java.lang.Boolean"/>
 	<parameter name="isApelacion" class="java.lang.Boolean"/>
+	<parameter name="juzgadoProcedencia" class="java.lang.String"/>
 	<query language="sql"><![CDATA[]]></query>
 	<background height="600" splitType="Stretch">
 		<element kind="image" uuid="11874e22-3bae-4b92-8b8a-6a1920929dc7" x="213" y="166" width="240" height="220" hImageAlign="Left">
@@ -110,7 +111,7 @@
 				<expression><![CDATA["Sala:"]]></expression>
 			</element>
 		</band>
-		<band height="169">
+		<band height="174">
 			<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 			<element kind="component" uuid="5bbc92ac-3392-410f-875e-97d0f2744e26" x="48" y="7" width="160" height="130">
 				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
@@ -150,6 +151,15 @@
 			</element>
 			<element kind="textField" uuid="11500104-10ec-4e8d-aed1-3a4257561253" x="77" y="139" width="100" height="30" bold="true" hTextAlign="Center">
 				<expression><![CDATA[$P{capturista}]]></expression>
+			</element>
+		</band>
+		<band height="21">
+			<element kind="staticText" uuid="dec979d2-9065-4334-b075-7a963fd5590b" stretchType="ContainerHeight" x="211" y="1" width="139" height="20" bold="true">
+				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				<text><![CDATA[Juzgado de procedencia:]]></text>
+			</element>
+			<element kind="textField" uuid="5feea861-0a38-4da5-99f6-99d696d5127a" x="333" y="1" width="160" height="20">
+				<expression><![CDATA[$P{juzgadoProcedencia}]]></expression>
 			</element>
 		</band>
 		<band height="247">

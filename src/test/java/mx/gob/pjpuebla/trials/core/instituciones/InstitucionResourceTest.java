@@ -2,6 +2,11 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionResource;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.BeforeEach;

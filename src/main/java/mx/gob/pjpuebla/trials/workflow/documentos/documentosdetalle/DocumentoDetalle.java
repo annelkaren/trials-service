@@ -3,7 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
+import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
 import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -67,6 +69,13 @@ public class DocumentoDetalle implements Serializable {
 
     @Column(name = "T_FECHA_PUBLICACION")
     private LocalDate fechaPublicacion;
+
+    @Column(name = "N_ESTADO_ENVIO")
+    private EstadoEnvio estadoEnvio;
+
+    @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona persona;
 
     @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

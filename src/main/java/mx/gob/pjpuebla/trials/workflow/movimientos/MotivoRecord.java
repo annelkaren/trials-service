@@ -3,5 +3,6 @@ import java.io.Serializable;
 
 public record MotivoRecord(
         String motivo,
-        int documentoId
+        int documentoId,
+        boolean devueltoOficialia
 ) implements Serializable {}

@@ -80,8 +80,7 @@ public class ReasignacionExpedienteService {
                 .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado",
                         "tipoJuicioId: " + carpetaParent.getTipoJuicio().getId()));
 
-        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaId(oficialia.getId())
-                .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
+        List<Juzgado> juzgadosRelacionados = juzgadoRepository.findJuzgadoByOficialiaIdAndTipoJuicio(oficialia.getId(), tipoJuicio.getId());
 
         Juzgado juzgadoCarpetaNew = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.DEMANDA, juzgadosRelacionados);
 
