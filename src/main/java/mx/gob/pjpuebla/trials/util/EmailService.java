@@ -51,6 +51,7 @@ public class EmailService {
             helper.setReplyTo("no-reply@pjpuebla.gob.mx");
             helper.setSubject(subject);
             helper.setText(message, true);
+            helper.setFrom(mailSender.getUsername());
 
             if (filename != null && filename.length > 0) {//si vienen archivo adjuntos
                 FileSystemResource file;
