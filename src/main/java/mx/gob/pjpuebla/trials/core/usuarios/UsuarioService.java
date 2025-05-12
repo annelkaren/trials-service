@@ -36,7 +36,7 @@ public class UsuarioService {
             if (response.getStatus() == HttpStatus.CREATED.value()) {
                 sendMail(userRepresentation.getEmail(),
                         userRepresentation.getCredentials().get(0).getValue(),
-                        userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
+                       userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
                 return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             } else {
                 throw new UserAlreadyExistException("El correo electrónico proporcionado ya se encuentra registrado", persona.getCorreoElectronico());

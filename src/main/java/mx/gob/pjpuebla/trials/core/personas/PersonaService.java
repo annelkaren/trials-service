@@ -133,9 +133,20 @@ public class PersonaService {
     private void fillPersonaData(Persona persona) {
         persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
                 .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
-        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
-                .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
-        persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+
+        if (persona.getEstadoCivil().getId() != null) {
+            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
+                    .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
+        }else{
+            persona.setEstadoCivil(null);
+        }
+
+        if(persona.getDomicilio().getCalle() != null && !persona.getDomicilio().getCalle().isEmpty()) {
+            persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+        }else{
+            persona.setDomicilio(null);
+        }
+        
 
         if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
@@ -215,10 +226,10 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                .filter(juzgado -> juzgado.getMateria() != null
-                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                .toList()
+                        .filter(juzgado -> juzgado.getMateria() != null
+                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                        .toList()
                 : Collections.emptyList();
     }
 
@@ -360,7 +371,7 @@ public class PersonaService {
     }
 
     public List<PersonaRecordResponse> findAllMensajeros() {
-        List<String> roles =  List.of("MENSAJERO");
+        List<String> roles = List.of("MENSAJERO");
         List<String> ids = usuarioService.findAllByRoles(roles);
         List<PersonaRecordResponse> mensajeros = new ArrayList<>();
         for (String id : ids) {
@@ -389,11 +400,11 @@ public class PersonaService {
                     TipoCentroTrabajo.JUZGADO));
         }
         if (persona.getOficialia() != null) {
-            centrosTrabajo.add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
-                    TipoCentroTrabajo.OFICIALIA_COMUN));
+            centrosTrabajo
+                    .add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
+                            TipoCentroTrabajo.OFICIALIA_COMUN));
         }
 
-        
         return centrosTrabajo;
     }
 }
