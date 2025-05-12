@@ -33,7 +33,8 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
             new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord(s.id, s.version, s.nombre, s.estado, s.tipo, s.telefono, s.extension,
             new mx.gob.pjpuebla.trials.core.distritos.DistritoRecord(dis.id, dis.nombre),
             new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
-                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia))
+                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
+            s.latitude, s.longitude, s.photo)
             FROM Sede s
             LEFT JOIN s.domicilio dom
             LEFT JOIN s.distrito dis

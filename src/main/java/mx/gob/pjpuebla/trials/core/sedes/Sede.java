@@ -44,6 +44,18 @@ public class Sede implements Serializable, Auditable {
     @Column(name = "S_EXTENSION")
     private String extension;
 
+    @Size(max = 80)
+    @Column(name = "S_LATITUDE")
+    private String latitude;
+
+    @Size(max = 80)
+    @Column(name = "S_LONGITUDE")
+    private String longitude;
+
+    @Size(max = 100)
+    @Column(name = "S_PHOTO")
+    private String photo;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "S_TIPO", nullable = false)
     private Tipo tipo;

@@ -16,9 +16,12 @@ import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,16 +43,17 @@ public class SedeService {
     private final DomicilioService domicilioService;
     private final JuzgadoRepository juzgadoRepository;
     private final OficialiaRepository oficialiaRepository;
+    private final DigitalizacionService digitalizacionService;
 
     /**
      * Recupera todas las sedes con la posibilidad de paginación y filtrado por
      * nombre.
-     * 
+     *
      * @param example  Un objeto de tipo Sede con los filtros aplicados (por
      *                 ejemplo, nombre).
      * @param pageable Objeto que contiene la información de paginación.
      * @return Un {@link Page} de {@link SedeDomicilioRecordResponse} con los
-     *         resultados de la consulta.
+     * resultados de la consulta.
      */
     @Transactional(readOnly = true)
     public Page<SedeDomicilioRecordResponse> getAll(Sede example, Pageable pageable) {
@@ -59,7 +63,7 @@ public class SedeService {
     /**
      * Busca una sede por su ID y su estado. Si no se encuentra, lanza una excepción
      * {@link NotFoundException}.
-     * 
+     *
      * @param id El ID de la sede a buscar.
      * @return Un {@link SedeRecord} con los datos de la sede encontrada.
      * @throws NotFoundException Si no se encuentra la sede con el ID dado.
@@ -67,20 +71,23 @@ public class SedeService {
     @Transactional(readOnly = true)
     public SedeRecord findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        return sedeRepository.findByIdAndEstadoIn(id, estados)
+        SedeRecord sedeRecord = sedeRepository.findByIdAndEstadoIn(id, estados)
                 .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
+        String image = digitalizacionService.getPhoto(sedeRecord.id(), (sedeRecord.photo() != null) ? sedeRecord.photo() : "");
+        return sedeRecord.withPhoto(image);
     }
 
     /**
      * Crea una nueva sede y la guarda en la base de datos. Si ya existe una sede
      * con el mismo nombre, lanza una excepción {@link ConflictException}.
-     * 
-     * @param sede Un objeto de tipo {@link Sede} con los datos de la nueva sede a
-     *             crear.
+     *
+     * @param sede  Un objeto de tipo {@link Sede} con los datos de la nueva sede a
+     *              crear.
+     * @param image fotografía de la sede
      * @return Un {@link SedeRecordResponse} con los datos de la sede recién creada.
      * @throws ConflictException Si ya existe una sede con el mismo nombre.
      */
-    public SedeRecordResponse create(Sede sede) {
+    public SedeRecordResponse create(Sede sede, MultipartFile image) {
         if (sedeRepository.findByNombre(sede.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 sedes con el mismo nombre");
         }
@@ -88,6 +95,12 @@ public class SedeService {
         sede.setDistrito(distritoRepository.findById(sede.getDistrito().getId()).orElse(null));
         sede.setDomicilio(domicilioService.save(sede.getDomicilio()));
         sede = sedeRepository.save(sede);
+
+        if (image != null) {
+            DigitalizacionRecord record = digitalizacionService.savePhoto(image, sede.getId());
+            sede.setPhoto(record.nombreArchivo());
+            sedeRepository.save(sede);
+        }
         return new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado());
     }
 
@@ -95,18 +108,25 @@ public class SedeService {
      * Actualiza una sede existente en la base de datos.
      * Si ocurre un error de versión (optimista), lanza una excepción
      * {@link InvalidVersionException}.
-     * 
-     * @param sede Un objeto de tipo {@link Sede} con los datos de la sede a
-     *             actualizar.
+     *
+     * @param sede  Un objeto de tipo {@link Sede} con los datos de la sede a
+     *              actualizar.
+     * @param image fotografía de la sede
      * @return Un {@link SedeRecordResponse} con los datos de la sede actualizada.
      * @throws InvalidVersionException Si se detecta un conflicto de versiones al
      *                                 intentar actualizar la sede.
      */
-    public SedeRecordResponse update(Sede sede) {
+    public SedeRecordResponse update(Sede sede, MultipartFile image) {
         try {
+            sede.setPhoto(null);
             sede.setDistrito(distritoRepository.findById(sede.getDistrito().getId()).orElse(null));
             sede.setDomicilio(domicilioService.save(sede.getDomicilio()));
             sedeRepository.save(sede);
+            if (image != null) {
+                DigitalizacionRecord record = digitalizacionService.savePhoto(image, sede.getId());
+                sede.setPhoto(record.nombreArchivo());
+                sedeRepository.save(sede);
+            }
             return new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Sede.class.getSimpleName());
@@ -116,10 +136,10 @@ public class SedeService {
     /**
      * Recupera todas las sedes junto con sus domicilios asociados, permitiendo la
      * paginación de los resultados.
-     * 
+     *
      * @param pageable Objeto que contiene la información de paginación.
      * @return Un {@link Page} de {@link SedeDomiciliosRecord} con los resultados de
-     *         la consulta.
+     * la consulta.
      */
     @Transactional(readOnly = true)
     public Page<SedeDomiciliosRecord> getAllSedesAndDomicilios(Pageable pageable) {
@@ -129,7 +149,7 @@ public class SedeService {
     /**
      * Elimina una sede de la base de datos. Si la sede está asociada a un juzgado o
      * a una oficialía, lanza una excepción {@link ConstraintViolationException}.
-     * 
+     *
      * @param id El ID de la sede a eliminar.
      * @throws ConstraintViolationException Si la sede está asociada a un juzgado o
      *                                      a una oficialía.
@@ -141,6 +161,7 @@ public class SedeService {
                     "sedeId");
         } else {
             sedeRepository.deleteById(id);
+            digitalizacionService.deletePhoto(id);
         }
     }
 }
