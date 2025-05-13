@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import lombok.Setter;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,6 +87,7 @@ public class DigitalizacionService {
     private final AudienciaService audienciaService;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
+    private static final Set<String> TIPO_IMAGENES_PERMITIDAS = Set.of("image/jpg", "image/png", "image/jpeg");
     private static final String EXTENSION_ARCHIVO = ".pdf";
 
     // Si se usa en mas métodos cambiar variable global por local.
@@ -240,6 +244,27 @@ public class DigitalizacionService {
     }
 
     /**
+     * Valida las propiedades del archivo: que no esté vacío, que sea una imagen, y que
+     * no exceda el tamaño máximo permitido.
+     *
+     * @param file El archivo a validar.
+     * @throws ResponseStatusException Si el archivo no cumple con las condiciones.
+     */
+    private void validateImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede estar vacío.");
+        }
+
+        if (file.getContentType() == null || !TIPO_IMAGENES_PERMITIDAS.contains(file.getContentType())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo debe ser una imagen.");
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no puede superar los 50 MB.");
+        }
+    }
+
+    /**
      * Maneja la creación de directorios para documentos de tipo oficio.
      *
      * @param documento El documento de tipo oficio.
@@ -275,7 +300,7 @@ public class DigitalizacionService {
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA,
-                APELACION:
+                 APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(
@@ -386,6 +411,91 @@ public class DigitalizacionService {
     private void validateNotNull(Object value, String message) {
         if (value == null) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
+     * Guarda una fotografía relacionada a una sede
+     *
+     * @param photo  imagen de la sede
+     * @param sedeId identificador interno de la sede
+     * @return Nuevo objeto con ruta y nombre de la imagen guardada
+     */
+    public DigitalizacionRecord savePhoto(MultipartFile photo, Integer sedeId) {
+        this.basePath = this.rootFolder + "/digitalizacion/sedes/";
+        validateImage(photo);
+        Path rutaArchivo = crearDirectorios(Paths.get(basePath, sedeId.toString()));
+        String photoName = UUID.randomUUID() + "." + FilenameUtils.getExtension(photo.getOriginalFilename());
+        // Guardar el archivo y manejar posibles excepciones
+        try {
+            Files.write(rutaArchivo.resolve(photoName), photo.getBytes());
+            log.info("Fotografía cargada en el servidor con nombre: {}", photoName);
+        } catch (IOException e) {
+            log.error("Error al guardar la imagen: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al guardar la imagen en el servidor", e);
+        }
+        //Eliminar archivos anteriores, solo puede existir una fotografía
+        File[] allContents = Paths.get(basePath, sedeId.toString()).toFile().listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                if (!file.getName().equals(photoName)) {
+                    file.delete();
+                }
+            }
+        }
+        return new DigitalizacionRecord(sedeId, rutaArchivo.resolve(photoName).toString(),
+                photoName);
+    }
+
+    /**
+     * Obtiene un String en base64 de la fotografía relacionada a la sede
+     *
+     * @param sedeId - identificador interno de la sede
+     * @param name   - nombre de la imagen
+     * @return base64 de la imagen, si no existe se retorna vacio
+     */
+    public String getPhoto(Integer sedeId, String name) {
+        this.basePath = this.rootFolder + "/digitalizacion/sedes/";
+        Path rutaArchivo = Paths.get(basePath, sedeId.toString(), name);
+        if (Files.exists(rutaArchivo)) {
+            try {
+                return "data:image/png;base64," + Base64.encodeBase64String(Files.readAllBytes(rutaArchivo)); // Retorna el archivo como Base64
+            } catch (IOException e) {
+                log.error("Error al obtener la fotografía de la sede: {}", e.getMessage(), e);
+                return "";
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Elimina la fotografía de la sede, la eliminamos unicamente cuando la sede es eliminada
+     *
+     * @param sedeId - identificador interno de la sede
+     */
+    public void deletePhoto(Integer sedeId) {
+        this.basePath = this.rootFolder + "/digitalizacion/sedes/";
+        Path path = Paths.get(basePath, sedeId.toString());
+        deleteContent(path);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            log.error("Error al eliminar la fotografía de la sede: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Método auxiliar que verifica si un directorio tiene elementos, si tiene los elimina
+     *
+     * @param path - ruta de la carpeta
+     */
+    private void deleteContent(Path path) {
+        File[] allContents = path.toFile().listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                file.delete();
+            }
         }
     }
 }

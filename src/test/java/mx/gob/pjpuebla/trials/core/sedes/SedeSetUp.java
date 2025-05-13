@@ -62,7 +62,8 @@ public class SedeSetUp {
                 Tipo.EXTERNO,
                 "", "",
                 new DistritoRecord(1, ""),
-                new DomicilioRecord(1L, "", "", "", "", "", "", "", "", ""));
+                new DomicilioRecord(1L, "", "", "", "", "", "", "", "", ""),
+                "19.233503026844463", "-98.23867360110482", "");
     }
 
     public  static SedeDomiciliosRecord createSedeDomiciliosRecord(Sede sede, Domicilio domicilio){
