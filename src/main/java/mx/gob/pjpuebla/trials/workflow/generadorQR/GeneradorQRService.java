@@ -182,9 +182,9 @@ public class GeneradorQRService {
         String folio = carpeta.getFolio();
 
         return switch (tipoCarpeta) {
-            case DEMANDA -> "D" + folio;
-            case EXHORTO -> "E" + folio;
-            case AMPARO -> "A" + folio;
+            case DEMANDA -> "D" + '-' + folio;
+            case EXHORTO -> "E" + '-' + folio;
+            case AMPARO -> "A" + '-' + folio;
             default -> folio;
         };
     }
