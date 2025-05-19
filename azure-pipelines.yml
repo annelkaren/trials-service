@@ -74,85 +74,85 @@ stages:
               tags: |
                 $(tag)
 
-  - stage: Deploy
-    dependsOn: Build
-    jobs:
-      - deployment: Deploy_Alpha
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-        pool:
-          vmImage: $(vmImageName)
-        environment: alpha-latest
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-
-                - task: DownloadSecureFile@1
-                  name: secrets
-                  displayName: 'Download k8s Secrets'
-                  inputs:
-                    secureFile: 'alpha-trials-secrets-241018.properties'
-
-                - script: |
-                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
-                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/alpha/trials-secrets.properties
-                  displayName: 'Installing k8s Secrets'
-
-                - task: KubernetesManifest@1
-                  name: bake
-                  displayName: Kustomize
-                  inputs:
-                    action: bake
-                    renderType: kustomize
-                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
-                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/alpha'
-                    namespace: 'trials'
-
-                - task: KubernetesManifest@1
-                  displayName: Deploy
-                  inputs:
-                    action: deploy
-                    kubernetesServiceConnection: 'alpha-latest-trials-1726267947420'
-                    namespace: 'trials'
-                    manifests: $(bake.manifestsBundle)
-
-      - deployment: Deploy_Beta
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-        pool:
-          vmImage: $(vmImageName)
-        environment: beta-test
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-
-                - task: DownloadSecureFile@1
-                  name: secrets
-                  displayName: 'Download k8s Secrets'
-                  inputs:
-                    secureFile: 'beta-trials-secrets-241018.properties'
-
-                - script: |
-                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
-                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/beta/trials-secrets.properties
-                  displayName: 'Installing k8s Secrets'
-
-                - task: KubernetesManifest@1
-                  name: bake
-                  displayName: Kustomize
-                  inputs:
-                    action: bake
-                    renderType: kustomize
-                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
-                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/beta'
-                    namespace: 'trials'
-
-                - task: KubernetesManifest@1
-                  displayName: Deploy
-                  inputs:
-                    action: deploy
-                    kubernetesServiceConnection: 'beta-test-trials-1729214160171'
-                    namespace: 'trials'
-                    manifests: $(bake.manifestsBundle)
+#  - stage: Deploy
+#    dependsOn: Build
+#    jobs:
+#      - deployment: Deploy_Alpha
+#        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+#        pool:
+#          vmImage: $(vmImageName)
+#        environment: alpha-latest
+#        strategy:
+#          runOnce:
+#            deploy:
+#              steps:
+#                - checkout: self
+#
+#                - task: DownloadSecureFile@1
+#                  name: secrets
+#                  displayName: 'Download k8s Secrets'
+#                  inputs:
+#                    secureFile: 'alpha-trials-secrets-241018.properties'
+#
+#                - script: |
+#                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+#                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/alpha/trials-secrets.properties
+#                  displayName: 'Installing k8s Secrets'
+#
+#                - task: KubernetesManifest@1
+#                  name: bake
+#                  displayName: Kustomize
+#                  inputs:
+#                    action: bake
+#                    renderType: kustomize
+#                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+#                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/alpha'
+#                    namespace: 'trials'
+#
+#                - task: KubernetesManifest@1
+#                  displayName: Deploy
+#                  inputs:
+#                    action: deploy
+#                    kubernetesServiceConnection: 'alpha-latest-trials-1726267947420'
+#                    namespace: 'trials'
+#                    manifests: $(bake.manifestsBundle)
+#
+#      - deployment: Deploy_Beta
+#        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+#        pool:
+#          vmImage: $(vmImageName)
+#        environment: beta-test
+#        strategy:
+#          runOnce:
+#            deploy:
+#              steps:
+#                - checkout: self
+#
+#                - task: DownloadSecureFile@1
+#                  name: secrets
+#                  displayName: 'Download k8s Secrets'
+#                  inputs:
+#                    secureFile: 'beta-trials-secrets-241018.properties'
+#
+#                - script: |
+#                    echo Installing $(secrets.secureFilePath) to the kustomize directory...
+#                    sudo cp $(secrets.secureFilePath) $(Build.SourcesDirectory)/kustomize/overlays/beta/trials-secrets.properties
+#                  displayName: 'Installing k8s Secrets'
+#
+#                - task: KubernetesManifest@1
+#                  name: bake
+#                  displayName: Kustomize
+#                  inputs:
+#                    action: bake
+#                    renderType: kustomize
+#                    containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+#                    kustomizationPath: '$(Build.SourcesDirectory)/kustomize/overlays/beta'
+#                    namespace: 'trials'
+#
+#                - task: KubernetesManifest@1
+#                  displayName: Deploy
+#                  inputs:
+#                    action: deploy
+#                    kubernetesServiceConnection: 'beta-test-trials-1729214160171'
+#                    namespace: 'trials'
+#                    manifests: $(bake.manifestsBundle)
