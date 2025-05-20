@@ -308,6 +308,8 @@ public class DocumentoResource {
         this.documentoService.devolverABandejas(devolucion);
         return ResponseEntity.ok("Devolución completa");
     }
-    
+
+
+  
 
 }
