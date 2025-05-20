@@ -106,7 +106,7 @@ public class SelloCaratulaService {
             };
 
         }
-        result = prefijo + "-" + documento.getCarpeta().getFolio();
+        result = prefijo + "." + documento.getCarpeta().getFolio();
         return result;
     }
 
