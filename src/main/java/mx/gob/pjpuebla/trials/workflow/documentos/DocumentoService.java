@@ -137,7 +137,9 @@ public class DocumentoService {
 
         @Transactional(readOnly = true)
         public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
+                System.out.println("LA PALABRA CLAVE DESDE EL GET ES : " + key);
                 key = (key != null) ? key.toLowerCase() : "";
+                System.out.println("LA PALABRA CLAVE DESDE EL GET DESPUES DEL LOWER ES : " + key);
                 Object[] resultado = procesarTipoCarpeta(key);
                 TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
                 TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
@@ -1284,7 +1286,7 @@ public class DocumentoService {
         }
 
         public Object[] getQR(String folioDocumentoQR) {
-                String[] parte = folioDocumentoQR.split("-");
+                String[] parte = folioDocumentoQR.split("\\.");
 
                 if (parte.length != 2) {
                         throw new IllegalArgumentException("El código QR tiene un formato inválido.");
@@ -1299,7 +1301,7 @@ public class DocumentoService {
                 String tipoCarpeta = null;
                 Integer folio = null;
 
-                if (key.matches("[a-zA-Z]-\\d+")) {
+                if (key.matches("[a-zA-Z].\\d+")) {
                         Object[] qrValues = getQR(key);
                         tipoCarpeta = (String) qrValues[0];
                         folio = (Integer) qrValues[1];
