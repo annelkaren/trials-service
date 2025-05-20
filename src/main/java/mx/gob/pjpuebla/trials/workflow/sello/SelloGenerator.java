@@ -208,7 +208,7 @@ public class SelloGenerator {
             };
 
         }
-        result = prefijo + "-" + documento.getCarpeta().getFolio();
+        result = prefijo + "." + documento.getCarpeta().getFolio();
         return result;
     }
 
