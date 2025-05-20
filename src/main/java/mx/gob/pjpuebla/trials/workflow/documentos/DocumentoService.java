@@ -137,9 +137,7 @@ public class DocumentoService {
 
         @Transactional(readOnly = true)
         public Page<DocumentoGridRecord> getAll(String key, Pageable pageable) {
-                System.out.println("LA PALABRA CLAVE DESDE EL GET ES : " + key);
                 key = (key != null) ? key.toLowerCase() : "";
-                System.out.println("LA PALABRA CLAVE DESDE EL GET DESPUES DEL LOWER ES : " + key);
                 Object[] resultado = procesarTipoCarpeta(key);
                 TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
                 TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
@@ -149,11 +147,9 @@ public class DocumentoService {
                 Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
                 Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : null;
 
-                // Traducir los campos de ordenamiento
-                Pageable adjustedPageable = translatePageable(pageable);
-
+                // Obtener resultados sin orden estricto desde DB
                 Page<Movimiento> page = movimientoService.getAllBandejaEntrada(
-                                adjustedPageable,
+                                Pageable.unpaged(), // ❗️ sin orden ni paginación aún
                                 juzgadoId,
                                 oficialiaId,
                                 key,
@@ -164,7 +160,6 @@ public class DocumentoService {
                 List<DocumentoGridRecord> list = page.getContent()
                                 .stream()
                                 .map(movimiento -> {
-
                                         Documento documento = defaultIfNull(movimiento.getDocumento(),
                                                         documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
                                                                         movimiento.getCarpeta() != null
@@ -177,9 +172,7 @@ public class DocumentoService {
                                                         documento.getCarpeta());
 
                                         String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA"))
-                                                                        ? "En juzgado"
-                                                                        : "";
+                                                        || movimiento.getEstado().equals("SALIDA")) ? "En juzgado" : "";
 
                                         TipoDocumento tipoDocumento = documento.getTipoDocumento();
                                         String folio = (tipoDocumento != null
@@ -198,7 +191,8 @@ public class DocumentoService {
                                         EstadoCarpeta estadoCarpeta = (tipoDocumento != null) ? documento.getEstatus()
                                                         : carpeta.getEstatus();
 
-                                        return new DocumentoGridRecord(documento.getId(),
+                                        return new DocumentoGridRecord(
+                                                        documento.getId(),
                                                         folio,
                                                         carpeta.getExpediente(),
                                                         materia,
@@ -213,31 +207,71 @@ public class DocumentoService {
                                 })
                                 .toList();
 
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                // Ordenar en memoria
+                Comparator<DocumentoGridRecord> comparator = buildComparator(pageable.getSort());
+                List<DocumentoGridRecord> sortedList = list.stream()
+                                .sorted(comparator)
+                                .toList();
+
+                // Aplicar paginación
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), sortedList.size());
+                List<DocumentoGridRecord> pagedList = sortedList.subList(start, end);
+
+                return new PageImpl<>(pagedList, pageable, sortedList.size());
         }
 
-        private Pageable translatePageable(Pageable original) {
-                Sort adjustedSort = original.getSort().stream()
-                                .map(order -> {
-                                        String property = order.getProperty();
-                                        switch (property) {
-                                                case "folio":
-                                                        return new Sort.Order(order.getDirection(), "c.folio"); 
-                                                case "expediente":
-                                                        return new Sort.Order(order.getDirection(), "c.expediente");
-                                                case "materia":
-                                                        return new Sort.Order(order.getDirection(),
-                                                                        "c.juzgado.materia.nombre");
-                                                case "fechaRegistro":
-                                                        return new Sort.Order(order.getDirection(),
-                                                                        "m.fechaAsignacion");
-                                                default:
-                                                        return order;
-                                        }
-                                })
-                                .collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by));
+        private Comparator<DocumentoGridRecord> buildComparator(Sort sort) {
+                Comparator<DocumentoGridRecord> comparator = Comparator.comparing(r -> 0); // dummy inicial
 
-                return PageRequest.of(original.getPageNumber(), original.getPageSize(), adjustedSort);
+                for (Sort.Order order : sort) {
+                        Comparator<DocumentoGridRecord> fieldComparator;
+
+                        switch (order.getProperty()) {
+                                case "folio":
+                                        fieldComparator = Comparator.comparing(r -> {
+                                                try {
+                                                        return Integer.parseInt(r.folio());
+                                                } catch (NumberFormatException e) {
+                                                        return 0;
+                                                }
+                                        });
+                                        break;
+                                case "expediente":
+                                        fieldComparator = Comparator.comparing(DocumentoGridRecord::expediente,
+                                                        Comparator.nullsLast(String::compareToIgnoreCase));
+                                        break;
+                                case "materia":
+                                        fieldComparator = Comparator.comparing(DocumentoGridRecord::materia,
+                                                        Comparator.nullsLast(String::compareToIgnoreCase));
+                                        break;
+                                case "tipoEntrada":
+                                        fieldComparator = Comparator.comparing(DocumentoGridRecord::tipoEntrada,
+                                                        Comparator.nullsLast(String::compareToIgnoreCase));
+                                        break;
+                                case "organoJurisdiccional":
+                                        fieldComparator = Comparator.comparing(
+                                                        DocumentoGridRecord::organoJurisdiccional,
+                                                        Comparator.nullsLast(String::compareToIgnoreCase));
+                                        break;
+                                case "fechaRegistro":
+                                        fieldComparator = Comparator.comparing(DocumentoGridRecord::fechaRegistro,
+                                                        Comparator.nullsLast(LocalDateTime::compareTo));
+                                        break;
+                                default:
+                                        continue; // ignora propiedades desconocidas
+                        }
+
+                        // Aplica dirección
+                        if (order.getDirection().isDescending()) {
+                                fieldComparator = fieldComparator.reversed();
+                        }
+
+                        // Combinar comparadores
+                        comparator = comparator.thenComparing(fieldComparator);
+                }
+
+                return comparator;
         }
 
         @Transactional(readOnly = true)
