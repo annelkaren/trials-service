@@ -217,7 +217,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                         (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL))
                         OR
                         (concepto.nombre = 'Adjuntar'
-                         OR (doc.tipoDocumento IS NULL AND concepto.nombre = 'Distribución')
+                         OR (doc.tipoDocumento IS NULL )
                          OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL)
                         )
                     )
