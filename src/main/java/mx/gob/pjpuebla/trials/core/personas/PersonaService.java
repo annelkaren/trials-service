@@ -407,4 +407,23 @@ public class PersonaService {
 
         return centrosTrabajo;
     }
+
+    public boolean findByEmail(String email) {
+        Persona persona = this.personaRepository.findByCorreoElectronico(email);
+        if (persona != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public void createLitigante(Persona persona, List<RoleRecord> roles) {
+       if(!findByEmail(persona.getCorreoElectronico())) {
+           List<String> rolesToSave = getNames(roles);
+           persona.setUsuario(usuarioService.create(persona));
+           persona.setIsExternalUser(ExternalUser.YES);
+           roleService.addRoles(persona.getUsuario(), rolesToSave);
+
+           personaRepository.save(persona);
+       }
+    }
 }
