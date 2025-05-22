@@ -410,10 +410,7 @@ public class PersonaService {
 
     public boolean findByEmail(String email) {
         Persona persona = this.personaRepository.findByCorreoElectronico(email);
-        if (persona != null) {
-            return true;
-        }
-        return false;
+        return persona != null;
     }
 
     public void createLitigante(Persona persona, List<RoleRecord> roles) {

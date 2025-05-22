@@ -61,7 +61,7 @@ public class Persona implements Serializable, Auditable {
     private LocalDate fechaNacimiento;
 
     @Enumerated
-    @Column(name = "N_SEXO", nullable = true)
+    @Column(name = "N_SEXO")
     private Sexo sexo;
 
     @Column(name = "S_OCUPACION")

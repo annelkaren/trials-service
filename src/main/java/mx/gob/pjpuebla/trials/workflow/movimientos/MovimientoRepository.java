@@ -77,7 +77,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     (c IS NOT NULL AND jc.id = :juzgadoId)
                     OR (d IS NOT NULL AND jcd.id = :juzgadoId)
                 )
-               
                 AND (
                     LOWER(c.folio) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
