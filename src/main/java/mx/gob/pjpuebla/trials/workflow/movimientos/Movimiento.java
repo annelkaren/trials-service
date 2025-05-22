@@ -6,6 +6,7 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.enums.EstadoProrroga;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
@@ -72,4 +73,12 @@ public class Movimiento implements Serializable {
 
     @Column(name = "S_DURACION")
     private String duracion;
+
+    @Size(max = 300)
+    @Column(name = "S_MOTIVO_PRORROGA")
+    private String motivoProrroga;
+
+    @Enumerated
+    @Column(name = "N_ESTADO_PRORROGA")
+    private EstadoProrroga estadoProrroga;
 }
