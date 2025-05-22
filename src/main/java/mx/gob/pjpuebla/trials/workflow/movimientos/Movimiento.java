@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -81,4 +82,7 @@ public class Movimiento implements Serializable {
     @Enumerated
     @Column(name = "N_ESTADO_PRORROGA")
     private EstadoProrroga estadoProrroga;
+
+    @Column(name = "T_FECHA_PRORROGA")
+    private LocalDate fechaProrroga;
 }

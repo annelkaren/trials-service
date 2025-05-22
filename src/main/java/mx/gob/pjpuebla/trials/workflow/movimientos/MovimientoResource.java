@@ -18,9 +18,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -108,5 +112,9 @@ public class MovimientoResource {
         return movimientoService.getTurnadoMovimientos(carpetaId);
     }
 
+    @PutMapping("/solicitudProrroga/{movimientoId}")
+    public ResponseEntity<?> solicitarProrroga(@PathVariable Integer movimientoId, @RequestBody MovimientoProrrogaRecord movimientoProrrogaRecord) {
+        return movimientoService.solicitarProrroga(movimientoId, movimientoProrrogaRecord);
+    }
 
 }
