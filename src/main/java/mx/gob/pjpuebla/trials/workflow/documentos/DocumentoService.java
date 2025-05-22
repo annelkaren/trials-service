@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -126,6 +127,7 @@ public class DocumentoService {
         private final JuzgadoRepository juzgadoRepository;
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final DocumentoContenidoRepository documentoContenidoRepository;
+        private final EventoService eventosService;
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -1167,6 +1169,8 @@ public class DocumentoService {
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
+                Juzgado juzgado = persona.getJuzgado();
+                Oficialia oficialia = persona.getOficialia();
                 boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
                 Object[] resultado = procesarTipoCarpeta(key);
@@ -1189,7 +1193,22 @@ public class DocumentoService {
                                         Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta()
                                                         : documento != null ? documento.getCarpeta() : null;
 
-                                        assert carpeta != null;
+                                        LocalDateTime fechaTurnado = mov.getFechaAsignacion();
+
+                                        LocalDateTime fechaTermino = (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias())
+                                                                                   : (carpeta.getConcepto() != null)
+                                                                                        ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias())
+                                                                                        : null;
+
+                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino.toLocalDate(), juzgado, oficialia);
+                                        if(esDiaInhabil){
+                                                fechaTermino = eventosService.siguienteDiaHabil(fechaTermino.toLocalDate(), juzgado, oficialia).atStartOfDay();
+                                        }
+                                                
+                                        
+                                        String motivoProrroga = mov.getMotivoProrroga();
+                                        EstadoProrroga estadoProrroga = mov.getEstadoProrroga();
+                                        boolean turnadoVencido = fechaTermino.isBefore(LocalDateTime.now());
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         (isPromocion) ? documento.getId() : null,
@@ -1208,17 +1227,8 @@ public class DocumentoService {
                                                                                         ? carpeta.getConcepto()
                                                                                                         .getNombre()
                                                                                         : "-",
-                                                        mov.getFechaAsignacion(),
-                                                        (isPromocion) ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento.getConcepto().getDias())
-                                                                        : (carpeta.getConcepto() != null)
-                                                                                        ? mov.getFechaAsignacion()
-                                                                                                        .plusDays(
-                                                                                                                        carpeta.getConcepto()
-                                                                                                                                        .getDias())
-                                                                                        : null, // TODO. Validar si
-                                                                                                // tiene horas sumar en
-                                                        // lugar de dias, crear nuevo metodo
+                                                        fechaTurnado,
+                                                        fechaTermino,
                                                         StringUtils.capitalize(
                                                                         (isPromocion) ? documento.getEstatus().name()
                                                                                         .toLowerCase()
@@ -1226,7 +1236,10 @@ public class DocumentoService {
                                                                                                         .toLowerCase()),
                                                         (isPromocion) ? mov.getObservaciones()
                                                                         : getObservaciones(carpeta,
-                                                                                        mov.getObservaciones()));
+                                                                                        mov.getObservaciones()),
+                                                                                        turnadoVencido,
+                                                                                        motivoProrroga,
+                                                                                        estadoProrroga);
                                 })
                                 .toList();
 
