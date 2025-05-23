@@ -188,10 +188,10 @@ public class MovimientoService {
                         : origen.getDuracion().replace("d", ""));
     }
 
-    public ResponseEntity<?> solicitarProrroga(Integer movimientoId, MovimientoProrrogaRecord movimientoProrrogaRecord) {
+    public ResponseEntity<?> solicitarProrroga(MovimientoProrrogaRecord movimientoProrrogaRecord) {
         
-        Movimiento movimiento = movimientoRepository.findById(movimientoId)
-                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado", "movimientoId: " + movimientoId));
+        Movimiento movimiento = movimientoRepository.findById(movimientoProrrogaRecord.motivoId())
+                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado", "movimientoId: " + movimientoProrrogaRecord.motivoId()));
 
         movimiento.setMotivoProrroga(movimientoProrrogaRecord.motivoProrroga());
         movimiento.setFechaProrroga(movimientoProrrogaRecord.fechaProrroga());

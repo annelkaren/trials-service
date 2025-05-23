@@ -1211,6 +1211,7 @@ public class DocumentoService {
                                         boolean turnadoVencido = fechaTermino.isBefore(LocalDateTime.now());
 
                                         return new DocumentoAsignadoResponseRecord(
+                                                        mov.getId(),
                                                         (isPromocion) ? documento.getId() : null,
                                                         carpeta.getId(),
                                                         carpeta.getExpediente(),

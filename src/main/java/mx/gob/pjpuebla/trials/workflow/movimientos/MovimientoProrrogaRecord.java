@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 public record MovimientoProrrogaRecord(
+        Integer motivoId,
         String motivoProrroga,
         LocalDate fechaProrroga
 ) implements Serializable { }

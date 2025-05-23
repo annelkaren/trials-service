@@ -112,9 +112,9 @@ public class MovimientoResource {
         return movimientoService.getTurnadoMovimientos(carpetaId);
     }
 
-    @PutMapping("/solicitudProrroga/{movimientoId}")
-    public ResponseEntity<?> solicitarProrroga(@PathVariable Integer movimientoId, @RequestBody MovimientoProrrogaRecord movimientoProrrogaRecord) {
-        return movimientoService.solicitarProrroga(movimientoId, movimientoProrrogaRecord);
+    @PutMapping("/solicitudProrroga")
+    public ResponseEntity<?> solicitarProrroga(@RequestBody MovimientoProrrogaRecord movimientoProrrogaRecord) {
+        return movimientoService.solicitarProrroga(movimientoProrrogaRecord);
     }
 
 }

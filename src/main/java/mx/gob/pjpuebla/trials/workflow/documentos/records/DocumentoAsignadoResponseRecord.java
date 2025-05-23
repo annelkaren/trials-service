@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import mx.gob.pjpuebla.trials.util.enums.EstadoProrroga;
 
 public record DocumentoAsignadoResponseRecord(
+    Integer movimientoId,
     Integer id,
     Integer carpetaId,
     String expediente,
