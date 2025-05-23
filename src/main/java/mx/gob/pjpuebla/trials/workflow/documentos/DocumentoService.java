@@ -1281,7 +1281,8 @@ public class DocumentoService {
                                 movimiento.setConcepto(documento.getConcepto().getNombre());
                                 movimiento.setDuracion(documento.getConcepto().getDias().toString() + "d");
                                 movimiento.setDocumento(documento);
-                                movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
+                                movimiento.setOficialia(persona.getOficialia());
+                                //movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
                         } else {
                                 Carpeta carpeta = mov.getCarpeta();
                                 carpeta.setFechaAsignacion(LocalDateTime.now())
@@ -1294,7 +1295,8 @@ public class DocumentoService {
                                 movimiento.setConcepto(carpeta.getConcepto().getNombre());
                                 movimiento.setDuracion(carpeta.getConcepto().getDias().toString() + "d");
                                 movimiento.setCarpeta(carpeta);
-                                movimiento.setJuzgado(carpeta.getJuzgado());
+                                //movimiento.setJuzgado(carpeta.getJuzgado());
+                                movimiento.setOficialia(persona.getOficialia());
                         }
                         this.movimientoRepository.save(movimiento);
                 }

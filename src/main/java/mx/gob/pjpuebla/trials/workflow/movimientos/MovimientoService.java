@@ -142,12 +142,13 @@ public class MovimientoService {
     public String getOrigen(Integer documentoId, Integer carpetaId) {
         Movimiento movimiento;
         if (documentoId != null) {
-            movimiento = movimientoRepository.findFirstByDocumentoIdOrderByIdAsc(documentoId);
+            movimiento = movimientoRepository.findFirstByDocumentoIdOrderByIdDesc(documentoId);
             return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
                     : movimiento.getJuzgado().getNombre();
         }
         if (carpetaId != null) {
-            movimiento = movimientoRepository.findFirstByCarpetaIdOrderByIdAsc(carpetaId);
+            movimiento = movimientoRepository.findFirstByCarpetaIdOrderByIdDesc(carpetaId);
+            
             return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
                     : movimiento.getJuzgado().getNombre();
         }

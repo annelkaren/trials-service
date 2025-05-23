@@ -198,10 +198,13 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
 
-
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
     Movimiento findFirstByDocumentoIdOrderByIdAsc(Integer carpetaId);
+
+    Movimiento findFirstByCarpetaIdOrderByIdDesc(Integer documentoId);
+
+    Movimiento findFirstByDocumentoIdOrderByIdDesc(Integer carpetaId);
 
     List<Movimiento> findByCarpetaIdAndEstadoInOrderByIdAsc(Integer carpetaId, List<String> estados);
 
