@@ -77,7 +77,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     (c IS NOT NULL AND jc.id = :juzgadoId)
                     OR (d IS NOT NULL AND jcd.id = :juzgadoId)
                 )
-               
                 AND (
                     LOWER(c.folio) LIKE %:key%
                     OR LOWER(c.expediente) LIKE %:key%
@@ -199,10 +198,13 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
 
-
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
     Movimiento findFirstByDocumentoIdOrderByIdAsc(Integer carpetaId);
+
+    Movimiento findFirstByCarpetaIdOrderByIdDesc(Integer documentoId);
+
+    Movimiento findFirstByDocumentoIdOrderByIdDesc(Integer carpetaId);
 
     List<Movimiento> findByCarpetaIdAndEstadoInOrderByIdAsc(Integer carpetaId, List<String> estados);
 

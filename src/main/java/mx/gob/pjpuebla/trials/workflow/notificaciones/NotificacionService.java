@@ -6,11 +6,10 @@ import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
-import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -324,11 +323,12 @@ public class NotificacionService {
                         ? persona.getCorreoNotificacion()
                         : persona.getCorreoElectronico();
                 String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " "
-                        + persona.getApellidoPaterno();
+                        + ((persona.getApellidoMaterno() != null) ? persona.getApellidoMaterno() : "");
                 String numCarpeta = documento.getCarpeta().getExpediente();
                 String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
                 String tipoDocumento = documento.getTipoDocumento().name();
 
+                createLitigante(persona, email);
                 sendNotificacion(email, nombreParticipante, numCarpeta, nombreJuzgado, tipoDocumento);
             }
         }
@@ -339,6 +339,18 @@ public class NotificacionService {
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
+    }
+
+    private void createLitigante(PersonaDocumento personaDocumento, String email){
+        Persona persona = new Persona();
+        persona.setDomicilio(personaDocumento.getFnDomicilio());
+        persona.setNombre(personaDocumento.getNombre());
+        persona.setApellidoPaterno(personaDocumento.getApellidoPaterno());
+        persona.setApellidoMaterno(personaDocumento.getApellidoMaterno());
+        persona.setCurp(personaDocumento.getCurp());
+        persona.setCorreoElectronico(email);
+        persona.setEstado(Estado.ACTIVE);
+        personaService.createLitigante(persona,Arrays.asList(new RoleRecord("LITIGANTE", "LITIGANTE")));
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,

@@ -820,7 +820,7 @@ public class DocumentoService {
                 DocumentoData documentoData = new DocumentoData();
                 documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
                 documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO))
-                                ? EstadoCarpeta.TURNADO
+                                ? EstadoCarpeta.RECEPCION
                                 : EstadoCarpeta.ASIGNADO);
                 if (persona.getOficialia() != null) {
                         documento.setEstatus(EstadoCarpeta.CAPTURA);
@@ -838,10 +838,8 @@ public class DocumentoService {
                                 && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
                 }
-                if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {// promoción
-                                                                                                        // desde el
-                                                                                                        // portal del
-                                                                                                        // litigante
+                //promoción desde el portal del litigante
+                if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         DocumentoContenido contenido = new DocumentoContenido();
                         contenido.setDocumento(documento);
                         contenido.setTexto(documentoPromocionRecord.contenido());
@@ -852,7 +850,7 @@ public class DocumentoService {
                 addAnexos(documentoPromocionRecord.anexos(), documento);
                 if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         movimientoService.createMovimentoPromocionElectronica(documento, documento.getPersona(),
-                                        EstadoCarpeta.TURNADO.name(), documento.getConcepto());
+                                        EstadoCarpeta.RECEPCION.name(), documento.getConcepto());
                 } else {
                         movimientoService.createMovimentoWithConcepto(null, documento, documento.getPersona(), null,
                                         documento.getEstatus().name(), documento.getConcepto());
@@ -1297,7 +1295,8 @@ public class DocumentoService {
                                 movimiento.setConcepto(documento.getConcepto().getNombre());
                                 movimiento.setDuracion(documento.getConcepto().getDias().toString() + "d");
                                 movimiento.setDocumento(documento);
-                                movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
+                                movimiento.setOficialia(persona.getOficialia());
+                                //movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
                         } else {
                                 Carpeta carpeta = mov.getCarpeta();
                                 carpeta.setFechaAsignacion(LocalDateTime.now())
@@ -1310,7 +1309,8 @@ public class DocumentoService {
                                 movimiento.setConcepto(carpeta.getConcepto().getNombre());
                                 movimiento.setDuracion(carpeta.getConcepto().getDias().toString() + "d");
                                 movimiento.setCarpeta(carpeta);
-                                movimiento.setJuzgado(carpeta.getJuzgado());
+                                //movimiento.setJuzgado(carpeta.getJuzgado());
+                                movimiento.setOficialia(persona.getOficialia());
                         }
                         this.movimientoRepository.save(movimiento);
                 }

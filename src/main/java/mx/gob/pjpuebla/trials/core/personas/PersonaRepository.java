@@ -83,4 +83,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
             Pageable pageable);
 
     List<Persona> findByJuzgadoId(Integer juzgadoId);
+
+    Persona findByCorreoElectronico(String correo);
 }
