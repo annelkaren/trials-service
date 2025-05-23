@@ -75,14 +75,4 @@ public class Movimiento implements Serializable {
     @Column(name = "S_DURACION")
     private String duracion;
 
-    @Size(max = 300)
-    @Column(name = "S_MOTIVO_PRORROGA")
-    private String motivoProrroga;
-
-    @Enumerated
-    @Column(name = "N_ESTADO_PRORROGA")
-    private EstadoProrroga estadoProrroga;
-
-    @Column(name = "T_FECHA_PRORROGA")
-    private LocalDate fechaProrroga;
 }

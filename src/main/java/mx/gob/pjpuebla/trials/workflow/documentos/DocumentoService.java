@@ -65,6 +65,8 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
+import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogas;
+import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogasService;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 
 import org.apache.commons.lang3.StringUtils;
@@ -128,6 +130,7 @@ public class DocumentoService {
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final DocumentoContenidoRepository documentoContenidoRepository;
         private final EventoService eventosService;
+        private final SolicitudesProrrogasService solicitudesProrrogasService;
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -1203,10 +1206,15 @@ public class DocumentoService {
                                                 fechaTermino = eventosService.siguienteDiaHabil(fechaTermino.toLocalDate(), juzgado, oficialia).atStartOfDay();
                                         }
                                                 
+                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService.getLastProrrogas(mov.getId());
                                         
-                                        String motivoProrroga = mov.getMotivoProrroga();
-                                        EstadoProrroga estadoProrroga = mov.getEstadoProrroga();
-                                        boolean turnadoVencido = fechaTermino.isBefore(LocalDateTime.now());
+                                        String motivoProrroga = solicitudProrroga != null ? solicitudProrroga.getMotivoProrroga() : null;
+                                        EstadoProrroga estadoProrroga = solicitudProrroga != null ?  solicitudProrroga.getEstado() : null;
+                                        
+                                        
+                                        boolean turnadoVencido = (solicitudProrroga != null && solicitudProrroga.getEstado().equals(EstadoProrroga.AUTORIZADA)) ?  
+                                                        solicitudProrroga.getFechaAutorizada().isBefore(LocalDate.now())  :
+                                                        fechaTermino.isBefore(LocalDateTime.now());
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),

@@ -188,18 +188,4 @@ public class MovimientoService {
                 (origen.getDuracion().endsWith("h")) ? origen.getDuracion().replace("h", " horas")
                         : origen.getDuracion().replace("d", ""));
     }
-
-    public ResponseEntity<?> solicitarProrroga(MovimientoProrrogaRecord movimientoProrrogaRecord) {
-        
-        Movimiento movimiento = movimientoRepository.findById(movimientoProrrogaRecord.motivoId())
-                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado", "movimientoId: " + movimientoProrrogaRecord.motivoId()));
-
-        movimiento.setMotivoProrroga(movimientoProrrogaRecord.motivoProrroga());
-        movimiento.setFechaProrroga(movimientoProrrogaRecord.fechaProrroga());
-        movimiento.setEstadoProrroga(EstadoProrroga.SOLICITADA);
-
-        movimientoRepository.save(movimiento);
-
-        return ResponseEntity.ok("Prorroga solicitada");
-    }
 }
