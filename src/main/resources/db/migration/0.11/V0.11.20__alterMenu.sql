@@ -1,0 +1,1 @@
+ALTER TABLE trials.tbl_menus ALTER COLUMN s_rol TYPE varchar(350) USING s_rol::varchar(350);
