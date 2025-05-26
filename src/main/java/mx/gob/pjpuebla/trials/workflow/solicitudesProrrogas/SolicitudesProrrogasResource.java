@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
 
 @RequiredArgsConstructor
 @RestController
@@ -17,8 +19,8 @@ public class SolicitudesProrrogasResource {
 
     public final SolicitudesProrrogasService solicitudesProrrogasService;
 
-    @PostMapping("/solicitudProrroga")
-    public ResponseEntity<?> solicitarProrroga(@RequestBody SolicitudesProrrogasRecord solicitudesProrrogaRecord) {
+    @PostMapping("/crear")
+    public ResponseEntity<ApiResponse<?>> solicitarProrroga(@RequestBody SolicitudesProrrogasRecord solicitudesProrrogaRecord) {
         return solicitudesProrrogasService.solicitarProrroga(solicitudesProrrogaRecord);
     }
 }
