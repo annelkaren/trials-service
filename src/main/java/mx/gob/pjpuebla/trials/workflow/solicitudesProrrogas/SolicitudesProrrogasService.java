@@ -65,9 +65,31 @@ public class SolicitudesProrrogasService {
         return ResponseEntity.ok(ApiResponseFactory.success("Prórroga solicitada con éxito"));
     }
 
-    public Page<SolicitudProrrogaRecordResponse> getSolicitudesProrrogas() {
-        return solicitudesProrrogasRepository.getAll(Pageable.unpaged());
+    public Page<SolicitudProrrogaRecordResponse> getSolicitudesProrrogas(String key, Pageable pageable) {
+        return solicitudesProrrogasRepository.getAll(pageable);
         
 
     }
+
+    public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(SolicitudesProrrogasSaveRecord solicitudesProrrogasSaveRecord) {
+        
+        if (eventoService.esDiaInHabil(solicitudesProrrogasSaveRecord.fechaAutorizacion(), null, null)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseFactory.error("La fecha de autorización debe ser un dia habil",
+                            ApiResponseFactory.VALIDATION_ERROR));
+        }
+
+
+        SolicitudesProrrogas solicitudesProrroga = solicitudesProrrogasRepository.findById(solicitudesProrrogasSaveRecord.solicitudProrrogaId())
+        .orElseThrow(() -> new NotFoundException("Solicitud no encontrada",
+                        "solicitudProrrogaId: " + solicitudesProrrogasSaveRecord.solicitudProrrogaId()));;
+
+        solicitudesProrroga.setEstado(solicitudesProrrogasSaveRecord.estadoProrroga());
+        solicitudesProrroga.setFechaAutorizada(solicitudesProrrogasSaveRecord.fechaAutorizacion());
+
+        solicitudesProrrogasRepository.save(solicitudesProrroga);
+        
+        return ResponseEntity.ok(ApiResponseFactory.success("Respuesta enviada con éxito"));
+    }
+    
 }

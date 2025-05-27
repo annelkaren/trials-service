@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
@@ -12,7 +13,8 @@ public record SolicitudProrrogaRecordResponse(
     String tipoEntrada,
     String motivo,
     LocalDateTime fechaAsignacion,
-    LocalDate fechaCalculada,
+    LocalDate fechaAltaSolicitud,
+    LocalDate fechaTermino,
     LocalDate fechaProrroga,
     EstadoCarpeta estadoCarpeta,
     String nombreCompleto
@@ -23,6 +25,7 @@ public record SolicitudProrrogaRecordResponse(
         TipoCarpeta tipoCarpeta,
         String motivo,
         LocalDateTime fechaAsignacion,
+        Audit audit,
         Integer dias,
         LocalDate fechaProrroga,
         EstadoCarpeta estadoCarpeta,
@@ -32,9 +35,10 @@ public record SolicitudProrrogaRecordResponse(
         this(
             id,
             expediente,
-            tipoCarpeta != null ? tipoCarpeta.getEtiqueta() : null,,
+            tipoCarpeta != null ? tipoCarpeta.getEtiqueta() : null,
             motivo,
             fechaAsignacion,
+            audit.getFechaAlta().toLocalDate(),
             (fechaAsignacion != null && dias != null)
                 ? fechaAsignacion.plusDays(dias).toLocalDate()
                 : null,

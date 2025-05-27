@@ -18,12 +18,15 @@ public interface SolicitudesProrrogasRepository extends JpaRepository<Solicitude
                     sp.id,
                     c.expediente,
                     c.tipoCarpeta,
-                    m.motivo,
+                    sp.motivoProrroga,
                     m.fechaAsignacion,
+                    sp.audit,
                     concepto.dias,
                     sp.fechaProrroga,
                     c.estatus,
-                    CONCAT(persona.nombre, ' ', persona.apellidoPaterno, ' ', persona.apellidoMaterno)
+                   CONCAT(COALESCE(persona.nombre, ''), ' ', COALESCE(persona.apellidoPaterno, ''),
+                    ' ',COALESCE(persona.apellidoMaterno, '')
+)
                 )
                 FROM SolicitudesProrrogas sp
                 JOIN sp.movimiento m
