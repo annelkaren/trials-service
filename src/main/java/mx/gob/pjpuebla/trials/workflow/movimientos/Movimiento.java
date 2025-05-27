@@ -6,12 +6,10 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.util.enums.EstadoProrroga;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

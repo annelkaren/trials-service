@@ -1,17 +1,15 @@
 package mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas;
 
 import java.time.LocalDate;
-import java.util.Map;
-
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
+
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
-import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
@@ -65,5 +63,11 @@ public class SolicitudesProrrogasService {
         solicitudesProrrogasRepository.save(solicitudProrroga);
 
         return ResponseEntity.ok(ApiResponseFactory.success("Prórroga solicitada con éxito"));
+    }
+
+    public Page<SolicitudProrrogaRecordResponse> getSolicitudesProrrogas() {
+        return solicitudesProrrogasRepository.getAll(Pageable.unpaged());
+        
+
     }
 }
