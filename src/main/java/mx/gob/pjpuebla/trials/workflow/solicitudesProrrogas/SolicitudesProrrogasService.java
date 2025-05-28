@@ -69,7 +69,7 @@ public class SolicitudesProrrogasService {
     }
 
     public Page<SolicitudProrrogaRecordResponse> getSolicitudesProrrogas(String key, Pageable pageable) {
-        return solicitudesProrrogasRepository.getAll(pageable);
+        return solicitudesProrrogasRepository.getAll(key, pageable);
         
 
     }
