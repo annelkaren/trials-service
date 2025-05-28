@@ -181,7 +181,7 @@ public class DigitalizacionService {
         documento.setRuta(nombreUnicoArchivo);
 
         //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
-        if (documento.getTipoDocumento() != null) {
+        if (documento.getTipoDocumento() != null && documento.getPersona().getOficialia() != null) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
         } else {
             documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
