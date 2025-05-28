@@ -774,7 +774,8 @@ public class DocumentoService {
                                                         : documento.getFolio();
 
                                         String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA"))
+                                                        || movimiento.getEstado().equals("SALIDA") 
+                                                        || movimiento.getEstado().equals("DEVUELTO_A_OFICIALIA"))
                                                                         ? "En juzgado"
                                                                         : "";
 

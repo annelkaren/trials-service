@@ -96,4 +96,13 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
     Optional<Oficialia> findByNombreIgnoreCase(String nombre);
     
     boolean existsBySedeId(Integer sedeId);
+
+    @Query("""
+        SELECT o
+        FROM Oficialia o
+        JOIN o.juzgados j
+        Where j.id = :juzgadoId
+        and o.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+        """)
+    Optional<Oficialia> findByJuzgadoId(Integer juzgadoId);
 }
