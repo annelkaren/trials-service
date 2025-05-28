@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import mx.gob.pjpuebla.trials.util.enums.EstadoProrroga;
 
 @Repository
 public interface SolicitudesProrrogasRepository extends JpaRepository<SolicitudesProrrogas, Integer> {
@@ -33,6 +34,7 @@ public interface SolicitudesProrrogasRepository extends JpaRepository<Solicitude
                 JOIN m.carpeta c
                 JOIN c.concepto concepto
                 JOIN m.persona persona
+                WHERE sp.estado = EstadoProrroga.SOLICITADA
             """)
     Page<SolicitudProrrogaRecordResponse> getAll(Pageable pageable);
 

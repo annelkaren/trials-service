@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas;
 
 import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.estados.Estado;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
@@ -71,25 +74,34 @@ public class SolicitudesProrrogasService {
 
     }
 
-    public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(SolicitudesProrrogasSaveRecord solicitudesProrrogasSaveRecord) {
-        
-        if (eventoService.esDiaInHabil(solicitudesProrrogasSaveRecord.fechaAutorizacion(), null, null)) {
+public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(List<SolicitudesProrrogasSaveRecord> solicitudesProrrogasSaveRecordList) {
+    for (SolicitudesProrrogasSaveRecord solicitud : solicitudesProrrogasSaveRecordList) {
+
+        if (EstadoProrroga.AUTORIZADA.equals(solicitud.estadoProrroga()) &&
+            eventoService.esDiaInHabil(solicitud.fechaAutorizacion(), null, null)) {
+            
             return ResponseEntity.badRequest()
-                    .body(ApiResponseFactory.error("La fecha de autorización debe ser un dia habil",
-                            ApiResponseFactory.VALIDATION_ERROR));
+                .body(ApiResponseFactory.error(
+                    "La fecha de autorización debe ser un día hábil para la solicitud con ID " + solicitud.solicitudProrrogaId(),
+                    ApiResponseFactory.VALIDATION_ERROR));
         }
 
+        SolicitudesProrrogas solicitudesProrroga = solicitudesProrrogasRepository.findById(solicitud.solicitudProrrogaId())
+            .orElseThrow(() -> new NotFoundException("Solicitud no encontrada", "solicitudProrrogaId: " + solicitud.solicitudProrrogaId()));
 
-        SolicitudesProrrogas solicitudesProrroga = solicitudesProrrogasRepository.findById(solicitudesProrrogasSaveRecord.solicitudProrrogaId())
-        .orElseThrow(() -> new NotFoundException("Solicitud no encontrada",
-                        "solicitudProrrogaId: " + solicitudesProrrogasSaveRecord.solicitudProrrogaId()));;
+        solicitudesProrroga.setEstado(solicitud.estadoProrroga());
 
-        solicitudesProrroga.setEstado(solicitudesProrrogasSaveRecord.estadoProrroga());
-        solicitudesProrroga.setFechaAutorizada(solicitudesProrrogasSaveRecord.fechaAutorizacion());
+        if (EstadoProrroga.AUTORIZADA.equals(solicitud.estadoProrroga())) {
+            solicitudesProrroga.setFechaAutorizada(solicitud.fechaAutorizacion());
+        } else {
+            solicitudesProrroga.setFechaAutorizada(null); 
+        }
 
         solicitudesProrrogasRepository.save(solicitudesProrroga);
-        
-        return ResponseEntity.ok(ApiResponseFactory.success("Respuesta enviada con éxito"));
     }
+
+    return ResponseEntity.ok(ApiResponseFactory.success("Todas las solicitudes fueron procesadas exitosamente ✅"));
+}
+
     
 }

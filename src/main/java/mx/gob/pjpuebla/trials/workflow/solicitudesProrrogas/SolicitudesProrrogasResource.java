@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +38,7 @@ public class SolicitudesProrrogasResource {
     }
 
     @PutMapping("/estatusProrroga")
-    public ResponseEntity<ApiResponse<?>> estatusProrroga(@RequestBody SolicitudesProrrogasSaveRecord solicitudesProrrogasSaveRecord) {
+    public ResponseEntity<ApiResponse<?>> estatusProrroga(@RequestBody List<SolicitudesProrrogasSaveRecord> solicitudesProrrogasSaveRecord) {
         return solicitudesProrrogasService.actualizaSolicitudProrroga(solicitudesProrrogasSaveRecord);
     }
 
