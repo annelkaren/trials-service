@@ -1204,18 +1204,25 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTermino = (isPromocion)
                                                         ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento != null ? documento.getConcepto().getDias() : 0)
+                                                                        .plusDays(documento != null
+                                                                                        ? documento.getConcepto()
+                                                                                                        .getDias()
+                                                                                        : 0)
                                                         : (carpeta != null && carpeta.getConcepto() != null)
                                                                         ? mov.getFechaAsignacion().plusDays(
                                                                                         carpeta.getConcepto().getDias())
                                                                         : null;
 
-                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino != null ? fechaTermino.toLocalDate() : null,
+                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(
+                                                        fechaTermino != null ? fechaTermino.toLocalDate() : null,
                                                         juzgado, oficialia);
 
                                         if (esDiaInhabil) {
                                                 fechaTermino = eventosService
-                                                                .siguienteDiaHabil(fechaTermino != null ? fechaTermino.toLocalDate() : null, juzgado,
+                                                                .siguienteDiaHabil(
+                                                                                fechaTermino != null ? fechaTermino
+                                                                                                .toLocalDate() : null,
+                                                                                juzgado,
                                                                                 oficialia)
                                                                 .atStartOfDay();
                                         }
@@ -1230,7 +1237,8 @@ public class DocumentoService {
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
 
-                                        boolean turnadoVencido = fechaTermino != null ? fechaTermino.isBefore(LocalDateTime.now()) : false;
+                                        boolean turnadoVencido = fechaTermino != null
+                                                        && fechaTermino.isBefore(LocalDateTime.now());
 
                                         boolean prorrogaActiva = solicitudProrroga != null
                                                         && solicitudProrroga.getEstado()
@@ -1241,7 +1249,6 @@ public class DocumentoService {
                                         String observaciones = (isPromocion) ? mov.getObservaciones()
                                                         : getObservaciones(carpeta,
                                                                         mov.getObservaciones());
-
                                         String textoNotificacion = getTextoNotificacion(
                                                         Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
@@ -1261,9 +1268,10 @@ public class DocumentoService {
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
                                                         ((isPromocion) && documento != null) ? documento.getId() : null,
-                                                        carpeta != null ?  carpeta.getId() : null,
-                                                        carpeta != null ?  carpeta.getExpediente() : null,
-                                                        (isPromocion) ? documento.getFolio() : carpeta.getFolio(),
+                                                        carpeta != null ? carpeta.getId() : null,
+                                                        carpeta != null ? carpeta.getExpediente() : null,
+                                                        (isPromocion) && documento != null ? documento.getFolio()
+                                                                        : carpeta != null ? carpeta.getFolio() : "",
                                                         StringUtils.capitalize(
                                                                         (isPromocion) ? documento.getTipoDocumento()
                                                                                         .name()
@@ -1297,6 +1305,9 @@ public class DocumentoService {
         }
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
+                if (carpeta == null) {
+                        return observaciones;
+                }
 
                 if (carpeta.getPrioridad() != null && carpeta.getPrioridad().equals(Prioridad.URGENTE)) {
                         return StringUtils.capitalize(Prioridad.URGENTE.name().toLowerCase());

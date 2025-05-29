@@ -15,10 +15,12 @@ public class ApiResponseFactory {
         return new ApiResponse<>(true, message, SUCCESS, 200, data, LocalDateTime.now());
     }
 
+    @SuppressWarnings("null")
     public static <T> ApiResponse<T> success(String message) {
         return new ApiResponse<>(true, message, SUCCESS, 200, null, LocalDateTime.now());
     }
 
+    @SuppressWarnings("null")
     public static <T> ApiResponse<T> error(String message, String code, int status) {
         return new ApiResponse<>(false, message, code, status, null, LocalDateTime.now());
     }
