@@ -27,7 +27,7 @@ public class EmailService {
     private final Configuration freemarkerConfig;
 
     public void sendMail(List<String> to, List<String> cc, List<String> bcc,
-                         String subject, String template, Map<String, Object> model) {
+            String subject, String template, Map<String, Object> model) {
         try {
             Template tpl = freemarkerConfig.getTemplate(template);
             String html = FreeMarkerTemplateUtils.processTemplateIntoString(tpl, model);
@@ -38,7 +38,7 @@ public class EmailService {
     }
 
     public void sendMail(List<String> to, List<String> cc, List<String> bcc,
-                         String subject, String message, String... filename) {
+            String subject, String message, String... filename) {
         try {
             if (to.isEmpty() && cc.isEmpty() && bcc.isEmpty()) {
                 throw new IllegalArgumentException("No recipients found to send");
@@ -51,11 +51,16 @@ public class EmailService {
             helper.setReplyTo("no-reply@pjpuebla.gob.mx");
             helper.setSubject(subject);
             helper.setText(message, true);
-            helper.setFrom(mailSender.getUsername());
+            String from = mailSender.getUsername();
+            if (from == null) {
+                throw new IllegalStateException("No se puede enviar el correo: el username del mailSender está nulo");
+            }
+            helper.setFrom(from);
+           
 
-            if (filename != null && filename.length > 0) {//si vienen archivo adjuntos
+            if (filename != null && filename.length > 0) {// si vienen archivo adjuntos
                 FileSystemResource file;
-                for (String f : filename) {//para cada adjunto
+                for (String f : filename) {// para cada adjunto
                     file = new FileSystemResource(new File(f));
                     helper.addAttachment(f, file);
                 }

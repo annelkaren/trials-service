@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -64,6 +65,8 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRe
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
+import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogas;
+import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogasService;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 
 import org.apache.commons.lang3.StringUtils;
@@ -126,6 +129,8 @@ public class DocumentoService {
         private final JuzgadoRepository juzgadoRepository;
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final DocumentoContenidoRepository documentoContenidoRepository;
+        private final EventoService eventosService;
+        private final SolicitudesProrrogasService solicitudesProrrogasService;
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -774,7 +779,7 @@ public class DocumentoService {
                                                         : documento.getFolio();
 
                                         String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA") 
+                                                        || movimiento.getEstado().equals("SALIDA")
                                                         || movimiento.getEstado().equals("DEVUELTO_A_OFICIALIA"))
                                                                         ? "En juzgado"
                                                                         : "";
@@ -837,7 +842,7 @@ public class DocumentoService {
                                 && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
                 }
-                //promoción desde el portal del litigante
+                // promoción desde el portal del litigante
                 if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         DocumentoContenido contenido = new DocumentoContenido();
                         contenido.setDocumento(documento);
@@ -1090,7 +1095,7 @@ public class DocumentoService {
                                         String concepto;
                                         String expediente;
                                         Integer carpetaId;
-                                        Integer documentoId = documento.getId();
+                                        Integer documentoId = documento != null ? documento.getId() : null;
                                         Integer conceptoId;
 
                                         // Si documento no es null, se obtienen los valores correspondientes
@@ -1171,6 +1176,8 @@ public class DocumentoService {
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
+                Juzgado juzgado = persona.getJuzgado();
+                Oficialia oficialia = persona.getOficialia();
                 boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
                 Object[] resultado = procesarTipoCarpeta(key);
@@ -1193,44 +1200,98 @@ public class DocumentoService {
                                         Carpeta carpeta = mov.getCarpeta() != null ? mov.getCarpeta()
                                                         : documento != null ? documento.getCarpeta() : null;
 
-                                        assert carpeta != null;
+                                        LocalDateTime fechaTurnado = mov.getFechaAsignacion();
+
+                                        LocalDateTime fechaTermino = (isPromocion)
+                                                        ? mov.getFechaAsignacion()
+                                                                        .plusDays(documento != null
+                                                                                        ? documento.getConcepto()
+                                                                                                        .getDias()
+                                                                                        : 0)
+                                                        : (carpeta != null && carpeta.getConcepto() != null)
+                                                                        ? mov.getFechaAsignacion().plusDays(
+                                                                                        carpeta.getConcepto().getDias())
+                                                                        : null;
+
+                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(
+                                                        fechaTermino != null ? fechaTermino.toLocalDate() : null,
+                                                        juzgado, oficialia);
+
+                                        if (esDiaInhabil) {
+                                                fechaTermino = eventosService
+                                                                .siguienteDiaHabil(
+                                                                                fechaTermino != null ? fechaTermino
+                                                                                                .toLocalDate() : null,
+                                                                                juzgado,
+                                                                                oficialia)
+                                                                .atStartOfDay();
+                                        }
+
+                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService
+                                                        .getLastProrrogas(mov.getId());
+
+                                        String motivoProrroga = solicitudProrroga != null
+                                                        ? solicitudProrroga.getMotivoProrroga()
+                                                        : null;
+                                        EstadoProrroga estadoProrroga = solicitudProrroga != null
+                                                        ? solicitudProrroga.getEstado()
+                                                        : null;
+
+                                        boolean turnadoVencido = fechaTermino != null
+                                                        && fechaTermino.isBefore(LocalDateTime.now());
+
+                                        boolean prorrogaActiva = solicitudProrroga != null
+                                                        && solicitudProrroga.getEstado()
+                                                                        .equals(EstadoProrroga.AUTORIZADA)
+                                                        && !LocalDateTime.now().isAfter(solicitudProrroga
+                                                                        .getFechaAutorizada().atStartOfDay());
+
+                                        String observaciones = (isPromocion) ? mov.getObservaciones()
+                                                        : getObservaciones(carpeta,
+                                                                        mov.getObservaciones());
+                                        String textoNotificacion = getTextoNotificacion(
+                                                        Objects.equals(observaciones, "URGENTE"),
+                                                        turnadoVencido,
+                                                        prorrogaActiva,
+                                                        solicitudProrroga != null && solicitudProrroga.getEstado()
+                                                                        .equals(EstadoProrroga.AUTORIZADA));
+
+                                        String colorNotificacion = getColorCorrespondenciaAsignados(
+                                                        Objects.equals(observaciones, "URGENTE"),
+                                                        turnadoVencido,
+                                                        prorrogaActiva,
+                                                        solicitudProrroga != null
+                                                                        ? solicitudProrroga.getEstado().equals(
+                                                                                        EstadoProrroga.AUTORIZADA)
+                                                                        : false);
 
                                         return new DocumentoAsignadoResponseRecord(
-                                                        (isPromocion) ? documento.getId() : null,
-                                                        carpeta.getId(),
-                                                        carpeta.getExpediente(),
-                                                        (isPromocion) ? documento.getFolio() : carpeta.getFolio(),
+                                                        mov.getId(),
+                                                        ((isPromocion) && documento != null) ? documento.getId() : null,
+                                                        carpeta != null ? carpeta.getId() : null,
+                                                        carpeta != null ? carpeta.getExpediente() : null,
+                                                        (isPromocion) && documento != null ? documento.getFolio()
+                                                                        : carpeta != null ? carpeta.getFolio() : "",
                                                         StringUtils.capitalize(
-                                                                        (isPromocion) ? documento.getTipoDocumento()
-                                                                                        .name()
-                                                                                        .toLowerCase()
-                                                                                        : carpeta.getTipoCarpeta()
-                                                                                                        .name()
-                                                                                                        .toLowerCase()),
-                                                        (isPromocion) ? documento.getConcepto().getNombre()
-                                                                        : (carpeta.getConcepto() != null)
+                                                                        (isPromocion && documento != null) ? documento.getTipoDocumento().name().toLowerCase()
+                                                                                      : carpeta != null ? carpeta.getTipoCarpeta().name().toLowerCase() : ""),
+                                                        (isPromocion && documento != null) ? documento.getConcepto().getNombre()
+                                                                        : (carpeta != null && carpeta.getConcepto() != null)
                                                                                         ? carpeta.getConcepto()
                                                                                                         .getNombre()
                                                                                         : "-",
-                                                        mov.getFechaAsignacion(),
-                                                        (isPromocion) ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento.getConcepto().getDias())
-                                                                        : (carpeta.getConcepto() != null)
-                                                                                        ? mov.getFechaAsignacion()
-                                                                                                        .plusDays(
-                                                                                                                        carpeta.getConcepto()
-                                                                                                                                        .getDias())
-                                                                                        : null, // TODO. Validar si
-                                                                                                // tiene horas sumar en
-                                                        // lugar de dias, crear nuevo metodo
+                                                        fechaTurnado,
+                                                        fechaTermino,
                                                         StringUtils.capitalize(
-                                                                        (isPromocion) ? documento.getEstatus().name()
+                                                                        (isPromocion && documento != null ) ? documento.getEstatus().name()
                                                                                         .toLowerCase()
-                                                                                        : carpeta.getEstatus().name()
-                                                                                                        .toLowerCase()),
-                                                        (isPromocion) ? mov.getObservaciones()
-                                                                        : getObservaciones(carpeta,
-                                                                                        mov.getObservaciones()));
+                                                                                        : carpeta != null ? carpeta.getEstatus().name().toLowerCase() : ""),
+                                                        observaciones,
+                                                        turnadoVencido,
+                                                        motivoProrroga,
+                                                        estadoProrroga,
+                                                        textoNotificacion,
+                                                        colorNotificacion);
                                 })
                                 .toList();
 
@@ -1239,15 +1300,64 @@ public class DocumentoService {
         }
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
+                if (carpeta == null) {
+                        return observaciones;
+                }
+
                 if (carpeta.getPrioridad() != null && carpeta.getPrioridad().equals(Prioridad.URGENTE)) {
                         return StringUtils.capitalize(Prioridad.URGENTE.name().toLowerCase());
                 }
+
                 Integer promociones = documentoRepository.countByCarpetaIdAndTipoDocumentoAndEstatus(
                                 carpeta.getId(), TipoDocumento.PROMOCION, EstadoCarpeta.INTEGRADO);
+
                 if (promociones > 0) {
                         return promociones + " promociones nuevas";
                 }
                 return observaciones;
+        }
+
+        private String getColorCorrespondenciaAsignados(boolean isUrgente, boolean turnadoVencido,
+                        boolean prorrogaActiva, boolean prorrogaAutorizada) {
+                String color = "green";
+
+                if (isUrgente || (turnadoVencido && !prorrogaAutorizada) || (prorrogaAutorizada && !prorrogaActiva)) {
+                        color = "red";
+                }
+
+                if (prorrogaAutorizada && prorrogaActiva) {
+                        color = "orange";
+                }
+
+                return color;
+        }
+
+        private String getTextoNotificacion(
+                        boolean esUrgente,
+                        boolean turnadoVencido,
+                        boolean prorrogaActiva,
+                        boolean tieneProrrogaAutorizada) {
+                if (esUrgente && turnadoVencido) {
+                        return "Este documento urgente ya venció el plazo de atención";
+                }
+
+                if (turnadoVencido && !tieneProrrogaAutorizada) {
+                        return "Este documento ha vencido sin prórroga autorizada";
+                }
+
+                if (prorrogaActiva) {
+                        return "Este documento tiene una prórroga activa";
+                }
+
+                if (tieneProrrogaAutorizada && turnadoVencido) {
+                        return "Este documento tuvo una prórroga autorizada que ya venció";
+                }
+
+                if (esUrgente) {
+                        return "Este documento urgente debe atenderse prioritariamente";
+                }
+
+                return "Normal";
         }
 
         public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid) {
@@ -1288,7 +1398,7 @@ public class DocumentoService {
                                 movimiento.setDuracion(documento.getConcepto().getDias().toString() + "d");
                                 movimiento.setDocumento(documento);
                                 movimiento.setOficialia(persona.getOficialia());
-                                //movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
+                                // movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
                         } else {
                                 Carpeta carpeta = mov.getCarpeta();
                                 carpeta.setFechaAsignacion(LocalDateTime.now())
@@ -1301,7 +1411,7 @@ public class DocumentoService {
                                 movimiento.setConcepto(carpeta.getConcepto().getNombre());
                                 movimiento.setDuracion(carpeta.getConcepto().getDias().toString() + "d");
                                 movimiento.setCarpeta(carpeta);
-                                //movimiento.setJuzgado(carpeta.getJuzgado());
+                                // movimiento.setJuzgado(carpeta.getJuzgado());
                                 movimiento.setOficialia(persona.getOficialia());
                         }
                         this.movimientoRepository.save(movimiento);
