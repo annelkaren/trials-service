@@ -98,7 +98,7 @@ public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(List<Solicitude
         solicitudesProrrogasRepository.save(solicitudesProrroga);
     }
 
-    return ResponseEntity.ok(ApiResponseFactory.success("Todas las solicitudes fueron procesadas exitosamente ✅"));
+    return ResponseEntity.ok(ApiResponseFactory.success("Todas las solicitudes fueron procesadas exitosamente."));
 }
 
 
