@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.core.estados.Estado;
+
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
@@ -70,8 +70,6 @@ public class SolicitudesProrrogasService {
 
     public Page<SolicitudProrrogaRecordResponse> getSolicitudesProrrogas(String key, Pageable pageable) {
         return solicitudesProrrogasRepository.getAll(key, pageable);
-        
-
     }
 
 public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(List<SolicitudesProrrogasSaveRecord> solicitudesProrrogasSaveRecordList) {
@@ -101,6 +99,11 @@ public ResponseEntity<ApiResponse<?>> actualizaSolicitudProrroga(List<Solicitude
     }
 
     return ResponseEntity.ok(ApiResponseFactory.success("Todas las solicitudes fueron procesadas exitosamente ✅"));
+}
+
+
+public List<SolicitudProrrogaRecordResponse> obtenerHistoricoProrrogas(Integer movimientoId){
+    return null;
 }
 
     

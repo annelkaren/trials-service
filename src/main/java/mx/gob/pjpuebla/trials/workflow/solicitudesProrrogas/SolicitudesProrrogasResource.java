@@ -43,8 +43,8 @@ public class SolicitudesProrrogasResource {
     }
 
     @GetMapping("/listasr/{movimientoId}")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    public List<SolicitudProrrogaRecordResponse> obtenerHistoricoProrrogas(Integer movimientoId) {
+        return solicitudesProrrogasService.obtenerHistoricoProrrogas(movimientoId);
     }
     
     

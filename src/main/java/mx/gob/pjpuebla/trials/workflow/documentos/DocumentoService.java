@@ -779,7 +779,7 @@ public class DocumentoService {
                                                         : documento.getFolio();
 
                                         String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA") 
+                                                        || movimiento.getEstado().equals("SALIDA")
                                                         || movimiento.getEstado().equals("DEVUELTO_A_OFICIALIA"))
                                                                         ? "En juzgado"
                                                                         : "";
@@ -842,7 +842,7 @@ public class DocumentoService {
                                 && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         digitalizacionService.guardarArchivo(multipartFile, documento.getId());
                 }
-                //promoción desde el portal del litigante
+                // promoción desde el portal del litigante
                 if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
                         DocumentoContenido contenido = new DocumentoContenido();
                         contenido.setDocumento(documento);
@@ -1202,25 +1202,61 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTurnado = mov.getFechaAsignacion();
 
-                                        LocalDateTime fechaTermino = (isPromocion) ? mov.getFechaAsignacion().plusDays(documento.getConcepto().getDias())
-                                                                                   : (carpeta.getConcepto() != null)
-                                                                                        ? mov.getFechaAsignacion().plusDays(carpeta.getConcepto().getDias())
-                                                                                        : null;
+                                        LocalDateTime fechaTermino = (isPromocion)
+                                                        ? mov.getFechaAsignacion()
+                                                                        .plusDays(documento.getConcepto().getDias())
+                                                        : (carpeta.getConcepto() != null)
+                                                                        ? mov.getFechaAsignacion().plusDays(
+                                                                                        carpeta.getConcepto().getDias())
+                                                                        : null;
 
-                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino.toLocalDate(), juzgado, oficialia);
-                                        if(esDiaInhabil){
-                                                fechaTermino = eventosService.siguienteDiaHabil(fechaTermino.toLocalDate(), juzgado, oficialia).atStartOfDay();
+                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino.toLocalDate(),
+                                                        juzgado, oficialia);
+
+                                        if (esDiaInhabil) {
+                                                fechaTermino = eventosService
+                                                                .siguienteDiaHabil(fechaTermino.toLocalDate(), juzgado,
+                                                                                oficialia)
+                                                                .atStartOfDay();
                                         }
-                                                
-                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService.getLastProrrogas(mov.getId());
-                                        
-                                        String motivoProrroga = solicitudProrroga != null ? solicitudProrroga.getMotivoProrroga() : null;
-                                        EstadoProrroga estadoProrroga = solicitudProrroga != null ?  solicitudProrroga.getEstado() : null;
-                                        
-                                        
-                                        boolean turnadoVencido = (solicitudProrroga != null && solicitudProrroga.getEstado().equals(EstadoProrroga.AUTORIZADA)) ?  
-                                                        solicitudProrroga.getFechaAutorizada().isBefore(LocalDate.now())  :
-                                                        fechaTermino.isBefore(LocalDateTime.now());
+
+                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService
+                                                        .getLastProrrogas(mov.getId());
+
+                                        String motivoProrroga = solicitudProrroga != null
+                                                        ? solicitudProrroga.getMotivoProrroga()
+                                                        : null;
+                                        EstadoProrroga estadoProrroga = solicitudProrroga != null
+                                                        ? solicitudProrroga.getEstado()
+                                                        : null;
+
+                                        boolean turnadoVencido = fechaTermino.isBefore(LocalDateTime.now());
+
+                                        boolean prorrogaActiva = solicitudProrroga != null
+                                                        && solicitudProrroga.getEstado()
+                                                                        .equals(EstadoProrroga.AUTORIZADA)
+                                                        && !LocalDateTime.now().isAfter(solicitudProrroga
+                                                                        .getFechaAutorizada().atStartOfDay());
+
+                                        String observaciones = (isPromocion) ? mov.getObservaciones()
+                                                        : getObservaciones(carpeta,
+                                                                        mov.getObservaciones());
+
+                                        String textoNotificacion = getTextoNotificacion(
+                                                        defaultIfNull(Objects.equals(observaciones, "URGENTE"), false),
+                                                        turnadoVencido,
+                                                        prorrogaActiva,
+                                                        solicitudProrroga != null && solicitudProrroga.getEstado()
+                                                                        .equals(EstadoProrroga.AUTORIZADA));
+
+                                        String colorNotificacion = getColorCorrespondenciaAsignados(
+                                                        defaultIfNull(Objects.equals(observaciones, "URGENTE"), false),
+                                                        turnadoVencido,
+                                                        prorrogaActiva,
+                                                        solicitudProrroga != null
+                                                                        ? solicitudProrroga.getEstado().equals(
+                                                                                        EstadoProrroga.AUTORIZADA)
+                                                                        : false);
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
@@ -1247,12 +1283,12 @@ public class DocumentoService {
                                                                                         .toLowerCase()
                                                                                         : carpeta.getEstatus().name()
                                                                                                         .toLowerCase()),
-                                                        (isPromocion) ? mov.getObservaciones()
-                                                                        : getObservaciones(carpeta,
-                                                                                        mov.getObservaciones()),
-                                                                                        turnadoVencido,
-                                                                                        motivoProrroga,
-                                                                                        estadoProrroga);
+                                                        observaciones,
+                                                        turnadoVencido,
+                                                        motivoProrroga,
+                                                        estadoProrroga,
+                                                        textoNotificacion,
+                                                        colorNotificacion);
                                 })
                                 .toList();
 
@@ -1261,15 +1297,61 @@ public class DocumentoService {
         }
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
+
                 if (carpeta.getPrioridad() != null && carpeta.getPrioridad().equals(Prioridad.URGENTE)) {
                         return StringUtils.capitalize(Prioridad.URGENTE.name().toLowerCase());
                 }
+
                 Integer promociones = documentoRepository.countByCarpetaIdAndTipoDocumentoAndEstatus(
                                 carpeta.getId(), TipoDocumento.PROMOCION, EstadoCarpeta.INTEGRADO);
+
                 if (promociones > 0) {
                         return promociones + " promociones nuevas";
                 }
                 return observaciones;
+        }
+
+        private String getColorCorrespondenciaAsignados(boolean isUrgente, boolean turnadoVencido,
+                        boolean prorrogaActiva, boolean prorrogaAutorizada) {
+                String color = "green";
+
+                if (isUrgente || (turnadoVencido && !prorrogaAutorizada) || (prorrogaAutorizada && !prorrogaActiva)) {
+                        color = "red";
+                }
+
+                if (prorrogaAutorizada && prorrogaActiva) {
+                        color = "orange";
+                }
+
+                return color;
+        }
+
+        private String getTextoNotificacion(
+                        boolean esUrgente,
+                        boolean turnadoVencido,
+                        boolean prorrogaActiva,
+                        boolean tieneProrrogaAutorizada) {
+                if (esUrgente && turnadoVencido) {
+                        return "Este documento urgente ya venció el plazo de atención";
+                }
+
+                if (turnadoVencido && !tieneProrrogaAutorizada) {
+                        return "Este documento ha vencido sin prórroga autorizada";
+                }
+
+                if (prorrogaActiva) {
+                        return "Este documento tiene una prórroga activa";
+                }
+
+                if (tieneProrrogaAutorizada && turnadoVencido) {
+                        return "Este documento tuvo una prórroga autorizada que ya venció";
+                }
+
+                if (esUrgente) {
+                        return "Este documento urgente debe atenderse prioritariamente";
+                }
+
+                return "Normal";
         }
 
         public List<DocumentoAsignadoResponseRecord> getAllAsignado(Persona persona, String uuid) {
@@ -1310,7 +1392,7 @@ public class DocumentoService {
                                 movimiento.setDuracion(documento.getConcepto().getDias().toString() + "d");
                                 movimiento.setDocumento(documento);
                                 movimiento.setOficialia(persona.getOficialia());
-                                //movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
+                                // movimiento.setJuzgado(documento.getCarpeta().getJuzgado());
                         } else {
                                 Carpeta carpeta = mov.getCarpeta();
                                 carpeta.setFechaAsignacion(LocalDateTime.now())
@@ -1323,7 +1405,7 @@ public class DocumentoService {
                                 movimiento.setConcepto(carpeta.getConcepto().getNombre());
                                 movimiento.setDuracion(carpeta.getConcepto().getDias().toString() + "d");
                                 movimiento.setCarpeta(carpeta);
-                                //movimiento.setJuzgado(carpeta.getJuzgado());
+                                // movimiento.setJuzgado(carpeta.getJuzgado());
                                 movimiento.setOficialia(persona.getOficialia());
                         }
                         this.movimientoRepository.save(movimiento);

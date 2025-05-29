@@ -19,7 +19,9 @@ public record DocumentoAsignadoResponseRecord(
     String observaciones,
     boolean turnadoVencido,
     String motivoProrroga,
-    EstadoProrroga estadoProrroga
+    EstadoProrroga estadoProrroga,
+    String textoNotificacion,
+    String colorNotificacion
 ) implements Serializable {
     
 }
