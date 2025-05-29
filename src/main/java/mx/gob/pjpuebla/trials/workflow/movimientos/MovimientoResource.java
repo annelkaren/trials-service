@@ -35,7 +35,7 @@ public class MovimientoResource {
     private final AnexoRepository anexoRepository;
 
     @GetMapping("/{uuid}")
-    public ResponseEntity<Object> getReporteMovimiento(String uuid) {
+    public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid")String uuid) {
         
         List<MovimientoSalidaRecord> movimientos = movimientoService.getMovimientosSalida(uuid);
         // Combinar movimientos con anexos
