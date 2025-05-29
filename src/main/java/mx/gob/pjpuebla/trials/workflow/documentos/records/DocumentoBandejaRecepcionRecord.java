@@ -16,6 +16,7 @@ public record DocumentoBandejaRecepcionRecord(
         LocalDateTime fechaHoraEnvio,
         Boolean isInterno,
         Prioridad prioridad,
-        Integer horas
+        Integer horas,
+        Integer conceptoId
 ) implements Serializable {
 }

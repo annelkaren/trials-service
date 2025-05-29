@@ -446,7 +446,8 @@ class DocumentoResourceTest {
                 LocalDate.now(),
                 false,
                 false,
-                'C'
+                'C',
+                "000001/2025"
         );
         given(documentoService.getAllOficios(any(), any()))
                 .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));

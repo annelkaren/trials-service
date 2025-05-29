@@ -181,11 +181,13 @@ public class DigitalizacionService {
         documento.setRuta(nombreUnicoArchivo);
 
         //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
-        if (documento.getTipoDocumento() != null) {
+        if (documento.getTipoDocumento() != null && (documento.getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA || documento.getEstatus() == EstadoCarpeta.EDICION)) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
         } else {
-            documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
-            carpetaRepository.save(documento.getCarpeta());
+            if (documento.getCarpeta().getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA || documento.getCarpeta().getEstatus() == EstadoCarpeta.EDICION){
+                documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
+                carpetaRepository.save(documento.getCarpeta());
+            } 
         }
 
         documentoRepository.save(documento);

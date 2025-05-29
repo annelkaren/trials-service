@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -28,6 +30,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Service
 public class MovimientoService {
+
+    private final OficialiaRepository oficialiaRepository;
 
     private final MovimientoRepository movimientoRepository;
     private final CarpetaRepository carpetaRepository;
@@ -90,6 +94,13 @@ public class MovimientoService {
 
     private Movimiento createMovimiento(Carpeta carpeta, Documento documento, Persona persona, String motivo,
             String estado) {
+        Oficialia oficialia = persona.getOficialia();
+
+        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) || persona.getJuzgado() != null){
+            oficialia = oficialiaRepository.findByJuzgadoId(persona.getJuzgado().getId())
+                    .orElse(null); 
+        }
+
         return new Movimiento()
                 .setCarpeta(carpeta)
                 .setDocumento(documento)
@@ -97,7 +108,7 @@ public class MovimientoService {
                 .setMotivo(motivo)
                 .setPersona(persona)
                 .setEstado(estado)
-                .setOficialia(persona.getOficialia())
+                .setOficialia(oficialia)
                 .setJuzgado(persona.getJuzgado());
     }
 
