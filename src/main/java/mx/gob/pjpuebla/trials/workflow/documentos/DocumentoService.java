@@ -1051,7 +1051,8 @@ public class DocumentoService {
                                                         movimiento.getFechaAsignacion(),
                                                         true,
                                                         carpeta.getPrioridad(),
-                                                        carpeta.getHoras());
+                                                        carpeta.getHoras(),
+                                                        carpeta.getConcepto().getId());
                                 })
                                 .toList();
 
@@ -1090,6 +1091,7 @@ public class DocumentoService {
                                         String expediente;
                                         Integer carpetaId;
                                         Integer documentoId = documento.getId();
+                                        Integer conceptoId;
 
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
@@ -1097,6 +1099,7 @@ public class DocumentoService {
                                                 tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                                 documento);
                                                 concepto = documento.getConcepto().getNombre();
+                                                conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
                                                 carpetaId = documento.getCarpeta().getId();
                                         } else {
@@ -1105,6 +1108,7 @@ public class DocumentoService {
                                                 tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                                 carpeta);
                                                 concepto = carpeta.getConcepto().getNombre();
+                                                conceptoId = carpeta.getConcepto().getId();
                                                 expediente = carpeta.getExpediente();
                                                 carpetaId = carpeta.getId();
                                         }
@@ -1120,7 +1124,8 @@ public class DocumentoService {
                                                         movimiento.getFechaAsignacion(),
                                                         (Boolean) map.get(IS_INTERNO),
                                                         null,
-                                                        null);
+                                                        null,
+                                                        conceptoId);
 
                                 })
                                 .toList();
@@ -1491,7 +1496,8 @@ public class DocumentoService {
                                                 item.fechaEntrega(),
                                                 item.bandAcuse(),
                                                 item.bandDigitalizado(),
-                                                item.tamanioPapel()))
+                                                item.tamanioPapel(),
+                                                item.expediente()))
                                 .toList();
 
                 return new PageImpl<>(list, pageable, page.getTotalElements());
