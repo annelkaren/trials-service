@@ -72,4 +72,5 @@ public class Movimiento implements Serializable {
 
     @Column(name = "S_DURACION")
     private String duracion;
+
 }
