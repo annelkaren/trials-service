@@ -15,17 +15,17 @@ public class ApiResponseFactory {
         return new ApiResponse<>(true, message, SUCCESS, 200, data, LocalDateTime.now());
     }
 
-    @SuppressWarnings("null")
-    public static <T> ApiResponse<T> success(String message) {
-        return new ApiResponse<>(true, message, SUCCESS, 200, null, LocalDateTime.now());
+    public static <T> ApiResponse<String> success(String message) {
+        return new ApiResponse<>(true, message, SUCCESS, 200, "", LocalDateTime.now());
     }
 
-    @SuppressWarnings("null")
-    public static <T> ApiResponse<T> error(String message, String code, int status) {
-        return new ApiResponse<>(false, message, code, status, null, LocalDateTime.now());
+    public static <T> ApiResponse<String> error(String message, String code, int status) {
+        return new ApiResponse<>(false, message, code, status, "", LocalDateTime.now());
     }
 
-    public static <T> ApiResponse<T> error(String message, String code) {
+    public static <T> ApiResponse<String> error(String message, String code) {
         return error(message, code, 400);
     }
 }
+    
+

@@ -1273,24 +1273,19 @@ public class DocumentoService {
                                                         (isPromocion) && documento != null ? documento.getFolio()
                                                                         : carpeta != null ? carpeta.getFolio() : "",
                                                         StringUtils.capitalize(
-                                                                        (isPromocion) ? documento.getTipoDocumento()
-                                                                                        .name()
-                                                                                        .toLowerCase()
-                                                                                        : carpeta.getTipoCarpeta()
-                                                                                                        .name()
-                                                                                                        .toLowerCase()),
-                                                        (isPromocion) ? documento.getConcepto().getNombre()
-                                                                        : (carpeta.getConcepto() != null)
+                                                                        (isPromocion && documento != null) ? documento.getTipoDocumento().name().toLowerCase()
+                                                                                      : carpeta != null ? carpeta.getTipoCarpeta().name().toLowerCase() : ""),
+                                                        (isPromocion && documento != null) ? documento.getConcepto().getNombre()
+                                                                        : (carpeta != null && carpeta.getConcepto() != null)
                                                                                         ? carpeta.getConcepto()
                                                                                                         .getNombre()
                                                                                         : "-",
                                                         fechaTurnado,
                                                         fechaTermino,
                                                         StringUtils.capitalize(
-                                                                        (isPromocion) ? documento.getEstatus().name()
+                                                                        (isPromocion && documento != null ) ? documento.getEstatus().name()
                                                                                         .toLowerCase()
-                                                                                        : carpeta.getEstatus().name()
-                                                                                                        .toLowerCase()),
+                                                                                        : carpeta != null ? carpeta.getEstatus().name().toLowerCase() : ""),
                                                         observaciones,
                                                         turnadoVencido,
                                                         motivoProrroga,

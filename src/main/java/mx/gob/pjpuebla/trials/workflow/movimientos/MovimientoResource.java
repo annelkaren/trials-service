@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class MovimientoResource {
     private final AnexoRepository anexoRepository;
 
     @GetMapping("/{uuid}")
-    public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid")String uuid) {
+    public ResponseEntity<Object> getReporteMovimiento(@PathVariable("uuid") String uuid) {
         
         List<MovimientoSalidaRecord> movimientos = movimientoService.getMovimientosSalida(uuid);
         // Combinar movimientos con anexos
