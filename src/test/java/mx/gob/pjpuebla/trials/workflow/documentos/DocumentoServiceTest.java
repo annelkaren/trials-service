@@ -1136,7 +1136,8 @@ class DocumentoServiceTest {
                                 LocalDate.now(),
                                 false,
                                 false,
-                                'o');
+                                'o',
+                                "000001/2025");
 
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 
@@ -1178,7 +1179,8 @@ class DocumentoServiceTest {
                                 LocalDate.now(),
                                 true,
                                 true,
-                                'o');
+                                'o',
+                                "000001/2025");
 
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 

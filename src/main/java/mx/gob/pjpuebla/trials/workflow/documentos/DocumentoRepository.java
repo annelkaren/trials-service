@@ -170,19 +170,22 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 dd.fechaEntrega,
                 CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
                 CASE WHEN COUNT(dc) > 0 THEN true ELSE false END,
-                MAX(dc.tamanioPapel)
+                MAX(dc.tamanioPapel), 
+                COALESCE(c.expediente, 'N/A')
             )
             FROM Documento doc
             LEFT JOIN doc.institucion ins
             LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
+            LeFT JOIN doc.carpeta c
             WHERE doc.tipoDocumento = :tipoDocumento
             AND (
                 lower(doc.folio) LIKE %:key% OR
                 lower(ins.nombre) LIKE %:key% OR
-                lower(dd.asunto) LIKE %:key%
+                lower(dd.asunto) LIKE %:key% OR
+                lower(COALESCE(c.expediente, 'N/A')) LIKE %:key%
             )
-            GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta
+            GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta, c.expediente
             """)
     Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
 
