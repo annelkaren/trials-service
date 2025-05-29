@@ -34,7 +34,6 @@ public interface SolicitudesProrrogasRepository extends JpaRepository<Solicitude
                 JOIN m.persona persona
                 WHERE sp.estado = EstadoProrroga.SOLICITADA AND (
                     LOWER(c.expediente) LIKE %:key% OR
-                    
                     LOWER(sp.motivoProrroga) LIKE %:key% OR
                     LOWER(CONCAT(COALESCE(persona.nombre, ''), ' ', COALESCE(persona.apellidoPaterno, ''), ' ', COALESCE(persona.apellidoMaterno, ''))) LIKE %:key%
                 )

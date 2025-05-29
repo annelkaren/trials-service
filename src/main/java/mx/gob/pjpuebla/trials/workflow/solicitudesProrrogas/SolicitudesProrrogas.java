@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

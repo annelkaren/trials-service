@@ -1095,7 +1095,7 @@ public class DocumentoService {
                                         String concepto;
                                         String expediente;
                                         Integer carpetaId;
-                                        Integer documentoId = documento.getId();
+                                        Integer documentoId = documento != null ? documento.getId() : null;
                                         Integer conceptoId;
 
                                         // Si documento no es null, se obtienen los valores correspondientes
@@ -1204,18 +1204,18 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTermino = (isPromocion)
                                                         ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento.getConcepto().getDias())
-                                                        : (carpeta.getConcepto() != null)
+                                                                        .plusDays(documento != null ? documento.getConcepto().getDias() : 0)
+                                                        : (carpeta != null && carpeta.getConcepto() != null)
                                                                         ? mov.getFechaAsignacion().plusDays(
                                                                                         carpeta.getConcepto().getDias())
                                                                         : null;
 
-                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino.toLocalDate(),
+                                        Boolean esDiaInhabil = eventosService.esDiaInHabil(fechaTermino != null ? fechaTermino.toLocalDate() : null,
                                                         juzgado, oficialia);
 
                                         if (esDiaInhabil) {
                                                 fechaTermino = eventosService
-                                                                .siguienteDiaHabil(fechaTermino.toLocalDate(), juzgado,
+                                                                .siguienteDiaHabil(fechaTermino != null ? fechaTermino.toLocalDate() : null, juzgado,
                                                                                 oficialia)
                                                                 .atStartOfDay();
                                         }
@@ -1230,7 +1230,7 @@ public class DocumentoService {
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
 
-                                        boolean turnadoVencido = fechaTermino.isBefore(LocalDateTime.now());
+                                        boolean turnadoVencido = fechaTermino != null ? fechaTermino.isBefore(LocalDateTime.now()) : false;
 
                                         boolean prorrogaActiva = solicitudProrroga != null
                                                         && solicitudProrroga.getEstado()
@@ -1243,14 +1243,14 @@ public class DocumentoService {
                                                                         mov.getObservaciones());
 
                                         String textoNotificacion = getTextoNotificacion(
-                                                        defaultIfNull(Objects.equals(observaciones, "URGENTE"), false),
+                                                        Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
                                                         prorrogaActiva,
                                                         solicitudProrroga != null && solicitudProrroga.getEstado()
                                                                         .equals(EstadoProrroga.AUTORIZADA));
 
                                         String colorNotificacion = getColorCorrespondenciaAsignados(
-                                                        defaultIfNull(Objects.equals(observaciones, "URGENTE"), false),
+                                                        Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
                                                         prorrogaActiva,
                                                         solicitudProrroga != null
@@ -1260,9 +1260,9 @@ public class DocumentoService {
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
-                                                        (isPromocion) ? documento.getId() : null,
-                                                        carpeta.getId(),
-                                                        carpeta.getExpediente(),
+                                                        ((isPromocion) && documento != null) ? documento.getId() : null,
+                                                        carpeta != null ?  carpeta.getId() : null,
+                                                        carpeta != null ?  carpeta.getExpediente() : null,
                                                         (isPromocion) ? documento.getFolio() : carpeta.getFolio(),
                                                         StringUtils.capitalize(
                                                                         (isPromocion) ? documento.getTipoDocumento()
