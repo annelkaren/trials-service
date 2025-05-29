@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
@@ -47,6 +48,8 @@ class MovimientosServiceTest {
     DocumentoRepository documentoRepository;
     @Mock
     CarpetaRepository carpetaRepository;
+    @Mock
+    OficialiaRepository oficialiaRepository;
 
     @InjectMocks
     MovimientoService movimientoService;
@@ -122,6 +125,9 @@ class MovimientosServiceTest {
         MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3, true);
         Persona currentUser = new Persona();
         Carpeta carpeta = new Carpeta();
+        
+        currentUser.setJuzgado(JuzgadoSetUp.createJuzgado());
+
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         Documento documento = new Documento();  
         documento.setCarpeta(carpeta);  
