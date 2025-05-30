@@ -94,9 +94,9 @@ public class MovimientoService {
             String estado) {
         Oficialia oficialia = persona.getOficialia();
 
-        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) || persona.getJuzgado() != null){
+        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) && persona.getJuzgado() != null) {
             oficialia = oficialiaRepository.findByJuzgadoId(persona.getJuzgado().getId())
-                    .orElse(null); 
+                    .orElse(null);
         }
 
         return new Movimiento()
@@ -111,13 +111,17 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folio) {
-        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId, tipoCarpetaNombre, tipoDocumentoNombre, folio);
+            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre,
+            TipoDocumento tipoDocumentoNombre, Integer folio) {
+        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio);
     }
 
     public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-            String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folio) {
-        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId, tipoCarpetaNombre, tipoDocumentoNombre, folio);
+            String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
+            Integer folio) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {
@@ -126,44 +130,59 @@ public class MovimientoService {
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
                         "carpetaId: " + motivoRecord.documentoId()));
 
-       
         if (motivoRecord.devueltoOficialia()) {
-           
+
             createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
                     EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
             carpetaRepository.actualizarEstatus(carpeta.getId(),
                     EstadoCarpeta.DEVUELTO_A_OFICIALIA);
-           
+
         } else {
-           
+
             createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
                     EstadoCarpeta.DEVUELTO.name());
             carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
-           
-        }
 
+        }
 
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
             String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio) {
-        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta, tipoDocumento, folio);
+        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
+                tipoDocumento, folio);
     }
 
-    public String getOrigen(Integer documentoId, Integer carpetaId) {
-        Movimiento movimiento;
+    public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {
+        Movimiento movimiento = null;
+        Persona persona = null;
+        Map<String, Object> origen = new HashMap<>();
+
         if (documentoId != null) {
             movimiento = movimientoRepository.findFirstByDocumentoIdOrderByIdDesc(documentoId);
-            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
-                    : movimiento.getJuzgado().getNombre();
+            if (movimiento != null) {
+                persona = movimiento.getPersona();
+                origen.put("nombrePersona", persona.getNombre() + " " + persona.getApellidoPaterno()
+                        + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""));
+                origen.put("centroTrabajo", (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
+                        : movimiento.getJuzgado().getNombre());
+                return origen;
+            }
+
         }
         if (carpetaId != null) {
             movimiento = movimientoRepository.findFirstByCarpetaIdOrderByIdDesc(carpetaId);
-            
-            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
-                    : movimiento.getJuzgado().getNombre();
+             if (movimiento != null) {
+                persona = movimiento.getPersona();
+                origen.put("nombrePersona", persona.getNombre() + " " + persona.getApellidoPaterno()
+                        + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""));
+                origen.put("centroTrabajo", (movimiento.getOficialia() != null) ?
+                        movimiento.getOficialia().getNombre()
+                        : movimiento.getJuzgado().getNombre());
+                return origen;
+            }
         }
-        return "";
+        return origen;
     }
 
     public List<TurnadoMovimientoRecord> getTurnadoMovimientos(Integer carpetaId) {

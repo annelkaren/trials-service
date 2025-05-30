@@ -324,7 +324,8 @@ class DocumentoServiceTest {
                 movimiento.setMotivo("Prueba");
 
                 Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
-                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(), any()))
+                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(),
+                                any()))
                                 .willReturn(movimientoPage);
 
                 // Act
@@ -767,7 +768,7 @@ class DocumentoServiceTest {
         @Test
         void getAllBandejaRecepcion_return_page() {
                 Documento demanda = DocumentoSetUp.create(tipoJuicio);
-                
+
                 demanda.getCarpeta().setFolio("1");
                 demanda.getCarpeta().setJuzgado(juzgado);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
@@ -776,9 +777,15 @@ class DocumentoServiceTest {
                 Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
                 Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+                Map<String, Object> origen = Map.of(
+                                "centroTrabajo", "prueba",
+                                "nombrePersona", "Juan Pérez");
+
                 given(documentoService.getDocumentoForRenderOficialMayor(movimiento, movimiento.getCarpeta()))
                                 .willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
-                given(movimientoService.getOrigen(any(), any())).willReturn("OCP");
+
+                given(movimientoService.getOrigen(any(), any())).willReturn(origen);
+
                 given(personaService.getAuditor()).willReturn(persona);
                 given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
                 given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Carpeta.class)))
@@ -807,10 +814,14 @@ class DocumentoServiceTest {
                 // Mismo juzgado
                 Movimiento movimiento = new Movimiento().setJuzgado(juzgado);
                 Persona persona = new Persona().setJuzgado(juzgado);
-                given(movimientoService.getOrigen(any(), any())).willReturn(juzgado.getNombre());
+                Map<String, Object> origenPrincipal = Map.of(
+                                "centroTrabajo", "prueba",
+                                "nombrePersona", persona.getJuzgado().getNombre());
+                                
+                given(movimientoService.getOrigen(any(), any())).willReturn(origenPrincipal);
                 Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
                 assertThat(origen.get("name").toString()).contains(persona.getJuzgado().getNombre());
-                assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
+                assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
         }
 
         @Test
@@ -819,17 +830,25 @@ class DocumentoServiceTest {
                 Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
                 Movimiento movimiento = new Movimiento().setOficialia(oficialia);
                 Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
-                given(movimientoService.getOrigen(any(), any())).willReturn(oficialia.getNombre());
+                 Map<String, Object> origenPrincipal = Map.of(
+                                "centroTrabajo", "prueba",
+                                "nombrePersona", oficialia.getNombre());
+
+                given(movimientoService.getOrigen(any(), any())).willReturn(origenPrincipal);
                 Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
                 assertThat(origen.get("name").toString()).contains(oficialia.getNombre());
-                assertThat(origen.get("isInterno").toString().toLowerCase()).contains("true");
+                assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
         }
 
         @Test
         void getOrigen_invalid() {
                 Movimiento movimiento = new Movimiento();
                 Persona persona = new Persona();
-                given(movimientoService.getOrigen(any(), any())).willReturn("");
+                 Map<String, Object> origenPrincipal= Map.of(
+                                "centroTrabajo", "prueba",
+                                "nombrePersona", "");
+
+                given(movimientoService.getOrigen(any(), any())).willReturn(origenPrincipal);
                 Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
                 assertThat(origen.get("name").toString()).contains("");
                 assertThat(origen.get("isInterno").toString().toLowerCase()).contains("false");
@@ -872,8 +891,6 @@ class DocumentoServiceTest {
                 });
                 assertEquals("El tipo de carpeta es desconocido", exceptionTipoDesconocido.getMessage(),
                                 "Carpeta es desconocida");
-
-              
 
         }
 
@@ -991,7 +1008,8 @@ class DocumentoServiceTest {
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
                 given(personaService.getAuditor()).willReturn(persona);
-                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(), any())).willReturn(page);
+                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(),
+                                any())).willReturn(page);
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
@@ -1078,7 +1096,8 @@ class DocumentoServiceTest {
                                 .setFechaAsignacion(LocalDateTime.now()).setEstado(EstadoCarpeta.ASIGNADO.name());
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
 
-                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any(), any(), any(), any()))
+                given(documentoRepository.findByPersonaAsignada(anyString(), any(), any(), anyBoolean(), any(), any(),
+                                any(), any()))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 given(personaService.getAuditor())
