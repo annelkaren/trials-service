@@ -1151,26 +1151,29 @@ public class DocumentoService {
         }
 
         protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
+                Integer documentoId = movimiento.getDocumento() != null ? movimiento.getDocumento().getId() : null;
+                Integer carpetaId = movimiento.getCarpeta() != null ? movimiento.getCarpeta().getId() : null;
 
-                String origen = movimientoService.getOrigen(
-                                (movimiento.getDocumento() != null) ? movimiento.getDocumento().getId() : null,
-                                (movimiento.getCarpeta() != null) ? movimiento.getCarpeta().getId() : null);
+                Map<String, Object> origen = movimientoService.getOrigen(documentoId, carpetaId);
+                String centroTrabajo = ((String) origen.get("centroTrabajo"));
+                String nombrePersona = (String) origen.get("nombrePersona");
 
-                Map<String, Object> map = new HashMap<>();
-                map.put(IS_INTERNO, false);
-
-                if (persona.getJuzgado() != null
-                                && Objects.equals(origen.toUpperCase(),
-                                                persona.getJuzgado().getNombre().toUpperCase())) {
-                        map.put(IS_INTERNO, true);
+                boolean esInterno = false;
+                if (persona.getJuzgado() != null && centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
+                                        
+                        esInterno = true;
+                } else if (persona.getOficialia() != null
+                                && centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
+                                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
+                        esInterno = true;
                 }
-                if (persona.getOficialia() != null
-                                && Objects.equals(origen.toUpperCase(),
-                                                persona.getOficialia().getNombre().toUpperCase())) {
-                        map.put(IS_INTERNO, true);
-                }
-                map.put("name", origen);
-                return map;
+
+
+                Map<String, Object> resultado = new HashMap<>();
+                resultado.put(IS_INTERNO, esInterno);
+                resultado.put("name", nombrePersona);
+
+                return resultado;
         }
 
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
@@ -1273,19 +1276,33 @@ public class DocumentoService {
                                                         (isPromocion) && documento != null ? documento.getFolio()
                                                                         : carpeta != null ? carpeta.getFolio() : "",
                                                         StringUtils.capitalize(
-                                                                        (isPromocion && documento != null) ? documento.getTipoDocumento().name().toLowerCase()
-                                                                                      : carpeta != null ? carpeta.getTipoCarpeta().name().toLowerCase() : ""),
-                                                        (isPromocion && documento != null) ? documento.getConcepto().getNombre()
-                                                                        : (carpeta != null && carpeta.getConcepto() != null)
-                                                                                        ? carpeta.getConcepto()
-                                                                                                        .getNombre()
-                                                                                        : "-",
+                                                                        (isPromocion && documento != null)
+                                                                                        ? documento.getTipoDocumento()
+                                                                                                        .name()
+                                                                                                        .toLowerCase()
+                                                                                        : carpeta != null ? carpeta
+                                                                                                        .getTipoCarpeta()
+                                                                                                        .name()
+                                                                                                        .toLowerCase()
+                                                                                                        : ""),
+                                                        (isPromocion && documento != null)
+                                                                        ? documento.getConcepto().getNombre()
+                                                                        : (carpeta != null && carpeta
+                                                                                        .getConcepto() != null)
+                                                                                                        ? carpeta.getConcepto()
+                                                                                                                        .getNombre()
+                                                                                                        : "-",
                                                         fechaTurnado,
                                                         fechaTermino,
                                                         StringUtils.capitalize(
-                                                                        (isPromocion && documento != null ) ? documento.getEstatus().name()
-                                                                                        .toLowerCase()
-                                                                                        : carpeta != null ? carpeta.getEstatus().name().toLowerCase() : ""),
+                                                                        (isPromocion && documento != null)
+                                                                                        ? documento.getEstatus().name()
+                                                                                                        .toLowerCase()
+                                                                                        : carpeta != null ? carpeta
+                                                                                                        .getEstatus()
+                                                                                                        .name()
+                                                                                                        .toLowerCase()
+                                                                                                        : ""),
                                                         observaciones,
                                                         turnadoVencido,
                                                         motivoProrroga,
@@ -1553,9 +1570,10 @@ public class DocumentoService {
 
                 List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
                 addAnexoExtra(anexosActuales, doc);
-                String origen = movimientoService.getOrigen(
+                String origen = (String) movimientoService.getOrigen(
                                 (doc.getTipoDocumento() != null) ? doc.getId() : null,
-                                (doc.getTipoDocumento() != null) ? null : doc.getCarpeta().getId());
+                                (doc.getTipoDocumento() != null) ? null : doc.getCarpeta().getId())
+                                .get("centroTrabajo");
 
                 return new DocumentoRecepcionRecord(
                                 (doc.getTipoDocumento() != null
@@ -1800,6 +1818,7 @@ public class DocumentoService {
                         String duracion = (carpeta.getHoras() != null && carpeta.getHoras() > 0)
                                         ? carpeta.getHoras() + "h"
                                         : concepto.getDias().toString() + "d";
+                        
                         Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
                                         EstadoCarpeta.TURNADO.name(),
                                         StringUtils.capitalize(concepto.getNombre().toLowerCase()),
@@ -1933,7 +1952,8 @@ public class DocumentoService {
                 carpeta.setJuzgado(persona.getJuzgado());
                 carpeta.setFolio(getFolio("D"));
                 carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-                carpeta.setExpediente(String.format("%06d", Integer.parseInt(documentoRecord.numero()))  + "/" + documentoRecord.anio());
+                carpeta.setExpediente(String.format("%06d", Integer.parseInt(documentoRecord.numero())) + "/"
+                                + documentoRecord.anio());
                 carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
                 carpeta.setSelloEstatus(SelloEstatus.VALIDO);
                 carpeta.setFechaAsignacion(LocalDateTime.now());
