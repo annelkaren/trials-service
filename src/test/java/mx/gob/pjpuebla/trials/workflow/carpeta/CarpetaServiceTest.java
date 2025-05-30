@@ -580,6 +580,7 @@ class CarpetaServiceTest {
                 .setNombre("Rubro2")
                 .setProcedimiento(new Procedimiento().setId(2).setNombre("Procedimiento2"));
         validCarpeta.setRubros(Set.of(rubro1, rubro2));
+        validCarpeta.setAudit(new Audit().setFechaAlta(LocalDateTime.now()));
         Documento documento = DocumentoSetUp.create(tipoJuicio)
                 .setCarpeta(validCarpeta);
 

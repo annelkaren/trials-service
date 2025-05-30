@@ -388,7 +388,7 @@ public class CarpetaService {
                                                                      // PENAL
                                 carpeta.getTipoJuicio().getId(), // TODO mapear de forma correcta expediente tipo PENAL
                                 "", // extraAudienciaSelloRecord.nombreJuez(),
-                                LocalDateTime.now().format(pattern), // TODO añadir fecha presentación
+                                carpeta.getAudit().getFechaAlta().format(pattern),
                                 "Asunto de penal desde Backend", // TODO añadir asunto para expediente tipo PENAL
                                 tipoProcedimiento,
                                 rubros,

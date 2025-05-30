@@ -1933,7 +1933,7 @@ public class DocumentoService {
                 carpeta.setJuzgado(persona.getJuzgado());
                 carpeta.setFolio(getFolio("D"));
                 carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-                carpeta.setExpediente(documentoRecord.numero() + "/" + documentoRecord.anio());
+                carpeta.setExpediente(String.format("%06d", Integer.parseInt(documentoRecord.numero()))  + "/" + documentoRecord.anio());
                 carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
                 carpeta.setSelloEstatus(SelloEstatus.VALIDO);
                 carpeta.setFechaAsignacion(LocalDateTime.now());
@@ -1951,6 +1951,7 @@ public class DocumentoService {
                 createPersonaDocumento(documentoRecord.actor(), carpeta);
                 createPersonaDocumento(documentoRecord.demandado(), carpeta);
                 addAnexos(documentoRecord.anexos(), documento);
+                carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
 
                 digitalizacionService.guardarArchivo(multipartFile, documento.getId());
 
