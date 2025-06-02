@@ -627,8 +627,8 @@ public class DocumentoService {
 
                 PersonaDocumento entity = new PersonaDocumento();
                 entity.setNombre(persona.nombre());
-                entity.setApellidoPaterno(persona.apellidoPaterno());
-                entity.setApellidoMaterno(persona.apellidoMaterno());
+                entity.setApellidoPaterno((persona.apellidoPaterno() == null)? "": persona.apellidoPaterno());
+                entity.setApellidoMaterno((persona.apellidoMaterno() == null)? "": persona.apellidoMaterno());
                 entity.setPseudonimo(persona.pseudonimo());
                 entity.setTipoPersona(persona.tipoPersona());
                 entity.setRol(Rol.PRINCIPAL);

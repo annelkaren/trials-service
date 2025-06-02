@@ -3,6 +3,9 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.PiezaRecord;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 
@@ -191,5 +194,31 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             @Param("year") Integer year,
             @Param("juzgadoId") Integer juzgadoId);
 
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(
+                ca.id, ca.expediente, ma.nombre, '', '','', juz.nombre, 0L
+            )
+            FROM Carpeta ca
+            JOIN ca.juzgado juz
+            JOIN juz.sede se
+            JOIN se.distrito di
+            JOIN ca.tipoJuicio tj
+            JOIN tj.materia ma
+            WHERE ca.expediente = :expediente
+            AND ma.id = :materiaId
+            AND di.id = :distritoId
+            """)
+    List<LitiganteExpedientesRecord> getExpedientesByMateria(Integer materiaId, String expediente, Integer distritoId);
 
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.litigante.responselitigante.PiezaRecord(
+                ca.id, ca.expediente, tp.tipo
+            )
+            FROM Carpeta ca
+            JOIN ca.carpetaPadre cap
+            JOIN ca.tipoPieza tp
+            WHERE cap.id = :carpetaPadreId
+            AND ca.tipoCarpeta = :tipoCarpeta
+            """)
+    List<PiezaRecord> findPiezasByCarpetaId(Integer carpetaPadreId, TipoCarpeta tipoCarpeta);
 }

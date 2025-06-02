@@ -234,7 +234,7 @@ public class JuzgadoService {
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
-        } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+        } else if (TipoCarpeta.EXHORTO.name().toUpperCase().equals(tipoCarpeta.name())) {
             instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
             reason = "No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre() + " para asignar. ";
         } else {

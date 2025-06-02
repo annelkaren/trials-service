@@ -9,6 +9,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -39,4 +40,17 @@ public class MateriaService {
         return new MateriaRecord(materia.getId(), StringUtils.capitalize(materia.getNombre().toLowerCase()));
     }
 
+    @Transactional(readOnly = true)
+    public List<MateriaRecord> findMateriasPublicas() {
+        List<Materia> materias = materiaRepository.findByNombreNotInOrderByNombre(Arrays.asList("EXHORTO"));
+        List<MateriaRecord> list = materias.stream()
+                .map(m -> new MateriaRecord(m.getId(), StringUtils.capitalize(m.getNombre().toLowerCase())))
+                .toList();
+        return list;
+    }
+
+    @Transactional(readOnly = true)
+    public List<SentenciasByMateriaRecord> getCountSentenciasByMaterias() {
+        return materiaRepository.getCountSentenciasByMateria();
+    }
 }

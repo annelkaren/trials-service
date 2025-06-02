@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.personasdocumentos;
 
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord;
 import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.LibroGobiernoRecord;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PersonaDataRecord;
@@ -190,5 +192,38 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
         and ca.id = :carpetaId and tp.nombre = :tipoParte
         """)
     List<String> findTipoPartePrincipalByCarpetaId(Integer carpetaId, String tipoParte);
-     
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.litigante.responselitigante.LibroGobiernoRecord(
+                ca.expediente,
+                j.nombre,
+                tj.nombre,
+                tp.nombre
+            )
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN ca.tipoJuicio tj
+            JOIN pd.tipoPartes tp
+            JOIN ca.juzgado j
+            WHERE LOWER(TRANSLATE(pd.nombre, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) = LOWER(:nombre)
+            AND LOWER(TRANSLATE(pd.apellidoPaterno, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) = LOWER(:aPaterno)
+            AND LOWER(TRANSLATE(pd.apellidoMaterno, 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiounAEIOUN')) = LOWER(:aMaterno)
+            ORDER BY ca.expediente
+            """)
+    Page<LibroGobiernoRecord> findByNombreCompleto(String nombre, String aPaterno, String aMaterno, Pageable pageable);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord(
+                pd.id,
+                CONCAT(pd.nombre, ' ', pd.apellidoPaterno, ' ', COALESCE(pd.apellidoMaterno || ' ', '')),
+                tp.nombre
+            )
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN pd.tipoPartes tp
+            WHERE ca.id = :carpetaId
+            ORDER BY tp.nombre, pd.nombre
+            """)
+    List<TipoPartesRecord> findPartesByCarpetaId(Integer carpetaId);
+
 }
