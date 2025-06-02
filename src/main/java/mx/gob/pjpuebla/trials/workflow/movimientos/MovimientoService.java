@@ -2,7 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -19,7 +18,6 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -157,8 +155,8 @@ public class MovimientoService {
     }
 
     public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {
-        Movimiento movimiento = null;
-        Persona persona = null;
+        Movimiento movimiento;
+        Persona persona;
         Map<String, Object> origen = new HashMap<>();
 
         if (documentoId != null) {

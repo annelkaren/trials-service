@@ -43,10 +43,9 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public List<MateriaRecord> findMateriasPublicas() {
         List<Materia> materias = materiaRepository.findByNombreNotInOrderByNombre(Arrays.asList("EXHORTO"));
-        List<MateriaRecord> list = materias.stream()
+        return materias.stream()
                 .map(m -> new MateriaRecord(m.getId(), StringUtils.capitalize(m.getNombre().toLowerCase())))
                 .toList();
-        return list;
     }
 
     @Transactional(readOnly = true)

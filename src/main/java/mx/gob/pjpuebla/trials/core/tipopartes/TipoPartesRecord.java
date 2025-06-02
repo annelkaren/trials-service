@@ -1,11 +1,7 @@
 package mx.gob.pjpuebla.trials.core.tipopartes;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import mx.gob.pjpuebla.trials.core.personas.PersonaRecord;
-import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
-
 import java.io.Serializable;
-import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record TipoPartesRecord(
@@ -15,19 +11,19 @@ public record TipoPartesRecord(
 ) implements Serializable {
 
     public TipoPartesRecord hideNames() {
-        String newName = "";
+        StringBuilder newName = new StringBuilder();
         String[] names = nombre().split(" ");
         for (String name : names) {
             String name1 = name.substring(0, 2);
-            String wildcard = "";
+            StringBuilder wildcard = new StringBuilder();
             for (int i = 2; i < name.length(); i++) {
-                wildcard += "*";
+                wildcard.append("*");
                 if(i == name.length() -1){
-                    wildcard += " ";
+                    wildcard.append(" ");
                 }
             }
-            newName += name1 + wildcard;
+            newName.append(name1).append(wildcard);
         }
-        return new TipoPartesRecord(id(), newName, tipoJuicio());
+        return new TipoPartesRecord(id(), newName.toString(), tipoJuicio());
     }
 }
