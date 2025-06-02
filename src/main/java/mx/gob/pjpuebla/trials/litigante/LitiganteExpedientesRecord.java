@@ -10,11 +10,12 @@ public record LitiganteExpedientesRecord(
         String actorPrincipal,
         String demandadoPrincipal,
         String juzgado,
-        Long notificacionesPendientes
+        Long notificacionesPendientes,
+        String sede
 ) implements Serializable {
 
     public LitiganteExpedientesRecord additionalData(String actorPrincipal, String demandadoPrincipal, Long notificacionesPendientes) {
         return new LitiganteExpedientesRecord(id(), numeroExpediente(), materia(), tipoJuicio(), actorPrincipal,
-                demandadoPrincipal, juzgado(), notificacionesPendientes);
+                demandadoPrincipal, juzgado(), notificacionesPendientes, sede());
     }
 }

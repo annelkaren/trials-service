@@ -4,6 +4,9 @@ import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.ExhortoRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.LibroGobiernoRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.SentenciasPublicasRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
@@ -72,5 +75,36 @@ public class LitiganteResource {
     @GetMapping(value = "/promociones/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public DocumentoPromocionRecord getPromocionById(@PathVariable Integer id) {
         return litiganteService.getPromocionById(id);
+    }
+
+    @GetMapping(value = "/librogobierno", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<LibroGobiernoRecord> getConsultaLibroGobierno(
+            Pageable pageable,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "aPaterno", required = false) String aPaterno,
+            @RequestParam(value = "aMaterno", required = false) String aMaterno) {
+        return litiganteService.getConsultaLibroGobierno(nombre, aPaterno, aMaterno, pageable);
+    }
+
+    @GetMapping(value = "/sentencias/{materiaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<SentenciasPublicasRecord> getSentenciasPublicas(
+            Pageable pageable,
+            @PathVariable Integer materiaId) {
+        return litiganteService.getSentenciasPublicas(materiaId, pageable);
+    }
+
+    @GetMapping(value = "/expedientes/{materiaId}/{distritoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<LitiganteExpedientesRecord> getExpediente(
+            @PathVariable Integer materiaId,
+            @PathVariable Integer distritoId,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "anio", required = false) String anio) {
+        return litiganteService.getExpedientes(materiaId, expediente, anio, distritoId);
+    }
+
+    @GetMapping(value = "/expediente/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ExhortoRecord getExpedienteById(
+            @PathVariable Integer carpetaId) {
+        return litiganteService.getExpedienteById(carpetaId);
     }
 }

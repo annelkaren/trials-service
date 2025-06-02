@@ -2,11 +2,16 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
@@ -14,6 +19,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoC
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
 import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
@@ -46,6 +52,9 @@ public class LitiganteService {
     private final DocumentoRepository documentoRepository;
     private final DocumentoContenidoRepository documentoContenidoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
+    private final CarpetaRepository carpetaRepository;
+    private final MovimientoService movimientoService;
+    private final MateriaRepository materiaRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -197,5 +206,60 @@ public class LitiganteService {
         DocumentoContenido contenido = documentoContenidoRepository.findByDocumentoId(promocionId)
                 .orElseThrow(() -> new NotFoundException("Documento no encontrada", promocionId.toString()));
         return new DocumentoPromocionRecord(promocion.getCarpeta().getId(), TipoPromocion.CORREO_ELECTRONICO, null, contenido.getTexto());
+    }
+
+    public Page<LibroGobiernoRecord> getConsultaLibroGobierno(
+            String nombre, String aPaterno, String aMaterno, Pageable pageable) {
+        return personaDocumentoRepository.findByNombreCompleto(nombre.trim(), aPaterno.trim(), aMaterno.trim(), pageable);
+    }
+
+    public Page<SentenciasPublicasRecord> getSentenciasPublicas(
+            Integer materiaId, Pageable pageable) {
+        Page<SentenciasPublicasRecord> page = documentoDetalleRepository.findSentenciasByMateriaId(materiaId, pageable);
+        List<SentenciasPublicasRecord> list = page.getContent().stream()
+                .map(m -> m.format())
+                .toList();
+        return new PageImpl<>(list, pageable, page.getTotalElements());
+    }
+
+    public List<LitiganteExpedientesRecord> getExpedientes(
+            Integer materiaId, String expediente, String anio, Integer distritoId) {
+        expediente = getExpedienteNumber(expediente);
+        expediente = verifyMateria(expediente, materiaId);
+        expediente = expediente.concat("/").concat(anio).toUpperCase();
+        return carpetaRepository.getExpedientesByMateria(materiaId, expediente, distritoId);
+    }
+
+    private String getExpedienteNumber(String expediente) {
+        try {
+            Integer number = Integer.parseInt(expediente);
+            return String.format("%06d", number);
+        } catch (NullPointerException ex) {
+            return expediente;
+        }
+    }
+
+    private String verifyMateria(String expediente, Integer materiaId) {
+        Materia materia = materiaRepository.findById(materiaId)
+                .orElseThrow(() -> new NotFoundException("Materia no encontrado", materiaId.toString()));
+        if (materia.getNombre().equalsIgnoreCase(TipoCarpeta.EXHORTO.name())) {
+            expediente = "E".concat(expediente);
+        }
+        return expediente;
+    }
+
+    public ExhortoRecord getExpedienteById(Integer carpetId) {
+        Carpeta expediente = carpetaRepository.findById(carpetId)
+                .orElseThrow(() -> new NotFoundException("Expediente no encontrado", carpetId.toString()));
+        List<TipoPartesRecord> partes = personaDocumentoRepository.findPartesByCarpetaId(carpetId);
+        List<TipoPartesRecord> list = partes.stream()
+                .map(parte -> parte.hideNames())
+                .toList();
+        List<HistorialRecord> historial = movimientoService.getHistorialByExpediente(carpetId);
+        List<PiezaRecord> piezas = carpetaRepository.findPiezasByCarpetaId(carpetId, TipoCarpeta.PIEZA);
+        piezas.add(0, new PiezaRecord(carpetId, expediente.getExpediente(), "Expediente principal"));
+        return new ExhortoRecord(expediente.getJuzgado().getNombre(), expediente.getExpediente(),
+                historial.get(0).hora(), expediente.getJuzgado().getNombre(), historial.get(0).nombre(),
+                list, historial, piezas);
     }
 }

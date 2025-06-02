@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.HistorialRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -94,7 +95,7 @@ public class MovimientoService {
             String estado) {
         Oficialia oficialia = persona.getOficialia();
 
-        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) && persona.getJuzgado() != null) {
+        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) || persona.getJuzgado() != null) {
             oficialia = oficialiaRepository.findByJuzgadoId(persona.getJuzgado().getId())
                     .orElse(null);
         }
@@ -154,8 +155,8 @@ public class MovimientoService {
     }
 
     public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {
-        Movimiento movimiento = null;
-        Persona persona = null;
+        Movimiento movimiento;
+        Persona persona;
         Map<String, Object> origen = new HashMap<>();
 
         if (documentoId != null) {
@@ -204,7 +205,7 @@ public class MovimientoService {
 
     /* SE CREA METODO PARA CORREGIR SCAN DE QODANA */
     public TurnadoMovimientoRecord createTurnadoMovimientoRecord(Movimiento origen, Movimiento destino,
-            List<Movimiento> list) {
+                                                                 List<Movimiento> list) {
         return new TurnadoMovimientoRecord(
                 (origen.getUuid() != null) ? list.get(0).getOficialia().getNombre()
                         : origen.getPersona().getNombre() + " " + origen.getPersona().getApellidoPaterno(),
@@ -215,5 +216,20 @@ public class MovimientoService {
                 destino.getConcepto(),
                 (origen.getDuracion().endsWith("h")) ? origen.getDuracion().replace("h", " horas")
                         : origen.getDuracion().replace("d", ""));
+    }
+
+    public List<HistorialRecord> getHistorialByExpediente(Integer carpetaId) {
+        List<Movimiento> list = movimientoRepository.findByCarpetaIdOrderByFechaAsignacionDesc(carpetaId);
+        return list.stream()
+                .map(mov -> new HistorialRecord(
+                        "-",
+                        mov.getPersona().getNombre() + " " + mov.getPersona().getApellidoPaterno() + " "
+                                + (mov.getPersona().getApellidoMaterno() != null ? mov.getPersona().getApellidoMaterno() : ""),
+                        mov.getFechaAsignacion().toLocalDate(),
+                        mov.getFechaAsignacion(),
+                        mov.getEstado(),
+                        mov.getConcepto()
+
+                )).toList();
     }
 }

@@ -59,7 +59,7 @@ class LitiganteServiceTest extends SetupServiceTest {
     void getExpedientesRelacionados_() {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "", "", "Juzgado 5 Mercantil TEST", 0L);
+                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
         given(personaDocumentoRepository.findByUsername(any(), any(), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(Arrays.asList(litiganteExpedientesRecord), PageRequest.of(0, 1), 1));
         given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
