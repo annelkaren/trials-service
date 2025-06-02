@@ -18,9 +18,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
+
+
 
 @RequiredArgsConstructor
 @RestController
@@ -107,6 +108,5 @@ public class MovimientoResource {
     public List<TurnadoMovimientoRecord> turnadoList(@PathVariable("carpetaId") Integer carpetaId){
         return movimientoService.getTurnadoMovimientos(carpetaId);
     }
-
 
 }

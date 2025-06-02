@@ -45,14 +45,14 @@ public class MovimientoService {
     }
 
     public Movimiento createMovimento(Carpeta carpeta, Documento documento, Persona persona, String motivo,
-                                      String estado) {
+            String estado) {
         Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado);
         movimiento = this.movimientoRepository.save(movimiento);
         return movimiento;
     }
 
     public Movimiento createMovimentoWithObservaciones(Carpeta carpeta, Documento documento, String estado,
-                                                       String observaciones, String recomendaciones, String motivo, String concepto, String duracion) {
+            String observaciones, String recomendaciones, String motivo, String concepto, String duracion) {
         Persona personaAuditor = personaService.getAuditor();
         Movimiento movimiento = createMovimiento(carpeta, documento, personaAuditor, motivo, estado)
                 .setObservaciones(observaciones)
@@ -65,7 +65,7 @@ public class MovimientoService {
     }
 
     public Movimiento createMovimentoTurnado(Carpeta carpeta, Documento documento, Persona persona, String motivo,
-                                             String estado, String concepto, Persona destino, String duracion) {
+            String estado, String concepto, Persona destino, String duracion) {
         Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado)
                 .setConcepto(concepto)
                 .setDestino(destino)
@@ -75,7 +75,7 @@ public class MovimientoService {
     }
 
     public Movimiento createMovimentoWithConcepto(Carpeta carpeta, Documento documento, Persona persona, String motivo,
-                                                  String estado, Concepto concepto) {
+            String estado, Concepto concepto) {
         Movimiento movimiento = createMovimiento(carpeta, documento, persona, motivo, estado);
         movimiento.setConcepto((concepto != null) ? concepto.getNombre() : null);
         movimiento.setDuracion((concepto != null) ? concepto.getDias().toString() + "d" : null);
@@ -84,7 +84,7 @@ public class MovimientoService {
     }
 
     public Movimiento createMovimentoPromocionElectronica(Documento documento, Persona persona, String estado,
-                                                          Concepto concepto) {
+            Concepto concepto) {
         Movimiento movimiento = createMovimiento(null, documento, persona, "", estado);
         movimiento.setConcepto(concepto.getNombre());
         movimiento.setDuracion(concepto.getDias().toString() + "d");
@@ -94,7 +94,7 @@ public class MovimientoService {
     }
 
     private Movimiento createMovimiento(Carpeta carpeta, Documento documento, Persona persona, String motivo,
-                                        String estado) {
+            String estado) {
         Oficialia oficialia = persona.getOficialia();
 
         if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) || persona.getJuzgado() != null) {
@@ -114,13 +114,17 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-                                                   String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folio) {
-        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId, tipoCarpetaNombre, tipoDocumentoNombre, folio);
+            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre,
+            TipoDocumento tipoDocumentoNombre, Integer folio) {
+        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio);
     }
 
     public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-                                                String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folio) {
-        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId, tipoCarpetaNombre, tipoDocumentoNombre, folio);
+            String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
+            Integer folio) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {
@@ -130,36 +134,58 @@ public class MovimientoService {
                         "carpetaId: " + motivoRecord.documentoId()));
 
         if (motivoRecord.devueltoOficialia()) {
+
             createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
                     EstadoCarpeta.DEVUELTO_A_OFICIALIA.name());
             carpetaRepository.actualizarEstatus(carpeta.getId(),
                     EstadoCarpeta.DEVUELTO_A_OFICIALIA);
+
         } else {
+
             createMovimento(carpeta, null, currentUser, motivoRecord.motivo(),
                     EstadoCarpeta.DEVUELTO.name());
             carpetaRepository.actualizarEstatus(carpeta.getId(), EstadoCarpeta.DEVUELTO);
+
         }
+
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
-                                                 String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio) {
-        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta, tipoDocumento, folio);
+            String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio) {
+        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
+                tipoDocumento, folio);
     }
 
-    public String getOrigen(Integer documentoId, Integer carpetaId) {
-        Movimiento movimiento;
+    public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {
+        Movimiento movimiento = null;
+        Persona persona = null;
+        Map<String, Object> origen = new HashMap<>();
+
         if (documentoId != null) {
             movimiento = movimientoRepository.findFirstByDocumentoIdOrderByIdDesc(documentoId);
-            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
-                    : movimiento.getJuzgado().getNombre();
+            if (movimiento != null) {
+                persona = movimiento.getPersona();
+                origen.put("nombrePersona", persona.getNombre() + " " + persona.getApellidoPaterno()
+                        + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""));
+                origen.put("centroTrabajo", (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
+                        : movimiento.getJuzgado().getNombre());
+                return origen;
+            }
+
         }
         if (carpetaId != null) {
             movimiento = movimientoRepository.findFirstByCarpetaIdOrderByIdDesc(carpetaId);
-
-            return (movimiento.getOficialia() != null) ? movimiento.getOficialia().getNombre()
-                    : movimiento.getJuzgado().getNombre();
+             if (movimiento != null) {
+                persona = movimiento.getPersona();
+                origen.put("nombrePersona", persona.getNombre() + " " + persona.getApellidoPaterno()
+                        + (persona.getApellidoMaterno() != null ? " " + persona.getApellidoMaterno() : ""));
+                origen.put("centroTrabajo", (movimiento.getOficialia() != null) ?
+                        movimiento.getOficialia().getNombre()
+                        : movimiento.getJuzgado().getNombre());
+                return origen;
+            }
         }
-        return "";
+        return origen;
     }
 
     public List<TurnadoMovimientoRecord> getTurnadoMovimientos(Integer carpetaId) {
