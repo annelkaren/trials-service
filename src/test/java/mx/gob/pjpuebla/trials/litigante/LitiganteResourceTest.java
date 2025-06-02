@@ -45,7 +45,7 @@ class LitiganteResourceTest {
     void getExpedientesRelacionados() throws Exception {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "", "", "Juzgado 5 Mercantil TEST", 0L);
+                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
         given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
 

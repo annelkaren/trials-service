@@ -196,7 +196,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(
-                ca.id, ca.expediente, ma.nombre, '', '','', juz.nombre, 0L
+                ca.id, ca.expediente, ma.nombre, '', '','', juz.nombre, 0L, se.nombre
             )
             FROM Carpeta ca
             JOIN ca.juzgado juz

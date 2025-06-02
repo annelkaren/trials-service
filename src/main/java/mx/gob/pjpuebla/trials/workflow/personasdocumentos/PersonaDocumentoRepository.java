@@ -154,7 +154,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
-         tj.nombre, '', '', juz.nombre, 0L)
+         tj.nombre, '', '', juz.nombre, 0L, '')
         FROM PersonaDocumento pd
         JOIN pd.carpeta ca
         JOIN ca.juzgado juz
@@ -170,7 +170,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
 
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, CONCAT(ca.expediente, ' - ', juz.nombre),
-        '', '', '', '', '', 0L)
+        '', '', '', '', '', 0L, '')
         FROM PersonaDocumento pd
         JOIN pd.carpeta ca
         JOIN ca.juzgado juz
