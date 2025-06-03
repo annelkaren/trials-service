@@ -14,6 +14,11 @@ public record TipoPartesRecord(
         StringBuilder newName = new StringBuilder();
         String[] names = nombre().split(" ");
         for (String name : names) {
+
+            if (name.length() < 3) {
+                continue;
+            }
+
             String name1 = name.substring(0, 2);
             StringBuilder wildcard = new StringBuilder();
             for (int i = 2; i < name.length(); i++) {
