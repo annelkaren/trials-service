@@ -215,7 +215,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord(
                 pd.id,
-                CONCAT(pd.nombre, ' ', pd.apellidoPaterno, ' ', COALESCE(pd.apellidoMaterno || ' ', '')),
+                CONCAT(pd.nombre, ' ', COALESCE(pd.apellidoPaterno, ''), ' ', COALESCE(pd.apellidoMaterno || ' ', '')),
                 tp.nombre
             )
             FROM PersonaDocumento pd
