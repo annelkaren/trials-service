@@ -1102,7 +1102,7 @@ class DocumentoServiceTest {
                                                 listPage.size()));
                 given(personaService.getAuditor())
                                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
-                Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",
+                Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",null,
                                 PageRequest.of(1, listPage.size()));
                 System.out.println(page.getContent());
                 assertThat(page.getContent())
