@@ -1176,8 +1176,16 @@ public class DocumentoService {
                 return resultado;
         }
 
-        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
+        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
+
+                //Buscamos a la persona si es que la manda en el parametro
+                if(personaId != null){
+                        personaAsignada = personaRepository.findById(personaId)
+                                .orElseThrow(() -> new NotFoundException("persona no encontrada", "persona id" + personaId));
+                }
+
+
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
                 Oficialia oficialia = persona.getOficialia();
@@ -1381,7 +1389,7 @@ public class DocumentoService {
                 personaAsignada = persona;
                 String key = Objects.toString(uuid, "");
 
-                return getAllAsignado(key, Pageable.unpaged()).getContent();
+                return getAllAsignado(key, null, Pageable.unpaged()).getContent();
         }
 
         protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
@@ -1841,7 +1849,7 @@ public class DocumentoService {
                 Integer termino24horas = 0;
                 Integer termino3dias = 0;
 
-                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", Pageable.unpaged());
+                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", null, Pageable.unpaged());
 
                 totalAsignados = asignados.getSize();
 

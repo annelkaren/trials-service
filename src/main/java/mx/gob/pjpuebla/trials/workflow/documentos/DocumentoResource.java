@@ -167,8 +167,8 @@ public class DocumentoResource {
     @GetMapping("/bandeja/asignados")
     public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllAsignado(key, pageable);
+            @PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "personaId", required = false) Long personaId) {
+        return this.documentoService.getAllAsignado(key, personaId, pageable);
     }
 
     @PostMapping("/bandeja/asignados/movimiento")
