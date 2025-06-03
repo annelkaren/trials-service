@@ -95,7 +95,7 @@ public class MovimientoService {
             String estado) {
         Oficialia oficialia = persona.getOficialia();
 
-        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) || persona.getJuzgado() != null) {
+        if (estado.equals(EstadoCarpeta.DEVUELTO_A_OFICIALIA.name()) && persona.getJuzgado() != null) {
             oficialia = oficialiaRepository.findByJuzgadoId(persona.getJuzgado().getId())
                     .orElse(null);
         }
