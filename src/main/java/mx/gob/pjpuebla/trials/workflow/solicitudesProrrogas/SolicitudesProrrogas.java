@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,13 +22,17 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.EstadoProrroga;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 
-@Entity
+
 @Data
+@Entity
+@EntityListeners(AuditListener.class)
 @Table(name = "TBL_SOLICITUDES_PRORROGAS")
-public class SolicitudesProrrogas implements Serializable {
+public class SolicitudesProrrogas implements Serializable, Auditable {
     
     @Id
     @SequenceGenerator(name="idSolicitudProrroga", sequenceName="SEQ_SOLICITUDES_PRORROGAS", allocationSize= 1)
