@@ -1248,7 +1248,8 @@ public class DocumentoService {
                                                         : null;
 
                                         boolean turnadoVencido = fechaTermino != null
-                                                        && fechaTermino.isBefore(LocalDateTime.now());
+                                                        && fechaTermino.isBefore(LocalDateTime.now()) 
+                                                        && !mov.getConcepto().equals("RESGUARDO");
 
                                         boolean prorrogaActiva = solicitudProrroga != null
                                                         && solicitudProrroga.getEstado()
