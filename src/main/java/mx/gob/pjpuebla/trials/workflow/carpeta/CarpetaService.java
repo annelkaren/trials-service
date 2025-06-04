@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -431,6 +432,17 @@ public class CarpetaService {
         }
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
+
+                // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
+                Concepto conceptoPromocion = null;
+
+                for (Integer documentoId : piezaRecord.documentos()) {
+                        Documento documentoTemp = documentoRepository.findById(documentoId).orElse(null);
+                        if (documentoTemp.getTipoDocumento().equals(TipoDocumento.PROMOCION)) {
+                                conceptoPromocion = documentoTemp.getConcepto();
+                        }
+                }
+
                 Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
                 TipoPieza tipoPieza = tipoPiezaRepository
@@ -460,6 +472,7 @@ public class CarpetaService {
                 pieza.setJuzgado(carpetaPadre.getJuzgado());
                 pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
                 pieza.setTipoPieza(tipoPieza);
+                pieza.setConcepto(conceptoPromocion);
                 pieza.setAudit(new Audit());
 
                 pieza = carpetaRepository.save(pieza);
