@@ -632,8 +632,8 @@ public class DocumentoService {
 
                 PersonaDocumento entity = new PersonaDocumento();
                 entity.setNombre(persona.nombre());
-                entity.setApellidoPaterno((persona.apellidoPaterno() == null)? "": persona.apellidoPaterno());
-                entity.setApellidoMaterno((persona.apellidoMaterno() == null)? "": persona.apellidoMaterno());
+                entity.setApellidoPaterno((persona.apellidoPaterno() == null) ? "" : persona.apellidoPaterno());
+                entity.setApellidoMaterno((persona.apellidoMaterno() == null) ? "" : persona.apellidoMaterno());
                 entity.setPseudonimo(persona.pseudonimo());
                 entity.setTipoPersona(persona.tipoPersona());
                 entity.setRol(Rol.PRINCIPAL);
@@ -1160,14 +1160,13 @@ public class DocumentoService {
 
                 boolean esInterno = false;
                 if (persona.getJuzgado() != null && centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
-                                        
+
                         esInterno = true;
                 } else if (persona.getOficialia() != null
                                 && centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
+                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
                         esInterno = true;
                 }
-
 
                 Map<String, Object> resultado = new HashMap<>();
                 resultado.put(IS_INTERNO, esInterno);
@@ -1179,12 +1178,12 @@ public class DocumentoService {
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
 
-                //Buscamos a la persona si es que la manda en el parametro
-                if(personaId != null){
+                // Buscamos a la persona si es que la manda en el parametro
+                if (personaId != null) {
                         personaAsignada = personaRepository.findById(personaId)
-                                .orElseThrow(() -> new NotFoundException("persona no encontrada", "persona id" + personaId));
+                                        .orElseThrow(() -> new NotFoundException("persona no encontrada",
+                                                        "persona id" + personaId));
                 }
-
 
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
@@ -1812,16 +1811,26 @@ public class DocumentoService {
                         carpeta.setConcepto(concepto);
                         carpeta.setPrioridad(item.prioridad());
 
-                        //Conversiones de dias a horas o dias. de momento se comentan ya que se menciono que se manejaria en dias no en horas.
-                        /* 
-                        float toDays = (float) item.horas() / 24;
+                        // Conversiones de dias a horas o dias. de momento se comentan ya que se
+                        // menciono que se manejaria en dias no en horas.
+                        /*
+                         * float toDays = (float) item.horas() / 24;
+                         * if (toDays != (float) concepto.getDias()) {
+                         * carpeta.setHoras(item.horas());
+                         * } else {
+                         * carpeta.setHoras(null);
+                         * }
+                         */
+
+                        //ajuste en la obtención de dias ya que en si ya se le pasan 
+                        //los dias no hay necesidad de dividir entre 24
+                        float toDays = (float) (item.dias() != null ? item.dias() : 0);  
                         if (toDays != (float) concepto.getDias()) {
-                                carpeta.setHoras(item.horas());
+                                carpeta.setHoras(item.dias());
                         } else {
                                 carpeta.setHoras(null);
                         }
-                        */
-                        carpeta.setHoras(item.horas());
+
                         carpeta.setEstatus(EstadoCarpeta.TURNADO);
 
                         carpetaRepository.save(carpeta);
@@ -1831,7 +1840,7 @@ public class DocumentoService {
                         String duracion = (carpeta.getHoras() != null && carpeta.getHoras() > 0)
                                         ? carpeta.getHoras() + "h"
                                         : concepto.getDias().toString() + "d";
-                        
+
                         Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
                                         EstadoCarpeta.TURNADO.name(),
                                         StringUtils.capitalize(concepto.getNombre().toLowerCase()),

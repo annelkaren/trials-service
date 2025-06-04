@@ -8,7 +8,7 @@ public record AsignadoTurnadoRecord(
         Integer idDocumentoAsignado,
         Integer idPersonalJuzgado,
         Integer idConcepto,
-        Integer horas,
+        Integer dias,
         Prioridad prioridad
 ) implements Serializable {
 }
