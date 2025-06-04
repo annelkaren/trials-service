@@ -1811,12 +1811,17 @@ public class DocumentoService {
 
                         carpeta.setConcepto(concepto);
                         carpeta.setPrioridad(item.prioridad());
+
+                        //Conversiones de dias a horas o dias. de momento se comentan ya que se menciono que se manejaria en dias no en horas.
+                        /* 
                         float toDays = (float) item.horas() / 24;
                         if (toDays != (float) concepto.getDias()) {
                                 carpeta.setHoras(item.horas());
                         } else {
                                 carpeta.setHoras(null);
                         }
+                        */
+                        carpeta.setHoras(item.horas());
                         carpeta.setEstatus(EstadoCarpeta.TURNADO);
 
                         carpetaRepository.save(carpeta);

@@ -6,6 +6,7 @@ public record ConceptoRecordResponse(
         Integer id,
         String nombre,
         Integer dias,
-        Estado estado
+        Estado estado,
+        String roles
 ) {
 }
