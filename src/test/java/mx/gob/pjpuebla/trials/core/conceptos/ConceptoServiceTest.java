@@ -64,7 +64,7 @@ class ConceptoServiceTest {
         given(carpetaRepository.findById(anyInt()))
                 .willReturn(Optional.of(carpeta));
 
-        given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(1, List.of("Adjuntar", "Distribución")))
+        given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(1, List.of("Adjuntar", "Distribución", "RESGUARDO")))
                 .willReturn(conceptosList);
 
         List<ConceptoRecordResponse> response = conceptoService.getAll(1);
