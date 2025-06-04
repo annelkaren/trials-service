@@ -1,0 +1,18 @@
+ALTER TABLE TRIALS.TBL_CONCEPTOS ADD COLUMN S_ROLES VARCHAR(255);
+
+-- verifica si existe el concepto y si existe lo actualiza si no lo crea.
+WITH upsert AS (
+    UPDATE TRIALS.TBL_CONCEPTOS
+    SET S_ROLES = 'Oficial Mayor del Juzgado'
+    WHERE UPPER(S_NOMBRE) = 'RESGUARDO'
+    RETURNING *
+)
+INSERT INTO TRIALS.TBL_CONCEPTOS (
+    PN_ID, N_VERSION, S_NOMBRE, N_DIAS, N_ESTADO,
+    S_USUARIO_ALTA, S_USUARIO_EDITA, FN_TIPO_JUICIO, S_ROLES
+)
+SELECT
+    nextval('TRIALS.SEQ_CONCEPTOS_ID'), 0, 'RESGUARDO', 0, 0,
+    '6b13785f-d213-4585-a76b-437ffe57c9c7', '6b13785f-d213-4585-a76b-437ffe57c9c7',
+    NULL, 'Oficial Mayor del Juzgado'
+WHERE NOT EXISTS (SELECT 1 FROM upsert);

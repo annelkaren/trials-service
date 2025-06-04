@@ -37,12 +37,13 @@ public class ConceptoService {
     public List<ConceptoRecordResponse> getAll(Integer carpetaId) {
       Carpeta carpeta = carpetaRepository.findById(carpetaId).orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId"+carpetaId));
 
-      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución")).stream()
+      return conceptoRepository.findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución", "RESGUARDO")).stream()
                 .map(concepto -> new ConceptoRecordResponse(
                     concepto.getId(),
                     concepto.getNombre().toUpperCase(),
                     concepto.getDias(),
-                    concepto.getEstado()))
+                    concepto.getEstado(),
+                    concepto.getRoles()))
                 .toList();
     }
 
@@ -50,7 +51,7 @@ public class ConceptoService {
     public ConceptoRecordResponse findById(Integer id) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Concepto no encontrado", "conceptoId"));
-        return new ConceptoRecordResponse(concepto.getId(), concepto.getNombre(), concepto.getDias(), concepto.getEstado());
+        return new ConceptoRecordResponse(concepto.getId(), concepto.getNombre(), concepto.getDias(), concepto.getEstado(), concepto.getRoles());
     }
 
     public Page<ConceptoRecord> getAllConceptos(Pageable pageable, String key){
