@@ -434,14 +434,14 @@ public class CarpetaService {
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
 
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
-                Concepto conceptoPromocion = null;
-
-                for (Integer documentoId : piezaRecord.documentos()) {
-                        Documento documentoTemp = documentoRepository.findById(documentoId).orElse(null);
-                        if (documentoTemp.getTipoDocumento().equals(TipoDocumento.PROMOCION)) {
-                                conceptoPromocion = documentoTemp.getConcepto();
-                        }
-                }
+                Concepto conceptoPromocion = piezaRecord.documentos().stream()
+                                .map(documentoRepository::findById)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .filter(doc -> TipoDocumento.PROMOCION.equals(doc.getTipoDocumento()))
+                                .map(Documento::getConcepto)
+                                .findFirst()
+                                .orElse(null);
 
                 Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
