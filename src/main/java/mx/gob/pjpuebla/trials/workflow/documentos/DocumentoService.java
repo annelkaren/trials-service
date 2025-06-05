@@ -1139,8 +1139,13 @@ public class DocumentoService {
         }
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
+                }
+
+                if(carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)){
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), TipoDocumento.PROMOCION);
                 }
 
                 if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
