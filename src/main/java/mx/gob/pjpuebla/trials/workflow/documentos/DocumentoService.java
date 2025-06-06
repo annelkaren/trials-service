@@ -1139,8 +1139,13 @@ public class DocumentoService {
         }
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
+                }
+
+                if(carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)){
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), TipoDocumento.PROMOCION);
                 }
 
                 if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
@@ -1247,9 +1252,10 @@ public class DocumentoService {
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
 
-                                        boolean turnadoVencido = fechaTermino != null
-                                                        && fechaTermino.isBefore(LocalDateTime.now()) 
-                                                        && !mov.getConcepto().equals("RESGUARDO");
+                                        boolean turnadoVencido = fechaTermino != null &&
+                                                        fechaTermino.isBefore(LocalDateTime.now()) &&
+                                                        (mov.getConcepto() != null
+                                                                        && !mov.getConcepto().equals("RESGUARDO"));
 
                                         boolean prorrogaActiva = solicitudProrroga != null
                                                         && solicitudProrroga.getEstado()
@@ -1823,9 +1829,9 @@ public class DocumentoService {
                          * }
                          */
 
-                        //ajuste en la obtención de dias ya que en si ya se le pasan 
-                        //los dias no hay necesidad de dividir entre 24
-                        float toDays = (float) (item.dias() != null ? item.dias() : 0);  
+                        // ajuste en la obtención de dias ya que en si ya se le pasan
+                        // los dias no hay necesidad de dividir entre 24
+                        float toDays = (float) (item.dias() != null ? item.dias() : 0);
                         if (toDays != (float) concepto.getDias()) {
                                 carpeta.setHoras(item.dias());
                         } else {
