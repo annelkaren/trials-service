@@ -1050,14 +1050,15 @@ public class DocumentoService {
                                                         documento.getId(),
                                                         carpeta.getFolio(),
                                                         carpeta.getExpediente(),
-                                                        tipoEntrada,
+                                                        tipoEntrada.replace("Promocion", "Promoción"),
                                                         origen,
                                                         carpeta.getConcepto().getNombre(),
                                                         movimiento.getFechaAsignacion(),
                                                         true,
                                                         carpeta.getPrioridad(),
                                                         carpeta.getHoras(),
-                                                        carpeta.getConcepto().getId());
+                                                        carpeta.getConcepto().getId(),
+                                                        documento.getData().getTipoPromocion().name());
                                 })
                                 .toList();
 
@@ -1097,6 +1098,7 @@ public class DocumentoService {
                                         Integer carpetaId;
                                         Integer documentoId = documento != null ? documento.getId() : null;
                                         Integer conceptoId;
+                                        String tipoPromocion = "";
 
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
@@ -1107,6 +1109,7 @@ public class DocumentoService {
                                                 conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
                                                 carpetaId = documento.getCarpeta().getId();
+                                                tipoPromocion = documento.getData().getTipoPromocion().name();
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
                                                 folio = carpeta.getFolio();
@@ -1123,14 +1126,15 @@ public class DocumentoService {
                                                         documentoId,
                                                         folio,
                                                         expediente,
-                                                        StringUtils.capitalize(tipoEntrada.toLowerCase()),
+                                                        StringUtils.capitalize(tipoEntrada.toLowerCase()).replace("Promocion", "Promoción"),
                                                         map.get("name").toString(),
                                                         concepto,
                                                         movimiento.getFechaAsignacion(),
                                                         (Boolean) map.get(IS_INTERNO),
                                                         null,
                                                         null,
-                                                        conceptoId);
+                                                        conceptoId,
+                                                        tipoPromocion);
 
                                 })
                                 .toList();

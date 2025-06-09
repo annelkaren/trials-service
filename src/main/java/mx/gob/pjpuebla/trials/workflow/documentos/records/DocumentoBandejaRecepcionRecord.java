@@ -17,6 +17,7 @@ public record DocumentoBandejaRecepcionRecord(
         Boolean isInterno,
         Prioridad prioridad,
         Integer horas,
-        Integer conceptoId
+        Integer conceptoId,
+        String tipoPromocion
 ) implements Serializable {
 }
