@@ -632,8 +632,8 @@ public class DocumentoService {
 
                 PersonaDocumento entity = new PersonaDocumento();
                 entity.setNombre(persona.nombre());
-                entity.setApellidoPaterno((persona.apellidoPaterno() == null)? "": persona.apellidoPaterno());
-                entity.setApellidoMaterno((persona.apellidoMaterno() == null)? "": persona.apellidoMaterno());
+                entity.setApellidoPaterno((persona.apellidoPaterno() == null) ? "" : persona.apellidoPaterno());
+                entity.setApellidoMaterno((persona.apellidoMaterno() == null) ? "" : persona.apellidoMaterno());
                 entity.setPseudonimo(persona.pseudonimo());
                 entity.setTipoPersona(persona.tipoPersona());
                 entity.setRol(Rol.PRINCIPAL);
@@ -1143,8 +1143,13 @@ public class DocumentoService {
         }
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
+                }
+
+                if(carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)){
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), TipoDocumento.PROMOCION);
                 }
 
                 if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
@@ -1164,14 +1169,13 @@ public class DocumentoService {
 
                 boolean esInterno = false;
                 if (persona.getJuzgado() != null && centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
-                                        
+
                         esInterno = true;
                 } else if (persona.getOficialia() != null
                                 && centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
+                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
                         esInterno = true;
                 }
-
 
                 Map<String, Object> resultado = new HashMap<>();
                 resultado.put(IS_INTERNO, esInterno);
@@ -1180,8 +1184,16 @@ public class DocumentoService {
                 return resultado;
         }
 
-        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Pageable pageable) {
+        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
+
+                // Buscamos a la persona si es que la manda en el parametro
+                if (personaId != null) {
+                        personaAsignada = personaRepository.findById(personaId)
+                                        .orElseThrow(() -> new NotFoundException("persona no encontrada",
+                                                        "persona id" + personaId));
+                }
+
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
                 Oficialia oficialia = persona.getOficialia();
@@ -1244,8 +1256,10 @@ public class DocumentoService {
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
 
-                                        boolean turnadoVencido = fechaTermino != null
-                                                        && fechaTermino.isBefore(LocalDateTime.now());
+                                        boolean turnadoVencido = fechaTermino != null &&
+                                                        fechaTermino.isBefore(LocalDateTime.now()) &&
+                                                        (mov.getConcepto() != null
+                                                                        && !mov.getConcepto().equals("RESGUARDO"));
 
                                         boolean prorrogaActiva = solicitudProrroga != null
                                                         && solicitudProrroga.getEstado()
@@ -1385,7 +1399,7 @@ public class DocumentoService {
                 personaAsignada = persona;
                 String key = Objects.toString(uuid, "");
 
-                return getAllAsignado(key, Pageable.unpaged()).getContent();
+                return getAllAsignado(key, null, Pageable.unpaged()).getContent();
         }
 
         protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
@@ -1807,12 +1821,27 @@ public class DocumentoService {
 
                         carpeta.setConcepto(concepto);
                         carpeta.setPrioridad(item.prioridad());
-                        float toDays = (float) item.horas() / 24;
+
+                        // Conversiones de dias a horas o dias. de momento se comentan ya que se
+                        // menciono que se manejaria en dias no en horas.
+                        /*
+                         * float toDays = (float) item.horas() / 24;
+                         * if (toDays != (float) concepto.getDias()) {
+                         * carpeta.setHoras(item.horas());
+                         * } else {
+                         * carpeta.setHoras(null);
+                         * }
+                         */
+
+                        // ajuste en la obtención de dias ya que en si ya se le pasan
+                        // los dias no hay necesidad de dividir entre 24
+                        float toDays = (float) (item.dias() != null ? item.dias() : 0);
                         if (toDays != (float) concepto.getDias()) {
-                                carpeta.setHoras(item.horas());
+                                carpeta.setHoras(item.dias());
                         } else {
                                 carpeta.setHoras(null);
                         }
+
                         carpeta.setEstatus(EstadoCarpeta.TURNADO);
 
                         carpetaRepository.save(carpeta);
@@ -1822,7 +1851,7 @@ public class DocumentoService {
                         String duracion = (carpeta.getHoras() != null && carpeta.getHoras() > 0)
                                         ? carpeta.getHoras() + "h"
                                         : concepto.getDias().toString() + "d";
-                        
+
                         Movimiento movimiento = movimientoService.createMovimentoTurnado(carpeta, null, persona, null,
                                         EstadoCarpeta.TURNADO.name(),
                                         StringUtils.capitalize(concepto.getNombre().toLowerCase()),
@@ -1845,7 +1874,7 @@ public class DocumentoService {
                 Integer termino24horas = 0;
                 Integer termino3dias = 0;
 
-                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", Pageable.unpaged());
+                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", null, Pageable.unpaged());
 
                 totalAsignados = asignados.getSize();
 

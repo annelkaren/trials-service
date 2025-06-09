@@ -49,6 +49,9 @@ public class Concepto implements Serializable, Auditable {
     @Column(name = "N_ESTADO", nullable = false)
     private Estado estado;
 
+    @Column(name = "S_ROLES")
+    private String roles;
+
     @Accessors(chain = false)
     @Embedded
     private Audit audit;
