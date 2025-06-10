@@ -992,7 +992,7 @@ class DocumentoServiceTest {
         @Test
         void getIndicadores_success() {
                 Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
-                Documento demanda = DocumentoSetUp.create(tipoJuicio);
+                Documento demanda = DocumentoSetUp.create(tipoJuicio).setTipoDocumento(TipoDocumento.PROMOCION);
                 demanda.getCarpeta().setFolio("1");
                 demanda.getCarpeta().setJuzgado(juzgado);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
@@ -1007,6 +1007,7 @@ class DocumentoServiceTest {
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
                 Page<Movimiento> page = new PageImpl<>(listPage);
 
+                given(etiquetaService.renderEtiquetaRecepcion(any(), any(Carpeta.class))).willReturn("Promocion");
                 given(personaService.getAuditor()).willReturn(persona);
                 given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(),
                                 any())).willReturn(page);
