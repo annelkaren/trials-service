@@ -1058,7 +1058,7 @@ public class DocumentoService {
                                                         carpeta.getPrioridad(),
                                                         carpeta.getHoras(),
                                                         carpeta.getConcepto().getId(),
-                                                        documento.getData().getTipoPromocion().name());
+                                                        (documento.getData() != null) ?documento.getData().getTipoPromocion().name() : "");
                                 })
                                 .toList();
 
