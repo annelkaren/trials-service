@@ -58,6 +58,9 @@ public class Oficialia implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    @Column(name = "S_TIPOS_DOCS")
+    private String tiposDocumentos;
+
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
     @JoinTable(name = "TBL_OFICIALIAS_MATERIAS",
             joinColumns = {

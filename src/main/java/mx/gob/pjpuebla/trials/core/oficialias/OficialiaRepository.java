@@ -19,7 +19,8 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             SELECT
             new mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord(o.id, o.version, o.nombre, o.responsable, o.estado,
                 new mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord(t.id, t.nombre),
-                new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse(s.id, s.nombre, s.estado)
+                new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse(s.id, s.nombre, s.estado),
+                o.tiposDocumentos
             )
             FROM Oficialia o
             LEFT JOIN o.tipoOficialia t
@@ -45,7 +46,8 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             t.nombre,
             t.id,
             j.nombre,
-            j.id
+            j.id,
+            null
         )
         FROM Oficialia o
         LEFT JOIN o.materias m
