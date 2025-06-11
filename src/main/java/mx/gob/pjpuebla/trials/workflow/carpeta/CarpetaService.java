@@ -6,6 +6,9 @@ import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
@@ -80,6 +83,7 @@ public class CarpetaService {
         private final DocumentoDetalleRepository documentoDetalleRepository;
         private final MovimientoRepository movimientoRepository;
         private final JuzgadoRepository juzgadoRepository;
+        private final OficialiaRepository oficialiaRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -349,7 +353,16 @@ public class CarpetaService {
 
                         case "tipoEntradasBandejaEntrada" -> {
                                 var persona = personaService.getAuditor();
-                                String tipoDocumentosStr = persona.getOficialia().getTiposDocumentos();
+                                Juzgado juzgado = persona.getJuzgado();
+                                Oficialia oficialia = null;
+
+                                if(juzgado != null){
+                                        oficialia = oficialiaRepository.findByJuzgadoId(juzgado.getId()).get();
+                                }else{
+                                        oficialia = persona.getOficialia();
+                                }
+                                
+                                String tipoDocumentosStr = oficialia.getTiposDocumentos();
                                 
                                 if (tipoDocumentosStr == null || tipoDocumentosStr.isBlank()) {
                                         yield List.of();
