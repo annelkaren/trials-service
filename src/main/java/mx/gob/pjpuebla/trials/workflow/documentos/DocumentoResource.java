@@ -104,8 +104,9 @@ public class DocumentoResource {
 
     @GetMapping("/bandeja/entrada")
     public Page<DocumentoGridRecord> getAll(Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return this.documentoService.getAll(key, pageable);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
+        return this.documentoService.getAll(key, pageable, tipoEntrada);
     }
 
     @GetMapping("/bandeja/salida")

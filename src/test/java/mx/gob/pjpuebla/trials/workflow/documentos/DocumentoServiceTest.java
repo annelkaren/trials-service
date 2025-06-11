@@ -329,7 +329,7 @@ class DocumentoServiceTest {
                                 .willReturn(movimientoPage);
 
                 // Act
-                Page<DocumentoGridRecord> result = documentoService.getAll(null, pageable);
+                Page<DocumentoGridRecord> result = documentoService.getAll(null, pageable, "Todas");
 
                 // Assert
                 assertThat(result).isNotNull();
