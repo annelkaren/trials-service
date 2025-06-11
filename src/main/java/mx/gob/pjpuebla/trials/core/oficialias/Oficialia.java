@@ -58,6 +58,7 @@ public class Oficialia implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    //columna para determinar que tipos de documentos puede recibir la oficialia
     @Column(name = "S_TIPOS_DOCS")
     private String tiposDocumentos;
 
