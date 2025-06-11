@@ -32,7 +32,7 @@ public class OficialiaSetUp {
     }
 
     public static OficialiaRecord createOficialiaRecord(Oficialia oficialia, TipoOficialiaRecord tipo, SedeRecordResponse sede) {
-        return new OficialiaRecord(oficialia.getId(), oficialia.getVersion(), oficialia.getNombre(), oficialia.getResponsable(), Estado.ACTIVE, tipo, sede);
+        return new OficialiaRecord(oficialia.getId(), oficialia.getVersion(), oficialia.getNombre(), oficialia.getResponsable(), Estado.ACTIVE, tipo, sede, "");
     }
 
     public static OficialiaRecordResponse createOficialiaRecordResponse(Oficialia oficialia) {
@@ -40,6 +40,6 @@ public class OficialiaSetUp {
     }
 
     public static OficialiaMateriaRecord CreateOficialiaMateriaRecord(Oficialia oficialia, Materia materia, Sede sede, TipoOficialia tipoOficialia, Juzgado juzgado) {
-        return  new OficialiaMateriaRecord(oficialia.getId(), oficialia.getNombre(), oficialia.getEstado(), materia.getNombre(), materia.getId(), sede.getId(), tipoOficialia.getNombre(), tipoOficialia.getId(), juzgado.getNombre(), juzgado.getId() );
+        return  new OficialiaMateriaRecord(oficialia.getId(), oficialia.getNombre(), oficialia.getEstado(), materia.getNombre(), materia.getId(), sede.getId(), tipoOficialia.getNombre(), tipoOficialia.getId(), juzgado.getNombre(), juzgado.getId(), null );
     }
 }

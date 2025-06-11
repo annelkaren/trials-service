@@ -342,6 +342,9 @@ public class CarpetaService {
                         case "catalogoTipoPiezas" -> this.tipoPiezaRepository.findAll().stream()
                                         .map(e -> new CarpetaCatalogoRecord(e.getClave(), e.getTipo()))
                                         .toList();
+                        case "tipoEntradas" -> Arrays.stream(TipoCarpeta.values())
+                                        .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta()))
+                                        .toList();
                         default -> Collections.emptyList();
                 };
         }
