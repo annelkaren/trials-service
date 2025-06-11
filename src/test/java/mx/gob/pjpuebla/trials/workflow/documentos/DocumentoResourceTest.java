@@ -113,7 +113,7 @@ class DocumentoResourceTest {
                 EstadoCarpeta.CAPTURA,
                 true, "Juzgado 1", "", "");
 
-        given(documentoService.getAll(any(), any(Pageable.class)))
+        given(documentoService.getAll(any(), any(Pageable.class), "Todas"))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(

@@ -6,6 +6,7 @@ import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 
 import java.io.Serializable;
@@ -38,10 +39,17 @@ public record OficialiaRecord(
                                                 ? Arrays.stream(tipoDocumentos.split(","))
                                                                 .map(String::trim)
                                                                 .map(clave -> {
-                                                                        TipoCarpeta tipoCarpeta = TipoCarpeta
-                                                                                        .valueOf(clave);
-                                                                        return new CarpetaCatalogoRecord(clave,
-                                                                                        tipoCarpeta.getEtiqueta());
+                                                                        if (clave.equals("PROMOCION")) {
+                                                                                TipoDocumento tipoDocumento = TipoDocumento
+                                                                                                .valueOf(clave);
+                                                                                return new CarpetaCatalogoRecord(clave,
+                                                                                                tipoDocumento.getEtiqueta());
+                                                                        } else {
+                                                                                TipoCarpeta tipoCarpeta = TipoCarpeta
+                                                                                                .valueOf(clave);
+                                                                                return new CarpetaCatalogoRecord(clave,
+                                                                                                tipoCarpeta.getEtiqueta());
+                                                                        }
                                                                 })
                                                                 .collect(Collectors.toList())
                                                 : null);
