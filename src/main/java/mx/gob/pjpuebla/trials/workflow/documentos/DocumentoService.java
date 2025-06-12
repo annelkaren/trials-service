@@ -41,6 +41,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepo
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionPersonaRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
@@ -1150,7 +1151,8 @@ public class DocumentoService {
                 return resultado;
         }
 
-        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable) {
+        public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable,
+                        String tipoEntradaFilter) {
                 key = (key != null) ? key.toLowerCase() : "";
 
                 // Buscamos a la persona si es que la manda en el parametro
@@ -1175,6 +1177,23 @@ public class DocumentoService {
 
                 List<DocumentoAsignadoResponseRecord> list = page.getContent()
                                 .stream()
+                                .filter(movimiento -> {
+                                        if (tipoEntradaFilter == null || tipoEntradaFilter.isBlank())
+                                                return true;
+                                        if (tipoEntradaFilter.equalsIgnoreCase("Todas"))
+                                                return true;
+
+                                        Carpeta carpeta = movimiento.getCarpeta();
+                                        Documento documento = movimiento.getDocumento();
+
+                                        if (carpeta == null) {
+                                                carpeta = documento.getCarpeta();
+                                        }
+
+                                        String tipoEntrada = documento != null ? documento.getTipoDocumento().name() : carpeta.getTipoCarpeta().name();
+
+                                        return tipoEntrada.equalsIgnoreCase(tipoEntradaFilter.trim());
+                                })
                                 .map(mov -> {
                                         Documento documento = mov.getDocumento();
 
@@ -1365,7 +1384,7 @@ public class DocumentoService {
                 personaAsignada = persona;
                 String key = Objects.toString(uuid, "");
 
-                return getAllAsignado(key, null, Pageable.unpaged()).getContent();
+                return getAllAsignado(key, null, Pageable.unpaged(), null).getContent();
         }
 
         protected String sendToBandejaRecepcion(List<Integer> idList, Integer personaCarrito) {
@@ -1509,6 +1528,25 @@ public class DocumentoService {
                 }
 
                 return new IndicadoresRecord(totalPendientes, totalRecibidosHoy, totalRecibidosAyer, totalOldies);
+        }
+
+        public List<CarpetaCatalogoRecord> getTipoEntradas(String bandeja) {
+
+                Page<DocumentoAsignadoResponseRecord> page = getAllAsignado(null, null, Pageable.unpaged(), "Todas");
+                return page.getContent().stream()
+                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(), item.tipoEntrada()))
+                                .distinct().toList();
+
+                /*
+                 * switch(bandeja){
+                 * 
+                 * case "ASIGNADO":
+                 * 
+                 * 
+                 * default: return null;
+                 * }
+                 */
+
         }
 
         public Integer createOficio(Integer institucionId, LocalDate fechaEmision, String asunto, Integer carpetaId) {
@@ -1840,7 +1878,7 @@ public class DocumentoService {
                 Integer termino24horas = 0;
                 Integer termino3dias = 0;
 
-                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", null, Pageable.unpaged());
+                Page<DocumentoAsignadoResponseRecord> asignados = getAllAsignado("", null, Pageable.unpaged(), null);
 
                 totalAsignados = asignados.getSize();
 

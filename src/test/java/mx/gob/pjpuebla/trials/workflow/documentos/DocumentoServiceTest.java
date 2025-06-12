@@ -1104,7 +1104,7 @@ class DocumentoServiceTest {
                 given(personaService.getAuditor())
                                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
                 Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",null,
-                                PageRequest.of(1, listPage.size()));
+                                PageRequest.of(1, listPage.size()), null );
                 System.out.println(page.getContent());
                 assertThat(page.getContent())
                                 .hasSize(1)

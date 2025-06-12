@@ -351,52 +351,6 @@ public class CarpetaService {
                                                         .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta())),
                                         Stream.of(new CarpetaCatalogoRecord("PROMOCION", "Promoción"))).toList();
 
-                        case "tipoEntradasBandejaEntrada" -> {
-                                var persona = personaService.getAuditor();
-                                Juzgado juzgado = persona.getJuzgado();
-                                Oficialia oficialia = null;
-
-                                if(juzgado != null){
-                                        oficialia = oficialiaRepository.findByJuzgadoId(juzgado.getId()).get();
-                                }else{
-                                        oficialia = persona.getOficialia();
-                                }
-                                
-                                String tipoDocumentosStr = oficialia.getTiposDocumentos();
-                                
-                                if (tipoDocumentosStr == null || tipoDocumentosStr.isBlank()) {
-                                        yield List.of();
-                                }
-
-                                String[] claves = tipoDocumentosStr.split(",");
-
-                                yield Arrays.stream(claves)
-                                                .map(String::trim)
-                                                .map(clave -> {
-                                                        // Buscar en TipoCarpeta
-                                                        Optional<CarpetaCatalogoRecord> fromTipoCarpeta = Arrays
-                                                                        .stream(TipoCarpeta.values())
-                                                                        .filter(e -> e.name().equalsIgnoreCase(clave))
-                                                                        .findFirst()
-                                                                        .map(e -> new CarpetaCatalogoRecord(e.name(),
-                                                                                        e.getEtiqueta()));
-
-                                                        if (fromTipoCarpeta.isPresent())
-                                                                return fromTipoCarpeta.get();
-
-                                                        // Si no se encontró, buscar en TipoDocumento
-                                                        return Arrays.stream(TipoDocumento.values())
-                                                                        .filter(e -> e.name().equalsIgnoreCase(clave))
-                                                                        .findFirst()
-                                                                        .map(e -> new CarpetaCatalogoRecord(e.name(),
-                                                                                        e.getEtiqueta()))
-                                                                        .orElse(null); // Si no está en ninguno, se
-                                                                                       // ignora
-                                                })
-                                                .filter(Objects::nonNull) // Eliminar nulos (los no encontrados)
-                                                .toList();
-                        }
-
                         default -> Collections.emptyList();
                 };
         }
