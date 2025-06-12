@@ -56,9 +56,12 @@ public class GeneradorQRService {
     public byte[] getContinuityReport(Integer expMin, Integer expMax, Integer year) throws JRException, IOException {
         Persona personaLogueada = personaService.getAuditor();
 
-        // Obtiene los expedientes desde la consulta
-        List<String> expedientes = carpetaRepository.findByExpMinAndExMaxAndYear(
+        // Obtiene los resultado desde la consulta
+        List<Object[]> resultado = carpetaRepository.findByExpMinAndExMaxAndYear(
                 expMin, expMax, year, personaLogueada.getJuzgado().getId());
+
+        List<QrExpedienteProjection> expedientes = resultado.stream()
+                .map(arr -> new QrExpedienteProjection((String) arr[0], (String) arr[1])).toList();
 
         if (expedientes.isEmpty()) {
             throw new NotFoundException("No existen expedientes con los criterios de busqueda.",
@@ -74,7 +77,7 @@ public class GeneradorQRService {
             GeneradorQRDTO generador = new GeneradorQRDTO();
 
             // Obtenemos una sublista de 30 elementos (o menos si es el último bloque)
-            List<String> sublista = expedientes.subList(i, Math.min(i + 30, expedientes.size()));
+            List<QrExpedienteProjection> sublista = expedientes.subList(i, Math.min(i + 30, expedientes.size()));
 
             // Asignamos los códigos al DTO
             asignarCodigosADTO(generador, sublista);
@@ -99,13 +102,21 @@ public class GeneradorQRService {
      * @param codigos   La lista de códigos QR a asignar.
      * @throws RuntimeException Si ocurre un error al acceder a los campos del DTO.
      */
-    private void asignarCodigosADTO(GeneradorQRDTO generador, List<String> codigos) {
+    private void asignarCodigosADTO(GeneradorQRDTO generador, List<QrExpedienteProjection> codigos) {
         try {
             for (int i = 0; i < codigos.size(); i++) {
-                String fieldName = "codigo" + (i + 1);
-                Field field = GeneradorQRDTO.class.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                field.set(generador, codigos.get(i));
+
+                String codigoField = "codigo" + (i + 1);
+                String textoField = "texto" + (i + 1);
+
+                Field codigo = GeneradorQRDTO.class.getDeclaredField(codigoField);
+                Field texto = GeneradorQRDTO.class.getDeclaredField(textoField);
+
+                codigo.setAccessible(true);
+                texto.setAccessible(true);
+
+                codigo.set(generador, codigos.get(i).getQr());
+                texto.set(generador, codigos.get(i).getExpediente());
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Error al asignar códigos al DTO", e);
@@ -125,7 +136,7 @@ public class GeneradorQRService {
      * @throws IOException Si ocurre un error de entrada/salida al leer el recurso
      *                     del reporte.
      */
-    public byte[] getReportByCoordinates(String expediente, Integer casilla) throws JRException, IOException {
+public byte[] getReportByCoordinates(String expediente, Integer casilla) throws JRException, IOException {
         // Obtener la persona logueada
         Persona personaLogueada = personaService.getAuditor();
 
@@ -159,7 +170,7 @@ public class GeneradorQRService {
 
         // Crear un DTO y asignar los valores usando el método auxiliar
         GeneradorQRDTO dto = new GeneradorQRDTO();
-        asignarCodigosADTO(dto, Arrays.asList(generadorAux));
+        //asignarCodigosADTO(dto, Arrays.asList(generadorAux));
 
         // Agregar el DTO a la lista
         generadorFinal.add(dto);

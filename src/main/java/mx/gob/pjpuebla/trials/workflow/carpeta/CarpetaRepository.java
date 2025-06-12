@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.litigante.responselitigante.PiezaRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
+import mx.gob.pjpuebla.trials.workflow.generadorQR.QrExpedienteProjection;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -167,15 +168,17 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
     Persona findSiguienteJuezPenal();
 
     @Query(value = """
-            SELECT
+            SELECT 
                 CASE
                     WHEN c.n_tipo_carpeta = 0 THEN 'D' || '.' ||  c.s_folio
                     WHEN c.n_tipo_carpeta = 1 THEN 'E' || '.' ||  c.s_folio
                     WHEN c.n_tipo_carpeta = 2 THEN 'A' || '.' ||  c.s_folio
                     ELSE '' || c.s_folio
-                END
+                END AS qr,
+                c.s_expediente || '\n' || LOWER(juzgado.s_nombre)  expediente
             
             FROM tbl_carpetas c
+            JOIN tbl_juzgados juzgado on juzgado.pn_id = c.fn_juzgado
             WHERE CAST(
                     REGEXP_REPLACE(SPLIT_PART(c.s_expediente, '/', 1), '[^0-9]', '', 'g')
                     AS INTEGER
@@ -188,7 +191,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                     AS INTEGER
                   )
             """, nativeQuery = true)
-    List<String> findByExpMinAndExMaxAndYear(
+    List<Object[]> findByExpMinAndExMaxAndYear(
             @Param("expedienteMin") Integer expedienteMin,
             @Param("expedienteMax") Integer expedienteMax,
             @Param("year") Integer year,
