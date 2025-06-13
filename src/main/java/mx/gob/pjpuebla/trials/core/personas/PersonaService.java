@@ -423,4 +423,8 @@ public class PersonaService {
            personaRepository.save(persona);
        }
     }
+
+    public List<RoleRecord> getRolesByUser(String userId){
+        return roleService.getRolesByUserId(userId);
+    }
 }

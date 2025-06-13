@@ -3,10 +3,7 @@ package mx.gob.pjpuebla.trials.litigante;
 import com.google.zxing.WriterException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.ExhortoRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.LibroGobiernoRecord;
-import mx.gob.pjpuebla.trials.litigante.responselitigante.SentenciasPublicasRecord;
+import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
@@ -106,5 +103,10 @@ public class LitiganteResource {
     public ExhortoRecord getExpedienteById(
             @PathVariable Integer carpetaId) {
         return litiganteService.getExpedienteById(carpetaId);
+    }
+
+    @GetMapping("/pieza/{carpetaId}")
+    public List<HistorialRecord> getHistorialByPieza(@PathVariable("carpetaId") Integer carpetaId){
+        return litiganteService.getHistorialByPieza(carpetaId);
     }
 }
