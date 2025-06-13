@@ -260,6 +260,10 @@ public class LitiganteService {
         piezas.add(0, new PiezaRecord(carpetId, expediente.getExpediente(), "Expediente principal"));
         return new ExhortoRecord(expediente.getJuzgado().getNombre(), expediente.getExpediente(),
                 historial.get(0).hora(), expediente.getJuzgado().getNombre(), historial.get(0).nombre(),
-                list, historial, piezas);
+                list, historial, piezas, historial.get(0).cargo());
+    }
+
+    public List<HistorialRecord> getHistorialByPieza(Integer carpetId) {
+        return movimientoService.getHistorialByExpediente(carpetId);
     }
 }

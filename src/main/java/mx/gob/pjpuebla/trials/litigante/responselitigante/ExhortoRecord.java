@@ -13,6 +13,7 @@ public record ExhortoRecord(
         String asignado,
         List<TipoPartesRecord> partes,
         List<HistorialRecord> historial,
-        List<PiezaRecord> piezas
+        List<PiezaRecord> piezas,
+        String cargo
 ) {
 }

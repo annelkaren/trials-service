@@ -73,4 +73,7 @@ public class Movimiento implements Serializable {
     @Column(name = "S_DURACION")
     private String duracion;
 
+    @Column(name = "S_CARGO")
+    private String cargo;//Rol del usuario que ejecutó el movimiento
+
 }
