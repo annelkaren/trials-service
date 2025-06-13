@@ -37,6 +37,8 @@ public class CarpetaResource {
         return ResponseEntity.ok(carpetaResponseRecord);
     }
 
+    
+
 
     @GetMapping(value = "/personas/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ApelacionRecordResponse> getPersonasDocumentoByCarpetaId(@PathVariable Integer carpetaId) {

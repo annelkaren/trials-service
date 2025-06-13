@@ -399,7 +399,7 @@ class DocumentoResourceTest {
 
         DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, 1, 1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente, true, "prorroga", EstadoProrroga.AUTORIZADA, "ejemplo", "red");
 
-        given(documentoService.getAllAsignado(anyString(), anyLong(), any(Pageable.class)))
+        given(documentoService.getAllAsignado(anyString(), anyLong(), any(Pageable.class), anyString() ))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
 
         mockMvc.perform(

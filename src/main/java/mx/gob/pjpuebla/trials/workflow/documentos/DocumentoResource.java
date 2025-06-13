@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 
 @RequiredArgsConstructor
@@ -168,8 +170,9 @@ public class DocumentoResource {
     @GetMapping("/bandeja/asignados")
     public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "personaId", required = false) Long personaId) {
-        return this.documentoService.getAllAsignado(key, personaId, pageable);
+            @PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "personaId", required = false) Long personaId,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
+        return this.documentoService.getAllAsignado(key, personaId, pageable, tipoEntrada);
     }
 
     @PostMapping("/bandeja/asignados/movimiento")
@@ -310,7 +313,11 @@ public class DocumentoResource {
         return ResponseEntity.ok("Devolución completa");
     }
 
-
-  
+    @GetMapping("/filtroBandeja")
+    public List<CarpetaCatalogoRecord>  filtroTiposEntradas(@RequestParam String bandeja) {
+        return documentoService.getTipoEntradas(bandeja);
+    }
+    
+    
 
 }
