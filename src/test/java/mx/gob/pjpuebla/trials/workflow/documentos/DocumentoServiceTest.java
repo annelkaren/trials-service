@@ -325,7 +325,7 @@ class DocumentoServiceTest {
 
                 Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
                 given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(),
-                                any()))
+                                any(), any(), any() ))
                                 .willReturn(movimientoPage);
 
                 // Act

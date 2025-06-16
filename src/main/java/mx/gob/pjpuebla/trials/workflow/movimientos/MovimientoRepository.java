@@ -195,8 +195,14 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                     (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
                 )
+                      AND (
+                (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
+                OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
+                OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
+                OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
+            )
             """)
-    Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
+    Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
