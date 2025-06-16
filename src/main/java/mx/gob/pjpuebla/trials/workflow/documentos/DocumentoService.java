@@ -721,15 +721,15 @@ public class DocumentoService {
 
         public Page<DocumentoGridRecord> getAllHistorial(String key, Pageable pageable) {
 
-                //Obtenemos variables para la consulta al repository:
+                // Obtenemos variables para la consulta al repository:
                 Persona currentUser = personaService.getAuditor();
                 Integer juzgadoId = getJuzgadoId(currentUser);
                 Integer oficialiaId = getOficialiaId(currentUser);
                 key = (key != null) ? key.toLowerCase() : "";
-                Page<Movimiento> page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
-                
-                
-                //Mapeamos resultado de la connsulta
+                Page<Movimiento> page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId,
+                                pageable);
+
+                // Mapeamos resultado de la connsulta
                 List<DocumentoGridRecord> listaDocumentoRecords = page.getContent().stream()
                                 .map(movimiento -> {
 
@@ -745,10 +745,10 @@ public class DocumentoService {
                                                 materia = getMateriaExpediente(carpeta);
                                         }
 
-                                        if(documento == null){
+                                        if (documento == null) {
                                                 documento = getDocumentoWhenIsNull(carpeta);
                                         }
-                                       
+
                                         tipoEntrada = getTipoEntrada(carpeta, documento);
                                         folio = getFolioBandejas(carpeta, documento);
 
@@ -770,16 +770,18 @@ public class DocumentoService {
                 return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
         }
 
-        private Documento getDocumentoWhenIsNull(Carpeta carpeta){
+        private Documento getDocumentoWhenIsNull(Carpeta carpeta) {
                 TipoDocumento tipoDocumento = null;
 
                 switch (carpeta.getTipoCarpeta()) {
                         case DEMANDA -> tipoDocumento = null;
                         case EXHORTO -> tipoDocumento = TipoDocumento.EXHORTO;
                         case APELACION -> tipoDocumento = TipoDocumento.APELACION;
-                        case PIEZA -> tipoDocumento = TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO TRATARLO.
-                        default -> throw new IllegalArgumentException("TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
-                } 
+                        case PIEZA -> tipoDocumento = TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO
+                                                                               // O COMO TRATARLO.
+                        default -> throw new IllegalArgumentException(
+                                        "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
+                }
 
                 return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
         }
@@ -934,17 +936,19 @@ public class DocumentoService {
                 Carpeta carpeta = new Carpeta();
 
                 Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
-                                .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId: " + apelacionRecord.carpetaId()));
+                                .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
+                                                "carpetaId: " + apelacionRecord.carpetaId()));
 
-                // Busca el tipoJuicio  por id, si no lo encuentra lanza una excepción.
-                TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId()); 
-                                                                                                
+                // Busca el tipoJuicio por id, si no lo encuentra lanza una excepción.
+                TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId());
+
                 List<Juzgado> juzgadosRelacionados = juzgadoRepository.findSalaByOficialiaId(oficialia.getId())
                                 .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
 
                 carpeta.setTipoJuicio(tipoJuicio);
                 carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
-                carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), juzgadosRelacionados));
+                carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(),
+                                juzgadosRelacionados));
                 carpeta.setFolio(getFolio("AP"));
                 carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
                 carpeta.setEstatus(EstadoCarpeta.CAPTURA);
@@ -965,7 +969,8 @@ public class DocumentoService {
                 documento.setTipoDocumento(TipoDocumento.APELACION);
 
                 // Obtiene folio
-                Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, auditor.getJuzgado(), auditor.getOficialia());
+                Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, auditor.getJuzgado(),
+                                auditor.getOficialia());
                 documento.setFolio(folio.toString());
 
                 documento = documentoRepository.save(documento);
@@ -994,8 +999,9 @@ public class DocumentoService {
 
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
                 movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
-                
-                return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
+
+                return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
+                                documento.getCarpeta().getTipoCarpeta());
         }
 
         public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
@@ -1203,29 +1209,24 @@ public class DocumentoService {
                 TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
                 Integer folioTemp = (Integer) resultado[2];
 
+                TipoDocumento tipoEntradaDoc = null;
+                TipoCarpeta tipoEntradaCarp = null;
+
+                try {
+                        tipoEntradaDoc = TipoDocumento.valueOf(tipoEntradaFilter.toUpperCase());
+                } catch (Exception e) {
+                        try {
+                                tipoEntradaCarp = TipoCarpeta.valueOf(tipoEntradaFilter.toUpperCase());
+                        } catch (Exception ignored) {
+                        }
+                }
+
                 Page<Movimiento> page = documentoRepository.findByPersonaAsignada(key, persona.getJuzgado().getId(),
-                                persona, esOficialMayor, pageable, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp);
+                                persona, esOficialMayor, pageable, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp,
+                                tipoEntradaDoc, tipoEntradaCarp);
 
                 List<DocumentoAsignadoResponseRecord> list = page.getContent()
                                 .stream()
-                                .filter(movimiento -> {
-                                        if (tipoEntradaFilter == null || tipoEntradaFilter.isBlank())
-                                                return true;
-                                        if (tipoEntradaFilter.equalsIgnoreCase("Todas"))
-                                                return true;
-
-                                        Carpeta carpeta = movimiento.getCarpeta();
-                                        Documento documento = movimiento.getDocumento();
-
-                                        if (carpeta == null) {
-                                                carpeta = documento.getCarpeta();
-                                        }
-
-                                        String tipoEntrada = documento != null ? documento.getTipoDocumento().name()
-                                                        : carpeta.getTipoCarpeta().name();
-
-                                        return tipoEntrada.equalsIgnoreCase(tipoEntradaFilter.trim());
-                                })
                                 .map(mov -> {
                                         Documento documento = mov.getDocumento();
 
