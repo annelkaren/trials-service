@@ -720,43 +720,40 @@ public class DocumentoService {
         }
 
         public Page<DocumentoGridRecord> getAllHistorial(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
-                Persona currentUser = personaService.getAuditor();
-                Page<Movimiento> page;
-                Integer juzgadoId = (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
-                Integer oficialiaId = (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
-                page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
 
+                //Obtenemos variables para la consulta al repository:
+                Persona currentUser = personaService.getAuditor();
+                Integer juzgadoId = getJuzgadoId(currentUser);
+                Integer oficialiaId = getOficialiaId(currentUser);
+                key = (key != null) ? key.toLowerCase() : "";
+                Page<Movimiento> page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId, pageable);
+                
+                
+                //Mapeamos resultado de la connsulta
                 List<DocumentoGridRecord> listaDocumentoRecords = page.getContent().stream()
                                 .map(movimiento -> {
-                                        Documento documento = (movimiento.getDocumento() != null)
-                                                        ? movimiento.getDocumento()
-                                                        : documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(
-                                                                        movimiento.getCarpeta().getId());
 
-                                        Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta()
-                                                        : documento.getCarpeta();
+                                        Carpeta carpeta = movimiento.getCarpeta();
+                                        Documento documento = movimiento.getDocumento();
+                                        String folio = "";
+                                        String estaEnJuzgado = estadoExpedienteBandejaHistorial(movimiento.getEstado());
+                                        String materia = "";
+                                        String tipoEntrada;
 
-                                        String folio = (documento.getTipoDocumento() == null)
-                                                        ? carpeta.getFolio()
-                                                        : documento.getFolio();
+                                        if (carpeta == null) {
+                                                carpeta = documento.getCarpeta();
+                                                materia = getMateriaExpediente(carpeta);
+                                        }
 
-                                        String estaEnJuzgado = !(movimiento.getEstado().equals("CAPTURA")
-                                                        || movimiento.getEstado().equals("SALIDA")
-                                                        || movimiento.getEstado().equals("DEVUELTO_A_OFICIALIA"))
-                                                                        ? "En juzgado"
-                                                                        : "";
-
-                                        String materia = StringUtils.capitalize(
-                                                        carpeta.getJuzgado().getMateria().getNombre().toLowerCase());
-                                        String tipoEntrada = (documento.getTipoDocumento() == null)
-                                                        ? StringUtils.capitalize(
-                                                                        carpeta.getTipoCarpeta().name().toLowerCase())
-                                                        : StringUtils.capitalize(documento.getTipoDocumento().name()
-                                                                        .toLowerCase());
+                                        if(documento == null){
+                                                documento = getDocumentoWhenIsNull(carpeta);
+                                        }
+                                       
+                                        tipoEntrada = getTipoEntrada(carpeta, documento);
+                                        folio = getFolioBandejas(carpeta, documento);
 
                                         return new DocumentoGridRecord(
-                                                        documento.getId(),
+                                                        documento != null ? documento.getId() : null,
                                                         folio,
                                                         carpeta.getExpediente(),
                                                         materia,
@@ -768,10 +765,50 @@ public class DocumentoService {
                                                         "",
                                                         estaEnJuzgado,
                                                         movimiento.getMotivo());
-
                                 }).toList();
 
                 return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
+        }
+
+        private Documento getDocumentoWhenIsNull(Carpeta carpeta){
+                TipoDocumento tipoDocumento = null;
+
+                switch (carpeta.getTipoCarpeta()) {
+                        case DEMANDA -> tipoDocumento = null;
+                        case EXHORTO -> tipoDocumento = TipoDocumento.EXHORTO;
+                        case APELACION -> tipoDocumento = TipoDocumento.APELACION;
+                        case PIEZA -> tipoDocumento = TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO TRATARLO.
+                        default -> throw new IllegalArgumentException("TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
+                } 
+
+                return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
+        }
+
+        private String estadoExpedienteBandejaHistorial(String estado) {
+                return !(estado.equals("CAPTURA") ||
+                                estado.equals("SALIDA") ||
+                                estado.equals("DEVUELTO_A_OFICIALIA")) ? "En juzgado" : "";
+        }
+
+        private String getTipoEntrada(Carpeta carpeta, Documento documento) {
+                return (carpeta != null) ? StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase())
+                                : StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase());
+        }
+
+        private String getMateriaExpediente(Carpeta carpeta) {
+                return StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase());
+        }
+
+        private String getFolioBandejas(Carpeta carpeta, Documento documento) {
+                return carpeta != null ? carpeta.getFolio() : documento.getFolio();
+        }
+
+        private Integer getJuzgadoId(Persona currentUser) {
+                return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
+        }
+
+        private Integer getOficialiaId(Persona currentUser) {
+                return (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
         }
 
         @Transactional
@@ -897,23 +934,17 @@ public class DocumentoService {
                 Carpeta carpeta = new Carpeta();
 
                 Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
-                                .orElseThrow(
-                                                () -> new NotFoundException(CARPETA_NOT_FOUND,
-                                                                "carpetaId: " + apelacionRecord.carpetaId()));
+                                .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, "carpetaId: " + apelacionRecord.carpetaId()));
 
-                TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId()); // Busca el tipoJuicio
-                                                                                                  // por id, si no lo
-                                                                                                  // encuentra lanza una
-                                                                                                  // excepción.
-
+                // Busca el tipoJuicio  por id, si no lo encuentra lanza una excepción.
+                TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId()); 
+                                                                                                
                 List<Juzgado> juzgadosRelacionados = juzgadoRepository.findSalaByOficialiaId(oficialia.getId())
                                 .stream().filter(j -> j.getTipoJuicios().contains(tipoJuicio)).toList();
 
                 carpeta.setTipoJuicio(tipoJuicio);
                 carpeta.setTipoCarpeta(TipoCarpeta.APELACION);
-                carpeta.setJuzgado(
-                                juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(),
-                                                juzgadosRelacionados));
+                carpeta.setJuzgado(juzgadoService.getJuzgado(carpeta.getTipoJuicio(), carpeta.getTipoCarpeta(), juzgadosRelacionados));
                 carpeta.setFolio(getFolio("AP"));
                 carpeta.setExpediente(generateNumExpediente(carpeta.getJuzgado(), TipoCarpeta.APELACION));
                 carpeta.setEstatus(EstadoCarpeta.CAPTURA);
@@ -927,14 +958,14 @@ public class DocumentoService {
                 data.setApelacionOtroActorNombre(apelacionRecord.otroNombreActor());
                 data.setApelacionOtroDemandadoNombre(apelacionRecord.otroNombreDemandado());
                 data.setApelacionAntecedenteCarpeta(apelacionRecord.carpetaId().toString());
+
                 documento.setData(data);
                 documento.setPersona(auditor);
                 documento.setFechaAsignacion(LocalDateTime.now());
                 documento.setTipoDocumento(TipoDocumento.APELACION);
 
                 // Obtiene folio
-                Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, auditor.getJuzgado(),
-                                auditor.getOficialia());
+                Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, auditor.getJuzgado(), auditor.getOficialia());
                 documento.setFolio(folio.toString());
 
                 documento = documentoRepository.save(documento);
@@ -962,9 +993,9 @@ public class DocumentoService {
                 }
 
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
-                movimientoService.createMovimento(carpeta, documento, auditor, null, EstadoCarpeta.CAPTURA.name());
-                return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
-                                documento.getCarpeta().getTipoCarpeta());
+                movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
+                
+                return new DocumentoRecord(documento.getId(), carpeta.getFolio(), documento.getCarpeta().getTipoCarpeta());
         }
 
         public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
@@ -1190,7 +1221,8 @@ public class DocumentoService {
                                                 carpeta = documento.getCarpeta();
                                         }
 
-                                        String tipoEntrada = documento != null ? documento.getTipoDocumento().name() : carpeta.getTipoCarpeta().name();
+                                        String tipoEntrada = documento != null ? documento.getTipoDocumento().name()
+                                                        : carpeta.getTipoCarpeta().name();
 
                                         return tipoEntrada.equalsIgnoreCase(tipoEntradaFilter.trim());
                                 })

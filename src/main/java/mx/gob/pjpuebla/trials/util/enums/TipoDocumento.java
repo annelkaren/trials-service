@@ -13,7 +13,8 @@ public enum TipoDocumento {
     SENTENCIA_PUBLICA("Sentencia pública","Sentencias públicas"),
     DOCUMENTO_IDENTIFICACION("Documento de identificación","Documentos de identificación"),
     APELACION("Apelación", "Apelaciones"),
-    PRUEBA_AUDIENCIA("Prueba audiencia", "Pruebas audiencia");
+    PRUEBA_AUDIENCIA("Prueba audiencia", "Pruebas audiencia"),
+    EXHORTO("Exhorto", "Exortos");
 
     private final String etiqueta;
     private final String plural;
