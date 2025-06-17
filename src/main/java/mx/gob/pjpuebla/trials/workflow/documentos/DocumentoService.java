@@ -1294,10 +1294,7 @@ public class DocumentoService {
                                                         Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
                                                         prorrogaActiva,
-                                                        solicitudProrroga != null
-                                                                        ? solicitudProrroga.getEstado().equals(
-                                                                                        EstadoProrroga.AUTORIZADA)
-                                                                        : false);
+                                                        solicitudProrroga != null && solicitudProrroga.getEstado().equals(EstadoProrroga.AUTORIZADA));
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
@@ -1967,8 +1964,10 @@ public class DocumentoService {
         public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord) {
                 Persona persona = personaService.getAuditor();
                 DocumentoData data = new DocumentoData();
+                
                 Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "Carpeta"));
+
                 Integer folio = documentoFoliosService.getFolio(TipoDocumento.AMPARO, persona.getJuzgado(), null);
 
                 data.setAmparoFechaPresentacion(amparoRecord.fechaPresentacion());
