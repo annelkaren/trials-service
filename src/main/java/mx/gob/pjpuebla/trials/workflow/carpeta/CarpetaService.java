@@ -450,7 +450,10 @@ public class CarpetaService {
                                 .filter(doc -> TipoDocumento.PROMOCION.equals(doc.getTipoDocumento()))
                                 .map(Documento::getConcepto)
                                 .findFirst()
-                                .orElse(conceptoRepository.findByNombre("Nueva creación").get());
+                                .orElse(
+                                         conceptoRepository.findByNombre("Nueva creación")
+                                             .orElseThrow(() -> new IllegalStateException("El concepto 'Nueva creación' no se encontró en la base de datos"))
+                                     );
 
                 Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));

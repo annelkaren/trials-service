@@ -1266,10 +1266,7 @@ public class DocumentoService {
                                                         Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
                                                         prorrogaActiva,
-                                                        solicitudProrroga != null
-                                                                        ? solicitudProrroga.getEstado().equals(
-                                                                                        EstadoProrroga.AUTORIZADA)
-                                                                        : false);
+                                                        solicitudProrroga != null && solicitudProrroga.getEstado().equals(EstadoProrroga.AUTORIZADA));
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
