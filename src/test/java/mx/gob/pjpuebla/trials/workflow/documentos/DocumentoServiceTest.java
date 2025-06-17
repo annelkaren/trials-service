@@ -773,6 +773,7 @@ class DocumentoServiceTest {
                 demanda.getCarpeta().setJuzgado(juzgado);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
+
                 demanda.getCarpeta().setConcepto(concepto);
                 Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
                 List<Movimiento> listPage = Collections.singletonList(movimiento);
@@ -789,6 +790,7 @@ class DocumentoServiceTest {
                 given(personaService.getAuditor()).willReturn(persona);
                 given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
                
+                given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(), any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
 
                 List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
@@ -797,8 +799,10 @@ class DocumentoServiceTest {
                                 juzgado.getId(), list, "", motivos, persona, null, null, null, null, null))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
+
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
                                 PageRequest.of(0, listPage.size()), "" );
+
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
