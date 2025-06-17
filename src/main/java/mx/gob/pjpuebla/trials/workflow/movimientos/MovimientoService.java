@@ -90,11 +90,11 @@ public class MovimientoService {
         return movimiento;
     }
 
-    private String getCargo(String userId){
+    private String getCargo() {
         String cargo = "-";
-        List<RoleRecord> roles = personaService.getRolesByUser(userId);
-        if (!roles.isEmpty() && roles.size() == 1) {
-            cargo = roles.get(0).name();
+        Persona persona = personaService.getAuditor();
+        if (persona != null) {
+            cargo = persona.getRolPrincipal();
         }
         return cargo;
     }
@@ -116,7 +116,7 @@ public class MovimientoService {
                 .setPersona(persona)
                 .setEstado(estado)
                 .setOficialia(oficialia)
-                .setCargo(getCargo(persona.getUsuario()))
+                .setCargo(getCargo())
                 .setJuzgado(persona.getJuzgado());
     }
 
