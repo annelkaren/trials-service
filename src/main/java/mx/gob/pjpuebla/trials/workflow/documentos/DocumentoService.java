@@ -181,10 +181,10 @@ public class DocumentoService {
                                 .map(movimiento -> {
                                         Carpeta carpeta = movimiento.getCarpeta();
                                         Documento documento = movimiento.getDocumento();
-                                        
-                                        String folio = "";
+
+                                        String folio;
                                         String estaEnJuzgado = estadoExpedienteBandejaHistorial(movimiento.getEstado());
-                                        String materia = "";
+                                        String materia;
                                         String tipoEntrada;
 
                                         if (carpeta == null) {
@@ -714,25 +714,26 @@ public class DocumentoService {
 
                                         Carpeta carpeta = movimiento.getCarpeta();
                                         Documento documento = movimiento.getDocumento();
-                                        String folio = "";
+                                        String folio;
                                         String estaEnJuzgado = estadoExpedienteBandejaHistorial(movimiento.getEstado());
-                                        String materia = "";
+                                        String materia;
                                         String tipoEntrada;
 
                                         if (carpeta == null) {
                                                 carpeta = documento.getCarpeta();
-                                                materia = getMateriaExpediente(carpeta);
+
                                         }
 
                                         if (documento == null) {
                                                 documento = getDocumentoWhenIsNull(carpeta);
                                         }
 
+                                        materia = getMateriaExpediente(carpeta);
                                         tipoEntrada = getTipoEntrada(carpeta, documento);
                                         folio = getFolioBandejas(carpeta, documento);
 
                                         return new DocumentoGridRecord(
-                                                        documento != null ? documento.getId() : null,
+                                                        documento.getId(),
                                                         folio,
                                                         carpeta.getExpediente(),
                                                         materia,
@@ -750,17 +751,14 @@ public class DocumentoService {
         }
 
         private Documento getDocumentoWhenIsNull(Carpeta carpeta) {
-                TipoDocumento tipoDocumento = null;
-
-                switch (carpeta.getTipoCarpeta()) {
-                        case DEMANDA -> tipoDocumento = null;
-                        case EXHORTO -> tipoDocumento = TipoDocumento.EXHORTO;
-                        case APELACION -> tipoDocumento = TipoDocumento.APELACION;
-                        case PIEZA -> tipoDocumento = TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO
-                                                                               // O COMO TRATARLO.
+                TipoDocumento tipoDocumento = switch (carpeta.getTipoCarpeta()) {
+                        case DEMANDA -> null;
+                        case EXHORTO -> TipoDocumento.EXHORTO;
+                        case APELACION -> TipoDocumento.APELACION;
+                        case PIEZA -> TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO TRATARLO.
                         default -> throw new IllegalArgumentException(
                                         "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
-                }
+                };
 
                 return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
         }
@@ -772,7 +770,8 @@ public class DocumentoService {
         }
 
         private String getTipoEntrada(Carpeta carpeta, Documento documento) {
-                return (documento.getTipoDocumento() != null) ? StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase())
+                return (documento.getTipoDocumento() != null)
+                                ? StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase())
                                 : StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase());
         }
 
@@ -983,7 +982,8 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta());
         }
 
-        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable, String tipoEntradaFilter) {
+        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable,
+                        String tipoEntradaFilter) {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
                 Object[] resultado = procesarTipoCarpeta(key);
@@ -991,7 +991,7 @@ public class DocumentoService {
                 TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
                 Integer folioTemp = (Integer) resultado[2];
 
-                //Filtro:
+                // Filtro:
                 TipoDocumento tipoEntradaDoc = null;
                 TipoCarpeta tipoEntradaCarp = null;
                 try {
@@ -1003,16 +1003,17 @@ public class DocumentoService {
                         }
                 }
 
-
                 if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
                         return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
                                         tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
                 }
-                return renderData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
+                return renderData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp,
+                                tipoEntradaDoc, tipoEntradaCarp);
         }
 
         private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
-                        TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+                        TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp,
+                        TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
                 Page<Movimiento> page = movimientoService.getBandejaRecepcion(
                                 pageable,
                                 currentUser.getJuzgado().getId(),
@@ -1023,7 +1024,7 @@ public class DocumentoService {
                                 tipoCarpetaNombre,
                                 tipoDocumentoNombre,
                                 folioTemp,
-                                tipoEntradaDoc, 
+                                tipoEntradaDoc,
                                 tipoEntradaCarp);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
@@ -1033,7 +1034,7 @@ public class DocumentoService {
 
                                         String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                         carpeta);
-                                        
+
                                         String origen = movimiento.getPersona().getNombre() + " "
                                                         + movimiento.getPersona().getApellidoPaterno() + " "
                                                         + ((movimiento.getPersona().getApellidoMaterno() != null)
@@ -1110,6 +1111,7 @@ public class DocumentoService {
                                                 tipoPromocion = documento.getData().getTipoPromocion().name();
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
+                                                documento = getDocumentoWhenIsNull(carpeta);
                                                 folio = carpeta.getFolio();
                                                 tipoEntrada = getTipoEntrada(carpeta, documento);
                                                 concepto = carpeta.getConcepto().getNombre();
@@ -1239,6 +1241,7 @@ public class DocumentoService {
                                                                                         ? documento.getConcepto()
                                                                                                         .getDias()
                                                                                         : 0)
+
                                                         : (carpeta != null && carpeta.getConcepto() != null)
                                                                         ? mov.getFechaAsignacion().plusDays(
                                                                                         carpeta.getConcepto().getDias())
@@ -1293,7 +1296,8 @@ public class DocumentoService {
                                                         Objects.equals(observaciones, "URGENTE"),
                                                         turnadoVencido,
                                                         prorrogaActiva,
-                                                        solicitudProrroga != null && solicitudProrroga.getEstado().equals(EstadoProrroga.AUTORIZADA));
+                                                        solicitudProrroga != null && solicitudProrroga.getEstado()
+                                                                        .equals(EstadoProrroga.AUTORIZADA));
 
                                         return new DocumentoAsignadoResponseRecord(
                                                         mov.getId(),
@@ -1557,18 +1561,20 @@ public class DocumentoService {
         public List<CarpetaCatalogoRecord> getTipoEntradas(String bandeja) {
 
                 return switch (bandeja) {
-                        case "ASIGNADO" -> {
+                        case "ASIGNADOS" -> {
                                 Page<DocumentoAsignadoResponseRecord> page = getAllAsignado(null, null,
                                                 Pageable.unpaged(), "Todas");
                                 yield page.getContent().stream()
-                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(), item.tipoEntrada()))
+                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
+                                                                item.tipoEntrada()))
                                                 .distinct()
                                                 .toList();
                         }
                         case "ENTRADA" -> {
                                 Page<DocumentoGridRecord> page = getAll(null, Pageable.unpaged(), "Todas");
                                 yield page.getContent().stream()
-                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(), item.tipoEntrada()))
+                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
+                                                                item.tipoEntrada()))
                                                 .distinct()
                                                 .toList();
                         }
@@ -1576,7 +1582,8 @@ public class DocumentoService {
                                 Page<DocumentoBandejaRecepcionRecord> page;
                                 page = getAllBandejaRecepcion(null, Pageable.unpaged(), "Todas");
                                 yield page.getContent().stream()
-                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(), item.tipoEntrada()))
+                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
+                                                                item.tipoEntrada()))
                                                 .distinct()
                                                 .toList();
                         }
@@ -1963,7 +1970,7 @@ public class DocumentoService {
         public AmparoRecordResponse createAmparo(AmparoRecord amparoRecord) {
                 Persona persona = personaService.getAuditor();
                 DocumentoData data = new DocumentoData();
-                
+
                 Carpeta carpeta = carpetaRepository.findById(amparoRecord.carpetaId())
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "Carpeta"));
 
