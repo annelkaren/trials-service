@@ -795,11 +795,11 @@ class DocumentoServiceTest {
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
                 given(movimientoService.getAllBandejaRecepcion(
                                 PageRequest.of(0, listPage.size()),
-                                juzgado.getId(), list, "", motivos, persona, null, null, null))
+                                juzgado.getId(), list, "", motivos, persona, null, null, null, null, null))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
-                                PageRequest.of(0, listPage.size()));
+                                PageRequest.of(0, listPage.size()), "" );
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
@@ -1010,7 +1010,7 @@ class DocumentoServiceTest {
                 given(etiquetaService.renderEtiquetaRecepcion(any(), any(Carpeta.class))).willReturn("Promocion");
                 given(personaService.getAuditor()).willReturn(persona);
                 given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any(), any(), any(),
-                                any())).willReturn(page);
+                                any(), any(), any())).willReturn(page);
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
