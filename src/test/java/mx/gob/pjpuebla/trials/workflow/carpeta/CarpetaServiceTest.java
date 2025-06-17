@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -138,6 +140,8 @@ class CarpetaServiceTest {
     private CarpetaEtapasRepository carpetaEtapasRepository;
     @Mock
     private DocumentoDetalleRepository documentoDetalleRepository;
+    @Mock
+    private ConceptoRepository conceptoRepository;
 
     private Carpeta validCarpeta;
     private PersonaDocumentoRecord actor;
@@ -788,7 +792,8 @@ class CarpetaServiceTest {
         String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
         Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
         PiezaRecord piezaRecord = new PiezaRecord(null, tipoPieza.getClave(), Collections.singletonList(1));
-
+        Concepto concepto = ConceptoSetUp.createConcepto();
+        
         Carpeta piezaTmp = new Carpeta()
                 .setId(5)
                 .setExpediente(expediente)
@@ -801,7 +806,7 @@ class CarpetaServiceTest {
         given(tipoPiezaRepository.existsByClave(any())).willReturn(true);
         given(carpetaRepository.save(any())).willReturn(piezaTmp);
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
-
+        given(conceptoRepository.findByNombre("Nueva creación")).willReturn(Optional.of(concepto));
         piezaTmp = target.createPieza(carpetaPadreId, piezaRecord);
         assertThat(piezaTmp).isNotNull()
                 .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");

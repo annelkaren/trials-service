@@ -122,16 +122,16 @@ public class MovimientoService {
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
                                                    String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre,
-                                                   TipoDocumento tipoDocumentoNombre, Integer folio) {
+                                                   TipoDocumento tipoDocumentoNombre, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
         return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
-                tipoCarpetaNombre, tipoDocumentoNombre, folio);
+                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
     }
 
     public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
                                                 String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
-                                                Integer folio) {
+                                                Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
         return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
-                tipoCarpetaNombre, tipoDocumentoNombre, folio);
+                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {
@@ -158,9 +158,9 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
-                                                 String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio) {
+                                                 String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
         return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
-                tipoDocumento, folio);
+                tipoDocumento, folio, tipoEntradaDoc, tipoEntradaCarp);
     }
 
     public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {

@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -82,6 +83,7 @@ public class CarpetaService {
         private final MovimientoRepository movimientoRepository;
         private final JuzgadoRepository juzgadoRepository;
         private final OficialiaRepository oficialiaRepository;
+        private final ConceptoRepository conceptoRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -448,7 +450,10 @@ public class CarpetaService {
                                 .filter(doc -> TipoDocumento.PROMOCION.equals(doc.getTipoDocumento()))
                                 .map(Documento::getConcepto)
                                 .findFirst()
-                                .orElse(null);
+                                .orElse(
+                                         conceptoRepository.findByNombre("Nueva creación")
+                                             .orElseThrow(() -> new IllegalStateException("El concepto 'Nueva creación' no se encontró en la base de datos"))
+                                     );
 
                 Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
