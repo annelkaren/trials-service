@@ -788,8 +788,7 @@ class DocumentoServiceTest {
 
                 given(personaService.getAuditor()).willReturn(persona);
                 given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
-                given(etiquetaService.renderEtiquetaRecepcion(any(String.class), any(Carpeta.class)))
-                                .willReturn("Expediente");
+               
 
                 List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
@@ -805,7 +804,7 @@ class DocumentoServiceTest {
                                 .first()
                                 .hasFieldOrPropertyWithValue("carpetaId", demanda.getId())
                                 .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
-                                .hasFieldOrPropertyWithValue("tipoEntrada", "Expediente")
+                                .hasFieldOrPropertyWithValue("tipoEntrada", "Demanda")
                                 .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
         }
 
