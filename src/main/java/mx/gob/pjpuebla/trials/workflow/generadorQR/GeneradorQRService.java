@@ -17,6 +17,7 @@ import org.springframework.core.io.Resource;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,7 @@ public class GeneradorQRService {
      * @throws IOException Si ocurre un error de entrada/salida al leer el recurso
      *                     del reporte.
      */
-public byte[] getReportByCoordinates(String expediente, Integer casilla) throws JRException, IOException {
+    public byte[] getReportByCoordinates(String expediente, Integer casilla) throws JRException, IOException {
         // Obtener la persona logueada
         Persona personaLogueada = personaService.getAuditor();
 
@@ -149,35 +150,27 @@ public byte[] getReportByCoordinates(String expediente, Integer casilla) throws 
                     "Expediente " + expediente);
         }
 
-        // Obtener el código QR de la carpeta
+        // Obtener el código QR y texto de la carpeta
         String codigo = getExpedienteCarpeta(carpeta);
+        String texto = carpeta.getExpediente() + "\n" + carpeta.getJuzgado().getNombre().toLowerCase();
 
-        // Lista para los DTOs con los códigos QR
-        List<GeneradorQRDTO> generadorFinal = new ArrayList<>();
+        // Crear la lista de 30 posiciones con QrExpedienteProjection (null excepto una)
+        List<QrExpedienteProjection> codigos = new ArrayList<>();
 
-        // Crear un arreglo auxiliar para los 30 códigos QR
-        String[] generadorAux = new String[30];
-
-        // Llenamos el arreglo con null, excepto en la casilla seleccionada
         for (int i = 0; i < 30; i++) {
-            if (i == casilla - 1) { // Casilla empieza en 1, pero el índice de arreglo es 0
-                generadorAux[i] = codigo;
+            if (i == casilla - 1) {
+                codigos.add(new QrExpedienteProjection(codigo, texto));
             } else {
-                generadorAux[i] = null;
+                codigos.add(new QrExpedienteProjection(null, null));
             }
         }
 
-        // Crear un DTO y asignar los valores usando el método auxiliar
         GeneradorQRDTO dto = new GeneradorQRDTO();
-        //asignarCodigosADTO(dto, Arrays.asList(generadorAux));
+        asignarCodigosADTO(dto, codigos);
 
-        // Agregar el DTO a la lista
-        generadorFinal.add(dto);
-
-        // Crear el DataSource para JasperReports
+        List<GeneradorQRDTO> generadorFinal = List.of(dto);
         beanCollectionDataSource = new JRBeanCollectionDataSource(generadorFinal);
 
-        // Exporta el reporte a PDF
         return JasperExportManager.exportReportToPdf(getJasperReport(expedienteQR));
     }
 
