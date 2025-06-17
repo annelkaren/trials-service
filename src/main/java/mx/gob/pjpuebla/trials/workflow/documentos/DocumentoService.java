@@ -1003,6 +1003,7 @@ public class DocumentoService {
                         }
                 }
 
+
                 if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
                         return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
                                         tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
@@ -1032,6 +1033,7 @@ public class DocumentoService {
 
                                         String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                         carpeta);
+                                        
                                         String origen = movimiento.getPersona().getNombre() + " "
                                                         + movimiento.getPersona().getApellidoPaterno() + " "
                                                         + ((movimiento.getPersona().getApellidoMaterno() != null)
@@ -1100,8 +1102,7 @@ public class DocumentoService {
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
                                                 folio = documento.getFolio();
-                                                tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
-                                                                documento);
+                                                tipoEntrada = getTipoEntrada(carpeta, documento);
                                                 concepto = documento.getConcepto().getNombre();
                                                 conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
@@ -1110,8 +1111,7 @@ public class DocumentoService {
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
                                                 folio = carpeta.getFolio();
-                                                tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
-                                                                carpeta);
+                                                tipoEntrada = getTipoEntrada(carpeta, documento);
                                                 concepto = carpeta.getConcepto().getNombre();
                                                 conceptoId = carpeta.getConcepto().getId();
                                                 expediente = carpeta.getExpediente();
@@ -1123,8 +1123,7 @@ public class DocumentoService {
                                                         documentoId,
                                                         folio,
                                                         expediente,
-                                                        StringUtils.capitalize(tipoEntrada.toLowerCase())
-                                                                        .replace("Promocion", "Promoción"),
+                                                        StringUtils.capitalize(tipoEntrada.toLowerCase()),
                                                         map.get("name").toString(),
                                                         concepto,
                                                         movimiento.getFechaAsignacion(),
