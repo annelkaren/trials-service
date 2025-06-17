@@ -109,54 +109,60 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Documento findByCarpetaIdAndRutaIsNull(Integer id);
 
     @Query("""
-                SELECT m
-                FROM Movimiento m
-                LEFT JOIN m.carpeta c
-                LEFT JOIN c.juzgado jc
-                LEFT JOIN m.documento d
-                LEFT JOIN d.carpeta cd
-                LEFT JOIN cd.juzgado jcd
-                LEFT JOIN m.juzgado j
-                LEFT JOIN m.oficialia o
-                LEFT JOIN c.persona pc
-                LEFT JOIN d.persona pd
-                WHERE (
-                    (c IS NOT NULL AND c.estatus IN (
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                    ) AND pc = :personaAsignada
-                    AND jc.id = :juzgadoId)
-                    OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
-                    mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                    ) AND pd = :personaAsignada
-                    AND jsonb_extract_path_text(d.data, 'pieza') is null
-                    AND jcd.id = :juzgadoId) else false  end > false
-                )
-                 AND m.fechaAsignacion = (
-                    SELECT MAX(m2.fechaAsignacion)
-                    FROM Movimiento m2
-                    WHERE (
-                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
-                )
-                AND m.estado IN ('TURNADO','ASIGNADO','DEVUELTO')
-                AND (
-                    LOWER(c.folio) LIKE %:key%
-                    OR LOWER(d.folio) LIKE %:key%
-                    OR LOWER(cd.folio) LIKE %:key%
-                    OR LOWER(cd.expediente) LIKE %:key%
-                    OR LOWER(c.expediente) LIKE %:key%
-                    OR CAST(m.uuid AS text) = :key
-                    OR (
-                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
-                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
-                )
-            """)
+                                 SELECT m
+                                 FROM Movimiento m
+                                 LEFT JOIN m.carpeta c
+                                 LEFT JOIN c.juzgado jc
+                                 LEFT JOIN m.documento d
+                                 LEFT JOIN d.carpeta cd
+                                 LEFT JOIN cd.juzgado jcd
+                                 LEFT JOIN m.juzgado j
+                                 LEFT JOIN m.oficialia o
+                                 LEFT JOIN c.persona pc
+                                 LEFT JOIN d.persona pd
+                                 WHERE (
+                                     (c IS NOT NULL AND c.estatus IN (
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                                     ) AND pc = :personaAsignada
+                                     AND jc.id = :juzgadoId)
+                                     OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
+                                     mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
+                                     ) AND pd = :personaAsignada
+                                     AND jsonb_extract_path_text(d.data, 'pieza') is null
+                                     AND jcd.id = :juzgadoId) else false  end > false
+                                 )
+                                  AND m.fechaAsignacion = (
+                                     SELECT MAX(m2.fechaAsignacion)
+                                     FROM Movimiento m2
+                                     WHERE (
+                                     (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                                     (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                                 )
+                                 AND m.estado IN ('TURNADO','ASIGNADO','DEVUELTO')
+                                 AND (
+                                     LOWER(c.folio) LIKE %:key%
+                                     OR LOWER(d.folio) LIKE %:key%
+                                     OR LOWER(cd.folio) LIKE %:key%
+                                     OR LOWER(cd.expediente) LIKE %:key%
+                                     OR LOWER(c.expediente) LIKE %:key%
+                                     OR CAST(m.uuid AS text) = :key
+                                     OR (
+                                     (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                                          OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
+                                 )
+                                AND (
+                (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
+                OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
+                OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
+                OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
+            )""")
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
-            Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio);
+            Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
+            TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
@@ -338,7 +344,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             """)
     Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
-    Page<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento, Pageable pageable);
+    Page<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento,
+            Pageable pageable);
 
     @Query("""
                 SELECT doc
@@ -350,7 +357,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
                 AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
             """)
-    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key, Pageable pageable);
+    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key,
+            Pageable pageable);
 
     @Query("""
                 SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END
@@ -397,6 +405,5 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("key") String key,
             @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
             @Param("juzgados") List<Juzgado> juzgados);
-
 
 }

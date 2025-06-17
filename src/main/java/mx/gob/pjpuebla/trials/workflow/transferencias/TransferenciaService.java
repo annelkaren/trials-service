@@ -63,7 +63,7 @@ public class TransferenciaService {
         UUID uuid = UUID.randomUUID();
         LocalDateTime fechaTransferencia = LocalDateTime.now();
 
-        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("", personaEntrega.getJuzgado().getId(), personaEntrega, Boolean.TRUE, Pageable.unpaged(), null, null, null).getContent();
+        List<Movimiento> asignaciones = documentoRepository.findByPersonaAsignada("", personaEntrega.getJuzgado().getId(), personaEntrega, Boolean.TRUE, Pageable.unpaged(), null, null, null, null, null).getContent();
 
         for(Movimiento asignacion : asignaciones){
             Movimiento movimiento = new Movimiento()
