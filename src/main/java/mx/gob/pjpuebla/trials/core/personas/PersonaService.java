@@ -22,7 +22,6 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
