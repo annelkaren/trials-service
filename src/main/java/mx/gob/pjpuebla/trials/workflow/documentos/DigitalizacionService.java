@@ -155,7 +155,9 @@ public class DigitalizacionService {
 
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
                     .orElse(null);
-            if (documentoDetalle != null && documentoDetalle.getEstadoEnvio().equals(EstadoEnvio.RECIBIDO_DESTINO)) {
+
+            if (documentoDetalle != null
+                    && Objects.equals(documentoDetalle.getEstadoEnvio(), EstadoEnvio.RECIBIDO_DESTINO)) {
                 nombreUnicoArchivo = generarNombreArchivo("OFICIO_OCP");
             }
         }
@@ -180,14 +182,17 @@ public class DigitalizacionService {
         // Actualiza la carpeta con la ruta del archivo y guarda en la base de datos
         documento.setRuta(nombreUnicoArchivo);
 
-        //ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO DE DEVOLUCIÓN DEL JUZGADO)
-        if (documento.getTipoDocumento() != null && (documento.getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA || documento.getEstatus() == EstadoCarpeta.EDICION)) {
+        // ACTUALIZAMOS ESTATUS DE LA CARPETA O DOCUMENTO SI SE REQUIERE (ESTO EN CASO
+        // DE DEVOLUCIÓN DEL JUZGADO)
+        if (documento.getTipoDocumento() != null && (documento.getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA
+                || documento.getEstatus() == EstadoCarpeta.EDICION)) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
         } else {
-            if (documento.getCarpeta().getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA || documento.getCarpeta().getEstatus() == EstadoCarpeta.EDICION){
+            if (documento.getCarpeta().getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA
+                    || documento.getCarpeta().getEstatus() == EstadoCarpeta.EDICION) {
                 documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
                 carpetaRepository.save(documento.getCarpeta());
-            } 
+            }
         }
 
         documentoRepository.save(documento);
@@ -246,7 +251,8 @@ public class DigitalizacionService {
     }
 
     /**
-     * Valida las propiedades del archivo: que no esté vacío, que sea una imagen, y que
+     * Valida las propiedades del archivo: que no esté vacío, que sea una imagen, y
+     * que
      * no exceda el tamaño máximo permitido.
      *
      * @param file El archivo a validar.
@@ -302,7 +308,7 @@ public class DigitalizacionService {
 
         switch (carpeta.getTipoCarpeta()) {
             case DEMANDA,
-                 APELACION:
+                    APELACION:
                 return crearDirectorios(Paths.get(basePath, expediente));
             case EXHORTO:
                 return crearDirectorios(
@@ -437,7 +443,7 @@ public class DigitalizacionService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al guardar la imagen en el servidor", e);
         }
-        //Eliminar archivos anteriores, solo puede existir una fotografía
+        // Eliminar archivos anteriores, solo puede existir una fotografía
         File[] allContents = Paths.get(basePath, sedeId.toString()).toFile().listFiles();
         if (allContents != null) {
             for (File file : allContents) {
@@ -462,7 +468,11 @@ public class DigitalizacionService {
         Path rutaArchivo = Paths.get(basePath, sedeId.toString(), name);
         if (Files.exists(rutaArchivo)) {
             try {
-                return "data:image/png;base64," + Base64.encodeBase64String(Files.readAllBytes(rutaArchivo)); // Retorna el archivo como Base64
+                return "data:image/png;base64," + Base64.encodeBase64String(Files.readAllBytes(rutaArchivo)); // Retorna
+                                                                                                              // el
+                                                                                                              // archivo
+                                                                                                              // como
+                                                                                                              // Base64
             } catch (IOException e) {
                 log.error("Error al obtener la fotografía de la sede: {}", e.getMessage(), e);
                 return "";
@@ -472,7 +482,8 @@ public class DigitalizacionService {
     }
 
     /**
-     * Elimina la fotografía de la sede, la eliminamos unicamente cuando la sede es eliminada
+     * Elimina la fotografía de la sede, la eliminamos unicamente cuando la sede es
+     * eliminada
      *
      * @param sedeId - identificador interno de la sede
      */
@@ -488,7 +499,8 @@ public class DigitalizacionService {
     }
 
     /**
-     * Método auxiliar que verifica si un directorio tiene elementos, si tiene los elimina
+     * Método auxiliar que verifica si un directorio tiene elementos, si tiene los
+     * elimina
      *
      * @param path - ruta de la carpeta
      */
