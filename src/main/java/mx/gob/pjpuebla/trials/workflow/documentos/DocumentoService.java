@@ -1432,6 +1432,7 @@ public class DocumentoService {
                                         .setEstado(EstadoCarpeta.RECEPCION.name())
                                         .setPersona(personaAuditor)
                                         .setUuid(uuid)
+                                        .setCargo(personaAuditor.getRolPrincipal())
                                         .setObservaciones(nombrePersona);
 
                         if (mov.getDocumento() != null) {

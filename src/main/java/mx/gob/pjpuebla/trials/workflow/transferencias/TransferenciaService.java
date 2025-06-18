@@ -78,6 +78,7 @@ public class TransferenciaService {
                     .setRecomendaciones(asignacion.getRecomendaciones())
                     .setEstado(EstadoCarpeta.TURNADO.name())
                     .setConcepto(asignacion.getConcepto())
+                    .setCargo(personaEntrega.getRolPrincipal())
                     .setDuracion(asignacion.getDuracion());
 
             movimientoRepository.save(movimiento);

@@ -101,7 +101,7 @@ class PersonaResourceTest {
     @Test
     void create_success() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.create(PersonaSetUp.createPersona(), List.of(roleRecord)))
+        given(mockPersonaService.create(new PersonaDTO()))
                 .willReturn(personaRecordResponse);
 
         mockMvc.perform(
@@ -115,7 +115,7 @@ class PersonaResourceTest {
     @Test
     void update_success() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(PersonaSetUp.createPersona(), List.of(roleRecord)))
+        given(mockPersonaService.update(new PersonaDTO()))
                 .willReturn(personaRecordResponse);
 
         mockMvc.perform(
@@ -129,7 +129,7 @@ class PersonaResourceTest {
     @Test
     void update_error() throws Exception {
         RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(PersonaSetUp.createPersona(), List.of(roleRecord)))
+        given(mockPersonaService.update(new PersonaDTO()))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(
@@ -137,7 +137,7 @@ class PersonaResourceTest {
                         .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
+        ).andExpect(status().isBadRequest());
     }
 
     @Test

@@ -22,6 +22,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -107,12 +108,15 @@ public class PersonaService {
         return persona.withRoles(roles);
     }
 
-    public PersonaRecordResponse create(Persona persona, List<RoleRecord> roles) {
+    public PersonaRecordResponse create(PersonaDTO dto) {
+        Persona persona = dto.getPersona();
+        List<RoleRecord> roles = dto.getRoles();
         if (!isValidAge(persona.getFechaNacimiento())) {
             throw new ConflictException("El usuario debe ser mayor de edad");
         }
         List<String> rolesToSave = getNames(roles);
         validateAdminRole(rolesToSave, persona);
+        persona.setRolPrincipal(setRolPrincipal(roles, dto.getRolPrincipal()));
         persona.setUsuario(usuarioService.create(persona));
         persona.setIsExternalUser(ExternalUser.NO);
         roleService.addRoles(persona.getUsuario(), rolesToSave);
@@ -137,16 +141,16 @@ public class PersonaService {
         if (persona.getEstadoCivil().getId() != null) {
             persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
                     .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
-        }else{
+        } else {
             persona.setEstadoCivil(null);
         }
 
-        if(persona.getDomicilio().getCalle() != null && !persona.getDomicilio().getCalle().isEmpty()) {
+        if (persona.getDomicilio().getCalle() != null && !persona.getDomicilio().getCalle().isEmpty()) {
             persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
-        }else{
+        } else {
             persona.setDomicilio(null);
         }
-        
+
 
         if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
@@ -163,7 +167,9 @@ public class PersonaService {
         }
     }
 
-    public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
+    public PersonaRecordResponse update(PersonaDTO dto) {
+        Persona persona = dto.getPersona();
+        List<RoleRecord> roles = dto.getRoles();
         try {
             if (!isValidAge(persona.getFechaNacimiento())) {
                 throw new ConflictException("El usuario debe ser mayor de edad");
@@ -172,6 +178,7 @@ public class PersonaService {
             List<String> rolesToSave = getNames(roles);
             validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
+            persona.setRolPrincipal(setRolPrincipal(roles, dto.getRolPrincipal()));
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), rolesToSave);
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(),
@@ -226,10 +233,10 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                        .filter(juzgado -> juzgado.getMateria() != null
-                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                        .toList()
+                .filter(juzgado -> juzgado.getMateria() != null
+                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                .toList()
                 : Collections.emptyList();
     }
 
@@ -360,6 +367,17 @@ public class PersonaService {
         }
     }
 
+    private String setRolPrincipal(List<RoleRecord> roles, String rolPrincipal) {
+        if (roles.isEmpty()) {
+            return "-";
+        }
+        if (roles.size() == 1) {
+            return roles.get(0).name();
+        } else {
+            return roles.stream().filter(rol -> rol.id().equals(rolPrincipal)).findFirst().get().name();
+        }
+    }
+
     public boolean verifyIfUserExistsAndIsLitigante(String username) {
         String usuario = usuarioService.findByUsernameAndRol(username, "LITIGANTE");
         Optional<Persona> persona = personaRepository.findByUsuario(usuario);
@@ -414,17 +432,17 @@ public class PersonaService {
     }
 
     public void createLitigante(Persona persona, List<RoleRecord> roles) {
-       if(!findByEmail(persona.getCorreoElectronico())) {
-           List<String> rolesToSave = getNames(roles);
-           persona.setUsuario(usuarioService.create(persona));
-           persona.setIsExternalUser(ExternalUser.YES);
-           roleService.addRoles(persona.getUsuario(), rolesToSave);
+        if (!findByEmail(persona.getCorreoElectronico())) {
+            List<String> rolesToSave = getNames(roles);
+            persona.setUsuario(usuarioService.create(persona));
+            persona.setIsExternalUser(ExternalUser.YES);
+            roleService.addRoles(persona.getUsuario(), rolesToSave);
 
-           personaRepository.save(persona);
-       }
+            personaRepository.save(persona);
+        }
     }
 
-    public List<RoleRecord> getRolesByUser(String userId){
+    public List<RoleRecord> getRolesByUser(String userId) {
         return roleService.getRolesByUserId(userId);
     }
 }

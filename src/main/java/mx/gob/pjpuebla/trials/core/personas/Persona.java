@@ -75,6 +75,9 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_TELEFONO")
     private String telefono;
 
+    @Column(name = "S_ROL_PRINCIPAL")
+    private String rolPrincipal;
+
     @Pattern(regexp = "^\\d{10}$")
     @Column(name = "S_CELULAR")
     private String celular;
