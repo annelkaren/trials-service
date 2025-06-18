@@ -187,8 +187,10 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
-
-        PersonaRecordResponse response = personaService.create(validPersona, rolesRecord);
+        PersonaDTO dto = new PersonaDTO();
+        dto.setPersona(validPersona);
+        dto.setRoles(rolesRecord);
+        PersonaRecordResponse response = personaService.create(dto);
 
         assertThat(response).isOfAnyClassIn(PersonaRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
@@ -221,9 +223,10 @@ class PersonaServiceTest extends SetupServiceTest {
         given(juzgadoRepository.findById(juzgado.getId())).willReturn(Optional.ofNullable(juzgado));
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona)).willReturn(validPersona);
-
-
-        PersonaRecordResponse response = personaService.update(validPersona, rolesRecord);
+        PersonaDTO dto = new PersonaDTO();
+        dto.setPersona(validPersona);
+        dto.setRoles(rolesRecord);
+        PersonaRecordResponse response = personaService.update(dto);
 
         assertThat(response).isOfAnyClassIn(PersonaRecordResponse.class)
                 .hasFieldOrPropertyWithValue("id", validPersona.getId())
@@ -253,10 +256,12 @@ class PersonaServiceTest extends SetupServiceTest {
         given(domicilioService.save(validDomicilio)).willReturn(validDomicilio);
         given(mockPersonaRepository.save(validPersona))
                 .willThrow(OptimisticLockingFailureException.class);
-
+        PersonaDTO dto = new PersonaDTO();
+        dto.setPersona(validPersona);
+        dto.setRoles(rolesRecord);
         InvalidVersionException assertThrows = assertThrows(
                 InvalidVersionException.class,
-                () -> personaService.update(validPersona, rolesRecord)
+                () -> personaService.update(dto)
         );
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");

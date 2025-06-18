@@ -5,7 +5,6 @@ import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.HistorialRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -90,11 +89,11 @@ public class MovimientoService {
         return movimiento;
     }
 
-    private String getCargo(String userId){
+    private String getCargo() {
         String cargo = "-";
-        List<RoleRecord> roles = personaService.getRolesByUser(userId);
-        if (!roles.isEmpty() && roles.size() == 1) {
-            cargo = roles.get(0).name();
+        Persona persona = personaService.getAuditor();
+        if (persona != null) {
+            cargo = persona.getRolPrincipal();
         }
         return cargo;
     }
@@ -116,7 +115,7 @@ public class MovimientoService {
                 .setPersona(persona)
                 .setEstado(estado)
                 .setOficialia(oficialia)
-                .setCargo(getCargo(persona.getUsuario()))
+                .setCargo(getCargo())
                 .setJuzgado(persona.getJuzgado());
     }
 

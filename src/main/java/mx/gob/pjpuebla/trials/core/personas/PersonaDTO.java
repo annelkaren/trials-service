@@ -10,4 +10,5 @@ public class PersonaDTO {
 
     private Persona persona;
     private List<RoleRecord> roles;
+    private String rolPrincipal;
 }

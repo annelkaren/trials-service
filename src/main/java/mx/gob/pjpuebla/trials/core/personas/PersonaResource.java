@@ -65,12 +65,12 @@ public class PersonaResource {
 
     @PostMapping
     public PersonaRecordResponse create(@RequestBody @Valid PersonaDTO persona) {
-        return this.personaService.create(persona.getPersona(), persona.getRoles());
+        return this.personaService.create(persona);
     }
 
     @PutMapping
     public PersonaRecordResponse update(@RequestBody @Valid PersonaDTO persona) {
-        return this.personaService.update(persona.getPersona(), persona.getRoles());
+        return this.personaService.update(persona);
     }
 
     @GetMapping(value = "/curp/{curp}", produces = MediaType.APPLICATION_JSON_VALUE)
