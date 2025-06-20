@@ -816,7 +816,6 @@ public class CarpetaService {
                 List<Documento> documentos = documentoRepository.findByCarpetaId(piezaId);
 
                 for (Documento doc : documentos) {
-                        doc.setCarpeta(pieza.getCarpetaPadre());
                         doc.setData(doc.getData().setEstadoPieza(estadoPieza));
 
                         documentoRepository.save(doc);
