@@ -790,7 +790,7 @@ class DocumentoServiceTest {
                 given(personaService.getAuditor()).willReturn(persona);
                 given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
                
-                given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(), any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
+                //given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(), any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
 
                 List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());

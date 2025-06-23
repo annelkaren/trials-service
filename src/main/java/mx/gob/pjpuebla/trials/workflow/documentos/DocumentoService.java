@@ -755,7 +755,8 @@ public class DocumentoService {
                         case DEMANDA -> null;
                         case EXHORTO -> TipoDocumento.EXHORTO;
                         case APELACION -> TipoDocumento.APELACION;
-                        case PIEZA -> TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO TRATARLO.
+                        case PIEZA -> TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO
+                                                               // TRATARLO.
                         default -> throw new IllegalArgumentException(
                                         "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
                 };
@@ -984,6 +985,7 @@ public class DocumentoService {
 
         public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable,
                         String tipoEntradaFilter) {
+
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
                 Object[] resultado = procesarTipoCarpeta(key);
@@ -1030,7 +1032,6 @@ public class DocumentoService {
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {
                                         Carpeta carpeta = movimiento.getCarpeta();
-                                        Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta);
 
                                         String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
                                                         carpeta);
@@ -1043,7 +1044,7 @@ public class DocumentoService {
 
                                         return new DocumentoBandejaRecepcionRecord(
                                                         carpeta.getId(),
-                                                        documento.getId(),
+                                                        null,
                                                         carpeta.getFolio(),
                                                         carpeta.getExpediente(),
                                                         tipoEntrada.replace("Promocion", "Promoción"),
@@ -1054,9 +1055,7 @@ public class DocumentoService {
                                                         carpeta.getPrioridad(),
                                                         carpeta.getHoras(),
                                                         carpeta.getConcepto().getId(),
-                                                        (documento.getData() != null)
-                                                                        ? documento.getData().getTipoPromocion().name()
-                                                                        : "");
+                                                        null);
                                 })
                                 .toList();
 
@@ -1103,7 +1102,7 @@ public class DocumentoService {
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
                                                 folio = documento.getFolio();
-                                                tipoEntrada = getTipoEntrada(carpeta, documento);
+                                                tipoEntrada = carpeta.getTipoCarpeta().getEtiqueta();
                                                 concepto = documento.getConcepto().getNombre();
                                                 conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
@@ -1111,9 +1110,9 @@ public class DocumentoService {
                                                 tipoPromocion = documento.getData().getTipoPromocion().name();
                                         } else {
                                                 // Si documento es null, se toman los valores de carpeta
-                                                documento = getDocumentoWhenIsNull(carpeta);
+
                                                 folio = carpeta.getFolio();
-                                                tipoEntrada = getTipoEntrada(carpeta, documento);
+                                                tipoEntrada = carpeta.getTipoCarpeta().getEtiqueta();
                                                 concepto = carpeta.getConcepto().getNombre();
                                                 conceptoId = carpeta.getConcepto().getId();
                                                 expediente = carpeta.getExpediente();
@@ -1145,11 +1144,6 @@ public class DocumentoService {
 
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
-                }
-
-                if (carpeta.getTipoCarpeta().equals(TipoCarpeta.PIEZA)) {
-                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(),
-                                        TipoDocumento.PROMOCION);
                 }
 
                 if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
@@ -1235,7 +1229,7 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTurnado = mov.getFechaAsignacion();
 
-                                        LocalDateTime fechaTermino = (isPromocion)
+                                        LocalDateTime fechaTermino  = (isPromocion)
                                                         ? mov.getFechaAsignacion()
                                                                         .plusDays(documento != null
                                                                                         ? documento.getConcepto()
@@ -1261,12 +1255,12 @@ public class DocumentoService {
                                                                 .atStartOfDay();
                                         }
 
-                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService
-                                                        .getLastProrrogas(mov.getId());
+                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService.getLastProrrogas(mov.getId());
 
                                         String motivoProrroga = solicitudProrroga != null
                                                         ? solicitudProrroga.getMotivoProrroga()
                                                         : null;
+                                                        
                                         EstadoProrroga estadoProrroga = solicitudProrroga != null
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
@@ -1345,6 +1339,13 @@ public class DocumentoService {
 
                 personaAsignada = null;
                 return new PageImpl<>(list, pageable, page.getTotalElements());
+        }
+
+        private LocalDateTime getFechaTermino(Movimiento movimiento, Documento documento, Carpeta carpeta) {
+                Concepto concepto = (documento != null) ? documento.getConcepto() : carpeta.getConcepto();
+                int aumentoDeDias = (concepto != null) ? concepto.getDias() : 0;
+
+                return movimiento.getFechaAsignacion().plusDays(aumentoDeDias);
         }
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
