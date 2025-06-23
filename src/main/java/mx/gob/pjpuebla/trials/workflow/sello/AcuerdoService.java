@@ -32,7 +32,7 @@ public class AcuerdoService {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Rectangle pageSize = documentoContenido.getTamanioPapel() == 'o' ? PageSize.LEGAL : PageSize.LETTER;
 
-        Document document = new Document(pageSize, 113.386F, 28.3465F, 60.0F, 36.0F);
+        Document document = new Document(pageSize, 65.0F, 65.0F, 60.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
         pdf.setPageEvent(new PdfPageEventHelper() {
