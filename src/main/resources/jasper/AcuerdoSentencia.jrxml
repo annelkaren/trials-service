@@ -1,0 +1,37 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="sentencia" language="java" columnCount="1" pageWidth="595" pageHeight="842" columnWidth="454" leftMargin="113" rightMargin="28" topMargin="20" bottomMargin="20" uuid="50dac59b-43e5-4b44-926d-cb98364b14dd">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="cm"/>
+	<style name="VerticalText" hTextAlign="Center" vTextAlign="Middle" fontName="SansSerif" fontSize="8.0" bold="true"/>
+	<parameter name="contenidoDocumento" class="java.lang.String"/>
+	<parameter name="qrText" class="java.lang.String"/>
+	<query language="sql"><![CDATA[]]></query>
+	<background height="802" splitType="Stretch">
+		<element kind="staticText" uuid="1d107adf-7f90-4548-80c5-c410999ce497" x="0" y="0" width="30" height="802" forecolor="rgba(0, 0, 0, 0.11764706)" rotation="Left" fontSize="18.0" hTextAlign="Center" vTextAlign="Top" style="VerticalText">
+			<text><![CDATA[SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL]]></text>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+		</element>
+		<element kind="staticText" uuid="114b1415-8c3a-4c61-a91a-51b3d40fe8b4" x="399" y="0" width="55" height="736" rotation="Right" markup="html" fontSize="18.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[El suscrito, Secretario, informa que el texto que precede corresponde a la 
+resolución emitida, conforme a la certificación que obra en el expediente]]></text>
+		</element>
+		<element kind="component" uuid="d6a31c6f-4f7d-4715-9d54-15d37a7ed165" x="400" y="736" width="54" height="64">
+			<component kind="barcode4j:QRCode" errorCorrectionLevel="H">
+				<codeExpression><![CDATA[$P{qrText}]]></codeExpression>
+			</component>
+		</element>
+		<element kind="staticText" uuid="e778d2fd-d23b-4f48-b6f4-98f14a25f2d7" x="30" y="-3" width="360" height="802" forecolor="rgba(0, 0, 0, 0.11764706)" rotation="None" markup="html" fontSize="60.0" bold="false" hTextAlign="Center" vTextAlign="Middle" style="VerticalText">
+			<text><![CDATA[Poder Judicial
+del
+Estado de Puebla]]></text>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+		</element>
+	</background>
+	<detail>
+		<band height="125" splitType="Stretch">
+			<element kind="textField" uuid="c3d4e5f6-a7b8-9012-3456-07890abcdef2" x="30" y="0" width="368" height="125" markup="html" textAdjust="StretchHeight" hTextAlign="Justified">
+				<expression><![CDATA[$P{contenidoDocumento}]]></expression>
+			</element>
+		</band>
+	</detail>
+</jasperReport>

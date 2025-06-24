@@ -12,12 +12,30 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
+import net.sf.jasperreports.engine.JRBand;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.JRDesignBand;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.core.io.Resource;
 
 @Slf4j
 @Service
@@ -25,9 +43,48 @@ import java.io.StringReader;
 @RequiredArgsConstructor
 public class AcuerdoService {
 
+    @Value("classpath:jasper/AcuerdoSentencia.jrxml")
+    private Resource sentenciaJrxml;
+
     private final DocumentoContenidoService documentoContenidoService;
 
-    public byte[] getAcuerdoPdf(Integer documentoId) throws IOException {
+public byte[] getAcuerdoPdf(Integer documentoId) throws IOException, JRException {
+    try (InputStream jrxmlStream = sentenciaJrxml.getInputStream()) {
+
+        DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
+
+        JasperDesign design = JRXmlLoader.load(jrxmlStream);
+
+        int backgroundHeight = 802; // fijo, por tu diseño
+        int top = design.getTopMargin();       // 20
+        int bottom = design.getBottomMargin(); // 20
+
+        // Asegura que el contenido quepa
+        int pageHeight = (documentoContenido.getTamanioPapel() == 'o')
+            ? 1008  // Legal
+            : Math.max(792, top + backgroundHeight + bottom); // Carta, pero mínimo lo necesario
+
+        design.setPageHeight(pageHeight);
+
+        // Asegura que el background tenga el alto correcto
+        JRBand background = design.getBackground();
+        if (background instanceof JRDesignBand) {
+            ((JRDesignBand) background).setHeight(backgroundHeight);
+        }
+
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("contenidoDocumento", documentoContenido.getTexto());
+        parametros.put("qrText", "portal de litigantes");
+
+        JasperReport report = JasperCompileManager.compileReport(design);
+        JRDataSource dataSource = new JREmptyDataSource(1);
+        JasperPrint print = JasperFillManager.fillReport(report, parametros, dataSource);
+
+        return JasperExportManager.exportReportToPdf(print);
+    }
+}
+
+    public byte[] getAcuerdoPdf2(Integer documentoId) throws IOException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Rectangle pageSize = documentoContenido.getTamanioPapel() == 'o' ? PageSize.LEGAL : PageSize.LETTER;
@@ -46,7 +103,6 @@ public class AcuerdoService {
                     gState.setFillOpacity(0.3f);
                     canvas.setGState(gState);
 
-
                     String watermarkText = "SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL";
                     canvas.beginText();
                     canvas.setFontAndSize(baseFont, 18);
@@ -59,9 +115,9 @@ public class AcuerdoService {
                     gState1.setFillOpacity(0.1f);
                     canvas.setGState(gState1);
 
-                    String watermarkText2 = "Poder Judicial" ;
-                    String watermarkText22=  "del" ;
-                    String watermarkText23= "Estado de Puebla";
+                    String watermarkText2 = "Poder Judicial";
+                    String watermarkText22 = "del";
+                    String watermarkText23 = "Estado de Puebla";
                     canvas.beginText();
                     canvas.setFontAndSize(baseFont, 60);
                     float x2 = (document.left() + document.right()) / 2;
@@ -94,7 +150,7 @@ public class AcuerdoService {
         BitMatrix bitMatrix;
         try {
 
-            PdfContentByte canvas =  pdf.getDirectContent();
+            PdfContentByte canvas = pdf.getDirectContent();
             BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
 
             String watermarkText3 = "El suscrito, Secretario, informa que el texto que precede corresponde a la ";
@@ -114,7 +170,8 @@ public class AcuerdoService {
             canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText4, x4, y4, 270);
             canvas.endText();
 
-            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()), BarcodeFormat.QR_CODE, 58, 58);
+            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()),
+                    BarcodeFormat.QR_CODE, 58, 58);
             ByteArrayOutputStream qrbaos = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", qrbaos);
             Image qrcode = Image.getInstance(qrbaos.toByteArray());
@@ -135,7 +192,6 @@ public class AcuerdoService {
         document.close();
         return baos.toByteArray();
     }
-
 
     public void procesarHTMLConImagenes(String html, Document document) throws IOException, DocumentException {
         String[] partes = html.split("<img");
