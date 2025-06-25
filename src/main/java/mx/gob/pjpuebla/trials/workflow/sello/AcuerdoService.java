@@ -1,5 +1,4 @@
 package mx.gob.pjpuebla.trials.workflow.sello;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -12,155 +11,164 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
-@Component
 @RequiredArgsConstructor
 public class AcuerdoService {
 
     private final DocumentoContenidoService documentoContenidoService;
 
-    public byte[] getAcuerdoPdf(Integer documentoId) throws IOException {
+    public byte[] getAcuerdoPdf(Integer documentoId) throws IOException, DocumentException {
+        // 1. Obtener el contenido del documento
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Rectangle pageSize = documentoContenido.getTamanioPapel() == 'o' ? PageSize.LEGAL : PageSize.LETTER;
 
-        Document document = new Document(pageSize, 65.0F, 65.0F, 60.0F, 36.0F);
+        // 2. Crear documento con márgenes específicos
+        Document document = new Document(pageSize, 113.386F, 65.0F, 60.0F, 36.0F);
         PdfWriter pdf = PdfWriter.getInstance(document, baos);
 
+        // 3. Generar el código QR y la fuente UNA SOLA VEZ para reutilizarlos en cada página
+        final Image qrcodeImage;
+        try {
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()),
+                    BarcodeFormat.QR_CODE, 58, 58);
+            ByteArrayOutputStream qrBaos = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", qrBaos);
+            qrcodeImage = Image.getInstance(qrBaos.toByteArray());
+        } catch (WriterException e) {
+            log.error("No se pudo generar el código QR. Se omitirá del PDF.", e);
+            
+            throw new DocumentException(e);
+        }
+        
+        final BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+
+        // 4. Configurar el evento de página para añadir contenido repetitivo
         pdf.setPageEvent(new PdfPageEventHelper() {
             @Override
             public void onEndPage(PdfWriter writer, Document document) {
                 try {
-                    PdfContentByte canvas = writer.getDirectContentUnder();
-                    BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+                    PdfContentByte canvasOnTop = writer.getDirectContent();
+                    PdfContentByte canvasUnder = writer.getDirectContentUnder();
 
-                    PdfGState gState = new PdfGState();
-                    gState.setFillOpacity(0.3f);
-                    canvas.setGState(gState);
+                    // --- CONTENIDO QUE VA DETRÁS DEL TEXTO (Marcas de agua) ---
+                    addBackgroundWatermarks(document, canvasUnder, baseFont);
+                    
+                    // --- CONTENIDO QUE VA ENCIMA (Textos de margen y QR) ---
+                    addForegroundContent(document, canvasOnTop, baseFont, qrcodeImage);
 
-
-                    String watermarkText = "SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL";
-                    canvas.beginText();
-                    canvas.setFontAndSize(baseFont, 18);
-                    float x1 = document.left() - 22;
-                    float y1 = (document.bottom() + document.top()) / 2;
-                    canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText, x1, y1, 90);
-                    canvas.endText();
-
-                    PdfGState gState1 = new PdfGState();
-                    gState1.setFillOpacity(0.1f);
-                    canvas.setGState(gState1);
-
-                    String watermarkText2 = "Poder Judicial" ;
-                    String watermarkText22=  "del" ;
-                    String watermarkText23= "Estado de Puebla";
-                    canvas.beginText();
-                    canvas.setFontAndSize(baseFont, 60);
-                    float x2 = (document.left() + document.right()) / 2;
-                    float y2 = (document.top() + document.bottom()) / 2 + 80;
-                    canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText2, x2, y2, 0);
-                    canvas.endText();
-
-                    canvas.beginText();
-                    canvas.setFontAndSize(baseFont, 60);
-                    float x22 = (document.left() + document.right()) / 2;
-                    float y22 = (document.top() + document.bottom()) / 2;
-                    canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText22, x22, y22, 0);
-                    canvas.endText();
-
-                    canvas.beginText();
-                    canvas.setFontAndSize(baseFont, 60);
-                    float x23 = (document.left() + document.right()) / 2;
-                    float y23 = (document.top() + document.bottom()) / 2 - 80;
-                    canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText23, x23, y23, 0);
-                    canvas.endText();
-
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                } catch (DocumentException e) {
+                   
+                    throw new ExceptionConverter(e);
                 }
             }
         });
 
+        // 5. Abrir el documento y procesar el contenido HTML
         document.open();
-
-        BitMatrix bitMatrix;
-        try {
-
-            PdfContentByte canvas =  pdf.getDirectContent();
-            BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
-
-            String watermarkText3 = "El suscrito, Secretario, informa que el texto que precede corresponde a la ";
-            String watermarkText4 = "resolución emitida, conforme a la certificación que obra en el expediente";
-
-            canvas.beginText();
-            canvas.setFontAndSize(baseFont, 18);
-            float x3 = document.right() + 32;
-            float y3 = (document.top() - 280);
-            canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText3, x3, y3, 270);
-            canvas.endText();
-
-            canvas.beginText();
-            canvas.setFontAndSize(baseFont, 18);
-            float x4 = document.right() + 10;
-            float y4 = (document.top() - 280);
-            canvas.showTextAligned(Element.ALIGN_CENTER, watermarkText4, x4, y4, 270);
-            canvas.endText();
-
-            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()), BarcodeFormat.QR_CODE, 58, 58);
-            ByteArrayOutputStream qrbaos = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", qrbaos);
-            Image qrcode = Image.getInstance(qrbaos.toByteArray());
-
-            float x = document.right() - 6;
-            float y = document.bottom() + 15;
-
-            qrcode.setAbsolutePosition(x, y);
-
-            document.add(qrcode);
-
-        } catch (WriterException e) {
-            log.error(e.getMessage(), e);
-        }
-
         procesarHTMLConImagenes(documentoContenido.getTexto(), document);
 
+        // 6. Cerrar el documento para finalizar
         document.close();
         return baos.toByteArray();
     }
+    
+    /**
+     * Añade las marcas de agua que van DETRÁS del contenido principal.
+     */
+    private void addBackgroundWatermarks(Document document, PdfContentByte canvas, BaseFont baseFont) {
+        // Marca de agua vertical
+        canvas.saveState(); // Guardar el estado gráfico actual
+        PdfGState gStateVertical = new PdfGState();
+        gStateVertical.setFillOpacity(0.3f);
+        canvas.setGState(gStateVertical);
+        canvas.beginText();
+        canvas.setFontAndSize(baseFont, 18);
+        canvas.showTextAligned(Element.ALIGN_CENTER, "SISTEMA ELECTRÓNICO DE CONTROL Y GESTIÓN JUDICIAL", document.left() - 22, (document.bottom() + document.top()) / 2, 90);
+        canvas.endText();
+        canvas.restoreState(); // CORREGIDO: Restaurar el estado gráfico
 
+        // Marca de agua central
+        canvas.saveState(); // Guardar el estado gráfico actual
+        PdfGState gStateCenter = new PdfGState();
+        gStateCenter.setFillOpacity(0.1f);
+        canvas.setGState(gStateCenter);
+        canvas.beginText();
+        canvas.setFontAndSize(baseFont, 60);
+        float centerX = (document.left() + document.right()) / 2;
+        float centerY = (document.top() + document.bottom()) / 2;
+        canvas.showTextAligned(Element.ALIGN_CENTER, "Poder Judicial", centerX, centerY + 80, 0);
+        canvas.showTextAligned(Element.ALIGN_CENTER, "del", centerX, centerY, 0);
+        canvas.showTextAligned(Element.ALIGN_CENTER, "Estado de Puebla", centerX, centerY - 80, 0);
+        canvas.endText();
+        canvas.restoreState(); 
+    }
 
-    public void procesarHTMLConImagenes(String html, Document document) throws IOException, DocumentException {
-        String[] partes = html.split("<img");
+    /**
+     * Añade los elementos que van ENCIMA del contenido, como textos en los márgenes y el QR.
+     */
+    private void addForegroundContent(Document document, PdfContentByte canvas, BaseFont baseFont, Image qrcode) throws DocumentException {
+        // Texto rotado en el margen derecho
+        canvas.beginText();
+        canvas.setFontAndSize(baseFont, 18); 
+        canvas.showTextAligned(Element.ALIGN_CENTER, "El suscrito, Secretario, informa que el texto que precede corresponde a la ", document.right() + 32, document.top() - 280, 270);
+        canvas.showTextAligned(Element.ALIGN_CENTER, "resolución emitida, conforme a la certificación que obra en el expediente", document.right() + 10, document.top() - 280, 270);
+        canvas.endText();
 
-        for (int i = 0; i < partes.length; i++) {
-            String textoLimpio = limpiarHTMLAntesDeImagen(partes[i]);
-
-            if (!textoLimpio.isEmpty()) {
-                procesarHTML(textoLimpio, document);
-            }
-
-            if (i < partes.length - 1) {
-                procesarImagen(partes[i + 1], document);
-            }
+        // Código QR en la esquina inferior derecha
+        if (qrcode != null) {
+            qrcode.setAbsolutePosition(document.right() - 6, document.bottom() + 15);
+            canvas.addImage(qrcode);
         }
     }
 
+    /**
+     * Procesa una cadena HTML, separando el texto de las imágenes para renderizarlos correctamente.
+     * Este método es más robusto que un simple split.
+     */
+    public void procesarHTMLConImagenes(String html, Document document) throws IOException, DocumentException {
+        Pattern pattern = Pattern.compile("(<img[^>]+>)", Pattern.CASE_INSENSITIVE);
+        String[] partes = pattern.split(html);
+        Matcher matcher = pattern.matcher(html);
+
+        int parteIndex = 0;
+        while (matcher.find()) {
+            if (parteIndex < partes.length && !partes[parteIndex].trim().isEmpty()) {
+                procesarHTML(partes[parteIndex], document);
+            }
+            parteIndex++;
+            
+            String imgTag = matcher.group(1);
+            procesarImagenDesdeTag(imgTag, document);
+        }
+        
+        if (parteIndex < partes.length && !partes[parteIndex].trim().isEmpty()) {
+            procesarHTML(partes[parteIndex], document);
+        }
+    }
+    
+    /**
+     * Parsea un fragmento de HTML (sin imágenes) y lo añade al documento.
+     */
     private void procesarHTML(String htmlFragment, Document document) throws DocumentException, IOException {
         HTMLWorker htmlWorker = new HTMLWorker(document);
         htmlWorker.parse(new StringReader(htmlFragment));
     }
-
-    private void procesarImagen(String htmlFragment, Document document) {
-        String imageUrl = extraerImagenUrl(htmlFragment);
-
+    
+    /**
+     * Extrae la URL de una etiqueta <img> y la añade al documento.
+     */
+    private void procesarImagenDesdeTag(String imgTag, Document document) {
+        String imageUrl = extraerImagenUrl(imgTag);
         if (imageUrl != null) {
             try {
                 Image image = Image.getInstance(imageUrl);
@@ -168,27 +176,20 @@ public class AcuerdoService {
                 image.setAlignment(Element.ALIGN_LEFT);
                 document.add(image);
             } catch (Exception e) {
-                log.error("Error al agregar imagen: ", e);
+                log.error("Error al agregar imagen desde URL [{}]: {}", imageUrl, e.getMessage(), e);
             }
         }
     }
 
-    private String extraerImagenUrl(String htmlFragment) {
-        int srcIndex = htmlFragment.indexOf("src=\"");
-        if (srcIndex == -1) {
-            return null;
+    /**
+     * Extrae el valor del atributo src de una etiqueta de imagen.
+     */
+    private String extraerImagenUrl(String imgTag) {
+        Pattern srcPattern = Pattern.compile("src=\"([^\"]+)\"", Pattern.CASE_INSENSITIVE);
+        Matcher srcMatcher = srcPattern.matcher(imgTag);
+        if (srcMatcher.find()) {
+            return srcMatcher.group(1);
         }
-        int start = srcIndex + 5;
-        int end = htmlFragment.indexOf("\"", start);
-        if (end == -1) {
-            return null;
-        }
-        return htmlFragment.substring(start, end);
+        return null;
     }
-
-    private String limpiarHTMLAntesDeImagen(String htmlParte) {
-        htmlParte = htmlParte.replaceAll("src[^>]*>", "");
-        return htmlParte;
-    }
-
 }
