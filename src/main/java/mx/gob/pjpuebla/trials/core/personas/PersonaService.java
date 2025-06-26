@@ -55,7 +55,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 
-
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -517,41 +516,40 @@ public class PersonaService {
         return true;
     }
 
-public boolean validarCredencialesActuales(Persona user, String currentPassword) {
-    try {
-        RestTemplate restTemplate = new RestTemplate();
-        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
-        UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    public boolean validarCredencialesActuales(Persona user, String currentPassword) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+            UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("grant_type", "password");
-        map.add("username", userRepresentation.getUserSessions().get(0).getUsername());
-        map.add("password", currentPassword);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+            map.add("client_id", clientId);
+            map.add("client_secret", clientSecret);
+            map.add("grant_type", "password");
+            map.add("username", userRepresentation.getUserSessions().get(0).getUsername());
+            map.add("password", currentPassword);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-            serverUrlKc,
-            HttpMethod.POST,
-            entity,
-            String.class
-        );
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
-        return response.getStatusCode().is2xxSuccessful();
+            ResponseEntity<String> response = restTemplate.exchange(
+                    serverUrlKc,
+                    HttpMethod.POST,
+                    entity,
+                    String.class);
 
-    } catch (HttpClientErrorException e) {
-        System.err.println("Credenciales inválidas: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-        return false;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
+            return response.getStatusCode().is2xxSuccessful();
+
+        } catch (HttpClientErrorException e) {
+            log.warn("Credenciales inválidas: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return false;
+
+        } catch (Exception e) {
+            log.error("Error al validar credenciales actuales", e);
+            return false;
+        }
     }
-}
-
 
 }
