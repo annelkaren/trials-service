@@ -71,6 +71,7 @@ keycloak:
   client-id: trials-service
   client-secret: 2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj
   client-server-id: 8c9e121a-53b2-45bf-89e0-8d1d03a1dd50
+  get-token-url: http://localhost:8080/realms/trials-realm/protocol/openid-connect/token
 
 app:
   root-folder: /opt/pjp/files

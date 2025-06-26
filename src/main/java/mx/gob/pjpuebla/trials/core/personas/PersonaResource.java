@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.personas;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -126,6 +128,12 @@ public class PersonaResource {
     @GetMapping("/centroTrabajo/login")
     public List<CentroTrabajoRecord> getCentroTrabajoPersonaLogueada() {
         return personaService.findCentroTrabajoByPersonCurrent();
+    }
+
+    @PutMapping("/changePassword")
+   public ResponseEntity<ApiResponse<String>> cambiarContraseña(@RequestBody CambioPasswordRecord request) {
+        ApiResponse<String> response = personaService.changePassword(request);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
 }

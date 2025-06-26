@@ -16,17 +16,30 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
+import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +48,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +74,19 @@ public class PersonaService {
     private final RoleService roleService;
     private final SalaRepository salaRepository;
     private static final String PERSON_NOT_FOUND = "Persona no encontrada";
+    private final KeycloakSecurityUtil keycloakSecurityUtil;
+
+    @Value("${keycloak.realm}")
+    private String realm;
+
+    @Value("${keycloak.client-id}")
+    private String clientId;
+
+    @Value("${keycloak.get-token-url}")
+    private String serverUrlKc;
+
+    @Value("${keycloak.client-secret}")
+    private String clientSecret;
 
     @Transactional(readOnly = true)
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
@@ -150,7 +183,6 @@ public class PersonaService {
             persona.setDomicilio(null);
         }
 
-
         if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
                     .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId")));
@@ -232,10 +264,10 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                .filter(juzgado -> juzgado.getMateria() != null
-                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                .toList()
+                        .filter(juzgado -> juzgado.getMateria() != null
+                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                        .toList()
                 : Collections.emptyList();
     }
 
@@ -444,4 +476,82 @@ public class PersonaService {
     public List<RoleRecord> getRolesByUser(String userId) {
         return roleService.getRolesByUserId(userId);
     }
+
+    public ApiResponse<String> changePassword(CambioPasswordRecord request) {
+        String current = request.currentPassword();
+        String nueva = request.newPassword();
+        String confirmar = request.confirmPassword();
+        Persona userLogueado = getAuditor();
+
+        if (!nueva.equals(confirmar)) {
+            return ApiResponseFactory.error("Las contraseñas nuevas no coinciden.",
+                    ApiResponseFactory.VALIDATION_ERROR);
+        }
+
+        if (!validarCredencialesActuales(userLogueado, current)) {
+            return ApiResponseFactory.error("La contraseña actual es incorrecta.", ApiResponseFactory.UNAUTHORIZED,
+                    401);
+        }
+
+        try {
+            cambiarPasswordInKeyCloak(userLogueado, nueva);
+            return ApiResponseFactory.success("Contraseña actualizada correctamente.");
+        } catch (Exception e) {
+            return ApiResponseFactory.error("Error al actualizar la contraseña", ApiResponseFactory.INTERNAL_ERROR,
+                    500);
+        }
+
+    }
+
+    public boolean cambiarPasswordInKeyCloak(Persona user, String password) {
+
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+
+        UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setType(CredentialRepresentation.PASSWORD);
+        cred.setValue(password);
+        cred.setTemporary(false);
+
+        userRepresentation.resetPassword(cred);
+        return true;
+    }
+
+public boolean validarCredencialesActuales(Persona user, String currentPassword) {
+    try {
+        RestTemplate restTemplate = new RestTemplate();
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+        UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("grant_type", "password");
+        map.add("username", userRepresentation.getUserSessions().get(0).getUsername());
+        map.add("password", currentPassword);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+            serverUrlKc,
+            HttpMethod.POST,
+            entity,
+            String.class
+        );
+
+        return response.getStatusCode().is2xxSuccessful();
+
+    } catch (HttpClientErrorException e) {
+        System.err.println("Credenciales inválidas: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+        return false;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+
 }
