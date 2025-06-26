@@ -154,15 +154,8 @@ public class GeneradorQRService {
         String texto = carpeta.getExpediente() + "\n" + carpeta.getJuzgado().getNombre().toLowerCase();
 
         // Crear la lista de 30 posiciones con QrExpedienteProjection (null excepto una)
-        List<QrExpedienteProjection> codigos = new ArrayList<>();
+       List<QrExpedienteProjection> codigos = generarCodigos(codigo, texto, casilla);
 
-        for (int i = 0; i < 30; i++) {
-            if (i == casilla - 1) {
-                codigos.add(new QrExpedienteProjection(codigo, texto));
-            } else {
-                codigos.add(new QrExpedienteProjection(null, null));
-            }
-        }
 
         GeneradorQRDTO dto = new GeneradorQRDTO();
         asignarCodigosADTO(dto, codigos);
@@ -171,6 +164,18 @@ public class GeneradorQRService {
         beanCollectionDataSource = new JRBeanCollectionDataSource(generadorFinal);
 
         return JasperExportManager.exportReportToPdf(getJasperReport(expedienteQR));
+    }
+
+    private List<QrExpedienteProjection> generarCodigos(String codigo, String texto, int casilla) {
+        List<QrExpedienteProjection> codigos = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            if (i == casilla - 1) {
+                codigos.add(new QrExpedienteProjection(codigo, texto));
+            } else {
+                codigos.add(new QrExpedienteProjection(null, null));
+            }
+        }
+        return codigos;
     }
 
     /**
