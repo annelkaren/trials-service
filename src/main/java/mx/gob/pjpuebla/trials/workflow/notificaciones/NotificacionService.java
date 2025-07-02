@@ -350,6 +350,8 @@ public class NotificacionService {
         persona.setCurp(personaDocumento.getCurp());
         persona.setCorreoElectronico(email);
         persona.setEstado(Estado.ACTIVE);
+        persona.setRolPrincipal("LITIGANTE");
+
         personaService.createLitigante(persona,Arrays.asList(new RoleRecord("LITIGANTE", "LITIGANTE")));
     }
 
