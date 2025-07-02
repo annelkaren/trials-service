@@ -67,6 +67,7 @@ public class NotificacionService {
         estado = (estado != null) ? estado.toLowerCase() : "";
 
         TipoNotificacion tipoNotificacion = TipoNotificacion.ESTRADO;
+
         if (!tipo.isEmpty()) {
             try {
                 tipoNotificacion = TipoNotificacion.valueOf(tipo.toUpperCase());
@@ -75,6 +76,7 @@ public class NotificacionService {
             }
         }
         EstadoNotificacion estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+        
         if (!estado.isEmpty()) {
             try {
                 estadoNotificacion = EstadoNotificacion.valueOf(estado.toUpperCase());
