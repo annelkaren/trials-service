@@ -76,7 +76,7 @@ public class NotificacionService {
             }
         }
         EstadoNotificacion estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
-        
+
         if (!estado.isEmpty()) {
             try {
                 estadoNotificacion = EstadoNotificacion.valueOf(estado.toUpperCase());
@@ -303,9 +303,17 @@ public class NotificacionService {
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
-            EstadoNotificacion estadoNotificacion = persona.getTipoNotificacion()
-                    .equals(TipoNotificacion.CORREO_ELECTRONICO) ? EstadoNotificacion.POR_LEER
-                            : EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+            EstadoNotificacion estadoNotificacion;
+            TipoNotificacion notificacionSeleccionada = persona.getTipoNotificacion();
+            if (notificacionSeleccionada.equals(TipoNotificacion.CORREO_ELECTRONICO)) {
+                estadoNotificacion = EstadoNotificacion.POR_LEER;
+            }
+
+            else if (notificacionSeleccionada.equals(TipoNotificacion.DOMICILIO)) {
+                estadoNotificacion = EstadoNotificacion.POR_NOTIFICAR;
+            } else {
+                estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+            }
 
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
@@ -343,7 +351,7 @@ public class NotificacionService {
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
 
-    private void createLitigante(PersonaDocumento personaDocumento, String email){
+    private void createLitigante(PersonaDocumento personaDocumento, String email) {
         Persona persona = new Persona();
         persona.setDomicilio(personaDocumento.getFnDomicilio());
         persona.setNombre(personaDocumento.getNombre());
@@ -354,7 +362,7 @@ public class NotificacionService {
         persona.setEstado(Estado.ACTIVE);
         persona.setRolPrincipal("LITIGANTE");
 
-        personaService.createLitigante(persona,Arrays.asList(new RoleRecord("LITIGANTE", "LITIGANTE")));
+        personaService.createLitigante(persona, Arrays.asList(new RoleRecord("LITIGANTE", "LITIGANTE")));
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
@@ -402,7 +410,6 @@ public class NotificacionService {
 
         Page<NotificacionesDetalles> notificacionesDetallesPage = notificacionesDetallesRepository
                 .findByNotificacionDocumentoId(idNotificacion, pageable);
-      
 
         return notificacionesDetallesPage.map(detalle -> new AcuerdoNotificacionesRecord(
                 detalle.getNotificacion().getId(),

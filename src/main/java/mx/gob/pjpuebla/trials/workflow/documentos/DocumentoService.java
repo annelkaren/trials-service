@@ -1102,7 +1102,7 @@ public class DocumentoService {
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
                                                 folio = documento.getFolio();
-                                                tipoEntrada = carpeta.getTipoCarpeta().getEtiqueta();
+                                                tipoEntrada =  documento.getTipoDocumento().name();
                                                 concepto = documento.getConcepto().getNombre();
                                                 conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
