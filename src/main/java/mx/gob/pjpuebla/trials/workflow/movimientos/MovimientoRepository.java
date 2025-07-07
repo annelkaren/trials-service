@@ -92,7 +92,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
                 OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
                 OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
-                
             )
                 order by m.fechaAsignacion desc
             """)
