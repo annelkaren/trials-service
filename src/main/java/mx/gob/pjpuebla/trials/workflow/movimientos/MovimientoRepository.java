@@ -93,6 +93,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
                 OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
             )
+                order by m.fechaAsignacion desc
             """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
             String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
@@ -143,6 +144,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
                 OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
             )
+                ORDER BY m.fechaAsignacion DESC
             """)
     Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
             String motivos, Persona personaId, TipoCarpeta tipoCarpeta,
