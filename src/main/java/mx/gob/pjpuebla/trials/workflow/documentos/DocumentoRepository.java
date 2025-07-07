@@ -159,7 +159,10 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
                 OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
                 OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
-            )""")
+                
+            )
+            ORDER BY m.fechaAsignacion ASC 
+            """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
             Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
             TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
