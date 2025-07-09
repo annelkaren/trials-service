@@ -8,6 +8,7 @@ import lombok.Data;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -28,7 +29,7 @@ public class ListaEstrado implements Serializable {
     private LocalDateTime fechaAlta;
 
     @Column(name = "T_FECHA_VENCIMIENTO", updatable = false)
-    private Date fechaVencimiento;
+    private LocalDate fechaVencimiento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FN_PERSONA")

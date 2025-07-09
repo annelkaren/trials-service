@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -239,7 +240,7 @@ public class NotificacionService {
         notificacionRepository.save(notificacion);
     }
 
-    public void createListaEstrado(List<Integer> notificacionIds, Date fechaVencimiento) {
+    public void createListaEstrado(List<Integer> notificacionIds, LocalDate fechaVencimiento) {
 
         if (notificacionIds == null || notificacionIds.isEmpty()) {
             throw new IllegalArgumentException("Debe proporcionar al menos un ID de notificación.");

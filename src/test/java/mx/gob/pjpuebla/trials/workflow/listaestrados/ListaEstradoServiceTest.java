@@ -146,7 +146,7 @@ class ListaEstradoServiceTest {
         given(notificacionRepository.getNotificacionByTipo(id)).willReturn(notificacionList);
         given(personaService.getAuditor()).willReturn(persona);
         given(documentoDetalleRepository.findByDocumentoId(anyInt())).willReturn(Optional.of(documentoDetalle));
-        given(generator.getReporteListaEstrados(any())).willReturn(pdfMock);
+        given(generator.getReporteListaEstrados(any(), any())).willReturn(pdfMock);
 
         ResponseEntity<Object> response = target.getReporteListaEstrados(id);
 

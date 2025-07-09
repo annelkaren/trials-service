@@ -21,16 +21,17 @@ public class ListaEstradoGenerator {
     private Resource listaEstradosOF;
     private JRBeanCollectionDataSource beanCollectionDataSource;
 
-    public byte[] getReporteListaEstrados(List<ListaEstradoDTO> listaEstradosDTO) throws JRException, IOException{
+    public byte[] getReporteListaEstrados(List<ListaEstradoDTO> listaEstradosDTO, String leyendaFooter) throws JRException, IOException{
         beanCollectionDataSource = new JRBeanCollectionDataSource(listaEstradosDTO);
-        return JasperExportManager.exportReportToPdf(getJasperReport());
+        return JasperExportManager.exportReportToPdf(getJasperReport(leyendaFooter));
     }
 
-    private JasperPrint getJasperReport() throws JRException, IOException{
+    private JasperPrint getJasperReport(String leyendaFooter) throws JRException, IOException{
         Map<String, Object> parameters = new HashMap<>();
 
         parameters.put("logotipoHeder","jasper/header.jpg");
         parameters.put("p_image_background","jasper/escudo.png");
+        parameters.put("p_leyenda_footer", leyendaFooter);
 
         return JasperFillManager.fillReport(
                 listaEstradosOF.getInputStream(),

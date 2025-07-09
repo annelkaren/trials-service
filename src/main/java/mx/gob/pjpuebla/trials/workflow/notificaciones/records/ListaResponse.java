@@ -1,11 +1,11 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones.records;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public record ListaResponse(
         List<Integer> notificacionIds,
-        Date fechaVencimiento
+        LocalDate fechaVencimiento
 ) implements Serializable {
 }

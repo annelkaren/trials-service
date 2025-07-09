@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -112,9 +111,9 @@ class NotificacionResourceTest {
     @Test
     void createListaEstrado_success() throws Exception {
 
-        doNothing().when(notificacionService).createListaEstrado(any(List.class), any(Date.class));
+        doNothing().when(notificacionService).createListaEstrado(any(List.class), any(LocalDate.class));
         ListaResponse listaResponse = new ListaResponse(List.of(1, 2, 3),
-                Date.from(LocalDate.now().plusDays(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                LocalDate.from(LocalDate.now().plusDays(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
         String requestBody = new ObjectMapper().writeValueAsString(listaResponse);
 
 

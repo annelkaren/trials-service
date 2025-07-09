@@ -78,6 +78,11 @@ public class ListaEstradoService {
             nombreCentroTrabajo = persona.getOficialia().getNombre();
         }
 
+        String leyendaFooter = "NOTIFICACION POR ESTRADOS,PUBLICADO EL DIA " +  notificacionList.get(0).getListaEstrado().getFechaAlta().toLocalDate().toString() + "\n" + 
+        nombreCentroTrabajo.toUpperCase() + "\n" +
+        "C. DILIGENCIARIO LIC. " + persona.getNombre().toUpperCase() + " " + persona.getApellidoPaterno().toUpperCase() + (persona.getApellidoMaterno() != null ?  " " + persona.getApellidoMaterno().toUpperCase() : "") + "\n" +
+        "FECHA DE RETIRO " + notificacionList.get(0).getListaEstrado().getFechaVencimiento().toString();
+
         List<ListaEstradoDTO> listaEstradosDTO = notificacionList.stream()
                 .map(notificacion -> {
                     String juzgado = nombreCentroTrabajo != null ? nombreCentroTrabajo : "";
@@ -121,7 +126,7 @@ public class ListaEstradoService {
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("reporte", "notificaciones_" + UUID.randomUUID() + ".pdf");
 
-            byte[] reporte = generator.getReporteListaEstrados(listaEstradosDTO);
+            byte[] reporte = generator.getReporteListaEstrados(listaEstradosDTO, leyendaFooter);
 
             return ResponseEntity.ok().headers(headers).body(reporte);
         } catch (IOException | JRException e) {
