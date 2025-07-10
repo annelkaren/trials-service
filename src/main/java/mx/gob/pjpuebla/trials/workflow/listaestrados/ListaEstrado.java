@@ -10,7 +10,6 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 @Entity

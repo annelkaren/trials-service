@@ -38,6 +38,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -134,9 +135,15 @@ class ListaEstradoServiceTest {
             .setCarpeta(carpeta)
             .setTipoDocumento(TipoDocumento.ACUERDO)
             .setData(docdata);
-        List<Notificacion> notificacionList = List.of(new Notificacion().setDocumento(documento));
+        ListaEstrado l = new ListaEstrado()
+            .setFechaAlta(LocalDateTime.now())
+            .setFechaVencimiento(LocalDate.now());
+
+        List<Notificacion> notificacionList = List.of(new Notificacion().setDocumento(documento).setListaEstrado(l));
         Persona persona = new Persona();
         persona.setJuzgado(new Juzgado().setNombre("Juzgado Prueba"));
+        persona.setNombre("nombre ejemplo");
+        persona.setApellidoPaterno("apellido paterno");
 
         DocumentoDetalle documentoDetalle = new DocumentoDetalle();
         documentoDetalle.setFechaResolucion(LocalDate.now());
