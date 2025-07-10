@@ -34,6 +34,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -389,7 +390,7 @@ class NotificacionServiceTest {
     @Test
     void createListaEstrado_Success() {
         List<Integer> notificacionIds = List.of(1, 2, 3);
-        Date fechaVencimiento = new Date();
+        LocalDate fechaVencimiento = LocalDate.now();
 
         Persona auditor = new Persona();
         auditor.setUsuario("auditorUsuario");
@@ -425,7 +426,7 @@ class NotificacionServiceTest {
     @Test
     void createListaEstrado_Error() {
         List<Integer> notificacionIds = Collections.emptyList();
-        Date fechaVencimiento = new Date();
+        LocalDate fechaVencimiento = LocalDate.now();
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> notificacionService.createListaEstrado(notificacionIds, fechaVencimiento));
 

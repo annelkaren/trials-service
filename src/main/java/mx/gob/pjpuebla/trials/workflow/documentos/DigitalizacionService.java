@@ -448,9 +448,12 @@ public class DigitalizacionService {
         if (allContents != null) {
             for (File file : allContents) {
                 if (!file.getName().equals(photoName)) {
-                    file.delete();
+                    if (!file.delete()) {
+                        log.warn("No se pudo eliminar el archivo anterior: {}", file.getAbsolutePath());
+                    }
                 }
             }
+
         }
         return new DigitalizacionRecord(sedeId, rutaArchivo.resolve(photoName).toString(),
                 photoName);
@@ -508,8 +511,11 @@ public class DigitalizacionService {
         File[] allContents = path.toFile().listFiles();
         if (allContents != null) {
             for (File file : allContents) {
-                file.delete();
+                if (!file.delete()) {
+                    log.warn("No se pudo eliminar el archivo: {}", file.getAbsolutePath());
+                }
             }
         }
     }
+
 }

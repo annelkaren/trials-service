@@ -12,7 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -32,9 +30,6 @@ import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.domicilio.DomicilioSetUp;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
 import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
 import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.error.ConflictException;

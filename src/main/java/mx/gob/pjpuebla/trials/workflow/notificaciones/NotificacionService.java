@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -239,7 +240,7 @@ public class NotificacionService {
         notificacionRepository.save(notificacion);
     }
 
-    public void createListaEstrado(List<Integer> notificacionIds, Date fechaVencimiento) {
+    public void createListaEstrado(List<Integer> notificacionIds, LocalDate fechaVencimiento) {
 
         if (notificacionIds == null || notificacionIds.isEmpty()) {
             throw new IllegalArgumentException("Debe proporcionar al menos un ID de notificación.");
@@ -303,17 +304,9 @@ public class NotificacionService {
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
-            EstadoNotificacion estadoNotificacion;
+            
             TipoNotificacion notificacionSeleccionada = persona.getTipoNotificacion();
-            if (notificacionSeleccionada.equals(TipoNotificacion.CORREO_ELECTRONICO)) {
-                estadoNotificacion = EstadoNotificacion.POR_LEER;
-            }
-
-            else if (notificacionSeleccionada.equals(TipoNotificacion.DOMICILIO)) {
-                estadoNotificacion = EstadoNotificacion.POR_NOTIFICAR;
-            } else {
-                estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
-            }
+            EstadoNotificacion estadoNotificacion = determinarEstadoNotificacion(notificacionSeleccionada);
 
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
@@ -351,6 +344,15 @@ public class NotificacionService {
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
 
+    private EstadoNotificacion determinarEstadoNotificacion(TipoNotificacion tipo) {
+    return switch (tipo) {
+        case CORREO_ELECTRONICO -> EstadoNotificacion.POR_LEER;
+        case DOMICILIO -> EstadoNotificacion.POR_NOTIFICAR;
+        default -> EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+    };
+}
+
+
     private void createLitigante(PersonaDocumento personaDocumento, String email) {
         Persona persona = new Persona();
         persona.setDomicilio(personaDocumento.getFnDomicilio());
@@ -362,7 +364,8 @@ public class NotificacionService {
         persona.setEstado(Estado.ACTIVE);
         persona.setRolPrincipal("LITIGANTE");
 
-        personaService.createLitigante(persona, Arrays.asList(new RoleRecord("LITIGANTE", "LITIGANTE")));
+        personaService.createLitigante(persona, Collections.singletonList(new RoleRecord("LITIGANTE", "LITIGANTE"))
+ );
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
