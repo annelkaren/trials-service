@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
@@ -113,8 +114,10 @@ class NotificacionResourceTest {
 
         doNothing().when(notificacionService).createListaEstrado(any(List.class), any(LocalDate.class));
         ListaResponse listaResponse = new ListaResponse(List.of(1, 2, 3),
-                LocalDate.from(LocalDate.now().plusDays(5).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        String requestBody = new ObjectMapper().writeValueAsString(listaResponse);
+                LocalDate.now().plusDays(5));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String requestBody = objectMapper.writeValueAsString(listaResponse);
 
 
         mockMvc.perform(post("/api/workflow/bandeja/notificaciones/createLista")
