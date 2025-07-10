@@ -94,18 +94,8 @@ public class CarpetaService {
 
         public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
                 // Usar una variable auxiliar para la modificación de juzgadoId
-                final Integer finalJuzgadoId;
+                final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
 
-                // Validar juzgadoId
-                if (juzgadoId == null) {
-                        Persona auditor = personaService.getAuditor();
-                        if (auditor == null || auditor.getJuzgado() == null) {
-                                throw new IllegalArgumentException("No se puede determinar el juzgado.");
-                        }
-                        finalJuzgadoId = auditor.getJuzgado().getId();
-                } else {
-                        finalJuzgadoId = juzgadoId;
-                }
 
                 Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
                                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado",
@@ -159,6 +149,18 @@ public class CarpetaService {
 
                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados,
                                 estadoJuzgado, carpeta.getEstatus().getEtiqueta());
+        }
+
+        private Integer obtenerJuzgadoIdFinal(Integer juzgadoId) {
+                if (juzgadoId == null) {
+                        Persona auditor = personaService.getAuditor();
+                        if (auditor == null || auditor.getJuzgado() == null) {
+                                throw new IllegalArgumentException("No se puede determinar el juzgado.");
+                        }
+                        return auditor.getJuzgado().getId();
+                } else {
+                        return juzgadoId;
+                }
         }
 
         protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
@@ -451,9 +453,9 @@ public class CarpetaService {
                                 .map(Documento::getConcepto)
                                 .findFirst()
                                 .orElse(
-                                         conceptoRepository.findByNombre("Nueva creación")
-                                             .orElseThrow(() -> new IllegalStateException("El concepto 'Nueva creación' no se encontró en la base de datos"))
-                                     );
+                                                conceptoRepository.findByNombre("Nueva creación")
+                                                                .orElseThrow(() -> new IllegalStateException(
+                                                                                "El concepto 'Nueva creación' no se encontró en la base de datos")));
 
                 Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));

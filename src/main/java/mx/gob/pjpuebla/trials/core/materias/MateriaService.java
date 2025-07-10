@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -42,7 +43,8 @@ public class MateriaService {
 
     @Transactional(readOnly = true)
     public List<MateriaRecord> findMateriasPublicas() {
-        List<Materia> materias = materiaRepository.findByNombreNotInOrderByNombre(Arrays.asList("EXHORTO"));
+        List<Materia> materias = materiaRepository.findByNombreNotInOrderByNombre(Collections.singletonList("EXHORTO"));
+
         return materias.stream()
                 .map(m -> new MateriaRecord(m.getId(), StringUtils.capitalize(m.getNombre().toLowerCase())))
                 .toList();

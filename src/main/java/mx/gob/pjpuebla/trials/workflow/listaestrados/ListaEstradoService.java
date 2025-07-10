@@ -85,7 +85,7 @@ public class ListaEstradoService {
 
         List<ListaEstradoDTO> listaEstradosDTO = notificacionList.stream()
                 .map(notificacion -> {
-                    String juzgado = nombreCentroTrabajo != null ? nombreCentroTrabajo : "";
+                    String juzgado = nombreCentroTrabajo;
                     String diaPublicado = LocalDate.now().toString();
                     String asunto = "EXP." + notificacion.getDocumento().getCarpeta().getExpediente()
                             + "\n" + notificacion.getDocumento().getCarpeta().getTipoJuicio().getNombre()
