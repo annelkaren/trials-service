@@ -206,7 +206,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
                 SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord(
                     doc.id,
-                   CASE
+                    CASE
                         WHEN doc.tipoDocumento = 2 THEN CONCAT('Acuerdo ', doc.id)
                         WHEN doc.tipoDocumento IS NULL THEN 'Demanda inicial'
                         ELSE COALESCE(CONCAT('promo ', doc.folio), 'Demanda inicial')
@@ -219,31 +219,33 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 JOIN doc.carpeta carpeta
                 LEFT JOIN doc.concepto concepto
                 LEFT JOIN Movimiento m ON m.documento = doc
-                WHERE
-                    (
-                        (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento = 0 OR doc.tipoDocumento IS NULL)) OR
-                        (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IN (0, 2) OR doc.tipoDocumento IS NULL))
-                    )
-                    AND (
-                        (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento = 2 AND doc.concepto IS NULL))
-                        OR
-                        (concepto.nombre = 'Adjuntar'
-                         OR (doc.tipoDocumento IS NULL )
-                         OR (doc.tipoDocumento = 2 AND :tipoDocumento = 'SENTENCIA' AND doc.concepto IS NULL)
-                        )
-                    )
-                    AND (
-                        ((doc.tipoDocumento = 2 AND m.estado = 'CREADO') OR doc.tipoDocumento IS NULL)
-                        OR
-                        (m.estado = 'ASIGNADO')
-                    )
-                    AND doc.carpeta.id = :carpetaId
-                    AND
-                    CASE
-                        WHEN :documentoId IS NULL AND doc.acuerdoRespuesta IS NULL THEN 1
-                        WHEN :documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id) OR (doc.acuerdoRespuesta IS NULL) THEN 1
-                        ELSE 0
-                    END = 1
+                WHERE doc.carpeta.id = :carpetaId
+                  AND (
+                    (:tipoDocumento = 'ACUERDO' AND (doc.tipoDocumento IS NULL OR doc.tipoDocumento = 0)) OR
+                    (:tipoDocumento = 'SENTENCIA' AND (doc.tipoDocumento IS NULL OR doc.tipoDocumento IN (0, 2)))
+                  )
+                  AND (
+                    (:tipoDocumento = 'SENTENCIA' AND doc.tipoDocumento = 2 AND doc.concepto IS NULL)
+                    OR concepto.nombre = 'Adjuntar'
+                    OR doc.tipoDocumento IS NULL
+                  )
+                  AND (
+                    (doc.tipoDocumento = 2 AND m.estado = 'CREADO' AND m.id = (
+                        SELECT MAX(m2.id)
+                        FROM Movimiento m2
+                        WHERE m2.documento = doc
+                    )) OR
+                    doc.tipoDocumento IS NULL OR
+                    (m.estado = 'ASIGNADO' AND m.id = (
+                        SELECT MAX(m3.id)
+                        FROM Movimiento m3
+                        WHERE m3.documento = doc
+                    ))
+                  )
+                  AND (
+                    (:documentoId IS NULL AND doc.acuerdoRespuesta IS NULL) OR
+                    (:documentoId IS NOT NULL AND (:documentoId = doc.acuerdoRespuesta.id OR doc.acuerdoRespuesta IS NULL))
+                  )
             """)
     List<AcuerdoPromocionesRecord> obtenerPromociones(
             @Param("carpetaId") Integer carpetaId,
