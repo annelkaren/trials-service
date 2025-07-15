@@ -1,11 +1,23 @@
 spring:
   application:
     name: trials
+  # --- SECCIÓN DE BASES DE DATOS ---
   datasource:
-    url: jdbc:postgresql://localhost:5432/trialsdb?currentSchema=trials
-    username: trialsusr
-    password: Chang3Me!
-    driver-class-name: org.postgresql.Driver
+   # ---- CONFIGURACIÓN BASE DE DATOS PRINCIPAL (PostgreSQL) ----
+    primary:
+      jdbcUrl: jdbc:postgresql://localhost:5432/trialsdb?currentSchema=trials
+      username: trialsusr
+      password: Chang3Me!
+      driver-class-name: org.postgresql.Driver
+
+    # ---- CONFIGURACIÓN BASE DE DATOS SECUNDARIA (MySQL) ----
+    secondary:
+      jdbcUrl: jdbc:mysql://172.16.6.181:3306/acuerdos?zeroDateTimeBehavior=convertToNull
+      username: kevin
+      password: password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+
   jpa:
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
