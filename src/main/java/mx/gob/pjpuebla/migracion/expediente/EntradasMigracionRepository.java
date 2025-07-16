@@ -11,17 +11,12 @@ import org.springframework.stereotype.Repository;
 public interface EntradasMigracionRepository extends JpaRepository<EntradasMigracion, Integer> {
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.migracion.expediente.EntradasMigracionRecord(
-            entrada,
-            juzgado,
-            null,
-            null
-        )
+        SELECT entrada
         FROM EntradasMigracion entrada
         LEFT JOIN JuzgadosMigracion  juzgado ON entrada.juzgado = juzgado.codigo
         WHERE entrada.expediente = :expediente AND entrada.amo = :amo AND entrada.juzgado = :juzgado
     """)
-    List<EntradasMigracionRecord> buscarPorExpedienteAmoYJuzgado(
+    List<EntradasMigracion> buscarPorExpedienteAmoYJuzgado(
         @Param("expediente") String expediente,
         @Param("amo") Integer amo,
         @Param("juzgado") String juzgado
