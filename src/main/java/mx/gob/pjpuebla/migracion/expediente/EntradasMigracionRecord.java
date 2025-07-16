@@ -5,6 +5,9 @@ import java.util.List;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.amparos.AmparosMigracion;
+import mx.gob.pjpuebla.migracion.detallesProm.DetallesProm;
+import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracion;
+import mx.gob.pjpuebla.migracion.exhortoForaneo.ExhortoForaneoMigracion;
 import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracion;
 import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.migracion.movimientos.MovimientosMigracionRecord;
@@ -18,5 +21,8 @@ public record EntradasMigracionRecord(
     List<AcuerdosMigracion> acuerdos,
     List<AmparosMigracion> amparos,
     List<OficiosMigracion> oficios,
-    List<ActoresMigracion> actores
+    List<ActoresMigracion> actores,
+    List<DetallesProm> detallesProm,
+    List<ExhortoForaneoMigracion> exortoForaneo,
+    List<ExhortosCapitalMigracion> exortoCapital
 ) {}

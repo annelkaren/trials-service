@@ -15,6 +15,12 @@ import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparosMigracion;
+import mx.gob.pjpuebla.migracion.detallesProm.DetallesProm;
+import mx.gob.pjpuebla.migracion.detallesProm.DetallesPromService;
+import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracion;
+import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracionService;
+import mx.gob.pjpuebla.migracion.exhortoForaneo.ExhortoForaneoMigracion;
+import mx.gob.pjpuebla.migracion.exhortoForaneo.ExhortoForaneoMigracionService;
 import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracion;
 import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracionService;
 import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracion;
@@ -38,7 +44,9 @@ public class EntradasMigracionService {
     private final AmparoMigracionService amparoMigracionService;
     private final OficiosMigracionService oficiosMigracionService;
     private final ActoresMigracionService actoresMigracionService;
-
+    private final DetallesPromService detallesPromService;
+    private final ExhortoForaneoMigracionService exhortoForaneoMigracionService;
+    private final ExhortosCapitalMigracionService exhortoCapitalMigracionService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -77,13 +85,21 @@ public class EntradasMigracionService {
             //Se obtienen los actores:
             List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
 
+            //Se obtienen los detalles de la promocion si es que existen
+            List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
+            //Se obtienen los exhortos foraneos:
+            List<ExhortoForaneoMigracion> exhortoForaneoMigracion = exhortoForaneoMigracionService.buscarPorJuzgadoOr(juzgado.getCodigo());
+
+            //se obtienen los exhortos capital
+            List<ExhortosCapitalMigracion> exortoCapitalMigracion = exhortoCapitalMigracionService.buscarPorJuzgadoOr(juzgado.getCodigo());
 
             // Se ensambla el registro final
             resultado.add(new EntradasMigracionRecord(
                 entrada, juzgado, ubicaciones, 
                 juicio, acuerdos, amparos, 
-                oficios, actores));
+                oficios, actores, detallesProm,
+                exhortoForaneoMigracion, exortoCapitalMigracion));
         }
 
         return resultado;
