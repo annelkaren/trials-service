@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AcuerdosMigracionRepository extends JpaRepository<AcuerdosMigracion, Integer>{
     
-    public List<AcuerdosMigracion> findByCuEntradas(String cuEntradas);
+    public List<AcuerdosMigracion> findByCuEntradasAndSentenciaIn(String cuEntradas, List<String> sentencia);
 }

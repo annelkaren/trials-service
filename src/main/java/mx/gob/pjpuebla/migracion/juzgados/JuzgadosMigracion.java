@@ -2,9 +2,14 @@ package mx.gob.pjpuebla.migracion.juzgados;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import mx.gob.pjpuebla.migracion.materias.MateriasMigracion;
+
 import org.hibernate.annotations.Immutable;
 
 @Data 
@@ -29,14 +34,16 @@ public class JuzgadosMigracion {
     @Column(name = "tabla_ubi", insertable = false, updatable = false)
     private String tablaUbicacion;
 
-    @Column(name = "materia", insertable = false, updatable = false)
-    private String materia;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "materia", referencedColumnName = "codigo", insertable = false, updatable = false)
+    private MateriasMigracion materiaObj;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "materia_real", referencedColumnName = "codigo", insertable = false, updatable = false)
+    private MateriasMigracion materiaRealObj;
 
     @Column(name = "distrito", insertable = false, updatable = false)
     private String distrito;
-
-    @Column(name = "materia_real", insertable = false, updatable = false)
-    private String materiaReal;
 
     @Column(name = "cita", insertable = false, updatable = false)
     private String cita;

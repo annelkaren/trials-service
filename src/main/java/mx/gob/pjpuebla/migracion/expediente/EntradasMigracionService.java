@@ -76,6 +76,9 @@ public class EntradasMigracionService {
             // Se obtienen los acuerdos: 
             List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
+            // se obtienen sentencias:
+            List<AcuerdosMigracion> sentencias = acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
+
             //Se obtienen amparos: 
             List<AmparosMigracion> amparos = amparoMigracionService.buscarPorCu(entrada.getCu());
 
@@ -99,7 +102,8 @@ public class EntradasMigracionService {
                 entrada, juzgado, ubicaciones, 
                 juicio, acuerdos, amparos, 
                 oficios, actores, detallesProm,
-                exhortoForaneoMigracion, exortoCapitalMigracion));
+                exhortoForaneoMigracion, exortoCapitalMigracion,
+                sentencias));
         }
 
         return resultado;

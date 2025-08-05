@@ -24,5 +24,6 @@ public record EntradasMigracionRecord(
     List<ActoresMigracion> actores,
     List<DetallesProm> detallesProm,
     List<ExhortoForaneoMigracion> exortoForaneo,
-    List<ExhortosCapitalMigracion> exortoCapital
+    List<ExhortosCapitalMigracion> exortoCapital,
+    List<AcuerdosMigracion> sentencias
 ) {}
