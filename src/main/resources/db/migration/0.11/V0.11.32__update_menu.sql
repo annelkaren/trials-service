@@ -2,18 +2,18 @@
 
 -- Actualiza sección de bandeja
 UPDATE TRIALS.TBL_MENUS
-SET S_ROL = S_ROL + ',COMISARIO'
+SET S_ROL = S_ROL || ',COMISARIO'
 WHERE S_NOMBRE = 'Bandeja' AND s_link = '';
 COMMIT;
 
 -- Actualiza banseja de asignados
 UPDATE TRIALS.TBL_MENUS
-SET S_ROL = S_ROL + ',DILIGENCIARIO,COMISARIO'
+SET S_ROL = S_ROL || ',DILIGENCIARIO,COMISARIO'
 WHERE S_NOMBRE = 'Asignado';
 COMMIT;
 
 -- Actualiza bandeja de recepción:
 UPDATE TRIALS.TBL_MENUS
-SET  S_ROL = S_ROL + ',COMISARIO'
+SET  S_ROL = S_ROL || ',COMISARIO'
 WHERE S_NOMBRE = 'Recepción';
 COMMIT;
