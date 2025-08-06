@@ -3,7 +3,7 @@
 -- Actualiza sección de bandeja
 UPDATE TRIALS.TBL_MENUS
 SET S_ROL = S_ROL + ',COMISARIO'
-WHERE S_NOMBRE = 'Bandeja' AND s_link = "";
+WHERE S_NOMBRE = 'Bandeja' AND s_link = '';
 COMMIT;
 
 -- Actualiza banseja de asignados
