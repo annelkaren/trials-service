@@ -96,7 +96,6 @@ public class CarpetaService {
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
 
-
                 Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
                                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado",
                                                 expediente + " - " + finalJuzgadoId));
@@ -165,18 +164,31 @@ public class CarpetaService {
 
         protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
                 List<Rol> rol = List.of(Rol.PRINCIPAL);
-                PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id,
+                List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
                                 parte, rol);
 
-                if (persona == null) {
+                if (personas == null || personas.isEmpty()) {
                         return "";
                 }
 
-                String nombre = persona.nombre() != null ? persona.nombre() : "";
-                String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
-                String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
+                List<String> nombresCompletos = new ArrayList<>();
 
-                return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+                for (PersonaDocumentoRecord p : personas) {
+                        List<String> partesNombre = new ArrayList<>();
+                        if (p.nombre() != null && !p.nombre().isBlank())
+                                partesNombre.add(p.nombre());
+                        if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank())
+                                partesNombre.add(p.apellidoPaterno());
+                        if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank())
+                                partesNombre.add(p.apellidoMaterno());
+
+                        
+                        if (!partesNombre.isEmpty()) {
+                                nombresCompletos.add(String.join(" ", partesNombre));
+                        }
+                }
+
+                return String.join(", ", nombresCompletos);
         }
 
         @Transactional(readOnly = true)
