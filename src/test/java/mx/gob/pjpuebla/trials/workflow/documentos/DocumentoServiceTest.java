@@ -1090,6 +1090,7 @@ class DocumentoServiceTest {
         void getAllBandejaAsignados() {
                 Documento demanda = DocumentoSetUp.create(tipoJuicio);
                 demanda.getCarpeta().setFolio("1");
+                demanda.setData(new DocumentoData().setTipoPromocion(TipoPromocion.CORREO_ELECTRONICO));
                 demanda.setTipoDocumento(TipoDocumento.PROMOCION);
                 demanda.setEstatus(EstadoCarpeta.ASIGNADO);
                 demanda.getCarpeta().setJuzgado(juzgado);
