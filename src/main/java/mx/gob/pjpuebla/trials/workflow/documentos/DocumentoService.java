@@ -1333,7 +1333,9 @@ public class DocumentoService {
                                                         motivoProrroga,
                                                         estadoProrroga,
                                                         textoNotificacion,
-                                                        colorNotificacion);
+                                                        colorNotificacion,
+                                                        (isPromocion && documento != null) ?
+                                                                documento.getData().getTipoPromocion().name() : "");
                                 })
                                 .toList();
 
@@ -1755,13 +1757,14 @@ public class DocumentoService {
                                                         "conceptoId" + p.idConcepto()));
                         Movimiento movimiento;
 
-                        if (p.tipoEntrada().equals("PROMOCION")) {
+                        if (p.tipoEntrada().toUpperCase().equals("PROMOCION")) {
 
                                 Documento documento = documentoRepository.findById(p.idDocumentoRecepcion())
                                                 .orElseThrow(() -> new NotFoundException("Documento no encontrado",
                                                                 "documento ID" + p.idDocumentoRecepcion()));
 
                                 documento.setConcepto(concepto);
+                                documento.setPersona(persona);
                                 documento.setEstatus(EstadoCarpeta.ASIGNADO);
                                 documentoRepository.save(documento);
 
