@@ -193,18 +193,15 @@ class CarpetaServiceTest {
                 .willReturn(Optional.ofNullable(juzgado));
         given(carpetaRepository.findByExpedienteAndJuzgadoId(any(), any()))
                 .willReturn(Optional.ofNullable(validCarpeta));
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
-                .willReturn(actor);
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
-                .willReturn(demandado);
+
 
         CarpetaResponseRecord carpetaResponseRecord = target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
 
         assertThat(carpetaResponseRecord)
                 .isOfAnyClassIn(CarpetaResponseRecord.class)
                 .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
-                .hasFieldOrPropertyWithValue("actor", actor.nombre() + " " + actor.apellidoPaterno())
-                .hasFieldOrPropertyWithValue("demandado", demandado.nombre() + " " + demandado.apellidoPaterno());
+                .hasFieldOrPropertyWithValue("actor", "")
+                .hasFieldOrPropertyWithValue("demandado", "");
     }
 
     @Test
@@ -910,11 +907,6 @@ class CarpetaServiceTest {
         given(carpetaRepository.findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10))))
                 .willReturn(carpetaPage);
 
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
-                .willReturn(actor);
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
-                .willReturn(demandado);
-
         given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
 
         Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
@@ -923,8 +915,7 @@ class CarpetaServiceTest {
 
         verify(personaService).getAuditor();
         verify(carpetaRepository).findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"), eq(PageRequest.of(0, 10)));
-        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any());
-        verify(personaDocumentoRepository, times(1)).findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any());
+        
         verify(carpetaDetalleRepository, times(1)).findByCarpetaId(any());
     }
 
@@ -947,18 +938,15 @@ class CarpetaServiceTest {
                 .willReturn(Optional.of(documento));
         given(documentoDetalleRepository.findByDocumentoId(documento.getId()))
                 .willReturn(Optional.of(documentoDetalle));
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Actor"), any()))
-                .willReturn(actor);
-        given(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(any(), eq("Demandado"), any()))
-                .willReturn(demandado);
+
 
         SentenciaPublicaResponseRecord result = target.getCarpetaByExpedienteAndSentencia(carpeta.getExpediente());
 
         assertThat(result)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("idCarpeta", carpeta.getId())
-                .hasFieldOrPropertyWithValue("actor", "Juan Perez")
-                .hasFieldOrPropertyWithValue("demandado", "Nauj Zerep")
+                .hasFieldOrPropertyWithValue("actor", "")
+                .hasFieldOrPropertyWithValue("demandado", "")
                 .hasFieldOrPropertyWithValue("materia", carpeta.getJuzgado().getMateria().getNombre())
                 .hasFieldOrPropertyWithValue("juzgado", carpeta.getJuzgado().getNombre())
                 .hasFieldOrPropertyWithValue("sentencia", documentoDetalle.getTipoSentencia().name())

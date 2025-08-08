@@ -49,6 +49,33 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);
 
+        @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
+                pd.nombre,
+                pd.apellidoPaterno,
+                pd.apellidoMaterno,
+                pd.pseudonimo,
+                pd.tipoPersona,
+                pd.curp,
+                pd.domicilio,
+                pd.celular,
+                pd.correoElectronico,
+                tp.nombre,
+                tp.id,
+                c.id
+            )
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta c
+            JOIN pd.tipoPartes tp
+            WHERE c.id = :carpetaId
+            AND pd.rol IN :rol
+            AND tp.nombre = :parte
+            """)
+    List<PersonaDocumentoRecord> findPersonaAndTipoParteByCarpetaIdLibroGobierno(
+            @Param("carpetaId") Integer carpetaId,
+            @Param("parte") String parte,
+            @Param("rol") List<Rol> rol);
+
             @Query("""
                 SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
                     pd.nombre,

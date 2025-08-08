@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.personas;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<PersonaRecord> findByCurp(String curp);
 
     Optional<Persona> findByUsuario(String usuario);
+
+    Optional<Persona> findByJuzgadoAndRolPrincipal(Juzgado j, String rolPrincipal);
 
     Optional<Persona> findByUsuarioAndJuzgadoIdAndEstadoIn(String usuario, Integer juzgadoId, List<Estado> estados);
 

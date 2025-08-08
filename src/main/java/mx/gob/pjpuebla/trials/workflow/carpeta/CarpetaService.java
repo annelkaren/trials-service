@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
@@ -84,6 +85,7 @@ public class CarpetaService {
         private final JuzgadoRepository juzgadoRepository;
         private final OficialiaRepository oficialiaRepository;
         private final ConceptoRepository conceptoRepository;
+        private final PersonaRepository personaRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -95,7 +97,6 @@ public class CarpetaService {
         public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
-
 
                 Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
                                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado",
@@ -165,18 +166,31 @@ public class CarpetaService {
 
         protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
                 List<Rol> rol = List.of(Rol.PRINCIPAL);
-                PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id,
+                List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
                                 parte, rol);
 
-                if (persona == null) {
+                if (personas == null || personas.isEmpty()) {
                         return "";
                 }
 
-                String nombre = persona.nombre() != null ? persona.nombre() : "";
-                String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
-                String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
+                List<String> nombresCompletos = new ArrayList<>();
 
-                return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+                for (PersonaDocumentoRecord p : personas) {
+                        List<String> partesNombre = new ArrayList<>();
+                        if (p.nombre() != null && !p.nombre().isBlank())
+                                partesNombre.add(p.nombre());
+                        if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank())
+                                partesNombre.add(p.apellidoPaterno());
+                        if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank())
+                                partesNombre.add(p.apellidoMaterno());
+
+                        
+                        if (!partesNombre.isEmpty()) {
+                                nombresCompletos.add(String.join(" ", partesNombre));
+                        }
+                }
+
+                return String.join(", ", nombresCompletos);
         }
 
         @Transactional(readOnly = true)
@@ -380,8 +394,6 @@ public class CarpetaService {
                 List<PersonaDataRecord> apelacionRecordResponseList = personaDocumentoRepository
                                 .findPersonaDocumentoDataByCarpetaId(carpeta.getId());
 
-                // Obtiene el nombre del juez TODO.obtener nombre del juez
-
                 DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
                 EtapaProcesalRecord etapaProcesalRecord = null;
@@ -394,12 +406,17 @@ public class CarpetaService {
                                         carpetaEtapas.getEtapaProcesal().getNombre());
                 }
 
+                //obtenemos juzgado y nombre del juez :
+                Juzgado juzgado = carpeta.getJuzgado();
+                Persona juez = personaRepository.findByJuzgadoAndRolPrincipal(juzgado, "Juez").orElse(null);
+                String nombreJuez = juez != null ? juez.getNombre() + " " + juez.getApellidoPaterno() + " " + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "") : "";
+                
                 return new InfoExpedienteRecord(
                                 carpeta.getExpediente(),
                                 carpeta.getTipoJuicio().getNombre(), // TODO mapear de forma correcta expediente tipo
                                                                      // PENAL
                                 carpeta.getTipoJuicio().getId(), // TODO mapear de forma correcta expediente tipo PENAL
-                                "", // extraAudienciaSelloRecord.nombreJuez(),
+                                nombreJuez, 
                                 carpeta.getAudit().getFechaAlta().format(pattern),
                                 "Asunto de penal desde Backend", // TODO añadir asunto para expediente tipo PENAL
                                 tipoProcedimiento,
