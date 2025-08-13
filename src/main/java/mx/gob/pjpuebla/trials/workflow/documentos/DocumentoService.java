@@ -880,6 +880,7 @@ public class DocumentoService {
                                 .setData(data)
                                 .setCarpeta(carpeta)
                                 .setPersona(auditor)
+                                .setTipoDocumento(TipoDocumento.EXHORTO)
                                 .setFechaAsignacion(LocalDateTime.now());
                 documento = documentoRepository.save(documento);
 
