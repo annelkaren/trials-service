@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
@@ -85,6 +86,7 @@ import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class DocumentoService {
 
@@ -259,18 +261,27 @@ public class DocumentoService {
         }
 
         public DocumentoRecord updateStatus(Integer id, Integer status) {
+
                 Documento documento = documentoRepository.findById(id)
                                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
+
                 EstadoCarpeta value = EstadoCarpeta.values()[status];
-                if (documento.getTipoDocumento() == null) {
+                
+                 
+                TipoDocumento tipoDocumento = documento.getTipoDocumento();
+                boolean isDocumento = false;
+                
+                if (tipoDocumento == null || tipoDocumento.equals(TipoDocumento.EXHORTO) || tipoDocumento.equals(TipoDocumento.APELACION) ) {
                         documento.getCarpeta().setEstatus(value);
                         carpetaRepository.save(documento.getCarpeta());
                 } else {
                         documento.setEstatus(value);
                         documentoRepository.save(documento);
+                        isDocumento = true;
                 }
-                boolean isDocumento = documento.getTipoDocumento() != null;
+
                 boolean isApelacion = Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION);
+
                 movimientoService.createMovimento(
                                 isDocumento && !isApelacion ? null : documento.getCarpeta(),
                                 isDocumento && !isApelacion ? documento : null,
@@ -887,6 +898,7 @@ public class DocumentoService {
                 addAnexos(documentoExhortoRecord.anexos(), documento);
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(),
                                 juzgadosRelacionadosExhorto);
+                
                 movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
 
                 carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
@@ -1143,15 +1155,24 @@ public class DocumentoService {
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
 
+
+
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
                 }
 
-                if (!carpeta.getTipoCarpeta().equals(TipoCarpeta.APELACION)) {
+                 if (carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
                         return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
                 }
+                try {
+                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(carpeta.getTipoCarpeta().name());
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
 
-                return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), TipoDocumento.APELACION);
+                } catch (Exception e) {
+                        log.error("Error: ", e);
+                       return new Documento().setId(0);
+                }
+                
         }
 
         protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
