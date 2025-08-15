@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class DocumentoData implements Serializable {
 
-    private transient List<TipoJuicioDemandasRecord> tiposJuicios;
+    private List<TipoJuicioDemandasRecord> tiposJuicios;
     private Integer tieneAbogado;
     private String nombreAbogado;
     private String cedulaAbogado;

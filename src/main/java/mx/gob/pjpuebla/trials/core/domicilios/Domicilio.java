@@ -54,6 +54,9 @@ public class Domicilio implements Serializable, Auditable {
     @Column(name = "S_MUNICIPIO", nullable = false)
     private String municipio;
 
+    @Column(name = "N_MUNICIPIO")
+    private Integer municipioId;
+
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_ESTADO_REPUBLICA", nullable = false)

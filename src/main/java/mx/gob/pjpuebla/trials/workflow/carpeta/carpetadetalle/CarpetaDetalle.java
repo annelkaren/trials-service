@@ -95,7 +95,7 @@ public class CarpetaDetalle implements Serializable {
     private String localidad;
 
     @Column(name = "T_FECHA_REGISTRO")
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 
     @Column(name = "T_HORA_REGISTRO")
     private LocalTime horaFormal;

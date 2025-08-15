@@ -717,7 +717,7 @@ public class CarpetaService {
                                 .setLocalidad(detalle.localidad())
                                 .setFechaRegistro(
                                                 detalle.fechaRegistro() != null
-                                                                ? (LocalDateTime.parse(detalle.fechaRegistro(),
+                                                                ? (LocalDate.parse(detalle.fechaRegistro(),
                                                                                 pattern))
                                                                 : null)
                                 .setHoraFormal(detalle.horaFormal())

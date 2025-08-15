@@ -250,12 +250,20 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             """)
     LocalDate getDatesByMateria(List<Integer> materiasId, List<Integer> juiciosExcluidos);
 
-    @Query("""
-                SELECT ca.audit.fechaAlta
-                FROM Carpeta ca
-                LEFT JOIN ca.tipoJuicio tj
-                WHERE tj.id IN (:tipoJuicios)
-                ORDER BY ca.audit.fechaAlta limit 1
-            """)
-    LocalDate getDatesByTipoJuicio(List<Integer> tipoJuicios);
+    @Query(value = """
+            SELECT ca.t_fecha_alta
+            FROM tbl_documentos doc
+            JOIN tbl_carpetas ca ON doc.fn_carpeta = ca.pn_id
+            JOIN tbl_tipo_juicio tj ON ca.fn_tipo_juicio = tj.pn_id
+            WHERE (
+              jsonb_typeof(doc.j_data->'tiposJuicios') = 'array'
+              AND EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements(doc.j_data->'tiposJuicios') juicios
+                WHERE (juicios->>'id')::int IN (:tipoJuicios)
+              )
+            ) OR tj.pn_id IN (:tipoJuicios)
+            ORDER BY ca.t_fecha_alta
+            """, nativeQuery = true)
+    LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
 }

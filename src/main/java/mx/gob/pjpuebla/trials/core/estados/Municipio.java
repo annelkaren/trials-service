@@ -8,7 +8,7 @@ public class Municipio {
     private String stateId;
     private String name;
 
-    @JsonAlias("cvegeo")
+    @JsonAlias("cve_agem")
     public String getId() {
         return id;
     }
