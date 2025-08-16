@@ -264,6 +264,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
               )
             ) OR tj.pn_id IN (:tipoJuicios)
             ORDER BY ca.t_fecha_alta
+            LIMIT 1
             """, nativeQuery = true)
     LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
 }

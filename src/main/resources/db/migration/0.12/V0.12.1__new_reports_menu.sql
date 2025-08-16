@@ -9,25 +9,26 @@ SELECT nextval('TRIALS.SEQ_PERSONAS_ID'), 0, 'Alejandra', 'Estadistica', '', '',
 FROM TRIALS.TBL_ESTADO_CIVIL AS EC, TRIALS.TBL_ESCOLARIDADES AS E WHERE EC.S_NOMBRE = 'Soltero/a' AND E.S_NOMBRE = 'No especificado';
 
 CREATE TABLE TRIALS.TBL_REPORTES (
-    PN_FILA         INTEGER NOT NULL,
-    PN_COLUMNA      CHARACTER VARYING(5) NOT NULL,
-    S_REPORTE       CHARACTER VARYING(100) NOT NULL,
-    STYLE_DATA      JSONB NULL
+    PN_ID           INTEGER NOT NULL,
+    S_CLAVE         CHARACTER VARYING(100) NOT NULL,
+    S_NOMBRE        CHARACTER VARYING(100) NOT NULL,
+    S_DESCRIPCION   CHARACTER VARYING(100) NOT NULL,
+  	N_ORDEN         INTEGER NOT NULL,
     EXTRA_DATA      JSONB NULL
 );
 
 ALTER TABLE
   TRIALS.TBL_REPORTES
 ADD
-  CONSTRAINT TBL_REPORTES_PKEY PRIMARY KEY (PN_COLUMNA, PN_FILA);
+  CONSTRAINT TBL_REPORTES_PKEY PRIMARY KEY (PN_ID);
 
-INSERT INTO TRIALS.TBL_REPORTES (PN_FILA, PN_COLUMNA, S_REPORTE, STYLE_DATA, EXTRA_DATA)
+INSERT INTO TRIALS.TBL_REPORTES (PN_ID, S_CLAVE, S_NOMBRE, S_DESCRIPCION, N_ORDEN, EXTRA_DATA)
 VALUES
-(7, 3, 'DIVORCIOS', null, '{"materias":null,"tipoJuicios":[112,113],"juiciosExcluidos":null}'),
-(2, 0, 'BANAVIM', null, null),
-(3, 0, 'LABORAL', null, '{"materias":[150],"tipoJuicios":null,"juiciosExcluidos":null}'),
-(4, 0, 'PENAL', null, '{"materias":[100],"tipoJuicios":null,"juiciosExcluidos":null}'),
-(0, 1, 'ADOLESCENTES', null, '{"materias":[400],"tipoJuicios":null,"juiciosExcluidos":null}'),
-(0, 2, 'CFM', null, '{"materias":[200,250,300],"tipoJuicios":null,"juiciosExcluidos":[112,113]}');
+(1, 'PENAL', 'Penal', 'Impartición De Justicia En Materia Penal', 1, '{"materias":[100],"tipoJuicios":null,"juiciosExcluidos":null}'),
+(2, 'ADOLESCENTES', 'Penal adolescentes', 'Justicia Para Adolescentes', 2, '{"materias":[400],"tipoJuicios":null,"juiciosExcluidos":null}'),
+(3, 'CFM', 'Civil, Familiar, Mercantil', 'Impartición De Justicia En Materia Civil, Familiar Y Mercantil', 3, '{"materias":[200,250,300],"tipoJuicios":null,"juiciosExcluidos":[112,113]}'),
+(4, 'LABORAL', 'Laboral', 'Registro Administrativo En Materia Laboral (RALAB) INEGI', 4, '{"materias":[150],"tipoJuicios":null,"juiciosExcluidos":null}'),
+(5, 'BANAVIM', 'BANAVIM', 'Órdenes De Protección BANAVIM', 5, null),
+(6, 'DIVORCIOS', 'Divorcios', 'Registro De Divorcios Incausados', 6, '{"materias":null,"tipoJuicios":[112,113],"juiciosExcluidos":null}');
 
 ALTER TABLE TRIALS.TBL_DOMICILIOS ADD COLUMN N_MUNICIPIO INTEGER NULL;
