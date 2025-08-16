@@ -28,7 +28,7 @@ VALUES
 (2, 'ADOLESCENTES', 'Penal adolescentes', 'Justicia Para Adolescentes', 2, '{"materias":[400],"tipoJuicios":null,"juiciosExcluidos":null}'),
 (3, 'CFM', 'Civil, Familiar, Mercantil', 'Impartición De Justicia En Materia Civil, Familiar Y Mercantil', 3, '{"materias":[200,250,300],"tipoJuicios":null,"juiciosExcluidos":[112,113]}'),
 (4, 'LABORAL', 'Laboral', 'Registro Administrativo En Materia Laboral (RALAB) INEGI', 4, '{"materias":[150],"tipoJuicios":null,"juiciosExcluidos":null}'),
-(5, 'BANAVIM', 'BANAVIM', 'Órdenes De Protección BANAVIM', 5, null),
+(5, 'BANAVIM', 'BANAVIM', 'Órdenes De Protección BANAVIM', 5, '{}'),
 (6, 'DIVORCIOS', 'Divorcios', 'Registro De Divorcios Incausados', 6, '{"materias":null,"tipoJuicios":[112,113],"juiciosExcluidos":null}');
 
 ALTER TABLE TRIALS.TBL_DOMICILIOS ADD COLUMN N_MUNICIPIO INTEGER NULL;

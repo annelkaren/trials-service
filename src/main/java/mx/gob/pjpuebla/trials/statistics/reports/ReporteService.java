@@ -46,7 +46,7 @@ public class ReporteService {
                 response.add(result);
             } else if (record.getExtraData().getTipoJuicios() != null && !record.getExtraData().getTipoJuicios().isEmpty()) {
                 ReporteRecord result = new ReporteRecord(record.getKey(), record.getName(), record.getDescription(),
-                        carpetaRepository.getDatesByTipoJuicio(record.getExtraData().getTipoJuicios()).toLocalDate());
+                        carpetaRepository.getDatesByTipoJuicio(record.getExtraData().getTipoJuicios()));
                 response.add(result);
             } else {
                 ReporteRecord result = new ReporteRecord(record.getKey(), record.getName(), record.getDescription(), null);

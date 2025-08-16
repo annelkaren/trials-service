@@ -266,5 +266,5 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             ORDER BY ca.t_fecha_alta
             LIMIT 1
             """, nativeQuery = true)
-    LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
+    LocalDate getDatesByTipoJuicio(List<Integer> tipoJuicios);
 }
