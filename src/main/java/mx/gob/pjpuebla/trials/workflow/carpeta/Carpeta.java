@@ -102,6 +102,13 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "N_SENTENCIA", nullable = false)
     private TipoSentencia sentencia;
 
+    @Enumerated
+    @Column(name = "N_MIGRADO", nullable = false)
+    private Migrado isMigrado; 
+
+    @Column(name = "S_CU", nullable = false)
+    private String cu;
+
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpetaPadre;

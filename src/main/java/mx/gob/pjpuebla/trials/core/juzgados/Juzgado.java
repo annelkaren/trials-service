@@ -102,5 +102,8 @@ public class Juzgado implements Serializable, Auditable {
 
     @Column(name= "S_CLAVE_JUZGADO")
     private String claveJuzgado;
+
+    @Column(name = "S_TABLA_UBI")
+    private String tablaUbicacion;
 }
 
