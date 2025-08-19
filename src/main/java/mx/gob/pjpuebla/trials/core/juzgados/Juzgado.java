@@ -99,5 +99,8 @@ public class Juzgado implements Serializable, Auditable {
     @Size(max = 50)
     @Column(name = "S_NOMENCLATURA")
     private String nomenclatura;
+
+    @Column(name= "S_CLAVE_JUZGADO")
+    private String claveJuzgado;
 }
 
