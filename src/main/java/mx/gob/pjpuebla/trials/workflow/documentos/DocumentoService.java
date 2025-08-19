@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.configuraciones.Configuraciones;
+import mx.gob.pjpuebla.trials.core.configuraciones.ConfiguracionesRepository;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
@@ -134,6 +136,7 @@ public class DocumentoService {
         private final DocumentoContenidoRepository documentoContenidoRepository;
         private final EventoService eventosService;
         private final SolicitudesProrrogasService solicitudesProrrogasService;
+        private final ConfiguracionesRepository configuracionesRepository;
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -266,12 +269,12 @@ public class DocumentoService {
                                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
 
                 EstadoCarpeta value = EstadoCarpeta.values()[status];
-                
-                 
+
                 TipoDocumento tipoDocumento = documento.getTipoDocumento();
                 boolean isDocumento = false;
-                
-                if (tipoDocumento == null || tipoDocumento.equals(TipoDocumento.EXHORTO) || tipoDocumento.equals(TipoDocumento.APELACION) ) {
+
+                if (tipoDocumento == null || tipoDocumento.equals(TipoDocumento.EXHORTO)
+                                || tipoDocumento.equals(TipoDocumento.APELACION)) {
                         documento.getCarpeta().setEstatus(value);
                         carpetaRepository.save(documento.getCarpeta());
                 } else {
@@ -678,16 +681,21 @@ public class DocumentoService {
          * @return string
          */
         public String getFolio(String tipo) {
-                Long valNum = switch (tipo) {
+
+                // Agregamos en la generación del folio el distintivo de la serie:
+                Optional<Configuraciones> identificador = configuracionesRepository.findByPropiedad("SERIE");
+                String identificadorFolio = identificador.isPresent() ? identificador.get().getValor() : "";
+
+                String valNum = switch (tipo) {
                         case "E" -> // Case para exhorto
-                                documentoRepository.getNextValExhorto();
+                                documentoRepository.getNextValExhorto() + identificadorFolio;
                         case "D" -> // Case para demanda
-                                documentoRepository.getNextValDemanda();
+                                documentoRepository.getNextValDemanda() + identificadorFolio;
                         case "P" -> // Case para promocion
-                                documentoRepository.getNextValPromocion();
+                                documentoRepository.getNextValPromocion() + identificadorFolio;
                         case "ES" -> // Case para exhorto salida
-                                documentoRepository.getNextValExhortoSalida();
-                        case "AP" -> documentoRepository.getNextValApelacion();
+                                documentoRepository.getNextValExhortoSalida() + identificadorFolio;
+                        case "AP" -> documentoRepository.getNextValApelacion() + identificadorFolio;
                         default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
                 };
                 return valNum.toString();
@@ -898,7 +906,7 @@ public class DocumentoService {
                 addAnexos(documentoExhortoRecord.anexos(), documento);
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(),
                                 juzgadosRelacionadosExhorto);
-                
+
                 movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());
 
                 carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
@@ -1115,7 +1123,7 @@ public class DocumentoService {
                                         // Si documento no es null, se obtienen los valores correspondientes
                                         if (documento != null && isPromocion) {
                                                 folio = documento.getFolio();
-                                                tipoEntrada =  documento.getTipoDocumento().name();
+                                                tipoEntrada = documento.getTipoDocumento().name();
                                                 concepto = documento.getConcepto().getNombre();
                                                 conceptoId = documento.getConcepto().getId();
                                                 expediente = documento.getCarpeta().getExpediente();
@@ -1155,13 +1163,11 @@ public class DocumentoService {
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
 
-
-
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
                 }
 
-                 if (carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
+                if (carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
                         return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
                 }
                 try {
@@ -1170,9 +1176,9 @@ public class DocumentoService {
 
                 } catch (Exception e) {
                         log.error("Error: ", e);
-                       return new Documento().setId(0);
+                        return new Documento().setId(0);
                 }
-                
+
         }
 
         protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
@@ -1251,7 +1257,7 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTurnado = mov.getFechaAsignacion();
 
-                                        LocalDateTime fechaTermino  = (isPromocion)
+                                        LocalDateTime fechaTermino = (isPromocion)
                                                         ? mov.getFechaAsignacion()
                                                                         .plusDays(documento != null
                                                                                         ? documento.getConcepto()
@@ -1277,12 +1283,13 @@ public class DocumentoService {
                                                                 .atStartOfDay();
                                         }
 
-                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService.getLastProrrogas(mov.getId());
+                                        SolicitudesProrrogas solicitudProrroga = solicitudesProrrogasService
+                                                        .getLastProrrogas(mov.getId());
 
                                         String motivoProrroga = solicitudProrroga != null
                                                         ? solicitudProrroga.getMotivoProrroga()
                                                         : null;
-                                                        
+
                                         EstadoProrroga estadoProrroga = solicitudProrroga != null
                                                         ? solicitudProrroga.getEstado()
                                                         : null;
@@ -1356,8 +1363,9 @@ public class DocumentoService {
                                                         estadoProrroga,
                                                         textoNotificacion,
                                                         colorNotificacion,
-                                                        (isPromocion && documento != null) ?
-                                                                documento.getData().getTipoPromocion().name() : "");
+                                                        (isPromocion && documento != null)
+                                                                        ? documento.getData().getTipoPromocion().name()
+                                                                        : "");
                                 })
                                 .toList();
 
@@ -2391,6 +2399,7 @@ public class DocumentoService {
 
         private Carpeta crearCarpeta(TipoJuicio tipoJuicio, Juzgado juzgado, String folio, TipoCarpeta tipoCarpeta,
                         String expediente, Persona personaLogueada) {
+
                 Carpeta carpeta = new Carpeta()
                                 .setTipoJuicio(tipoJuicio)
                                 .setJuzgado(juzgado)
@@ -2400,9 +2409,17 @@ public class DocumentoService {
                                 .setEstatus(EstadoCarpeta.CAPTURA)
                                 .setSelloEstatus(SelloEstatus.VALIDO)
                                 .setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(personaLogueada);
+                                .setPersona(personaLogueada)
+                                .setIsMigrado(Migrado.NO)
+                                .setCu(getCu(juzgado, expediente));
 
                 return carpetaRepository.save(carpeta);
+        }
+
+        public String getCu(Juzgado juzgado, String expediente) {
+                String clave = (juzgado != null) ? Objects.toString(juzgado.getClaveJuzgado(), "") : "";
+                String exp = (expediente != null) ? expediente.replace("/", "") : "";
+                return clave + exp;
         }
 
         private Documento crearDocumento(Carpeta carpeta, DocumentoData documentoData, Persona persona) {
