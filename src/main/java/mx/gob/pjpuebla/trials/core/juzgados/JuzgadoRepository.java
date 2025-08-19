@@ -179,4 +179,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.NO_APLICA")
         List<Juzgado> findJuzgadoExhortoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 
+
+        Optional<Juzgado> findByClaveJuzgado(String clave);
+
 }

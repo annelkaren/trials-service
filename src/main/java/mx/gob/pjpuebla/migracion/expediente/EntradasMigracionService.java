@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,10 @@ import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracionService;
 import mx.gob.pjpuebla.migracion.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +52,9 @@ public class EntradasMigracionService {
     private final DetallesPromService detallesPromService;
     private final ExhortoForaneoMigracionService exhortoForaneoMigracionService;
     private final ExhortosCapitalMigracionService exhortoCapitalMigracionService;
+
+    // service de sistema actual:
+    private final JuzgadoService juzgadoService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -152,4 +160,31 @@ public class EntradasMigracionService {
                 rs.getString("sentido"),
                 rs.getString("digitalizado_acu")));
     }
+
+
+    public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
+
+        // Paso 1, validar que exista tanto el juzgado como la oficialia en el sistema actual
+        Juzgado juzgado = validaJuzgado(claveJuzgado);
+
+        //paso 2 obtener la oficialia del juzgado:
+
+        return ResponseEntity.ok("Expediente migrado correctamente.");
+    }
+
+
+    // metodos de validación:
+    private Juzgado validaJuzgado(String claveJuzgado){
+
+        Juzgado juzgado = juzgadoService.findByClaveJuzgado(claveJuzgado);
+
+        if(juzgado == null){
+           ApiResponseFactory.error("EL juzgado no se encuentra registrado en el sistema", "500");
+        }
+
+        return juzgado;
+    }
+
+    
+
 }
