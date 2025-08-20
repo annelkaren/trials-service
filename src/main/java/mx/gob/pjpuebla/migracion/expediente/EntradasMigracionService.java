@@ -27,12 +27,20 @@ import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracionService;
 import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracionService;
 import mx.gob.pjpuebla.migracion.movimientos.MovimientosMigracionRecord;
+import mx.gob.pjpuebla.migracion.ocomun.Ocomun;
+import mx.gob.pjpuebla.migracion.ocomun.OcomunRepository;
+import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 
 @Service
 @RequiredArgsConstructor
@@ -52,9 +60,12 @@ public class EntradasMigracionService {
     private final DetallesPromService detallesPromService;
     private final ExhortoForaneoMigracionService exhortoForaneoMigracionService;
     private final ExhortosCapitalMigracionService exhortoCapitalMigracionService;
+    private final OcomunService ocomunService;
+
 
     // service de sistema actual:
     private final JuzgadoService juzgadoService;
+    private final CarpetaService carpetaService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -164,10 +175,28 @@ public class EntradasMigracionService {
 
     public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
 
-        // Paso 1, validar que exista tanto el juzgado como la oficialia en el sistema actual
+        // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema actual
         Juzgado juzgado = validaJuzgado(claveJuzgado);
 
-        //paso 2 obtener la oficialia del juzgado:
+        // Paso 2: traemos información del expediente desde mysql :
+        List<EntradasMigracion> entradas = buscarEntradas(expediente, year, claveJuzgado);
+
+        // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado y por el expediente.
+        Carpeta carpetaExistente = carpetaService.getExpediente(expediente + "/" + year, juzgado);
+        
+        if(carpetaExistente != null){
+            ApiResponseFactory.error("El expediente ya se encuentra en el sistema.", "500");
+        }
+
+        //PASO 4: traer información de ocomun para ir llenando mi expediente:
+        Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entradas.get(0).getCu()); // Tomamos la primera coincidencia de entradas.
+
+        //Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
+        JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
+
+
+        //Paso 6: crear carpeta:
+        Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, juicio);
 
         return ResponseEntity.ok("Expediente migrado correctamente.");
     }
@@ -184,6 +213,22 @@ public class EntradasMigracionService {
 
         return juzgado;
     }
+
+    //metodos de cración:
+    private Carpeta crearCarpetaMigracion(EntradasMigracion entrada, Ocomun ocomun, Juzgado juzgado, JuiciosMigracion juiciosMigracion){
+
+        Carpeta carpeta = new Carpeta()
+        .setVersion(0)
+        .setFolio(ocomun.getFolio().toString())
+        .setExpediente(ocomun.getExpediente())
+        .setSelloEstatus(SelloEstatus.VALIDO)
+        .setEstatus(EstadoCarpeta.MIGRADO)
+        .setTipoCarpeta(TipoCarpeta.DEMANDA)
+        .setJuzgado(juzgado)
+        .setTipoJuicio(null)
+
+    }
+
 
     
 

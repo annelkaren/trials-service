@@ -237,4 +237,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                         """)
         List<String> findDistinctTipoEntradaByBandeja(@Param("bandeja") String bandeja);
 
+
+        Optional<Carpeta> findByExpedienteAndJuzgado(String expediente, Juzgado juzgado);
 }

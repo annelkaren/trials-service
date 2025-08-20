@@ -2410,7 +2410,6 @@ public class DocumentoService {
                                 .setSelloEstatus(SelloEstatus.VALIDO)
                                 .setFechaAsignacion(LocalDateTime.now())
                                 .setPersona(personaLogueada)
-                                .setIsMigrado(Migrado.NO)
                                 .setCu(getCu(juzgado, expediente));
 
                 return carpetaRepository.save(carpeta);

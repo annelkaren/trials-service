@@ -983,4 +983,12 @@ public class CarpetaService {
                 }
         }
 
+        public Carpeta getExpediente(String expediente, Juzgado juzgado){
+                Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);
+
+                if(carpeta.isPresent()){
+                        return carpeta.get();
+                }
+                return null;
+        }
 }

@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -102,9 +103,9 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "N_SENTENCIA", nullable = false)
     private TipoSentencia sentencia;
 
-    @Enumerated
-    @Column(name = "N_MIGRADO")
-    private Migrado isMigrado; 
+    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Migraciones migracion;
 
     @Column(name = "S_CU")
     private String cu;
