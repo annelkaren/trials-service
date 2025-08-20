@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.migracion.expediente;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +33,23 @@ import mx.gob.pjpuebla.migracion.ocomun.OcomunRepository;
 import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 
 @Service
 @RequiredArgsConstructor
@@ -62,10 +71,12 @@ public class EntradasMigracionService {
     private final ExhortosCapitalMigracionService exhortoCapitalMigracionService;
     private final OcomunService ocomunService;
 
-
     // service de sistema actual:
     private final JuzgadoService juzgadoService;
     private final CarpetaService carpetaService;
+    private final CarpetaRepository carpetaRepository;
+    private final TipoJuicioRepository tipoJuicioRepository;
+    private final DocumentoService documentoService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -92,37 +103,39 @@ public class EntradasMigracionService {
             // Se obtiene el juicio asociado al campo `juicio` de la entrada
             JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
-            // Se obtienen los acuerdos: 
+            // Se obtienen los acuerdos:
             List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
             // se obtienen sentencias:
             List<AcuerdosMigracion> sentencias = acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
 
-            //Se obtienen amparos: 
+            // Se obtienen amparos:
             List<AmparosMigracion> amparos = amparoMigracionService.buscarPorCu(entrada.getCu());
 
-            //Se obtienen oficios:
+            // Se obtienen oficios:
             List<OficiosMigracion> oficios = oficiosMigracionService.buscarPorCu(entrada.getCu());
 
-            //Se obtienen los actores:
+            // Se obtienen los actores:
             List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
 
-            //Se obtienen los detalles de la promocion si es que existen
+            // Se obtienen los detalles de la promocion si es que existen
             List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
-            //Se obtienen los exhortos foraneos:
-            List<ExhortoForaneoMigracion> exhortoForaneoMigracion = exhortoForaneoMigracionService.buscarPorJuzgadoOr(juzgado.getCodigo());
+            // Se obtienen los exhortos foraneos:
+            List<ExhortoForaneoMigracion> exhortoForaneoMigracion = exhortoForaneoMigracionService
+                    .buscarPorJuzgadoOr(juzgado.getCodigo());
 
-            //se obtienen los exhortos capital
-            List<ExhortosCapitalMigracion> exortoCapitalMigracion = exhortoCapitalMigracionService.buscarPorJuzgadoOr(juzgado.getCodigo());
+            // se obtienen los exhortos capital
+            List<ExhortosCapitalMigracion> exortoCapitalMigracion = exhortoCapitalMigracionService
+                    .buscarPorJuzgadoOr(juzgado.getCodigo());
 
             // Se ensambla el registro final
             resultado.add(new EntradasMigracionRecord(
-                entrada, juzgado, ubicaciones, 
-                juicio, acuerdos, amparos, 
-                oficios, actores, detallesProm,
-                exhortoForaneoMigracion, exortoCapitalMigracion,
-                sentencias));
+                    entrada, juzgado, ubicaciones,
+                    juicio, acuerdos, amparos,
+                    oficios, actores, detallesProm,
+                    exhortoForaneoMigracion, exortoCapitalMigracion,
+                    sentencias));
         }
 
         return resultado;
@@ -172,64 +185,103 @@ public class EntradasMigracionService {
                 rs.getString("digitalizado_acu")));
     }
 
-
     public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
 
-        // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema actual
+        // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema
+        // actual
         Juzgado juzgado = validaJuzgado(claveJuzgado);
 
         // Paso 2: traemos información del expediente desde mysql :
         List<EntradasMigracion> entradas = buscarEntradas(expediente, year, claveJuzgado);
 
-        // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado y por el expediente.
+        // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado y
+        // por el expediente.
         Carpeta carpetaExistente = carpetaService.getExpediente(expediente + "/" + year, juzgado);
-        
-        if(carpetaExistente != null){
+
+        if (carpetaExistente != null) {
             ApiResponseFactory.error("El expediente ya se encuentra en el sistema.", "500");
         }
 
-        //PASO 4: traer información de ocomun para ir llenando mi expediente:
-        Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entradas.get(0).getCu()); // Tomamos la primera coincidencia de entradas.
+        // PASO 4: traer información de ocomun para ir llenando mi expediente:
+        Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entradas.get(0).getCu()); // Tomamos la primera
+                                                                                       // coincidencia de entradas.
 
-        //Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
-        JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
+        // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
+        JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
 
+        // Paso 6 : se busca si existe el tipo de juicio en el sistema actual si no lo
+        // crea desactivado:
+        TipoJuicio tipoJuicio = null;
 
-        //Paso 6: crear carpeta:
-        Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, juicio);
+        // paso 7: se busca el concepto del ultimo turnado si no se encuentra lo crea
+        Concepto concepto = null;
+
+        // Paso 8: se crea el registro de migración
+        Migraciones migracion = null;
+
+        // Paso 9: crear la carpeta carpeta:
+        Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto,
+                migracion);
 
         return ResponseEntity.ok("Expediente migrado correctamente.");
     }
 
-
     // metodos de validación:
-    private Juzgado validaJuzgado(String claveJuzgado){
+    private Juzgado validaJuzgado(String claveJuzgado) {
 
         Juzgado juzgado = juzgadoService.findByClaveJuzgado(claveJuzgado);
 
-        if(juzgado == null){
-           ApiResponseFactory.error("EL juzgado no se encuentra registrado en el sistema", "500");
+        if (juzgado == null) {
+            ApiResponseFactory.error("EL juzgado no se encuentra registrado en el sistema", "500");
         }
 
         return juzgado;
     }
 
-    //metodos de cración:
-    private Carpeta crearCarpetaMigracion(EntradasMigracion entrada, Ocomun ocomun, Juzgado juzgado, JuiciosMigracion juiciosMigracion){
+    // metodos de cración:
+    private Carpeta crearCarpetaMigracion(EntradasMigracion entrada,
+            Ocomun ocomun,
+            Juzgado juzgado,
+            TipoJuicio tipoJuicio,
+            Concepto concepto,
+            Migraciones migracion) {
 
         Carpeta carpeta = new Carpeta()
-        .setVersion(0)
-        .setFolio(ocomun.getFolio().toString())
-        .setExpediente(ocomun.getExpediente())
-        .setSelloEstatus(SelloEstatus.VALIDO)
-        .setEstatus(EstadoCarpeta.MIGRADO)
-        .setTipoCarpeta(TipoCarpeta.DEMANDA)
-        .setJuzgado(juzgado)
-        .setTipoJuicio(null)
+                .setVersion(0)
+                .setFolio(ocomun.getFolio().toString())
+                .setExpediente(ocomun.getExpediente())
+                .setSelloEstatus(SelloEstatus.VALIDO)
+                .setEstatus(EstadoCarpeta.MIGRADO)
+                .setTipoCarpeta(TipoCarpeta.DEMANDA)
+                .setJuzgado(juzgado)
+                .setTipoJuicio(tipoJuicio)
+                .setPersona(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setCarpetaPadre(null)
+                .setDeterminacionJurisdiccional(null)
+                .setSentencia(null)
+                .setTipoPieza(null)
+                .setConcepto(concepto)
+                .setHoras(null)
+                .setPrioridad(null)
+                .setMigracion(migracion)
+                .setCu(documentoService.getCu(juzgado, ocomun.getExpediente()));
+
+        return carpetaRepository.save(carpeta);
 
     }
 
+    private TipoJuicio crearTipoJuicio(Materia materia, String nombre) {
+        TipoJuicio tipoJuicio = new TipoJuicio()
+                .setEstado(Estado.INACTIVE)
+                .setMateria(materia)
+                .setNombre(nombre)
+                .setTipoCausa(null)
+                .setTipoJuicioPadreOral(null)
+                .setTipoJuicioPadreTrad(null);
 
-    
+        return tipoJuicioRepository.save(tipoJuicio);
+
+    }
 
 }
