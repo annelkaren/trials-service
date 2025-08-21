@@ -13,6 +13,7 @@ public interface NacionalidadRepository extends JpaRepository<Nacionalidad, Inte
             SELECT n
             FROM Nacionalidad n
             WHERE (lower(n.name) LIKE %:key%)
+            ORDER BY n.name
             """)
     List<Nacionalidad> findAllFilterByName(String key);
 }

@@ -239,16 +239,28 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             """)
     List<String> findDistinctTipoEntradaByBandeja(@Param("bandeja") String bandeja);
 
-    @Query("""
-                SELECT ca.audit.fechaAlta
-                FROM Carpeta ca
-                JOIN ca.tipoJuicio tj
-                JOIN tj.materia ma
-                WHERE ma.id IN (:materiasId)
-                AND tj.id NOT IN (:juiciosExcluidos)
-                ORDER BY ca.audit.fechaAlta limit 1
-            """)
-    LocalDate getDatesByMateria(List<Integer> materiasId, List<Integer> juiciosExcluidos);
+    @Query(value = """
+            SELECT ca.t_fecha_alta
+            FROM trials.tbl_documentos doc
+            JOIN trials.tbl_carpetas ca ON doc.fn_carpeta = ca.pn_id
+            JOIN trials.tbl_tipo_juicio tj ON ca.fn_tipo_juicio = tj.pn_id
+            JOIN trials.tbl_materias ma ON ma.pn_id = tj.fn_materia
+            WHERE
+               (
+                 doc.j_data->'tiposJuicios' IS NULL
+                 OR jsonb_typeof(doc.j_data->'tiposJuicios') <> 'array'
+                 OR EXISTS (
+                   SELECT 1
+                   FROM jsonb_array_elements(doc.j_data->'tiposJuicios') juicios
+                   WHERE (juicios->>'id')::int NOT IN (112,113)
+                 )
+               )
+            AND tj.pn_id NOT IN (:juiciosExcluidos)
+            AND ma.pn_id IN (:materiasId)
+            ORDER BY ca.t_fecha_alta
+            LIMIT 1
+            """, nativeQuery = true)
+    LocalDateTime getDatesByMateria(List<Integer> materiasId, List<Integer> juiciosExcluidos);
 
     @Query(value = """
             SELECT ca.t_fecha_alta
@@ -266,5 +278,5 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             ORDER BY ca.t_fecha_alta
             LIMIT 1
             """, nativeQuery = true)
-    LocalDate getDatesByTipoJuicio(List<Integer> tipoJuicios);
+    LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
 }

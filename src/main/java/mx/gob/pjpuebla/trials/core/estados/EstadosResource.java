@@ -44,7 +44,6 @@ public class EstadosResource {
     public List<Municipio> getMunByState(@PathVariable String id) {
         MunicipioRecord response = restTemplate.getForObject(
                 getInegiPath + getMunPath + id, MunicipioRecord.class, new HashMap<>());
-        System.out.println(response.datos());
         return (response != null && response.datos() != null) ? response.datos() : new ArrayList<>();
     }
 }
