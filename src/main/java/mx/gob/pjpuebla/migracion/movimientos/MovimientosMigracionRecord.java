@@ -19,5 +19,6 @@ public record MovimientosMigracionRecord(
         Integer numFoja,
         String obse,
         String sentido,
-        String digitalizadoAcu) {
+        String digitalizadoAcu,
+        String puestoRecibioTBLPuesto) {
 }

@@ -4,6 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum EstadoMigracion {
-    MIGRADO,
+    EXPEDIENTE_MIGRADO,
+    DOCUMENTOS_MIGRADOS,
+    MIGRADO_COMPLETADO,
     NO_MIGRADO
 }

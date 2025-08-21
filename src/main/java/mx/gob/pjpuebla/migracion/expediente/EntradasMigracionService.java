@@ -48,6 +48,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -55,6 +56,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
 @Service
 @RequiredArgsConstructor
@@ -86,6 +88,7 @@ public class EntradasMigracionService {
     private final TipoJuicioService tipoJuicioService;
     private final ConceptoService conceptoService;
     private final ConceptoRepository conceptoRepository;
+    private final MigracionesService migracionesService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -191,23 +194,48 @@ public class EntradasMigracionService {
                 rs.getObject("num_foja", Integer.class),
                 rs.getString("obse"),
                 rs.getString("sentido"),
-                rs.getString("digitalizado_acu")));
+                rs.getString("digitalizado_acu"),
+                ""));
     }
 
     // Retorna el ultimo movimiento de la tabla ubicaciones perteneciente al juzgado
     // que atendio el expediente
-    private String buscarUltimoMovimiento(String cu, String tablaUbi) {
-        String sql = "SELECT estado FROM " + tablaUbi + " " +
-                "WHERE cu = :cu AND status = 'A' " +
-                "ORDER BY id DESC LIMIT 1";
+    private MovimientosMigracionRecord buscarUltimoMovimiento(String cu, String tablaUbi) {
+        String sql = "SELECT " +
+                "  u.id_ubicaciones, u.cu, u.id_puesto, u.fecha, u.hora, u.status, u.estado, u.etapa, " +
+                "  u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, u.libro, u.num_foja, " +
+                "  u.obse, u.sentido, u.digitalizado_acu, p.nombre " + // ← solo columnas que mapeas
+                "FROM " + tablaUbi + " u " +
+                "JOIN acuerdos.puestos p ON u.id_puesto = p.id_puesto " + // ← alias p
+                "WHERE u.cu = :cu AND u.status = 'A' " + // ← califica columnas
+                "ORDER BY u.id_ubicaciones DESC " + // ← usa la PK/último id real
+                "LIMIT 1";
 
         try {
             return jdbcTemplate.queryForObject(
                     sql,
                     Map.of("cu", cu),
-                    String.class);
-        } catch (EmptyResultDataAccessException e) {
-            return null; // o "SIN_ESTADO", según tu lógica de negocio
+                    (rs, rowNum) -> new MovimientosMigracionRecord(
+                            rs.getInt("id_ubicaciones"),
+                            rs.getString("cu"),
+                            rs.getObject("id_puesto", Integer.class),
+                            rs.getObject("fecha", LocalDate.class),
+                            rs.getString("hora"),
+                            rs.getString("status"),
+                            rs.getString("estado"),
+                            rs.getString("etapa"),
+                            rs.getString("entrego"),
+                            rs.getString("recibio"),
+                            rs.getString("puesto_entrego"),
+                            rs.getString("puesto_recibio"),
+                            rs.getString("libro"),
+                            rs.getObject("num_foja", Integer.class),
+                            rs.getString("obse"),
+                            rs.getString("sentido"),
+                            rs.getString("digitalizado_acu"),
+                            rs.getString("nombre")));
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return null; 
         }
     }
 
@@ -248,18 +276,24 @@ public class EntradasMigracionService {
         }
 
         // paso 8: se busca el concepto del ultimo turnado si no se encuentra lo crea
-        String nombreConceptoPHP = buscarUltimoMovimiento(entradas.get(0).getCu(), juzgadoMigracion.getTablaUbicacion());
-        Concepto concepto = conceptoService.findByNombre(nombreConceptoPHP);
-        if(concepto == null){
-            concepto = crearConcepto(nombreConceptoPHP, tipoJuicio);
+        MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entradas.get(0).getCu(),
+                juzgadoMigracion.getTablaUbicacion());
+        Concepto concepto = conceptoService.findByNombre(ultimoMovimientoPhp.estado());
+        if (concepto == null) {
+            concepto = crearConcepto(ultimoMovimientoPhp.estado(), tipoJuicio);
         }
 
-        // Paso 9: se crea el registro de migración
-        Migraciones migracion = null;
-
-        // Paso 10: crear la carpeta carpeta:
+        // Paso 9: crear la carpeta carpeta:
         Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto,
-                migracion);
+                null);
+
+        // Paso 10: se crea el registro de migración
+        Migraciones migracion = null;
+        if (carpeta != null) {
+            String observacionesMigracion = "Se ha migrado el expediente principal";
+            migracion = migracionesService.createMigraciones(EstadoMigracion.EXPEDIENTE_MIGRADO, observacionesMigracion,
+                    ultimoMovimientoPhp.recibio(), ultimoMovimientoPhp.puestoRecibioTBLPuesto(), juzgado, carpeta);
+        }
 
         return ResponseEntity.ok("Expediente migrado correctamente.");
     }
@@ -322,20 +356,20 @@ public class EntradasMigracionService {
 
     }
 
-    private Concepto crearConcepto(String nombre, TipoJuicio tipoJuicio){
+    private Concepto crearConcepto(String nombre, TipoJuicio tipoJuicio) {
         Concepto concepto = new Concepto()
-        .setVersion(0)
-        .setNombre(nombre)
-        .setDias(null)
-        .setEstado(Estado.INACTIVE)
-        .setTipoJuicio(tipoJuicio)
-        .setRoles(null);
+                .setVersion(0)
+                .setNombre(nombre)
+                .setDias(null)
+                .setEstado(Estado.INACTIVE)
+                .setTipoJuicio(tipoJuicio)
+                .setRoles(null);
 
         return conceptoRepository.save(concepto);
-        
+
     }
 
-    //mapeos
+    // mapeos
     private String mapMateria(String m) {
         return switch (m) {
             case "P" -> "PENAL";
