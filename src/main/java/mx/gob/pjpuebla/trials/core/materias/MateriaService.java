@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Slf4j
@@ -53,5 +54,15 @@ public class MateriaService {
     @Transactional(readOnly = true)
     public List<SentenciasByMateriaRecord> getCountSentenciasByMaterias() {
         return materiaRepository.getCountSentenciasByMateria();
+    }
+
+    public Materia findByNombre(String nombre){
+        Optional<Materia> materia = materiaRepository.findByNombre(nombre);
+
+        if(materia.isPresent()){
+            return materia.get();
+        }
+        
+        return null;
     }
 }

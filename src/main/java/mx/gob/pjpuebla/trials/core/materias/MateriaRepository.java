@@ -44,4 +44,6 @@ public interface MateriaRepository extends JpaRepository<Materia, Integer> {
             ORDER BY ma.nombre
             """)
     List<SentenciasByMateriaRecord> getCountSentenciasByMateria();
+
+    Optional<Materia> findByNombre(String nombre);
 }

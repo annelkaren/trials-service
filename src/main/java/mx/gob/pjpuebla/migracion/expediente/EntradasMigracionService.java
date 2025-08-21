@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,16 @@ import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.materias.MateriaService;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -77,6 +82,10 @@ public class EntradasMigracionService {
     private final CarpetaRepository carpetaRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
     private final DocumentoService documentoService;
+    private final MateriaService materiaService;
+    private final TipoJuicioService tipoJuicioService;
+    private final ConceptoService conceptoService;
+    private final ConceptoRepository conceptoRepository;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -185,10 +194,28 @@ public class EntradasMigracionService {
                 rs.getString("digitalizado_acu")));
     }
 
+    // Retorna el ultimo movimiento de la tabla ubicaciones perteneciente al juzgado
+    // que atendio el expediente
+    private String buscarUltimoMovimiento(String cu, String tablaUbi) {
+        String sql = "SELECT estado FROM " + tablaUbi + " " +
+                "WHERE cu = :cu AND status = 'A' " +
+                "ORDER BY id DESC LIMIT 1";
+
+        try {
+            return jdbcTemplate.queryForObject(
+                    sql,
+                    Map.of("cu", cu),
+                    String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null; // o "SIN_ESTADO", según tu lógica de negocio
+        }
+    }
+
     public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
 
         // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema
         // actual
+        JuzgadosMigracion juzgadoMigracion = juzgadosMigracionService.buscarByCodigo(claveJuzgado);
         Juzgado juzgado = validaJuzgado(claveJuzgado);
 
         // Paso 2: traemos información del expediente desde mysql :
@@ -209,17 +236,28 @@ public class EntradasMigracionService {
         // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
 
-        // Paso 6 : se busca si existe el tipo de juicio en el sistema actual si no lo
+        // Paso 6: se busca la materia de la entrada para vincularla con el tipoJuicio:
+        String materiaString = mapMateria(juicioPhp.getMateria());
+        Materia materia = materiaService.findByNombre(materiaString);
+
+        // Paso 7 : se busca si existe el tipo de juicio en el sistema actual si no lo
         // crea desactivado:
-        TipoJuicio tipoJuicio = null;
+        TipoJuicio tipoJuicio = tipoJuicioService.findByNombre(juicioPhp.getDescripcion());
+        if (tipoJuicio == null) {
+            tipoJuicio = crearTipoJuicio(materia, juicioPhp.getDescripcion());
+        }
 
-        // paso 7: se busca el concepto del ultimo turnado si no se encuentra lo crea
-        Concepto concepto = null;
+        // paso 8: se busca el concepto del ultimo turnado si no se encuentra lo crea
+        String nombreConceptoPHP = buscarUltimoMovimiento(entradas.get(0).getCu(), juzgadoMigracion.getTablaUbicacion());
+        Concepto concepto = conceptoService.findByNombre(nombreConceptoPHP);
+        if(concepto == null){
+            concepto = crearConcepto(nombreConceptoPHP, tipoJuicio);
+        }
 
-        // Paso 8: se crea el registro de migración
+        // Paso 9: se crea el registro de migración
         Migraciones migracion = null;
 
-        // Paso 9: crear la carpeta carpeta:
+        // Paso 10: crear la carpeta carpeta:
         Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto,
                 migracion);
 
@@ -282,6 +320,33 @@ public class EntradasMigracionService {
 
         return tipoJuicioRepository.save(tipoJuicio);
 
+    }
+
+    private Concepto crearConcepto(String nombre, TipoJuicio tipoJuicio){
+        Concepto concepto = new Concepto()
+        .setVersion(0)
+        .setNombre(nombre)
+        .setDias(null)
+        .setEstado(Estado.INACTIVE)
+        .setTipoJuicio(tipoJuicio)
+        .setRoles(null);
+
+        return conceptoRepository.save(concepto);
+        
+    }
+
+    //mapeos
+    private String mapMateria(String m) {
+        return switch (m) {
+            case "P" -> "PENAL";
+            case "L" -> "LABORAL";
+            case "M" -> "MERCANTIL";
+            case "F" -> "FAMILIAR";
+            case "C" -> "CIVIL";
+            case "E" -> "EXHORTO";
+            case "J" -> "JUSTICIA PARA ADOLESCENTES";
+            default -> "DESCONOCIDO";
+        };
     }
 
 }
