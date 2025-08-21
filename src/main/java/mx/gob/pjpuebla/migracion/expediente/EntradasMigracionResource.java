@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 
 
+
 @RestController
 @RequestMapping("/api/migracion/expediente")
 @RequiredArgsConstructor
@@ -41,5 +42,8 @@ public class EntradasMigracionResource {
        
         return service.migrarExpediente(expediente, year, juzgado);
     }
+
+
+    
     
 }

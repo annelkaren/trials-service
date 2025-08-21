@@ -260,6 +260,7 @@ public class EntradasMigracionService {
         // PASO 4: traer información de ocomun para ir llenando mi expediente:
         Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entradas.get(0).getCu()); // Tomamos la primera
                                                                                        // coincidencia de entradas.
+        //TODO: EVALUAR ESCENARIO DONDE NO HAY OFICIALIA COMUN
 
         // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
@@ -320,14 +321,14 @@ public class EntradasMigracionService {
 
         Carpeta carpeta = new Carpeta()
                 .setVersion(0)
-                .setFolio(ocomun.getFolio().toString())
-                .setExpediente(ocomun.getExpediente())
+                .setFolio(ocomun.getFolio().toString()) // TODO: UID PARA LOS QUE NO TIENEN OFICIALIA.
+                .setExpediente(ocomun.getExpediente())  // TODO: DESDE ENTRADAS
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setEstatus(EstadoCarpeta.MIGRADO)
-                .setTipoCarpeta(TipoCarpeta.DEMANDA)
+                .setTipoCarpeta(TipoCarpeta.DEMANDA) // TODO: EVALUAR DE DONDE VIENE SI ES JUZGADO ES DENABDAM SU ES JUZGADO PERO DE EXHORTO ES EXHOTHO SI ES SALA ES APELACION
                 .setJuzgado(juzgado)
                 .setTipoJuicio(tipoJuicio)
-                .setPersona(null)
+                .setPersona(null) //
                 .setFechaAsignacion(LocalDateTime.now())
                 .setCarpetaPadre(null)
                 .setDeterminacionJurisdiccional(null)
@@ -337,7 +338,7 @@ public class EntradasMigracionService {
                 .setHoras(null)
                 .setPrioridad(null)
                 .setMigracion(migracion)
-                .setCu(documentoService.getCu(juzgado, ocomun.getExpediente()));
+                .setCu(documentoService.getCu(juzgado, ocomun.getExpediente())); //TODO: TRAER CU NO CALCULARLO.
 
         return carpetaRepository.save(carpeta);
 
