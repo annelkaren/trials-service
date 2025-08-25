@@ -3,17 +3,27 @@ package mx.gob.pjpuebla.migracion.expediente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracionService;
+import mx.gob.pjpuebla.migracion.actores.complementoCampos.ActorGeneralMigracion;
+import mx.gob.pjpuebla.migracion.actores.complementoCampos.ActorGeneralMigracionRepository;
+import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigracion;
+import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigracionRepository;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
@@ -37,6 +47,8 @@ import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoService;
+import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -45,18 +57,31 @@ import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
+import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
+import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +102,8 @@ public class EntradasMigracionService {
     private final ExhortoForaneoMigracionService exhortoForaneoMigracionService;
     private final ExhortosCapitalMigracionService exhortoCapitalMigracionService;
     private final OcomunService ocomunService;
+    private final ActorGeneralMigracionRepository actorGeneralMigracionRepository;
+    private final DemandadoGeneralMigracionRepository demandadoGeneralMigracionRepository;
 
     // service de sistema actual:
     private final JuzgadoService juzgadoService;
@@ -89,6 +116,10 @@ public class EntradasMigracionService {
     private final ConceptoService conceptoService;
     private final ConceptoRepository conceptoRepository;
     private final MigracionesService migracionesService;
+    private final DocumentoRepository documentoRepository;
+    private final AnexoRepository anexoRepository;
+    private final TipoPartesRepository tipoPartesRepository;
+    private final PersonaDocumentoRepository personaDocumentoRepository;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -235,7 +266,7 @@ public class EntradasMigracionService {
                             rs.getString("digitalizado_acu"),
                             rs.getString("nombre")));
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {
-            return null; 
+            return null;
         }
     }
 
@@ -260,7 +291,7 @@ public class EntradasMigracionService {
         // PASO 4: traer información de ocomun para ir llenando mi expediente:
         Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entradas.get(0).getCu()); // Tomamos la primera
                                                                                        // coincidencia de entradas.
-        //TODO: EVALUAR ESCENARIO DONDE NO HAY OFICIALIA COMUN
+        // TODO: EVALUAR ESCENARIO DONDE NO HAY OFICIALIA COMUN
 
         // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entradas.get(0).getJuicio());
@@ -288,7 +319,22 @@ public class EntradasMigracionService {
         Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto,
                 null);
 
-        // Paso 10: se crea el registro de migración
+        // paso 10: crear documento asociado a la carpeta, en este metodo se crea la
+        // demanda inicial:
+        Documento documento = crearDocumentoMigracion(null, carpeta, new DocumentoData(), oficiliaComunPhp, null, null,
+                null, null);
+
+        // paso 11: crear registro de los anexos:
+        List<Anexo> anexos = crearAnexosMigracion(oficiliaComunPhp.getAnexos(), documento);
+
+        // paso 12: buscar a las personas involucradas en la entrada: actores,
+        // demandados o terceros involucrados:
+        List<ActoresMigracion> personas = actoresMigracionService.buscarPorClave(entradas.get(0).getCu());
+
+        // paso 13: crear registro de actores, demandados y terceros involucrados:
+        PersonaDocumento personaDocumentoActor = crearPersonaDocumento(personas);
+
+        // Paso 14: se crea el registro de migración
         Migraciones migracion = null;
         if (carpeta != null) {
             String observacionesMigracion = "Se ha migrado el expediente principal";
@@ -321,14 +367,15 @@ public class EntradasMigracionService {
 
         Carpeta carpeta = new Carpeta()
                 .setVersion(0)
-                .setFolio(ocomun.getFolio().toString()) // TODO: UID PARA LOS QUE NO TIENEN OFICIALIA.
-                .setExpediente(ocomun.getExpediente())  // TODO: DESDE ENTRADAS
+                .setFolio(ocomun != null ? ocomun.getFolio().toString() : UUID.randomUUID().toString())
+                .setExpediente(entrada.getExpediente())
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setEstatus(EstadoCarpeta.MIGRADO)
-                .setTipoCarpeta(TipoCarpeta.DEMANDA) // TODO: EVALUAR DE DONDE VIENE SI ES JUZGADO ES DENABDAM SU ES JUZGADO PERO DE EXHORTO ES EXHOTHO SI ES SALA ES APELACION
+                .setTipoCarpeta(TipoCarpeta.DEMANDA) // TODO: EVALUAR DE DONDE VIENE SI ES JUZGADO ES DENABDAM SU ES
+                                                     // JUZGADO PERO DE EXHORTO ES EXHOTHO SI ES SALA ES APELACION
                 .setJuzgado(juzgado)
                 .setTipoJuicio(tipoJuicio)
-                .setPersona(null) //
+                .setPersona(null)
                 .setFechaAsignacion(LocalDateTime.now())
                 .setCarpetaPadre(null)
                 .setDeterminacionJurisdiccional(null)
@@ -338,10 +385,56 @@ public class EntradasMigracionService {
                 .setHoras(null)
                 .setPrioridad(null)
                 .setMigracion(migracion)
-                .setCu(documentoService.getCu(juzgado, ocomun.getExpediente())); //TODO: TRAER CU NO CALCULARLO.
+                .setCu(entrada.getCu());
 
         return carpetaRepository.save(carpeta);
 
+    }
+
+    private Documento crearDocumentoMigracion(TipoDocumento tipoDocumento, Carpeta carpeta,
+            DocumentoData data, Ocomun ocomun, String folio, Concepto concepto, Institucion institucion,
+            Documento documentoRelacionado) {
+
+        Documento documento = new Documento()
+                .setVersion(0)
+                .setTipoDocumento(tipoDocumento)
+                .setData(data)
+                .setRuta(ocomun != null ? ocomun.getRutaDigitalizacion() : "")
+                .setCarpeta(carpeta)
+                .setPersona(null)
+                .setFechaAsignacion(LocalDateTime.now())
+                .setEstatus(EstadoCarpeta.MIGRADO)
+                .setFolio(folio)
+                .setConcepto(concepto)
+                .setInstitucion(institucion)
+                .setAcuerdoRespuesta(documentoRelacionado);
+
+        return documentoRepository.save(documento);
+
+    }
+
+    @Transactional
+    private List<Anexo> crearAnexosMigracion(String anexos, Documento documento) {
+        if (documento == null) {
+            throw new IllegalArgumentException("El documento es obligatorio.");
+        }
+        if (anexos == null || anexos.isBlank()) {
+            return List.of();
+        }
+
+        // Divide por coma ignorando espacios, elimina vacíos y duplicados, mapea a
+        // entidad
+        List<Anexo> toSave = Pattern.compile("\\s*,\\s*")
+                .splitAsStream(anexos)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .map(nombre -> new Anexo()
+                        .setNombre(nombre)
+                        .setDocumento(documento))
+                .toList();
+
+        return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
 
     private TipoJuicio crearTipoJuicio(Materia materia, String nombre) {
@@ -370,6 +463,131 @@ public class EntradasMigracionService {
 
     }
 
+    private TipoPartes findOrCreateTipoPartes(TipoJuicio tipoJuicio, String nombreTipoParte) {
+        Optional<TipoPartes> tipoParte = tipoPartesRepository.findByNombreAndTipoJuicioId(nombreTipoParte,
+                tipoJuicio.getId());
+
+        if (tipoParte.isPresent()) {
+            return tipoParte.get();
+        }
+
+        TipoPartes tipoParteNew = new TipoPartes()
+                .setEstado(Estado.INACTIVE)
+                .setNombre(nombreTipoParte)
+                .setTipoJuicio(tipoJuicio);
+
+        return tipoPartesRepository.save(tipoParteNew);
+
+    }
+
+    private List<PersonaDocumento> crearPersonaDocumento(List<ActoresMigracion> personas, TipoJuicio tipoJuicio, String tipoParte, Carpeta carpeta) {
+        // Declaramos la lista de personasDocumentos la cual nos servira para guardar
+        // todo:
+        List<PersonaDocumento> personaDocumento = new ArrayList<>();
+
+        // buscamos las primeras personas de la demanda tanto actor como demandado:
+        PersonaDocumento ACTOR_PRINCIPAL = findFirstByTipo(personas, "A", tipoJuicio, tipoParte, carpeta);
+        PersonaDocumento DEMANDADO_PRINCIPAL = findFirstByTipo(personas, "D", tipoJuicio, tipoParte, carpeta);
+
+        
+
+
+
+        return personaDocumentoRepository.saveAll(personaDocumento);
+
+    }
+
+    private PersonaDocumento createPersonaDocumento(String nombre, String pseudonimo, String tipoPersona, Rol rol,
+            Carpeta carpeta, TipoPartes tipoPartes, String ine, String curp, String celular, String correoElectronico,
+            String domicilio, TipoNotificacion tipoNotificacion, String correoNotificacion,
+            Domicilio domicilioNotificacion) {
+        return new PersonaDocumento()
+                .setNombre(nombre)
+                .setPseudonimo(pseudonimo)
+                .setTipoPersona(tipoPersona) // Moral o fisica
+                .setRol(rol) // PRINCIPAL O SECUNDARIO
+                .setCarpeta(carpeta)
+                .setTipoPartes(tipoPartes)
+                .setIne(ine)
+                .setCurp(curp)
+                .setCelular(celular)
+                .setCorreoElectronico(correoElectronico)
+                .setDomicilio(domicilio)
+                .setTipoNotificacion(tipoNotificacion)
+                .setCorreoNotificacion(correoNotificacion)
+                .setFnDomicilio(domicilioNotificacion);
+
+    }
+
+    // busca el primer actor y el primer demandado de la demanda para asignar el rol
+    // correctamente en personas documentos:
+    private PersonaDocumento findFirstByTipo(List<ActoresMigracion> actores, String tipoBuscado, 
+        TipoJuicio tipoJuicio, String tipoParte, Carpeta carpeta) {
+        Optional<ActoresMigracion> actor = actores.stream()
+                .filter(a -> (a.getEstatus() == null || a.getEstatus().isBlank())
+                        && (a.getRepresenta() == null || a.getRepresenta().isBlank())) // estatus y representa es null o
+                                                                                       // blank
+                .filter(a -> tipoBuscado.equalsIgnoreCase(a.getTipo()))
+                .min(Comparator.comparingInt(a -> {
+                    String claveAct = a.getClaveAct();
+                    return Integer.parseInt(claveAct.substring(claveAct.length() - 1));
+                }));
+
+        if(actor.isPresent()){
+            ActoresMigracion a = actor.get();
+            String ine = null;
+            String curp = null;
+            String celular = null;
+            String correoElectronico = null;
+            String Domicilio = null;
+            String tipoNotificacion = null;
+            String domicilioNotificacion = null;
+
+            if(tipoBuscado == "A"){
+                ActorGeneralMigracion actorDatosGenerales = findByActorGeneralMigracion(a.getClaveAct());
+                actorDatosGenerales.
+            }
+
+
+            return createPersonaDocumento(
+                a.getNombre(), 
+                null, 
+                mapTipoPersona(a.getTipoPersona()),
+                Rol.PRINCIPAL,
+                carpeta, // carpeta
+                findOrCreateTipoPartes(tipoJuicio, tipoParte), // tipo Parte
+                null, //ine
+                null, // curp
+                null, // celular
+                null, // correoElectronico
+                null, // Nombredomicilio
+                null, // tipoNotificacion 
+                null, // correo notificacion
+                null);
+        }
+
+        return null;
+    }
+
+    private ActorGeneralMigracion findByActorGeneralMigracion(String cuActor){    
+        Optional<ActorGeneralMigracion> actorDatosGenerales = actorGeneralMigracionRepository.findBycuActor(cuActor);
+        if(actorDatosGenerales.isPresent()){
+            return actorDatosGenerales.get();
+        }
+
+        return null;
+    }
+
+    private DemandadoGeneralMigracion findByDemandadoGeneralMigracion(String cuDemandado){
+        Optional<DemandadoGeneralMigracion> demandadoDatosGenerales = demandadoGeneralMigracionRepository.findBycuDem(cuDemandado);
+
+        if(demandadoDatosGenerales.isPresent()){
+            return demandadoDatosGenerales.get();
+        }
+
+        return null;
+    }
+
     // mapeos
     private String mapMateria(String m) {
         return switch (m) {
@@ -384,4 +602,11 @@ public class EntradasMigracionService {
         };
     }
 
+    private String mapTipoPersona(String tipoPersona) {
+        return switch (tipoPersona) {
+            case "F" -> "fisica";
+            case "M" -> "moral";
+            default -> "";
+        };
+    }
 }
