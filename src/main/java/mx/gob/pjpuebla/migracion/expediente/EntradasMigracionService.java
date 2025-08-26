@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.migracion.expediente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,12 +10,9 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import org.springframework.util.StringUtils;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,20 +38,18 @@ import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.migracion.juzgados.JuzgadosMigracionService;
 import mx.gob.pjpuebla.migracion.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.ocomun.Ocomun;
-import mx.gob.pjpuebla.migracion.ocomun.OcomunRepository;
+
 import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoService;
-import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaService;
-import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
@@ -63,7 +57,6 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
@@ -112,7 +105,6 @@ public class EntradasMigracionService {
     private final CarpetaService carpetaService;
     private final CarpetaRepository carpetaRepository;
     private final TipoJuicioRepository tipoJuicioRepository;
-    private final DocumentoService documentoService;
     private final MateriaService materiaService;
     private final TipoJuicioService tipoJuicioService;
     private final ConceptoService conceptoService;
@@ -284,6 +276,7 @@ public class EntradasMigracionService {
 
         // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado y
         // por el expediente.
+        //TODO: VALIDAR SI SE MIGRARA EL EXPEDIENTE CONCATENANDO LA BARRA Y EL AÑO O SOLO EL EXPEDIENTE.
         Carpeta carpetaExistente = carpetaService.getExpediente(expediente + "/" + year, juzgado);
 
         if (carpetaExistente != null) {
@@ -318,8 +311,7 @@ public class EntradasMigracionService {
         }
 
         // Paso 9: crear la carpeta carpeta:
-        Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto,
-                null);
+        Carpeta carpeta = crearCarpetaMigracion(entradas.get(0), oficiliaComunPhp, juzgado, tipoJuicio, concepto);
 
         // paso 10: crear documento asociado a la carpeta, en este metodo se crea la
         // demanda inicial:
@@ -364,8 +356,7 @@ public class EntradasMigracionService {
             Ocomun ocomun,
             Juzgado juzgado,
             TipoJuicio tipoJuicio,
-            Concepto concepto,
-            Migraciones migracion) {
+            Concepto concepto) {
 
         Carpeta carpeta = new Carpeta()
                 .setVersion(0)
@@ -386,7 +377,6 @@ public class EntradasMigracionService {
                 .setConcepto(concepto)
                 .setHoras(null)
                 .setPrioridad(null)
-                .setMigracion(migracion)
                 .setCu(entrada.getCu());
 
         return carpetaRepository.save(carpeta);
@@ -456,7 +446,7 @@ public class EntradasMigracionService {
         Concepto concepto = new Concepto()
                 .setVersion(0)
                 .setNombre(nombre)
-                .setDias(null)
+                .setDias(0)
                 .setEstado(Estado.INACTIVE)
                 .setTipoJuicio(tipoJuicio)
                 .setRoles(null);

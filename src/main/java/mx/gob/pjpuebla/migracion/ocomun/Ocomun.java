@@ -21,7 +21,7 @@ public class Ocomun {
     private Integer folio;
     private String expediente;
 
-    @Column(name = "ayio")
+    @Column(name = "ayo")
     private String year;
 
     @Column(name = "juzgado")
@@ -113,8 +113,8 @@ public class Ocomun {
     @Column(name = "piezasJA") // super numerario cuantas piezas lleva. 
     private String piezasJA;
 
-    @Column(name="anexoJA")
-    private String anexoJA;
+    @Column(name="anexosJA")
+    private String anexosJA;
 
     private String diasentenciaJA;
     
@@ -132,7 +132,7 @@ public class Ocomun {
     @Column(name = "nombre_juez_jof")
     private String nombreJuezOralidad;
 
-    @Column(name = "celular_actor_j")
+    @Column(name = "celular_actor_jof")
     private String celularActorOralidad;
 
     @Column(name = "correo_actor_jof")
