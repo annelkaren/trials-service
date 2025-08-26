@@ -80,6 +80,7 @@ public class Domicilio implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    //TODO: CONSIDERAR QUE NO SIEMPRE ES UNACALLE.
     public String getLineaDomicilio() {
         StringBuilder sb = new StringBuilder();
         if (calle != null) {

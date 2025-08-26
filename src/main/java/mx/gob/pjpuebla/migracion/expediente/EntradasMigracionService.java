@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import org.springframework.util.StringUtils;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracion;
@@ -332,7 +334,7 @@ public class EntradasMigracionService {
         List<ActoresMigracion> personas = actoresMigracionService.buscarPorClave(entradas.get(0).getCu());
 
         // paso 13: crear registro de actores, demandados y terceros involucrados:
-        PersonaDocumento personaDocumentoActor = crearPersonaDocumento(personas);
+        List<PersonaDocumento> personaDocumentoActor = crearPersonaDocumento(personas, tipoJuicio, carpeta);
 
         // Paso 14: se crea el registro de migración
         Migraciones migracion = null;
@@ -480,30 +482,53 @@ public class EntradasMigracionService {
 
     }
 
-    private List<PersonaDocumento> crearPersonaDocumento(List<ActoresMigracion> personas, TipoJuicio tipoJuicio, String tipoParte, Carpeta carpeta) {
+    private List<PersonaDocumento> crearPersonaDocumento(List<ActoresMigracion> personas, TipoJuicio tipoJuicio, Carpeta carpeta) {
         // Declaramos la lista de personasDocumentos la cual nos servira para guardar
         // todo:
         List<PersonaDocumento> personaDocumento = new ArrayList<>();
 
-        // buscamos las primeras personas de la demanda tanto actor como demandado:
-        PersonaDocumento ACTOR_PRINCIPAL = findFirstByTipo(personas, "A", tipoJuicio, tipoParte, carpeta);
-        PersonaDocumento DEMANDADO_PRINCIPAL = findFirstByTipo(personas, "D", tipoJuicio, tipoParte, carpeta);
+        personas.forEach(persona -> {
+            // determinamos si la persona implicada es un actor, demandado:
 
-        
+            TipoPartes tipoPartes = findOrCreateTipoPartes(tipoJuicio, mapTipoPartesMigracion(persona.getTipo()));
+            
+            //campos que se llenan unicamente para tipo de juicio familiar y tipo de sistema oralidad:
+            String ine = null;
+            String curp = null;
+            String celular = null;
+            String correoElectronico = null;
+            String domicilio = null;
 
+            //Configurar notificaciones: 
+            TipoNotificacion tipoNotificacion = mapTipoNotificacion(persona.getTipoNotificacion());
+            String correoElectronicoNotificacion = null;
 
+            PersonaDocumento personaObj = createPersonaDocumento(
+                persona.getNombre(),
+                mapTipoPersona(persona.getTipoPersona()),
+                Rol.PRINCIPAL, 
+                carpeta,
+                tipoPartes,
+                ine, 
+                curp, 
+                celular, 
+                correoElectronico, 
+                domicilio, 
+                tipoNotificacion, 
+                correoElectronicoNotificacion);
+
+            personaDocumento.add(personaObj);
+        });
 
         return personaDocumentoRepository.saveAll(personaDocumento);
 
     }
 
-    private PersonaDocumento createPersonaDocumento(String nombre, String pseudonimo, String tipoPersona, Rol rol,
+    private PersonaDocumento createPersonaDocumento(String nombre, String tipoPersona, Rol rol,
             Carpeta carpeta, TipoPartes tipoPartes, String ine, String curp, String celular, String correoElectronico,
-            String domicilio, TipoNotificacion tipoNotificacion, String correoNotificacion,
-            Domicilio domicilioNotificacion) {
+            String domicilio, TipoNotificacion tipoNotificacion, String correoNotificacion) {
         return new PersonaDocumento()
                 .setNombre(nombre)
-                .setPseudonimo(pseudonimo)
                 .setTipoPersona(tipoPersona) // Moral o fisica
                 .setRol(rol) // PRINCIPAL O SECUNDARIO
                 .setCarpeta(carpeta)
@@ -514,74 +539,24 @@ public class EntradasMigracionService {
                 .setCorreoElectronico(correoElectronico)
                 .setDomicilio(domicilio)
                 .setTipoNotificacion(tipoNotificacion)
-                .setCorreoNotificacion(correoNotificacion)
-                .setFnDomicilio(domicilioNotificacion);
+                .setCorreoNotificacion(correoNotificacion);
 
     }
 
-    // busca el primer actor y el primer demandado de la demanda para asignar el rol
-    // correctamente en personas documentos:
-    private PersonaDocumento findFirstByTipo(List<ActoresMigracion> actores, String tipoBuscado, 
-        TipoJuicio tipoJuicio, String tipoParte, Carpeta carpeta) {
-        Optional<ActoresMigracion> actor = actores.stream()
-                .filter(a -> (a.getEstatus() == null || a.getEstatus().isBlank())
-                        && (a.getRepresenta() == null || a.getRepresenta().isBlank())) // estatus y representa es null o
-                                                                                       // blank
-                .filter(a -> tipoBuscado.equalsIgnoreCase(a.getTipo()))
-                .min(Comparator.comparingInt(a -> {
-                    String claveAct = a.getClaveAct();
-                    return Integer.parseInt(claveAct.substring(claveAct.length() - 1));
-                }));
-
-        if(actor.isPresent()){
-            ActoresMigracion a = actor.get();
-            String ine = null;
-            String curp = null;
-            String celular = null;
-            String correoElectronico = null;
-            String Domicilio = null;
-            String tipoNotificacion = null;
-            String domicilioNotificacion = null;
-
-            if(tipoBuscado == "A"){
-                ActorGeneralMigracion actorDatosGenerales = findByActorGeneralMigracion(a.getClaveAct());
-                actorDatosGenerales.
-            }
-
-
-            return createPersonaDocumento(
-                a.getNombre(), 
-                null, 
-                mapTipoPersona(a.getTipoPersona()),
-                Rol.PRINCIPAL,
-                carpeta, // carpeta
-                findOrCreateTipoPartes(tipoJuicio, tipoParte), // tipo Parte
-                null, //ine
-                null, // curp
-                null, // celular
-                null, // correoElectronico
-                null, // Nombredomicilio
-                null, // tipoNotificacion 
-                null, // correo notificacion
-                null);
-        }
-
-        return null;
-    }
-
-    private ActorGeneralMigracion findByActorGeneralMigracion(String cuActor){    
+    private ActorGeneralMigracion findByActorGeneralMigracion(String cuActor) {
         Optional<ActorGeneralMigracion> actorDatosGenerales = actorGeneralMigracionRepository.findBycuActor(cuActor);
-        if(actorDatosGenerales.isPresent()){
+        if (actorDatosGenerales.isPresent()) {
             return actorDatosGenerales.get();
         }
 
         return null;
     }
 
-    private DemandadoGeneralMigracion findByDemandadoGeneralMigracion(String cuDemandado){
-        Optional<DemandadoGeneralMigracion> demandadoDatosGenerales = demandadoGeneralMigracionRepository.findBycuDem(cuDemandado);
+    private DemandadoGeneralMigracion findByDemandadoGeneralMigracion(String cuDemandado) {
+        Optional<DemandadoGeneralMigracion> demandadoDatosGenerales = demandadoGeneralMigracionRepository
+                .findBycuDem(cuDemandado);
 
-        if(demandadoDatosGenerales.isPresent()){
+        if (demandadoDatosGenerales.isPresent()) {
             return demandadoDatosGenerales.get();
         }
 
@@ -607,6 +582,26 @@ public class EntradasMigracionService {
             case "F" -> "fisica";
             case "M" -> "moral";
             default -> "";
+        };
+    }
+
+    private String mapTipoPartesMigracion(String tipo) {
+        return switch (tipo) {
+            case "D" -> "Demandado";
+            case "A" -> "Actor";
+            default -> "";
+        };
+    }
+
+    private TipoNotificacion mapTipoNotificacion(String tipoNotificacion){
+        return switch (tipoNotificacion){
+            case "CO" -> TipoNotificacion.CORREO_ELECTRONICO;
+            case "DN" -> TipoNotificacion.DOMICILIO;
+            case "DE" -> TipoNotificacion.EMPLAZAMIENTO;
+            case "ES", "E" -> TipoNotificacion.ESTRADO;
+            case "EX" -> TipoNotificacion.EXHORTO;
+            case "ED" -> TipoNotificacion.EDITCTOS;
+            default  -> TipoNotificacion.NINGUNO;
         };
     }
 }
