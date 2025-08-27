@@ -59,6 +59,7 @@ import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -361,7 +362,7 @@ public class EntradasMigracionService {
         Carpeta carpeta = new Carpeta()
                 .setVersion(0)
                 .setFolio(ocomun != null ? ocomun.getFolio().toString() : UUID.randomUUID().toString())
-                .setExpediente(entrada.getExpediente())
+                .setExpediente(entrada.getExpediente() + "/" + entrada.getAmo())
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setEstatus(EstadoCarpeta.MIGRADO)
                 .setTipoCarpeta(TipoCarpeta.DEMANDA) // TODO: EVALUAR DE DONDE VIENE SI ES JUZGADO ES DENABDAM SU ES
@@ -377,6 +378,7 @@ public class EntradasMigracionService {
                 .setConcepto(concepto)
                 .setHoras(null)
                 .setPrioridad(null)
+                .setMigrado(Migrado.SI)
                 .setCu(entrada.getCu());
 
         return carpetaRepository.save(carpeta);
