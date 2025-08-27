@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse;
@@ -19,7 +20,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 public class MigracionesService {
     
     private final MigracionesRepository migracionesRepository;
-
+    private final PersonaService personaService;
 
     public Migraciones createMigraciones(EstadoMigracion estadoMigracion, String observaciones, String asignacionAnterior, String puestoAsignacionAnterior, Juzgado juzgado, Carpeta carpeta){
 
@@ -43,6 +44,7 @@ public class MigracionesService {
                         m.getId(),
                         m.getCarpeta() != null ? m.getCarpeta().getExpediente() : null,
                         m.getEstatus().getEtiqueta(),
+                        personaService.getNamePersona(m.getAudit().getUsuarioAlta()),
                         m.getObservaciones(),
                         m.getAsignacionAnterior(),
                         m.getPuestoAsignacionAnterior(),

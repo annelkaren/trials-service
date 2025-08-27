@@ -552,4 +552,13 @@ public class PersonaService {
         }
     }
 
+    public String getNamePersona(String usuario){
+        Optional<Persona> persona = personaRepository.findByUsuario(usuario);
+
+        if(persona.isPresent()){
+            Persona p = persona.get();
+            return (p.getNombre() + ' ' + p.getApellidoPaterno() + (p.getApellidoPaterno() != null ? p.getApellidoPaterno() : "") ).toUpperCase();
+        }
+        return "";
+    }
 }

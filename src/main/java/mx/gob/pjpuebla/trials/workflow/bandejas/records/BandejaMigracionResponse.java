@@ -5,6 +5,7 @@ public record BandejaMigracionResponse(
     Integer idMigracion,
     String expediente,
     String estadoMigracion,
+    String migradoPor,
     String observacionesMigracion,
     String asignacionAnterior,
     String puestoAsignacionAnterior,
