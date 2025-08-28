@@ -88,7 +88,7 @@ public class MigracionesService {
         }
 
         // 4) Idempotencia: si ya está asignada a esa persona, responde OK
-        if (carpeta.getEstatus() == EstadoCarpeta.ASIGNADO && personaAsignada.equals(carpeta.getPersona())) {
+        if (carpeta.getEstatus() == EstadoCarpeta.ASIGNADO) {
              return new ApiResponse<>(true, "El expediente ya estaba turnado.", "SUCCESS_ALREADY_ASSIGNED", 200, "", LocalDateTime.now());
         }
 

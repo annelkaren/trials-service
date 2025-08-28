@@ -5,6 +5,7 @@ import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,13 +21,16 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.util.Auditable;
 
 @Data
 @Entity
+@EntityListeners(AuditListener.class)
 @Table(name = "TBL_MIGRACIONES")
-public class Migraciones implements Serializable{
+public class Migraciones implements Serializable, Auditable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idMigracion")
