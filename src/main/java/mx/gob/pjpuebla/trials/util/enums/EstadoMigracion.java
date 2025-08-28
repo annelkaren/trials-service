@@ -7,6 +7,7 @@ public enum EstadoMigracion {
     EXPEDIENTE_MIGRADO("Expediente migrado"),
     DOCUMENTOS_MIGRADOS("Documentos del expediente migrados"),
     MIGRADO_COMPLETADO("Migración completada"),
+    EXPEDIENTE_TURNADO("Expediente turnado"),
     NO_MIGRADO("Expediente no migrado");
 
     private final String etiqueta;

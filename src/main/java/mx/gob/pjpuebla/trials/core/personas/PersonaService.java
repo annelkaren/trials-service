@@ -139,6 +139,14 @@ public class PersonaService {
         return persona.withRoles(roles);
     }
 
+    public Persona findPersonaById(Long personaId){
+        Optional<Persona> persona = personaRepository.findById(personaId);
+        if(persona.isPresent()){
+            return persona.get();
+        }
+        return null;
+    }
+
     public PersonaRecordResponse create(PersonaDTO dto) {
         Persona persona = dto.getPersona();
         List<RoleRecord> roles = dto.getRoles();

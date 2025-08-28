@@ -991,4 +991,8 @@ public class CarpetaService {
                 }
                 return null;
         }
+
+        public Carpeta save(Carpeta carpeta) {
+                return carpetaRepository.save(carpeta);
+        }
 }
