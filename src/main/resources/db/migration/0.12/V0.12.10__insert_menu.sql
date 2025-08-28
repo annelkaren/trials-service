@@ -1,0 +1,8 @@
+-- Registro para migrar expedientes:
+
+INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
+VALUES (47, 'Migración', 'ADMINISTRADOR_JUZGADO,OFICIAL_MAYOR_JUZGADO,SECRETARIO', '/api/migracion/expedientes',5,3);
+
+-- bandeja de migración:
+INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
+VALUES (48, 'Migración', 'ADMINISTRADOR_JUZGADO,OFICIAL_MAYOR_JUZGADO,SECRETARIO', '/api/bandeja/migracion',15, 4);
