@@ -1,7 +1,9 @@
 package mx.gob.pjpuebla.migracion.juzgados;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +16,8 @@ public interface JuzgadosMigracionRepository extends JpaRepository<JuzgadosMigra
      * Usamos Optional para manejar de forma segura el caso en que no se encuentre el juzgado.
      */
     Optional<JuzgadosMigracion> findByCodigo(String codigo);
+
+    @EntityGraph(attributePaths={ "materiaObj","materiaRealObj" })
+    List<JuzgadosMigracion> findAll();
 
 }

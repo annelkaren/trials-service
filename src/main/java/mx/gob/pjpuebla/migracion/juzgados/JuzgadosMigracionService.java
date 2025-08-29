@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.migracion.juzgados;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

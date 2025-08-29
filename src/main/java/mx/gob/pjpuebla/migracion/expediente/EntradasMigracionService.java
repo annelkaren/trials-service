@@ -56,6 +56,9 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
+import mx.gob.pjpuebla.trials.error.ConflictException;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
@@ -271,6 +274,9 @@ public class EntradasMigracionService {
         // actual
         JuzgadosMigracion juzgadoMigracion = juzgadosMigracionService.buscarByCodigo(claveJuzgado);
         Juzgado juzgado = validaJuzgado(claveJuzgado);
+        if(juzgado == null){
+            throw new NotFoundException("Juzgado no encontrado, revise que este dada de alta su clave.", claveJuzgado);
+        }
 
         // Paso 2: traemos información del expediente desde mysql :
         List<EntradasMigracion> entradas = buscarEntradas(expediente, year, claveJuzgado);
@@ -281,7 +287,7 @@ public class EntradasMigracionService {
         Carpeta carpetaExistente = carpetaService.getExpediente(expediente + "/" + year, juzgado);
 
         if (carpetaExistente != null) {
-            ApiResponseFactory.error("El expediente ya se encuentra en el sistema.", "500");
+            throw new ConstraintViolationException("El expediente ya se encuentra en el sistema", carpetaExistente.getId().toString());
         }
 
         // PASO 4: traer información de ocomun para ir llenando mi expediente:
@@ -344,10 +350,6 @@ public class EntradasMigracionService {
     private Juzgado validaJuzgado(String claveJuzgado) {
 
         Juzgado juzgado = juzgadoService.findByClaveJuzgado(claveJuzgado);
-
-        if (juzgado == null) {
-            ApiResponseFactory.error("EL juzgado no se encuentra registrado en el sistema", "500");
-        }
 
         return juzgado;
     }
