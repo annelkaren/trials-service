@@ -16,14 +16,7 @@ import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 public record EntradasMigracionRecord(
     EntradasMigracion entrada,
     JuzgadosMigracion juzgado,
-    List<MovimientosMigracionRecord> ubicaciones,
+    MovimientosMigracionRecord ubicaciones,
     JuiciosMigracion juicios,
-    List<AcuerdosMigracion> acuerdos,
-    List<AmparosMigracion> amparos,
-    List<OficiosMigracion> oficios,
-    List<ActoresMigracion> actores,
-    List<DetallesProm> detallesProm,
-    List<ExhortoForaneoMigracion> exortoForaneo,
-    List<ExhortosCapitalMigracion> exortoCapital,
-    List<AcuerdosMigracion> sentencias
+    List<ActoresMigracion> actores
 ) {}

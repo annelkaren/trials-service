@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.migracion.expediente;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,8 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
         @Param("expediente") String expediente,
         @Param("amo") Integer amo,
         @Param("juzgado") String juzgado
+
     );
+
+    Optional<EntradasMigracion> findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(String expediente, Integer amo, String juzgado, String status);
 }

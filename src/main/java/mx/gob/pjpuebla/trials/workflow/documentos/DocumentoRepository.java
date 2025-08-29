@@ -125,8 +125,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                                     ) AND pc = :personaAsignada
-                                     AND jc.id = :juzgadoId)
+                                     ) AND pc = :personaAsignada AND jc.id = :juzgadoId)
+
                                      OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
