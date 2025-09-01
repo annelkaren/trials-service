@@ -565,7 +565,7 @@ public class PersonaService {
 
         if(persona.isPresent()){
             Persona p = persona.get();
-            return (p.getNombre() + ' ' + p.getApellidoPaterno() + (p.getApellidoPaterno() != null ? p.getApellidoPaterno() : "") ).toUpperCase();
+            return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' ' + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "") ).toUpperCase();
         }
         return "";
     }
