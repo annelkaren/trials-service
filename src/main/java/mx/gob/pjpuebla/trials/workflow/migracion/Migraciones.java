@@ -20,6 +20,7 @@ import jakarta.validation.constraints.Max;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
@@ -63,6 +64,11 @@ public class Migraciones implements Serializable, Auditable{
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Carpeta carpeta;
+
+    //Persona a quien se va a turnar el expediente .
+    @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona personaTurnado;
 
     @Accessors(chain = false)
     @Embedded

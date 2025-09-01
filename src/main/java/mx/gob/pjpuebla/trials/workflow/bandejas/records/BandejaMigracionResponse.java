@@ -9,6 +9,8 @@ public record BandejaMigracionResponse(
     String observacionesMigracion,
     String asignacionAnterior,
     String puestoAsignacionAnterior,
-    Integer carpetaId
+    Integer carpetaId,
+    String nombreConcepto,
+    Integer diasTurnado
     
 ) {}

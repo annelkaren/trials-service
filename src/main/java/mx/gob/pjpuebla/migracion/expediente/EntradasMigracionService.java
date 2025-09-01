@@ -26,6 +26,10 @@ import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparosMigracion;
+import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracion;
+import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracionService;
+import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracion;
+import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracionService;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesPromService;
 import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracion;
@@ -100,6 +104,8 @@ public class EntradasMigracionService {
     private final OcomunService ocomunService;
     private final ActorGeneralMigracionRepository actorGeneralMigracionRepository;
     private final DemandadoGeneralMigracionRepository demandadoGeneralMigracionRepository;
+    private final ConceptosMigracionService conceptosMigracionService;
+    private final ConceptosMatFamiliarMigracionService conceptosMatFamiliarMigracionService;
 
     // service de sistema actual:
     private final JuzgadoService juzgadoService;
@@ -145,33 +151,40 @@ public class EntradasMigracionService {
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Se obtienen los acuerdos:
-        //List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+        // List<AcuerdosMigracion> acuerdos =
+        // acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
         // se obtienen sentencias:
-        //List<AcuerdosMigracion> sentencias = acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
+        // List<AcuerdosMigracion> sentencias =
+        // acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
 
         // Se obtienen amparos:
-        //List<AmparosMigracion> amparos = amparoMigracionService.buscarPorCu(entrada.getCu());
+        // List<AmparosMigracion> amparos =
+        // amparoMigracionService.buscarPorCu(entrada.getCu());
 
         // Se obtienen oficios:
-        //List<OficiosMigracion> oficios = oficiosMigracionService.buscarPorCu(entrada.getCu());
+        // List<OficiosMigracion> oficios =
+        // oficiosMigracionService.buscarPorCu(entrada.getCu());
 
         // Se obtienen los actores:
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
 
         // Se obtienen los detalles de la promocion si es que existen
-        //List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
+        // List<DetallesProm> detallesProm =
+        // detallesPromService.buscarPorCu(entrada.getCu());
 
         // Se obtienen los exhortos foraneos:
-        //List<ExhortoForaneoMigracion> exhortoForaneoMigracion = exhortoForaneoMigracionService
-        //        .buscarPorJuzgadoOr(juzgado.getCodigo());
+        // List<ExhortoForaneoMigracion> exhortoForaneoMigracion =
+        // exhortoForaneoMigracionService
+        // .buscarPorJuzgadoOr(juzgado.getCodigo());
 
         // se obtienen los exhortos capital
-        //List<ExhortosCapitalMigracion> exortoCapitalMigracion = exhortoCapitalMigracionService
-        //        .buscarPorJuzgadoOr(juzgado.getCodigo());
+        // List<ExhortosCapitalMigracion> exortoCapitalMigracion =
+        // exhortoCapitalMigracionService
+        // .buscarPorJuzgadoOr(juzgado.getCodigo());
 
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio,  actores);
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores);
     }
 
     /**
@@ -267,6 +280,7 @@ public class EntradasMigracionService {
         }
     }
 
+    @Transactional
     public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
 
         // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema
@@ -293,7 +307,7 @@ public class EntradasMigracionService {
 
         // PASO 4: traer información de ocomun para ir llenando mi expediente:
         Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entrada.getCu()); // Tomamos la primera
-                                                                                       // coincidencia de entradas.
+                                                                               // coincidencia de entradas.
         // TODO: EVALUAR ESCENARIO DONDE NO HAY OFICIALIA COMUN
 
         // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
@@ -313,9 +327,11 @@ public class EntradasMigracionService {
         // paso 8: se busca el concepto del ultimo turnado si no se encuentra lo crea
         MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entrada.getCu(),
                 juzgadoMigracion.getTablaUbicacion());
-        Concepto concepto = conceptoService.findByNombre(ultimoMovimientoPhp.estado());
+        Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio,ultimoMovimientoPhp.estado());
+
+        Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoPhp.estado(), tipoJuicio);
         if (concepto == null) {
-            concepto = crearConcepto(ultimoMovimientoPhp.estado(), tipoJuicio);
+            concepto = crearConcepto(ultimoMovimientoPhp.estado(), tipoJuicio, diasConcepto);
         }
 
         // Paso 9: crear la carpeta carpeta:
@@ -340,7 +356,7 @@ public class EntradasMigracionService {
         Migraciones migracion = null;
         if (carpeta != null) {
             String observacionesMigracion = "Se ha migrado el expediente principal";
-            migracion = migracionesService.createMigraciones(EstadoMigracion.EXPEDIENTE_MIGRADO, observacionesMigracion,
+            migracion = migracionesService.createMigraciones(EstadoMigracion.MIGRADO_COMPLETADO, observacionesMigracion,
                     ultimoMovimientoPhp.recibio(), ultimoMovimientoPhp.puestoRecibioTBLPuesto(), juzgado, carpeta);
         }
 
@@ -447,11 +463,11 @@ public class EntradasMigracionService {
 
     }
 
-    private Concepto crearConcepto(String nombre, TipoJuicio tipoJuicio) {
+    private Concepto crearConcepto(String nombre, TipoJuicio tipoJuicio, Integer dias) {
         Concepto concepto = new Concepto()
                 .setVersion(0)
                 .setNombre(nombre)
-                .setDias(0)
+                .setDias(dias)
                 .setEstado(Estado.INACTIVE)
                 .setTipoJuicio(tipoJuicio)
                 .setRoles(null);
@@ -540,6 +556,17 @@ public class EntradasMigracionService {
 
     }
 
+    private Integer getDiasConceptoMigracion(TipoJuicio tipoJuicio, String estado) {
+
+        if (tipoJuicio.getMateria().getNombre() == "FAMILIAR" && tipoJuicio.getTipoSistema().getNombre() == "Oral") {
+            ConceptosMatFamiliarMigracion concepto = conceptosMatFamiliarMigracionService.findConceptoMatFamiliarByClave(estado);
+            return   concepto != null ? concepto.getDias() : 0;
+        } else {
+            ConceptosMigracion concepto = conceptosMigracionService.findConceptoByClave(estado);
+            return concepto != null ? concepto.getDias() : 0;
+        }
+    }
+
     private ActorGeneralMigracion findByActorGeneralMigracion(String cuActor) {
         Optional<ActorGeneralMigracion> actorDatosGenerales = actorGeneralMigracionRepository.findBycuActor(cuActor);
         if (actorDatosGenerales.isPresent()) {
@@ -591,6 +618,10 @@ public class EntradasMigracionService {
     }
 
     private TipoNotificacion mapTipoNotificacion(String tipoNotificacion) {
+        if (tipoNotificacion == null) {
+            return TipoNotificacion.NINGUNO;
+        }
+
         return switch (tipoNotificacion) {
             case "CO" -> TipoNotificacion.CORREO_ELECTRONICO;
             case "DN" -> TipoNotificacion.DOMICILIO;

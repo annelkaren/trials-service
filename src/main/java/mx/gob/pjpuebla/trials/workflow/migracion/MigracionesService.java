@@ -63,8 +63,9 @@ public class MigracionesService {
                         m.getObservaciones(),
                         m.getAsignacionAnterior(),
                         m.getPuestoAsignacionAnterior(),
-                        m.getCarpeta() != null ? m.getCarpeta().getId() : null
-
+                        m.getCarpeta() != null ? m.getCarpeta().getId() : null,
+                        m.getCarpeta().getConcepto().getNombre(),
+                        m.getCarpeta().getConcepto().getDias()
                 ));
     }
 
@@ -75,7 +76,7 @@ public class MigracionesService {
             .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración", migracionId.toString()));
       
         // 2) Validar estado de la migración
-        if (migracion.getEstatus() != EstadoMigracion.EXPEDIENTE_MIGRADO) {
+        if (migracion.getEstatus() != EstadoMigracion.MIGRADO_COMPLETADO) {
             throw new NotFoundException("La migración no está en un estado turnable.", migracionId.toString());
         }
 
@@ -117,6 +118,8 @@ public class MigracionesService {
 
         // 7) Actualizar estatus de la migración
         migracion.setEstatus(EstadoMigracion.EXPEDIENTE_TURNADO);
+        migracion.setPersonaTurnado(personaAsignada);
+        migracion.setObservaciones("Se ha turnado el expediente");
         migracionesRepository.save(migracion);
 
         return new ApiResponse<>(true, "El expediente ha sido turnado con éxito.", "SUCCESS", 201, "", LocalDateTime.now());
