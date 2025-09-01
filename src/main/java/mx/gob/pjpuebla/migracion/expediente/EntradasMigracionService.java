@@ -325,13 +325,14 @@ public class EntradasMigracionService {
         }
 
         // paso 8: se busca el concepto del ultimo turnado si no se encuentra lo crea
-        MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entrada.getCu(),
-                juzgadoMigracion.getTablaUbicacion());
-        Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio,ultimoMovimientoPhp.estado());
+        MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entrada.getCu(), juzgadoMigracion.getTablaUbicacion());
+        String ultimoMovimientoText = ultimoMovimientoPhp.estado() != null ? ultimoMovimientoPhp.estado() : "Archivo";
 
-        Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoPhp.estado(), tipoJuicio);
+        Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio,ultimoMovimientoText);
+
+        Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
         if (concepto == null) {
-            concepto = crearConcepto(ultimoMovimientoPhp.estado(), tipoJuicio, diasConcepto);
+            concepto = crearConcepto(ultimoMovimientoText, tipoJuicio, diasConcepto);
         }
 
         // Paso 9: crear la carpeta carpeta:
