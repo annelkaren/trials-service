@@ -13,9 +13,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.actores.ActoresMigracionService;
 import mx.gob.pjpuebla.migracion.actores.complementoCampos.ActorGeneralMigracion;
@@ -83,6 +84,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EntradasMigracionService {
 
     // Plantilla JDBC configurada para usar la base secundaria (migración)
@@ -181,7 +183,7 @@ public class EntradasMigracionService {
         // .buscarPorJuzgadoOr(juzgado.getCodigo());
 
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, acuerdos);
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, acuerdos, detallesProm);
     }
 
     /**
@@ -323,7 +325,7 @@ public class EntradasMigracionService {
         String ultimoMovimientoText = ultimoMovimientoPhp.estado() != null ? ultimoMovimientoPhp.estado() : "Archivo";
 
         Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio,ultimoMovimientoText);
-
+        
         Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
         if (concepto == null) {
             concepto = crearConcepto(ultimoMovimientoText, tipoJuicio, diasConcepto);
@@ -352,6 +354,8 @@ public class EntradasMigracionService {
         // paso 14 obtener promociones:
         List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
         createPromocionesMigracion(detallesProm, carpeta);
+        
+        
         //List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
         // Paso 15: se crea el registro de migración
@@ -582,10 +586,10 @@ public class EntradasMigracionService {
 
         if (tipoJuicio.getMateria().getNombre() == "FAMILIAR" && tipoJuicio.getTipoSistema().getNombre() == "Oral") {
             ConceptosMatFamiliarMigracion concepto = conceptosMatFamiliarMigracionService.findConceptoMatFamiliarByClave(estado);
-            return   concepto != null ? concepto.getDias() : 0;
+            return   concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;
         } else {
             ConceptosMigracion concepto = conceptosMigracionService.findConceptoByClave(estado);
-            return concepto != null ? concepto.getDias() : 0;
+            return concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;
         }
     }
 

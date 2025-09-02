@@ -19,5 +19,6 @@ public record EntradasMigracionRecord(
     MovimientosMigracionRecord ubicaciones,
     JuiciosMigracion juicios,
     List<ActoresMigracion> actores,
-    List<AcuerdosMigracion> acuerdos
+    List<AcuerdosMigracion> acuerdos,
+    List<DetallesProm> promociones
 ) {}

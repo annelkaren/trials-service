@@ -19,6 +19,6 @@ public class ConceptosMatFamiliarMigracion {
     private Integer id;
 
     private String clave;
-    private Integer dias;
+    private String dias;
     private String estatus;
 }

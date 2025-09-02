@@ -10,7 +10,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DocumentoData implements Serializable {
 
     private transient List<TipoJuicioDemandasRecord> tiposJuicios;

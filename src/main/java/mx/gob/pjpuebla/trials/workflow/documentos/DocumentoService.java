@@ -2450,11 +2450,12 @@ public class DocumentoService {
                                 .setData(docData)
                                 .setPersona(persona)
                                 .setTipoDocumento(TipoDocumento.PROMOCION)
-                                .setRuta(ruta);
+                                .setRuta(ruta)
+                                .setMigrado(Migrado.SI);
                 
                 //promoción electronica: 
                 if(tipoPromocion.equals(tipoPromocion.CORREO_ELECTRONICO)){
-
+                        
                 }
                 return documentoRepository.save(promocion);
         }
