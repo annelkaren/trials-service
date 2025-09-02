@@ -25,16 +25,13 @@ import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigra
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
-import mx.gob.pjpuebla.migracion.amparos.AmparosMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracionService;
 import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracionService;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesPromService;
-import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracion;
 import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracionService;
-import mx.gob.pjpuebla.migracion.exhortoForaneo.ExhortoForaneoMigracion;
 import mx.gob.pjpuebla.migracion.exhortoForaneo.ExhortoForaneoMigracionService;
 import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracion;
 import mx.gob.pjpuebla.migracion.juicios.JuiciosMigracionService;
@@ -44,7 +41,6 @@ import mx.gob.pjpuebla.migracion.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.ocomun.Ocomun;
 
 import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
-import mx.gob.pjpuebla.migracion.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
@@ -70,6 +66,7 @@ import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -77,6 +74,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
@@ -121,6 +119,7 @@ public class EntradasMigracionService {
     private final AnexoRepository anexoRepository;
     private final TipoPartesRepository tipoPartesRepository;
     private final PersonaDocumentoRepository personaDocumentoRepository;
+    private final DocumentoService documentoService;
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -151,8 +150,7 @@ public class EntradasMigracionService {
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Se obtienen los acuerdos:
-        // List<AcuerdosMigracion> acuerdos =
-        // acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+         List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
         // se obtienen sentencias:
         // List<AcuerdosMigracion> sentencias =
@@ -170,8 +168,7 @@ public class EntradasMigracionService {
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
 
         // Se obtienen los detalles de la promocion si es que existen
-        // List<DetallesProm> detallesProm =
-        // detallesPromService.buscarPorCu(entrada.getCu());
+        List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
         // Se obtienen los exhortos foraneos:
         // List<ExhortoForaneoMigracion> exhortoForaneoMigracion =
@@ -184,7 +181,7 @@ public class EntradasMigracionService {
         // .buscarPorJuzgadoOr(juzgado.getCodigo());
 
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores);
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, acuerdos);
     }
 
     /**
@@ -295,9 +292,6 @@ public class EntradasMigracionService {
         EntradasMigracion entrada = buscarEntradas(expediente, year, claveJuzgado);
 
         // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado y
-        // por el expediente.
-        // TODO: VALIDAR SI SE MIGRARA EL EXPEDIENTE CONCATENANDO LA BARRA Y EL AÑO O
-        // SOLO EL EXPEDIENTE.
         Carpeta carpetaExistente = carpetaService.getExpediente(expediente + "/" + year, juzgado);
 
         if (carpetaExistente != null) {
@@ -353,7 +347,14 @@ public class EntradasMigracionService {
         // paso 13: crear registro de actores, demandados y terceros involucrados:
         List<PersonaDocumento> personaDocumentoActor = crearPersonaDocumento(personas, tipoJuicio, carpeta);
 
-        // Paso 14: se crea el registro de migración
+        //Migración de documentos:
+
+        // paso 14 obtener promociones:
+        List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
+        createPromocionesMigracion(detallesProm, carpeta);
+        //List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+
+        // Paso 15: se crea el registro de migración
         Migraciones migracion = null;
         if (carpeta != null) {
             String observacionesMigracion = "Se ha migrado el expediente principal";
@@ -557,6 +558,26 @@ public class EntradasMigracionService {
 
     }
 
+    private List<Documento> createPromocionesMigracion(List<DetallesProm> detallesProm, Carpeta carpeta){
+        List<Documento> promocionesCreadas = new ArrayList<>();
+
+        detallesProm.forEach(promocion -> {
+             // pasamos el tipo de promoción 1 escrito 2 oficio
+             // Pasamos la descripción si es promocion electronica o una promocion .
+            TipoPromocion tipoPromocion = mapTipoPromocion(promocion.getTipo(), promocion.getDescrip());
+            
+            //crear promoción: 
+            Documento promocionCreada = documentoService.createPromocionMigracion(carpeta, tipoPromocion, promocion.getId().toString(), promocion.getArchivo());
+            // Crear anexos: 
+            createAnexosDePromociones(promocion.getAnexos(), promocionCreada);
+                       
+            
+            promocionesCreadas.add(promocionCreada);
+        });
+
+        return promocionesCreadas;
+    }
+
     private Integer getDiasConceptoMigracion(TipoJuicio tipoJuicio, String estado) {
 
         if (tipoJuicio.getMateria().getNombre() == "FAMILIAR" && tipoJuicio.getTipoSistema().getNombre() == "Oral") {
@@ -632,5 +653,40 @@ public class EntradasMigracionService {
             case "ED" -> TipoNotificacion.EDITCTOS;
             default -> TipoNotificacion.NINGUNO;
         };
+    }
+
+    private TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion){
+        
+        if(descripcion == "PROMOCION ELECTRONICA"){
+            return TipoPromocion.CORREO_ELECTRONICO;
+        }
+        
+        if(tipoPromocion == null || tipoPromocion != ""){
+            return TipoPromocion.ESCRITO;
+        }
+
+        return switch(tipoPromocion) {
+            case "0","1","3","E" -> TipoPromocion.ESCRITO;
+            case "2" -> TipoPromocion.OFICIO;
+            default -> TipoPromocion.ESCRITO;
+        };
+    }
+
+    private List<Anexo> createAnexosDePromociones(String anexos, Documento documento){
+        if(anexos == null || anexos.isBlank() || anexos.contentEquals("Sin Anexos")){
+            return List.of();
+        }
+
+        List<Anexo> toSave = Pattern.compile("\\s*.\\s*")
+            .splitAsStream(anexos)
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .distinct()
+            .map(nombre -> new Anexo()
+                .setNombre(nombre)
+                .setDocumento(documento))
+            .toList();
+            
+        return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
 }

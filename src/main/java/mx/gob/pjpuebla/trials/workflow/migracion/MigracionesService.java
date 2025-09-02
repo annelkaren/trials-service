@@ -119,7 +119,7 @@ public class MigracionesService {
         // 7) Actualizar estatus de la migración
         migracion.setEstatus(EstadoMigracion.EXPEDIENTE_TURNADO);
         migracion.setPersonaTurnado(personaAsignada);
-        migracion.setObservaciones("Se ha turnado el expediente");
+        migracion.setObservaciones("Se ha turnado el expediente a " +  personaService.getNamePersona(personaAsignada.getUsuario()) );
         migracionesRepository.save(migracion);
 
         return new ApiResponse<>(true, "El expediente ha sido turnado con éxito.", "SUCCESS", 201, "", LocalDateTime.now());

@@ -18,5 +18,6 @@ public record EntradasMigracionRecord(
     JuzgadosMigracion juzgado,
     MovimientosMigracionRecord ubicaciones,
     JuiciosMigracion juicios,
-    List<ActoresMigracion> actores
+    List<ActoresMigracion> actores,
+    List<AcuerdosMigracion> acuerdos
 ) {}

@@ -20,7 +20,7 @@ public class AcuerdosMigracionService {
      * @return Lista de acuerdos relacionados con el CU; vacía si no se encuentran
      */
     public List<AcuerdosMigracion> buscarAcuerdosPorCu(String cuEntradas){
-        return acuerdosMigracionRepository.findByCuEntradasAndSentenciaIn(cuEntradas, List.of("N"));
+        return acuerdosMigracionRepository.findByCuEntradasAndEstatus(cuEntradas,"A");
     }
 
     /**
@@ -31,7 +31,7 @@ public class AcuerdosMigracionService {
      * @return Lista de acuerdos relacionados con el CU; vacía si no se encuentran
      */
     public List<AcuerdosMigracion> buscarSentenciasPorCu(String cuEntradas){
-        return acuerdosMigracionRepository.findByCuEntradasAndSentenciaIn(cuEntradas, List.of("A","C","D","I"));
+        return acuerdosMigracionRepository.findByCuEntradasAndSentenciaInAndEstatus(cuEntradas, List.of("A","C","D","I"), "A");
     }
     
 

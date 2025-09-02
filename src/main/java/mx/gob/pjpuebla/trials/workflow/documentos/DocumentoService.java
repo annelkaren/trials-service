@@ -826,6 +826,7 @@ public class DocumentoService {
                 documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO))
                                 ? EstadoCarpeta.RECEPCION
                                 : EstadoCarpeta.ASIGNADO);
+
                 if (persona.getOficialia() != null) {
                         documento.setEstatus(EstadoCarpeta.CAPTURA);
                 } else {
@@ -833,6 +834,7 @@ public class DocumentoService {
                                         .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar")));
                         documento.setFechaAsignacion(LocalDateTime.now());
                 }
+
                 documento.setData(documentoData);
                 documento.setPersona(persona);
                 documento.setTipoDocumento(TipoDocumento.PROMOCION);
@@ -2431,7 +2433,29 @@ public class DocumentoService {
                 return documentoRepository.save(documento);
         }
 
-        private <T> T defaultIfNull(T value, T defaultValue) {
-                return value != null ? value : defaultValue;
+        public Documento createPromocionMigracion(Carpeta carpeta, TipoPromocion tipoPromocion, String folio, String ruta) {
+
+                Persona persona = personaService.getAuditor();
+                Concepto concepto = conceptoRepository.findByNombre("Adjuntar")
+                                .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar"));
+
+                DocumentoData docData = new DocumentoData()
+                                .setTipoPromocion(tipoPromocion);
+
+                Documento promocion = new Documento()
+                                .setCarpeta(carpeta)
+                                .setFolio(folio)
+                                .setEstatus(EstadoCarpeta.MIGRADO)
+                                .setConcepto(concepto)
+                                .setData(docData)
+                                .setPersona(persona)
+                                .setTipoDocumento(TipoDocumento.PROMOCION)
+                                .setRuta(ruta);
+                
+                //promoción electronica: 
+                if(tipoPromocion.equals(tipoPromocion.CORREO_ELECTRONICO)){
+
+                }
+                return documentoRepository.save(promocion);
         }
 }

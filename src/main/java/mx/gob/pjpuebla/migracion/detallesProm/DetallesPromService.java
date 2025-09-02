@@ -21,6 +21,6 @@ public class DetallesPromService {
      * @return Lista de detalles encontrados
      */
     public List<DetallesProm> buscarPorCu(String cu) {
-        return detallesPromRepository.findByCu(cu);
+        return detallesPromRepository.findByCuAndStatus(cu, "A");
     }
 }
