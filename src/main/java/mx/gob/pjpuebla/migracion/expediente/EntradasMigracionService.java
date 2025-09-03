@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.migracion.expediente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import mx.gob.pjpuebla.migracion.actores.complementoCampos.ActorGeneralMigracion
 import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigracion;
 import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigracionRepository;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
+import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracion;
@@ -152,7 +154,7 @@ public class EntradasMigracionService {
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Se obtienen los acuerdos:
-         List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+        List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
         // se obtienen sentencias:
         // List<AcuerdosMigracion> sentencias =
@@ -321,11 +323,12 @@ public class EntradasMigracionService {
         }
 
         // paso 8: se busca el concepto del ultimo turnado si no se encuentra lo crea
-        MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entrada.getCu(), juzgadoMigracion.getTablaUbicacion());
+        MovimientosMigracionRecord ultimoMovimientoPhp = buscarUltimoMovimiento(entrada.getCu(),
+                juzgadoMigracion.getTablaUbicacion());
         String ultimoMovimientoText = ultimoMovimientoPhp.estado() != null ? ultimoMovimientoPhp.estado() : "Archivo";
 
-        Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio,ultimoMovimientoText);
-        
+        Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio, ultimoMovimientoText);
+
         Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
         if (concepto == null) {
             concepto = crearConcepto(ultimoMovimientoText, tipoJuicio, diasConcepto);
@@ -349,14 +352,14 @@ public class EntradasMigracionService {
         // paso 13: crear registro de actores, demandados y terceros involucrados:
         List<PersonaDocumento> personaDocumentoActor = crearPersonaDocumento(personas, tipoJuicio, carpeta);
 
-        //Migración de documentos:
+        // Migración de documentos:
 
         // paso 14 obtener promociones:
         List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
         createPromocionesMigracion(detallesProm, carpeta);
-        
-        
-        //List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+
+        // List<AcuerdosMigracion> acuerdos =
+        // acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
 
         // Paso 15: se crea el registro de migración
         Migraciones migracion = null;
@@ -562,20 +565,43 @@ public class EntradasMigracionService {
 
     }
 
-    private List<Documento> createPromocionesMigracion(List<DetallesProm> detallesProm, Carpeta carpeta){
+    private List<Documento> createAcuerdoMigracion(List<AcuerdosMigracion> acuerdos, Carpeta carpeta) {
+        List<Documento> documentosAcuerdos = new ArrayList<>();
+
+        acuerdos.forEach(acuerdo -> {
+            List<String> rubros = mapRubros(acuerdo.getResumen());
+            String rubroPrincipal = rubros.size() > 0 ? rubros.get(0) : "";
+
+            AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
+                    carpeta,
+                    rubroPrincipal,
+                    acuerdo.getFechaResolucion(),
+                    rubros,
+                    acuerdo.getClave().toString(),
+                    acuerdo.getRuta());
+
+            Documento acuerdoCreado = documentoService.createAcuerdoMigracion(data);
+            documentosAcuerdos.add(acuerdoCreado);
+
+        });
+
+        return documentosAcuerdos;
+    }
+
+    private List<Documento> createPromocionesMigracion(List<DetallesProm> detallesProm, Carpeta carpeta) {
         List<Documento> promocionesCreadas = new ArrayList<>();
 
         detallesProm.forEach(promocion -> {
-             // pasamos el tipo de promoción 1 escrito 2 oficio
-             // Pasamos la descripción si es promocion electronica o una promocion .
+            // pasamos el tipo de promoción 1 escrito 2 oficio
+            // Pasamos la descripción si es promocion electronica o una promocion .
             TipoPromocion tipoPromocion = mapTipoPromocion(promocion.getTipo(), promocion.getDescrip());
-            
-            //crear promoción: 
-            Documento promocionCreada = documentoService.createPromocionMigracion(carpeta, tipoPromocion, promocion.getId().toString(), promocion.getArchivo());
-            // Crear anexos: 
+
+            // crear promoción:
+            Documento promocionCreada = documentoService.createPromocionMigracion(carpeta, tipoPromocion,
+                    promocion.getId().toString(), promocion.getArchivo());
+            // Crear anexos:
             createAnexosDePromociones(promocion.getAnexos(), promocionCreada);
-                       
-            
+
             promocionesCreadas.add(promocionCreada);
         });
 
@@ -585,8 +611,9 @@ public class EntradasMigracionService {
     private Integer getDiasConceptoMigracion(TipoJuicio tipoJuicio, String estado) {
 
         if (tipoJuicio.getMateria().getNombre() == "FAMILIAR" && tipoJuicio.getTipoSistema().getNombre() == "Oral") {
-            ConceptosMatFamiliarMigracion concepto = conceptosMatFamiliarMigracionService.findConceptoMatFamiliarByClave(estado);
-            return   concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;
+            ConceptosMatFamiliarMigracion concepto = conceptosMatFamiliarMigracionService
+                    .findConceptoMatFamiliarByClave(estado);
+            return concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;
         } else {
             ConceptosMigracion concepto = conceptosMigracionService.findConceptoByClave(estado);
             return concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;
@@ -659,38 +686,49 @@ public class EntradasMigracionService {
         };
     }
 
-    private TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion){
-        
-        if(descripcion == "PROMOCION ELECTRONICA"){
+    private TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion) {
+
+        if (descripcion == "PROMOCION ELECTRONICA") {
             return TipoPromocion.CORREO_ELECTRONICO;
         }
-        
-        if(tipoPromocion == null || tipoPromocion != ""){
+
+        if (tipoPromocion == null || tipoPromocion != "") {
             return TipoPromocion.ESCRITO;
         }
 
-        return switch(tipoPromocion) {
-            case "0","1","3","E" -> TipoPromocion.ESCRITO;
+        return switch (tipoPromocion) {
+            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
             case "2" -> TipoPromocion.OFICIO;
             default -> TipoPromocion.ESCRITO;
         };
     }
 
-    private List<Anexo> createAnexosDePromociones(String anexos, Documento documento){
-        if(anexos == null || anexos.isBlank() || anexos.contentEquals("Sin Anexos")){
+    private List<String> mapRubros(String rubros) {
+        if (rubros == null || rubros.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(rubros.split("\\."))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    private List<Anexo> createAnexosDePromociones(String anexos, Documento documento) {
+        if (anexos == null || anexos.isBlank() || anexos.contentEquals("Sin Anexos")) {
             return List.of();
         }
 
         List<Anexo> toSave = Pattern.compile("\\s*.\\s*")
-            .splitAsStream(anexos)
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .distinct()
-            .map(nombre -> new Anexo()
-                .setNombre(nombre)
-                .setDocumento(documento))
-            .toList();
-            
+                .splitAsStream(anexos)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .map(nombre -> new Anexo()
+                        .setNombre(nombre)
+                        .setDocumento(documento))
+                .toList();
+
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
 }

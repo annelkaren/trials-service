@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.configuraciones.Configuraciones;
@@ -17,6 +18,7 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
+import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -2445,7 +2447,7 @@ public class DocumentoService {
                 Documento promocion = new Documento()
                                 .setCarpeta(carpeta)
                                 .setFolio(folio)
-                                .setEstatus(EstadoCarpeta.MIGRADO)
+                                .setEstatus(EstadoCarpeta.INTEGRADO)
                                 .setConcepto(concepto)
                                 .setData(docData)
                                 .setPersona(persona)
@@ -2458,5 +2460,35 @@ public class DocumentoService {
                         
                 }
                 return documentoRepository.save(promocion);
+        }
+
+        @Transactional
+        public Documento createAcuerdoMigracion(AcuerdosMigracionSaveRecord acuerdo){
+                //Creamos información de los rubros en documentoData:
+                DocumentoData docData = new DocumentoData()
+                        .setRubros(acuerdo.rubros());
+
+                //Creamos información del documento. 
+                Documento documento = new Documento()
+                        .setCarpeta(acuerdo.carpeta())
+                        .setTipoDocumento(TipoDocumento.ACUERDO)
+                        .setEstatus(EstadoCarpeta.PUBLICADO)
+                        .setData(docData)
+                        .setFolio(acuerdo.folio())
+                        .setRuta(acuerdo.ruta());
+                
+                documento = documentoRepository.save(documento);
+                
+                DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                        .setTipoAcuerdo(acuerdo.tipoAcuerdo())
+                        .setFechaResolucion(acuerdo.fechaResolucion())
+                        .setEtapaProcesal("")
+                        .setResumen("")
+                        .setDocumento(documento);
+                
+                documentoDetalleRepository.save(documentoDetalle);
+                
+                return documento;
+
         }
 }
