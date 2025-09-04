@@ -1,16 +1,18 @@
 package mx.gob.pjpuebla.migracion.acuerdos;
 
 import java.time.LocalDate;
-import java.util.List;
 
+import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 
-public record AcuerdosMigracionSaveRecord(
+public record SentenciaMigracionSaveRecord(
     Carpeta carpeta,
-    String tipoAcuerdo,
     LocalDate fechaResolucion,
-    List<String> rubros,
+    TipoSentencia tipoSentencia,
+    TipoResolucion tipoResolucion,
     String folio,
     String ruta,
     LocalDate fechaPublicacion
+
 ) {}

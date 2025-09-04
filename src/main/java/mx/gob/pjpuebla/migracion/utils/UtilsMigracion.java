@@ -1,0 +1,143 @@
+package mx.gob.pjpuebla.migracion.utils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
+import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
+
+public class UtilsMigracion {
+
+    // Declaramos los posibles valores que necesitamos declarar de tipoSentencia:
+    Pattern P_DEF = Pattern.compile("sentencia\\s+definitiva", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    Pattern P_INT = Pattern.compile("sentencia\\s+interlocutoria", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+    Pattern P_DEF_SOLO = Pattern.compile("\\bdefinitiva\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    Pattern P_INT_SOLO = Pattern.compile("\\binterlocutoria\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+    // mapeos
+    public String mapMateria(String m) {
+        return switch (m) {
+            case "P" -> "PENAL";
+            case "L" -> "LABORAL";
+            case "M" -> "MERCANTIL";
+            case "F" -> "FAMILIAR";
+            case "C" -> "CIVIL";
+            case "E" -> "EXHORTO";
+            case "J" -> "JUSTICIA PARA ADOLESCENTES";
+            default -> "DESCONOCIDO";
+        };
+    }
+
+    public String mapTipoPersona(String tipoPersona) {
+        return switch (tipoPersona) {
+            case "F" -> "fisica";
+            case "M" -> "moral";
+            default -> "";
+        };
+    }
+
+    public String mapTipoPartesMigracion(String tipo) {
+        return switch (tipo) {
+            case "D" -> "Demandado";
+            case "A" -> "Actor";
+            default -> "";
+        };
+    }
+
+    public TipoNotificacion mapTipoNotificacion(String tipoNotificacion) {
+        if (tipoNotificacion == null) {
+            return TipoNotificacion.NINGUNO;
+        }
+
+        return switch (tipoNotificacion) {
+            case "CO" -> TipoNotificacion.CORREO_ELECTRONICO;
+            case "DN" -> TipoNotificacion.DOMICILIO;
+            case "DE" -> TipoNotificacion.EMPLAZAMIENTO;
+            case "ES", "E" -> TipoNotificacion.ESTRADO;
+            case "EX" -> TipoNotificacion.EXHORTO;
+            case "ED" -> TipoNotificacion.EDITCTOS;
+            default -> TipoNotificacion.NINGUNO;
+        };
+    }
+
+    public TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion) {
+
+        if (descripcion == "PROMOCION ELECTRONICA") {
+            return TipoPromocion.CORREO_ELECTRONICO;
+        }
+
+        if (tipoPromocion == null || tipoPromocion != "") {
+            return TipoPromocion.ESCRITO;
+        }
+
+        return switch (tipoPromocion) {
+            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
+            case "2" -> TipoPromocion.OFICIO;
+            default -> TipoPromocion.ESCRITO;
+        };
+    }
+
+    public List<String> mapRubros(String rubros) {
+        if (rubros == null || rubros.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(rubros.split("\\."))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    public TipoSentencia mapTipoSentencia(String tipoSentencia) {
+
+        // SI la cadena es nula, esta vacia o dice solo sentencia asignamos sentencia
+        // definitiva.
+        if (tipoSentencia == null || tipoSentencia.isBlank() || tipoSentencia.toLowerCase() == "sentencia") {
+            return TipoSentencia.SENTENCIA_DEFINITIVA;
+        }
+
+        // 1) Buscamos las grases completas y tomar la que aparezca primero en la
+        // cadena:
+        int idxDef = firstIndex(P_DEF, tipoSentencia);
+        int idxInt = firstIndex(P_INT, tipoSentencia);
+
+        if (idxDef != Integer.MAX_VALUE || idxInt != Integer.MAX_VALUE) {
+            return (idxInt < idxDef) ? TipoSentencia.SENTENCIA_INTERLOCUTORIA
+                    : TipoSentencia.SENTENCIA_DEFINITIVA;
+        }
+
+        // 2) Fallback: si no se encontró "sentencia ..." pero sí las palabras clave
+        // sueltas
+        int idxDef2 = firstIndex(P_DEF_SOLO, tipoSentencia);
+        int idxInt2 = firstIndex(P_INT_SOLO, tipoSentencia);
+
+        if (idxDef2 == Integer.MAX_VALUE && idxInt2 == Integer.MAX_VALUE) {
+            // Si nada coincide, puedes devolver un default o DESCONOCIDA según tu dominio
+            return TipoSentencia.SENTENCIA_DEFINITIVA;
+        }
+        return (idxInt2 < idxDef2) ? TipoSentencia.SENTENCIA_INTERLOCUTORIA
+                : TipoSentencia.SENTENCIA_DEFINITIVA;
+
+    }
+
+    public TipoResolucion mapTipoResolucionSentencia(String tipoResolucion) {
+        return switch (tipoResolucion) {
+            case "A" -> TipoResolucion.ABSOLUTORIA;
+            case "C" -> TipoResolucion.CONDENATORIA;
+            case "D" -> TipoResolucion.DECLARATIVA;
+            case "I" -> TipoResolucion.IMPROCEDENTE;
+            default -> throw new NotFoundException("No se puede determinar el tipo de resolución de una sentencia", tipoResolucion);
+        };
+    }
+
+    private static int firstIndex(Pattern p, String text) {
+        Matcher m = p.matcher(text);
+        return m.find() ? m.start() : Integer.MAX_VALUE;
+    }
+}

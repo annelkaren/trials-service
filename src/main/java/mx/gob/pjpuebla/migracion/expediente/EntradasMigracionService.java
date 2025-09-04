@@ -27,6 +27,7 @@ import mx.gob.pjpuebla.migracion.actores.complementoCampos.DemandadoGeneralMigra
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionService;
+import mx.gob.pjpuebla.migracion.acuerdos.SentenciaMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.amparos.AmparoMigracionService;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracionService;
@@ -45,6 +46,7 @@ import mx.gob.pjpuebla.migracion.ocomun.Ocomun;
 
 import mx.gob.pjpuebla.migracion.ocomun.OcomunService;
 import mx.gob.pjpuebla.migracion.oficios.OficiosMigracionService;
+import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoService;
@@ -70,6 +72,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -108,6 +111,7 @@ public class EntradasMigracionService {
     private final DemandadoGeneralMigracionRepository demandadoGeneralMigracionRepository;
     private final ConceptosMigracionService conceptosMigracionService;
     private final ConceptosMatFamiliarMigracionService conceptosMatFamiliarMigracionService;
+    private final UtilsMigracion utilsMigracion;
 
     // service de sistema actual:
     private final JuzgadoService juzgadoService;
@@ -312,7 +316,7 @@ public class EntradasMigracionService {
         JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Paso 6: se busca la materia de la entrada para vincularla con el tipoJuicio:
-        String materiaString = mapMateria(juicioPhp.getMateria());
+        String materiaString = utilsMigracion.mapMateria(juicioPhp.getMateria());
         Materia materia = materiaService.findByNombre(materiaString);
 
         // Paso 7 : se busca si existe el tipo de juicio en el sistema actual si no lo
@@ -354,12 +358,10 @@ public class EntradasMigracionService {
 
         // Migración de documentos:
 
-        // paso 14 obtener promociones:
-        List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
-        createPromocionesMigracion(detallesProm, carpeta);
+        // paso 14 crear acuerdos y sentencias:
 
-        // List<AcuerdosMigracion> acuerdos =
-        // acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+        List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
+        List<AcuerdosMigracion> sentencias = acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
 
         // Paso 15: se crea el registro de migración
         Migraciones migracion = null;
@@ -511,7 +513,7 @@ public class EntradasMigracionService {
         personas.forEach(persona -> {
             // determinamos si la persona implicada es un actor, demandado:
 
-            TipoPartes tipoPartes = findOrCreateTipoPartes(tipoJuicio, mapTipoPartesMigracion(persona.getTipo()));
+            TipoPartes tipoPartes = findOrCreateTipoPartes(tipoJuicio, utilsMigracion.mapTipoPartesMigracion(persona.getTipo()));
 
             // campos que se llenan unicamente para tipo de juicio familiar y tipo de
             // sistema oralidad:
@@ -522,12 +524,12 @@ public class EntradasMigracionService {
             String domicilio = null;
 
             // Configurar notificaciones:
-            TipoNotificacion tipoNotificacion = mapTipoNotificacion(persona.getTipoNotificacion());
+            TipoNotificacion tipoNotificacion = utilsMigracion.mapTipoNotificacion(persona.getTipoNotificacion());
             String correoElectronicoNotificacion = null;
 
             PersonaDocumento personaObj = createPersonaDocumento(
                     persona.getNombre(),
-                    mapTipoPersona(persona.getTipoPersona()),
+                    utilsMigracion.mapTipoPersona(persona.getTipoPersona()),
                     Rol.PRINCIPAL,
                     carpeta,
                     tipoPartes,
@@ -569,7 +571,7 @@ public class EntradasMigracionService {
         List<Documento> documentosAcuerdos = new ArrayList<>();
 
         acuerdos.forEach(acuerdo -> {
-            List<String> rubros = mapRubros(acuerdo.getResumen());
+            List<String> rubros = utilsMigracion.mapRubros(acuerdo.getResumen());
             String rubroPrincipal = rubros.size() > 0 ? rubros.get(0) : "";
 
             AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
@@ -578,7 +580,8 @@ public class EntradasMigracionService {
                     acuerdo.getFechaResolucion(),
                     rubros,
                     acuerdo.getClave().toString(),
-                    acuerdo.getRuta());
+                    acuerdo.getRuta(),
+                    acuerdo.getFecha());
 
             Documento acuerdoCreado = documentoService.createAcuerdoMigracion(data);
             documentosAcuerdos.add(acuerdoCreado);
@@ -588,13 +591,35 @@ public class EntradasMigracionService {
         return documentosAcuerdos;
     }
 
+    private List<Documento> createSentenciaMigracion(List<AcuerdosMigracion> sentencias, Carpeta carpeta){
+        List<Documento> documentosSentencias = new ArrayList<>();
+
+        sentencias.forEach(sentencia -> {
+
+            SentenciaMigracionSaveRecord data = new SentenciaMigracionSaveRecord(
+                carpeta,
+                sentencia.getFechaResolucion(),
+                utilsMigracion.mapTipoSentencia(sentencia.getResumen()),
+                utilsMigracion.mapTipoResolucionSentencia(sentencia.getSentencia()),
+                sentencia.getClave().toString(),
+                sentencia.getRuta(),
+                sentencia.getFecha()
+            );
+
+            Documento sentenciaCreada = documentoService.createSentenciaMigracion(data);
+            documentosSentencias.add(sentenciaCreada);
+        });
+
+        return documentosSentencias;
+    }
+
     private List<Documento> createPromocionesMigracion(List<DetallesProm> detallesProm, Carpeta carpeta) {
         List<Documento> promocionesCreadas = new ArrayList<>();
 
         detallesProm.forEach(promocion -> {
             // pasamos el tipo de promoción 1 escrito 2 oficio
             // Pasamos la descripción si es promocion electronica o una promocion .
-            TipoPromocion tipoPromocion = mapTipoPromocion(promocion.getTipo(), promocion.getDescrip());
+            TipoPromocion tipoPromocion = utilsMigracion.mapTipoPromocion(promocion.getTipo(), promocion.getDescrip());
 
             // crear promoción:
             Documento promocionCreada = documentoService.createPromocionMigracion(carpeta, tipoPromocion,
@@ -620,100 +645,6 @@ public class EntradasMigracionService {
         }
     }
 
-    private ActorGeneralMigracion findByActorGeneralMigracion(String cuActor) {
-        Optional<ActorGeneralMigracion> actorDatosGenerales = actorGeneralMigracionRepository.findBycuActor(cuActor);
-        if (actorDatosGenerales.isPresent()) {
-            return actorDatosGenerales.get();
-        }
-
-        return null;
-    }
-
-    private DemandadoGeneralMigracion findByDemandadoGeneralMigracion(String cuDemandado) {
-        Optional<DemandadoGeneralMigracion> demandadoDatosGenerales = demandadoGeneralMigracionRepository
-                .findBycuDem(cuDemandado);
-
-        if (demandadoDatosGenerales.isPresent()) {
-            return demandadoDatosGenerales.get();
-        }
-
-        return null;
-    }
-
-    // mapeos
-    private String mapMateria(String m) {
-        return switch (m) {
-            case "P" -> "PENAL";
-            case "L" -> "LABORAL";
-            case "M" -> "MERCANTIL";
-            case "F" -> "FAMILIAR";
-            case "C" -> "CIVIL";
-            case "E" -> "EXHORTO";
-            case "J" -> "JUSTICIA PARA ADOLESCENTES";
-            default -> "DESCONOCIDO";
-        };
-    }
-
-    private String mapTipoPersona(String tipoPersona) {
-        return switch (tipoPersona) {
-            case "F" -> "fisica";
-            case "M" -> "moral";
-            default -> "";
-        };
-    }
-
-    private String mapTipoPartesMigracion(String tipo) {
-        return switch (tipo) {
-            case "D" -> "Demandado";
-            case "A" -> "Actor";
-            default -> "";
-        };
-    }
-
-    private TipoNotificacion mapTipoNotificacion(String tipoNotificacion) {
-        if (tipoNotificacion == null) {
-            return TipoNotificacion.NINGUNO;
-        }
-
-        return switch (tipoNotificacion) {
-            case "CO" -> TipoNotificacion.CORREO_ELECTRONICO;
-            case "DN" -> TipoNotificacion.DOMICILIO;
-            case "DE" -> TipoNotificacion.EMPLAZAMIENTO;
-            case "ES", "E" -> TipoNotificacion.ESTRADO;
-            case "EX" -> TipoNotificacion.EXHORTO;
-            case "ED" -> TipoNotificacion.EDITCTOS;
-            default -> TipoNotificacion.NINGUNO;
-        };
-    }
-
-    private TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion) {
-
-        if (descripcion == "PROMOCION ELECTRONICA") {
-            return TipoPromocion.CORREO_ELECTRONICO;
-        }
-
-        if (tipoPromocion == null || tipoPromocion != "") {
-            return TipoPromocion.ESCRITO;
-        }
-
-        return switch (tipoPromocion) {
-            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
-            case "2" -> TipoPromocion.OFICIO;
-            default -> TipoPromocion.ESCRITO;
-        };
-    }
-
-    private List<String> mapRubros(String rubros) {
-        if (rubros == null || rubros.isBlank()) {
-            return List.of();
-        }
-
-        return Arrays.stream(rubros.split("\\."))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList();
-    }
-
     private List<Anexo> createAnexosDePromociones(String anexos, Documento documento) {
         if (anexos == null || anexos.isBlank() || anexos.contentEquals("Sin Anexos")) {
             return List.of();
@@ -731,4 +662,8 @@ public class EntradasMigracionService {
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
+
+
+        
+            
 }

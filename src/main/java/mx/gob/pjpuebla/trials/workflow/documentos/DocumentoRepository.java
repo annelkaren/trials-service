@@ -410,4 +410,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
             @Param("juzgados") List<Juzgado> juzgados);
 
+    Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
+
 }

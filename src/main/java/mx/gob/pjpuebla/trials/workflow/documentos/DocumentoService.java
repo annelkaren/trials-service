@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.acuerdos.AcuerdosMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.acuerdos.SentenciaMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.detallesProm.DetallePromSaveRecord;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.configuraciones.Configuraciones;
@@ -2435,60 +2437,95 @@ public class DocumentoService {
                 return documentoRepository.save(documento);
         }
 
-        public Documento createPromocionMigracion(Carpeta carpeta, TipoPromocion tipoPromocion, String folio, String ruta) {
+        public Documento createPromocionMigracion(DetallePromSaveRecord promocion) {
 
                 Persona persona = personaService.getAuditor();
                 Concepto concepto = conceptoRepository.findByNombre("Adjuntar")
                                 .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar"));
 
                 DocumentoData docData = new DocumentoData()
-                                .setTipoPromocion(tipoPromocion);
+                                .setTipoPromocion(promocion.tipoPromocion());
 
-                Documento promocion = new Documento()
-                                .setCarpeta(carpeta)
-                                .setFolio(folio)
+                Documento promocionNew = new Documento()
+                                .setCarpeta(promocion.carpeta())
+                                .setFolio(promocion.folio())
                                 .setEstatus(EstadoCarpeta.INTEGRADO)
                                 .setConcepto(concepto)
                                 .setData(docData)
                                 .setPersona(persona)
                                 .setTipoDocumento(TipoDocumento.PROMOCION)
-                                .setRuta(ruta)
+                                .setRuta(promocion.ruta())
                                 .setMigrado(Migrado.SI);
                 
-                //promoción electronica: 
-                if(tipoPromocion.equals(tipoPromocion.CORREO_ELECTRONICO)){
-                        
+                //Buscamos si esta promoción esta relacionada con un acuerdo
+                Optional<Documento> acuerdo = documentoRepository.findByTipoDocumentoAndFolio(TipoDocumento.ACUERDO, promocion.acuerdo());
+
+                if(acuerdo.isPresent()){
+                        Documento documentoAcuerdo = acuerdo.get();
+                        promocionNew.setAcuerdoRespuesta(documentoAcuerdo);
                 }
-                return documentoRepository.save(promocion);
+
+                // promoción electronica:
+                if (promocion.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
+
+                }
+                return documentoRepository.save(promocionNew);
         }
 
         @Transactional
-        public Documento createAcuerdoMigracion(AcuerdosMigracionSaveRecord acuerdo){
-                //Creamos información de los rubros en documentoData:
+        public Documento createAcuerdoMigracion(AcuerdosMigracionSaveRecord acuerdo) {
+                // Creamos información de los rubros en documentoData:
                 DocumentoData docData = new DocumentoData()
-                        .setRubros(acuerdo.rubros());
+                                .setRubros(acuerdo.rubros());
 
-                //Creamos información del documento. 
+                // Creamos información del documento.
                 Documento documento = new Documento()
-                        .setCarpeta(acuerdo.carpeta())
-                        .setTipoDocumento(TipoDocumento.ACUERDO)
-                        .setEstatus(EstadoCarpeta.PUBLICADO)
-                        .setData(docData)
-                        .setFolio(acuerdo.folio())
-                        .setRuta(acuerdo.ruta());
-                
+                                .setCarpeta(acuerdo.carpeta())
+                                .setTipoDocumento(TipoDocumento.ACUERDO)
+                                .setEstatus(EstadoCarpeta.PUBLICADO)
+                                .setData(docData)
+                                .setFolio(acuerdo.folio())
+                                .setRuta(acuerdo.ruta());
+
                 documento = documentoRepository.save(documento);
-                
+
                 DocumentoDetalle documentoDetalle = new DocumentoDetalle()
-                        .setTipoAcuerdo(acuerdo.tipoAcuerdo())
-                        .setFechaResolucion(acuerdo.fechaResolucion())
-                        .setEtapaProcesal("")
-                        .setResumen("")
-                        .setDocumento(documento);
-                
+                                .setTipoAcuerdo(acuerdo.tipoAcuerdo())
+                                .setFechaResolucion(acuerdo.fechaResolucion())
+                                .setEtapaProcesal("")
+                                .setResumen("")
+                                .setFechaPublicacion(acuerdo.fechaPublicacion())
+                                .setDocumento(documento);
+
                 documentoDetalleRepository.save(documentoDetalle);
-                
+
                 return documento;
 
+        }
+
+        @Transactional
+        public Documento createSentenciaMigracion(SentenciaMigracionSaveRecord sentencia) {
+                // Creamos documento:
+                Documento documentoSentencia = new Documento()
+                                .setCarpeta(sentencia.carpeta())
+                                .setTipoDocumento(TipoDocumento.SENTENCIA)
+                                .setEstatus(EstadoCarpeta.PUBLICADO)
+                                .setFolio(sentencia.folio())
+                                .setRuta(sentencia.ruta());
+
+                documentoSentencia = documentoRepository.save(documentoSentencia);
+
+                DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                                .setFechaResolucion(sentencia.fechaResolucion())
+                                .setEtapaProcesal("")
+                                .setTipoSentencia(sentencia.tipoSentencia())
+                                .setTipoResolucion(sentencia.tipoResolucion())
+                                .setExtractoSentencia("")
+                                .setDocumento(documentoSentencia)
+                                .setFechaPublicacion(sentencia.fechaPublicacion());
+
+                documentoDetalleRepository.save(documentoDetalle);
+
+                return documentoSentencia;
         }
 }
