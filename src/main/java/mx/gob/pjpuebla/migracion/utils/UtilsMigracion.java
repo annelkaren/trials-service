@@ -5,20 +5,25 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 
+@RequiredArgsConstructor
+@Service
 public class UtilsMigracion {
 
     // Declaramos los posibles valores que necesitamos declarar de tipoSentencia:
-    Pattern P_DEF = Pattern.compile("sentencia\\s+definitiva", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    Pattern P_INT = Pattern.compile("sentencia\\s+interlocutoria", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_DEF = Pattern.compile("sentencia\\s+definitiva", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_INT = Pattern.compile("sentencia\\s+interlocutoria", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-    Pattern P_DEF_SOLO = Pattern.compile("\\bdefinitiva\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    Pattern P_INT_SOLO = Pattern.compile("\\binterlocutoria\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_DEF_SOLO = Pattern.compile("\\bdefinitiva\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_INT_SOLO = Pattern.compile("\\binterlocutoria\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     // mapeos
     public String mapMateria(String m) {

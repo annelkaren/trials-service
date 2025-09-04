@@ -33,6 +33,7 @@ import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.ConceptosMigracionService;
 import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracion;
 import mx.gob.pjpuebla.migracion.conceptos.familiar.ConceptosMatFamiliarMigracionService;
+import mx.gob.pjpuebla.migracion.detallesProm.DetallePromSaveRecord;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.detallesProm.DetallesPromService;
 import mx.gob.pjpuebla.migracion.exhortoCapital.ExhortosCapitalMigracionService;
@@ -362,6 +363,11 @@ public class EntradasMigracionService {
 
         List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
         List<AcuerdosMigracion> sentencias = acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
+        List<DetallesProm> promociones = detallesPromService.buscarPorCu(entrada.getCu());
+        
+        createAcuerdoMigracion(acuerdos, carpeta);
+        createSentenciaMigracion(sentencias, carpeta);
+        createPromocionesMigracion(promociones, carpeta);
 
         // Paso 15: se crea el registro de migración
         Migraciones migracion = null;
@@ -622,8 +628,14 @@ public class EntradasMigracionService {
             TipoPromocion tipoPromocion = utilsMigracion.mapTipoPromocion(promocion.getTipo(), promocion.getDescrip());
 
             // crear promoción:
-            Documento promocionCreada = documentoService.createPromocionMigracion(carpeta, tipoPromocion,
-                    promocion.getId().toString(), promocion.getArchivo());
+            DetallePromSaveRecord detallePromocion = new DetallePromSaveRecord
+            (carpeta, 
+            tipoPromocion,
+            promocion.getId().toString(),
+            promocion.getArchivo(),
+            promocion.getAcuerdo());
+
+            Documento promocionCreada = documentoService.createPromocionMigracion(detallePromocion);
             // Crear anexos:
             createAnexosDePromociones(promocion.getAnexos(), promocionCreada);
 
