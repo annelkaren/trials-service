@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
@@ -144,5 +145,20 @@ public class UtilsMigracion {
     private static int firstIndex(Pattern p, String text) {
         Matcher m = p.matcher(text);
         return m.find() ? m.start() : Integer.MAX_VALUE;
+    }
+
+        // -------- Helpers internos --------
+
+    public String normalizeExpediente(String expediente) {
+        if (expediente == null || expediente.isBlank()) {
+            throw new IllegalArgumentException("El 'expediente' no puede ser nulo ni vacío.");
+        }
+        return expediente.trim(); 
+    }
+
+    public void requireNonNullJuzgado(Juzgado juzgado) {
+        if (juzgado == null) {
+            throw new IllegalArgumentException("El 'juzgado' no puede ser nulo.");
+        }
     }
 }

@@ -1,8 +1,0 @@
-package mx.gob.pjpuebla.migracion.oficios;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
-
-public interface OficiosMigracionRepository extends JpaRepository<OficiosMigracion, Integer> {
-    List<OficiosMigracion> findByCu(String cu);
-}

@@ -1,0 +1,24 @@
+package mx.gob.pjpuebla.migracion.readers.expediente;
+
+import java.util.List;
+
+import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
+import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracion;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
+import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
+
+public record EntradasMigracionRecord(
+    EntradasMigracion entrada,
+    JuzgadosMigracion juzgado,
+    MovimientosMigracionRecord ubicaciones,
+    JuiciosMigracion juicios,
+    List<ActoresMigracion> actores,
+    List<AcuerdosMigracion> acuerdos,
+    List<DetallesProm> promociones
+) {}
