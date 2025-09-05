@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.migracion.readers.expediente;
+package mx.gob.pjpuebla.migracion.readers.entradas;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,7 +91,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EntradasMigracionService {
+public class EntradasMigracionReader {
 
    
 
@@ -142,10 +142,10 @@ public class EntradasMigracionService {
     public EntradasMigracionRecord buscarPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
 
         // Buscar entrada:
-        EntradasMigracion entrada = buscarEntradas(expediente, amo, juzgadoCodigo);
+        EntradasMigracion entrada = requireByExpedienteAmoJuzgado(expediente, amo, juzgadoCodigo);
 
         // Buscar juzgado:
-        JuzgadosMigracion juzgado = juzgadosMigracionService.buscarByCodigo(juzgadoCodigo);
+        JuzgadosMigracion juzgado = juzgadosMigracionService.requireByCodigo(juzgadoCodigo);
 
         // Definir tabla ubicacion:
         String tablaUbi = juzgado != null ? juzgado.getTablaUbicacion() : null;
@@ -200,7 +200,7 @@ public class EntradasMigracionService {
      * @param juzgadoCodigo Código del juzgado
      * @return Lista de entidades `EntradasMigracion`
      */
-    private EntradasMigracion buscarEntradas(String expediente, Integer amo, String juzgadoCodigo) {
+    public EntradasMigracion requireByExpedienteAmoJuzgado(String expediente, Integer amo, String juzgadoCodigo) {
         Optional<EntradasMigracion> entradasOptional = entradasMigracionRepository
                 .findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(expediente, amo, juzgadoCodigo, "A");
 
@@ -216,11 +216,11 @@ public class EntradasMigracionService {
     public ResponseEntity<String> migrarExpediente(String expediente, Integer year, String claveJuzgado) {
 
         // Paso 1: validar que exista tanto el juzgado como la oficialia en el sistema
-        JuzgadosMigracion juzgadoMigracion = juzgadosMigracionService.buscarByCodigo(claveJuzgado);
+        JuzgadosMigracion juzgadoMigracion = juzgadosMigracionService.requireByCodigo(claveJuzgado);
         Juzgado juzgado = juzgadosMigracionService.getJuzgadoFromSistema(claveJuzgado);
 
         // Paso 2: traemos información del expediente desde mysql :
-        EntradasMigracion entrada = buscarEntradas(expediente, year, claveJuzgado);
+        EntradasMigracion entrada = requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
 
         // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado.
         assertExpedienteDisponible(expediente + "/" + year, juzgado);

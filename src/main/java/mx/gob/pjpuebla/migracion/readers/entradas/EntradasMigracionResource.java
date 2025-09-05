@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.migracion.readers.expediente;
+package mx.gob.pjpuebla.migracion.readers.entradas;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @SecurityRequirement(name = "keycloak")
 public class EntradasMigracionResource {
 
-    private final EntradasMigracionService service;
+    private final EntradasMigracionReader service;
 
     @GetMapping
     public ResponseEntity<EntradasMigracionRecord> buscarPorFiltros(

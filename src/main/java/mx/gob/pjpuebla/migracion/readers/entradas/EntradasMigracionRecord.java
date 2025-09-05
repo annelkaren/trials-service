@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.migracion.readers.expediente;
+package mx.gob.pjpuebla.migracion.readers.entradas;
 
 import java.util.List;
 

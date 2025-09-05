@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.migracion.readers.expediente;
+package mx.gob.pjpuebla.migracion.readers.entradas;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

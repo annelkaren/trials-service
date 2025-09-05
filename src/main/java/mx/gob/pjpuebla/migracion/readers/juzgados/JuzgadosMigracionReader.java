@@ -65,7 +65,7 @@ public class JuzgadosMigracionReader {
      * @param codigo Código único del juzgado
      * @return Entidad `JuzgadosMigracion` si existe; null si no se encuentra
      */
-    public JuzgadosMigracion buscarByCodigo(String codigo) {
+    public JuzgadosMigracion requireByCodigo(String codigo) {
         Optional<JuzgadosMigracion> juzgado = juzgadosRepository.findByCodigo(codigo);
 
         if (juzgado.isPresent()) {

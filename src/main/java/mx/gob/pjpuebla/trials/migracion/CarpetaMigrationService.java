@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.migracion.readers.expediente.EntradasMigracion;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;

@@ -1,0 +1,131 @@
+package mx.gob.pjpuebla.migracion.usecases;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+// Readers (legacy)
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader; 
+import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
+import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
+
+// ACL
+import mx.gob.pjpuebla.migracion.acl.mapper.MateriaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
+import mx.gob.pjpuebla.migracion.acl.normalizer.ExpedienteNormalizer;
+import mx.gob.pjpuebla.migracion.acl.validate.LegacyValidators;
+
+// Core (solo modelos)
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
+
+// Facades de migración
+import mx.gob.pjpuebla.trials.migracion.CarpetaMigrationService;
+import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
+import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
+import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
+import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class MigrarExpedienteUseCase {
+
+    // Readers legacy
+    private final EntradasMigracionReader entradasReader;
+    private final JuzgadosMigracionReader juzgadosReader;
+    private final UbicacionesReader ubicacionesReader;
+    private final JuiciosMigracionReader juiciosReader;
+    private final OcomunReader ocomunReader;
+    private final AcuerdosMigracionReader acuerdosReader;
+    private final DetallesPromReader detallesReader;
+    private final ActoresMigracionReader actoresReader;
+
+    // ACL
+    private final MateriaMapper materiaMapper;
+    private final RubrosMapper rubrosMapper;
+    private final PromocionMapper promocionMapper;
+    private final ExpedienteNormalizer expedienteNormalizer;
+    private final LegacyValidators validators;
+
+    // Facades de migración
+    private final CarpetaMigrationService carpetaMig;
+    private final ConceptoMigrationService conceptoMig;
+    private final DocumentoMigracionService documentoMig;
+    private final PersonasMigracionService personasMig;
+    private final MigracionesService migracionesService;
+
+    @Transactional
+    public void migrarExpediente(String expediente, Integer year, String claveJuzgado) {
+        // 1) Fetch legacy
+        var entrada   = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
+        var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
+        var ocomun    = ocomunReader.findByOcomun(entrada.getCu()); // puede ser null
+        var juicioLg  = juiciosReader.buscarJuicio(entrada.getJuicio());
+        var ubicUlt   = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
+        var acuerdos  = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());
+        var sentencias= acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
+        var promos    = detallesReader.buscarPorCu(entrada.getCu());
+        var actores   = actoresReader.buscarPorClave(entrada.getCu());
+
+        // 2) Normalizar/validar
+        String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
+        validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
+
+        // 3) Requerir juzgado actual y asegurar idempotencia
+        Juzgado juzgado = carpetaMig.requireJuzgadoActual(claveJuzgado);
+        carpetaMig.assertExpedienteDisponible(expCompleto, juzgado);
+
+        // 4) Mapeos de negocio
+        String materiaNombre     = materiaMapper.mapMateria(juicioLg.getMateria());
+        TipoJuicio tipoJuicio    = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion());
+        String estadoUltMov      = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
+                                    ? ubicUlt.estado() : "Archivo";
+        Concepto concepto        = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov);
+
+        // 5) Crear carpeta y documentos
+        Carpeta carpeta          = carpetaMig.createFromLegacy(entrada, ocomun, juzgado, tipoJuicio, concepto);
+
+        Documento docInicial     = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
+        documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
+
+        // 6) Personas
+        personasMig.createFromLegacy(actores, tipoJuicio, carpeta);
+
+        // 7) Documentos: acuerdos, sentencias, promociones
+        documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
+        documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
+
+        // Promociones: si tienes PromocionMapper aquí:
+        var tipoPromocionDefault = TipoPromocion.ESCRITO; // o mapear por cada promo con tu ACL
+        // Ejemplo: pasar el tipo mapeado por cada promo en lugar del default
+        promos.forEach(p -> {
+            var tp = promocionMapper.mapTipoPromocion(p.getTipo(), p.getDescrip());
+            documentoMig.createPromocionesFromLegacy(java.util.List.of(p), carpeta, tp);
+        });
+
+        // 8) Registro de migración
+        String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
+        String puesto  = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
+        migracionesService.createMigraciones(
+                EstadoMigracion.MIGRADO_COMPLETADO,
+                "Se ha migrado el expediente principal",
+                recibio,
+                puesto,
+                juzgado,
+                carpeta
+        );
+    }
+}
