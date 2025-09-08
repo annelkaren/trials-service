@@ -20,9 +20,9 @@ SELECT
   COALESCE(TO_CHAR(sen.fecha_sen, 'DD'), '')                AS "DIA_SEN",
   COALESCE(TO_CHAR(sen.fecha_sen, 'MM'), '')                AS "MES_SEN",
   COALESCE(TO_CHAR(sen.fecha_sen, 'YYYY'), '')              AS "AÑO_SEN",
-  ''                                                        AS "DIA_EJEC",
-  ''                                                        AS "MES_EJEC",
-  ''                                                        AS "AÑO_EJEC",
+  '-PENDIENTE-'                                             AS "DIA_EJEC",
+  '-PENDIENTE-'                                             AS "MES_EJEC",
+  '-PENDIENTE-'                                             AS "AÑO_EJEC",
   (
     CASE
       WHEN j.has_112 THEN CASE
@@ -33,7 +33,7 @@ SELECT
       ELSE 39
     END
   )::SMALLINT                                               AS "PERS_INICJUIC",
-  ''                                                        AS "A FAVOR",
+  '-PENDIENTE-'                                             AS "A FAVOR",
   28::SMALLINT                                              AS "CAUSA",
   CASE
     WHEN COALESCE(tcd.n_hijos, 0) = 0 THEN '99'
@@ -43,9 +43,9 @@ SELECT
     WHEN COALESCE(tcd.n_hijos_menores_edad, 0) = 0 THEN '99'
     ELSE TO_CHAR(tcd.n_hijos_menores_edad, 'FM00')
   END                                                       AS "MENORES_EDAD",
-  ''                                                        AS "CUSTODIA",
-  ''                                                        AS "PATRIA_POTESTAD",
-  ''                                                        AS "PENSION_ALIM",
+  '-PENDIENTE-'                                             AS "CUSTODIA",
+  '-PENDIENTE-'                                             AS "PATRIA_POTESTAD",
+  '-PENDIENTE-'                                             AS "PENSION_ALIM",
   -- ===== DATOS DEL DIVORCIANTE 1 =====
   CASE
     WHEN tpd1.s_sexo = 'Masculino' THEN '1'
@@ -71,7 +71,7 @@ SELECT
   tdd1.s_municipio                                          AS "MPIO_RESHAB_DIV1",
   tdd1.s_colonia                                            AS "LOC_RESHAB_DIV1",
   ted1.clave_reporte                                        AS "ESCOL_DIV1",
-  ''                                                        AS "AQUESEDEDICA_DIV1",
+  '-PENDIENTE-'                                             AS "AQUESEDEDICA_DIV1",
   tpd1.n_posicion_trabajo                                   AS "POSICENELTRABAJO_DIV1",
   -- ===== DATOS DEL DIVORCIANTE 2 =====
   CASE
@@ -98,7 +98,7 @@ SELECT
   tdd2.s_municipio                                          AS "MPIO_RESHAB_DIV2",
   tdd2.s_colonia                                            AS "LOC_RESHAB_DIV2",
   ted2.clave_reporte                                        AS "ESCOL_DIV2",
-  ''                                                        AS "AQUESEDEDICA_DIV2",
+  '-PENDIENTE-'                                             AS "AQUESEDEDICA_DIV2",
   tpd2.n_posicion_trabajo                                   AS "POSICENELTRABAJO_DIV2",
   tcd.s_observaciones                                       AS "OBSERVACIONES"
 FROM
