@@ -17,12 +17,11 @@ public class UsuarioMigracion {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
     private Integer clave;
 
     private Integer idusuario;
     private String correo;
-    private String psswd;
+    private String passwd;
     private LocalDate fec_reg;
     private String juz_reg;
     private String usu_reg;

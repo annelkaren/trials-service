@@ -15,8 +15,8 @@ public class EntradasUsuarioMigracionReader {
     private final EntradasUsuarioMigracionRepository entradasUsuarioMigracionRepository;
 
 
-    public EntradasUsuarioMigracion findByClaveActorAndEstatus(String claveActor, String estatus){
-        Optional<EntradasUsuarioMigracion> entradaOptional =  entradasUsuarioMigracionRepository.findByClaveActorAndEstatus(claveActor, estatus);
+    public EntradasUsuarioMigracion findByClaveActorAndEstatus(String claveActor){
+        Optional<EntradasUsuarioMigracion> entradaOptional =  entradasUsuarioMigracionRepository.findByClaveActorAndEstatus(claveActor, "A");
 
         if(entradaOptional.isPresent()){
             return entradaOptional.get();

@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.migracion.policies.MigracionDefaults;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class ConceptoMigrationService {
     private final ConceptosMatFamiliarMigracionReader conceptosFamReader;
     private final MigracionDefaults defaults;
 
+    // Todo: asignar tipo de sistema al tipo juicio.
     /**
      * Busca o crea un TipoJuicio para migración (crea sin activar flags especiales de negocio,
      * los defaults especiales van en los *MigrationService* cuando aplique).
@@ -45,8 +47,11 @@ public class ConceptoMigrationService {
         // 3) Crear si no existe
         TipoJuicio nuevo = new TipoJuicio()
                 .setNombre(descripcionLegacy)
-                .setMateria(materia);
-                // .setTipoSistema(...) si lo puedes determinar aquí
+                .setMateria(materia)
+                .setEstado(Estado.INACTIVE)
+                .setTipoCausa(null)
+                .setTipoJuicioPadreOral(null)
+                .setTipoJuicioPadreTrad(null);
 
         return tipoJuicioRepository.save(nuevo);
     }

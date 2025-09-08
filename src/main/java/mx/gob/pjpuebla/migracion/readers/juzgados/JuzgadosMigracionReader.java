@@ -21,8 +21,6 @@ public class JuzgadosMigracionReader {
     private final PersonaService personaService;
     private final JuzgadoService juzgadoService;
 
-    // ... (método buscarPorCodigo) ...
-
     /**
      * Busca todos los juzgados de forma de lista
      * 

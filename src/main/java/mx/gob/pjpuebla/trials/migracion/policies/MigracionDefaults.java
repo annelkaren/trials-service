@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.migracion.policies;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
@@ -18,13 +17,11 @@ import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 @RequiredArgsConstructor
 public class MigracionDefaults {
 
-    private final Clock clock;
-
     // ---- Carpeta ----
     public SelloEstatus defaultSelloCarpeta() { return SelloEstatus.VALIDO; }
     public EstadoCarpeta defaultEstadoCarpeta() { return EstadoCarpeta.MIGRADO; }
     public Migrado defaultFlagMigrado() { return Migrado.SI; }
-    public LocalDateTime now() { return LocalDateTime.now(clock); }
+    public LocalDateTime now() { return LocalDateTime.now(); }
 
     // ---- Concepto ----
     public Estado defaultEstadoConcepto() { return Estado.INACTIVE; }

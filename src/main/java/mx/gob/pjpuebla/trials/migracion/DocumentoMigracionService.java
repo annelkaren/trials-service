@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 // ACL mappers:
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 
 // Legacy models:
@@ -49,6 +50,7 @@ public class DocumentoMigracionService {
 
     private final SentenciaMapper sentenciaMapper;     // ACL
     private final ResolucionMapper resolucionMapper;   // ACL
+    private final PromocionMapper promocionMapper;    // ACL
 
     /* ------------------------------------------------------------------------------------------------
      *  Acuerdos
@@ -90,7 +92,6 @@ public class DocumentoMigracionService {
 
         List<Documento> documentos = new ArrayList<>();
         for (AcuerdosMigracion s : sentencias) {
-            // Mapear con ACL (no hardcodear enums)
             TipoSentencia tipoSent = sentenciaMapper.mapTipoSentencia(s.getResumen());
             TipoResolucion tipoRes = resolucionMapper.mapTipoResolucionSentencia(s.getSentencia());
 
@@ -111,19 +112,21 @@ public class DocumentoMigracionService {
     }
 
     /* ------------------------------------------------------------------------------------------------
-     *  Promociones (por si lo necesitas aquí también)
+     *  Promociones
      * ----------------------------------------------------------------------------------------------*/
     @Transactional
-    public List<Documento> createPromocionesFromLegacy(List<DetallesProm> promociones,
-                                                       Carpeta carpeta,
-                                                       TipoPromocion defaultTipo) {
+    public List<Documento> createPromocionesFromLegacy(List<DetallesProm> promociones, Carpeta carpeta) {
         if (promociones == null || promociones.isEmpty()) return List.of();
 
         List<Documento> documentos = new ArrayList<>();
+
         for (DetallesProm p : promociones) {
+
+            TipoPromocion tipoPromocion = promocionMapper.mapTipoPromocion(p.getTipo(), p.getDescrip());
+                
             DetallePromSaveRecord save = new DetallePromSaveRecord(
                     carpeta,
-                    defaultTipo,                 // o mapea con tu PromocionMapper en el usecase
+                    tipoPromocion,                 
                     p.getId().toString(),
                     p.getArchivo(),
                     p.getAcuerdo()

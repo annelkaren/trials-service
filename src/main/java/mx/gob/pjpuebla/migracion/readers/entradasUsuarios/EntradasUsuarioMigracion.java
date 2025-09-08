@@ -15,11 +15,10 @@ public class EntradasUsuarioMigracion {
       
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer clave;
 
     private Integer identradasUsuario;
-    private String idusuario;
+    private Integer idusuario;
     private String cuEntradas;
     private String tipo;
     private String otorgo;

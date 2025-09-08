@@ -24,4 +24,8 @@ public class PaisService {
                 .sorted(Comparator.comparing(PaisRecord::nombre)).toList();
     }
 
+    public Pais findByNombreComun(String nombreComun){
+        return paisRepository.findByNombreComun(nombreComun).orElse(null);
+    }
+
 }

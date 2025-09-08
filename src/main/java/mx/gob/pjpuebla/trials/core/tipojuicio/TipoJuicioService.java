@@ -98,9 +98,9 @@ public class TipoJuicioService {
     public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId) {
         List<TipoJuicioDemandasRecord> result = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
 
-        if (result.isEmpty()) {
-            throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
-        }
+        //if (result.isEmpty()) {
+        //    throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
+        //}
 
         return result;
     }

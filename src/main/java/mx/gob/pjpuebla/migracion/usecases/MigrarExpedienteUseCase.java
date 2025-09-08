@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 // Readers (legacy)
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader; 
+import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
@@ -70,15 +72,15 @@ public class MigrarExpedienteUseCase {
     @Transactional
     public void migrarExpediente(String expediente, Integer year, String claveJuzgado) {
         // 1) Fetch legacy
-        var entrada   = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
+        var entrada = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
         var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
-        var ocomun    = ocomunReader.findByOcomun(entrada.getCu()); // puede ser null
-        var juicioLg  = juiciosReader.buscarJuicio(entrada.getJuicio());
-        var ubicUlt   = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
-        var acuerdos  = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());
-        var sentencias= acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
-        var promos    = detallesReader.buscarPorCu(entrada.getCu());
-        var actores   = actoresReader.buscarPorClave(entrada.getCu());
+        var ocomun = ocomunReader.findByOcomun(entrada.getCu()); // puede ser null en el caso de expedientes relacionados con juzgados foraneos
+        var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
+        var ubicUlt = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
+        var acuerdos = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());
+        var sentencias = acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
+        var promos = detallesReader.buscarPorCu(entrada.getCu());
+        var actores = actoresReader.buscarPorClave(entrada.getCu());
 
         // 2) Normalizar/validar
         String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
@@ -88,17 +90,18 @@ public class MigrarExpedienteUseCase {
         Juzgado juzgado = carpetaMig.requireJuzgadoActual(claveJuzgado);
         carpetaMig.assertExpedienteDisponible(expCompleto, juzgado);
 
-        // 4) Mapeos de negocio
-        String materiaNombre     = materiaMapper.mapMateria(juicioLg.getMateria());
-        TipoJuicio tipoJuicio    = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion());
-        String estadoUltMov      = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
-                                    ? ubicUlt.estado() : "Archivo";
-        Concepto concepto        = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov);
+        // 4) Mapeos de valores necesarios en sistema actual provenientes del sistema legacy
+        String materiaNombre = materiaMapper.mapMateria(juicioLg.getMateria());
+        TipoJuicio tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion());
+        String estadoUltMov = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
+                ? ubicUlt.estado()
+                : "Archivo";
+        Concepto concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov);
 
         // 5) Crear carpeta y documentos
-        Carpeta carpeta          = carpetaMig.createFromLegacy(entrada, ocomun, juzgado, tipoJuicio, concepto);
+        Carpeta carpeta = carpetaMig.createFromLegacy(entrada, ocomun, juzgado, tipoJuicio, concepto);
 
-        Documento docInicial     = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
+        Documento docInicial = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
         documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
 
         // 6) Personas
@@ -107,25 +110,17 @@ public class MigrarExpedienteUseCase {
         // 7) Documentos: acuerdos, sentencias, promociones
         documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
         documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
-
-        // Promociones: si tienes PromocionMapper aquí:
-        var tipoPromocionDefault = TipoPromocion.ESCRITO; // o mapear por cada promo con tu ACL
-        // Ejemplo: pasar el tipo mapeado por cada promo en lugar del default
-        promos.forEach(p -> {
-            var tp = promocionMapper.mapTipoPromocion(p.getTipo(), p.getDescrip());
-            documentoMig.createPromocionesFromLegacy(java.util.List.of(p), carpeta, tp);
-        });
+        documentoMig.createPromocionesFromLegacy(promos, carpeta);
 
         // 8) Registro de migración
         String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
-        String puesto  = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
+        String puesto = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
         migracionesService.createMigraciones(
                 EstadoMigracion.MIGRADO_COMPLETADO,
                 "Se ha migrado el expediente principal",
                 recibio,
                 puesto,
                 juzgado,
-                carpeta
-        );
+                carpeta);
     }
 }

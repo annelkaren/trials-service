@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UsuarioMigracionRepository extends JpaRepository<UsuarioMigracion, Integer> {
     
-    Optional<UsuarioMigracion> findByIdUsuarioAndEstatus(Integer IdUsuario, String estatus);
+    Optional<UsuarioMigracion> findByIdusuarioAndEstatus(Integer IdUsuario, String estatus);
 
 }

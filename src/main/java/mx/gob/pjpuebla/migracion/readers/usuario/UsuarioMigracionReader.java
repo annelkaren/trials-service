@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 public class UsuarioMigracionReader {
     private final UsuarioMigracionRepository usuarioMigracionRepository;
 
-    public UsuarioMigracion findUsuarioMigracionByIdUsuarioAnEstado(Integer IdUsuario, String estado){
-        Optional<UsuarioMigracion> usuarioMigracionOptional = usuarioMigracionRepository.findByIdUsuarioAndEstatus(IdUsuario, estado);
+    public UsuarioMigracion findUsuarioMigracionByIdUsuarioAnEstado(Integer IdUsuario){
+        Optional<UsuarioMigracion> usuarioMigracionOptional = usuarioMigracionRepository.findByIdusuarioAndEstatus(IdUsuario, "A");
 
         if(usuarioMigracionOptional.isPresent()){
             return usuarioMigracionOptional.get();
