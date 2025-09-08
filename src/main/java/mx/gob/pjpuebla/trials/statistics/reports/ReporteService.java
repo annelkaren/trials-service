@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -19,7 +20,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -40,7 +41,7 @@ public class ReporteService {
         for (Reporte reportRecord : list) {
             if (reportRecord.getExtraData().getMaterias() != null && !reportRecord.getExtraData().getMaterias().isEmpty()) {
                 if (reportRecord.getExtraData().getJuiciosExcluidos() == null || reportRecord.getExtraData().getJuiciosExcluidos().isEmpty()) {
-                    reportRecord.getExtraData().setJuiciosExcluidos(Arrays.asList(0));
+                    reportRecord.getExtraData().setJuiciosExcluidos(Collections.singletonList(0));
                 }
                 LocalDateTime date = carpetaRepository.getDatesByMateria(reportRecord.getExtraData().getMaterias(), reportRecord.getExtraData().getJuiciosExcluidos());
                 ReporteRecord result = new ReporteRecord(reportRecord.getKey(), reportRecord.getName(), reportRecord.getDescription(),
@@ -66,7 +67,7 @@ public class ReporteService {
             ResultSet rs = queryResult.rs();
 
             wb.setCompressTempFiles(true);
-            Sheet sheet = wb.createSheet(key + "_" + startDate.toString().replace("-", "") + "_" + endDate.toString().replace("-", ""));
+            SXSSFSheet sheet = wb.createSheet(key + "_" + startDate.toString().replace("-", "") + "_" + endDate.toString().replace("-", ""));
 
             ResultSetMetaData md = rs.getMetaData();
             int cols = md.getColumnCount();
@@ -77,10 +78,8 @@ public class ReporteService {
             setValues(wb, sheet, md, rs);
 
             // —— Autosize
-            org.apache.poi.xssf.streaming.SXSSFSheet sxssfSheet =
-                    (org.apache.poi.xssf.streaming.SXSSFSheet) sheet;
             for (int colIdx = 0; colIdx < cols; colIdx++) {
-                sxssfSheet.trackColumnForAutoSizing(colIdx);
+                sheet.trackColumnForAutoSizing(colIdx);
             }
 
             for (int colIdx = 0; colIdx < cols; colIdx++) {
