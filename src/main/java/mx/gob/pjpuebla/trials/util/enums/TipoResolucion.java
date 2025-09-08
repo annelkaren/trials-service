@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum TipoResolucion {
     CONDENATORIA,
-    OBSOLUTORIA,
+    ABSOLUTORIA,
     DECLARATIVA,
     IMPROCEDENTE
 }

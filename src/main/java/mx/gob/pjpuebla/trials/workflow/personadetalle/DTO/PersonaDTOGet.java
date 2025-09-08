@@ -73,6 +73,9 @@ public class PersonaDTOGet {
     @Data
     public static class DatosEstadistica {
 
+        @JsonProperty("posicionTrabajo")
+        private Integer posicionTrabajo;
+
         @JsonProperty("cantidadBienes")
         private Integer cantidadBienes;
 
