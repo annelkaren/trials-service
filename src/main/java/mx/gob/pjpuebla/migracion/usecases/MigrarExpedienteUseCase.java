@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
-import java.util.List;
+
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +30,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
-
+import mx.gob.pjpuebla.trials.migracion.CarpetaDetalleMigracionService;
 // Facades de migración
 import mx.gob.pjpuebla.trials.migracion.CarpetaMigrationService;
 import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
@@ -68,6 +67,7 @@ public class MigrarExpedienteUseCase {
     private final DocumentoMigracionService documentoMig;
     private final PersonasMigracionService personasMig;
     private final MigracionesService migracionesService;
+    private final CarpetaDetalleMigracionService carpetaDetaleMig;
 
     @Transactional
     public void migrarExpediente(String expediente, Integer year, String claveJuzgado) {
@@ -92,7 +92,7 @@ public class MigrarExpedienteUseCase {
 
         // 4) Mapeos de valores necesarios en sistema actual provenientes del sistema legacy
         String materiaNombre = materiaMapper.mapMateria(juicioLg.getMateria());
-        TipoJuicio tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion());
+        TipoJuicio tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion(), juzLegacy);
         String estadoUltMov = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
                 ? ubicUlt.estado()
                 : "Archivo";
@@ -104,15 +104,18 @@ public class MigrarExpedienteUseCase {
         Documento docInicial = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
         documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
 
-        // 6) Personas
+        // 6) Creamos el detalle de la carpeta: 
+        carpetaDetaleMig.createCarpetaDetalle(carpeta);
+        
+        // 7) Personas
         personasMig.createFromLegacy(actores, tipoJuicio, carpeta);
 
-        // 7) Documentos: acuerdos, sentencias, promociones
+        // 8) Documentos: acuerdos, sentencias, promociones
         documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
         documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
         documentoMig.createPromocionesFromLegacy(promos, carpeta);
 
-        // 8) Registro de migración
+        // 9) Registro de migración
         String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
         String puesto = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
         migracionesService.createMigraciones(

@@ -7,14 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
+import mx.gob.pjpuebla.migracion.acl.mapper.TipoSistemaMapper;
 import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliarMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.migracion.policies.MigracionDefaults;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
@@ -28,6 +31,7 @@ public class ConceptoMigrationService {
     private final ConceptosMigracionReader conceptosReader;
     private final ConceptosMatFamiliarMigracionReader conceptosFamReader;
     private final MigracionDefaults defaults;
+    private final TipoSistemaMapper tipoSistemaMapper;
 
     // Todo: asignar tipo de sistema al tipo juicio.
     /**
@@ -35,21 +39,25 @@ public class ConceptoMigrationService {
      * los defaults especiales van en los *MigrationService* cuando aplique).
      */
     @Transactional
-    public TipoJuicio findOrCreateTipoJuicioForMigration(String materiaNombre, String descripcionLegacy) {
+    public TipoJuicio findOrCreateTipoJuicioForMigration(String materiaNombre, String descripcionLegacy, JuzgadosMigracion juzgadosMigracion) {
         // 1) Resolver Materia (recomendado que MateriaService tenga Optional<Materia> findByNombre)
         Materia materia = Optional.ofNullable(materiaService.findByNombre(materiaNombre))
                 .orElseThrow(() -> new IllegalArgumentException("Materia no encontrada: " + materiaNombre));
 
-        // 2) Buscar tipoJuicio por nombre
+        // 2) Obtener tipo de sistema: 
+        TipoSistema tipoSistema = tipoSistemaMapper.mapTipoSistema(juzgadosMigracion);
+
+        // 3) Buscar tipoJuicio por nombre
         Optional<TipoJuicio> existente = tipoJuicioRepository.findByNombre(descripcionLegacy);
         if (existente.isPresent()) return existente.get();
 
-        // 3) Crear si no existe
+        // 4) Crear si no existe
         TipoJuicio nuevo = new TipoJuicio()
                 .setNombre(descripcionLegacy)
                 .setMateria(materia)
                 .setEstado(Estado.INACTIVE)
                 .setTipoCausa(null)
+                .setTipoSistema(tipoSistema)
                 .setTipoJuicioPadreOral(null)
                 .setTipoJuicioPadreTrad(null);
 

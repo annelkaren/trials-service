@@ -99,9 +99,7 @@ public class CarpetaMigrationService {
                    .setTipoCarpeta(TipoCarpeta.DEMANDA)
                    .setMigrado(defaults.defaultFlagMigrado())
                    .setCu(entrada.getCu());
-        } else {
-            // DEFAULT: si s requiere aplicar otra politica
-        }
+        } 
 
         return carpetaRepository.save(carpeta);
     }
