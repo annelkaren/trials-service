@@ -93,3 +93,18 @@ inegi:
   url: https://gaia.inegi.org.mx/wscatgeo
   states-path: /mgee
   mun-path: /mgem/
+
+ftp:
+  servers:
+    principal:
+      host: 172.16.6.22
+      port: 21
+      username: secgj
+      password: 6<2Z9qy+yc.8
+      passive-move: true
+    respaldo:
+      host: 172.16.6.206
+      port: 21
+      username: secgj
+      password: 6<2Z9qy+yc.8
+      passive-move: true
