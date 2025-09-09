@@ -2485,7 +2485,8 @@ public class DocumentoService {
                                 .setEstatus(EstadoCarpeta.PUBLICADO)
                                 .setData(docData)
                                 .setFolio(acuerdo.folio())
-                                .setRuta(acuerdo.ruta());
+                                .setRuta(acuerdo.ruta())
+                                .setMigrado(Migrado.SI);
 
                 documento = documentoRepository.save(documento);
 
@@ -2511,7 +2512,8 @@ public class DocumentoService {
                                 .setTipoDocumento(TipoDocumento.SENTENCIA)
                                 .setEstatus(EstadoCarpeta.PUBLICADO)
                                 .setFolio(sentencia.folio())
-                                .setRuta(sentencia.ruta());
+                                .setRuta(sentencia.ruta())
+                                .setMigrado(Migrado.SI);
 
                 documentoSentencia = documentoRepository.save(documentoSentencia);
 

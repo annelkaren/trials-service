@@ -27,6 +27,7 @@ import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 // Core:
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
@@ -139,13 +140,13 @@ public class DocumentoMigracionService {
     }
 
     /* ------------------------------------------------------------------------------------------------
-     *  Demanda inicial y Anexos (sin cambios, te los dejo por completitud)
+     *  Demanda inicial y Anexos
      * ----------------------------------------------------------------------------------------------*/
     @Transactional
     public Documento createDemandaInicial(Ocomun ocomun,
                                           Carpeta carpeta,
                                           Concepto concepto) {
-        DocumentoData data = new DocumentoData(); // ajusta si necesitas payload
+        DocumentoData data = new DocumentoData(); 
         return createDocumento(null, carpeta, data,
                 ocomun != null ? ocomun.getRutaDigitalizacion() : "",
                 null, concepto, null, null);
@@ -172,7 +173,8 @@ public class DocumentoMigracionService {
                 .setFolio(folio)
                 .setConcepto(concepto)
                 .setInstitucion(institucion)
-                .setAcuerdoRespuesta(documentoRelacionado);
+                .setAcuerdoRespuesta(documentoRelacionado)
+                .setMigrado(Migrado.SI);
 
         return documentoRepository.save(doc);
     }
