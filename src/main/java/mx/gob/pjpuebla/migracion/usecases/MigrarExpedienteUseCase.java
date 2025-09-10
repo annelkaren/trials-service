@@ -32,8 +32,9 @@ import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.migracion.CarpetaDetalleMigracionService;
+import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
 // Facades de migración
-import mx.gob.pjpuebla.trials.migracion.CarpetaMigrationService;
+
 import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
 import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
@@ -64,7 +65,7 @@ public class MigrarExpedienteUseCase {
     private final LegacyValidators validators;
 
     // Facades de migración
-    private final CarpetaMigrationService carpetaMig;
+    private final CarpetaMigracionService carpetaMig;
     private final ConceptoMigrationService conceptoMig;
     private final DocumentoMigracionService documentoMig;
     private final PersonasMigracionService personasMig;

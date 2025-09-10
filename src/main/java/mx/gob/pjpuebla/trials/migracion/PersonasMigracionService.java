@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.acl.mapper.PartesMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.PersonasMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.NotificacionMapper;
@@ -36,6 +37,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PersonasMigracionService {
 
     private final DomicilioService domicilioService;
@@ -82,6 +84,7 @@ public class PersonasMigracionService {
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
             }
 
+            log.info("Persona: " + p.getNombre());
             var pd = new PersonaDocumento()
                 .setNombre(p.getNombre())
                 .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))
