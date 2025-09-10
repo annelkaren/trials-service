@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 // ACL mappers:
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 
@@ -20,6 +22,7 @@ import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion; 
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;     
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;    
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
@@ -37,6 +40,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -46,12 +51,15 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 public class DocumentoMigracionService {
 
     private final DocumentoRepository documentoRepository;
+    private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AnexoRepository anexoRepository;
     private final DocumentoService documentoService;
 
     private final SentenciaMapper sentenciaMapper;     // ACL
     private final ResolucionMapper resolucionMapper;   // ACL
     private final PromocionMapper promocionMapper;    // ACL
+    private final EstadoAcuseMapper estadoAcuseMapper; // ACL
+    private final EstadoOficioMapper estadoOficioMapper; // ACL
 
     /* ------------------------------------------------------------------------------------------------
      *  Acuerdos
@@ -209,5 +217,50 @@ public class DocumentoMigracionService {
                 .toList();
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
+    }
+
+    /* ------------------------------------------------------------------------------------------------
+     *  OFICIOS
+     * ----------------------------------------------------------------------------------------------*/
+
+    @Transactional
+    public List<Documento> createOficiosFromLegacy(List<OficiosMigracion> oficiosMigracion, Carpeta carpeta){
+        List<Documento> oficios = new ArrayList<>();
+
+        oficiosMigracion.forEach(oficioMigracion -> {
+            
+           
+            DocumentoData oficioData = new DocumentoData()
+                .setTipoOficio("Jurisdiccional")
+                .setOficioRealizadoPor(oficioMigracion.getNombre()); //Por recomendación se guarda nombre de la persona quien elaboro el ofico en form data.
+            
+            Documento documento = new Documento()
+                .setCarpeta(carpeta)
+                .setFolio(oficioMigracion.getOficio().toString())
+                .setTipoDocumento(TipoDocumento.OFICIO)
+                .setIdHistorico(oficioMigracion.getId())
+                .setData(oficioData)
+                .setInstitucionHistorica(oficioMigracion.getDependencia()) // nombre de la dependencia historica.
+                .setMigrado(Migrado.SI)
+                .setRuta(oficioMigracion.getRutaOfi()) // ruta del oficio.
+                .setEstatus(estadoOficioMapper.estadoOficioMapper(oficioMigracion.getMotivo(), oficioMigracion.getRutaOfiAcuse(), oficioMigracion.getEstatusOfi()));
+
+            documento = documentoRepository.save(documento);
+
+            DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                .setAsunto(oficioMigracion.getAsunto())
+                .setFechaEmision(oficioMigracion.getFecha())
+                .setFechaEntrega(oficioMigracion.getFechaEntrega())
+                .setDocumento(documento)
+                .setRuta(oficioMigracion.getRutaOfiAcuse()) //ruta del acuse.
+                .setComentario(oficioMigracion.getMotivo())
+                .setEstado(estadoAcuseMapper.mapEstadoAcuse(oficioMigracion.getMotivo(), oficioMigracion.getRutaOfiAcuse()));
+
+                documentoDetalleRepository.save(documentoDetalle);
+
+                oficios.add(documento);
+        });
+
+        return oficios;
     }
 }

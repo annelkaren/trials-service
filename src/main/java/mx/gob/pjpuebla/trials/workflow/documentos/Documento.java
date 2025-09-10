@@ -83,6 +83,12 @@ public class Documento implements Serializable, Auditable {
     @Column(name = "N_MIGRADO")
     private Migrado migrado;
 
+    @Column(name = "S_INSTITUCION_HISTORICA")
+    private String institucionHistorica;
+
+    @Column(name = "N_ID_HISTORICO")
+    private Integer idHistorico;
+
     @Accessors(chain = false)
     @Embedded
     private Audit audit;

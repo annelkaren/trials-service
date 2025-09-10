@@ -22,7 +22,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 @Service
 @RequiredArgsConstructor
-public class CarpetaMigrationService {
+public class CarpetaMigracionService {
 
     private final CarpetaRepository carpetaRepository;
     private final MigracionDefaults defaults;

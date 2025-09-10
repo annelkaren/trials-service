@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
@@ -53,6 +54,7 @@ public class MigrarExpedienteUseCase {
     private final AcuerdosMigracionReader acuerdosReader;
     private final DetallesPromReader detallesReader;
     private final ActoresMigracionReader actoresReader;
+    private final OficiosMigracionReader oficiosReader;
 
     // ACL
     private final MateriaMapper materiaMapper;
@@ -69,6 +71,7 @@ public class MigrarExpedienteUseCase {
     private final MigracionesService migracionesService;
     private final CarpetaDetalleMigracionService carpetaDetaleMig;
 
+
     @Transactional
     public void migrarExpediente(String expediente, Integer year, String claveJuzgado) {
         // 1) Fetch legacy
@@ -81,6 +84,7 @@ public class MigrarExpedienteUseCase {
         var sentencias = acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
         var promos = detallesReader.buscarPorCu(entrada.getCu());
         var actores = actoresReader.buscarPorClave(entrada.getCu());
+        var oficios = oficiosReader.buscarPorCu(entrada.getCu());
 
         // 2) Normalizar/validar
         String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
@@ -110,10 +114,11 @@ public class MigrarExpedienteUseCase {
         // 7) Personas
         personasMig.createFromLegacy(actores, tipoJuicio, carpeta);
 
-        // 8) Documentos: acuerdos, sentencias, promociones
+        // 8) Documentos: acuerdos, sentencias, promociones, oficios
         documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
         documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
         documentoMig.createPromocionesFromLegacy(promos, carpeta);
+        documentoMig.createOficiosFromLegacy(oficios, carpeta);
 
         // 9) Registro de migración
         String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;

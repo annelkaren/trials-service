@@ -17,6 +17,6 @@ public class OficiosMigracionReader {
      * @return Lista de oficios encontrados
      */
     public List<OficiosMigracion> buscarPorCu(String cu) {
-        return oficiosMigracionRepository.findByCu(cu);
+        return oficiosMigracionRepository.findByCuAndEstatusOfiIn(cu, List.of("S", "N"));
     }
 }
