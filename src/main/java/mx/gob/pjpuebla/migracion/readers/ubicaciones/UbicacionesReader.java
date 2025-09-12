@@ -102,7 +102,7 @@ public class UbicacionesReader {
     }
 
     public List<MovimientosMigracionRecord> buscarPiezasByCu(String cu, String tablaUbi) {
-        String sql =         "SELECT u.id_ubicaciones, u.cu, u.id_puesto, u.fecha, u.hora, u.status, u.estado, u.etapa, " +
+        String sql ="SELECT u.id_ubicaciones, u.cu, u.id_puesto, u.fecha, u.hora, u.status, u.estado, u.etapa, " +
         "u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, u.libro, u.num_foja, " +
         "u.obse, u.sentido, u.digitalizado_acu, p.nombre " +
         "FROM " + tablaUbi + " u " +

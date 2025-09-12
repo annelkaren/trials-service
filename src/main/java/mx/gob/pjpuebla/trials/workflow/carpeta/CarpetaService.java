@@ -166,8 +166,9 @@ public class CarpetaService {
 
         protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
                 List<Rol> rol = List.of(Rol.PRINCIPAL);
-                List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
-                                parte, rol);
+                List<PersonaDocumentoRecord> personas = personaDocumentoRepository
+                                .findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
+                                                parte, rol);
 
                 if (personas == null || personas.isEmpty()) {
                         return "";
@@ -184,7 +185,6 @@ public class CarpetaService {
                         if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank())
                                 partesNombre.add(p.apellidoMaterno());
 
-                        
                         if (!partesNombre.isEmpty()) {
                                 nombresCompletos.add(String.join(" ", partesNombre));
                         }
@@ -406,17 +406,20 @@ public class CarpetaService {
                                         carpetaEtapas.getEtapaProcesal().getNombre());
                 }
 
-                //obtenemos juzgado y nombre del juez :
+                // obtenemos juzgado y nombre del juez :
                 Juzgado juzgado = carpeta.getJuzgado();
                 Persona juez = personaRepository.findByJuzgadoAndRolPrincipal(juzgado, "Juez").orElse(null);
-                String nombreJuez = juez != null ? juez.getNombre() + " " + juez.getApellidoPaterno() + " " + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "") : "";
-                
+                String nombreJuez = juez != null
+                                ? juez.getNombre() + " " + juez.getApellidoPaterno() + " "
+                                                + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "")
+                                : "";
+
                 return new InfoExpedienteRecord(
                                 carpeta.getExpediente(),
                                 carpeta.getTipoJuicio().getNombre(), // TODO mapear de forma correcta expediente tipo
                                                                      // PENAL
                                 carpeta.getTipoJuicio().getId(), // TODO mapear de forma correcta expediente tipo PENAL
-                                nombreJuez, 
+                                nombreJuez,
                                 carpeta.getAudit().getFechaAlta().format(pattern),
                                 "Asunto de penal desde Backend", // TODO añadir asunto para expediente tipo PENAL
                                 tipoProcedimiento,
@@ -798,6 +801,7 @@ public class CarpetaService {
 
         public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId,
                         Pageable pageable) {
+
                 List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosCarpeta(key, carpetaId);
 
                 if (key != null && key.equals("TODAS PIEZAS")) {
@@ -983,10 +987,10 @@ public class CarpetaService {
                 }
         }
 
-        public Carpeta getExpediente(String expediente, Juzgado juzgado){
+        public Carpeta getExpediente(String expediente, Juzgado juzgado) {
                 Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);
 
-                if(carpeta.isPresent()){
+                if (carpeta.isPresent()) {
                         return carpeta.get();
                 }
                 return null;
@@ -994,5 +998,13 @@ public class CarpetaService {
 
         public Carpeta save(Carpeta carpeta) {
                 return carpetaRepository.save(carpeta);
+        }
+
+        public void saveAll(List<Carpeta> carpetas) {
+                carpetaRepository.saveAll(carpetas);
+        }
+
+        public List<Carpeta> findPiezasByCarpeta(Carpeta carpeta) {
+                return carpetaRepository.findByCarpetaPadre(carpeta);
         }
 }

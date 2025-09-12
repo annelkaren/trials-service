@@ -239,4 +239,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
 
         Optional<Carpeta> findByExpedienteAndJuzgado(String expediente, Juzgado juzgado);
+
+        List<Carpeta> findByCarpetaPadre(Carpeta c);
 }

@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.migracion;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -96,6 +98,12 @@ public class MigracionesService {
         carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
         carpeta.setPersona(personaAsignada);
         carpetaService.save(carpeta); 
+
+        // 6) verificar si hay piezas relacionadas con esta carpeta:
+        List<Carpeta> piezas = carpetaService.findPiezasByCarpeta(carpeta);
+
+        piezas.forEach(pieza -> { pieza.setPersona(personaAsignada);  });
+        carpetaService.saveAll(piezas);
 
         // 6) Crear movimiento
         Integer dias = concepto.getDias(); 
