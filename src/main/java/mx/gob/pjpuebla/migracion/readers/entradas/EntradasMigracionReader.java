@@ -142,7 +142,7 @@ public class EntradasMigracionReader {
 
         // Se obtienen las ubicaciones dependiendo del CU y de la tabla dinámica según
         // juzgado
-        MovimientosMigracionRecord ubicaciones = ubicacionesService.buscarUltimoMovimiento(entrada.getCu(), tablaUbi);
+        List<MovimientosMigracionRecord> ubicaciones = ubicacionesService.buscarPiezasByCu(entrada.getCu(), tablaUbi);
 
         // Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());

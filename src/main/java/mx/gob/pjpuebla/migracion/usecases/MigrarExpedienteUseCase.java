@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.migracion.usecases;
 
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +88,7 @@ public class MigrarExpedienteUseCase {
         var promos = detallesReader.buscarPorCu(entrada.getCu());
         var actores = actoresReader.buscarPorClave(entrada.getCu());
         var oficios = oficiosReader.buscarPorCu(entrada.getCu());
+        var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
 
         // 2) Normalizar/validar
         String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
@@ -120,6 +123,11 @@ public class MigrarExpedienteUseCase {
         documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
         documentoMig.createPromocionesFromLegacy(promos, carpeta);
         documentoMig.createOficiosFromLegacy(oficios, carpeta);
+
+        // 9) Piezas: Migración de piezas y sus documentos.
+        carpetaMig.createPiezaConDocumentos(carpeta, piezasLegacy);
+
+
 
         // 9) Registro de migración
         String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;

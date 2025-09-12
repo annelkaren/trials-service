@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.migracion.acl.mapper;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
@@ -9,8 +11,14 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 public class EstadoAcuseMapper {
     
     public EstadoAcuse mapEstadoAcuse(String motivo, String rutaAcuse){
-        if(motivo.isBlank() || motivo.isEmpty() || motivo == "" ||
-             rutaAcuse.isEmpty() || rutaAcuse.isBlank()) {
+        if(Objects.equals(motivo, "Cancelado")){
+            return EstadoAcuse.CANCELADO;
+        }
+
+        if(Objects.equals(motivo, "ENTREGADO")){ return EstadoAcuse.ENTREGADO; }
+        
+        if(motivo == null || motivo.isBlank() || motivo.isEmpty() || motivo.equals("") ||
+            rutaAcuse == null ||  rutaAcuse.isEmpty() || rutaAcuse.isBlank()) {
             return EstadoAcuse.DESCONOCIDO;
         }
 
@@ -18,11 +26,8 @@ public class EstadoAcuseMapper {
             return EstadoAcuse.ENTREGADO;
         }
 
-        return switch(motivo) {
-            case "Cancelado" -> EstadoAcuse.CANCELADO;
-            case "ENTREGADO" -> EstadoAcuse.ENTREGADO; 
-            default -> EstadoAcuse.NOENTREGADO;
-        };
+        return null;
+
     }
 
 }
