@@ -22,7 +22,8 @@ public record DocumentoAsignadoResponseRecord(
     EstadoProrroga estadoProrroga,
     String textoNotificacion,
     String colorNotificacion,
-    String tipoPromocion
+    String tipoPromocion,
+    String migrado
 ) implements Serializable {
     
 }

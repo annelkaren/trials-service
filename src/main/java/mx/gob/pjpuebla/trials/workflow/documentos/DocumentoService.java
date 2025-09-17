@@ -1371,7 +1371,9 @@ public class DocumentoService {
                                                         colorNotificacion,
                                                         (isPromocion && documento != null)
                                                                         ? documento.getData().getTipoPromocion().name()
-                                                                        : "");
+                                                                        : "",
+                                                                        (isPromocion) && documento != null ? documento.getMigrado().name()
+                                                                        : carpeta != null ? carpeta.getMigrado().name() : "");
                                 })
                                 .toList();
 
@@ -2530,4 +2532,16 @@ public class DocumentoService {
 
                 return documentoSentencia;
         }
+
+        public Documento findByDocumento(Integer documentoId){
+                return documentoRepository.findById(documentoId).orElse(null);
+        }
+
+        public Boolean isMigrado(Integer documentoId){
+                Documento documento = findByDocumento(documentoId);
+
+                return documento.getMigrado().equals(Migrado.SI);
+        }
+
+
 }

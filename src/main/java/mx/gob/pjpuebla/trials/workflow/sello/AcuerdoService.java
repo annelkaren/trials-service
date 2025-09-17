@@ -9,6 +9,9 @@ import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
 import org.springframework.stereotype.Service;
@@ -25,8 +28,19 @@ import java.util.regex.Pattern;
 public class AcuerdoService {
 
     private final DocumentoContenidoService documentoContenidoService;
+    private final DocumentoService documentoService;
+    private final DigitalizacionService digitalizacionService;
 
     public byte[] getAcuerdoPdf(Integer documentoId) throws IOException, DocumentException {
+
+        //evaluamos si es un documento migrado o no:
+        Documento documento = documentoService.findByDocumento(documentoId);
+
+        if(documento.getMigrado().name() == "SI"){
+            return digitalizacionService.getDocumentoMigrado(documento);
+        }
+
+
         // 1. Obtener el contenido del documento
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(documentoId);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -192,4 +206,5 @@ public class AcuerdoService {
         }
         return null;
     }
+
 }

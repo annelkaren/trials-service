@@ -527,7 +527,7 @@ public class DigitalizacionService {
         }
     }
 
-    private byte[] getDocumentoMigrado(Documento documento){
+    public byte[] getDocumentoMigrado(Documento documento){
         
         String ruta = documento.getRuta();
         if(ruta.contentEquals("172.16.6.11")){
