@@ -85,7 +85,6 @@ public class ListaEstradoService {
 
         List<ListaEstradoDTO> listaEstradosDTO = notificacionList.stream()
                 .map(notificacion -> {
-                    String juzgado = nombreCentroTrabajo;
                     String diaPublicado = LocalDate.now().toString();
                     String asunto = "EXP." + notificacion.getDocumento().getCarpeta().getExpediente()
                             + "\n" + notificacion.getDocumento().getCarpeta().getTipoJuicio().getNombre()
@@ -116,7 +115,7 @@ public class ListaEstradoService {
                     String notificacionDetalle = "Auto de fecha "
                             + (doc.getFechaResolucion() != null ? doc.getFechaResolucion().toString() : "")
                             + "\n" + nombresRubros;
-                    return new ListaEstradoDTO(juzgado, asunto, notificacionDetalle, diaPublicado);
+                    return new ListaEstradoDTO(nombreCentroTrabajo, asunto, notificacionDetalle, diaPublicado);
                 })
                 .toList();
 

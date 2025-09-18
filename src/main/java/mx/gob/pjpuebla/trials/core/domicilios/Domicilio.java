@@ -52,7 +52,11 @@ public class Domicilio implements Serializable, Auditable {
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_MUNICIPIO", nullable = false)
-    private String municipio;
+        private String municipio;
+
+    @Size(max = 10)
+    @Column(name = "S_MUNICIPIO_ID")
+    private String municipioId;
 
     @NotBlank
     @Size(min = 3, max = 250)

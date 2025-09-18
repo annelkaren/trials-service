@@ -1795,7 +1795,7 @@ public class DocumentoService {
                                                         "conceptoId" + p.idConcepto()));
                         Movimiento movimiento;
 
-                        if (p.tipoEntrada().toUpperCase().equals("PROMOCION")) {
+                        if (p.tipoEntrada().equalsIgnoreCase("PROMOCION")) {
 
                                 Documento documento = documentoRepository.findById(p.idDocumentoRecepcion())
                                                 .orElseThrow(() -> new NotFoundException("Documento no encontrado",

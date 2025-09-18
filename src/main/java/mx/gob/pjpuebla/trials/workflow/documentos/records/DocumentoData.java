@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DocumentoData implements Serializable {
 
-    private transient List<TipoJuicioDemandasRecord> tiposJuicios;
+    private List<TipoJuicioDemandasRecord> tiposJuicios;
     private Integer tieneAbogado;
     private String nombreAbogado;
     private String cedulaAbogado;

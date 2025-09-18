@@ -366,7 +366,9 @@ public class CarpetaService {
                                         Arrays.stream(TipoCarpeta.values())
                                                         .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta())),
                                         Stream.of(new CarpetaCatalogoRecord("PROMOCION", "Promoción"))).toList();
-
+                        case "posicionTrabajo" -> Arrays.stream(CatalogoPosicionTrabajo.values())
+                                .map(e -> new CarpetaCatalogoRecord(String.valueOf(e.getId()), e.getNombre()))
+                                .toList();
                         default -> Collections.emptyList();
                 };
         }
@@ -720,7 +722,7 @@ public class CarpetaService {
                                 .setLocalidad(detalle.localidad())
                                 .setFechaRegistro(
                                                 detalle.fechaRegistro() != null
-                                                                ? (LocalDateTime.parse(detalle.fechaRegistro(),
+                                                                ? (LocalDate.parse(detalle.fechaRegistro(),
                                                                                 pattern))
                                                                 : null)
                                 .setHoraFormal(detalle.horaFormal())
