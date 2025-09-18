@@ -878,10 +878,12 @@ public class DocumentoService {
 
                 List<Juzgado> juzgadosRelacionadosExhorto = juzgadoRepository
                                 .findJuzgadoExhortoByOficialiaId(oficialia.getId());
+
                 TipoJuicio tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase("EXHORTO")
                                 .orElseThrow(() -> new NotFoundException(
                                                 "Tipo de juicio no encontrado con nombre: Exhorto",
                                                 "EXHORTO"));
+
                 Juzgado juzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.EXHORTO,
                                 juzgadosRelacionadosExhorto);
 
@@ -2138,14 +2140,17 @@ public class DocumentoService {
                         MultipartFile multipartFile) {
                 Carpeta carpeta = carpetaRepository.findById(docExhortoSalidaRecord.carpetaId())
                                 .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "Carpeta"));
+
                 Persona auditor = personaService.getAuditor();
                 DocumentoData data = new DocumentoData();
+
                 data.setTramite(docExhortoSalidaRecord.tramite())
                                 .setDestino(docExhortoSalidaRecord.destino())
                                 .setExhortoObservaciones(docExhortoSalidaRecord.observaciones())
                                 .setFechaEntrega(docExhortoSalidaRecord.fechaEntrega())
                                 .setFechaDevolucion(docExhortoSalidaRecord.fechaDevolucion());
                 Documento documento = new Documento();
+                
                 documento.setData(data)
                                 .setCarpeta(carpeta)
                                 .setPersona(auditor)

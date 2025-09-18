@@ -21,6 +21,6 @@ public class ExhortosCapitalMigracionReader {
      * @return Lista de registros encontrados
      */
     public List<ExhortosCapitalMigracion> buscarPorJuzgadoOr(String juzgadoOr) {
-        return repository.findByJuzgadoOr(juzgadoOr);
+        return repository.findByJuzgado(juzgadoOr);
     }
 }

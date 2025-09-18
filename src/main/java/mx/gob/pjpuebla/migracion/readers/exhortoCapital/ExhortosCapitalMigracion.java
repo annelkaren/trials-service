@@ -25,7 +25,7 @@ public class ExhortosCapitalMigracion {
     private Integer amo;
 
     @Column(name = "juzgadoOr", nullable = false)
-    private String juzgadoOr;
+    private String juzgado;
 
     @Column(name = "destino")
     private String destino;
