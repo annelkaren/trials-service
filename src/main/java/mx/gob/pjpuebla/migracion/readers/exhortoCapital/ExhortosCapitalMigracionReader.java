@@ -23,4 +23,8 @@ public class ExhortosCapitalMigracionReader {
     public List<ExhortosCapitalMigracion> buscarPorJuzgadoOr(String juzgadoOr) {
         return repository.findByJuzgado(juzgadoOr);
     }
+
+    public List<ExhortosCapitalMigracion> buscarPorExpAmoJuzgado(String expediente, Integer amo, String juzgado){
+        return  repository.findByNumeroAndAmoAndJuzgado(expediente, amo, juzgado);
+    }
 }

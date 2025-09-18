@@ -23,4 +23,8 @@ public class ExhortoForaneoMigracionReader {
     public List<ExhortoForaneoMigracion> buscarPorJuzgadoOr(String jugadoOr) {
         return exhortoForaneoMigracionRepository.findByJuzgadoOr(jugadoOr);
     }
+
+    public List<ExhortoForaneoMigracion> buscarPorExpAmoJuzgado(String expediente, Integer amo, String juzgado){
+        return exhortoForaneoMigracionRepository.findByNumeroAndAmoAndJuzgado(expediente, amo, juzgado);
+    }
 }

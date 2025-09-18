@@ -5,4 +5,6 @@ import java.util.List;
 
 public interface ExhortosCapitalMigracionRepository extends JpaRepository<ExhortosCapitalMigracion, Integer> {
     List<ExhortosCapitalMigracion> findByJuzgado(String juzgadoOr);
+
+    List<ExhortosCapitalMigracion> findByNumeroAndAmoAndJuzgado(String expediente, Integer amo, String juzgado);
 }

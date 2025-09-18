@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 // Readers (legacy)
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
@@ -56,7 +57,7 @@ public class MigrarExpedienteUseCase {
     private final ActoresMigracionReader actoresReader;
     private final OficiosMigracionReader oficiosReader;
     private final ExhortosCapitalMigracionReader exhortosCapitalMigracionReader;
-
+    private final ExhortoForaneoMigracionReader exhortosForaneosMigracionReader;
     // ACL
     private final MateriaMapper materiaMapper;
     private final RubrosMapper rubrosMapper;
@@ -87,8 +88,9 @@ public class MigrarExpedienteUseCase {
         var actores = actoresReader.buscarPorClave(entrada.getCu());
         var oficios = oficiosReader.buscarPorCu(entrada.getCu());
         var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
-        var exhortosCapital = exhortosCapitalMigracionReader.buscarPorJuzgadoOr(claveJuzgado);
-
+        var exhortosCapital = exhortosCapitalMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
+        var exhortosForaneos = exhortosForaneosMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
+        
         // 2) Normalizar/validar
         String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
         validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
@@ -117,11 +119,13 @@ public class MigrarExpedienteUseCase {
         // 7) Personas
         personasMig.createFromLegacy(actores, tipoJuicio, carpeta);
 
-        // 8) Documentos: acuerdos, sentencias, promociones, oficios
+        // 8) Documentos: acuerdos, sentencias, promociones, oficios, exhortos capital - foraneo
         documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
         documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
         documentoMig.createPromocionesFromLegacy(promos, carpeta);
         documentoMig.createOficiosFromLegacy(oficios, carpeta);
+        documentoMig.createExhortoSalidaFromLegacy(exhortosCapital, carpeta);
+        documentoMig.createExhortoEntradaFromLegacy(exhortosForaneos, carpeta);
 
         // 9) Piezas: Migración de piezas y sus documentos.
         carpetaMig.createPiezaConDocumentos(carpeta, piezasLegacy);
