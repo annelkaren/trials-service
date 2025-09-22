@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -267,6 +268,7 @@ class DigitalizacionServiceTest {
         Persona persona = PersonaSetUp.createPersona();
 
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.setMigrado(Migrado.NO);
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
 
@@ -295,6 +297,7 @@ class DigitalizacionServiceTest {
 
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        documento.setMigrado(Migrado.NO);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
