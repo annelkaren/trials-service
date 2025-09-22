@@ -148,7 +148,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 
-        Optional<Juzgado> findByNombreIgnoreCaseAndContaining(String nombre);
+        Optional<Juzgado> findByNombreContainingIgnoreCase(String nombre);
 
         @Query("""
                         SELECT

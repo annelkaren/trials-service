@@ -24,6 +24,9 @@ import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -37,6 +40,7 @@ public class MigracionesService {
     private final PersonaService personaService;
     private final MovimientoService movimientoService;
     private final CarpetaService carpetaService;
+    private final DocumentoService documentoService;
 
     public Migraciones createMigraciones(EstadoMigracion estadoMigracion, String observaciones,
             String asignacionAnterior, String puestoAsignacionAnterior, Juzgado juzgado, Carpeta carpeta) {
@@ -84,7 +88,8 @@ public class MigracionesService {
         // 3) Cargar carpeta y dependencias
         Carpeta carpeta = migracion.getCarpeta();
         Concepto concepto = carpeta.getConcepto();
-        Persona personaAsignada = personaService.findPersonaById(personaId);
+        Persona personaAsignada =  personaId == 0 ? personaService.getAuditor() :  personaService.findPersonaById(personaId);
+
         if (personaAsignada == null) {
              throw new NotFoundException("No existe la persona indicada.", personaId.toString());
         }
@@ -105,7 +110,12 @@ public class MigracionesService {
         piezas.forEach(pieza -> { pieza.setPersona(personaAsignada);  });
         carpetaService.saveAll(piezas);
 
-        // 6) Crear movimiento
+        // 7 verificamos si hay documentos y los asignamos a la persona:
+        List<Documento> documentos = documentoService.findDocumentosByCarpetaId(carpeta.getId());
+        documentos.forEach(d -> {  d.setPersona(personaAsignada); });
+        documentoService.saveAll(documentos);
+
+        // 8) Crear movimiento
         Integer dias = concepto.getDias(); 
         String duration = (dias != null ? dias + "d" : null);
 

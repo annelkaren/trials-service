@@ -1,4 +1,5 @@
 package mx.gob.pjpuebla.config;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -20,11 +21,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(
-    basePackages = "mx.gob.pjpuebla.trials", 
-    entityManagerFactoryRef = "primaryEntityManagerFactory",
-    transactionManagerRef = "primaryTransactionManager"
-)
+@EnableJpaRepositories(basePackages = "mx.gob.pjpuebla.trials", entityManagerFactoryRef = "primaryEntityManagerFactory", transactionManagerRef = "primaryTransactionManager")
 public class PrimaryDbConfig {
 
     @Primary
@@ -40,15 +37,16 @@ public class PrimaryDbConfig {
             EntityManagerFactoryBuilder builder,
             @Qualifier("primaryDataSource") DataSource dataSource,
             ConfigurableListableBeanFactory beanFactory) {
-                
-            HashMap<String, Object> properties = new HashMap<>();
-            properties.put("hibernate.resource.beans.container", new SpringBeanContainer(beanFactory));
+
+        var props = new HashMap<String, Object>();
+        props.put("hibernate.resource.beans.container", new SpringBeanContainer(beanFactory));
+        props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
         return builder
                 .dataSource(dataSource)
-                .packages("mx.gob.pjpuebla.trials") // 📍 Apunta a las entidades de la DB principal
+                .packages("mx.gob.pjpuebla.trials")
                 .persistenceUnit("primary")
-                 .properties(properties)
+                .properties(props)
                 .build();
     }
 

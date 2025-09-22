@@ -20,8 +20,8 @@ public class ExhortoForaneoMigracionReader {
      * @param exhorto Clave del exhorto
      * @return Lista de exhortos encontrados
      */
-    public List<ExhortoForaneoMigracion> buscarPorJuzgadoOr(String jugadoOr) {
-        return exhortoForaneoMigracionRepository.findByJuzgadoOr(jugadoOr);
+    public List<ExhortoForaneoMigracion> buscarPorJuzgado(String jugadoOr) {
+        return exhortoForaneoMigracionRepository.findByJuzgado(jugadoOr);
     }
 
     public List<ExhortoForaneoMigracion> buscarPorExpAmoJuzgado(String expediente, Integer amo, String juzgado){

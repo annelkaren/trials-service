@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Servicio para consultar exhortos capitalinos por campo "juzgadoOr".
+ * Servicio para consultar exhortos capitalinos por campo "juzgado".
  */
 @Service
 @RequiredArgsConstructor
@@ -17,11 +17,11 @@ public class ExhortosCapitalMigracionReader {
     /**
      * Retorna una lista de exhortos capitalinos asociados a un juzgado origen.
      *
-     * @param juzgadoOr Clave del juzgado origen
+     * @param juzgado Clave del juzgado origen
      * @return Lista de registros encontrados
      */
-    public List<ExhortosCapitalMigracion> buscarPorJuzgadoOr(String juzgadoOr) {
-        return repository.findByJuzgado(juzgadoOr);
+    public List<ExhortosCapitalMigracion> buscarPorJuzgado(String juzgado) {
+        return repository.findByJuzgado(juzgado);
     }
 
     public List<ExhortosCapitalMigracion> buscarPorExpAmoJuzgado(String expediente, Integer amo, String juzgado){

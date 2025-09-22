@@ -132,7 +132,7 @@ public class MigrarExpedienteUseCase {
 
         
 
-        // 9) Registro de migración
+        // 10) Registro de migración
         String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
         String puesto = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
         migracionesService.createMigraciones(

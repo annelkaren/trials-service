@@ -22,7 +22,6 @@ import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
-import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoSalidaMigracionRecordSave;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;

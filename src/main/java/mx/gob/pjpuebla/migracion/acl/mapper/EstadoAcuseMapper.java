@@ -18,7 +18,7 @@ public class EstadoAcuseMapper {
         if(Objects.equals(motivo, "ENTREGADO")){ return EstadoAcuse.ENTREGADO; }
         
         if(motivo == null || motivo.isBlank() || motivo.isEmpty() || motivo.equals("") ||
-            rutaAcuse == null ||  rutaAcuse.isEmpty() || rutaAcuse.isBlank()) {
+            rutaAcuse == null  || rutaAcuse.equals("") || rutaAcuse.isBlank() ||  rutaAcuse.isEmpty()) {
             return EstadoAcuse.DESCONOCIDO;
         }
 

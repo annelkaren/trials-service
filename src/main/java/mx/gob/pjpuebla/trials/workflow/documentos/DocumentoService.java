@@ -2548,5 +2548,12 @@ public class DocumentoService {
                 return documento.getMigrado().equals(Migrado.SI);
         }
 
+        public List<Documento> findDocumentosByCarpetaId(Integer carpetaId){
+                return documentoRepository.findByCarpetaId(carpetaId);
+        }
+
+        public void saveAll(List<Documento> documentos){
+                documentoRepository.saveAll(documentos);
+        }
 
 }

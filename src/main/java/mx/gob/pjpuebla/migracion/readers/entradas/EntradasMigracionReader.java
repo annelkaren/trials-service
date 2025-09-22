@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.actores.complementoCampos.ActorGeneralMigracionRepository;
-import mx.gob.pjpuebla.migracion.readers.actores.complementoCampos.DemandadoGeneralMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
@@ -28,8 +26,6 @@ import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliar
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
-import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracion;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
@@ -37,7 +33,6 @@ import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
-import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
@@ -45,11 +40,9 @@ import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoService;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
-import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioService;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
@@ -69,7 +62,6 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
-import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
@@ -83,31 +75,22 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 @Slf4j
 public class EntradasMigracionReader {
 
-   
-
     private final AcuerdosMigracionReader acuerdosMigracionService;
     private final EntradasMigracionRepository entradasMigracionRepository;
     private final JuzgadosMigracionReader juzgadosMigracionService;
     private final JuiciosMigracionReader juiciosMigracionService;
     private final AmparoMigracionReader amparoMigracionService;
-    private final OficiosMigracionReader oficiosMigracionService;
     private final ActoresMigracionReader actoresMigracionService;
     private final DetallesPromReader detallesPromService;
-    private final ExhortoForaneoMigracionReader exhortoForaneoMigracionService;
-    private final ExhortosCapitalMigracionReader exhortoCapitalMigracionService;
+  
     private final OcomunReader ocomunService;
-    private final ActorGeneralMigracionRepository actorGeneralMigracionRepository;
-    private final DemandadoGeneralMigracionRepository demandadoGeneralMigracionRepository;
     private final ConceptosMigracionReader conceptosMigracionService;
     private final ConceptosMatFamiliarMigracionReader conceptosMatFamiliarMigracionService;
     private final UtilsMigracion utilsMigracion;
     private final UbicacionesReader ubicacionesService;
 
     // service de sistema actual:
-    private final JuzgadoService juzgadoService;
-    private final CarpetaService carpetaService;
     private final CarpetaRepository carpetaRepository;
-    private final TipoJuicioRepository tipoJuicioRepository;
     private final MateriaService materiaService;
     private final TipoJuicioService tipoJuicioService;
     private final ConceptoService conceptoService;
@@ -142,25 +125,16 @@ public class EntradasMigracionReader {
 
         // Se obtienen las ubicaciones dependiendo del CU y de la tabla dinámica según
         // juzgado
-        List<MovimientosMigracionRecord> ubicaciones = ubicacionesService.buscarPiezasByCu(entrada.getCu(), tablaUbi);
+        MovimientosMigracionRecord ubicaciones = ubicacionesService.buscarUltimoMovimiento(entrada.getCu(), tablaUbi);
 
         // Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
-        // Se obtienen los acuerdos:
-        List<AcuerdosMigracion> acuerdos = acuerdosMigracionService.buscarAcuerdosPorCu(entrada.getCu());
-
-        // se obtienen sentencias:
-        // List<AcuerdosMigracion> sentencias =
-        // acuerdosMigracionService.buscarSentenciasPorCu(entrada.getCu());
 
         // Se obtienen amparos:
         // List<AmparosMigracion> amparos =
         // amparoMigracionService.buscarPorCu(entrada.getCu());
 
-        // Se obtienen oficios:
-        // List<OficiosMigracion> oficios =
-        // oficiosMigracionService.buscarPorCu(entrada.getCu());
 
         // Se obtienen los actores:
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
@@ -168,18 +142,8 @@ public class EntradasMigracionReader {
         // Se obtienen los detalles de la promocion si es que existen
         List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
-        // Se obtienen los exhortos foraneos:
-        // List<ExhortoForaneoMigracion> exhortoForaneoMigracion =
-        // exhortoForaneoMigracionService
-        // .buscarPorJuzgadoOr(juzgado.getCodigo());
-
-        // se obtienen los exhortos capital
-        // List<ExhortosCapitalMigracion> exortoCapitalMigracion =
-        // exhortoCapitalMigracionService
-        // .buscarPorJuzgadoOr(juzgado.getCodigo());
-
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, acuerdos, detallesProm);
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, detallesProm);
     }
 
     /**
