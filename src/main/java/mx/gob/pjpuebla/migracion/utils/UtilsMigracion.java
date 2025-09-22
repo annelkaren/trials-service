@@ -91,7 +91,6 @@ public class UtilsMigracion {
         String code = tipoPromocion.trim().toUpperCase(Locale.ROOT);
         return switch (code) {
             case "2" -> TipoPromocion.OFICIO;
-            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
             default -> TipoPromocion.ESCRITO;
         };
     }

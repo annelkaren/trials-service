@@ -23,15 +23,5 @@ public class EntradasMigracionResource {
             @RequestParam String juzgado
     ) {
         return ResponseEntity.ok(service.buscarPorFiltros(expediente, year, juzgado));
-    }
-
-    //@PostMapping
-    //public ResponseEntity<String> migrarExpediente(@RequestBody EntradasMigracionSaveRecord request) {
-       
-    //    return service.migrarExpediente(request.expediente(), request.year(), request.juzgado());
-    //}
-
-
-    
-    
+    }    
 }

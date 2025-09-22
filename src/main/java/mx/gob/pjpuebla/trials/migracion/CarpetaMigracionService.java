@@ -60,7 +60,8 @@ public class CarpetaMigracionService {
         private final mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService juzgadoService;
 
         public Juzgado requireJuzgadoActual(String clave) {
-            var j = juzgadoService.findByClaveJuzgado(clave);
+            var j = juzgadoService.findByClaveJuzgado(clave).orElse(null);
+            
             if (j == null)
                 throw new NotFoundException("Juzgado no encontrado en sistema actual", clave);
             return j;

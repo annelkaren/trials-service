@@ -12,15 +12,8 @@ public class ConceptosMatFamiliarMigracionReader {
     
     private final ConceptosMatFamiliarMigracionRepository conceptosMatFamiliarMigracionRepository;
 
-    public ConceptosMatFamiliarMigracion findConceptoMatFamiliarByClave(String clave){
-        Optional<ConceptosMatFamiliarMigracion> conceptosOptional = conceptosMatFamiliarMigracionRepository.findByClave(clave);
-
-        if(conceptosOptional.isPresent()){
-            return conceptosOptional.get();
-        }
-
-        return null;
-
+    public Optional<ConceptosMatFamiliarMigracion> findConceptoMatFamiliarByClave(String clave){
+        return conceptosMatFamiliarMigracionRepository.findByClave(clave);
     }
 
 

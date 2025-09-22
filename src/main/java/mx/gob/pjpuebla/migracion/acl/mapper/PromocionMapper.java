@@ -24,7 +24,6 @@ public class PromocionMapper {
 
         return switch (tipoPromocion) {
             case "2" -> TipoPromocion.OFICIO;
-            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
             default -> TipoPromocion.ESCRITO;
         };
     }

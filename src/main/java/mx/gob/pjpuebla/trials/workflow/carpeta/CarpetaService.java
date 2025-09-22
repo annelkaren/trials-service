@@ -174,6 +174,11 @@ public class CarpetaService {
                         return "";
                 }
 
+                List<String> nombresCompletos = getNombreCompletos(personas);
+                return String.join(", ", nombresCompletos);
+        }
+
+        private List<String> getNombreCompletos(List<PersonaDocumentoRecord> personas) {
                 List<String> nombresCompletos = new ArrayList<>();
 
                 for (PersonaDocumentoRecord p : personas) {
@@ -190,7 +195,7 @@ public class CarpetaService {
                         }
                 }
 
-                return String.join(", ", nombresCompletos);
+                return nombresCompletos;
         }
 
         @Transactional(readOnly = true)
@@ -367,8 +372,8 @@ public class CarpetaService {
                                                         .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta())),
                                         Stream.of(new CarpetaCatalogoRecord("PROMOCION", "Promoción"))).toList();
                         case "posicionTrabajo" -> Arrays.stream(CatalogoPosicionTrabajo.values())
-                                .map(e -> new CarpetaCatalogoRecord(String.valueOf(e.getId()), e.getNombre()))
-                                .toList();
+                                        .map(e -> new CarpetaCatalogoRecord(String.valueOf(e.getId()), e.getNombre()))
+                                        .toList();
                         default -> Collections.emptyList();
                 };
         }
@@ -989,13 +994,8 @@ public class CarpetaService {
                 }
         }
 
-        public Carpeta getExpediente(String expediente, Juzgado juzgado) {
-                Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);
-
-                if (carpeta.isPresent()) {
-                        return carpeta.get();
-                }
-                return null;
+        public Optional<Carpeta> getExpediente(String expediente, Juzgado juzgado) {
+                return carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);
         }
 
         public Carpeta save(Carpeta carpeta) {

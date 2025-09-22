@@ -7,13 +7,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import io.micrometer.common.lang.NonNull;
 
 public interface MigracionesRepository extends JpaRepository<Migraciones, Integer>, JpaSpecificationExecutor<Migraciones>  {
 
     @SuppressWarnings("null")
     @Override
     @EntityGraph(attributePaths = { "carpeta" })
-    @NonNull
     Page<Migraciones> findAll(Specification<Migraciones> spec, Pageable pageable);
 }

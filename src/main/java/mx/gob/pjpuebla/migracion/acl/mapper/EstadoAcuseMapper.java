@@ -1,9 +1,6 @@
 package mx.gob.pjpuebla.migracion.acl.mapper;
 
-import java.util.Objects;
-
 import org.springframework.stereotype.Component;
-
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 
 @Component
@@ -31,5 +28,4 @@ public class EstadoAcuseMapper {
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
     }
-
 }

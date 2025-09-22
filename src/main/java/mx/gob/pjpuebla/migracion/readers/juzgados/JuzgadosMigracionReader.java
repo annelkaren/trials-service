@@ -94,7 +94,7 @@ public class JuzgadosMigracionReader {
             throw new IllegalArgumentException("La clave del juzgado no puede ser nula ni vacía.");
         }
 
-        Juzgado juzgado = juzgadoService.findByClaveJuzgado(claveJuzgado);
+        Juzgado juzgado = juzgadoService.findByClaveJuzgado(claveJuzgado).orElse(null);
         if (juzgado == null) {
             throw new NotFoundException(
                     "Juzgado no encontrado, revise que esté dada de alta su clave.",

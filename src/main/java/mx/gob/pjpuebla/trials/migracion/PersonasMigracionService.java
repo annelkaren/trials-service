@@ -71,7 +71,7 @@ public class PersonasMigracionService {
             Domicilio domicilioNotificacion = null;
             
             if(tipoNotif.equals(TipoNotificacion.CORREO_ELECTRONICO)){
-                EntradasUsuarioMigracion entradaUsuario = entradasUsuarioMigracionReader.findByClaveActorAndEstatus(p.getClaveAct());
+                EntradasUsuarioMigracion entradaUsuario= entradasUsuarioMigracionReader.findByClaveActorAndEstatus(p.getClaveAct()).orElse(null);
                 int idUsuario =  entradaUsuario.getIdusuario();
                 UsuarioMigracion usuario = usuarioMigracionReader.findUsuarioMigracionByIdUsuarioAnEstado(idUsuario);
 
@@ -83,7 +83,6 @@ public class PersonasMigracionService {
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
             }
 
-            log.info("Persona: " + p.getNombre());
             var pd = new PersonaDocumento()
                 .setNombre(p.getNombre())
                 .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))

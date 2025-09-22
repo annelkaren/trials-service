@@ -67,8 +67,8 @@ public class MigracionesService {
                         m.getAsignacionAnterior(),
                         m.getPuestoAsignacionAnterior(),
                         m.getCarpeta() != null ? m.getCarpeta().getId() : null,
-                        m.getCarpeta().getConcepto().getNombre(),
-                        m.getCarpeta().getConcepto().getDias()
+                        m.getCarpeta().getConcepto() != null ? m.getCarpeta().getConcepto().getNombre() : "",
+                        m.getCarpeta().getConcepto() != null ? m.getCarpeta().getConcepto().getDias() : null
                 ));
     }
 
@@ -86,7 +86,7 @@ public class MigracionesService {
         // 3) Cargar carpeta y dependencias
         Carpeta carpeta = migracion.getCarpeta();
         Concepto concepto = carpeta.getConcepto();
-        Persona personaAsignada =  personaId == 0 ? personaService.getAuditor() :  personaService.findPersonaById(personaId);
+        Persona personaAsignada =  personaId == 0 ? personaService.getAuditor() :  personaService.findPersonaById(personaId).orElse(null);
 
         if (personaAsignada == null) {
              throw new NotFoundException("No existe la persona indicada.", personaId.toString());
