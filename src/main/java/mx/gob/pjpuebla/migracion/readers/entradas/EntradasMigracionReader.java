@@ -181,8 +181,9 @@ public class EntradasMigracionReader {
       
 
         // PASO 4: traer información de ocomun para ir llenando mi expediente:
-        Ocomun oficiliaComunPhp = ocomunService.findByOcomun(entrada.getCu()); 
-       
+        Optional<Ocomun> oficiliaComunPhpOptional = ocomunService.findByOcomun(entrada.getCu()); 
+        Ocomun oficiliaComunPhp = oficiliaComunPhpOptional.isPresent() ? oficiliaComunPhpOptional.get() : null;
+
         // Paso 5: Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicioPhp = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
@@ -202,7 +203,8 @@ public class EntradasMigracionReader {
 
         Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio, ultimoMovimientoText);
 
-        Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
+        Optional<Concepto> conceptoOptional = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
+        Concepto concepto = conceptoOptional.isPresent() ? conceptoOptional.get() : null;
         if (concepto == null) {
             concepto = crearConcepto(ultimoMovimientoText, tipoJuicio, diasConcepto);
         }

@@ -12,13 +12,7 @@ public class OcomunReader {
     private final OcomunRepository ocomunRepository;
 
 
-    public Ocomun findByOcomun(String cu){
-        Optional<Ocomun> ocomun = ocomunRepository.findTopByCuAndEstatusOrderByIdDesc(cu, "A");
-    
-        if(ocomun.isPresent()){
-            return ocomun.get();
-        }
-
-        return null;
+    public Optional<Ocomun> findByOcomun(String cu){
+        return ocomunRepository.findTopByCuAndEstatusOrderByIdDesc(cu, "A");
     }
 }
