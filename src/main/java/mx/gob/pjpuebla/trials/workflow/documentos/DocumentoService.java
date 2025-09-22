@@ -20,7 +20,6 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
-import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaService;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
@@ -690,7 +689,7 @@ public class DocumentoService {
                 Optional<Configuraciones> identificador = configuracionesRepository.findByPropiedad("SERIE");
                 String identificadorFolio = identificador.isPresent() ? identificador.get().getValor() : "";
 
-                String valNum = switch (tipo) {
+                return switch (tipo) {
                         case "E" -> // Case para exhorto
                                 documentoRepository.getNextValExhorto() + identificadorFolio;
                         case "D" -> // Case para demanda
@@ -702,7 +701,6 @@ public class DocumentoService {
                         case "AP" -> documentoRepository.getNextValApelacion() + identificadorFolio;
                         default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
                 };
-                return valNum.toString();
         }
 
         public String generateNumExpediente(Juzgado juzgado, TipoCarpeta tipoCarpeta) {
@@ -2471,11 +2469,7 @@ public class DocumentoService {
                         Documento documentoAcuerdo = acuerdo.get();
                         promocionNew.setAcuerdoRespuesta(documentoAcuerdo);
                 }
-
-                // promoción electronica:
-                if (promocion.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
-
-                }
+               
                 return documentoRepository.save(promocionNew);
         }
 

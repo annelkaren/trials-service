@@ -5,7 +5,6 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

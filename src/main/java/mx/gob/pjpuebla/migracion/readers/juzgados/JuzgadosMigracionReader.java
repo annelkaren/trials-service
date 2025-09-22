@@ -21,20 +21,12 @@ public class JuzgadosMigracionReader {
     private final PersonaService personaService;
     private final JuzgadoService juzgadoService;
 
-    /**
-     * Busca todos los juzgados de forma de lista
-     * 
-     * @param pageable Contiene la información de paginación (número de página,
-     *                 tamaño, etc.).
-     * @return Un objeto mapeado de juzgados
-     */
     @Transactional(readOnly = true)
     public List<JuzgadosMigracionRecord> buscarTodos() {
 
         // 1. obtiene persona logueada:
         Persona persona = personaService.getAuditor();
         String claveJuzgado = persona.getJuzgado().getClaveJuzgado();
-        System.out.println("LA CLAVE DEL JUZGADO ES: " + claveJuzgado);
 
         if (claveJuzgado == null || claveJuzgado.isBlank() || claveJuzgado.isEmpty()) {
             throw new NotFoundException("Clave de juzgado no encontrada", "claveJuzgado");
@@ -43,7 +35,7 @@ public class JuzgadosMigracionReader {
         // 2. Llama al repositorio para obtener una página de entidades 'Juzgado'.
         Optional<JuzgadosMigracion> juzgadosOptional = juzgadosRepository.findByCodigo(claveJuzgado);
 
-        if (!juzgadosOptional.isPresent()) {
+        if (juzgadosOptional.isEmpty()) {
             throw new NotFoundException("Clave de juzgado no encontrada", "claveJuzgado");
         }
 

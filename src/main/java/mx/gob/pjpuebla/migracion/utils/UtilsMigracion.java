@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
-
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -20,11 +20,15 @@ import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 public class UtilsMigracion {
 
     // Declaramos los posibles valores que necesitamos declarar de tipoSentencia:
-    private static final Pattern P_DEF = Pattern.compile("sentencia\\s+definitiva", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    private static final Pattern P_INT = Pattern.compile("sentencia\\s+interlocutoria", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_DEF = Pattern.compile("sentencia\\s+definitiva",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_INT = Pattern.compile("sentencia\\s+interlocutoria",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-    private static final Pattern P_DEF_SOLO = Pattern.compile("\\bdefinitiva\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    private static final Pattern P_INT_SOLO = Pattern.compile("\\binterlocutoria\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_DEF_SOLO = Pattern.compile("\\bdefinitiva\\b",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern P_INT_SOLO = Pattern.compile("\\binterlocutoria\\b",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     // mapeos
     public String mapMateria(String m) {
@@ -73,18 +77,21 @@ public class UtilsMigracion {
     }
 
     public TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion) {
-
-        if (descripcion == "PROMOCION ELECTRONICA") {
+        // 1) Si la descripción indica promoción electrónica
+        if ("PROMOCION ELECTRONICA".equalsIgnoreCase(descripcion)) {
             return TipoPromocion.CORREO_ELECTRONICO;
         }
 
-        if (tipoPromocion == null || tipoPromocion != "") {
+        // 2) Si tipoPromocion no viene o viene vacío/espacios ⇒ ESCRITO
+        if (tipoPromocion == null || tipoPromocion.isBlank()) {
             return TipoPromocion.ESCRITO;
         }
 
-        return switch (tipoPromocion) {
-            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
+        // 3) Normaliza y decide
+        String code = tipoPromocion.trim().toUpperCase(Locale.ROOT);
+        return switch (code) {
             case "2" -> TipoPromocion.OFICIO;
+            case "0", "1", "3", "E" -> TipoPromocion.ESCRITO;
             default -> TipoPromocion.ESCRITO;
         };
     }
@@ -138,7 +145,8 @@ public class UtilsMigracion {
             case "C" -> TipoResolucion.CONDENATORIA;
             case "D" -> TipoResolucion.DECLARATIVA;
             case "I" -> TipoResolucion.IMPROCEDENTE;
-            default -> throw new NotFoundException("No se puede determinar el tipo de resolución de una sentencia", tipoResolucion);
+            default -> throw new NotFoundException("No se puede determinar el tipo de resolución de una sentencia",
+                    tipoResolucion);
         };
     }
 
@@ -147,13 +155,13 @@ public class UtilsMigracion {
         return m.find() ? m.start() : Integer.MAX_VALUE;
     }
 
-        // -------- Helpers internos --------
+    // -------- Helpers internos --------
 
     public String normalizeExpediente(String expediente) {
         if (expediente == null || expediente.isBlank()) {
             throw new IllegalArgumentException("El 'expediente' no puede ser nulo ni vacío.");
         }
-        return expediente.trim(); 
+        return expediente.trim();
     }
 
     public void requireNonNullJuzgado(Juzgado juzgado) {

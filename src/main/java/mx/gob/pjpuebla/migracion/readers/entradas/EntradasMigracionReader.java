@@ -493,7 +493,7 @@ public class EntradasMigracionReader {
 
         acuerdos.forEach(acuerdo -> {
             List<String> rubros = utilsMigracion.mapRubros(acuerdo.getResumen());
-            String rubroPrincipal = rubros.size() > 0 ? rubros.get(0) : "";
+            String rubroPrincipal = !rubros.isEmpty() ? rubros.get(0) : "";
 
             AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
                     carpeta,

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AcuerdosMigracionRepository extends JpaRepository<AcuerdosMigracion, Integer>{
     
-    public List<AcuerdosMigracion> findByCuEntradasAndEstatus(String cuEntradas, String estado);
+    List<AcuerdosMigracion> findByCuEntradasAndEstatus(String cuEntradas, String estado);
 
-    public List<AcuerdosMigracion> findByCuEntradasAndSentenciaInAndEstatus(String cuEntradas, List<String> tipo, String estado);
+    List<AcuerdosMigracion> findByCuEntradasAndSentenciaInAndEstatus(String cuEntradas, List<String> tipo, String estado);
 }

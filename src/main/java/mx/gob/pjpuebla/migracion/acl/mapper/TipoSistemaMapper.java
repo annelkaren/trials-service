@@ -21,18 +21,17 @@ public class TipoSistemaMapper {
         if (juzgadoMigracion.getMateriaRealObj().getCodigo().equals("F") &&
                 (Integer.parseInt(juzgadoMigracion.getCodigo()) >= 9000
                         && Integer.parseInt(juzgadoMigracion.getCodigo()) < 9009)) {
-            TipoSistema tipoSistema = tipoSistemaMigracionService.findTipoSistemaByNombre("Oral");
-            return tipoSistema;
+            return tipoSistemaMigracionService.findTipoSistemaByNombre("Oral");
         }
 
         // Si el juzgado tiene una materia X (Mixta) es un sistema mixto.
         if (juzgadoMigracion.getMateriaRealObj().getCodigo().equals("X")) {
-            TipoSistema tipoSistema = tipoSistemaMigracionService.findTipoSistemaByNombre("Mixto");
-            return tipoSistema;
+            return tipoSistemaMigracionService.findTipoSistemaByNombre("Mixto");
+            
         }
 
-        TipoSistema tipoSistema = tipoSistemaMigracionService.findTipoSistemaByNombre("Tradicional");
-        return tipoSistema;
+        return tipoSistemaMigracionService.findTipoSistemaByNombre("Tradicional");
+        
     }
 
 }

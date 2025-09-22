@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.stereotype.Component;
+import java.time.Duration;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +39,7 @@ public class FtpDownloader {
             if (cfg.isPassiveMode())
                 ftp.enterLocalPassiveMode();
             ftp.setFileType(FTP.BINARY_FILE_TYPE);
-            ftp.setDataTimeout(cfg.getDataTimeoutMs());
+            ftp.setDataTimeout(Duration.ofMillis(cfg.getDataTimeoutMs()));
 
             try (InputStream in = ftp.retrieveFileStream(remotePath);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream()) {

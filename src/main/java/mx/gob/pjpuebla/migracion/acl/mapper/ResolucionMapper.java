@@ -14,8 +14,8 @@ public class ResolucionMapper {
             case "D" -> TipoResolucion.DECLARATIVA;
             case "I" -> TipoResolucion.IMPROCEDENTE;
             default -> throw new NotFoundException(
-                "No se puede determinar el tipo de resolución de una sentencia",
-                String.valueOf(tipoResolucion)
+                "No se puede determinar el tipo de resolución de una sentencia", 
+                tipoResolucion
             );
         };
     }

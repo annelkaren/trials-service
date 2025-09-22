@@ -15,13 +15,13 @@ public class ExhortoForaneoMigracionReader {
       private final ExhortoForaneoMigracionRepository exhortoForaneoMigracionRepository;
 
     /**
-     * Busca todos los registros de exhortos foráneos relacionados con un exhorto.
+     * Busca todos los registros de exhortos foráneos relacionados con un juzgado
      *
-     * @param exhorto Clave del exhorto
+     * @param juzgado Clave del exhorto
      * @return Lista de exhortos encontrados
      */
-    public List<ExhortoForaneoMigracion> buscarPorJuzgado(String jugadoOr) {
-        return exhortoForaneoMigracionRepository.findByJuzgado(jugadoOr);
+    public List<ExhortoForaneoMigracion> buscarPorJuzgado(String jugado) {
+        return exhortoForaneoMigracionRepository.findByJuzgado(jugado);
     }
 
     public List<ExhortoForaneoMigracion> buscarPorExpAmoJuzgado(String expediente, Integer amo, String juzgado){
