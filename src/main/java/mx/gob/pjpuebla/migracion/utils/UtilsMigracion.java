@@ -111,7 +111,7 @@ public class UtilsMigracion {
 
         // SI la cadena es nula, esta vacia o dice solo sentencia asignamos sentencia
         // definitiva.
-        if (tipoSentencia == null || tipoSentencia.isBlank() || tipoSentencia.toLowerCase() == "sentencia") {
+        if (tipoSentencia == null || tipoSentencia.isBlank() || tipoSentencia.equalsIgnoreCase("sentencia")) {
             return TipoSentencia.SENTENCIA_DEFINITIVA;
         }
 

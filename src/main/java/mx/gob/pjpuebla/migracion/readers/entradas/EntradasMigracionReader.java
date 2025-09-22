@@ -240,11 +240,11 @@ public class EntradasMigracionReader {
         createPromocionesMigracion(promociones, carpeta);
 
         // Paso 15: se crea el registro de migración
-        if (carpeta != null) {
-            String observacionesMigracion = "Se ha migrado el expediente principal";
-            migracionesService.createMigraciones(EstadoMigracion.MIGRADO_COMPLETADO, observacionesMigracion,
+        
+        String observacionesMigracion = "Se ha migrado el expediente principal";
+        migracionesService.createMigraciones(EstadoMigracion.MIGRADO_COMPLETADO, observacionesMigracion,
                     ultimoMovimientoPhp.recibio(), ultimoMovimientoPhp.puestoRecibioTBLPuesto(), juzgado, carpeta);
-        }
+        
 
         return ResponseEntity.ok("Expediente migrado correctamente.");
     }
@@ -438,11 +438,11 @@ public class EntradasMigracionReader {
 
             // campos que se llenan unicamente para tipo de juicio familiar y tipo de
             // sistema oralidad:
-            String ine = null;
-            String curp = null;
-            String celular = null;
-            String correoElectronico = null;
-            String domicilio = null;
+            String ine = "";
+            String curp = "";
+            String celular = "";
+            String correoElectronico = "";
+            String domicilio = "";
 
             // Configurar notificaciones:
             TipoNotificacion tipoNotificacion = utilsMigracion.mapTipoNotificacion(persona.getTipoNotificacion());
@@ -562,7 +562,7 @@ public class EntradasMigracionReader {
 
     private Integer getDiasConceptoMigracion(TipoJuicio tipoJuicio, String estado) {
 
-        if (tipoJuicio.getMateria().getNombre() == "FAMILIAR" && tipoJuicio.getTipoSistema().getNombre() == "Oral") {
+        if (tipoJuicio.getMateria().getNombre().equalsIgnoreCase("FAMILIAR") && tipoJuicio.getTipoSistema().getNombre().equalsIgnoreCase("Oral")) {
             ConceptosMatFamiliarMigracion concepto = conceptosMatFamiliarMigracionService
                     .findConceptoMatFamiliarByClave(estado);
             return concepto != null ? Integer.parseInt(concepto.getDias().trim()) : 0;

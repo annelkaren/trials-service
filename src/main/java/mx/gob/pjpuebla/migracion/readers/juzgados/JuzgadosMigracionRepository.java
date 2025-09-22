@@ -7,17 +7,19 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import io.micrometer.common.lang.NonNull;
+
 
 @Repository
 public interface JuzgadosMigracionRepository extends JpaRepository<JuzgadosMigracion, Integer> {
 
-    /**
-     * Spring Data JPA crea automáticamente la consulta "SELECT * FROM ... WHERE codigo = ?"
-     * Usamos Optional para manejar de forma segura el caso en que no se encuentre el juzgado.
-     */
-    @EntityGraph(attributePaths={ "materiaObj","materiaRealObj" })
+    @NonNull
+    @EntityGraph(attributePaths = { "materiaObj", "materiaRealObj" })
     Optional<JuzgadosMigracion> findByCodigo(String codigo);
 
+    @SuppressWarnings("null")
+    @Override
+    @NonNull
     @EntityGraph(attributePaths={ "materiaObj","materiaRealObj" })
     List<JuzgadosMigracion> findAll();
 

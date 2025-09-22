@@ -15,6 +15,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import jakarta.persistence.EntityManagerFactory;
+
 import java.util.HashMap;
 
 import javax.sql.DataSource;
@@ -53,7 +55,7 @@ public class PrimaryDbConfig {
     @Primary
     @Bean(name = "primaryTransactionManager")
     public PlatformTransactionManager primaryTransactionManager(
-            @Qualifier("primaryEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory.getObject());
+            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory  emf) {
+        return new JpaTransactionManager(emf);
     }
 }

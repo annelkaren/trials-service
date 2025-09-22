@@ -150,7 +150,7 @@ public class CarpetaMigracionService {
                 .setFechaAsignacion(pieza.fecha().atStartOfDay())
                 .setTipoCarpeta(TipoCarpeta.PIEZA)
                 .setSelloEstatus(SelloEstatus.VALIDO)
-                .setEstatus(pieza.estado() == "ANEXO AL EXPEDIENTE" ? EstadoCarpeta.INTEGRADO : EstadoCarpeta.ASIGNADO)
+                .setEstatus(pieza.estado().equalsIgnoreCase("ANEXO AL EXPEDIENTE") ? EstadoCarpeta.INTEGRADO : EstadoCarpeta.ASIGNADO)
                 .setJuzgado(carpeta.getJuzgado())
                 .setTipoJuicio(carpeta.getTipoJuicio())
                 .setTipoPieza(tipoPieza)

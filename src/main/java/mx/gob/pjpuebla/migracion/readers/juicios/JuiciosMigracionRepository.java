@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JuiciosMigracionRepository extends JpaRepository<JuiciosMigracion, String> {
     
-    Optional<JuiciosMigracion> findById(String idJuicio);
+    Optional<JuiciosMigracion> findByIdJuicio(String idJuicio);
 }

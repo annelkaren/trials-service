@@ -13,6 +13,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import jakarta.persistence.EntityManagerFactory;
+
 import javax.sql.DataSource;
 import java.util.HashMap;
 
@@ -47,8 +49,8 @@ public class SecondaryDbConfig {
 
     @Bean(name = "secondaryTransactionManager")
     public PlatformTransactionManager secondaryTransactionManager(
-            @Qualifier("secondaryEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory.getObject());
+            @Qualifier("secondaryEntityManagerFactory") EntityManagerFactory  emf) {
+        return new JpaTransactionManager(emf);
     }
 
     @Bean(name = "secondaryNamedParameterJdbcTemplate")

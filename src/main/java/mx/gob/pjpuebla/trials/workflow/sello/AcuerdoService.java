@@ -9,6 +9,7 @@ import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
@@ -36,7 +37,7 @@ public class AcuerdoService {
         //evaluamos si es un documento migrado o no:
         Documento documento = documentoService.findByDocumento(documentoId);
 
-        if(documento.getMigrado().name() == "SI"){
+        if(documento.getMigrado().name().equals(Migrado.SI.name())){
             return digitalizacionService.getDocumentoMigrado(documento);
         }
 
