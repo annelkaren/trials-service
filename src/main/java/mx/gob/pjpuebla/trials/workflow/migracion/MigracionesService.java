@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.migracion;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,26 +59,38 @@ public class MigracionesService {
     @Transactional(readOnly = true)
     public Page<BandejaMigracionResponse> listar(BandejaMigracionFilter filter, Pageable pageable) {
         return migracionesRepository.findAll(MigracionesSpecs.withFilters(filter), pageable)
-                .map(m -> new BandejaMigracionResponse(
-                        m.getId(),
-                        m.getCarpeta() != null ? m.getCarpeta().getExpediente() : null,
-                        m.getEstatus().getEtiqueta(),
-                        personaService.getNamePersona(m.getAudit().getUsuarioAlta()),
-                        m.getObservaciones(),
-                        m.getAsignacionAnterior(),
-                        m.getPuestoAsignacionAnterior(),
-                        m.getCarpeta() != null ? m.getCarpeta().getId() : null,
-                        m.getCarpeta().getConcepto() != null ? m.getCarpeta().getConcepto().getNombre() : "",
-                        m.getCarpeta().getConcepto() != null ? m.getCarpeta().getConcepto().getDias() : null
-                ));
+                .map(m -> {
+                    String conceptoNom = Optional.ofNullable(m.getCarpeta())
+                            .map(Carpeta::getConcepto)
+                            .map(Concepto::getNombre)
+                            .orElse("");
+
+                    Integer conceptoDia = Optional.ofNullable(m.getCarpeta())
+                            .map(Carpeta::getConcepto)
+                            .map(Concepto::getDias)
+                            .orElse(null);
+
+                    return new BandejaMigracionResponse(
+                            m.getId(),
+                            m.getCarpeta() != null ? m.getCarpeta().getExpediente() : null,
+                            m.getEstatus().getEtiqueta(),
+                            personaService.getNamePersona(m.getAudit().getUsuarioAlta()),
+                            m.getObservaciones(),
+                            m.getAsignacionAnterior(),
+                            m.getPuestoAsignacionAnterior(),
+                            m.getCarpeta() != null ? m.getCarpeta().getId() : null,
+                            conceptoNom,
+                            conceptoDia);
+                });
     }
 
     @Transactional
     public ApiResponse<String> turnarExpedienteMigrado(Integer migracionId, Long personaId) {
         // 1) Cargar migración
         Migraciones migracion = migracionesRepository.findById(migracionId)
-            .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración", migracionId.toString()));
-      
+                .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
+                        migracionId.toString()));
+
         // 2) Validar estado de la migración
         if (migracion.getEstatus() != EstadoMigracion.MIGRADO_COMPLETADO) {
             throw new NotFoundException("La migración no está en un estado turnable.", migracionId.toString());
@@ -86,45 +99,51 @@ public class MigracionesService {
         // 3) Cargar carpeta y dependencias
         Carpeta carpeta = migracion.getCarpeta();
         Concepto concepto = carpeta.getConcepto();
-        Persona personaAsignada =  personaId == 0 ? personaService.getAuditor() :  personaService.findPersonaById(personaId).orElse(null);
+        Persona personaAsignada = personaId == 0 ? personaService.getAuditor()
+                : personaService.findPersonaById(personaId).orElse(null);
 
         if (personaAsignada == null) {
-             throw new NotFoundException("No existe la persona indicada.", personaId.toString());
+            throw new NotFoundException("No existe la persona indicada.", personaId.toString());
         }
 
         // 4) Idempotencia: si ya está asignada a esa persona, responde OK
         if (carpeta.getEstatus() == EstadoCarpeta.ASIGNADO) {
-             return new ApiResponse<>(true, "El expediente ya estaba turnado.", "SUCCESS_ALREADY_ASSIGNED", 200, "", LocalDateTime.now());
+            return new ApiResponse<>(true, "El expediente ya estaba turnado.", "SUCCESS_ALREADY_ASSIGNED", 200, "",
+                    LocalDateTime.now());
         }
 
         // 5) Actualizar carpeta
         carpeta.setEstatus(EstadoCarpeta.ASIGNADO);
         carpeta.setPersona(personaAsignada);
-        carpetaService.save(carpeta); 
+        carpetaService.save(carpeta);
 
         // 6) verificar si hay piezas relacionadas con esta carpeta:
         List<Carpeta> piezas = carpetaService.findPiezasByCarpeta(carpeta);
 
-        piezas.forEach(pieza -> { pieza.setPersona(personaAsignada);  });
+        piezas.forEach(pieza -> {
+            pieza.setPersona(personaAsignada);
+        });
         carpetaService.saveAll(piezas);
 
         // 7 verificamos si hay documentos y los asignamos a la persona:
         List<Documento> documentos = documentoService.findDocumentosByCarpetaId(carpeta.getId());
-        documentos.forEach(d -> {  d.setPersona(personaAsignada); });
+        documentos.forEach(d -> {
+            d.setPersona(personaAsignada);
+        });
         documentoService.saveAll(documentos);
 
         // 8) Crear movimiento
-        Integer dias = concepto.getDias(); 
+        Integer dias = concepto.getDias();
         String duration = (dias != null ? dias + "d" : null);
 
         Movimiento movimiento = movimientoService.createMovimentoTurnado(
                 carpeta,
-                null, 
+                null,
                 personaAsignada,
-                null, 
+                null,
                 EstadoCarpeta.ASIGNADO.name(),
                 concepto.getNombre(),
-                null, 
+                null,
                 duration);
 
         if (movimiento == null) {
@@ -134,10 +153,12 @@ public class MigracionesService {
         // 7) Actualizar estatus de la migración
         migracion.setEstatus(EstadoMigracion.EXPEDIENTE_TURNADO);
         migracion.setPersonaTurnado(personaAsignada);
-        migracion.setObservaciones("Se ha turnado el expediente a " +  personaService.getNamePersona(personaAsignada.getUsuario()) );
+        migracion.setObservaciones(
+                "Se ha turnado el expediente a " + personaService.getNamePersona(personaAsignada.getUsuario()));
         migracionesRepository.save(migracion);
 
-        return new ApiResponse<>(true, "El expediente ha sido turnado con éxito.", "SUCCESS", 201, "", LocalDateTime.now());
+        return new ApiResponse<>(true, "El expediente ha sido turnado con éxito.", "SUCCESS", 201, "",
+                LocalDateTime.now());
     }
 
 }

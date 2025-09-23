@@ -79,8 +79,7 @@ public class MigrarExpedienteUseCase {
         // 1) Fetch legacy
         var entrada = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
         var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
-        var ocomunOptional = ocomunReader.findByOcomun(entrada.getCu()); // puede ser null en el caso de expedientes relacionados con juzgados foraneos
-        var ocomun = ocomunOptional.isPresent() ? ocomunOptional.get() : null;
+        var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); // puede ser null en el caso de expedientes relacionados con juzgados foraneos
         var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
         var ubicUlt = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
         var acuerdos = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());

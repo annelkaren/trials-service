@@ -202,8 +202,8 @@ public class EntradasMigracionReader {
 
         Integer diasConcepto = getDiasConceptoMigracion(tipoJuicio, ultimoMovimientoText);
 
-        Optional<Concepto> conceptoOptional = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio);
-        Concepto concepto = conceptoOptional.isPresent() ? conceptoOptional.get() : null;
+        Concepto concepto = conceptoService.findByNombreAndTipoJuicio(ultimoMovimientoText, tipoJuicio).orElse(null);
+      
         if (concepto == null) {
             concepto = crearConcepto(ultimoMovimientoText, tipoJuicio, diasConcepto);
         }
@@ -217,7 +217,7 @@ public class EntradasMigracionReader {
                 null, null);
 
         // paso 11: crear registro de los anexos:
-        crearAnexosMigracion(oficiliaComunPhp.getAnexos(), documento);
+        crearAnexosMigracion(entrada.getDocumentos(), documento);
 
         // paso 12: buscar a las personas involucradas en la entrada: actores,
         // demandados o terceros involucrados:

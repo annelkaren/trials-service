@@ -83,7 +83,7 @@ public class ConceptoMigrationService {
                 .setVersion(0)
                 .setNombre(nombre)
                 .setDias(dias)
-                .setEstado(defaults.defaultEstadoConcepto()) // típicamente INACTIVE para migración
+                .setEstado(defaults.defaultEstadoConcepto()) 
                 .setTipoJuicio(tipoJuicio)
                 .setRoles(null);
 

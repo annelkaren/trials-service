@@ -182,20 +182,27 @@ public class CarpetaService {
                 List<String> nombresCompletos = new ArrayList<>();
 
                 for (PersonaDocumentoRecord p : personas) {
-                        List<String> partesNombre = new ArrayList<>();
-                        if (p.nombre() != null && !p.nombre().isBlank())
-                                partesNombre.add(p.nombre());
-                        if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank())
-                                partesNombre.add(p.apellidoPaterno());
-                        if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank())
-                                partesNombre.add(p.apellidoMaterno());
-
-                        if (!partesNombre.isEmpty()) {
-                                nombresCompletos.add(String.join(" ", partesNombre));
+                        String nombreCompleto = buildNombreCompleto(p);
+                        if (!nombreCompleto.isBlank()) {
+                                nombresCompletos.add(nombreCompleto);
                         }
                 }
 
                 return nombresCompletos;
+        }
+
+        private String buildNombreCompleto(PersonaDocumentoRecord p) {
+                List<String> partesNombre = new ArrayList<>();
+                if (p.nombre() != null && !p.nombre().isBlank()) {
+                        partesNombre.add(p.nombre());
+                }
+                if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank()) {
+                        partesNombre.add(p.apellidoPaterno());
+                }
+                if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank()) {
+                        partesNombre.add(p.apellidoMaterno());
+                }
+                return String.join(" ", partesNombre);
         }
 
         @Transactional(readOnly = true)

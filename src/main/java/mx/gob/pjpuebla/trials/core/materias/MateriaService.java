@@ -56,12 +56,6 @@ public class MateriaService {
     }
 
     public Materia findByNombre(String nombre){
-        Optional<Materia> materia = materiaRepository.findByNombre(nombre);
-
-        if(materia.isPresent()){
-            return materia.get();
-        }
-        
-        return null;
+        return materiaRepository.findByNombre(nombre).orElse(null);
     }
 }

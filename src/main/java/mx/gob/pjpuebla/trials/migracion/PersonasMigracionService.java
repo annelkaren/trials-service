@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.migracion;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +19,6 @@ import mx.gob.pjpuebla.migracion.readers.entradasUsuarios.EntradasUsuarioMigraci
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracion;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionReader;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
-import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.paises.Pais;
 import mx.gob.pjpuebla.trials.core.paises.PaisService;
@@ -41,7 +39,6 @@ public class PersonasMigracionService {
 
     private final DomicilioService domicilioService;
     private final DomicilioMigracionReader domicilioMigracionReader;
-    private final DomicilioRepository domicilioRepository;
 
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final TipoPartesRepository tipoPartesRepository;
@@ -53,13 +50,12 @@ public class PersonasMigracionService {
     private final EntradasUsuarioMigracionReader entradasUsuarioMigracionReader;
     private final UsuarioMigracionReader usuarioMigracionReader;
 
-
-
     @Transactional
     public List<PersonaDocumento> createFromLegacy(List<ActoresMigracion> personas,
-                                                   TipoJuicio tipoJuicio,
-                                                   Carpeta carpeta) {
-        if (personas == null || personas.isEmpty()) return List.of();
+            TipoJuicio tipoJuicio,
+            Carpeta carpeta) {
+        if (personas == null || personas.isEmpty())
+            return List.of();
 
         List<PersonaDocumento> toSave = new ArrayList<>();
         for (var p : personas) {
@@ -69,34 +65,39 @@ public class PersonasMigracionService {
             TipoNotificacion tipoNotif = notificacionMapper.mapTipoNotificacion(p.getTipoNotificacion());
             String correoNotificacion = null;
             Domicilio domicilioNotificacion = null;
-            
-            if(tipoNotif.equals(TipoNotificacion.CORREO_ELECTRONICO)){
-                EntradasUsuarioMigracion entradaUsuario= entradasUsuarioMigracionReader.findByClaveActorAndEstatus(p.getClaveAct()).orElse(null);
-                int idUsuario =  entradaUsuario.getIdusuario();
-                UsuarioMigracion usuario = usuarioMigracionReader.findUsuarioMigracionByIdUsuarioAnEstado(idUsuario);
 
-                correoNotificacion = usuario != null ? usuario.getCorreo() : "";
+            if (tipoNotif.equals(TipoNotificacion.CORREO_ELECTRONICO)) {
+                correoNotificacion = entradasUsuarioMigracionReader
+                        .findByClaveActorAndEstatus(p.getClaveAct())
+                        .map(entradaUsuario -> {
+                            int idUsuario = entradaUsuario.getIdusuario();
+                            UsuarioMigracion usuario = usuarioMigracionReader
+                                    .findUsuarioMigracionByIdUsuarioAnEstado(idUsuario);
+                            return (usuario != null) ? usuario.getCorreo() : "";
+                        })
+                        .orElse("");
             }
 
-            if(tipoNotif.equals(TipoNotificacion.DOMICILIO) || tipoNotif.equals(TipoNotificacion.EMPLAZAMIENTO)){
-                DomicilioMigracion domicilioMigracion = domicilioMigracionReader.findByCuActorAndEstado(p.getClaveAct());
+            if (tipoNotif.equals(TipoNotificacion.DOMICILIO) || tipoNotif.equals(TipoNotificacion.EMPLAZAMIENTO)) {
+                DomicilioMigracion domicilioMigracion = domicilioMigracionReader
+                        .findByCuActorAndEstado(p.getClaveAct());
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
             }
 
             var pd = new PersonaDocumento()
-                .setNombre(p.getNombre())
-                .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))
-                .setRol(Rol.PRINCIPAL)
-                .setCarpeta(carpeta)
-                .setTipoPartes(tipoParte)
-                .setIne(null)
-                .setCurp(null)
-                .setCelular(null)
-                .setCorreoElectronico(null)
-                .setDomicilio(null)
-                .setFnDomicilio(domicilioNotificacion)
-                .setTipoNotificacion(tipoNotif)
-                .setCorreoNotificacion(correoNotificacion);
+                    .setNombre(p.getNombre())
+                    .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))
+                    .setRol(Rol.PRINCIPAL)
+                    .setCarpeta(carpeta)
+                    .setTipoPartes(tipoParte)
+                    .setIne(null)
+                    .setCurp(null)
+                    .setCelular(null)
+                    .setCorreoElectronico(null)
+                    .setDomicilio(null)
+                    .setFnDomicilio(domicilioNotificacion)
+                    .setTipoNotificacion(tipoNotif)
+                    .setCorreoNotificacion(correoNotificacion);
 
             toSave.add(pd);
         }
@@ -105,29 +106,28 @@ public class PersonasMigracionService {
 
     private TipoPartes findOrCreateTipoPartes(TipoJuicio tipoJuicio, String nombre) {
         return tipoPartesRepository.findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId())
-            .orElseGet(() -> tipoPartesRepository.save(
-                new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio)
-            ));
+                .orElseGet(() -> tipoPartesRepository.save(
+                        new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio)));
     }
 
-    private Domicilio createDomicilioNotificacion(DomicilioMigracion domicilio){
-        //obtenemos registro del pais de México y lo asociamos al nuevo registro.
+    private Domicilio createDomicilioNotificacion(DomicilioMigracion domicilio) {
+        // obtenemos registro del pais de México y lo asociamos al nuevo registro.
 
         Pais pais = paisService.findByNombreComun("México");
 
         return domicilioService.save(new Domicilio()
-            .setCalle(domicilio.getCalle())
-            .setInterior(domicilio.getNumin())
-            .setExterior(domicilio.getNumex())
-            .setColonia(domicilio.getColonia())
-            //.setLocalidad() no se puede obtener la localidad desde legacy
-            .setCodigoPostal(domicilio.getCp().toString())
-            .setMunicipio(domicilio.getMunicipio())
-            .setEstadoRepublica(domicilio.getEstado())
-            // .setReferencia() no se puede obtener referencias desde legacy
-            .setPaisResidencia(pais)
-            .setLatitud(domicilio.getLatitud().toString())
-            .setLongitud(domicilio.getLongitud().toString())
-            .setCiudad(domicilio.getCiudad()));
+                .setCalle(domicilio.getCalle())
+                .setInterior(domicilio.getNumin())
+                .setExterior(domicilio.getNumex())
+                .setColonia(domicilio.getColonia())
+                // .setLocalidad() no se puede obtener la localidad desde legacy
+                .setCodigoPostal(domicilio.getCp().toString())
+                .setMunicipio(domicilio.getMunicipio())
+                .setEstadoRepublica(domicilio.getEstado())
+                // .setReferencia() no se puede obtener referencias desde legacy
+                .setPaisResidencia(pais)
+                .setLatitud(domicilio.getLatitud().toString())
+                .setLongitud(domicilio.getLongitud().toString())
+                .setCiudad(domicilio.getCiudad()));
     }
 }

@@ -14,17 +14,21 @@ import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 public class PromocionMapper {
 
     public TipoPromocion mapTipoPromocion(String tipoPromocion, String descripcion) {
-        if (descripcion != null && descripcion.equalsIgnoreCase("PROMOCION ELECTRONICA")) {
+        // Normaliza entradas
+        String desc = descripcion == null ? "" : descripcion.trim();
+        String tipo = tipoPromocion == null ? "" : tipoPromocion.trim();
+
+        // Regla 1: descripción manda si es "PROMOCION ELECTRONICA"
+        if (desc.equalsIgnoreCase("PROMOCION ELECTRONICA")) {
             return TipoPromocion.CORREO_ELECTRONICO;
         }
 
-        if (tipoPromocion == null || tipoPromocion.isBlank()) {
+        // Regla 2: si tipo vacío => ESCRITO
+        if (tipo.isEmpty()) {
             return TipoPromocion.ESCRITO;
         }
 
-        return switch (tipoPromocion) {
-            case "2" -> TipoPromocion.OFICIO;
-            default -> TipoPromocion.ESCRITO;
-        };
+        // Regla 3: casos concretos por código
+        return "2".equals(tipo) ? TipoPromocion.OFICIO : TipoPromocion.ESCRITO;
     }
 }

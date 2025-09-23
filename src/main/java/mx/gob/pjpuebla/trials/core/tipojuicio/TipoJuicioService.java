@@ -100,12 +100,6 @@ public class TipoJuicioService {
     }
 
     public TipoJuicio findByNombre(String nombre){
-        Optional<TipoJuicio> tipoJuicio = tipoJuicioRepository.findByNombreIgnoreCase(nombre);
-
-        if(tipoJuicio.isPresent()){
-            return tipoJuicio.get();
-        }
-
-        return null;
+        return tipoJuicioRepository.findByNombreIgnoreCase(nombre).orElse(null);
     }
 }

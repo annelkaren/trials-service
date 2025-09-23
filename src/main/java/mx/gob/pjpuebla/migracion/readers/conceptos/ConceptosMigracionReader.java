@@ -11,14 +11,7 @@ public class ConceptosMigracionReader {
     private final ConceptosMigracionRepository conceptosMigracionRepository;
 
     public ConceptosMigracion findConceptoByClave(String clave){
-        Optional<ConceptosMigracion> conceptosOptional = conceptosMigracionRepository.findByClave(clave);
-
-        if(conceptosOptional.isPresent()){
-            return conceptosOptional.get();
-        }
-
-        return null;
-
+        return conceptosMigracionRepository.findByClave(clave).orElse(null);
     }
 
 

@@ -56,13 +56,7 @@ public class JuzgadosMigracionReader {
      * @return Entidad `JuzgadosMigracion` si existe; null si no se encuentra
      */
     public JuzgadosMigracion requireByCodigo(String codigo) {
-        Optional<JuzgadosMigracion> juzgado = juzgadosRepository.findByCodigo(codigo);
-
-        if (juzgado.isPresent()) {
-            return juzgado.get();
-        }
-
-        return null;
+        return juzgadosRepository.findByCodigo(codigo).orElse(null);
     }
 
     /**

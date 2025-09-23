@@ -88,11 +88,11 @@ public class UtilsMigracion {
         }
 
         // 3) Normaliza y decide
-        String code = tipoPromocion.trim().toUpperCase(Locale.ROOT);
-        return switch (code) {
-            case "2" -> TipoPromocion.OFICIO;
-            default -> TipoPromocion.ESCRITO;
-        };
+        String code = tipoPromocion.trim();
+        if ("2".equals(code)) {
+            return TipoPromocion.OFICIO;
+        }
+        return TipoPromocion.ESCRITO;
     }
 
     public List<String> mapRubros(String rubros) {

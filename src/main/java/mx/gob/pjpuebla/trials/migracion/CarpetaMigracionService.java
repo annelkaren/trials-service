@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
@@ -91,9 +92,9 @@ public class CarpetaMigracionService {
     @Transactional
     public Carpeta createFromLegacy(EntradasMigracion entrada,
             Ocomun ocomun,
-            Juzgado juzgado,
-            TipoJuicio tipoJuicio,
-            Concepto concepto,
+            @NotNull Juzgado juzgado,
+            @NotNull TipoJuicio tipoJuicio,
+            @NotNull Concepto concepto,
             CreationPolicy policy) {
 
         if (entrada == null || juzgado == null || tipoJuicio == null || concepto == null) {
