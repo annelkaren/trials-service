@@ -13,8 +13,8 @@ spring:
     # ---- CONFIGURACIÓN BASE DE DATOS SECUNDARIA (MySQL) ----
     secondary:
       jdbcUrl: jdbc:mysql://172.16.6.181:3306/acuerdos?zeroDateTimeBehavior=convertToNull
-      username: kevin
-      password: password
+      username: migracion
+      password: Chang3Me!
       driver-class-name: com.mysql.cj.jdbc.Driver
 
 
