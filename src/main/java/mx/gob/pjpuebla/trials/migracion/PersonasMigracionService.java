@@ -14,7 +14,6 @@ import mx.gob.pjpuebla.migracion.acl.mapper.NotificacionMapper;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracion;
 import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.entradasUsuarios.EntradasUsuarioMigracion;
 import mx.gob.pjpuebla.migracion.readers.entradasUsuarios.EntradasUsuarioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracion;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionReader;

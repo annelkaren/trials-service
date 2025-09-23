@@ -81,6 +81,7 @@ public class CarpetaMigracionService {
     }
 
     @Transactional
+    @SuppressWarnings("ConstantConditions")
     public Carpeta createFromLegacy(EntradasMigracion entrada,
             Ocomun ocomun,
             Juzgado juzgado,
@@ -90,6 +91,7 @@ public class CarpetaMigracionService {
     }
 
     @Transactional
+    @SuppressWarnings("ConstantConditions")
     public Carpeta createFromLegacy(EntradasMigracion entrada,
             Ocomun ocomun,
             @NotNull Juzgado juzgado,
