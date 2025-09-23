@@ -629,7 +629,8 @@ public class CarpetaService {
                                 carpetaDetalle.getTipoJuicio() != null ? carpetaDetalle.getTipoJuicio().getId() : null,
                                 carpetaDetalle.getTipoJuicio() != null ? carpetaDetalle.getTipoJuicio().getNombre()
                                                 : null,
-                                carpetaDetalle.getCujus());
+                                carpetaDetalle.getCujus(),
+                                carpetaDetalle.getFechaEjecutoria());
         }
 
         public void saveExpedienteDetalle(
@@ -730,7 +731,8 @@ public class CarpetaService {
                                 .setFechaPresentacionImputado(detalle.fechaPresentacionImputado() != null
                                                 ? (LocalDate.parse(detalle.fechaPresentacionImputado(), pattern))
                                                 : null)
-                                .setCujus(detalle.cujus());
+                                .setCujus(detalle.cujus())
+                                .setFechaEjecutoria(detalle.fechaEjecutoria());
 
                 carpetaDetalleRepository.save(carpetaDetalle);
                 carpetaRepository.save(carpeta);
