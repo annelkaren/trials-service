@@ -755,7 +755,8 @@ class CarpetaServiceTest {
                         new RubroRecord(1, "Rubro1"),
                         new RubroRecord(2, "Rubro2")
                 ),
-                ""
+                "",
+                LocalDate.now()
         );
 
         given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(documento.getCarpeta()));
