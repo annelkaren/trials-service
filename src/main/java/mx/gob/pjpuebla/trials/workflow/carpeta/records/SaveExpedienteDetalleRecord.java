@@ -48,6 +48,7 @@ public record SaveExpedienteDetalleRecord(
         Integer tipoJuicioHijoId,
         EtapaProcesalRecord etapaProcesal,
         List<RubroRecord> rubros,
-        String cujus
+        String cujus,
+        LocalDate fechaEjecutoria
 ) implements Serializable {
 }

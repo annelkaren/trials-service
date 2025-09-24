@@ -101,7 +101,7 @@ public class ReporteService {
 
         String sql = "SELECT * FROM trials.reporte_" + key + """
                  WHERE make_date("AÑO_DEM"::int, "MES_DEM"::int, "DIA_DEM"::int) BETWEEN ? AND ?
-                ORDER BY make_date("AÑO_MAT"::int, "MES_MAT"::int, "DIA_MAT"::int)
+                ORDER BY make_date("AÑO_DEM"::int, "MES_DEM"::int, "DIA_DEM"::int)
                 """;
 
         Connection conn = dataSource.getConnection();

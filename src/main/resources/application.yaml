@@ -54,7 +54,10 @@ springdoc:
 
 logging:
   level:
-    org.keycloak.adapters.authorization.integration.jakarta.ServletPolicyEnforcerFilter: debug
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: DEBUG
+    org.springframework.http.converter.json: DEBUG
+    org.springframework.validation: DEBUG
 
 server:
   port: 8888
