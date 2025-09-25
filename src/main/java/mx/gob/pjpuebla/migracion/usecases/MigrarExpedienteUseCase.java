@@ -15,6 +15,7 @@ import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 
@@ -58,6 +59,7 @@ public class MigrarExpedienteUseCase {
     private final OficiosMigracionReader oficiosReader;
     private final ExhortosCapitalMigracionReader exhortosCapitalMigracionReader;
     private final ExhortoForaneoMigracionReader exhortosForaneosMigracionReader;
+    private final AmparoMigracionReader amparoMigracionReader;
     // ACL
     private final MateriaMapper materiaMapper;
     private final RubrosMapper rubrosMapper;
@@ -90,7 +92,8 @@ public class MigrarExpedienteUseCase {
         var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
         var exhortosCapital = exhortosCapitalMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
         var exhortosForaneos = exhortosForaneosMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
-        
+        var amparos = amparoMigracionReader.buscarPorCu(entrada.getCu());
+
         // 2) Normalizar/validar
         String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
         validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
@@ -130,6 +133,8 @@ public class MigrarExpedienteUseCase {
         // 9) Piezas: Migración de piezas y sus documentos.
         carpetaMig.createPiezaConDocumentos(carpeta, piezasLegacy);
 
+        // 10) Amparos
+        carpetaMig.createAmparos(carpeta, amparos);
         
 
         // 10) Registro de migración

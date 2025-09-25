@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
-import mx.gob.pjpuebla.trials.core.configuraciones.Configuraciones;
 import mx.gob.pjpuebla.trials.core.configuraciones.ConfiguracionesRepository;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;

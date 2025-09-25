@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.migracion;
 
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.tipoPiezas.TipoPiezaMigracion;
 import mx.gob.pjpuebla.migracion.readers.tipoPiezas.TipoPiezaMigracionRead;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
@@ -28,6 +30,7 @@ import mx.gob.pjpuebla.trials.migracion.policies.CreationPolicy;
 import mx.gob.pjpuebla.trials.migracion.policies.MigracionDefaults;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -46,6 +49,8 @@ public class CarpetaMigracionService {
     private final RubrosMapper rubrosMapper;
     private final DocumentoMigracionService documentoMig;
     private final TipoPiezaMigracionRead tipoPiezaMigracionRead;
+    private final ConceptoRepository conceptoRepository;
+    private final CarpetaService carpetaService;
 
     // Readers:
     private final AcuerdosMigracionReader acuerdosReader;
@@ -231,4 +236,5 @@ public class CarpetaMigracionService {
         
 
     }
+
 }

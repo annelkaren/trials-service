@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface AmparoMigracionRepository extends JpaRepository<AmparosMigracion, Integer> {
     
-    List<AmparosMigracion> findByCu(String cu);
+    List<AmparosMigracion> findByCuAndEstatus(String cu, String estatus);
 }

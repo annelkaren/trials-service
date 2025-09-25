@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.migracion;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 // ACL mappers:
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.AmparoMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
@@ -26,10 +29,12 @@ import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 
 // Core:
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
+import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
@@ -38,6 +43,8 @@ import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
@@ -45,6 +52,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
+import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
+import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 @Service
@@ -55,12 +64,16 @@ public class DocumentoMigracionService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AnexoRepository anexoRepository;
     private final DocumentoService documentoService;
+    private final ConceptoRepository conceptoRepository;
+    private final CarpetaService carpetaService;
+    private final InstitucionService institucionService;
 
     private final SentenciaMapper sentenciaMapper; // ACL
     private final ResolucionMapper resolucionMapper; // ACL
     private final PromocionMapper promocionMapper; // ACL
     private final EstadoAcuseMapper estadoAcuseMapper; // ACL
     private final EstadoOficioMapper estadoOficioMapper; // ACL
+    private final AmparoMapper amparoMapper; // ACL
 
     /*
      * -----------------------------------------------------------------------------
@@ -297,7 +310,8 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createExhortoSalidaFromLegacy(List<ExhortosCapitalMigracion> exhortosCapital, Carpeta carpeta) {
+    public List<Documento> createExhortoSalidaFromLegacy(List<ExhortosCapitalMigracion> exhortosCapital,
+            Carpeta carpeta) {
         List<Documento> exhortos = new ArrayList<>();
 
         exhortosCapital.forEach(exhorto -> {
@@ -323,7 +337,7 @@ public class DocumentoMigracionService {
 
     }
 
-        /*
+    /*
      * -----------------------------------------------------------------------------
      * -------------------
      * EXHORTO FORANEO - ENTRADA
@@ -331,16 +345,17 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createExhortoEntradaFromLegacy(List<ExhortoForaneoMigracion> exhortosForaneo, Carpeta carpeta) {
+    public List<Documento> createExhortoEntradaFromLegacy(List<ExhortoForaneoMigracion> exhortosForaneo,
+            Carpeta carpeta) {
         List<Documento> exhortos = new ArrayList<>();
 
         exhortosForaneo.forEach(exhorto -> {
             DocumentoData data = new DocumentoData()
                     .setTramite(exhorto.getTramite())
-                    //.setDestino(exhorto.getDestino())
+                    // .setDestino(exhorto.getDestino())
                     .setExhortoObservaciones(exhorto.getObse());
-                    //.setFechaEntrega(exhorto.getFechaEn())
-                    //.setFechaDevolucion(exhorto.getFechaDe());
+            // .setFechaEntrega(exhorto.getFechaEn())
+            // .setFechaDevolucion(exhorto.getFechaDe());
 
             Documento documento = new Documento()
                     .setData(data)
@@ -355,6 +370,61 @@ public class DocumentoMigracionService {
 
         return exhortos;
 
+    }
+
+    /*
+     * 
+     * AMPAROS
+     */
+
+    public List<Documento> createAmparos(Carpeta carpeta, List<AmparosMigracion> amparos) {
+
+        if (amparos == null || amparos.isEmpty()) {
+            return List.of();
+        }
+
+        List<Documento> documentos = new ArrayList<>();
+        amparos.forEach(amparo -> {
+
+
+            DocumentoData data = new DocumentoData()
+                    .setAmparoFechaPresentacion(amparo.getFecha())
+                    .setAmparoImpugnacion(amparoMapper.mapImpugnacion(amparo.getRevision()))
+                    .setAmparoQuejoso(amparo.getQuejoso1())
+                    .setAmparoTribunalId(null) // se setea si es AD institución de tipo tribunal feneral
+                    .setAmparoSalaId(null) // se setea si es AI segunda instancia - sala
+                    .setAmparoSentido(amparoMapper.mapSentido(amparo.getConcede()))
+                    .setAmparoSentidoImpugnacion(amparoMapper.mapSentidoImpugnacion(amparo.getImpugna()))
+                    .setAmparoTipo(amparoMapper.mapTipoAmparo(amparo.getTipo()))
+                    .setAmparoFechaTermino(amparo.getFechaConclusion());
+
+            Documento amparoDoc = new Documento()
+                    .setCarpeta(carpeta)
+                    .setData(data)
+                    .setFolio(amparo.getClave().toString())
+                    .setEstatus(EstadoCarpeta.MIGRADO)
+                    .setTipoDocumento(TipoDocumento.AMPARO)
+                    .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
+            documentos.add(amparoDoc);
+
+            documentoRepository.save(amparoDoc);
+            PiezaRecord piezaRecord = new PiezaRecord(null, amparoMapper.mapTipoAmparo(amparo.getTipo()),
+                    Collections.singletonList(amparoDoc.getId()));
+
+            carpetaService.createPieza(carpeta.getId(), piezaRecord);
+        });
+
+        return documentos;
+
+    }
+
+    private Integer findTribunalDistrito(String nombre){
+        return institucionService.findByTipoInstitucion("Tribunal Federal")
+            .stream()
+            .filter(inst -> inst.nombre().equalsIgnoreCase(nombre))
+            .findFirst()
+            .map(InstitucionRecord::id)
+            .orElse(null);
     }
 
 }

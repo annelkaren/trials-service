@@ -18,6 +18,6 @@ public class AmparoMigracionReader {
      * @return el objeto Amparo si existe, de lo contrario null
      */
     public List<AmparosMigracion> buscarPorCu(String cu) {
-        return amparoMigracionRepository.findByCu(cu);
+        return amparoMigracionRepository.findByCuAndEstatus(cu, "A");
     }
 }

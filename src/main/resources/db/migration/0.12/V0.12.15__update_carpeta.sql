@@ -9,3 +9,12 @@ where n_migrado is null;
 update trials.tbl_documentos td 
 set n_migrado = 0
 where td.n_migrado is null;
+
+-- alter en ambos para nuevos elementos creados:
+ALTER TABLE trials.tbl_carpetas
+ALTER COLUMN n_migrado
+SET DEFAULT 0;
+
+ALTER TABLE trials.tbl_documentos
+ALTER COLUMN n_migrado
+SET DEFAULT 0;
