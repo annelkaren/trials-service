@@ -28,7 +28,7 @@ import org.springframework.http.ResponseEntity;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
-@SecurityRequirement(name = "keycloack")
+@SecurityRequirement(name = "keycloak")
 public class BandejaEnviosResource {
 
     private final BandejaEnviosService bandejaEnviosService;

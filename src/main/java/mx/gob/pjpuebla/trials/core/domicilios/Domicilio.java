@@ -25,7 +25,7 @@ public class Domicilio implements Serializable, Auditable {
     private Long id;
 
     
-    @Size(min = 3, max = 250)
+    @Size(min = 1, max = 250)
     @Column(name = "S_CALLE")
     private String calle;
 
@@ -50,7 +50,7 @@ public class Domicilio implements Serializable, Auditable {
     private String codigoPostal;
 
     @NotBlank
-    @Size(min = 3, max = 250)
+    @Size(min = 1, max = 250)
     @Column(name = "S_MUNICIPIO", nullable = false)
         private String municipio;
 
@@ -59,7 +59,7 @@ public class Domicilio implements Serializable, Auditable {
     private String municipioId;
 
     @NotBlank
-    @Size(min = 3, max = 250)
+    @Size(min = 1, max = 250)
     @Column(name = "S_ESTADO_REPUBLICA", nullable = false)
     private String estadoRepublica;
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/api/migracion/expediente")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "keycloack")
+@SecurityRequirement(name = "keycloak")
 public class MigrarExpedienteResource {
     
     private final MigrarExpedienteUseCase migrarExpediente;
