@@ -1,6 +1,3 @@
-ALTER TABLE TRIALS.TBL_CARPETA_DETALLE ADD COLUMN T_FECHA_EJECUTORIA DATE;
-
---create new view
 --create new view
 CREATE OR REPLACE VIEW trials.reporte_laboral AS
 WITH base AS (
