@@ -53,4 +53,8 @@ public class MateriaService {
     public List<SentenciasByMateriaRecord> getCountSentenciasByMaterias() {
         return materiaRepository.getCountSentenciasByMateria();
     }
+
+    public Materia findByNombre(String nombre){
+        return materiaRepository.findByNombre(nombre).orElse(null);
+    }
 }

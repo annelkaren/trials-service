@@ -126,7 +126,7 @@ class NotificacionServiceTest {
                 .setId(1)
                 .setNotificacion(notificacion)
                 .setPersonaDocumento(persona)
-                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());;
+                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());
         when(notificacionesDetallesRepository.findByNotificacionId(anyInt()))
                 .thenReturn(Optional.of(notificacionesDetalles));
 
@@ -256,7 +256,7 @@ class NotificacionServiceTest {
         NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
                 .setId(1)
                 .setNotificacion(notificacion)
-                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());;
+                .setPersonaDocumento(PersonasDocumentosSetUp.createPersonasDocumentosTipoParte());
 
         when(notificacionesDetallesRepository.findByNotificacionId(any())).thenReturn(Optional.of(notificacionesDetalles));
 

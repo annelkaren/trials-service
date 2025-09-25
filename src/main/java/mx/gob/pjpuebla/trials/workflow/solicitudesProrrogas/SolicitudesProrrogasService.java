@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
-import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -29,7 +28,6 @@ public class SolicitudesProrrogasService {
 
     private final SolicitudesProrrogasRepository solicitudesProrrogasRepository;
     private final MovimientoRepository movimientoRepository;
-    private final PersonaService personaService;
     private final EventoService eventoService;
 
     public SolicitudesProrrogas getLastProrrogas(Integer movimientoId) {

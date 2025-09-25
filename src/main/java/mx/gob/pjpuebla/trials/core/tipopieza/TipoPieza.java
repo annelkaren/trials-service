@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
@@ -36,6 +37,10 @@ public class TipoPieza implements Serializable, Auditable {
     @Size(min = 1, max = 50)
     @Column(name = "S_CLAVE")
     private String clave;
+
+    @Enumerated
+    @Column(name = "N_ESTADO")
+    private Estado estado;
 
     @Accessors(chain = false)
     @Embedded

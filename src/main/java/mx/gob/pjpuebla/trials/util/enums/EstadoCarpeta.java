@@ -18,7 +18,8 @@ public enum EstadoCarpeta {
     INTEGRADO ("Integrado"),//Para indicar que una pieza fue integrada al expediente
     EDICION ("Edición"),
     ARCHIVO_JUDICIAL ("Archivo judicial"),
-    DEVUELTO_A_OFICIALIA("Devuelto a oficialía");
+    DEVUELTO_A_OFICIALIA("Devuelto a oficialía"),
+    MIGRADO("Expediente migrado");
 
     private final String etiqueta;
 

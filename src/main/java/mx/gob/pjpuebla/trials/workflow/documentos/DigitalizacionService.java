@@ -15,10 +15,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.util.ftp.FtpDownloader;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -85,6 +88,7 @@ public class DigitalizacionService {
     private final CarpetaRepository carpetaRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
+    private final FtpDownloader ftpDownloader;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final Set<String> TIPO_IMAGENES_PERMITIDAS = Set.of("image/jpg", "image/png", "image/jpeg");
@@ -205,6 +209,10 @@ public class DigitalizacionService {
         this.basePath = this.rootFolder + "/digitalizacion/";
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
+
+        if(documento.getMigrado().equals(Migrado.SI)){
+            return getDocumentoMigrado(documento);
+        }
 
         Path rutaArchivo = crearDirectorio(documento).resolve(documento.getRuta());
 
@@ -516,6 +524,17 @@ public class DigitalizacionService {
                 }
             }
         }
+    }
+
+    public byte[] getDocumentoMigrado(Documento documento){
+        
+        String ruta = documento.getRuta();
+        if(ruta.contentEquals("172.16.6.11")){
+            throw new NotFoundException("El archivo no existe en el servidor", ruta);
+        }
+
+        
+        return ftpDownloader.downloadFromFullUrl("ftp://"+ruta);
     }
 
 }

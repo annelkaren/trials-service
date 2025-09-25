@@ -58,7 +58,7 @@ import org.springframework.util.MultiValueMap;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@Transactional
+@Transactional(transactionManager = "primaryTransactionManager")
 public class PersonaService {
 
     private final AuditorAware<Jwt> auditorAware;
@@ -87,7 +87,7 @@ public class PersonaService {
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
@@ -121,7 +121,7 @@ public class PersonaService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public PersonaRecord findById(Long id) {
         String tipoCentroTrabajo = "";
         Integer centroTrabajoId = null;
@@ -137,6 +137,11 @@ public class PersonaService {
         }
         List<RoleRecord> roles = roleService.getRolesByUserId(persona.usuario(), tipoCentroTrabajo, centroTrabajoId);
         return persona.withRoles(roles);
+    }
+
+    public Optional<Persona> findPersonaById(Long personaId){
+        return personaRepository.findById(personaId);
+       
     }
 
     public PersonaRecordResponse create(PersonaDTO dto) {
@@ -218,7 +223,7 @@ public class PersonaService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public PersonaRecord findByCurp(String curp) {
         PersonaRecord persona = personaRepository.findByCurp(curp)
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "curp"));
@@ -232,7 +237,7 @@ public class PersonaService {
         return roles;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<JuezRecord> findAllJueces(Integer juzgadoId) {
         List<Sala> salas;
         List<JuezRecord> jueces = new ArrayList<>();
@@ -254,7 +259,7 @@ public class PersonaService {
         return jueces;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<JuezRecord> findByOficialiaOfPersonaLogueada(Integer materiaId) {
         Persona persona = getAuditor();
 
@@ -270,7 +275,7 @@ public class PersonaService {
                 : Collections.emptyList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<EncargadoCarritoRecord> findAllEncargadosCarrito() {
         List<EncargadoCarritoRecord> encargadoCarritoList = new ArrayList<>();
         List<String> ids = usuarioService.findAllByRoles(List.of("ENCARGADO_CARRITO"));
@@ -286,7 +291,7 @@ public class PersonaService {
         return encargadoCarritoList;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<CentroTrabajoRecord> findAllCentroTrabajo(String nombre) {
         Persona currentUser = getAuditor();
 
@@ -314,7 +319,7 @@ public class PersonaService {
         return centrosTrabajo;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
         boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
@@ -342,14 +347,14 @@ public class PersonaService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
+   @Transactional(transactionManager = "primaryTransactionManager")
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return personaRepository.findByUsuario(jwt.getSubject())
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<PersonaRecordResponse> getPersonalTurnado() {
         Persona persona = getAuditor();
         List<Persona> list = new ArrayList<>();
@@ -552,4 +557,13 @@ public class PersonaService {
         }
     }
 
+    public String getNamePersona(String usuario){
+        Optional<Persona> persona = personaRepository.findByUsuario(usuario);
+
+        if(persona.isPresent()){
+            Persona p = persona.get();
+            return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' ' + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "") ).toUpperCase();
+        }
+        return "";
+    }
 }

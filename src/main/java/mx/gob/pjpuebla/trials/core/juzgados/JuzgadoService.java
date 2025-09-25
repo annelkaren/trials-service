@@ -371,4 +371,8 @@ public class JuzgadoService {
 
         return new JuzgadoRecordItem(juzgadoActual.getId(), juzgadoActual.getNombre(), juzgadoActual.getEstado(), juzgadoActual.getMateria().getNombre());
     }
+
+    public Optional<Juzgado> findByClaveJuzgado(String clave) {
+        return juzgadoRepository.findByClaveJuzgado(clave);
+    }
 }

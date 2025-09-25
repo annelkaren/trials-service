@@ -59,4 +59,7 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
     Optional<TipoJuicio> getMateriaAndTipoSistemaById(@Param("idTipoSistema") Integer procedimientoId);
 
     Optional<TipoJuicio> findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(String name);
+
+     Optional<TipoJuicio> findByNombre(String nombre);
+    boolean existsByNombre(String nombre);
 }

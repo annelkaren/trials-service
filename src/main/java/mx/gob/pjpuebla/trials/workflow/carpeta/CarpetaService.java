@@ -7,7 +7,6 @@ import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -83,7 +82,6 @@ public class CarpetaService {
         private final DocumentoDetalleRepository documentoDetalleRepository;
         private final MovimientoRepository movimientoRepository;
         private final JuzgadoRepository juzgadoRepository;
-        private final OficialiaRepository oficialiaRepository;
         private final ConceptoRepository conceptoRepository;
         private final PersonaRepository personaRepository;
 
@@ -166,31 +164,43 @@ public class CarpetaService {
 
         protected String getNombrePersonaByIdAndParte(Integer id, String parte) {
                 List<Rol> rol = List.of(Rol.PRINCIPAL);
-                List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
-                                parte, rol);
+                List<PersonaDocumentoRecord> personas = personaDocumentoRepository
+                                .findPersonaAndTipoParteByCarpetaIdLibroGobierno(id,
+                                                parte, rol);
 
                 if (personas == null || personas.isEmpty()) {
                         return "";
                 }
 
+                List<String> nombresCompletos = getNombreCompletos(personas);
+                return String.join(", ", nombresCompletos);
+        }
+
+        private List<String> getNombreCompletos(List<PersonaDocumentoRecord> personas) {
                 List<String> nombresCompletos = new ArrayList<>();
 
                 for (PersonaDocumentoRecord p : personas) {
-                        List<String> partesNombre = new ArrayList<>();
-                        if (p.nombre() != null && !p.nombre().isBlank())
-                                partesNombre.add(p.nombre());
-                        if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank())
-                                partesNombre.add(p.apellidoPaterno());
-                        if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank())
-                                partesNombre.add(p.apellidoMaterno());
-
-                        
-                        if (!partesNombre.isEmpty()) {
-                                nombresCompletos.add(String.join(" ", partesNombre));
+                        String nombreCompleto = buildNombreCompleto(p);
+                        if (!nombreCompleto.isBlank()) {
+                                nombresCompletos.add(nombreCompleto);
                         }
                 }
 
-                return String.join(", ", nombresCompletos);
+                return nombresCompletos;
+        }
+
+        private String buildNombreCompleto(PersonaDocumentoRecord p) {
+                List<String> partesNombre = new ArrayList<>();
+                if (p.nombre() != null && !p.nombre().isBlank()) {
+                        partesNombre.add(p.nombre());
+                }
+                if (p.apellidoPaterno() != null && !p.apellidoPaterno().isBlank()) {
+                        partesNombre.add(p.apellidoPaterno());
+                }
+                if (p.apellidoMaterno() != null && !p.apellidoMaterno().isBlank()) {
+                        partesNombre.add(p.apellidoMaterno());
+                }
+                return String.join(" ", partesNombre);
         }
 
         @Transactional(readOnly = true)
@@ -367,8 +377,8 @@ public class CarpetaService {
                                                         .map(e -> new CarpetaCatalogoRecord(e.name(), e.getEtiqueta())),
                                         Stream.of(new CarpetaCatalogoRecord("PROMOCION", "Promoción"))).toList();
                         case "posicionTrabajo" -> Arrays.stream(CatalogoPosicionTrabajo.values())
-                                .map(e -> new CarpetaCatalogoRecord(String.valueOf(e.getId()), e.getNombre()))
-                                .toList();
+                                        .map(e -> new CarpetaCatalogoRecord(String.valueOf(e.getId()), e.getNombre()))
+                                        .toList();
                         default -> Collections.emptyList();
                 };
         }
@@ -408,17 +418,20 @@ public class CarpetaService {
                                         carpetaEtapas.getEtapaProcesal().getNombre());
                 }
 
-                //obtenemos juzgado y nombre del juez :
+                // obtenemos juzgado y nombre del juez :
                 Juzgado juzgado = carpeta.getJuzgado();
                 Persona juez = personaRepository.findByJuzgadoAndRolPrincipal(juzgado, "Juez").orElse(null);
-                String nombreJuez = juez != null ? juez.getNombre() + " " + juez.getApellidoPaterno() + " " + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "") : "";
-                
+                String nombreJuez = juez != null
+                                ? juez.getNombre() + " " + juez.getApellidoPaterno() + " "
+                                                + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "")
+                                : "";
+
                 return new InfoExpedienteRecord(
                                 carpeta.getExpediente(),
                                 carpeta.getTipoJuicio().getNombre(), // TODO mapear de forma correcta expediente tipo
                                                                      // PENAL
                                 carpeta.getTipoJuicio().getId(), // TODO mapear de forma correcta expediente tipo PENAL
-                                nombreJuez, 
+                                nombreJuez,
                                 carpeta.getAudit().getFechaAlta().format(pattern),
                                 "Asunto de penal desde Backend", // TODO añadir asunto para expediente tipo PENAL
                                 tipoProcedimiento,
@@ -802,6 +815,7 @@ public class CarpetaService {
 
         public Page<DocumentoDetalleCarpetaResponse> getAllDocumentosPiezas(String key, Integer carpetaId,
                         Pageable pageable) {
+
                 List<DocumentoDetalleCarpetaResponse> documentos = this.getAllDocumentosCarpeta(key, carpetaId);
 
                 if (key != null && key.equals("TODAS PIEZAS")) {
@@ -987,4 +1001,19 @@ public class CarpetaService {
                 }
         }
 
+        public Optional<Carpeta> getExpediente(String expediente, Juzgado juzgado) {
+                return carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);
+        }
+
+        public Carpeta save(Carpeta carpeta) {
+                return carpetaRepository.save(carpeta);
+        }
+
+        public void saveAll(List<Carpeta> carpetas) {
+                carpetaRepository.saveAll(carpetas);
+        }
+
+        public List<Carpeta> findPiezasByCarpeta(Carpeta carpeta) {
+                return carpetaRepository.findByCarpetaPadre(carpeta);
+        }
 }

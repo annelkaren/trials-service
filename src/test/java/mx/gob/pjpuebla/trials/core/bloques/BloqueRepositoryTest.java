@@ -23,12 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-@Sql(value = {
-        "/scripts/INSERT_BLOQUES.sql",
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(value = {
-        "/scripts/DELETE_BLOQUES.sql",
-}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
+@Sql(value = { "/scripts/INSERT_BLOQUES.sql" }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = {"/scripts/DELETE_BLOQUES.sql" }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 class BloqueRepositoryTest extends AuditConfigTest {
 
     @Autowired

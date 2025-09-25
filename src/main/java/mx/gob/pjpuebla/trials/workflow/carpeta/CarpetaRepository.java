@@ -238,6 +238,10 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             """)
     List<String> findDistinctTipoEntradaByBandeja(@Param("bandeja") String bandeja);
 
+
+    Optional<Carpeta> findByExpedienteAndJuzgado(String expediente, Juzgado juzgado);
+    List<Carpeta> findByCarpetaPadre(Carpeta c);
+    
     @Query(value = """
             SELECT ca.t_fecha_alta
             FROM trials.tbl_documentos doc

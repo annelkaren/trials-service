@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -95,12 +94,10 @@ public class TipoJuicioService {
     }
 
     public List<TipoJuicioDemandasRecord> getAllTipoJuicioHijo(Integer tipoJuicioPadreId) {
-        List<TipoJuicioDemandasRecord> result = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
+        return tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadreId);
+    }
 
-        if (result.isEmpty()) {
-            throw new NotFoundException("No hay Juicios asociados", "tipoJuicioPadreId");
-        }
-
-        return result;
+    public TipoJuicio findByNombre(String nombre){
+        return tipoJuicioRepository.findByNombreIgnoreCase(nombre).orElse(null);
     }
 }

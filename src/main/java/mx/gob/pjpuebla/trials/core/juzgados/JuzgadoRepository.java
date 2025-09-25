@@ -148,6 +148,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 
+        Optional<Juzgado> findByNombreContainingIgnoreCase(String nombre);
+
         @Query("""
                         SELECT
                         new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id,  f.nombre, f.estado, m.nombre)
@@ -178,5 +180,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         "WHERE oj.oficialiaId = :oficialiaId " +
                         "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.NO_APLICA")
         List<Juzgado> findJuzgadoExhortoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
+
+
+        Optional<Juzgado> findByClaveJuzgado(String clave);
 
 }

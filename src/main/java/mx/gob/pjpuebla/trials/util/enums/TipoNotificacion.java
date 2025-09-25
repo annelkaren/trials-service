@@ -7,7 +7,10 @@ public enum TipoNotificacion {
     ESTRADO("Estrado"),
     CORREO_ELECTRONICO("Correo electrónico"),
     DOMICILIO("Domicilio"),
-    NINGUNO("Ninguno");
+    NINGUNO("Ninguno"),
+    EMPLAZAMIENTO("Domicilio emplazamiento"), //demandado
+    EXHORTO("Exhorto"),
+    EDICTOS("Edictos");
     
     private final String tipoNotificacion;
 

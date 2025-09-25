@@ -235,7 +235,6 @@ public class DocumentoResource {
 
     @PostMapping(value = "/documentos/amparo")
     public AmparoRecordResponse crearAmparo(@RequestBody AmparoRecord amparoRecord) {
-
         return documentoService.createAmparo(amparoRecord);
 
     }

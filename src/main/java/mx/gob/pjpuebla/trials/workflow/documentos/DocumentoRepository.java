@@ -125,8 +125,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.DEVUELTO
-                                     ) AND pc = :personaAsignada
-                                     AND jc.id = :juzgadoId)
+                                     ) AND pc = :personaAsignada AND jc.id = :juzgadoId)
+
                                      OR case when :isOficial = true THEN (d IS NOT NULL AND d.estatus IN (
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.TURNADO,
                                      mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta.ASIGNADO,
@@ -409,5 +409,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("key") String key,
             @Param("isOficialMayorOficialia") Boolean isOficialMayorOficialia,
             @Param("juzgados") List<Juzgado> juzgados);
+
+    Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoSetUp;
+import mx.gob.pjpuebla.trials.core.configuraciones.ConfiguracionesRepository;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoRepository;
 import mx.gob.pjpuebla.trials.core.distritos.DistritoSetUp;
@@ -186,6 +187,9 @@ class DocumentoServiceTest {
         private EventoService eventosService;
         @Mock
         private SolicitudesProrrogasService solicitudesProrrogasService;
+
+        @Mock
+        private ConfiguracionesRepository configuracionesRepository;
 
         private TipoJuicio tipoJuicio;
         private Juzgado juzgado;
@@ -1094,6 +1098,7 @@ class DocumentoServiceTest {
                 demanda.setTipoDocumento(TipoDocumento.PROMOCION);
                 demanda.setEstatus(EstadoCarpeta.ASIGNADO);
                 demanda.getCarpeta().setJuzgado(juzgado);
+                demanda.setMigrado(Migrado.NO);
                 Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
                 demanda.setConcepto(concepto);

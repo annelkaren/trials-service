@@ -7,7 +7,8 @@ public enum EstadoAcuse {
     CREADO("Creado"),
     ENTREGADO("Entregado"),
     NOENTREGADO("No entregado"),
-    CANCELADO("Cancelado");
+    CANCELADO("Cancelado"),
+    DESCONOCIDO("Desconocido");
 
     private final String etiqueta;
 
