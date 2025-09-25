@@ -36,9 +36,9 @@ public class BandejasResources {
             @RequestParam(required = false) Integer juzgadoId,
             @RequestParam(required = false) Integer carpetaId,
             @RequestParam(required = false) String expediente,
-            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String key,
             Pageable pageable) {
-        var filter = new BandejaMigracionFilter(estado, juzgadoId, carpetaId, expediente, q);
+        var filter = new BandejaMigracionFilter(estado, juzgadoId, carpetaId, expediente, key);
         return migracionesService.listar(filter, pageable);
     }
 

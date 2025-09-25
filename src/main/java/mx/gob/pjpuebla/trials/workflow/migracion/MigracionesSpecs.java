@@ -34,7 +34,7 @@ public final class MigracionesSpecs {
             // Joins perezosos: solo si hacen falta
             Join<Migraciones, Carpeta> carpetaJoin = null;
             boolean needsCarpeta = (f.expediente() != null && !f.expediente().isBlank())
-                    || (f.q() != null && !f.q().isBlank());
+                    || (f.key() != null && !f.key().isBlank());
             if (needsCarpeta) {
                 carpetaJoin = root.join("carpeta", JoinType.LEFT);
             }
@@ -44,8 +44,8 @@ public final class MigracionesSpecs {
                 preds.add(cb.like(cb.lower(carpetaJoin.get("expediente")), like));
             }
 
-            if (f.q() != null && !f.q().isBlank()) {
-                String like = "%" + f.q().toLowerCase() + "%";
+            if (f.key() != null && !f.key().isBlank()) {
+                String like = "%" + f.key().toLowerCase() + "%";
                 List<Predicate> ors = new ArrayList<>();
                 ors.add(cb.like(cb.lower(root.get("observaciones")), like));
                 ors.add(cb.like(cb.lower(root.get("asignacionAnterior")), like));

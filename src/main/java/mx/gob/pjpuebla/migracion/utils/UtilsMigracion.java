@@ -70,7 +70,7 @@ public class UtilsMigracion {
             case "DE" -> TipoNotificacion.EMPLAZAMIENTO;
             case "ES", "E" -> TipoNotificacion.ESTRADO;
             case "EX" -> TipoNotificacion.EXHORTO;
-            case "ED" -> TipoNotificacion.EDITCTOS;
+            case "ED" -> TipoNotificacion.EDICTOS;
             default -> TipoNotificacion.NINGUNO;
         };
     }

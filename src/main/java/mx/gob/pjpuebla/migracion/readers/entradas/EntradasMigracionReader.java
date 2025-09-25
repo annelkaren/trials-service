@@ -315,7 +315,7 @@ public class EntradasMigracionReader {
         }
     }
 
-    // metodos de cración:
+    // metodos de creación
     private Carpeta crearCarpetaMigracion(EntradasMigracion entrada,
             Ocomun ocomun,
             Juzgado juzgado,
@@ -328,8 +328,7 @@ public class EntradasMigracionReader {
                 .setExpediente(entrada.getExpediente() + "/" + entrada.getAmo())
                 .setSelloEstatus(SelloEstatus.VALIDO)
                 .setEstatus(EstadoCarpeta.MIGRADO)
-                .setTipoCarpeta(TipoCarpeta.DEMANDA) // TODO: EVALUAR DE DONDE VIENE SI ES JUZGADO ES DENABDAM SU ES
-                                                     // JUZGADO PERO DE EXHORTO ES EXHOTHO SI ES SALA ES APELACION
+                .setTipoCarpeta(TipoCarpeta.DEMANDA)
                 .setJuzgado(juzgado)
                 .setTipoJuicio(tipoJuicio)
                 .setPersona(null)

@@ -10,7 +10,7 @@ public enum TipoNotificacion {
     NINGUNO("Ninguno"),
     EMPLAZAMIENTO("Domicilio emplazamiento"), //demandado
     EXHORTO("Exhorto"),
-    EDITCTOS("Editctos");
+    EDICTOS("Edictos");
     
     private final String tipoNotificacion;
 

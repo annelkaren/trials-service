@@ -7,5 +7,5 @@ public record BandejaMigracionFilter(
     Integer juzgadoId,
     Integer carpetaId,
     String expediente,   
-    String q
+    String key
 ) {}

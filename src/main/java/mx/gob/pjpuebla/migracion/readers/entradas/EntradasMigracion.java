@@ -27,7 +27,7 @@ public class EntradasMigracion {
 
     private String expediente;
 
-    private Integer amo;
+    private Integer amo; // amo significa año en varias entidades de la base de datos de mysql.
 
     private LocalDate fecha;
 
@@ -56,9 +56,6 @@ public class EntradasMigracion {
     private String oficio;
 
     private String etapa;
-
-    @Column(name = "tip_mo")
-    private String tipMo;
 
     private String status;
 
