@@ -1,5 +1,8 @@
 package mx.gob.pjpuebla.migracion.acl.mapper;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class AmparoMapper {
 
     public String mapTipoAmparo(String tipo) {
