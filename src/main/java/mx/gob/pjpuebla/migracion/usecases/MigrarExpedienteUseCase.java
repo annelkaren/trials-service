@@ -134,7 +134,7 @@ public class MigrarExpedienteUseCase {
         carpetaMig.createPiezaConDocumentos(carpeta, piezasLegacy);
 
         // 10) Amparos
-        carpetaMig.createAmparos(carpeta, amparos);
+        documentoMig.createAmparos(carpeta, amparos);
         
 
         // 10) Registro de migración

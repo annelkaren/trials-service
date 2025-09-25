@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.migracion;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -418,7 +417,7 @@ public class DocumentoMigracionService {
 
     }
 
-    private Integer findTribunalDistrito(String nombre){
+    public Integer findTribunalDistrito(String nombre){
         return institucionService.findByTipoInstitucion("Tribunal Federal")
             .stream()
             .filter(inst -> inst.nombre().equalsIgnoreCase(nombre))

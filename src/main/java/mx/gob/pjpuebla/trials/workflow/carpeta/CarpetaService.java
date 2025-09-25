@@ -7,7 +7,6 @@ import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -83,7 +82,6 @@ public class CarpetaService {
         private final DocumentoDetalleRepository documentoDetalleRepository;
         private final MovimientoRepository movimientoRepository;
         private final JuzgadoRepository juzgadoRepository;
-        private final OficialiaRepository oficialiaRepository;
         private final ConceptoRepository conceptoRepository;
         private final PersonaRepository personaRepository;
 

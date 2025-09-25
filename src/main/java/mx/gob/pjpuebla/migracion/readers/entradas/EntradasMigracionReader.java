@@ -18,7 +18,6 @@ import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
-import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracion;
 import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliarMigracion;
@@ -79,7 +78,6 @@ public class EntradasMigracionReader {
     private final EntradasMigracionRepository entradasMigracionRepository;
     private final JuzgadosMigracionReader juzgadosMigracionService;
     private final JuiciosMigracionReader juiciosMigracionService;
-    private final AmparoMigracionReader amparoMigracionService;
     private final ActoresMigracionReader actoresMigracionService;
     private final DetallesPromReader detallesPromService;
   
