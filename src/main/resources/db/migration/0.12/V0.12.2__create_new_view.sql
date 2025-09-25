@@ -1,3 +1,7 @@
+-- se incrementa tamaño en nombre ya que se detecto en la migración que hay personas morales con nombres muy largos.
+ALTER TABLE TRIALS.TBL_PERSONAS_DOCUMENTOS
+ALTER COLUMN s_nombres TYPE VARCHAR(100);
+
 CREATE OR REPLACE VIEW trials.reporte_divorcios AS
 SELECT
   -- ===== DATOS DEL REGISTRO =====
@@ -20,9 +24,9 @@ SELECT
   COALESCE(TO_CHAR(sen.fecha_sen, 'DD'), '')                AS "DIA_SEN",
   COALESCE(TO_CHAR(sen.fecha_sen, 'MM'), '')                AS "MES_SEN",
   COALESCE(TO_CHAR(sen.fecha_sen, 'YYYY'), '')              AS "AÑO_SEN",
-  '-PENDIENTE-'                                             AS "DIA_EJEC",
-  '-PENDIENTE-'                                             AS "MES_EJEC",
-  '-PENDIENTE-'                                             AS "AÑO_EJEC",
+  COALESCE(TO_CHAR(tcd.t_fecha_ejecutoria, 'DD'), '')       AS "DIA_EJEC",
+  COALESCE(TO_CHAR(tcd.t_fecha_ejecutoria, 'MM'), '')       AS "MES_EJEC",
+  COALESCE(TO_CHAR(tcd.t_fecha_ejecutoria, 'YYYY'), '')     AS "AÑO_EJEC",
   (
     CASE
       WHEN j.has_112 THEN CASE

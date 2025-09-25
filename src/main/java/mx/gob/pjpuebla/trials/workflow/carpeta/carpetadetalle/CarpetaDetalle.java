@@ -61,6 +61,9 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "T_FECHA_HECHO")
     private LocalDate fechaHecho;
 
+    @Column(name = "T_FECHA_EJECUTORIA")
+    private LocalDate fechaEjecutoria;
+
     @Column(name = "N_CANTIDAD_PRINCIPAL")
     private Integer cantidadPrincipal;
 
