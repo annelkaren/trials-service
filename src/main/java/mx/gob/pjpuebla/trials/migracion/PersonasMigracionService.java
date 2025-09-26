@@ -116,18 +116,22 @@ public class PersonasMigracionService {
         Pais pais = paisService.findByNombreComun("México");
 
         return domicilioService.save(new Domicilio()
-                .setCalle(domicilio.getCalle())
-                .setInterior(domicilio.getNumin())
-                .setExterior(domicilio.getNumex())
-                .setColonia(domicilio.getColonia())
+                .setCalle(transformarTextoInvalido(domicilio.getCalle()))
+                .setInterior(transformarTextoInvalido(domicilio.getNumin()))
+                .setExterior(transformarTextoInvalido(domicilio.getNumex()))
+                .setColonia(transformarTextoInvalido(domicilio.getColonia()))
                 // .setLocalidad() no se puede obtener la localidad desde legacy
-                .setCodigoPostal(domicilio.getCp().toString())
-                .setMunicipio(domicilio.getMunicipio())
-                .setEstadoRepublica(domicilio.getEstado())
+                .setCodigoPostal(transformarTextoInvalido(domicilio.getCp().toString()))
+                .setMunicipio(transformarTextoInvalido(domicilio.getMunicipio()))
+                .setEstadoRepublica(transformarTextoInvalido(domicilio.getEstado()))
                 // .setReferencia() no se puede obtener referencias desde legacy
                 .setPaisResidencia(pais)
-                .setLatitud(domicilio.getLatitud().toString())
-                .setLongitud(domicilio.getLongitud().toString())
-                .setCiudad(domicilio.getCiudad()));
+                .setLatitud(transformarTextoInvalido(domicilio.getLatitud().toString()))
+                .setLongitud(transformarTextoInvalido(domicilio.getLongitud().toString()))
+                .setCiudad(transformarTextoInvalido(domicilio.getCiudad())));
+    }
+
+ private String transformarTextoInvalido(String texto){
+        return texto.length() < 3 ? texto + "N/E" : texto;
     }
 }
