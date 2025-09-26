@@ -81,8 +81,7 @@ public class PersonasMigracionService {
                 DomicilioMigracion domicilioMigracion = domicilioMigracionReader
                         .findByCuActorAndEstado(p.getClaveAct());
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
-                System.out.println(domicilioMigracion.getMunicipio());
-                System.out.println(domicilioMigracion.getCu());
+               
             }
 
             var pd = new PersonaDocumento()
