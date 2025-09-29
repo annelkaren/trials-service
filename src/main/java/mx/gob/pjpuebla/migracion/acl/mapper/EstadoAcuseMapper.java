@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
 public class EstadoAcuseMapper {
 
     public EstadoAcuse mapEstadoAcuse(String motivo, String rutaAcuse) {
+       
         // 1) Normaliza comparaciones de estado (case-insensitive)
         if ("cancelado".equalsIgnoreCase(motivo)) {
             return EstadoAcuse.CANCELADO;
@@ -16,8 +17,9 @@ public class EstadoAcuseMapper {
         }
 
         // 2) Valida entradas: isBlank() cubre vacío y solo-espacios; verifica null
-      
-        if (isBlank(motivo) || isBlank(rutaAcuse)) {
+        
+
+        if (isBlank(motivo) || rutaAcuse == null || isBlank(rutaAcuse)) {
             return EstadoAcuse.DESCONOCIDO;
         }
 

@@ -10,9 +10,10 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 public class EstadoOficioMapper {
     
     public EstadoCarpeta estadoOficioMapper(String motivo, String rutaAcuse, String estatusOfi){
+        
         if(estatusOfi.equals("N")){ return EstadoCarpeta.CANCELADO; }
         
-        if(Objects.equals(motivo,"Cancelado") || Objects.equals(motivo, "") || Objects.equals(rutaAcuse, "")){ return EstadoCarpeta.CANCELADO; }
+        if(Objects.equals(motivo,"Cancelado") || Objects.equals(motivo, "") || Objects.equals(rutaAcuse, "") || rutaAcuse == null){ return EstadoCarpeta.CANCELADO; }
 
         
         if(!rutaAcuse.isBlank() || !rutaAcuse.isEmpty()){ return EstadoCarpeta.CON_ACUSE; }

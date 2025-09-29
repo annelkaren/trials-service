@@ -1201,7 +1201,6 @@ public class DocumentoService {
                         esInterno = true;
                 } else if (persona.getOficialia() != null
                                 && centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                        System.out.println("PERDSONA OFICIALIA: " + persona.getOficialia().getNombre());
                         esInterno = true;
                 }
 
