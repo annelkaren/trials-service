@@ -22,12 +22,12 @@ public class FtpProps {
     @Getter @Setter
     public static class FtpServerProps {
         private String host;
-        private int port = 21;
+        private final int port = 21;
         private String username;
         @ToString.Exclude
         private String password;
         private boolean passiveMode = true;
-        private int connectTimeoutMs = 10000;
-        private int dataTimeoutMs = 20000;
+        private final int connectTimeoutMs = 10000;
+        private final int dataTimeoutMs = 20000;
     }
 }
