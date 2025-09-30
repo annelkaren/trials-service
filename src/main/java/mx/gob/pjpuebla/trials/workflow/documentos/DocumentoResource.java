@@ -104,7 +104,7 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
     }
 
-    @GetMapping("/bandeja/entrada")
+    @GetMapping("/bandeja/entrada2")
     public Page<DocumentoGridRecord> getAll(Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {

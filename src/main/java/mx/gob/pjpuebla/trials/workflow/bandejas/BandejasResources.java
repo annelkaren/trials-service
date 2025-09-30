@@ -12,6 +12,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaRequest;
+import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 public class BandejasResources {
 
     private final MigracionesService migracionesService;
+    private final BandejasService bandejasService;
 
     @GetMapping("/migracion")
     public Page<BandejaMigracionResponse> bandeja(
@@ -56,4 +58,9 @@ public class BandejasResources {
         return ResponseEntity.status(HttpStatus.CREATED).body(result); // 201 Created
     }
 
+    //Bandeja de entrada:
+    @GetMapping("/entrada")
+    public Page<BandejaEntradaResponse> listarBandejaEntrada(Pageable pageable){
+        return bandejasService.listarBandejaEntrada(pageable);
+    }
 }

@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import java.util.*;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -160,6 +161,11 @@ public class MovimientoService {
                                                  String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
         return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
                 tipoDocumento, folio, tipoEntradaDoc, tipoEntradaCarp);
+    }
+
+    //metodo para prueba de refactor bandeja de entrada:
+    public Page<BandejaEntradaResponse> getBandejaEntrada(Pageable pageable) {
+        return movimientoRepository.getBandejaEntradas(pageable, List.of("CAPTURA", "EDICION", "DEVUELTO_A_OFICIALIA"));
     }
 
     public Map<String, Object> getOrigen(Integer documentoId, Integer carpetaId) {
