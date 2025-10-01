@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.movimientos;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,7 +9,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
@@ -19,7 +23,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 
 @Repository
-public interface MovimientoRepository extends JpaRepository<Movimiento, Integer> {
+public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>, JpaSpecificationExecutor<Movimiento> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
@@ -281,6 +285,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse(
+              m.id,
               doc.id,
               COALESCE(cDoc.id, cMov.id),
               COALESCE(cDoc.folio, cMov.folio),
@@ -359,5 +364,13 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     Page<BandejaEntradaResponse> getBandejaEntradas(
             Pageable pageable,
             @Param("estados") List<String> estados);
+
+  @Override
+  @EntityGraph(attributePaths = {
+      "carpeta", "carpeta.juzgado", "carpeta.juzgado.materia",
+      "documento", "documento.carpeta", "documento.carpeta.juzgado", "documento.carpeta.juzgado.materia"
+  })
+  @NonNull
+  Page<Movimiento> findAll(@Nullable Specification<Movimiento> spec, @Nullable Pageable pageable);
 
 }

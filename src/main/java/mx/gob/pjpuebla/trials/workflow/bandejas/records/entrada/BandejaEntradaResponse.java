@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 public record BandejaEntradaResponse(
+    Integer movimientoId,
     Integer idDocumento,
     Integer idCarpeta,
     String folio,
@@ -23,12 +24,12 @@ public record BandejaEntradaResponse(
     String motivoDevolucion
 ) {
 
-    public BandejaEntradaResponse(Integer idDocumento, Integer idCarpeta, String folio, String expediente, String materia,
+    public BandejaEntradaResponse(Integer movimientoId, Integer idDocumento, Integer idCarpeta, String folio, String expediente, String materia,
             TipoDocumento tipoDocumento, TipoCarpeta tipoCarpeta, String organoJurisdiccional, LocalDateTime fechaRegistro,
             SelloEstatus selloEstatus, EstadoCarpeta estatus, boolean hasFile, String estaEnJuzgado,
             String motivoDevolucion) {
-        this(idDocumento, idCarpeta, folio, expediente, materia,
-                tipoDocumento != null ? tipoDocumento.name() : tipoCarpeta.name(),
+        this(movimientoId, idDocumento, idCarpeta, folio, expediente, materia,
+                tipoDocumento != null ? tipoDocumento.getEtiqueta() : tipoCarpeta.getEtiqueta(),
                 organoJurisdiccional, fechaRegistro, selloEstatus, estatus, hasFile, estaEnJuzgado,
                 motivoDevolucion);
 

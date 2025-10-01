@@ -12,11 +12,15 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaRequest;
+import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,9 +62,20 @@ public class BandejasResources {
         return ResponseEntity.status(HttpStatus.CREATED).body(result); // 201 Created
     }
 
-    //Bandeja de entrada:
+    // Bandeja de entrada:
     @GetMapping("/entrada")
-    public Page<BandejaEntradaResponse> listarBandejaEntrada(Pageable pageable){
-        return bandejasService.listarBandejaEntrada(pageable);
+    public Page<BandejaEntradaResponse> listarBandejaEntrada(
+            @RequestParam(required = false) String folio,
+            @RequestParam(required = false) String expediente,
+            @RequestParam(required = false) String materia,
+            @RequestParam(required = false) String tipoEntrada,
+            @RequestParam(required = false) String organoJurisdiccional,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaRegistro,
+            @RequestParam(required = false) String key,
+            Pageable pageable) {
+
+        var filter = new BandejaEntradaFilter(
+                folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaRegistro, key);
+        return bandejasService.listarBandejaEntrada(filter, pageable);
     }
 }

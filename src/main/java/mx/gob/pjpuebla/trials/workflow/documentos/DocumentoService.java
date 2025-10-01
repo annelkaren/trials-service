@@ -776,8 +776,7 @@ public class DocumentoService {
                         case DEMANDA -> null;
                         case EXHORTO -> TipoDocumento.EXHORTO;
                         case APELACION -> TipoDocumento.APELACION;
-                        case PIEZA -> TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO
-                                                               // TRATARLO.
+                        case PIEZA -> TipoDocumento.PROMOCION; 
                         default -> throw new IllegalArgumentException(
                                         "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
                 };
