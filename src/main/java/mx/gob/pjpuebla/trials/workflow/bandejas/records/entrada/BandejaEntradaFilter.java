@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 public record BandejaEntradaFilter(
     String folio,
@@ -8,6 +9,6 @@ public record BandejaEntradaFilter(
     String materia,
     String tipoEntrada,
     String organoJurisdiccional,
-    LocalDateTime fechaRegistro,
+    LocalDate fechaRegistro,
     String key
 ) {}

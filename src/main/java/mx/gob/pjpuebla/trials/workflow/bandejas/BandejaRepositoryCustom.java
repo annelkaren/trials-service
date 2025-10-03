@@ -13,6 +13,7 @@ public interface BandejaRepositoryCustom {
     Page<BandejaEntradaResponse> findBandejaEntradas(
             Pageable pageable,
             List<String> estados,
-            @Nullable BandejaEntradaFilter filtro
-    );
+            @Nullable BandejaEntradaFilter filtro,
+            Integer juzgadoId,
+            Integer oficialiaId);
 }

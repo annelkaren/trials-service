@@ -16,11 +16,11 @@ import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFi
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,7 +70,7 @@ public class BandejasResources {
             @RequestParam(required = false) String materia,
             @RequestParam(required = false) String tipoEntrada,
             @RequestParam(required = false) String organoJurisdiccional,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaRegistro,
+            @RequestParam(required = false) LocalDate fechaRegistro,
             @RequestParam(required = false) String key,
             Pageable pageable) {
 

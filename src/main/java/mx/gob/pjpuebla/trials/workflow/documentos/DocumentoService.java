@@ -2419,6 +2419,7 @@ public class DocumentoService {
                                 .setSelloEstatus(SelloEstatus.VALIDO)
                                 .setFechaAsignacion(LocalDateTime.now())
                                 .setPersona(personaLogueada)
+                                .setMigrado(Migrado.NO)
                                 .setCu(getCu(juzgado, expediente));
 
                 return carpetaRepository.save(carpeta);
@@ -2434,6 +2435,7 @@ public class DocumentoService {
                 Documento documento = new Documento()
                                 .setCarpeta(carpeta)
                                 .setData(documentoData)
+                                .setMigrado(Migrado.NO)
                                 .setFechaAsignacion(LocalDateTime.now())
                                 .setPersona(persona);
 
