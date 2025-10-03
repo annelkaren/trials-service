@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.HttpStatus;
@@ -64,18 +65,7 @@ public class BandejasResources {
 
     // Bandeja de entrada:
     @GetMapping("/entrada")
-    public Page<BandejaEntradaResponse> listarBandejaEntrada(
-            @RequestParam(required = false) String folio,
-            @RequestParam(required = false) String expediente,
-            @RequestParam(required = false) String materia,
-            @RequestParam(required = false) String tipoEntrada,
-            @RequestParam(required = false) String organoJurisdiccional,
-            @RequestParam(required = false) LocalDate fechaRegistro,
-            @RequestParam(required = false) String key,
-            Pageable pageable) {
-
-        var filter = new BandejaEntradaFilter(
-                folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaRegistro, key);
-        return bandejasService.listarBandejaEntrada(filter, pageable);
+    public Page<BandejaEntradaResponse> listarBandejaEntrada(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
+        return bandejasService.listarBandejaEntrada(filtros, pageable);
     }
 }
