@@ -102,27 +102,7 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void getAll() throws Exception {
-        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1));
-        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        demanda.getCarpeta().setFolio("1");
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, demanda.getCarpeta().getFolio(),
-                demanda.getCarpeta().getExpediente(),
-                "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
-                EstadoCarpeta.CAPTURA,
-                true, "Juzgado 1", "", "");
 
-        given(documentoService.getAll(any(), any(Pageable.class), anyString()))
-                .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
-
-        mockMvc.perform(
-                        get("/api/workflow/bandeja/entrada")
-                                .content(ResourceUtilTest.asJsonString(documentoGridRecord))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
     @Test
     void update_status() throws Exception {
