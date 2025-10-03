@@ -336,24 +336,12 @@ public final class BandejaCriteriaHelper {
         Predicate eqFolio = cb.equal(cb.lower(coalesceFolioCD), folioExact);
 
         switch (prefix) {
-            case 'D' -> {
-                ors.add(cb.and(eqFolio, cb.equal(cMov.get("tipoCarpeta"), TipoCarpeta.DEMANDA)));
-            }
-            case 'A' -> {
-                ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.APELACION)));
-            }
-            case 'P' -> {
-                ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.PROMOCION)));
-            }
-            case 'E' -> {
-                ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.EXHORTO)));
-            }
-            case 'O' -> {
-                ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.OFICIO)));
-            }
-            default -> {
-                // prefijo no reconocido → nada
-            }
+            case 'D' -> ors.add(cb.and(eqFolio, cb.equal(cMov.get("tipoCarpeta"), TipoCarpeta.DEMANDA)));
+            case 'A' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.APELACION)));
+            case 'P' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.PROMOCION)));
+            case 'E' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.EXHORTO)));
+            case 'O' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.OFICIO)));
+            default -> {}
         }
     }
 }

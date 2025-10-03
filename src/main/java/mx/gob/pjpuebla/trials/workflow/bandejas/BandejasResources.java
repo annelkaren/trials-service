@@ -16,8 +16,6 @@ import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFi
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
-import java.time.LocalDate;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
