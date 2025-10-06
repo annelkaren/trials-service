@@ -337,10 +337,9 @@ public final class BandejaCriteriaHelper {
 
         switch (prefix) {
             case 'D' -> ors.add(cb.and(eqFolio, cb.equal(cMov.get("tipoCarpeta"), TipoCarpeta.DEMANDA)));
-            case 'A' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.APELACION)));
+            case 'A' -> ors.add(cb.and(eqFolio, cb.equal(cMov.get("tipoCarpeta"), TipoCarpeta.APELACION)));
             case 'P' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.PROMOCION)));
-            case 'E' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.EXHORTO)));
-            case 'O' -> ors.add(cb.and(eqFolio, cb.equal(doc.get("tipoDocumento"), TipoDocumento.OFICIO)));
+            case 'E' -> ors.add(cb.and(eqFolio, cb.equal(cMov.get("tipoCarpeta"), TipoCarpeta.EXHORTO)));
             default -> {}
         }
     }
