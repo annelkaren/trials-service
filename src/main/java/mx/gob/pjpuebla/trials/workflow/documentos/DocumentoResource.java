@@ -111,7 +111,7 @@ public class DocumentoResource {
         return this.documentoService.getAll(key, pageable, tipoEntrada);
     }
 
-    @GetMapping("/bandeja/salida")
+    @GetMapping("/bandeja/salida2")
     public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAllBandejaSalida(key, pageable);

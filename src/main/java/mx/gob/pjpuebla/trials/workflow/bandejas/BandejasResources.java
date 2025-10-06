@@ -66,4 +66,9 @@ public class BandejasResources {
     public Page<BandejaEntradaResponse> listarBandejaEntrada(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
         return bandejasService.listarBandejaEntrada(filtros, pageable);
     }
+
+    @GetMapping("/salida")
+    public Page<BandejaEntradaResponse> listarBandejaSalida(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
+        return bandejasService.listarBandejaSalida(filtros, pageable);
+    }
 }

@@ -22,8 +22,8 @@ public class BandejasService {
     private final PersonaService personaService;
 
     // Estados por defecto de la bandeja (los de tu JPQL)
-    private static final List<String> DEFAULT_ESTADOS_BANDEJA_ENTRADA = List.of("CAPTURA", "EDICION",
-            "DEVUELTO_A_OFICIALIA");
+    private static final List<String> DEFAULT_ESTADOS_BANDEJA_ENTRADA = List.of("CAPTURA", "EDICION", "DEVUELTO_A_OFICIALIA");
+    private static final List<String> DEFAULT_ESTADOS_BANDEJA_SALIDA = List.of("SALIDA");
 
     /**
      * Orquesta la consulta de la bandeja de entrada.
@@ -36,6 +36,19 @@ public class BandejasService {
         Integer juzgadoId = getJuzgadoId(currentUser);
         Integer oficialiaId = getOficialiaId(currentUser);
         return bandejaRepo.findBandejaEntradas(pageable, DEFAULT_ESTADOS_BANDEJA_ENTRADA, filter, juzgadoId, oficialiaId);
+    }
+
+        /**
+     * Orquesta la consulta de la bandeja de entrada.
+     * - Aplica filtros (record BandejaEntradaFilter)
+     * - Aplica orden global según Pageable.getSort()
+     * - Aplica paginación
+     */
+    public Page<BandejaEntradaResponse> listarBandejaSalida(BandejaEntradaFilter filter, Pageable pageable) {
+        Persona currentUser = personaService.getAuditor();
+        Integer juzgadoId = getJuzgadoId(currentUser);
+        Integer oficialiaId = getOficialiaId(currentUser);
+        return bandejaRepo.findBandejaSalida(pageable, DEFAULT_ESTADOS_BANDEJA_SALIDA, filter, juzgadoId, oficialiaId);
     }
 
     private Integer getJuzgadoId(Persona currentUser) {

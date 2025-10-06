@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -409,4 +410,168 @@ public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
                 }
                 return orders;
         }
+
+        
+        /**
+         * Consulta principal que devuelve la bandeja paginada.
+         *
+         * @param pageable    paginación y orden
+         * @param estados     estados de movimiento permitidos (p.ej.
+         *                    CAPTURA/EDICION/DEVUELTO_A_OFICIALIA)
+         * @param filtro      filtros opcionales de la bandeja
+         * @param juzgadoId   ámbito del usuario (juzgado) o {@code null}
+         * @param oficialiaId ámbito del usuario (oficialía) o {@code null}
+         */
+        @Override
+        public Page<BandejaEntradaResponse> findBandejaSalida(
+                        Pageable pageable,
+                        List<String> estados,
+                        @Nullable BandejaEntradaFilter filtro,
+                        Integer juzgadoId,
+                        Integer oficialiaId) {
+                CriteriaBuilder cb = em.getCriteriaBuilder();
+
+                // ======================
+                // SELECT (contenido)
+                // ======================
+                CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
+                Root<Movimiento> m = cq.from(Movimiento.class);
+
+                // ---- LEFT JOINs (no perder filas cuando alguna relación es opcional) ----
+                Join<Movimiento, Documento> doc = m.join("documento", JoinType.LEFT);
+                Join<Movimiento, Carpeta> cMov = m.join("carpeta", JoinType.LEFT);
+                Join<Documento, Carpeta> cDoc = doc.join("carpeta", JoinType.LEFT);
+
+                Join<Carpeta, Juzgado> jcMov = cMov.join("juzgado", JoinType.LEFT);
+                Join<Carpeta, Juzgado> jcDoc = cDoc.join("juzgado", JoinType.LEFT);
+
+                Join<Juzgado, Materia> matMov = jcMov.join("materia", JoinType.LEFT);
+                Join<Juzgado, Materia> matDoc = jcDoc.join("materia", JoinType.LEFT);
+
+                Join<Movimiento, Juzgado> jMov = m.join("juzgado", JoinType.LEFT);
+                Join<Movimiento, Oficialia> oMov = m.join("oficialia", JoinType.LEFT);
+
+                // ---- Predicados base ----
+                Predicate ultimoMovimiento   = ultimoMovimientoGlobal(cb, cq, m, doc, cMov);
+
+                // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
+                Predicate scope = buildScopePredicate(cb, jMov, oMov, juzgadoId, oficialiaId);
+
+                // ---- Filtros adicionales del record ----
+                Predicate filtrosExtras = buildFiltersPredicate(cb, cq, m, doc, cMov, cDoc, jcMov, jcDoc, matMov,
+                                matDoc, filtro);
+
+                // ---- Campos calculados (expresiones) usados en el SELECT ----
+                Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, doc, cMov);
+                Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, doc, cMov);
+
+                // Folio mostrado: por presencia (doc si hay, si no carpeta)
+                Expression<String> folioExpr = buildFolioPorPresenciaExpr(cb, doc, cMov);
+
+                // Expediente y materia con COALESCE (doc primero, luego carpeta) +
+                // capitalización
+                Expression<String> expediente = cb.<String>coalesce()
+                                .value(cDoc.get("expediente"))
+                                .value(cMov.get("expediente"));
+                Expression<String> materiaRaw = cb.<String>coalesce()
+                                .value(matDoc.get("nombre"))
+                                .value(matMov.get("nombre"));
+                Expression<String> materiaNombre = capitalizeExpr(cb, materiaRaw);
+
+                // órgano jurisdiccional con COALESCE + capitalización
+                Expression<String> organoRaw = cb.<String>coalesce()
+                                .value(jcDoc.get("nombre"))
+                                .value(jcMov.get("nombre"));
+                Expression<String> organoJ = capitalizeExpr(cb, organoRaw);
+
+                // sello estatus / estatus
+                Expression<SelloEstatus> selloEstatus = cb.<SelloEstatus>coalesce()
+                                .value(cDoc.get("selloEstatus"))
+                                .value(cMov.get("selloEstatus"));
+                Expression<EstadoCarpeta> estatus = cb.<EstadoCarpeta>coalesce()
+                                .value(cDoc.get("estatus"))
+                                .value(cMov.get("estatus"));
+
+                // "En Juzgado" por CASE de estado
+                Expression<String> estaEnJuzgado = cb.<String>selectCase()
+                                .when(cb.equal(m.get("estado"), "CAPTURA"), "En Juzgado")
+                                .when(cb.equal(m.get("estado"), "SALIDA"), "En Juzgado")
+                                .when(cb.equal(m.get("estado"), "DEVUELTO_A_OFICIALIA"), "En Juzgado")
+                                .otherwise("");
+
+                // ---- WHERE y SELECT final (DTO por constructor) ----
+                Predicate esSalida = cb.equal(m.get("estado"), "SALIDA");
+                cq.where(cb.and(esSalida, ultimoMovimiento, scope, filtrosExtras));
+
+                cq.select(cb.construct(
+                                BandejaEntradaResponse.class,
+                                m.get("id").as(Integer.class), // movimientoId
+                                idDocumentoFinal, // idDocumento (con fallback)
+                                cb.<Integer>coalesce() // idCarpeta: coalesce entre cDoc.id y cMov.id
+                                                .value(cDoc.get("id").as(Integer.class))
+                                                .value(cMov.get("id").as(Integer.class)),
+                                folioExpr, // folio (por presencia)
+                                expediente,
+                                materiaNombre,
+                                doc.get("tipoDocumento"), // NO tocar: alimenta tipoEntrada del DTO
+                                cMov.get("tipoCarpeta"), // NO tocar
+                                organoJ,
+                                m.get("fechaAsignacion"),
+                                selloEstatus,
+                                estatus,
+                                hasFile, // hasFile (con fallback)
+                                estaEnJuzgado,
+                                m.get("motivo")));
+
+                // ---- ORDER BY global (antes de paginar) ----
+                List<Order> orders = buildOrderBy(cb, cq, m, doc, cMov, cDoc, jcMov, jcDoc, matMov, matDoc,
+                                pageable.getSort());
+                if (!orders.isEmpty()) {
+                        cq.orderBy(orders);
+                } else {
+                        // Default: fechaAsignacion DESC
+                        cq.orderBy(cb.desc(m.get("fechaAsignacion")));
+                }
+
+                TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
+                typed.setFirstResult((int) pageable.getOffset());
+                typed.setMaxResults(pageable.getPageSize());
+                List<BandejaEntradaResponse> content = typed.getResultList();
+
+                // ======================
+                // COUNT (mismo WHERE)
+                // ======================
+                CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
+                Root<Movimiento> mC = countQ.from(Movimiento.class);
+
+                Join<Movimiento, Documento> docC = mC.join("documento", JoinType.LEFT);
+                Join<Movimiento, Carpeta> cMovC = mC.join("carpeta", JoinType.LEFT);
+                Join<Documento, Carpeta> cDocC = docC.join("carpeta", JoinType.LEFT);
+
+                Join<Carpeta, Juzgado> jcMovC = cMovC.join("juzgado", JoinType.LEFT);
+                Join<Carpeta, Juzgado> jcDocC = cDocC.join("juzgado", JoinType.LEFT);
+
+                Join<Juzgado, Materia> matMovC = jcMovC.join("materia", JoinType.LEFT);
+                Join<Juzgado, Materia> matDocC = jcDocC.join("materia", JoinType.LEFT);
+
+                Join<Movimiento, Juzgado> jMovC = mC.join("juzgado", JoinType.LEFT);
+                Join<Movimiento, Oficialia> oMovC = mC.join("oficialia", JoinType.LEFT);
+
+                Predicate baseEstadosC = mC.get("estado").in(estados);
+                Predicate ultimoMovimientoC = buildUltimoMovimientoPredicate(cb, countQ, mC, docC, cMovC, estados);
+                Predicate filtrosExtrasC = buildFiltersPredicate(cb, countQ, mC, docC, cMovC, cDocC, jcMovC, jcDocC,
+                                matMovC, matDocC, filtro);
+
+                Predicate scopeC = buildScopePredicate(cb, jMovC, oMovC, juzgadoId, oficialiaId);
+
+                countQ.select(cb.countDistinct(mC));
+                countQ.where(cb.and(baseEstadosC, ultimoMovimientoC, scopeC, filtrosExtrasC));
+
+                long total = em.createQuery(countQ).getSingleResult();
+
+                return new PageImpl<>(content, pageable, total);
+        }
+
+
+       
 }

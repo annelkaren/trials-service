@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import jakarta.persistence.criteria.AbstractQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -212,10 +214,19 @@ public final class BandejaCriteriaHelper {
             Join<Movimiento, Carpeta> cMov,
             List<String> estados
     ) {
+        //Guardamos la fecha y el id del movimiento.
         Expression<LocalDateTime> mFecha = m.get("fechaAsignacion").as(LocalDateTime.class);
         Expression<Integer> mId = m.get("id").as(Integer.class);
 
         // === Caso A: por carpeta (doc IS NULL)
+        //Pasos: 
+        /*
+         * Se define con subquery el tipo de dato que vamos a ocupar en la subconsulta
+         * Root<Movimiento> aqui configuramos de donde vamos a obener la información.
+         * Guardamos el elemento fechaAsignación en una varibale de tipo expresión LocalDateTime
+         * Ejecutamos el select pero aplicando un MAX con gratest sobre la columna m2Fecha.
+         * Aplicamos los wheres correspondeintes:
+         */
         Subquery<LocalDateTime> sqAFecha = cq.subquery(LocalDateTime.class);
         Root<Movimiento> m2 = sqAFecha.from(Movimiento.class);
         Expression<LocalDateTime> m2Fecha = m2.get("fechaAsignacion").as(LocalDateTime.class);
@@ -223,6 +234,7 @@ public final class BandejaCriteriaHelper {
         sqAFecha.where(
                 cb.equal(m2.get("carpeta"), cMov),
                 m2.get("estado").in(estados));
+
 
         Subquery<Integer> sqAId = cq.subquery(Integer.class);
         Root<Movimiento> m2b = sqAId.from(Movimiento.class);
@@ -265,6 +277,65 @@ public final class BandejaCriteriaHelper {
 
         return cb.or(casoA, casoB);
     }
+
+
+    public static <T> Predicate ultimoMovimientoGlobal(
+        CriteriaBuilder cb,
+        AbstractQuery<T> cq,
+        Root<Movimiento> m,       // root de Movimiento en tu query actual
+        From<?,?> doc,            // m.join("documento", LEFT)
+        From<?,?> cMov            // m.join("carpeta", LEFT)
+) {
+    // Campos del movimiento actual
+    Expression<java.time.LocalDateTime> mFecha = m.get("fechaAsignacion").as(java.time.LocalDateTime.class);
+    Expression<Integer>                mId    = m.get("id").as(Integer.class);
+
+    // ---------- Caso A: agrupar por CARPETA (cuando doc IS NULL) ----------
+    // Max(fecha) para esa carpeta
+    Subquery<java.time.LocalDateTime> sqAFecha = cq.subquery(java.time.LocalDateTime.class);
+    Root<Movimiento> m2A = sqAFecha.from(Movimiento.class);
+    sqAFecha.select(cb.greatest(m2A.get("fechaAsignacion").as(java.time.LocalDateTime.class)));
+    sqAFecha.where(cb.equal(m2A.get("carpeta").get("id"), cMov.get("id")));
+
+    // Tie-break por id: max(id) en esa fecha y carpeta
+    Subquery<Integer> sqAId = cq.subquery(Integer.class);
+    Root<Movimiento> m2B = sqAId.from(Movimiento.class);
+    sqAId.select(cb.greatest(m2B.get("id").as(Integer.class)));
+    sqAId.where(
+            cb.equal(m2B.get("carpeta").get("id"), cMov.get("id")),
+            cb.equal(m2B.get("fechaAsignacion"), mFecha)
+    );
+
+    Predicate casoA = cb.and(
+            cb.isNull(doc.get("id")),          // este movimiento está “por carpeta”
+            cb.equal(mFecha, sqAFecha),        // tiene la fecha máxima de su carpeta
+            cb.equal(mId, sqAId)               // y el id máximo en esa fecha (tie-break)
+    );
+
+    // ---------- Caso B: agrupar por DOCUMENTO (cuando doc IS NOT NULL) ----------
+    // Max(fecha) para ese documento
+    Subquery<java.time.LocalDateTime> sqBFecha = cq.subquery(java.time.LocalDateTime.class);
+    Root<Movimiento> m3A = sqBFecha.from(Movimiento.class);
+    sqBFecha.select(cb.greatest(m3A.get("fechaAsignacion").as(java.time.LocalDateTime.class)));
+    sqBFecha.where(cb.equal(m3A.get("documento").get("id"), doc.get("id")));
+
+    // Tie-break por id: max(id) en esa fecha y documento
+    Subquery<Integer> sqBId = cq.subquery(Integer.class);
+    Root<Movimiento> m3B = sqBId.from(Movimiento.class);
+    sqBId.select(cb.greatest(m3B.get("id").as(Integer.class)));
+    sqBId.where(
+            cb.equal(m3B.get("documento").get("id"), doc.get("id")),
+            cb.equal(m3B.get("fechaAsignacion"), mFecha)
+    );
+
+    Predicate casoB = cb.and(
+            cb.isNotNull(doc.get("id")),       // este movimiento está “por documento”
+            cb.equal(mFecha, sqBFecha),        // tiene la fecha máxima de su documento
+            cb.equal(mId, sqBId)               // y el id máximo en esa fecha (tie-break)
+    );
+
+    return cb.or(casoA, casoB); // último global = último por carpeta OR último por documento
+}
 
     /**
      * Aplica el "scope" del usuario:
