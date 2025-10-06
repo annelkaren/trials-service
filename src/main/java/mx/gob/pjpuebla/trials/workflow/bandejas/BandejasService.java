@@ -51,6 +51,15 @@ public class BandejasService {
         return bandejaRepo.findBandejaSalida(pageable, DEFAULT_ESTADOS_BANDEJA_SALIDA, filter, juzgadoId, oficialiaId);
     }
 
+    public Page<BandejaEntradaResponse> listarBandejaHistorial(BandejaEntradaFilter filter, Pageable pageable) {
+        Persona currentUser = personaService.getAuditor();
+        Integer juzgadoId = getJuzgadoId(currentUser);
+        Integer oficialiaId = getOficialiaId(currentUser);
+        return bandejaRepo.findBandejaHistorial(pageable, DEFAULT_ESTADOS_BANDEJA_SALIDA, filter, juzgadoId, oficialiaId);
+    }
+
+    
+
     private Integer getJuzgadoId(Persona currentUser) {
         return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
     }

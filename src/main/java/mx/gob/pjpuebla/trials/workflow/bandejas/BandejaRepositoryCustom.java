@@ -17,13 +17,18 @@ public interface BandejaRepositoryCustom {
             Integer juzgadoId,
             Integer oficialiaId);
 
-Page<BandejaEntradaResponse> findBandejaSalida(
-        Pageable pageable,
+    Page<BandejaEntradaResponse> findBandejaSalida(
+            Pageable pageable,
             List<String> estados,
             @Nullable BandejaEntradaFilter filtro,
             Integer juzgadoId,
-            Integer oficialiaId
-);
+            Integer oficialiaId);
 
+    Page<BandejaEntradaResponse> findBandejaHistorial(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro,
+            Integer juzgadoId,
+            Integer oficialiaId);
 
 }

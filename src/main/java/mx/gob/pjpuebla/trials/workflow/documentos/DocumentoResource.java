@@ -122,7 +122,7 @@ public class DocumentoResource {
         return this.documentoService.updateStatus(id, status);
     }
 
-    @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/bandeja/historial2", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {
