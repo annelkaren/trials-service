@@ -411,7 +411,6 @@ public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
                 return orders;
         }
 
-        
         /**
          * Consulta principal que devuelve la bandeja paginada.
          *
@@ -452,7 +451,7 @@ public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
                 Join<Movimiento, Oficialia> oMov = m.join("oficialia", JoinType.LEFT);
 
                 // ---- Predicados base ----
-                Predicate ultimoMovimiento   = ultimoMovimientoGlobal(cb, cq, m, doc, cMov);
+                Predicate ultimoMovimiento = ultimoMovimientoGlobal(cb, cq, m, doc, cMov);
 
                 // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
                 Predicate scope = buildScopePredicate(cb, jMov, oMov, juzgadoId, oficialiaId);
@@ -538,9 +537,7 @@ public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
                 typed.setMaxResults(pageable.getPageSize());
                 List<BandejaEntradaResponse> content = typed.getResultList();
 
-                // ======================
-                // COUNT (mismo WHERE)
-                // ======================
+                // --- COUNT (mismo WHERE que el SELECT) ---
                 CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
                 Root<Movimiento> mC = countQ.from(Movimiento.class);
 
@@ -550,28 +547,26 @@ public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
 
                 Join<Carpeta, Juzgado> jcMovC = cMovC.join("juzgado", JoinType.LEFT);
                 Join<Carpeta, Juzgado> jcDocC = cDocC.join("juzgado", JoinType.LEFT);
-
                 Join<Juzgado, Materia> matMovC = jcMovC.join("materia", JoinType.LEFT);
                 Join<Juzgado, Materia> matDocC = jcDocC.join("materia", JoinType.LEFT);
 
                 Join<Movimiento, Juzgado> jMovC = mC.join("juzgado", JoinType.LEFT);
                 Join<Movimiento, Oficialia> oMovC = mC.join("oficialia", JoinType.LEFT);
 
-                Predicate baseEstadosC = mC.get("estado").in(estados);
-                Predicate ultimoMovimientoC = buildUltimoMovimientoPredicate(cb, countQ, mC, docC, cMovC, estados);
+                // Igual que en SELECT:
+                Predicate ultimoMovimientoC = ultimoMovimientoGlobal(cb, countQ, mC, docC, cMovC); // <-- GLOBAL (sin
+                                                                                                   // estados)
+                Predicate esSalidaC = cb.equal(mC.get("estado"), "SALIDA"); // <-- estado afuera
+                Predicate scopeC = buildScopePredicate(cb, jMovC, oMovC, juzgadoId, oficialiaId);
                 Predicate filtrosExtrasC = buildFiltersPredicate(cb, countQ, mC, docC, cMovC, cDocC, jcMovC, jcDocC,
                                 matMovC, matDocC, filtro);
 
-                Predicate scopeC = buildScopePredicate(cb, jMovC, oMovC, juzgadoId, oficialiaId);
-
-                countQ.select(cb.countDistinct(mC));
-                countQ.where(cb.and(baseEstadosC, ultimoMovimientoC, scopeC, filtrosExtrasC));
+                countQ.select(cb.count(mC)); // o cb.countDistinct(mC) si lo prefieres
+                countQ.where(cb.and(esSalidaC, ultimoMovimientoC, scopeC, filtrosExtrasC));
 
                 long total = em.createQuery(countQ).getSingleResult();
 
                 return new PageImpl<>(content, pageable, total);
         }
 
-
-       
 }
