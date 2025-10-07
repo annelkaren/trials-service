@@ -106,8 +106,8 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "S_CU")
     private String cu;
 
-    @Column(name = "N_MIGRADO")
-    @Enumerated()
+    @Column(name = "N_MIGRADO", nullable = false)
+    @Enumerated
     private Migrado migrado;
 
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")

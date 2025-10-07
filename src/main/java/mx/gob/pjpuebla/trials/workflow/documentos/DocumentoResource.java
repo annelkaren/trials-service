@@ -104,14 +104,14 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
     }
 
-    @GetMapping("/bandeja/entrada")
+    @GetMapping("/bandeja/entrada2")
     public Page<DocumentoGridRecord> getAll(Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
         return this.documentoService.getAll(key, pageable, tipoEntrada);
     }
 
-    @GetMapping("/bandeja/salida")
+    @GetMapping("/bandeja/salida2")
     public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getAllBandejaSalida(key, pageable);
@@ -122,7 +122,7 @@ public class DocumentoResource {
         return this.documentoService.updateStatus(id, status);
     }
 
-    @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/bandeja/historial2", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DocumentoGridRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key) {

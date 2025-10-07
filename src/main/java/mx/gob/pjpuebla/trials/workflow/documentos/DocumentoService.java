@@ -776,8 +776,7 @@ public class DocumentoService {
                         case DEMANDA -> null;
                         case EXHORTO -> TipoDocumento.EXHORTO;
                         case APELACION -> TipoDocumento.APELACION;
-                        case PIEZA -> TipoDocumento.PROMOCION; // TODO: VALIDAR ESTE CASO SI ES CORRECTO O COMO
-                                                               // TRATARLO.
+                        case PIEZA -> TipoDocumento.PROMOCION; 
                         default -> throw new IllegalArgumentException(
                                         "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
                 };
@@ -2420,6 +2419,7 @@ public class DocumentoService {
                                 .setSelloEstatus(SelloEstatus.VALIDO)
                                 .setFechaAsignacion(LocalDateTime.now())
                                 .setPersona(personaLogueada)
+                                .setMigrado(Migrado.NO)
                                 .setCu(getCu(juzgado, expediente));
 
                 return carpetaRepository.save(carpeta);
@@ -2435,6 +2435,7 @@ public class DocumentoService {
                 Documento documento = new Documento()
                                 .setCarpeta(carpeta)
                                 .setData(documentoData)
+                                .setMigrado(Migrado.NO)
                                 .setFechaAsignacion(LocalDateTime.now())
                                 .setPersona(persona);
 

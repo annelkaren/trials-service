@@ -80,7 +80,8 @@ public class Documento implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Documento acuerdoRespuesta;
 
-    @Column(name = "N_MIGRADO")
+    @Enumerated
+    @Column(name = "N_MIGRADO", nullable = false)
     private Migrado migrado;
 
     @Column(name = "S_INSTITUCION_HISTORICA")

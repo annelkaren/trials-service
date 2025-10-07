@@ -8,15 +8,22 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 
 @Repository
-public interface MovimientoRepository extends JpaRepository<Movimiento, Integer> {
+public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>, JpaSpecificationExecutor<Movimiento> {
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
@@ -275,4 +282,95 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             """)
     Page<Movimiento> getBandejaDevueltos(Pageable pageable, List<Juzgado> juzgados, EstadoCarpeta estado, String key,
             String motivos);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse(
+              m.id,
+              doc.id,
+              COALESCE(cDoc.id, cMov.id),
+              COALESCE(cDoc.folio, cMov.folio),
+              COALESCE(cDoc.expediente, cMov.expediente),
+              COALESCE(matDoc.nombre, matMov.nombre),
+              doc.tipoDocumento,
+              COALESCE(cDoc.tipoCarpeta, cMov.tipoCarpeta),
+              COALESCE(jcDoc.nombre, jcMov.nombre),
+              m.fechaAsignacion,
+              COALESCE(cDoc.selloEstatus, cMov.selloEstatus),
+              COALESCE(cDoc.estatus, cMov.estatus),
+              CASE
+                WHEN doc IS NOT NULL THEN (doc.ruta IS NOT NULL)
+                ELSE EXISTS (
+                  SELECT 1 FROM Documento d
+                  WHERE d.carpeta = cMov
+                    AND d.tipoDocumento IS NULL
+                    AND d.ruta IS NOT NULL
+                )
+              END,
+              CASE
+                WHEN m.estado = 'CAPTURA' THEN 'En Juzgado'
+                WHEN m.estado = 'SALIDA' THEN 'En Juzgado'
+                WHEN m.estado = 'DEVUELTO_A_OFICIALIA' THEN 'En Juzgado'
+                ELSE ''
+              END,
+              m.motivo
+            )
+            FROM Movimiento m
+            LEFT JOIN m.documento doc
+            LEFT JOIN m.carpeta cMov
+            LEFT JOIN doc.carpeta cDoc
+            LEFT JOIN cMov.juzgado jcMov
+            LEFT JOIN cDoc.juzgado jcDoc
+            LEFT JOIN jcMov.materia matMov
+            LEFT JOIN jcDoc.materia matDoc
+            WHERE m.estado IN :estados
+            AND (
+              (
+                doc IS NULL
+                AND m.fechaAsignacion = (
+                  SELECT MAX(m2.fechaAsignacion)
+                  FROM Movimiento m2
+                  WHERE m2.carpeta = cMov
+                    AND m2.documento IS NULL
+                    AND m2.estado IN :estados
+                )
+                AND m.id = (
+                  SELECT MAX(m2b.id)
+                  FROM Movimiento m2b
+                  WHERE m2b.carpeta = cMov
+                    AND m2b.documento IS NULL
+                    AND m2b.estado IN :estados
+                    AND m2b.fechaAsignacion = m.fechaAsignacion
+                )
+              )
+              OR
+              (
+                doc IS NOT NULL
+                AND m.fechaAsignacion = (
+                  SELECT MAX(m3.fechaAsignacion)
+                  FROM Movimiento m3
+                  WHERE m3.documento = doc
+                    AND m3.estado IN :estados
+                )
+                AND m.id = (
+                  SELECT MAX(m3b.id)
+                  FROM Movimiento m3b
+                  WHERE m3b.documento = doc
+                    AND m3b.estado IN :estados
+                    AND m3b.fechaAsignacion = m.fechaAsignacion
+                )
+              )
+            )
+            """)
+    Page<BandejaEntradaResponse> getBandejaEntradas(
+            Pageable pageable,
+            @Param("estados") List<String> estados);
+
+  @Override
+  @EntityGraph(attributePaths = {
+      "carpeta", "carpeta.juzgado", "carpeta.juzgado.materia",
+      "documento", "documento.carpeta", "documento.carpeta.juzgado", "documento.carpeta.juzgado.materia"
+  })
+  @NonNull
+  Page<Movimiento> findAll(@Nullable Specification<Movimiento> spec, @Nullable Pageable pageable);
+
 }

@@ -130,13 +130,16 @@ public class SelloGenerator {
     }
 
     private String getFolio(Documento documento){
-        if(documento.getTipoDocumento() != null ){
+        TipoDocumento tipoDocumento = documento.getTipoDocumento();
+
+        if(tipoDocumento == null || 
+            tipoDocumento.equals(TipoDocumento.EXHORTO) ||
+            tipoDocumento.equals(TipoDocumento.APELACION)){
             
-            if(documento.getTipoDocumento().equals(TipoDocumento.PROMOCION)){
-                return documento.getFolio();
-            }
+            return documento.getCarpeta().getFolio();
         }
-        return documento.getCarpeta().getFolio();
+
+        return documento.getFolio();
     }
 
     private String getCapturista() {
@@ -190,26 +193,41 @@ public class SelloGenerator {
     }
 
     private String tipoDocumentoFolio(Documento documento) {
-
+        TipoDocumento tipoDocumento = documento.getTipoDocumento();
         String tipoCarpetaDocumento;
-        String result;
         String prefijo;
 
-        if (documento.getTipoDocumento() != null) {
-            tipoCarpetaDocumento = documento.getTipoDocumento().name();
-            prefijo = tipoCarpetaDocumento.equals("PROMOCION") ? "P" : "";
-        } else {
+        if(tipoDocumento == null || 
+            tipoDocumento.equals(TipoDocumento.EXHORTO) ||
+            tipoDocumento.equals(TipoDocumento.APELACION)){
             tipoCarpetaDocumento = documento.getCarpeta().getTipoCarpeta().name();
-            prefijo = switch (tipoCarpetaDocumento) {
+             prefijo = switch (tipoCarpetaDocumento) {
                 case "DEMANDA" -> "D";
                 case "APELACION" -> "A";
                 case "EXHORTO" -> "E";
                 default -> "";
             };
-
+            return prefijo + "." + documento.getCarpeta().getFolio();
+        }else{
+            tipoCarpetaDocumento = documento.getTipoDocumento().name();
+            prefijo = getPrefijoWhenTipoDocumentoIsNull(tipoCarpetaDocumento);
+            return prefijo + '.' + documento.getFolio();
         }
-        result = prefijo + "." + documento.getCarpeta().getFolio();
-        return result;
+    }
+
+    private String getPrefijoWhenTipoDocumentoIsNull(String tipoCarpetaDocumento){
+        if(tipoCarpetaDocumento.equalsIgnoreCase("promocion")){
+            return "P";
+        }
+        if(tipoCarpetaDocumento.equalsIgnoreCase("exhorto")){
+            return "E";
+        }
+
+        if(tipoCarpetaDocumento.equalsIgnoreCase("apelacion")){
+            return "A";
+        }
+
+        return "";
     }
 
     private String getCentroTrabajoCapturista() {
