@@ -113,6 +113,10 @@ public class JuzgadoService {
         );
     }
 
+    public Juzgado findJuzgadoById(Integer id){
+        return juzgadoRepository.findByIdAndEstadoIn(id, List.of(Estado.ACTIVE, Estado.INACTIVE)).orElse(null);
+    }
+
     public JuzgadoRecordItem create(Juzgado juzgado) {
         if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
