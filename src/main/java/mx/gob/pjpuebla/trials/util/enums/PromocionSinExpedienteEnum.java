@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum PromocionSinExpedienteEnum {
     REGISTRADO("Registrado"),
-    EXPEDIENTE_MIGRADO("ExpedienteMigrado");
+    PROMOCION_REGISTRADA("Promoción registrada");
 
     private final String etiqueta;
 

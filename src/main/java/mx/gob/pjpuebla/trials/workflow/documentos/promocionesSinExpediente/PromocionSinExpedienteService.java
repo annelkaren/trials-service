@@ -25,6 +25,7 @@ import mx.gob.pjpuebla.trials.util.enums.PromocionSinExpedienteEnum;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteFiltrosRecord;
@@ -37,7 +38,6 @@ import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 @Slf4j
 public class PromocionSinExpedienteService {
 
@@ -48,6 +48,8 @@ public class PromocionSinExpedienteService {
     private final MigrarExpedienteUseCase migrarExpedienteUseCase;
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
+    private final CarpetaService carpetaService;
+
 
     @Transactional
     public Page<PromocionSinExpedientePageRecord> getAll(
@@ -91,23 +93,39 @@ public class PromocionSinExpedienteService {
                         () -> new NotFoundException("No fue posible encontrar el registro de promoción sin expediente",
                                 idPromocion.toString()));
 
-        if (promocion.getEstado().equals(PromocionSinExpedienteEnum.EXPEDIENTE_MIGRADO)) {
+        if (promocion.getEstado().equals(PromocionSinExpedienteEnum.PROMOCION_REGISTRADA)) {
             throw new IllegalStateException("La promoción ya cuenta con un expediente asociado.");
         }
 
-        // Paso 2 buscamos el expediente en la base de datos del SECGJ PHP:
+        //paso 2 - verificamos si NO ya se ha migrado o se encuentra en el SECGJ Java para recuperar el registro o comenzar la buscqueda:
+        Carpeta carpetaExistente = carpetaService.findByExpedienteAndJuzgado(promocion.getExpediente(), promocion.getJuzgado());
+        if(carpetaExistente != null) {
+            //Si ya se ha migrado la carpeta anteriormente, solo registramos la promoción asociada:
+            return registraPromocion(
+                promocion.getTipoPromocion(),
+                carpetaExistente, 
+                promocion.getFolio(),
+                persona,
+                List.of(promocion.getAnexos().split(", ")));
+        }
+
+        // Paso 3 buscamos el expediente en la base de datos del SECGJ PHP:
         String expediente = promocion.getExpediente().split("/")[0];
         Integer year = Integer.parseInt(promocion.getExpediente().split("/")[1]); // promocion.getExpediente().split("/")[1];
         Juzgado juzgado = promocion.getJuzgado();
+
+        log.info("Iniciando búsqueda de expediente {} del año {} en el juzgado con clave {} del SECGJ PHP", expediente, year, juzgado.getClaveJuzgado());
 
         try {
             EntradasMigracionRecord entrada = entradasMigracionReader.buscarPorFiltros(
                     expediente, year, juzgado.getClaveJuzgado());
 
+           
             if (entrada != null) {
+                 
                 // SI se encuentra el expediente en el SECGJ PHP, lo migramos
                 MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpediente(expediente, year,
-                        expediente);
+                        juzgado.getClaveJuzgado());
 
                 // Una vez que ya se ha creado el expediente debemos de crear un movimiento de
                 // captura para que le aparezca el registro al capturista / digitalizador.
@@ -115,13 +133,19 @@ public class PromocionSinExpedienteService {
                         EstadoCarpeta.CAPTURA.name());
 
                 // Actualizamos estatus de la promoción sin expediente
-                promocion.setEstado(PromocionSinExpedienteEnum.EXPEDIENTE_MIGRADO);
+                promocion.setEstado(PromocionSinExpedienteEnum.PROMOCION_REGISTRADA);
                 promocion.setTipoJuicio(expedienteMigrado.carpeta().getTipoJuicio());
                 promocionSinExpedienteRepository.save(promocion);
 
                 // Ahora una vez que el expediente principal esta agregado creamos el registro
                 // de la promoción asociada al expediente principal:
                 List<String> anexos = List.of(promocion.getAnexos().split(", "));
+                //Actualizamos carpeta a estatado CAPTURA y asigmada a la perosna que mgiro para que pueda ser trabajada
+                Carpeta carpeta = expedienteMigrado.carpeta()
+                    .setEstatus(EstadoCarpeta.CAPTURA)
+                    .setPersona(persona);
+                carpetaService.save(carpeta);
+
                 return registraPromocion(promocion.getTipoPromocion(), expedienteMigrado.carpeta(), promocion.getFolio(), persona, anexos);
 
             }
@@ -131,7 +155,7 @@ public class PromocionSinExpedienteService {
        
             //Creamos el expediente antiguo
             log.info("No se encontro en SECGJ PHP - INICIO DE REGISTRO POR METODO EXPEDIENTE ANTIGUO");
-
+            return new DocumentoPromocionResponseRecord(null, null, null);
         }
 
         return null;

@@ -1016,4 +1016,10 @@ public class CarpetaService {
         public List<Carpeta> findPiezasByCarpeta(Carpeta carpeta) {
                 return carpetaRepository.findByCarpetaPadre(carpeta);
         }
+
+        public Carpeta findByExpedienteAndJuzgado(String expediente, Juzgado juzgado) {
+                return carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado).orElse(null);
+                
+                
+        }
 }
