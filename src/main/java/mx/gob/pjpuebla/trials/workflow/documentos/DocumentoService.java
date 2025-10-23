@@ -920,7 +920,7 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta());
         }
 
-        private void addAnexos(List<String> anexos, Documento documento) {
+        public void addAnexos(List<String> anexos, Documento documento) {
                 if (anexos != null && !anexos.isEmpty()) {
                         for (String anexo : anexos) {
                                 Anexo entity = new Anexo();
@@ -2548,6 +2548,10 @@ public class DocumentoService {
 
         public void saveAll(List<Documento> documentos){
                 documentoRepository.saveAll(documentos);
+        }
+
+        public Documento save(Documento documento){
+                return documentoRepository.save(documento);
         }
 
 }

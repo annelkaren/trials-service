@@ -229,8 +229,19 @@ public class CarpetaMigracionService {
             .setTipo(tipoPiezaMigracion.getTipo())
             .setVersion(0)
             .setEstado(Estado.INACTIVE));
-        
+    }
 
+    public Carpeta findByExpYearAndClaveJuzgado(String expediente, Integer year, String claveJuzgado){
+        String expedienteCompleto = expediente + "/" + year;
+        Juzgado juzgado = requireJuzgadoActual(claveJuzgado);
+
+        Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, juzgado);
+
+        if(carpeta.isPresent()){
+            return carpeta.get();
+        } else {
+            throw new NotFoundException("No se encontró la carpeta con los datos proporcionados", expedienteCompleto + " - " + claveJuzgado);
+        }
     }
 
 }

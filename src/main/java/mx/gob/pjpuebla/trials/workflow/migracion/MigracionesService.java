@@ -56,6 +56,16 @@ public class MigracionesService {
         return migracionesRepository.save(migracion);
     }
 
+    public Migraciones updateMigraciones(Integer migracionId, EstadoMigracion estadoMigracion, String observaciones) {
+        Migraciones migracion = migracionesRepository.findById(migracionId)
+                .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
+                        migracionId.toString()));
+
+        migracion.setEstatus(estadoMigracion);
+        migracion.setObservaciones(observaciones);
+        return migracionesRepository.save(migracion);
+    }
+
     @Transactional(readOnly = true)
     public Page<BandejaMigracionResponse> listar(BandejaMigracionFilter filter, Pageable pageable) {
         return migracionesRepository.findAll(MigracionesSpecs.withFilters(filter), pageable)

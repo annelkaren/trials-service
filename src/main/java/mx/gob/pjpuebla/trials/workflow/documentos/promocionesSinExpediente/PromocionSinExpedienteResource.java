@@ -9,6 +9,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.recor
 import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedientePageRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteSaveRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteSearchRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
 
@@ -46,7 +48,6 @@ public class PromocionSinExpedienteResource {
         return promocionSinExpedienteService.getAll(filtros, pageable);
     }
     
-
     @GetMapping("sello/{id}")
     public ResponseEntity<byte[]> getSelloPromocionSinExp(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
@@ -54,5 +55,12 @@ public class PromocionSinExpedienteResource {
         headers.setContentDispositionFormData("sello", id + "_sello.pdf");
         return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloPromocionSinExpediente(id));
     }
+
+    @PostMapping("asociarExpediente/{id}")
+    public DocumentoPromocionResponseRecord asociarExpediente(@PathVariable Integer id) {
+       
+        return promocionSinExpedienteService.asociarExpediente(id);
+    }
+    
 
 }
