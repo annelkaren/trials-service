@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -64,6 +65,7 @@ public class PromocionSinExpediente implements Serializable, Auditable {
     private String anexos;
 
     @Column(name = "N_ESTATUS")
+    @Enumerated
     private PromocionSinExpedienteEnum estado;
 
     @Column(name = "S_TIPO_REGISTRO")

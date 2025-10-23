@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente;
+package mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records;
 
 import java.util.List;
 

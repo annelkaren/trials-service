@@ -5,11 +5,17 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteFiltrosRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedientePageRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.records.PromocionSinExpedienteSaveRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +23,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/workflow/promocionesSinExpedientes")
+@RequestMapping("/api/workflow/promocionesSinExpedientes/")
 @SecurityRequirement(name = "keycloak")
 public class PromocionSinExpedienteResource {
 
@@ -34,7 +41,13 @@ public class PromocionSinExpedienteResource {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping("/sello/{id}")
+    @GetMapping("")
+    public Page<PromocionSinExpedientePageRecord> getAllPromocionesSinExpediente(@ModelAttribute PromocionSinExpedienteFiltrosRecord filtros, Pageable pageable) {
+        return promocionSinExpedienteService.getAll(filtros, pageable);
+    }
+    
+
+    @GetMapping("sello/{id}")
     public ResponseEntity<byte[]> getSelloPromocionSinExp(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
