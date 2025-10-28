@@ -1,9 +1,12 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 // Readers (legacy)
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
@@ -82,10 +85,20 @@ public class MigrarExpedienteUseCase {
   @Transactional
   public MigracionExpedienteResult migrarExpediente(String expediente, Integer year, String claveJuzgado) {
     // 1) Fetch legacy (todo local, sin estado global)
-    var entrada = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
+    Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);
+    
+    if(entradaOptional.isEmpty()) {
+      throw new IllegalArgumentException("No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
+    }
+    EntradasMigracion entrada = entradaOptional.get();
+    
+    
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
 
     var ocomun   = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); // puede ser null
+    if(ocomun != null) {
+        log.info("La ruta de digitalizacion de OCOUMUN ES: " + ocomun.getRutaDigitalizacion());
+    }
     var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
     validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
 
@@ -136,7 +149,11 @@ public class MigrarExpedienteUseCase {
       String expediente, Integer year, String claveJuzgado, Integer migracionId) {
 
     // Relee lo necesario para soportar ejecución "por partes"
-    var entrada   = entradasReader.requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
+    Optional<EntradasMigracion>entradaOptional   = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);
+    if(entradaOptional.isEmpty()) {
+      throw new IllegalArgumentException("No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
+    }
+    EntradasMigracion entrada = entradaOptional.get();
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
     var carpeta   = carpetaMig.findByExpYearAndClaveJuzgado(expediente, year, claveJuzgado);
 

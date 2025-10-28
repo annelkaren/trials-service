@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-
+import lombok.extern.slf4j.Slf4j;
 // ACL mappers:
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
@@ -26,6 +26,7 @@ import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
+import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
@@ -34,6 +35,7 @@ import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 // Core:
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
@@ -57,6 +59,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentoMigracionService {
 
     private final DocumentoRepository documentoRepository;
@@ -73,6 +76,8 @@ public class DocumentoMigracionService {
     private final EstadoAcuseMapper estadoAcuseMapper; // ACL
     private final EstadoOficioMapper estadoOficioMapper; // ACL
     private final AmparoMapper amparoMapper; // ACL
+
+    //utils:
 
     /*
      * -----------------------------------------------------------------------------
@@ -184,6 +189,7 @@ public class DocumentoMigracionService {
             Carpeta carpeta,
             Concepto concepto) {
         DocumentoData data = new DocumentoData();
+        log.info("Ruta digitalizacion: {}", ocomun != null ? ocomun.getRutaDigitalizacion() : "SIN RUTA");
         return createDocumento(null, carpeta, data,
                 ocomun != null ? ocomun.getRutaDigitalizacion() : "",
                 null, concepto, null, null);
@@ -198,6 +204,8 @@ public class DocumentoMigracionService {
             Concepto concepto,
             Institucion institucion,
             Documento documentoRelacionado) {
+                log.info("Ruta digitalizacion dentro de createDocumento: {}", ruta);
+                
         Documento doc = new Documento()
                 .setVersion(0)
                 .setTipoDocumento(tipoDocumento)
@@ -216,6 +224,9 @@ public class DocumentoMigracionService {
         return documentoRepository.save(doc);
     }
 
+
+    
+
     @Transactional
     public List<Anexo> createAnexos(String anexos, Documento documento) {
         if (documento == null)
@@ -223,13 +234,29 @@ public class DocumentoMigracionService {
         if (anexos == null || anexos.isBlank())
             return List.of();
 
+        String anexosNormalizados = UtilsMigracion.normalizeSpaces(anexos);
+
         List<Anexo> toSave = Pattern.compile("\\s*,\\s*")
-                .splitAsStream(anexos)
+                .splitAsStream(anexosNormalizados == null ? "" : anexosNormalizados)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .distinct()
-                .map(nombre -> new Anexo().setNombre(nombre).setDocumento(documento))
+                .map(nombre -> 
+                    new Anexo()
+                    .setNombre(nombre)
+                    .setDocumento(documento)
+                    )
                 .toList();
+
+         toSave.forEach(a -> {
+            if(a.getNombre().length() <= 3){
+                throw new IllegalArgumentException("El anexo " + a.getNombre() + " tiene menos de 4 caracteres.");
+            }
+
+            if(a.getNombre().equals("")){
+                throw new IllegalArgumentException("El anexo " + a.getNombre() + " esta vacio.");
+            }
+        });
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }

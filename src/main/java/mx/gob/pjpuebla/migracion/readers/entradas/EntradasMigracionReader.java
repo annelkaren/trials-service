@@ -113,7 +113,11 @@ public class EntradasMigracionReader {
     public EntradasMigracionRecord buscarPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
 
         // Buscar entrada:
-        EntradasMigracion entrada = requireByExpedienteAmoJuzgado(expediente, amo, juzgadoCodigo);
+        Optional<EntradasMigracion> entradaOptional = buscarEntradasPorFiltros(expediente, amo, juzgadoCodigo);
+        if (entradaOptional.isEmpty()) {
+            throw new NotFoundException("Entrada no encontrada con los filtros proporcionados", expediente + "/" + amo + " - " + juzgadoCodigo);
+        }
+        EntradasMigracion entrada = entradaOptional.get();
 
         // Buscar juzgado:
         JuzgadosMigracion juzgado = juzgadosMigracionService.requireByCodigo(juzgadoCodigo);
@@ -127,12 +131,6 @@ public class EntradasMigracionReader {
 
         // Se obtiene el juicio asociado al campo `juicio` de la entrada
         JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
-
-
-        // Se obtienen amparos:
-        // List<AmparosMigracion> amparos =
-        // amparoMigracionService.buscarPorCu(entrada.getCu());
-
 
         // Se obtienen los actores:
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
@@ -152,15 +150,12 @@ public class EntradasMigracionReader {
      * @param juzgadoCodigo Código del juzgado
      * @return Lista de entidades `EntradasMigracion`
      */
-    public EntradasMigracion requireByExpedienteAmoJuzgado(String expediente, Integer amo, String juzgadoCodigo) {
-        Optional<EntradasMigracion> entradasOptional = entradasMigracionRepository
-                .findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(expediente, amo, juzgadoCodigo, "A");
-
-        if (entradasOptional.isPresent()) {
-            return entradasOptional.get();
-        }
-
-        throw new NotFoundException("No se encontro el expediente", expediente);
+    public Optional<EntradasMigracion> buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
+        return entradasMigracionRepository.findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(
+                expediente,
+                 amo, 
+                 juzgadoCodigo, "A");
+      
     }
 
 
@@ -172,8 +167,12 @@ public class EntradasMigracionReader {
         Juzgado juzgado = juzgadosMigracionService.getJuzgadoFromSistema(claveJuzgado);
 
         // Paso 2: traemos información del expediente desde mysql :
-        EntradasMigracion entrada = requireByExpedienteAmoJuzgado(expediente, year, claveJuzgado);
+        Optional<EntradasMigracion> entradaOptional = buscarEntradasPorFiltros(expediente, year, claveJuzgado);
+        if(entradaOptional.isEmpty()) {
+          throw new IllegalArgumentException("No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
+        }
 
+        EntradasMigracion entrada = entradaOptional.get();
         // Paso 3: Buscamos si ya existe el expediente en el sistema por el juzgado.
         assertExpedienteDisponible(expediente + "/" + year, juzgado);
       

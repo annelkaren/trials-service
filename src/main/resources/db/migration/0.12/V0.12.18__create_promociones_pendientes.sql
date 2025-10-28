@@ -11,11 +11,17 @@ create table trials.tbl_promociones_pendientes(
 	N_ESTATUS INT,
 	S_TIPO_REGISTRO VARCHAR(100),
 	N_TIPO_PROMOCION INT,
+	FN_CARPETA         INT         NOT NULL,
+	FN_DOCUMENTO         INT         NOT NULL,
 	T_FECHA_ALTA    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     T_FECHA_EDITA   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     S_USUARIO_ALTA  VARCHAR(50)  DEFAULT CURRENT_USER,
     S_USUARIO_EDITA VARCHAR(50)  DEFAULT CURRENT_USER,
     
+
+	foreign key (FN_CARPETA) REFERENCES trials.tbl_carpetas(PN_ID),
+	foreign key (FN_DOCUMENTO) REFERENCES trials.tbl_documentos(PN_ID),
+
     constraint fk_prom_juzgados 
     	foreign key (FN_JUZGADO) REFERENCES trials.tbl_juzgados(PN_ID),
     constraint fk_prom_tipo_juicio
@@ -25,3 +31,5 @@ create table trials.tbl_promociones_pendientes(
   
 CREATE INDEX IDX_PROMOCION_JUZGADOS1 ON TRIALS.tbl_promociones_pendientes (FN_JUZGADO);
 CREATE INDEX IDX_PROMOCION_TIPOJUICIO2 ON TRIALS.tbl_promociones_pendientes (FN_TIPO_JUICIO);
+CREATE INDEX IDX_PROMOCION_CARPETA3 ON TRIALS.tbl_promociones_pendientes (FN_CARPETA);
+CREATE INDEX IDX_PROMOCION_DOCUMENTO4 ON TRIALS.tbl_promociones_pendientes (FN_DOCUMENTO);

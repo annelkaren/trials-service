@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.migracion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,8 +85,10 @@ public class PersonasMigracionService {
                
             }
 
+            String nombrePersona = p.getNombre().trim().length() < 3 ? p.getNombre().trim() + " N/E" : p.getNombre().trim();
+
             var pd = new PersonaDocumento()
-                    .setNombre(p.getNombre())
+                    .setNombre(nombrePersona)
                     .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))
                     .setRol(Rol.PRINCIPAL)
                     .setCarpeta(carpeta)
@@ -105,9 +108,17 @@ public class PersonasMigracionService {
     }
 
     private TipoPartes findOrCreateTipoPartes(TipoJuicio tipoJuicio, String nombre) {
-        return tipoPartesRepository.findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId())
-                .orElseGet(() -> tipoPartesRepository.save(
-                        new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio)));
+       
+        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId());
+        if (tipoPartes.isPresent()) {
+           
+            return tipoPartes.get();
+        }else{
+          
+            return tipoPartesRepository.save(
+                        new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio));
+        }
+     
     }
 
     private Domicilio createDomicilioNotificacion(DomicilioMigracion domicilio) {

@@ -175,4 +175,8 @@ public class ConceptoService {
         return conceptoRepository.findByNombreAndTipoJuicio(nombre, tipoJuicio);
     }
 
+    public Optional<Concepto> findByNombre(String nombre){
+        return conceptoRepository.findByNombre(nombre);
+    }
+
 }

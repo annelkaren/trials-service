@@ -40,7 +40,7 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Size(max = 20)
+    @Size(max = 50)
     @Column(name = "S_FOLIO", nullable = false)
     private String folio;
 

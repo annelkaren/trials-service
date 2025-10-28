@@ -27,6 +27,8 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.PromocionSinExpedienteEnum;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -73,6 +75,14 @@ public class PromocionSinExpediente implements Serializable, Auditable {
 
     @Column(name = "N_TIPO_PROMOCION")
     private TipoPromocion tipoPromocion;
+
+    @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Carpeta carpeta;
+
+    @JoinColumn(name = "FN_DOCUMENTO", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Documento documento;
 
     @Accessors(chain = false)
     @Embedded
