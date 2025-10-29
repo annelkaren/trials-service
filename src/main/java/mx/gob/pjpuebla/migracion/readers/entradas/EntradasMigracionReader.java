@@ -151,11 +151,10 @@ public class EntradasMigracionReader {
      * @return Lista de entidades `EntradasMigracion`
      */
     public Optional<EntradasMigracion> buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
-        return entradasMigracionRepository.findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(
+        return entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expediente,
                  amo, 
                  juzgadoCodigo, "A");
-      
     }
 
 

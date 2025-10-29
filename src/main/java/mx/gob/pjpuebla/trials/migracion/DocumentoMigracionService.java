@@ -35,7 +35,6 @@ import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 // Core:
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
-import mx.gob.pjpuebla.trials.util.enums.EstadoAnexo;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
@@ -77,7 +76,7 @@ public class DocumentoMigracionService {
     private final EstadoOficioMapper estadoOficioMapper; // ACL
     private final AmparoMapper amparoMapper; // ACL
 
-    //utils:
+    // utils:
 
     /*
      * -----------------------------------------------------------------------------
@@ -204,8 +203,7 @@ public class DocumentoMigracionService {
             Concepto concepto,
             Institucion institucion,
             Documento documentoRelacionado) {
-                log.info("Ruta digitalizacion dentro de createDocumento: {}", ruta);
-                
+
         Documento doc = new Documento()
                 .setVersion(0)
                 .setTipoDocumento(tipoDocumento)
@@ -224,9 +222,6 @@ public class DocumentoMigracionService {
         return documentoRepository.save(doc);
     }
 
-
-    
-
     @Transactional
     public List<Anexo> createAnexos(String anexos, Documento documento) {
         if (documento == null)
@@ -241,22 +236,10 @@ public class DocumentoMigracionService {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .distinct()
-                .map(nombre -> 
-                    new Anexo()
-                    .setNombre(nombre)
-                    .setDocumento(documento)
-                    )
+                .map(nombre -> new Anexo()
+                        .setNombre(nombre)
+                        .setDocumento(documento))
                 .toList();
-
-         toSave.forEach(a -> {
-            if(a.getNombre().length() <= 3){
-                throw new IllegalArgumentException("El anexo " + a.getNombre() + " tiene menos de 4 caracteres.");
-            }
-
-            if(a.getNombre().equals("")){
-                throw new IllegalArgumentException("El anexo " + a.getNombre() + " esta vacio.");
-            }
-        });
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
@@ -266,7 +249,8 @@ public class DocumentoMigracionService {
         if (anexos == null || anexos.isBlank() || "Sin Anexos".equalsIgnoreCase(anexos)) {
             return List.of();
         }
-        List<Anexo> toSave = Pattern.compile("\\s*,\\s*")
+
+        List<Anexo> anexosToSave = Pattern.compile("\\s*,\\s*")
                 .splitAsStream(anexos)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -274,7 +258,7 @@ public class DocumentoMigracionService {
                 .map(nombre -> new Anexo().setNombre(nombre).setDocumento(documento))
                 .toList();
 
-        return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
+        return anexosToSave.isEmpty() ? List.of() : anexoRepository.saveAll(anexosToSave);
     }
 
     /*
@@ -293,8 +277,7 @@ public class DocumentoMigracionService {
 
             DocumentoData oficioData = new DocumentoData()
                     .setTipoOficio("Jurisdiccional")
-                    .setOficioRealizadoPor(oficioMigracion.getNombre()); // Por recomendación se guarda nombre de la
-                                                                         // persona quien elaboro el ofico en form data.
+                    .setOficioRealizadoPor(oficioMigracion.getNombre()); 
 
             Documento documento = new Documento()
                     .setCarpeta(carpeta)
@@ -412,7 +395,6 @@ public class DocumentoMigracionService {
         List<Documento> documentos = new ArrayList<>();
         amparos.forEach(amparo -> {
 
-
             DocumentoData data = new DocumentoData()
                     .setAmparoFechaPresentacion(amparo.getFecha())
                     .setAmparoImpugnacion(amparoMapper.mapImpugnacion(amparo.getRevision()))
@@ -444,13 +426,13 @@ public class DocumentoMigracionService {
 
     }
 
-    public Integer findTribunalDistrito(String nombre){
+    public Integer findTribunalDistrito(String nombre) {
         return institucionService.findByTipoInstitucion("Tribunal Federal")
-            .stream()
-            .filter(inst -> inst.nombre().equalsIgnoreCase(nombre))
-            .findFirst()
-            .map(InstitucionRecord::id)
-            .orElse(null);
+                .stream()
+                .filter(inst -> inst.nombre().equalsIgnoreCase(nombre))
+                .findFirst()
+                .map(InstitucionRecord::id)
+                .orElse(null);
     }
 
 }

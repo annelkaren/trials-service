@@ -481,7 +481,7 @@ class CarpetaResourceTest {
                                 null,
                                 null,
                                 null,
-                                null);
+                                null,null, null);
 
                 when(mockCarpetaService.getCarpetaByExpedienteAndEstado("000001/2024", EstadoCarpeta.CANCELADO))
                                 .thenReturn(carpetaResponseRecord);

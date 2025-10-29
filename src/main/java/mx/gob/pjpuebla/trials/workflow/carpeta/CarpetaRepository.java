@@ -34,6 +34,15 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             """)
     Optional<Carpeta> findByExpedienteAndJuzgadoId(String expediente, Integer juzgadoId);
 
+        @Query("""
+            SELECT c
+            FROM Carpeta c
+            WHERE COALESCE(NULLIF(TRIM(LEADING '0' FROM c.expediente), ''), '0') =:expediente
+            AND c.juzgado.id = :juzgadoId
+            """)
+    Optional<Carpeta> findByExpedienteNormalizadoAndJuzgadoId(String expediente, Integer juzgadoId);
+
+
     @Query("""
             SELECT c
             FROM Carpeta c

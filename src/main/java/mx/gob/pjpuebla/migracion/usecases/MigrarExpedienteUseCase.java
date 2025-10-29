@@ -24,7 +24,6 @@ import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 // ACL
 import mx.gob.pjpuebla.migracion.acl.mapper.MateriaMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
 import mx.gob.pjpuebla.migracion.acl.normalizer.ExpedienteNormalizer;
 import mx.gob.pjpuebla.migracion.acl.validate.LegacyValidators;
 
@@ -62,7 +61,6 @@ public class MigrarExpedienteUseCase {
   // ACL
   private final MateriaMapper materiaMapper;
   private final RubrosMapper rubrosMapper;
-  private final PromocionMapper promocionMapper;
   private final ExpedienteNormalizer expedienteNormalizer;
   private final LegacyValidators validators;
 
@@ -138,8 +136,6 @@ public class MigrarExpedienteUseCase {
         juzgado,
         carpeta
     );
-
-    
 
     return new MigracionExpedienteResult(carpeta, migracion.getId());
   }

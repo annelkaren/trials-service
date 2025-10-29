@@ -12,17 +12,33 @@ import org.springframework.stereotype.Repository;
 public interface EntradasMigracionRepository extends JpaRepository<EntradasMigracion, Integer> {
 
     @Query("""
-        SELECT entrada
-        FROM EntradasMigracion entrada
-        LEFT JOIN JuzgadosMigracion  juzgado ON entrada.juzgado = juzgado.codigo
-        WHERE entrada.expediente = :expediente AND entrada.amo = :amo AND entrada.juzgado = :juzgado
-    """)
+                SELECT entrada
+                FROM EntradasMigracion entrada
+                LEFT JOIN JuzgadosMigracion  juzgado ON entrada.juzgado = juzgado.codigo
+                WHERE entrada.expediente = :expediente AND entrada.amo = :amo AND entrada.juzgado = :juzgado
+            """)
     List<EntradasMigracion> buscarPorExpedienteAmoYJuzgado(
-        @Param("expediente") String expediente,
-        @Param("amo") Integer amo,
-        @Param("juzgado") String juzgado
+            @Param("expediente") String expediente,
+            @Param("amo") Integer amo,
+            @Param("juzgado") String juzgado
 
     );
 
-    Optional<EntradasMigracion> findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(String expediente, Integer amo, String juzgado, String status);
+    @Query("""
+                SELECT e
+                FROM EntradasMigracion e
+                WHERE COALESCE(NULLIF(TRIM(LEADING '0' FROM e.expediente), ''), '0') = :expediente
+                  AND e.amo = :amo
+                  AND e.juzgado = :juzgado
+                  AND e.status = :status
+                ORDER BY e.id DESC
+            """)
+    Optional<EntradasMigracion> findTopByExpedienteNormalizado(
+            @Param("expediente") String expedienteNormalizado,
+            @Param("amo") Integer amo,
+            @Param("juzgado") String juzgado,
+            @Param("status") String status);
+
+    Optional<EntradasMigracion> findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(String expediente,
+            Integer amo, String juzgado, String status);
 }
