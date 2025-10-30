@@ -34,7 +34,7 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
                 ORDER BY e.id DESC
             """)
     Optional<EntradasMigracion> findTopByExpedienteNormalizado(
-            @Param("expediente") String expedienteNormalizado,
+            @Param("expediente") String expediente,
             @Param("amo") Integer amo,
             @Param("juzgado") String juzgado,
             @Param("status") String status);

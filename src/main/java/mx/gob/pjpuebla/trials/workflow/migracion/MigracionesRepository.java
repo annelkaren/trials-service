@@ -13,13 +13,7 @@ import org.springframework.lang.Nullable;
 
 public interface MigracionesRepository extends JpaRepository<Migraciones, Integer>, JpaSpecificationExecutor<Migraciones>  {
 
-/*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Find all Migraciones that match the given specification.
-     *
-     * @param spec The specification to use when searching for Migraciones.
-     * @param pageable The pageable to use when searching for Migraciones.
-/*******  7a9463cc-7933-47ed-91bd-7f197e2b41a8  *******/
+ 
     @Override
     @EntityGraph(attributePaths = "carpeta")
     @NonNull

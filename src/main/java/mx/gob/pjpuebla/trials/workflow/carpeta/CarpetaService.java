@@ -526,12 +526,11 @@ public class CarpetaService {
                 if(promocion.getMigrado().equals(Migrado.SI)  && migracionesOpt.isPresent()){
                       Migraciones migraciones = migracionesOpt.get();
                       if(migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
-                        throw new ConflictException("No es posible crear una pieza, es necesario migrar el expediente completo.");
+                        throw new ConflictException("Error al crear pieza, es necesario migrar el expediente completo.");
                       }
                 }
                 
-               return null;
-               /* 
+   
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
                 Concepto conceptoPromocion = piezaRecord.documentos().stream()
                                 .map(documentoRepository::findById)
@@ -582,7 +581,7 @@ public class CarpetaService {
                 asignarPieza(pieza, piezaRecord.documentos());
                 movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
                 return pieza;
-                */
+                
         }
 
         public String consecutivoPieza(Integer carpetaId, String clavePieza) {

@@ -61,6 +61,19 @@ public class BandejasResources {
         return ResponseEntity.status(HttpStatus.CREATED).body(result); // 201 Created
     }
 
+    @PostMapping("/migracion/migrarDocumentos")
+    public ResponseEntity<ApiResponse<String>> migrarDocumentos(@RequestBody BandejaRequest req) {
+
+        ApiResponse<String> result = migracionesService.migrarDocumentosExpediente(req.migracionId());
+
+        // si el servicio decide que ya estaba asignado
+        if (result.getCode().equals(ApiResponseFactory.SUCCESS_ALREADY_ASSIGNED)) {
+            return ResponseEntity.ok(result); // 200 OK
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result); 
+    }
+
     // Bandeja de entrada:
     @GetMapping("/entrada")
     public Page<BandejaEntradaResponse> listarBandejaEntrada(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
