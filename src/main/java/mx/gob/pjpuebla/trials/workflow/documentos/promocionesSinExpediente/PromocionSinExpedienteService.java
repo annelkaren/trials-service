@@ -26,8 +26,11 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.PromocionSinExpedienteEnum;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
@@ -121,15 +124,15 @@ public class PromocionSinExpedienteService {
                         promocion.setTipoJuicio(carpetaExistente.getTipoJuicio());
                         promocion.setTipoRegistro("Carpeta existente");
                         promocion.setCarpeta(carpetaExistente);
-
+                        Migrado migrado = carpetaExistente.getMigrado();
                         return registraPromocion(promocion.getTipoPromocion(), carpetaExistente, promocion.getFolio(),
                                         persona,
-                                        List.of(promocion.getAnexos().split(", ")), promocion);
+                                        List.of(promocion.getAnexos().split(", ")), promocion, migrado);
 
                 }
 
                 // Paso 3 buscamos el expediente en la base de datos del SECGJ PHP:
-                String expediente = promocion.getExpediente().split("/")[0];
+                String expediente = Utils.normalizarExpediente(promocion.getExpediente().split("/")[0]);
                 Integer year = Integer.parseInt(promocion.getExpediente().split("/")[1]);
                 Juzgado juzgado = promocion.getJuzgado();
 
@@ -144,10 +147,6 @@ public class PromocionSinExpedienteService {
                                 MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpediente(
                                                 expediente, year,
                                                 juzgado.getClaveJuzgado());
-                                // Una vez que ya se ha creado el expediente debemos de crear un movimiento de
-                                // captura para que le aparezca el registro al capturista / digitalizador.
-                                movimientoService.createMovimento(expedienteMigrado.carpeta(), null, persona, null,
-                                                EstadoCarpeta.CAPTURA.name());
 
                                 // Actualizamos estatus de la promoción sin expediente
                                 promocion.setEstado(PromocionSinExpedienteEnum.PROMOCION_REGISTRADA);
@@ -164,15 +163,9 @@ public class PromocionSinExpedienteService {
                                                 .filter(s -> !s.isEmpty())
                                                 .distinct()
                                                 .toList();
-                                // Actualizamos carpeta a estatado CAPTURA y asigmada a la perosna que mgiro
-                                // para que pueda ser trabajada
-                                Carpeta carpeta = expedienteMigrado.carpeta()
-                                                .setEstatus(EstadoCarpeta.CAPTURA)
-                                                .setPersona(persona);
-                                carpetaService.save(carpeta);
 
                                 return registraPromocion(promocion.getTipoPromocion(), expedienteMigrado.carpeta(),
-                                                promocion.getFolio(), persona, anexos, promocion);
+                                                promocion.getFolio(), persona, anexos, promocion, Migrado.SI);
                         } catch (Exception e) {
                                 log.error("Error al migrar el expediente", e);
                                 throw new RuntimeException("Error al migrar el expediente", e);
@@ -191,26 +184,27 @@ public class PromocionSinExpedienteService {
                                                         "Tipo Juicio 'Tradicional' no encontrado para la persona logueada",
                                                         String.valueOf(persona.getId())));
 
+                        Persona oficialMayor = personaService.getOficialMayor(juzgado);
+                        if(oficialMayor == null){
+                                throw new ConflictException("No existe un oficial mayor en el juzgado, imposible crear la promoción.");
+                        }
+
                         Carpeta carpeta = new Carpeta()
                                         .setJuzgado(juzgado)
                                         .setTipoJuicio(tipoJuicioTradicional)
                                         .setExpediente(expediente + "/" + year)
                                         .setFolio(promocion.getFolio())
                                         .setTipoCarpeta(TipoCarpeta.DEMANDA)
-                                        .setEstatus(EstadoCarpeta.CAPTURA)
+                                        .setEstatus(EstadoCarpeta.ASIGNADO)
                                         .setFechaAsignacion(LocalDateTime.now())
                                         .setSelloEstatus(SelloEstatus.VALIDO)
-                                        .setPersona(persona);
+                                        .setPersona(oficialMayor);
 
                         Concepto concepto = conceptoService.findByNombre("Distribución")
                                         .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Distribución"));
                         carpeta.setConcepto(concepto);
                         carpeta = carpetaService.save(carpeta);
-
                         carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
-
-                        movimientoService.createMovimento(carpeta, null, persona, null,
-                                        EstadoCarpeta.CAPTURA.name());
 
                         // Actualizamos estatus de la promoción sin expediente
                         promocion.setEstado(PromocionSinExpedienteEnum.PROMOCION_REGISTRADA);
@@ -229,13 +223,13 @@ public class PromocionSinExpedienteService {
                                         .toList();
 
                         return registraPromocion(promocion.getTipoPromocion(), carpeta, promocion.getFolio(), persona,
-                                        anexos, promocion);
+                                        anexos, promocion, Migrado.NO);
                 }
         }
 
         @Transactional
         private DocumentoPromocionResponseRecord registraPromocion(TipoPromocion tipoPromocion, Carpeta carpeta,
-                        String folio, Persona persona, List<String> anexos, PromocionSinExpediente promocion) {
+                        String folio, Persona persona, List<String> anexos, PromocionSinExpediente promocion, Migrado migrado) {
                 DocumentoData docData = new DocumentoData().setTipoPromocion(tipoPromocion);
 
                 Documento documento = new Documento()
@@ -244,7 +238,8 @@ public class PromocionSinExpedienteService {
                                 .setData(docData)
                                 .setFolio(folio)
                                 .setEstatus(EstadoCarpeta.CAPTURA)
-                                .setPersona(persona);
+                                .setPersona(persona)
+                                .setMigrado(migrado);
 
                 documento = documentoService.save(documento);
 

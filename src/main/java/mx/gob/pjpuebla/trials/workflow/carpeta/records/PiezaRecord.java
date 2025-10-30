@@ -7,6 +7,7 @@ import java.util.List;
 public record PiezaRecord(
     Integer tipoPiezaId,
     String clavePieza,
+    Integer promocionId,
     List<Integer> documentos
 ) implements Serializable {
     public PiezaRecord{

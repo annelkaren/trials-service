@@ -37,6 +37,7 @@ import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
 import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
+import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 
 @Service
@@ -81,7 +82,9 @@ public class MigrarExpedienteUseCase {
   }
 
   @Transactional
-  public MigracionExpedienteResult migrarExpediente(String expediente, Integer year, String claveJuzgado) {
+  public MigracionExpedienteResult migrarExpediente(String exp, Integer year, String claveJuzgado) {
+    String expediente = Utils.normalizarExpediente(exp);
+
     // 1) Fetch legacy (todo local, sin estado global)
     Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);
     
@@ -142,7 +145,9 @@ public class MigrarExpedienteUseCase {
 
   @Transactional
   public EstadoMigracion migrarDocumentosExpediente(
-      String expediente, Integer year, String claveJuzgado, Integer migracionId) {
+      String exp, Integer year, String claveJuzgado, Integer migracionId) {
+    
+    String expediente = Utils.normalizarExpediente(exp);
 
     // Relee lo necesario para soportar ejecución "por partes"
     Optional<EntradasMigracion>entradaOptional   = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);

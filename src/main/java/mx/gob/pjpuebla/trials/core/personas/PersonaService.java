@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -27,6 +28,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.account.UserRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -565,5 +567,20 @@ public class PersonaService {
             return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' ' + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "") ).toUpperCase();
         }
         return "";
+    }
+
+    public Persona getOficialMayor(Juzgado juzgado){
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+        String idOficialMayor = keycloak.realm(realm)
+            .roles()
+            .get("OFICIAL_MAYOR_JUZGADO").getUserMembers().get(0).getId();
+
+        Optional<Persona> persona =  personaRepository.findByUsuarioAndJuzgado(idOficialMayor, juzgado);
+
+        if(persona.isPresent()){
+            return persona.get();
+        }
+
+        return null;
     }
 }

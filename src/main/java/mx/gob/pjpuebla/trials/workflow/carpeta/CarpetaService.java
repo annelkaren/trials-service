@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.carpeta;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
-import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
@@ -26,6 +25,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -40,11 +40,15 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpediente;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpedienteRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -52,7 +56,6 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.internal.util.logging.Log;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -93,6 +96,8 @@ public class CarpetaService {
         private final PersonaRepository personaRepository;
         private final EntradasMigracionRepository entradasMigracionRepository;
         private final JuzgadoService juzgadoService;
+        private final PromocionSinExpedienteRepository promocionSinExpedienteRepository;
+        private final MigracionesRepository migracionesRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -114,7 +119,8 @@ public class CarpetaService {
                         carpetaOptional = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente,
                                         juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
-                        carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(expediente.stripIndent().replaceFirst("^0+(?!$)", ""), finalJuzgadoId);
+                        carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
+                                        Utils.normalizarExpediente(expediente), finalJuzgadoId);
                 }
 
                 if (carpetaOptional.isPresent()) {
@@ -122,13 +128,15 @@ public class CarpetaService {
                         return getDataCarpeta(carpetaOptional.get());
                 } else {
                         // Busca en SECJ PHP:
-                        String expedientePart = (expediente.split("/")[0]).stripIndent().replaceFirst("^0+(?!$)", "");
+                        String expedientePart = Utils.normalizarExpediente(expediente.split("/")[0]);
                         Integer year = Integer.parseInt(expediente.split("/")[1]);
 
-                        log.info("Expediente: {}, Year: {}, Juzgado: {}", expedientePart, year, juzgado.getClaveJuzgado());
+                        log.info("Expediente: {}, Year: {}, Juzgado: {}", expedientePart, year,
+                                        juzgado.getClaveJuzgado());
 
-                        Optional<EntradasMigracion> entrada = entradasMigracionRepository.findTopByExpedienteNormalizado(
-                                        expedientePart, year, juzgado.getClaveJuzgado(), "A");
+                        Optional<EntradasMigracion> entrada = entradasMigracionRepository
+                                        .findTopByExpedienteNormalizado(
+                                                        expedientePart, year, juzgado.getClaveJuzgado(), "A");
 
                         if (entrada.isPresent()) {
                                 // El expediente existe en SECJ PHP
@@ -509,7 +517,21 @@ public class CarpetaService {
         }
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
-
+                //Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear pieza':
+                Documento promocion = documentoRepository.findById(piezaRecord.promocionId())
+                        .orElseThrow(() -> new NotFoundException("La promoción no existe", "promocionId"));
+        
+                Optional<Migraciones> migracionesOpt = migracionesRepository.findByCarpetaId(carpetaId);
+                log.info("Migraciones: {}", migracionesOpt);
+                if(promocion.getMigrado().equals(Migrado.SI)  && migracionesOpt.isPresent()){
+                      Migraciones migraciones = migracionesOpt.get();
+                      if(migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
+                        throw new ConflictException("No es posible crear una pieza, es necesario migrar el expediente completo.");
+                      }
+                }
+                
+               return null;
+               /* 
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
                 Concepto conceptoPromocion = piezaRecord.documentos().stream()
                                 .map(documentoRepository::findById)
@@ -560,6 +582,7 @@ public class CarpetaService {
                 asignarPieza(pieza, piezaRecord.documentos());
                 movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
                 return pieza;
+                */
         }
 
         public String consecutivoPieza(Integer carpetaId, String clavePieza) {

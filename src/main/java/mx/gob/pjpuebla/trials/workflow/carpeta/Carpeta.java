@@ -108,7 +108,7 @@ public class Carpeta implements Serializable, Auditable {
 
     @Column(name = "N_MIGRADO", nullable = false)
     @Enumerated
-    private Migrado migrado;
+    private Migrado migrado = Migrado.NO;
 
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

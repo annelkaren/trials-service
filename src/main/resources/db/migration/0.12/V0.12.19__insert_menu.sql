@@ -7,5 +7,4 @@ INSERT INTO trials.tbl_menus (
     fn_parent
 )
 VALUES
-    (51, 'Promociones sin expediente', 'CAPTURISTA', '/api/workflow/promocion/sinExpedientes', 9, 3),
-    (52, 'Promociones sin expediente', 'CAPTURISTA', '/api/workflow/bandeja/promociones/sinExpedientes', 16, 4);
+    (51, 'Promociones sin expediente', 'CAPTURISTA', '/api/workflow/bandeja/promociones/sinExpedientes', 16, 4);

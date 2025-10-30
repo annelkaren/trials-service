@@ -789,7 +789,7 @@ class CarpetaServiceTest {
         String consecutivo = "AD01";
         String expediente = validCarpeta.getExpediente()+"/"+consecutivo;
         Documento documento = DocumentoSetUp.create(tipoJuicio).setData(new DocumentoData().setPieza(""));
-        PiezaRecord piezaRecord = new PiezaRecord(null, tipoPieza.getClave(), Collections.singletonList(1));
+        PiezaRecord piezaRecord = new PiezaRecord(null, tipoPieza.getClave(), null, Collections.singletonList(1));
         Concepto concepto = ConceptoSetUp.createConcepto();
         
         Carpeta piezaTmp = new Carpeta()

@@ -58,10 +58,12 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoC
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpedienteRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -140,6 +142,7 @@ public class DocumentoService {
         private final EventoService eventosService;
         private final SolicitudesProrrogasService solicitudesProrrogasService;
         private final ConfiguracionesRepository configuracionesRepository;
+
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -2040,7 +2043,7 @@ public class DocumentoService {
                 documentoRepository.save(amparo);
 
                 Carpeta pieza = carpetaService.createPieza(carpeta.getId(),
-                                new PiezaRecord(null, amparoRecord.tipoAmparo(),
+                                new PiezaRecord(null, amparoRecord.tipoAmparo(), null,
                                                 Collections.singletonList(amparo.getId())));
 
                 return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(),
@@ -2164,7 +2167,8 @@ public class DocumentoService {
         public DocumentoPromocionResponseRecord adjuntarPromocion(Integer documentoId) {
                 Documento documento = documentoRepository.findById(documentoId)
                                 .orElseThrow(() -> new NotFoundException("La promoción no existe", "documentoId"));
-
+               
+                 
                 if (documento.getEstatus() == EstadoCarpeta.ASIGNADO) {
                         documento.setEstatus(EstadoCarpeta.INTEGRADO);
                         documentoRepository.save(documento);
@@ -2174,6 +2178,7 @@ public class DocumentoService {
                 }
 
                 throw new ConflictException("No se puede integrar la promoción");
+                
         }
 
         @Transactional

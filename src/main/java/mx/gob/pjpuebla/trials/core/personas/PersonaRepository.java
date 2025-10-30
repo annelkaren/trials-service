@@ -88,4 +88,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     List<Persona> findByJuzgadoId(Integer juzgadoId);
 
     Persona findByCorreoElectronico(String correo);
+
+    Optional<Persona> findByUsuarioAndJuzgado(String usuario, Juzgado juzgado);
 }

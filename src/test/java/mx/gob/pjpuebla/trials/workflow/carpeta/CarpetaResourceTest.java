@@ -334,7 +334,7 @@ class CarpetaResourceTest {
         @Test
         void testPostAdjuntarPieza() throws Exception {
 
-                PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+                PiezaRecord request = new PiezaRecord(null, "AD", null, Collections.singletonList(1));
                 TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
                 Carpeta pieza = CarpetaSetUp.create().setTipoPieza(tipoPieza);
 
@@ -350,7 +350,7 @@ class CarpetaResourceTest {
 
         @Test
         void testPutAdjuntarPieza() throws Exception {
-                PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+                PiezaRecord request = new PiezaRecord(null, "AD", null, Collections.singletonList(1));
                 PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD",
                                 EstadoCarpeta.ASIGNADO);
 

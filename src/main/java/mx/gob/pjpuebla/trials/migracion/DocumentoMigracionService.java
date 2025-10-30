@@ -416,7 +416,7 @@ public class DocumentoMigracionService {
             documentos.add(amparoDoc);
 
             documentoRepository.save(amparoDoc);
-            PiezaRecord piezaRecord = new PiezaRecord(null, amparoMapper.mapTipoAmparo(amparo.getTipo()),
+            PiezaRecord piezaRecord = new PiezaRecord(null, amparoMapper.mapTipoAmparo(amparo.getTipo()), null,
                     Collections.singletonList(amparoDoc.getId()));
 
             carpetaService.createPieza(carpeta.getId(), piezaRecord);
