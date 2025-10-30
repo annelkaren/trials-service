@@ -82,7 +82,7 @@ public class Documento implements Serializable, Auditable {
 
     @Enumerated
     @Column(name = "N_MIGRADO", nullable = false)
-    private Migrado migrado;
+    private Migrado migrado = Migrado.NO;
 
     @Column(name = "S_INSTITUCION_HISTORICA")
     private String institucionHistorica;
