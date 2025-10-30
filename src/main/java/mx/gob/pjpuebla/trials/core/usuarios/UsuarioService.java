@@ -14,6 +14,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,9 @@ public class UsuarioService {
 
     private final KeycloakSecurityUtil keycloakSecurityUtil;
     private final EmailService emailService;
+
+    @Value("${app.correo-pruebas}")
+    private String correoPrueba;
 
     public String create(Persona persona) {
         UserRepresentation userRepresentation = mapUser(persona);
@@ -103,7 +107,7 @@ public class UsuarioService {
         emailService.sendMail(
                 List.of(email),
                 Collections.emptyList(),
-                Collections.emptyList(),
+                correoPrueba != null ? List.of(correoPrueba) : Collections.emptyList(),
                 "¡Bienvenido(a) a nuestro portal!",
                 "welcome.ftl",
                 sendEmail

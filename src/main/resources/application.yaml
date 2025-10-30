@@ -91,6 +91,7 @@ keycloak:
 app:
   root-folder: /opt/pjp/files
   portal-notificaciones: http://187.190.62.102/acuerdos/login
+  correo-pruebas: secgj@pjpuebla.gob.mx
 
 inegi:
   url: https://gaia.inegi.org.mx/wscatgeo
