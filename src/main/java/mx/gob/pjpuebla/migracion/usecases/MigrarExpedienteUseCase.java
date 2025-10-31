@@ -29,6 +29,7 @@ import mx.gob.pjpuebla.migracion.acl.validate.LegacyValidators;
 
 // Core (solo modelos)
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.migracion.CarpetaDetalleMigracionService;
 import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
 // Facades de migración
@@ -36,7 +37,9 @@ import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
 import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
 import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
-import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 
@@ -70,10 +73,9 @@ public class MigrarExpedienteUseCase {
   private final ConceptoMigrationService conceptoMig;
   private final DocumentoMigracionService documentoMig;
   private final PersonasMigracionService personasMig;
-  private final MigracionesService migracionesService;
   private final CarpetaDetalleMigracionService carpetaDetalleMig;
+  private final MigracionesRepository migracionesRepository;
 
-  
   // Orquestador: 1 sola transacción grande (o ajusta a tu estrategia)
   @Transactional
   public void migrarExpedienteCompleto(String expediente, Integer year, String claveJuzgado) {
@@ -86,19 +88,20 @@ public class MigrarExpedienteUseCase {
     String expediente = Utils.normalizarExpediente(exp);
 
     // 1) Fetch legacy (todo local, sin estado global)
-    Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);
-    
-    if(entradaOptional.isEmpty()) {
-      throw new IllegalArgumentException("No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
+    Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year,
+        claveJuzgado);
+
+    if (entradaOptional.isEmpty()) {
+      throw new IllegalArgumentException(
+          "No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
     }
     EntradasMigracion entrada = entradaOptional.get();
-    
-    
+
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
 
-    var ocomun   = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); // puede ser null
-    if(ocomun != null) {
-        log.info("La ruta de digitalizacion de OCOUMUN ES: " + ocomun.getRutaDigitalizacion());
+    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); // puede ser null
+    if (ocomun != null) {
+      log.info("La ruta de digitalizacion de OCOUMUN ES: " + ocomun.getRutaDigitalizacion());
     }
     var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
     validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
@@ -111,10 +114,12 @@ public class MigrarExpedienteUseCase {
     // 3) Último movimiento / mapeos
     var ubicUlt = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
     String materiaNombre = materiaMapper.mapMateria(juicioLg.getMateria());
-    var tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion(), juzLegacy);
+    var tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion(),
+        juzLegacy);
 
     String estadoUltMov = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
-        ? ubicUlt.estado() : "Archivo";
+        ? ubicUlt.estado()
+        : "Archivo";
     var concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov);
 
     // 4) Crear carpeta y documentos base
@@ -129,16 +134,15 @@ public class MigrarExpedienteUseCase {
 
     // 6) Registro de migración
     String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
-    String puesto  = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
+    String puesto = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
 
-    var migracion = migracionesService.createMigraciones(
+    var migracion = createMigraciones(
         EstadoMigracion.EXPEDIENTE_MIGRADO,
         "Se ha migrado el expediente principal",
         recibio,
         puesto,
         juzgado,
-        carpeta
-    );
+        carpeta);
 
     return new MigracionExpedienteResult(carpeta, migracion.getId());
   }
@@ -146,27 +150,28 @@ public class MigrarExpedienteUseCase {
   @Transactional
   public EstadoMigracion migrarDocumentosExpediente(
       String exp, Integer year, String claveJuzgado, Integer migracionId) {
-    
+
     String expediente = Utils.normalizarExpediente(exp);
 
-    // Relee lo necesario para soportar ejecución "por partes"
-    Optional<EntradasMigracion>entradaOptional   = entradasReader.buscarEntradasPorFiltros(expediente, year, claveJuzgado);
-    if(entradaOptional.isEmpty()) {
-      throw new IllegalArgumentException("No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
+    Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year,
+        claveJuzgado);
+    if (entradaOptional.isEmpty()) {
+      throw new IllegalArgumentException(
+          "No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
     }
     EntradasMigracion entrada = entradaOptional.get();
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
-    var carpeta   = carpetaMig.findByExpYearAndClaveJuzgado(expediente, year, claveJuzgado);
+    var carpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
 
     // Lecturas legacy
-    var acuerdos         = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());
-    var sentencias       = acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
-    var promos           = detallesReader.buscarPorCu(entrada.getCu());
-    var oficios          = oficiosReader.buscarPorCu(entrada.getCu());
-    var piezasLegacy     = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
-    var exhortosCapital  = exhortosCapitalMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
+    var acuerdos = acuerdosReader.buscarAcuerdosPorCu(entrada.getCu());
+    var sentencias = acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
+    var promos = detallesReader.buscarPorCu(entrada.getCu());
+    var oficios = oficiosReader.buscarPorCu(entrada.getCu());
+    var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
+    var exhortosCapital = exhortosCapitalMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
     var exhortosForaneos = exhortosForaneosMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
-    var amparos          = amparoMigracionReader.buscarPorCu(entrada.getCu());
+    var amparos = amparoMigracionReader.buscarPorCu(entrada.getCu());
 
     // Documentos (idealmente idempotentes)
     documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
@@ -182,13 +187,39 @@ public class MigrarExpedienteUseCase {
     // Amparos
     documentoMig.createAmparos(carpeta, amparos);
 
-    migracionesService.updateMigraciones(
+    updateMigraciones(
         migracionId,
         EstadoMigracion.MIGRADO_COMPLETADO,
-        "Se ha migrado el expediente principal junto con sus documentos"
-    );
+        "Se ha migrado el expediente principal junto con sus documentos");
 
     return EstadoMigracion.MIGRADO_COMPLETADO;
+  }
+
+  // Metodos para setear el regisgro en la tabla de migracioens:
+
+  private Migraciones createMigraciones(EstadoMigracion estadoMigracion, String observaciones,
+      String asignacionAnterior, String puestoAsignacionAnterior, Juzgado juzgado, Carpeta carpeta) {
+
+    Migraciones migracion = new Migraciones()
+        .setVersion(0)
+        .setEstatus(estadoMigracion)
+        .setObservaciones(observaciones)
+        .setAsignacionAnterior(asignacionAnterior)
+        .setPuestoAsignacionAnterior(puestoAsignacionAnterior)
+        .setJuzgado(juzgado)
+        .setCarpeta(carpeta);
+
+    return migracionesRepository.save(migracion);
+  }
+
+  private Migraciones updateMigraciones(Integer migracionId, EstadoMigracion estadoMigracion, String observaciones) {
+    Migraciones migracion = migracionesRepository.findById(migracionId)
+        .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
+            migracionId.toString()));
+
+    migracion.setEstatus(estadoMigracion);
+    migracion.setObservaciones(observaciones);
+    return migracionesRepository.save(migracion);
   }
 
 }

@@ -517,18 +517,23 @@ public class CarpetaService {
         }
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
+                Persona persona = personaService.getAuditor();
                 //Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear pieza':
                 Documento promocion = documentoRepository.findById(piezaRecord.promocionId())
                         .orElseThrow(() -> new NotFoundException("La promoción no existe", "promocionId"));
         
                 Optional<Migraciones> migracionesOpt = migracionesRepository.findByCarpetaId(carpetaId);
-                log.info("Migraciones: {}", migracionesOpt);
+                
                 if(promocion.getMigrado().equals(Migrado.SI)  && migracionesOpt.isPresent()){
                       Migraciones migraciones = migracionesOpt.get();
                       if(migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
                         throw new ConflictException("Error al crear pieza, es necesario migrar el expediente completo.");
                       }
-                }
+
+                      if(migraciones.getEstatus().equals(EstadoMigracion.MIGRADO_COMPLETADO) && migraciones.getCarpeta().getPersona() != persona){
+                        throw new ConflictException("Error al crear pieza, es necesario que usted tenga asignado el expediente completo.");
+                      }
+                }       
                 
    
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
@@ -550,8 +555,6 @@ public class CarpetaService {
                                 .findByIdOrClave(piezaRecord.tipoPiezaId(), piezaRecord.clavePieza())
                                 .stream().findFirst()
                                 .orElseThrow(() -> new NotFoundException("El Tipo de Pieza no existe", "tipoPieza"));
-
-                Persona persona = personaService.getAuditor();
 
                 if (piezaRecord.documentos().isEmpty()) {
                         throw new NotFoundException("No se puede crear una pieza vacía", "documentos");

@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.usecases.MigrarExpedienteUseCase;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
@@ -42,31 +41,6 @@ public class MigracionesService {
     private final CarpetaService carpetaService;
     private final DocumentoService documentoService;
     private final MigrarExpedienteUseCase migrarExpedienteUseCase;
-
-    public Migraciones createMigraciones(EstadoMigracion estadoMigracion, String observaciones,
-            String asignacionAnterior, String puestoAsignacionAnterior, Juzgado juzgado, Carpeta carpeta) {
-
-        Migraciones migracion = new Migraciones()
-                .setVersion(0)
-                .setEstatus(estadoMigracion)
-                .setObservaciones(observaciones)
-                .setAsignacionAnterior(asignacionAnterior)
-                .setPuestoAsignacionAnterior(puestoAsignacionAnterior)
-                .setJuzgado(juzgado)
-                .setCarpeta(carpeta);
-
-        return migracionesRepository.save(migracion);
-    }
-
-    public Migraciones updateMigraciones(Integer migracionId, EstadoMigracion estadoMigracion, String observaciones) {
-        Migraciones migracion = migracionesRepository.findById(migracionId)
-                .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
-                        migracionId.toString()));
-
-        migracion.setEstatus(estadoMigracion);
-        migracion.setObservaciones(observaciones);
-        return migracionesRepository.save(migracion);
-    }
 
     @Transactional(readOnly = true)
     public Page<BandejaMigracionResponse> listar(BandejaMigracionFilter filter, Pageable pageable) {
@@ -185,6 +159,7 @@ public class MigracionesService {
         String claveJuzgado = migracion.getJuzgado().getClaveJuzgado();
 
         EstadoMigracion estadoMigracion = migrarExpedienteUseCase.migrarDocumentosExpediente(expediente, year, claveJuzgado, migracionId);
+        
         if(!estadoMigracion.equals(EstadoMigracion.MIGRADO_COMPLETADO)){
                 throw new InternalServerError("No se pudo migrar el expediente.");
         }
