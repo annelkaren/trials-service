@@ -149,7 +149,6 @@ public class CarpetaMigracionService {
             String tipoPiezaString = tipoPieza(pieza.cu());
             TipoPieza tipoPieza = findTipoPieza(tipoPiezaString.substring(0,2));
            
-            Concepto concepto = null;
             String expediente = carpeta.getExpediente() + "/" + tipoPieza(pieza.cu());
 
             Carpeta piezaNew = new Carpeta()
@@ -163,7 +162,6 @@ public class CarpetaMigracionService {
                 .setJuzgado(carpeta.getJuzgado())
                 .setTipoJuicio(carpeta.getTipoJuicio())
                 .setTipoPieza(tipoPieza)
-                .setConcepto(concepto)
                 .setCu(pieza.cu());
 
             piezaNew = carpetaRepository.save(piezaNew);

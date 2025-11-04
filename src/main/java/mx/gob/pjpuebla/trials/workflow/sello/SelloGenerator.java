@@ -247,11 +247,10 @@ public class SelloGenerator {
     }
 
     private String getStringAnexosFromPromocionSinExpediente(String anexos) {
-        List<String> list = Arrays.asList(anexos.split(", ")).stream()
+        List<String> list = Arrays.stream(anexos.split(", "))
                 .map(nombre -> "- " + nombre + " <br/>")
                 .toList();
         return list.isEmpty() ? "- Sin anexos" : String.join("", list);
-
     }
 
     private String tipoDocumentoFolio(Documento documento) {

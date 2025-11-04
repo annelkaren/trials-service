@@ -575,14 +575,13 @@ public class PersonaService {
         Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
         String idOficialMayor = keycloak.realm(realm)
                 .roles()
-                .get("OFICIAL_MAYOR_JUZGADO").getUserMembers().get(0).getId();
+                .get("OFICIAL_MAYOR_JUZGADO")
+                .getUserMembers()
+                .get(0)
+                .getId();
 
-        Optional<Persona> persona = personaRepository.findByUsuarioAndJuzgado(idOficialMayor, juzgado);
-
-        if (persona.isPresent()) {
-            return persona.get();
-        }
-
-        return null;
+        return personaRepository
+                .findByUsuarioAndJuzgado(idOficialMayor, juzgado)
+                .orElse(null);
     }
 }

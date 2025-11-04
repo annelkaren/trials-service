@@ -99,10 +99,7 @@ public class MigrarExpedienteUseCase {
 
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
 
-    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); // puede ser null
-    if (ocomun != null) {
-      log.info("La ruta de digitalizacion de OCOUMUN ES: " + ocomun.getRutaDigitalizacion());
-    }
+    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); 
     var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
     validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
 
