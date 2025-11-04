@@ -16,7 +16,7 @@ import net.jcip.annotations.Immutable;
 @Data
 @Entity
 @Immutable
-@Table(name = "entradas")
+@Table(name = "entradas", schema = "acuerdos")
 public class EntradasMigracion {
     
     @Id
@@ -62,7 +62,7 @@ public class EntradasMigracion {
     @Column(name = "tipo_accion")
     private String tipoAccion;
 
-    @Column(name = "tipoDivorcio")
+    @Column(name = "`tipoDivorcio`") 
     private String tipoDivorcio;
 
     private String materia;

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
@@ -37,6 +38,7 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CarpetaMigracionService {
 
     private final CarpetaRepository carpetaRepository;
@@ -104,11 +106,13 @@ public class CarpetaMigracionService {
             throw new IllegalArgumentException("Parámetros obligatorios nulos en createFromLegacy");
         }
 
+        String folio = ocomun != null && ocomun.getFolio() != null
+                        ? ocomun.getFolio().toString()
+                        : UUID.randomUUID().toString();
+
         var carpeta = new Carpeta()
                 .setVersion(0)
-                .setFolio(ocomun != null && ocomun.getFolio() != null
-                        ? ocomun.getFolio().toString()
-                        : UUID.randomUUID().toString())
+                .setFolio(folio)
                 .setExpediente(entrada.getExpediente() + "/" + entrada.getAmo())
                 .setJuzgado(juzgado)
                 .setTipoJuicio(tipoJuicio)
@@ -145,7 +149,6 @@ public class CarpetaMigracionService {
             String tipoPiezaString = tipoPieza(pieza.cu());
             TipoPieza tipoPieza = findTipoPieza(tipoPiezaString.substring(0,2));
            
-            Concepto concepto = null;
             String expediente = carpeta.getExpediente() + "/" + tipoPieza(pieza.cu());
 
             Carpeta piezaNew = new Carpeta()
@@ -159,7 +162,6 @@ public class CarpetaMigracionService {
                 .setJuzgado(carpeta.getJuzgado())
                 .setTipoJuicio(carpeta.getTipoJuicio())
                 .setTipoPieza(tipoPieza)
-                .setConcepto(concepto)
                 .setCu(pieza.cu());
 
             piezaNew = carpetaRepository.save(piezaNew);
@@ -229,8 +231,19 @@ public class CarpetaMigracionService {
             .setTipo(tipoPiezaMigracion.getTipo())
             .setVersion(0)
             .setEstado(Estado.INACTIVE));
-        
+    }
 
+    public Carpeta findByExpYearAndClaveJuzgado(String expediente, Integer year, String claveJuzgado){
+        String expedienteCompleto = expediente + "/" + year;
+        Juzgado juzgado = requireJuzgadoActual(claveJuzgado);
+
+        Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, juzgado);
+
+        if(carpeta.isPresent()){
+            return carpeta.get();
+        } else {
+            throw new NotFoundException("No se encontró la carpeta con los datos proporcionados", expedienteCompleto + " - " + claveJuzgado);
+        }
     }
 
 }

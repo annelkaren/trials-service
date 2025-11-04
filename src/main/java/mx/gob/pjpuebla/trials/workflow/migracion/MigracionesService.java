@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.usecases.MigrarExpedienteUseCase;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
-import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
@@ -40,21 +40,7 @@ public class MigracionesService {
     private final MovimientoService movimientoService;
     private final CarpetaService carpetaService;
     private final DocumentoService documentoService;
-
-    public Migraciones createMigraciones(EstadoMigracion estadoMigracion, String observaciones,
-            String asignacionAnterior, String puestoAsignacionAnterior, Juzgado juzgado, Carpeta carpeta) {
-
-        Migraciones migracion = new Migraciones()
-                .setVersion(0)
-                .setEstatus(estadoMigracion)
-                .setObservaciones(observaciones)
-                .setAsignacionAnterior(asignacionAnterior)
-                .setPuestoAsignacionAnterior(puestoAsignacionAnterior)
-                .setJuzgado(juzgado)
-                .setCarpeta(carpeta);
-
-        return migracionesRepository.save(migracion);
-    }
+    private final MigrarExpedienteUseCase migrarExpedienteUseCase;
 
     @Transactional(readOnly = true)
     public Page<BandejaMigracionResponse> listar(BandejaMigracionFilter filter, Pageable pageable) {
@@ -84,6 +70,7 @@ public class MigracionesService {
                 });
     }
 
+
     @Transactional
     public ApiResponse<String> turnarExpedienteMigrado(Integer migracionId, Long personaId) {
         // 1) Cargar migración
@@ -92,9 +79,7 @@ public class MigracionesService {
                         migracionId.toString()));
 
         // 2) Validar estado de la migración
-        if (migracion.getEstatus() != EstadoMigracion.MIGRADO_COMPLETADO) {
-            throw new NotFoundException("La migración no está en un estado turnable.", migracionId.toString());
-        }
+      
 
         // 3) Cargar carpeta y dependencias
         Carpeta carpeta = migracion.getCarpeta();
@@ -159,6 +144,28 @@ public class MigracionesService {
 
         return new ApiResponse<>(true, "El expediente ha sido turnado con éxito.", "SUCCESS", 201, "",
                 LocalDateTime.now());
+    }
+
+
+    @Transactional
+    public ApiResponse<String> migrarDocumentosExpediente(Integer migracionId){
+        Migraciones migracion = migracionesRepository.findById(migracionId)
+                .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
+                        migracionId.toString()));
+
+        Carpeta carpeta = migracion.getCarpeta();
+        String expediente = carpeta.getExpediente().split("/")[0];
+        Integer year = Integer.parseInt( carpeta.getExpediente().split("/")[1]);
+        String claveJuzgado = migracion.getJuzgado().getClaveJuzgado();
+
+        EstadoMigracion estadoMigracion = migrarExpedienteUseCase.migrarDocumentosExpediente(expediente, year, claveJuzgado, migracionId);
+        
+        if(!estadoMigracion.equals(EstadoMigracion.MIGRADO_COMPLETADO)){
+                throw new InternalServerError("No se pudo migrar el expediente.");
+        }
+
+        return new ApiResponse<>(true, "Se ha migrado el expediente completo exitosamente.", "SUCCESS", 200, "", LocalDateTime.now());
+
     }
 
 }

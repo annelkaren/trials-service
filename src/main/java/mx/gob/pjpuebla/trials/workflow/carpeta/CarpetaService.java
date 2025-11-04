@@ -1,12 +1,16 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesal;
 import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -21,6 +25,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -40,6 +45,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovimientosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -65,6 +72,7 @@ import java.util.stream.Stream;
 @Transactional
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class CarpetaService {
 
         private final CarpetaRepository carpetaRepository;
@@ -84,6 +92,9 @@ public class CarpetaService {
         private final JuzgadoRepository juzgadoRepository;
         private final ConceptoRepository conceptoRepository;
         private final PersonaRepository personaRepository;
+        private final EntradasMigracionRepository entradasMigracionRepository;
+        private final JuzgadoService juzgadoService;
+        private final MigracionesRepository migracionesRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -96,23 +107,47 @@ public class CarpetaService {
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
 
-                Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
-                                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado",
-                                                expediente + " - " + finalJuzgadoId));
-                Carpeta carpeta;
-                if (juzgado.getMateria().getNombre().toLowerCase().contains("penal")
-                                || juzgado.getMateria().getNombre().toLowerCase().contains("justicia")) {
-                        carpeta = carpetaRepository
-                                        .findByExpedienteAndJuzgadoIdPenal(expediente, juzgado.getNomenclatura(),
-                                                        finalJuzgadoId)
-                                        .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
-                                                        expediente + " - " + finalJuzgadoId));
+                // Busca Juzgado en sistema SECJ JAVA, de no encontrarlo manda exception:
+                Juzgado juzgado = juzgadoService.requiredJuzgadoById(finalJuzgadoId);
+                String nombreMateriaJuz = juzgado.getMateria().getNombre().toLowerCase();
+                Optional<Carpeta> carpetaOptional;
+
+                if (nombreMateriaJuz.contains("penal") || nombreMateriaJuz.contains("justicia")) {
+                        carpetaOptional = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente,
+                                        juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
-                        carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
-                                        .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
-                                                        expediente + " - " + finalJuzgadoId));
+                        carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
+                                        Utils.normalizarExpediente(expediente), finalJuzgadoId);
                 }
 
+                if (carpetaOptional.isPresent()) {
+
+                        return getDataCarpeta(carpetaOptional.get());
+                } else {
+                        // Busca en SECJ PHP:
+                        String expedientePart = Utils.normalizarExpediente(expediente.split("/")[0]);
+                        Integer year = Integer.parseInt(expediente.split("/")[1]);
+
+                        log.info("Expediente: {}, Year: {}, Juzgado: {}", expedientePart, year,
+                                        juzgado.getClaveJuzgado());
+
+                        Optional<EntradasMigracion> entrada = entradasMigracionRepository
+                                        .findTopByExpedienteNormalizado(
+                                                        expedientePart, year, juzgado.getClaveJuzgado(), "A");
+
+                        if (entrada.isPresent()) {
+                                // El expediente existe en SECJ PHP
+                                return new CarpetaResponseRecord(200,
+                                                "¿El expediente no ha sido importado, desea recepciónar la promoción sin expediente?");
+                        } else {
+                                // El expediente no existe en SECJ PHP
+                                return new CarpetaResponseRecord(404,
+                                                "El expediente no existe, desea aun así recepcionar la promoción?");
+                        }
+                }
+        }
+
+        private CarpetaResponseRecord getDataCarpeta(Carpeta carpeta) {
                 // validaciones nuevas para penal:
                 String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
                 boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal")
@@ -132,22 +167,26 @@ public class CarpetaService {
                                                         List.of(Rol.PRINCIPAL))
                                         .stream()
                                         .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo()
-                                                        : persona.nombre() + " " + persona.apellidoPaterno() + " "
+                                                        : persona.nombre() + " " + persona.apellidoPaterno()
+                                                                        + " "
                                                                         + persona.apellidoPaterno())
                                         .toList();
 
                         imputados = personaDocumentoRepository
-                                        .findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), IMPUTADO_LABEL,
+                                        .findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(),
+                                                        IMPUTADO_LABEL,
                                                         List.of(Rol.PRINCIPAL))
                                         .stream()
                                         .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo()
-                                                        : persona.nombre() + " " + persona.apellidoPaterno() + " "
+                                                        : persona.nombre() + " " + persona.apellidoPaterno()
+                                                                        + " "
                                                                         + persona.apellidoPaterno())
                                         .toList();
                 }
 
-                return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados,
-                                estadoJuzgado, carpeta.getEstatus().getEtiqueta());
+                return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas,
+                                imputados,
+                                estadoJuzgado, carpeta.getEstatus().getEtiqueta(), 200, "Carpeta encontrada");
         }
 
         private Integer obtenerJuzgadoIdFinal(Integer juzgadoId) {
@@ -475,7 +514,25 @@ public class CarpetaService {
         }
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
+                Persona persona = personaService.getAuditor();
+                //Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear pieza':
+                Documento promocion = documentoRepository.findById(piezaRecord.promocionId())
+                        .orElseThrow(() -> new NotFoundException("La promoción no existe", "promocionId"));
+        
+                Optional<Migraciones> migracionesOpt = migracionesRepository.findByCarpetaId(carpetaId);
+                
+                if(promocion.getMigrado().equals(Migrado.SI)  && migracionesOpt.isPresent()){
+                      Migraciones migraciones = migracionesOpt.get();
+                      if(migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
+                        throw new ConflictException("Error al crear pieza, es necesario migrar el expediente completo.");
+                      }
 
+                      if(migraciones.getEstatus().equals(EstadoMigracion.MIGRADO_COMPLETADO) && migraciones.getCarpeta().getPersona() != persona){
+                        throw new ConflictException("Error al crear pieza, es necesario que usted tenga asignado el expediente completo.");
+                      }
+                }       
+                
+   
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
                 Concepto conceptoPromocion = piezaRecord.documentos().stream()
                                 .map(documentoRepository::findById)
@@ -495,8 +552,6 @@ public class CarpetaService {
                                 .findByIdOrClave(piezaRecord.tipoPiezaId(), piezaRecord.clavePieza())
                                 .stream().findFirst()
                                 .orElseThrow(() -> new NotFoundException("El Tipo de Pieza no existe", "tipoPieza"));
-
-                Persona persona = personaService.getAuditor();
 
                 if (piezaRecord.documentos().isEmpty()) {
                         throw new NotFoundException("No se puede crear una pieza vacía", "documentos");
@@ -526,6 +581,7 @@ public class CarpetaService {
                 asignarPieza(pieza, piezaRecord.documentos());
                 movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
                 return pieza;
+                
         }
 
         public String consecutivoPieza(Integer carpetaId, String clavePieza) {
@@ -976,7 +1032,7 @@ public class CarpetaService {
                 String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
                 String tipoJuicio = carpeta.getTipoJuicio().getNombre();
                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, null, null,
-                                carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta());
+                                carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta(), null, "");
         }
 
         public void devolverArchivoJudicial(List<Integer> ids) {
@@ -1015,5 +1071,10 @@ public class CarpetaService {
 
         public List<Carpeta> findPiezasByCarpeta(Carpeta carpeta) {
                 return carpetaRepository.findByCarpetaPadre(carpeta);
+        }
+
+        public Carpeta findByExpedienteAndJuzgado(String expediente, Juzgado juzgado) {
+                return carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado).orElse(null);
+
         }
 }

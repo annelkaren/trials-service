@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -139,9 +140,9 @@ public class PersonaService {
         return persona.withRoles(roles);
     }
 
-    public Optional<Persona> findPersonaById(Long personaId){
+    public Optional<Persona> findPersonaById(Long personaId) {
         return personaRepository.findById(personaId);
-       
+
     }
 
     public PersonaRecordResponse create(PersonaDTO dto) {
@@ -277,18 +278,20 @@ public class PersonaService {
 
     @Transactional(transactionManager = "primaryTransactionManager")
     public List<EncargadoCarritoRecord> findAllEncargadosCarrito() {
-        List<EncargadoCarritoRecord> encargadoCarritoList = new ArrayList<>();
         List<String> ids = usuarioService.findAllByRoles(List.of("ENCARGADO_CARRITO"));
-        for (String id : ids) {
-            Optional<Persona> persona = personaRepository.findByUsuario(id);
-            if (persona.isPresent()) {
-                String name = persona.get().getNombre() + " " + persona.get().getApellidoPaterno();
-                name += ((persona.get().getApellidoMaterno() != null) ? " " + persona.get().getApellidoMaterno() : "");
-                EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(persona.get().getId(), name);
-                encargadoCarritoList.add(encargadoCarritoRecord);
-            }
-        }
-        return encargadoCarritoList;
+
+        return ids.stream()
+                .map(personaRepository::findByUsuario)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(p -> {
+                    String name = p.getNombre() + " " + p.getApellidoPaterno();
+                    if (p.getApellidoMaterno() != null) {
+                        name += " " + p.getApellidoMaterno();
+                    }
+                    return new EncargadoCarritoRecord(p.getId(), name);
+                })
+                .toList();
     }
 
     @Transactional(transactionManager = "primaryTransactionManager")
@@ -347,7 +350,7 @@ public class PersonaService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-   @Transactional(transactionManager = "primaryTransactionManager")
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return personaRepository.findByUsuario(jwt.getSubject())
@@ -557,13 +560,28 @@ public class PersonaService {
         }
     }
 
-    public String getNamePersona(String usuario){
+    public String getNamePersona(String usuario) {
         Optional<Persona> persona = personaRepository.findByUsuario(usuario);
 
-        if(persona.isPresent()){
+        if (persona.isPresent()) {
             Persona p = persona.get();
-            return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' ' + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "") ).toUpperCase();
+            return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' '
+                    + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "")).toUpperCase();
         }
         return "";
+    }
+
+    public Persona getOficialMayor(Juzgado juzgado) {
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+        String idOficialMayor = keycloak.realm(realm)
+                .roles()
+                .get("OFICIAL_MAYOR_JUZGADO")
+                .getUserMembers()
+                .get(0)
+                .getId();
+
+        return personaRepository
+                .findByUsuarioAndJuzgado(idOficialMayor, juzgado)
+                .orElse(null);
     }
 }

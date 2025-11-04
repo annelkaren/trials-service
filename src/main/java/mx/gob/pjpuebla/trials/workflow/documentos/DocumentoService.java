@@ -141,6 +141,7 @@ public class DocumentoService {
         private final SolicitudesProrrogasService solicitudesProrrogasService;
         private final ConfiguracionesRepository configuracionesRepository;
 
+
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
         private static final String TIPO_JUICIO_NOT_FOUND = "Tipo Juicio no encontrado: ";
@@ -920,7 +921,7 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta());
         }
 
-        private void addAnexos(List<String> anexos, Documento documento) {
+        public void addAnexos(List<String> anexos, Documento documento) {
                 if (anexos != null && !anexos.isEmpty()) {
                         for (String anexo : anexos) {
                                 Anexo entity = new Anexo();
@@ -2040,7 +2041,7 @@ public class DocumentoService {
                 documentoRepository.save(amparo);
 
                 Carpeta pieza = carpetaService.createPieza(carpeta.getId(),
-                                new PiezaRecord(null, amparoRecord.tipoAmparo(),
+                                new PiezaRecord(null, amparoRecord.tipoAmparo(), null,
                                                 Collections.singletonList(amparo.getId())));
 
                 return new AmparoRecordResponse(pieza.getId(), amparo.getId(), pieza.getExpediente(),
@@ -2164,7 +2165,8 @@ public class DocumentoService {
         public DocumentoPromocionResponseRecord adjuntarPromocion(Integer documentoId) {
                 Documento documento = documentoRepository.findById(documentoId)
                                 .orElseThrow(() -> new NotFoundException("La promoción no existe", "documentoId"));
-
+               
+                 
                 if (documento.getEstatus() == EstadoCarpeta.ASIGNADO) {
                         documento.setEstatus(EstadoCarpeta.INTEGRADO);
                         documentoRepository.save(documento);
@@ -2174,6 +2176,7 @@ public class DocumentoService {
                 }
 
                 throw new ConflictException("No se puede integrar la promoción");
+                
         }
 
         @Transactional
@@ -2548,6 +2551,10 @@ public class DocumentoService {
 
         public void saveAll(List<Documento> documentos){
                 documentoRepository.saveAll(documentos);
+        }
+
+        public Documento save(Documento documento){
+                return documentoRepository.save(documento);
         }
 
 }

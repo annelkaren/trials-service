@@ -66,6 +66,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpedienteService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
@@ -187,6 +188,7 @@ class DocumentoServiceTest {
         private EventoService eventosService;
         @Mock
         private SolicitudesProrrogasService solicitudesProrrogasService;
+ 
 
         @Mock
         private ConfiguracionesRepository configuracionesRepository;
@@ -1676,7 +1678,7 @@ class DocumentoServiceTest {
                 List<String> anexos = List.of("Anexo1", "Anexo2");
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
-                                1, "actor 1", "demandado 1", null, null, null, null, null);
+                                1, "actor 1", "demandado 1", null, null, null, null, null, null, null);
 
                 DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.ESCRITO);
                 documento.setData(documentoData);

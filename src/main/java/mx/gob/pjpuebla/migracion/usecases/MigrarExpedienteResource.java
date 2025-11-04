@@ -11,21 +11,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 @RequestMapping("/api/migracion/expediente")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "keycloak")
 public class MigrarExpedienteResource {
-    
+
     private final MigrarExpedienteUseCase migrarExpediente;
 
     @PostMapping
-    public ResponseEntity<String> migrarExpediente(@RequestBody EntradasMigracionSaveRecord request) {
-        migrarExpediente.migrarExpediente(request.expediente(), request.year(), request.juzgado());
-        
+    public ResponseEntity<String> migrarExpedienteCompleto(@RequestBody EntradasMigracionSaveRecord request) {
+        migrarExpediente.migrarExpedienteCompleto(request.expediente(), request.year(), request.juzgado());
+
         return ResponseEntity.ok("Expediente migrado correctamente");
     }
-    
+
+    @PostMapping("/principal")
+    public ResponseEntity<String> migrarExpediente(@RequestBody EntradasMigracionSaveRecord request) {
+
+        migrarExpediente.migrarExpediente(request.expediente(), request.year(), request.juzgado());
+
+        return ResponseEntity.ok("Expediente migrado correctamente");
+    }
 
 }

@@ -167,4 +167,18 @@ public class UtilsMigracion {
             throw new IllegalArgumentException("El 'juzgado' no puede ser nulo.");
         }
     }
+
+    public static String normalizeSpaces(String s) {
+        if (s == null)
+            return "";
+        // Normaliza Unicode
+        String x = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFKC);
+        // Reemplaza tabs, NBSP, BOM y otros whitespace invisibles
+        x = x.replaceAll("[\\u0009\\u00A0\\u200B-\\u200D\\uFEFF]", " ");
+        // Quita espacios (de cualquier tipo) al inicio y final
+        x = x.replaceAll("^[\\p{Z}\\s]+|[\\p{Z}\\s]+$", "");
+        // Colapsa múltiples espacios
+        x = x.replaceAll("\\s+", " ");
+        return x;
+    }
 }

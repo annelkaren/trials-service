@@ -81,11 +81,14 @@ public class PersonasMigracionService {
                 DomicilioMigracion domicilioMigracion = domicilioMigracionReader
                         .findByCuActorAndEstado(p.getClaveAct());
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
-               
+
             }
 
+            String nombrePersona = p.getNombre().trim().length() < 3 ? p.getNombre().trim() + " N/E"
+                    : p.getNombre().trim();
+
             var pd = new PersonaDocumento()
-                    .setNombre(p.getNombre())
+                    .setNombre(nombrePersona)
                     .setTipoPersona(personasMapper.mapTipoPersona(p.getTipoPersona()))
                     .setRol(Rol.PRINCIPAL)
                     .setCarpeta(carpeta)
@@ -105,9 +108,13 @@ public class PersonasMigracionService {
     }
 
     private TipoPartes findOrCreateTipoPartes(TipoJuicio tipoJuicio, String nombre) {
-        return tipoPartesRepository.findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId())
+        return tipoPartesRepository
+                .findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId())
                 .orElseGet(() -> tipoPartesRepository.save(
-                        new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio)));
+                        new TipoPartes()
+                                .setEstado(Estado.INACTIVE)
+                                .setNombre(nombre)
+                                .setTipoJuicio(tipoJuicio)));
     }
 
     private Domicilio createDomicilioNotificacion(DomicilioMigracion domicilio) {
@@ -131,7 +138,7 @@ public class PersonasMigracionService {
                 .setCiudad(transformarTextoInvalido(domicilio.getCiudad())));
     }
 
- private String transformarTextoInvalido(String texto){
+    private String transformarTextoInvalido(String texto) {
         return texto.length() < 3 ? texto + "N/E" : texto;
     }
 }
