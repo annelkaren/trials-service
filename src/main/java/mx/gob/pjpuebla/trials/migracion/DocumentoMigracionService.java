@@ -232,7 +232,7 @@ public class DocumentoMigracionService {
         String anexosNormalizados = UtilsMigracion.normalizeSpaces(anexos);
 
         List<Anexo> toSave = Pattern.compile("\\s*,\\s*")
-                .splitAsStream(anexosNormalizados == null ? "" : anexosNormalizados)
+                .splitAsStream(anexosNormalizados)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .distinct()

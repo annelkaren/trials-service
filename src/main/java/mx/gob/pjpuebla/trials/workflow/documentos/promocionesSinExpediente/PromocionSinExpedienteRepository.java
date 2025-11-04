@@ -22,7 +22,7 @@ public interface PromocionSinExpedienteRepository extends JpaRepository<Promocio
                 t.nombre,
                 p.estado
             )
-            FROM PromocionSinExpediente p   
+            FROM PromocionSinExpediente p
             JOIN p.juzgado j
             LEFT JOIN p.tipoJuicio t
             """)

@@ -40,8 +40,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpediente;
-import mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.PromocionSinExpedienteRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpetaResponse;
@@ -96,7 +94,6 @@ public class CarpetaService {
         private final PersonaRepository personaRepository;
         private final EntradasMigracionRepository entradasMigracionRepository;
         private final JuzgadoService juzgadoService;
-        private final PromocionSinExpedienteRepository promocionSinExpedienteRepository;
         private final MigracionesRepository migracionesRepository;
 
         private static final String ACTOR_LABEL = "Actor";

@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.migracion.utils;
 
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;

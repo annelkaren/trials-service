@@ -82,10 +82,11 @@ public class PersonasMigracionService {
                 DomicilioMigracion domicilioMigracion = domicilioMigracionReader
                         .findByCuActorAndEstado(p.getClaveAct());
                 domicilioNotificacion = createDomicilioNotificacion(domicilioMigracion);
-               
+
             }
 
-            String nombrePersona = p.getNombre().trim().length() < 3 ? p.getNombre().trim() + " N/E" : p.getNombre().trim();
+            String nombrePersona = p.getNombre().trim().length() < 3 ? p.getNombre().trim() + " N/E"
+                    : p.getNombre().trim();
 
             var pd = new PersonaDocumento()
                     .setNombre(nombrePersona)
@@ -108,17 +109,13 @@ public class PersonasMigracionService {
     }
 
     private TipoPartes findOrCreateTipoPartes(TipoJuicio tipoJuicio, String nombre) {
-       
-        Optional<TipoPartes> tipoPartes = tipoPartesRepository.findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId());
-        if (tipoPartes.isPresent()) {
-           
-            return tipoPartes.get();
-        }else{
-          
-            return tipoPartesRepository.save(
-                        new TipoPartes().setEstado(Estado.INACTIVE).setNombre(nombre).setTipoJuicio(tipoJuicio));
-        }
-     
+        return tipoPartesRepository
+                .findByNombreAndTipoJuicioId(nombre, tipoJuicio.getId())
+                .orElseGet(() -> tipoPartesRepository.save(
+                        new TipoPartes()
+                                .setEstado(Estado.INACTIVE)
+                                .setNombre(nombre)
+                                .setTipoJuicio(tipoJuicio)));
     }
 
     private Domicilio createDomicilioNotificacion(DomicilioMigracion domicilio) {
@@ -142,7 +139,7 @@ public class PersonasMigracionService {
                 .setCiudad(transformarTextoInvalido(domicilio.getCiudad())));
     }
 
- private String transformarTextoInvalido(String texto){
+    private String transformarTextoInvalido(String texto) {
         return texto.length() < 3 ? texto + "N/E" : texto;
     }
 }
