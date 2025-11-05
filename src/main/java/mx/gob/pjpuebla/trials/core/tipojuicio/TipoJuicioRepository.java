@@ -60,6 +60,7 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
 
     Optional<TipoJuicio> findByNombreIgnoreCaseAndTipoJuicioPadreOralIsNotNull(String name);
 
-     Optional<TipoJuicio> findByNombre(String nombre);
+    Optional<TipoJuicio> findByNombre(String nombre);
+
     boolean existsByNombre(String nombre);
 }
