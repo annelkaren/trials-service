@@ -16,12 +16,12 @@ public record AcuerdoSentenciaRecord(
 ) implements Serializable {
 
          public AcuerdoSentenciaRecord(
-            String notificacionId,
+            Integer notificacionId,
             String numeroExpediente,
             LocalDateTime fechaNotificacion,
             String juzgado,
             Integer documentoId,
             String status) {
-        this(Integer.parseInt(notificacionId), numeroExpediente, fechaNotificacion, juzgado, documentoId, status, Migrado.PENDIENTE);
+        this(notificacionId, numeroExpediente, fechaNotificacion, juzgado, documentoId, status, Migrado.PENDIENTE);
     }
 }

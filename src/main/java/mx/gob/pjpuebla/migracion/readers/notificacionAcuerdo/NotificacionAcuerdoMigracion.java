@@ -23,7 +23,7 @@ public class NotificacionAcuerdoMigracion {
     private String claveActor;
 
     @Column(name = "clave_acuerdo")
-    private String claveAcuerdo;
+    private Integer claveAcuerdo;
 
     @Column(name = "tipo_notificacion")
     private String tipoNotificacion;
