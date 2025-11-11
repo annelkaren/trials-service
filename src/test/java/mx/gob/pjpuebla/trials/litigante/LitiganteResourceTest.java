@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.litigante;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ class LitiganteResourceTest {
     @Test
     void getAcuerdosSentencias() throws Exception {
         List<AcuerdoSentenciaRecord> list = Collections.singletonList(
-                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado"));
+                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado", Migrado.SI));
 
         given(litiganteService.getAcuerdosSentencias(any(Pageable.class))).willReturn(new PageImpl<>(list));
 

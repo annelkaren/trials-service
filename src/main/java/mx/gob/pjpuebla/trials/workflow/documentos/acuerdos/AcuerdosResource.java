@@ -29,6 +29,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -97,5 +99,15 @@ public class AcuerdosResource {
     public List<AcuerdoPromocionesRecord> getPromocionesAcuerdos(@PathVariable Integer acuerdoId) {
         return acuerdosService.findPromocionesByAcuerdo(acuerdoId);
     }
+
+    @GetMapping(value = "/documentos/acuerdos/legacy/{clave}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportAcuerdoPdfLegacy(@PathVariable Integer clave)  throws JRException, IOException, WriterException  {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acuerdo", clave + "_Documento.pdf");
+
+        return ResponseEntity.ok().headers(headers).body(acuerdoServicePdf.getAcuerdoPdfLegacy(clave));
+    }
+    
 
 }

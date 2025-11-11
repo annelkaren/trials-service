@@ -15,12 +15,12 @@ public interface UsuarioMigracionRepository extends JpaRepository<UsuarioMigraci
     @Query("""
             SELECT
                 new mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord(
-                    null,
+                    na.claveAcuerdo,
                     CONCAT(e.expediente, '/', e.amo),
                     na.fechaNotificacion,
                     j.descripcion,
                     null,
-                    'Completo'
+                    'Completado'
                 )
             FROM UsuarioMigracion u
             JOIN NotificacionAcuerdoMigracion na ON na.idCorreo = u.idusuario AND na.tipoNotificacion = 'CO' AND na.status = 'A'

@@ -210,7 +210,7 @@ public class DigitalizacionService {
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
 
-        if(documento.getMigrado().equals(Migrado.SI)){
+        if (documento.getMigrado().equals(Migrado.SI)) {
             return getDocumentoMigrado(documento);
         }
 
@@ -526,15 +526,23 @@ public class DigitalizacionService {
         }
     }
 
-    public byte[] getDocumentoMigrado(Documento documento){
-        
+    public byte[] getDocumentoMigrado(Documento documento) {
+
         String ruta = documento.getRuta();
-        if(ruta.contentEquals("172.16.6.11")){
+        if (ruta.contentEquals("172.16.6.11")) {
             throw new NotFoundException("El archivo no existe en el servidor", ruta);
         }
 
-        
-        return ftpDownloader.downloadFromFullUrl("ftp://"+ruta);
+        return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
+    }
+
+    public byte[] getDocumentoMigrado(String ruta) {
+
+        if (ruta.contentEquals("172.16.6.11")) {
+            throw new NotFoundException("El archivo no existe en el servidor", ruta);
+        }
+
+        return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
     }
 
 }

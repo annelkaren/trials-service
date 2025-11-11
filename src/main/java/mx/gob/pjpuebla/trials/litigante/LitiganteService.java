@@ -103,7 +103,9 @@ public class LitiganteService {
                         notification.getNotificacion().getDocumento().getCarpeta().getJuzgado().getNombre(),
                         notification.getNotificacion().getDocumento().getId(),
                         StringUtils.capitalize(notification.getNotificacion().getEstadoNotificacion().name()
-                                .replace("_", " ").toLowerCase())))
+                                .replace("_", " ").toLowerCase()),
+                        notification.getNotificacion().getDocumento().getMigrado()        
+                                ))
                 .collect(Collectors.toList());
 
         // Se incorpora notificaciones de expedientes del sistema SECJ PHP:
