@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
@@ -58,6 +59,7 @@ public class LitiganteService {
     private final MovimientoService movimientoService;
     private final MateriaRepository materiaRepository;
     private final UsuarioMigracionRepository usuarioMigracionRepository;
+    private final EntradasMigracionRepository entradasMigracionRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -72,7 +74,21 @@ public class LitiganteService {
                         String.join(", ",
                                 personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Demandado")),
                         notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(), username)))
+                .collect(Collectors.toList());
+
+        // Busca expedientes relacionados en SECJ PHP:
+        List<LitiganteExpedientesRecord> listSecjPhp = entradasMigracionRepository
+                .findExpedientesRelacionadosLegacy(username).stream()
+                .map(p -> new LitiganteExpedientesRecord(
+                        p.getId(), p.getNumeroExpediente(), p.getMateria(), p.getTipoJuicio(),
+                        p.getActorPrincipal(), p.getDemandadoPrincipal(), p.getJuzgado(),
+                        p.getNotificacionesPendientes(), p.getSede()))
                 .toList();
+        ;
+        list.addAll(Optional.ofNullable(listSecjPhp).orElse(Collections.emptyList()));
+
+        // FIN busqueda y adicion a la lista
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -104,8 +120,7 @@ public class LitiganteService {
                         notification.getNotificacion().getDocumento().getId(),
                         StringUtils.capitalize(notification.getNotificacion().getEstadoNotificacion().name()
                                 .replace("_", " ").toLowerCase()),
-                        notification.getNotificacion().getDocumento().getMigrado()        
-                                ))
+                        notification.getNotificacion().getDocumento().getMigrado()))
                 .collect(Collectors.toList());
 
         // Se incorpora notificaciones de expedientes del sistema SECJ PHP:
