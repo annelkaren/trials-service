@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -60,6 +61,7 @@ public class LitiganteService {
     private final MateriaRepository materiaRepository;
     private final UsuarioMigracionRepository usuarioMigracionRepository;
     private final EntradasMigracionRepository entradasMigracionRepository;
+    private final AcuerdosMigracionRepository acuerdosMigracionRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -82,7 +84,7 @@ public class LitiganteService {
                 .map(p -> new LitiganteExpedientesRecord(
                         p.getId(), p.getNumeroExpediente(), p.getMateria(), p.getTipoJuicio(),
                         p.getActorPrincipal(), p.getDemandadoPrincipal(), p.getJuzgado(),
-                        p.getNotificacionesPendientes(), p.getSede()))
+                        p.getNotificacionesPendientes(), p.getSede(), p.getCu()))
                 .toList();
         ;
         list.addAll(Optional.ofNullable(listSecjPhp).orElse(Collections.emptyList()));
@@ -199,7 +201,16 @@ public class LitiganteService {
                     doc.getData().getRubros().toString().replace("[", "").replace("]", ""),
                     "/api/litigante/documento/" + doc.getId()));
         }
+
         return new PageImpl<>(list, pageable, documentos.getTotalElements());
+    }
+
+    public Page<DocumentoResponseRecord> getExpedienteDetailsLegacy(String cu, Pageable pageable) {
+        // Obtiene correo de persona litigante
+        String userName = getLitiganteUsername();
+        log.info("Entre al METODOOOOO");
+        Page<DocumentoResponseRecord> acuerdosDetail = acuerdosMigracionRepository.findDetailsExpedienteLitigante(userName, cu, pageable);
+        return acuerdosDetail;
     }
 
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {

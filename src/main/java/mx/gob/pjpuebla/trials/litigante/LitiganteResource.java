@@ -17,6 +17,9 @@ import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -62,6 +65,13 @@ public class LitiganteResource {
     public Page<DocumentoResponseRecord> getExpedienteDetails(Pageable pageable, @PathVariable Integer carpetaId) {
         return litiganteService.getExpedienteDetails(carpetaId, pageable);
     }
+
+    @GetMapping("/acuerdos/legacy/{cu}")
+    public Page<DocumentoResponseRecord> getExpedienteDetailsLegacy(Pageable pageable, @PathVariable String cu) {
+        return litiganteService.getExpedienteDetailsLegacy(cu, pageable);
+    }
+
+    
 
     @GetMapping(value = "/promociones", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(@RequestParam String key, Pageable pageable) {

@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesInterface;
-import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord;
 
 @Repository
 public interface EntradasMigracionRepository extends JpaRepository<EntradasMigracion, Integer> {
@@ -70,7 +69,8 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
                 
                 CAST(null AS SIGNED) as notificacionesPendientes,
                 
-                '' as sede
+                '' as sede,
+                entrada.cu as cu
             
             FROM acuerdos.entradas entrada
             JOIN acuerdos.juicios juicio ON entrada.juicio = juicio.idjuicio

@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
+
 public interface LitiganteExpedientesInterface {
     Integer getId();
     String getNumeroExpediente();
@@ -10,4 +12,5 @@ public interface LitiganteExpedientesInterface {
     String getJuzgado();
     Long getNotificacionesPendientes();
     String getSede();
+    String getCu();
 }
