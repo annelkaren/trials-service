@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
@@ -55,6 +56,8 @@ class LitiganteServiceTest extends SetupServiceTest {
     DocumentoRepository documentoRepository;
     @Mock
     UsuarioMigracionRepository usuarioMigracionRepository;
+    @Mock
+    EntradasMigracionRepository entradasMigracionRepository;
     @InjectMocks
     LitiganteService litiganteService;
 
