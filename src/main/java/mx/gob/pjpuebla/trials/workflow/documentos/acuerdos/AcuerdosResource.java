@@ -81,6 +81,11 @@ public class AcuerdosResource {
         return acuerdosService.getAcuerdoOSentencia(acuerdoId);
     }
 
+    @GetMapping("/documentos/obtenerAcuerdo/legacy/{clave}/{cu}")
+    public Object obtenerAcuerdoOSentenciasLegacy(@PathVariable Integer clave, @PathVariable String cu) {
+        return acuerdosService.getAcuerdoOSentenciaLegacy(clave, cu);
+    }
+
     @PutMapping("/documentos/actualizarAcuerdo")
     public DocumentoGenericRecord actualizarAcuerdo(@RequestBody AcuerdoRecord acuerdo) {
 

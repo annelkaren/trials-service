@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import org.springframework.data.domain.PageImpl;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -29,6 +31,16 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoGenericRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
+import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
+import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -36,6 +48,7 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 @RequiredArgsConstructor
 @Service
 @Transactional
+@Slf4j
 public class AcuerdosService {
 
     private static final String DOC_DETALL_NOT_FOUND = "Documento detalle no encontrado";
@@ -48,6 +61,12 @@ public class AcuerdosService {
     private final MovimientoService movimientoService;
     private final PersonaService personaService;
     private final DocumentoFoliosService documentoFoliosService;
+    // repositorios para obtener datos de sistema SECGJ PHP:
+    private final AcuerdosMigracionRepository acuerdosMigracionRepository;
+    private final DetallesPromRepository detallesPromRepository;
+    private final OcomunRepository ocomunRepository;
+    private final SentenciaMapper sentenciaMapper;
+    private final ResolucionMapper resolucionMapper;
 
     @Transactional
     public DocumentoGenericRecord save(AcuerdoRecord acuerdo) {
@@ -61,8 +80,9 @@ public class AcuerdosService {
         DocumentoData docData = new DocumentoData();
         docData.setRubros(acuerdo.rubros());
 
-        //Obtiene folio
-        Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, persona.getJuzgado(), persona.getOficialia());
+        // Obtiene folio
+        Integer folio = documentoFoliosService.getFolio(TipoDocumento.ACUERDO, persona.getJuzgado(),
+                persona.getOficialia());
 
         // Creamos el nuevo documento (acuerdo=
         Documento doc = new Documento();
@@ -105,7 +125,8 @@ public class AcuerdosService {
         return new DocumentoGenericRecord(doc.getId(), TipoDocumento.ACUERDO);
     }
 
-    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, Integer documentoId, String tipoDocumento) {
+    public List<AcuerdoPromocionesRecord> obtenerPromociones(Integer carpetaId, Integer documentoId,
+            String tipoDocumento) {
         return documentoRepository.obtenerPromociones(carpetaId, documentoId, tipoDocumento);
     }
 
@@ -211,6 +232,73 @@ public class AcuerdosService {
 
     }
 
+    public Object getAcuerdoOSentenciaLegacy(Integer clave, String cu) {
+        Optional<AcuerdosMigracion> acuerdoOptional = acuerdosMigracionRepository.findByClave(clave);
+       
+        if (acuerdoOptional.isPresent()) {
+           
+            AcuerdosMigracion acuerdo = acuerdoOptional.get();
+
+            Optional<Ocomun> ocomunOptional = ocomunRepository.findTopByCuAndEstatusOrderByIdDesc(cu, "A");
+            List<DetallesProm> detallesProm = detallesPromRepository.findByCuAndStatus(cu, "A");
+            /*
+             * En SCGJ PHP el resumen son los rubros, debemos normalizarlos para
+             * hacer split y obtener rubros y tipoAcuerdo (Rubro principal)
+             */
+
+            String resumen = acuerdo.getResumen();
+            String resumenNormalizado = resumen.trim().replaceAll("(?<!^)(?=[A-Z])", ".");
+            String[] rubros = resumenNormalizado.split("\\.");
+            String tipoAcuerdo = rubros.length > 0 ? rubros[0] : null;
+
+            /*
+             * En SCGJ PHP las promociones relacionadas vienen de la tabla detallesprom
+             * la cual aplicaremos map para convertirla en el objeto AcierdoPromocioneRecord
+             */
+
+            List<AcuerdoPromocionesRecord> promocionesRelacionadas = detallesProm.stream().map(promocion -> {
+                return new AcuerdoPromocionesRecord(
+                        promocion.getId(),
+                        "promo " + promocion.getId(),
+                        promocion.getArchivo(),
+                        "",
+                        null);
+            }).toList();
+
+            // obtenemos la demanda inicial para unir las promociones, esta seria la primera
+            // promocion:
+            if (ocomunOptional.isPresent()) {
+                Ocomun ocomun = ocomunOptional.get();
+                promocionesRelacionadas.add(0, new AcuerdoPromocionesRecord(
+                        ocomun.getId(),
+                        "Demanda inicial ",
+                        ocomun.getRutaDigitalizacion(),
+                        "",
+                        null));
+            }
+
+            if (acuerdo.getSentencia() != "N") {
+                return new AcuerdoRecord(null, null, null, tipoAcuerdo, acuerdo.getFechaResolucion(), "SIn información",
+                        List.of(rubros), promocionesRelacionadas, ' ', "", "");
+            }
+
+            return new SentenciaRecordSave(
+                    null,
+                    null,
+                    null,
+                    sentenciaMapper.mapTipoSentencia(resumen),
+                    acuerdo.getFechaResolucion(),
+                    "Sin información",
+                    resolucionMapper.mapTipoResolucionSentencia(acuerdo.getSentencia()),
+                    "",
+                    ' ',
+                    " ",
+                    promocionesRelacionadas);
+        }
+        return null;
+
+    }
+
     public DocumentoGenericRecord update(AcuerdoRecord acuerdo) {
 
         Documento documento = documentoRepository.findById(acuerdo.acuerdoId())
@@ -265,7 +353,7 @@ public class AcuerdosService {
                 .map(p -> new AcuerdoPromocionesRecord(p.getId(),
                         (p.getTipoDocumento() == null) ? "Demanda Inicial"
                                 : p.getTipoDocumento() == TipoDocumento.ACUERDO ? "Acuerdo "
-                                : "Promoción " + p.getFolio(),
+                                        : "Promoción " + p.getFolio(),
                         p.getRuta(), "", null))
                 .toList();
     }

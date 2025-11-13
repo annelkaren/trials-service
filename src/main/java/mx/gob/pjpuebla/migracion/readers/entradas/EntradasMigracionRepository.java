@@ -87,4 +87,6 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
             nativeQuery = true)
     List<LitiganteExpedientesInterface> findExpedientesRelacionadosLegacy(String correo);
 
+    @Query("SELECT e FROM EntradasMigracion e WHERE e.cu = :cu and e.status = 'A' order by e.id desc limit 1")
+    Optional<EntradasMigracion> findByCu(String cu);
 }

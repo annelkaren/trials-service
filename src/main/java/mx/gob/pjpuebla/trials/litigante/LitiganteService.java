@@ -208,7 +208,6 @@ public class LitiganteService {
     public Page<DocumentoResponseRecord> getExpedienteDetailsLegacy(String cu, Pageable pageable) {
         // Obtiene correo de persona litigante
         String userName = getLitiganteUsername();
-        log.info("Entre al METODOOOOO");
         Page<DocumentoResponseRecord> acuerdosDetail = acuerdosMigracionRepository.findDetailsExpedienteLitigante(userName, cu, pageable);
         return acuerdosDetail;
     }
