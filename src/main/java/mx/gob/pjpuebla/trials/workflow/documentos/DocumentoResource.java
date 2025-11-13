@@ -96,6 +96,14 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getDocumento(documentoId));
     }
 
+    @GetMapping(value = "/documentos/digitalizacion/legacy/{promocionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFilePromocionLegacy(@PathVariable Integer promocionId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", promocionId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getPromocionMigrada(promocionId));
+    }
+
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
