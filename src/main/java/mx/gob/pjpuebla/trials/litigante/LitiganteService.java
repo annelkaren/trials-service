@@ -86,8 +86,7 @@ public class LitiganteService {
                         p.getActorPrincipal(), p.getDemandadoPrincipal(), p.getJuzgado(),
                         p.getNotificacionesPendientes(), p.getSede(), p.getCu()))
                 .toList();
-        ;
-        list.addAll(Optional.ofNullable(listSecjPhp).orElse(Collections.emptyList()));
+        list.addAll(listSecjPhp);
 
         // FIN busqueda y adicion a la lista
 
@@ -208,8 +207,7 @@ public class LitiganteService {
     public Page<DocumentoResponseRecord> getExpedienteDetailsLegacy(String cu, Pageable pageable) {
         // Obtiene correo de persona litigante
         String userName = getLitiganteUsername();
-        Page<DocumentoResponseRecord> acuerdosDetail = acuerdosMigracionRepository.findDetailsExpedienteLitigante(userName, cu, pageable);
-        return acuerdosDetail;
+        return acuerdosMigracionRepository.findDetailsExpedienteLitigante(userName, cu, pageable);
     }
 
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {

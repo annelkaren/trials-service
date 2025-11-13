@@ -554,7 +554,7 @@ public class DigitalizacionService {
         if(detallesProm.isEmpty()){
             throw new NotFoundException("El archivo no existe en el servidor", promocionId.toString());
         }
-        String ruta = detallesProm.isPresent() ? detallesProm.get().getArchivo() : "";
+        String ruta =  detallesProm.get().getArchivo();
          
 
         if (ruta.contentEquals("172.16.6.11")) {

@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.acuerdos;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import org.springframework.data.domain.PageImpl;
@@ -37,8 +38,6 @@ import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
-import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
-import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -263,7 +262,7 @@ public class AcuerdosService {
                         promocion.getArchivo(),
                         "",
                         null);
-            }).toList();
+            }).collect(Collectors.toList());
 
             // obtenemos la demanda inicial para unir las promociones, esta seria la primera
             // promocion:
@@ -277,7 +276,7 @@ public class AcuerdosService {
                         null));
             }
 
-            if (acuerdo.getSentencia() != "N") {
+            if (acuerdo.getSentencia().equals("N")) {
                 return new AcuerdoRecord(null, null, null, tipoAcuerdo, acuerdo.getFechaResolucion(), "SIn información",
                         List.of(rubros), promocionesRelacionadas, ' ', "", "");
             }

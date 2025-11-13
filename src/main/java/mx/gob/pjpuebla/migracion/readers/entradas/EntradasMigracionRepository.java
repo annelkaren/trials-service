@@ -46,7 +46,7 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
 
 @Query(value = """
             SELECT
-                null as id, 
+                null as id,
                 CONCAT(entrada.expediente, '/', entrada.amo) as numeroExpediente,
                 materia.materia as materia,
                 juicio.descrip as tipoJuicio,
