@@ -58,6 +58,15 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Optional<Persona> findByUsuarioAndJuzgadoIdAndEstadoIn(String usuario, Integer juzgadoId, List<Estado> estados);
 
     @Query("""
+            SELECT p FROM Persona p
+            LEFT JOIN p.juzgado juz
+            LEFT JOIN juz.materia ma
+            WHERE ma.nombre IN (:materias) AND p.usuario = :usuario
+            AND p.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+    Optional<Persona> findByUsuarioUUID(List<String> materias, String usuario);
+
+    @Query("""
                 SELECT p FROM Persona p
                 LEFT JOIN p.oficialia o
                 LEFT JOIN p.juzgado j

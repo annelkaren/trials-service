@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
@@ -184,4 +185,16 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         Optional<Juzgado> findByClaveJuzgado(String clave);
 
+        @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord(
+                s.id, s.nombre, d.calle,d.interior, d.exterior, d.colonia, d.codigoPostal, d.municipio,d.estadoRepublica,
+                d.referencia, d.localidad
+            )
+            FROM Juzgado juz
+            JOIN juz.sede s
+            JOIN s.domicilio d
+            JOIN juz.materia m
+            WHERE m.nombre IN (:materias) AND juz.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+        List<SedeDomiciliosRecord> getAllUbications(@Param("materias") List<String> materias);
 }

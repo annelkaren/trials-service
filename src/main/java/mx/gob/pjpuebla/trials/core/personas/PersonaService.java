@@ -24,6 +24,7 @@ import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
+import mx.gob.pjpuebla.trials.util.enums.Sexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
 
 import org.keycloak.admin.client.Keycloak;
@@ -42,13 +43,10 @@ import org.springframework.web.client.RestTemplate;
 
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -258,6 +256,33 @@ public class PersonaService {
             }
         }
         return jueces;
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
+    public Map<String, Integer> findAllJuecesPenales() {
+        List<Persona> jueces = new ArrayList<>();
+        Map<String, Integer> map = new HashMap<>();
+        int countMujeres = 0;
+        int countHombres = 0;
+        List<String> roles = Arrays.asList("JUEZ");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        for (String id : ids) {
+            Optional<Persona> juez = personaRepository.findByUsuarioUUID(Arrays.asList("PENAL"), id);
+            if (juez.isPresent()) {
+                jueces.add(juez.get());
+            }
+        }
+        for(Persona persona: jueces) {
+            if(persona.getSexo().equals(Sexo.FEMENINO))
+                countMujeres += 1;
+            if(persona.getSexo().equals(Sexo.MASCULINO))
+                countHombres += 1;
+
+        }
+        map.put("total", jueces.size());
+        map.put("hombres", countHombres);
+        map.put("mujeres", countMujeres);
+        return map;
     }
 
     @Transactional(transactionManager = "primaryTransactionManager")
