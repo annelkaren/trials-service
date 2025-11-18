@@ -14,8 +14,10 @@ public class EntradasUsuarioMigracionReader {
 
     private final EntradasUsuarioMigracionRepository entradasUsuarioMigracionRepository;
 
-
-    public Optional<EntradasUsuarioMigracion> findByClaveActorAndEstatus(String claveActor){
-        return entradasUsuarioMigracionRepository.findByClaveActorAndEstatus(claveActor, "A");
+    public Optional<EntradasUsuarioMigracion> findByClaveActorAndEstatus(String claveActor) {
+        return entradasUsuarioMigracionRepository
+                .findByClaveActorAndEstatus(claveActor, "A") 
+                .stream()
+                .findFirst(); 
     }
 }

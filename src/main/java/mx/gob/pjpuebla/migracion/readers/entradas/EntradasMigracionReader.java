@@ -22,6 +22,7 @@ import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -98,8 +99,10 @@ public class EntradasMigracionReader {
      * @return Lista de entidades `EntradasMigracion`
      */
     public Optional<EntradasMigracion> buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
+        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
+
         return entradasMigracionRepository.findTopByExpedienteNormalizado(
-                expediente,
+                expedienteNormalizado,
                  amo, 
                  juzgadoCodigo, "A");
     }

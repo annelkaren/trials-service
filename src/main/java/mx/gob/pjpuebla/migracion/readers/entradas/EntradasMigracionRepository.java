@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesInterface;
+
 @Repository
 public interface EntradasMigracionRepository extends JpaRepository<EntradasMigracion, Integer> {
 
@@ -41,4 +43,50 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
 
     Optional<EntradasMigracion> findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(String expediente,
             Integer amo, String juzgado, String status);
+
+@Query(value = """
+            SELECT
+                null as id,
+                CONCAT(entrada.expediente, '/', entrada.amo) as numeroExpediente,
+                materia.materia as materia,
+                juicio.descrip as tipoJuicio,
+
+                (SELECT nombre 
+                 FROM acuerdos.actores 
+                 WHERE clave = CONVERT(entrada.cu USING latin1) 
+                 AND tipo = 'A' 
+                 ORDER BY id 
+                 LIMIT 1) as actorPrincipal,
+
+                (SELECT nombre 
+                 FROM acuerdos.actores 
+                 WHERE clave = CONVERT(entrada.cu USING latin1) 
+                 AND tipo = 'D' 
+                 ORDER BY id 
+                 LIMIT 1) as demandadoPrincipal,
+
+                juzgado.descrip as juzgado, 
+                
+                CAST(null AS SIGNED) as notificacionesPendientes,
+                
+                '' as sede,
+                entrada.cu as cu
+            
+            FROM acuerdos.entradas entrada
+            JOIN acuerdos.juicios juicio ON entrada.juicio = juicio.idjuicio
+            JOIN acuerdos.entradasusuario entradasUsuario ON entrada.cu = entradasUsuario.cuEntradas
+            JOIN acuerdos.usuario usuario ON usuario.idusuario = entradasUsuario.idUsuario
+            JOIN acuerdos.juzgados juzgado ON entrada.juzgado = juzgado.codigo
+            JOIN acuerdos.materias materia ON juzgado.materia = materia.codigo
+            WHERE 
+                usuario.correo = :correo 
+                AND entrada.status = 'A' 
+                AND usuario.estatus = 'A'
+                AND entradasUsuario.estatus = 'A'
+            """, 
+            nativeQuery = true)
+    List<LitiganteExpedientesInterface> findExpedientesRelacionadosLegacy(String correo);
+
+    @Query("SELECT e FROM EntradasMigracion e WHERE e.cu = :cu and e.status = 'A' order by e.id desc limit 1")
+    Optional<EntradasMigracion> findByCu(String cu);
 }
