@@ -104,7 +104,7 @@ public class MigrarExpedienteUseCase {
     validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
 
     // 2) Normalizar / requerir juzgado
-    String expCompleto = expedienteNormalizer.normalizeExpediente(expediente + "/" + year);
+    String expCompleto = expedienteNormalizer.normalizeExpediente(exp + "/" + year);
     Juzgado juzgado = carpetaMig.requireJuzgadoActual(claveJuzgado);
     carpetaMig.assertExpedienteDisponible(expCompleto, juzgado);
 

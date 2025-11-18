@@ -9,6 +9,9 @@ import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +35,7 @@ public class AcuerdoService {
     private final DocumentoContenidoService documentoContenidoService;
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
+    private final AcuerdosMigracionRepository acuerdosMigracionRepository;
 
     public byte[] getAcuerdoPdf(Integer documentoId) throws IOException, DocumentException {
 
@@ -97,6 +102,18 @@ public class AcuerdoService {
         return baos.toByteArray();
     }
     
+
+    public byte[] getAcuerdoPdfLegacy(Integer clave) throws IOException, DocumentException  {
+        Optional<AcuerdosMigracion>  acuerdo = acuerdosMigracionRepository.findByClave(clave);
+
+        if(acuerdo.isPresent()){
+            return digitalizacionService.getDocumentoMigrado(acuerdo.get().getRuta());
+        }
+
+        throw new NotFoundException("No fue posible obtener el archivo con clave: ", clave.toString());
+
+    }
+
     /**
      * Añade las marcas de agua que van DETRÁS del contenido principal.
      */

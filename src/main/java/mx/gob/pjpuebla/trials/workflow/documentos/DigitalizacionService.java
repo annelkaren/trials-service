@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -35,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -89,6 +92,7 @@ public class DigitalizacionService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
     private final FtpDownloader ftpDownloader;
+    private final DetallesPromRepository detallesPromRepository;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
     private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
     private static final Set<String> TIPO_IMAGENES_PERMITIDAS = Set.of("image/jpg", "image/png", "image/jpeg");
@@ -210,7 +214,7 @@ public class DigitalizacionService {
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
         validateNotNull(documento, "No pudo ser obtenido el documento con ID: " + documentoId);
 
-        if(documento.getMigrado().equals(Migrado.SI)){
+        if (documento.getMigrado().equals(Migrado.SI)) {
             return getDocumentoMigrado(documento);
         }
 
@@ -526,15 +530,38 @@ public class DigitalizacionService {
         }
     }
 
-    public byte[] getDocumentoMigrado(Documento documento){
-        
+    public byte[] getDocumentoMigrado(Documento documento) {
+
         String ruta = documento.getRuta();
-        if(ruta.contentEquals("172.16.6.11")){
+        if (ruta.contentEquals("172.16.6.11")) {
             throw new NotFoundException("El archivo no existe en el servidor", ruta);
         }
 
-        
-        return ftpDownloader.downloadFromFullUrl("ftp://"+ruta);
+        return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
+    }
+
+    public byte[] getDocumentoMigrado(String ruta) {
+
+        if (ruta.contentEquals("172.16.6.11")) {
+            throw new NotFoundException("El archivo no existe en el servidor", ruta);
+        }
+
+        return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
+    }
+
+    public byte[] getPromocionMigrada(Integer promocionId){
+        Optional<DetallesProm> detallesProm = detallesPromRepository.findById(promocionId);
+        if(detallesProm.isEmpty()){
+            throw new NotFoundException("El archivo no existe en el servidor", promocionId.toString());
+        }
+        String ruta =  detallesProm.get().getArchivo();
+         
+
+        if (ruta.contentEquals("172.16.6.11")) {
+            throw new NotFoundException("El archivo no existe en el servidor", ruta);
+        }
+
+        return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
     }
 
 }

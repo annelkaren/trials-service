@@ -2,6 +2,9 @@ package mx.gob.pjpuebla.trials.litigante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord;
@@ -37,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,6 +59,9 @@ public class LitiganteService {
     private final CarpetaRepository carpetaRepository;
     private final MovimientoService movimientoService;
     private final MateriaRepository materiaRepository;
+    private final UsuarioMigracionRepository usuarioMigracionRepository;
+    private final EntradasMigracionRepository entradasMigracionRepository;
+    private final AcuerdosMigracionRepository acuerdosMigracionRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -69,7 +76,20 @@ public class LitiganteService {
                         String.join(", ",
                                 personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(pd.id(), "Demandado")),
                         notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(), username)))
+                .collect(Collectors.toList());
+
+        // Busca expedientes relacionados en SECJ PHP:
+        List<LitiganteExpedientesRecord> listSecjPhp = entradasMigracionRepository
+                .findExpedientesRelacionadosLegacy(username).stream()
+                .map(p -> new LitiganteExpedientesRecord(
+                        p.getId(), p.getNumeroExpediente(), p.getMateria(), p.getTipoJuicio(),
+                        p.getActorPrincipal(), p.getDemandadoPrincipal(), p.getJuzgado(),
+                        p.getNotificacionesPendientes(), p.getSede(), p.getCu()))
                 .toList();
+        list.addAll(listSecjPhp);
+
+        // FIN busqueda y adicion a la lista
+
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
@@ -99,9 +119,15 @@ public class LitiganteService {
                         notification.getNotificacion().getFechaNotificado(),
                         notification.getNotificacion().getDocumento().getCarpeta().getJuzgado().getNombre(),
                         notification.getNotificacion().getDocumento().getId(),
-                        StringUtils.capitalize(notification.getNotificacion().getEstadoNotificacion().name().replace("_", " ").toLowerCase())
-                ))
-                .toList();
+                        StringUtils.capitalize(notification.getNotificacion().getEstadoNotificacion().name()
+                                .replace("_", " ").toLowerCase()),
+                        notification.getNotificacion().getDocumento().getMigrado()))
+                .collect(Collectors.toList());
+
+        // Se incorpora notificaciones de expedientes del sistema SECJ PHP:
+        List<AcuerdoSentenciaRecord> listNotiSecjPhp = usuarioMigracionRepository.notificacionesLitigante(userName);
+        list.addAll(Optional.ofNullable(listNotiSecjPhp).orElse(Collections.emptyList()));
+        // FIn incorporación.
 
         for (NotificacionesDetalles item : page.getContent()) {
             if (item.getNotificacion().getEstadoNotificacion().equals(EstadoNotificacion.POR_LEER)) {
@@ -158,7 +184,7 @@ public class LitiganteService {
 
     private static String[] separarFechaYHora(String fechaHora) {
         String[] partes = fechaHora.split("T");
-        return partes.length == 2 ? partes : new String[]{"", ""};
+        return partes.length == 2 ? partes : new String[] { "", "" };
     }
 
     public Page<DocumentoResponseRecord> getExpedienteDetails(Integer carpetaId, Pageable pageable) {
@@ -174,13 +200,20 @@ public class LitiganteService {
                     doc.getData().getRubros().toString().replace("[", "").replace("]", ""),
                     "/api/litigante/documento/" + doc.getId()));
         }
+
         return new PageImpl<>(list, pageable, documentos.getTotalElements());
+    }
+
+    public Page<DocumentoResponseRecord> getExpedienteDetailsLegacy(String cu, Pageable pageable) {
+        // Obtiene correo de persona litigante
+        String userName = getLitiganteUsername();
+        return acuerdosMigracionRepository.findDetailsExpedienteLitigante(userName, cu, pageable);
     }
 
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {
         String userName = getLitiganteUsername();
         Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, key, pageable);
-        //TODO revisar paginador
+        // TODO revisar paginador
         return docPromociones.map(documento -> {
             String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
             String numeroExpediente = partesExpediente[0];
@@ -205,12 +238,14 @@ public class LitiganteService {
                 .orElseThrow(() -> new NotFoundException("Promoción no encontrada", promocionId.toString()));
         DocumentoContenido contenido = documentoContenidoRepository.findByDocumentoId(promocionId)
                 .orElseThrow(() -> new NotFoundException("Documento no encontrada", promocionId.toString()));
-        return new DocumentoPromocionRecord(promocion.getCarpeta().getId(), TipoPromocion.CORREO_ELECTRONICO, null, contenido.getTexto());
+        return new DocumentoPromocionRecord(promocion.getCarpeta().getId(), TipoPromocion.CORREO_ELECTRONICO, null,
+                contenido.getTexto());
     }
 
     public Page<LibroGobiernoRecord> getConsultaLibroGobierno(
             String nombre, String aPaterno, String aMaterno, Pageable pageable) {
-        return personaDocumentoRepository.findByNombreCompleto(nombre.trim(), aPaterno.trim(), aMaterno.trim(), pageable);
+        return personaDocumentoRepository.findByNombreCompleto(nombre.trim(), aPaterno.trim(), aMaterno.trim(),
+                pageable);
     }
 
     public Page<SentenciasPublicasRecord> getSentenciasPublicas(
