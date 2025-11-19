@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.statistics.reports;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.core.eventos.EventoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
@@ -10,6 +11,7 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,6 +48,7 @@ public class ReporteService {
     private final PersonaService personaService;
     private final AudienciaRepository audienciaRepository;
     private final DocumentoRepository documentoRepository;
+    private final EventoRepository eventoRepository;
     private final DataSource dataSource;
 
     public List<ReporteRecord> getAll() {
@@ -330,6 +334,33 @@ public class ReporteService {
         }
     }
 
+    public byte[] generateReportePenal(LocalDate startDate, LocalDate endDate) throws IOException {
+        try (SXSSFWorkbook wb = new SXSSFWorkbook(100);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            wb.setCompressTempFiles(true);
+
+            createSistemaTradicionalSheet(wb);
+            createSistemaOralSheet(wb);
+
+            createSentenciasSheet(wb);
+            createAmparosSheet(wb);
+            createDiasLaborablesSheet(wb);
+
+            createSistemaProcesalPenalAcusatorioSheet(wb);
+
+            createPrincipalesDelitosSheet(wb);
+            createMateriaFamiliarSheet(wb);
+
+            createDerechosHumanosSheet(wb);
+            createAdolescentesSheet(wb);
+            createConductasAdolescentesSheet(wb);
+
+            wb.write(out);
+            return out.toByteArray();
+        }
+    }
+
     private CellStyle titleStyle(SXSSFWorkbook wb) {
         CellStyle s = wb.createCellStyle();
         Font f = wb.createFont();
@@ -458,6 +489,696 @@ public class ReporteService {
             list.add(ubication);
         }
         return list.stream().distinct().toList();
+    }
+
+    private void createSistemaTradicionalSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("1. Sistema Tradicional");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("PRIMERA PARTE - SISTEMA TRADICIONAL");
+        titleCell.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 16));
+
+        rowIndex++;
+
+        String[] materias = {
+                "Rubro",
+                "Civil",
+                "Cuantía menor (Civil)",
+                "Mercantil",
+                "Familiar",
+                "Adolescentes",
+                "Penal",
+                "Penal de delitos no graves",
+                "Ejecución de sentencias",
+                "Narcomenudeo",
+                "Tutela de Derechos Humanos",
+                "Laboral Colectivo",
+                "Laboral Individual",
+                "Constitucional",
+                "Mixtos",
+                "Exhortos",
+                "Tribunal de Justicia Administrativa"
+        };
+
+        Row headerRow = sheet.createRow(rowIndex++);
+        for (int i = 0; i < materias.length; i++) {
+            Cell c = headerRow.createCell(i);
+            c.setCellValue(materias[i]);
+            c.setCellStyle(header);
+        }
+
+        String[] rubros = {
+                "Número de jueces/zas [1a instancia]",
+                "Hombres (jueces 1a instancia)",
+                "Mujeres (jueces 1a instancia)",
+                "Número de magistrados/as [2a instancia]",
+                "Hombres (magistrados)",
+                "Mujeres (magistradas)",
+                "Expedientes ingresados en primera instancia",
+                "Número de juicios iniciados en primera instancia",
+                "Expedientes ingresados por apelación (segunda instancia)",
+                "Expedientes ingresados al Centro de Justicia Alternativa",
+                "Expedientes del Centro de Justicia Alternativa resueltos favorablemente",
+                "Número de audiencias celebradas",
+                "Número de resoluciones [salas]"
+        };
+
+        for (String rubro : rubros) {
+            Row row = sheet.createRow(rowIndex++);
+            Cell rubroCell = row.createCell(0);
+            rubroCell.setCellValue(rubro);
+            rubroCell.setCellStyle(body);
+
+            for (int col = 1; col < materias.length; col++) {
+                Cell cell = row.createCell(col);
+                cell.setCellValue("0");
+                cell.setCellStyle(body);
+            }
+        }
+        autoSizeColumns(sheet, materias.length);
+    }
+
+    private void createSistemaOralSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("2. Sistema Oral");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("PRIMERA PARTE - SISTEMA ORAL");
+        titleCell.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 12));
+
+        rowIndex++;
+
+        String[] materias = {
+                "Rubro",
+                "Civil Oral",
+                "Mercantil Oral",
+                "Familiar Oral",
+                "Adolescentes Oral",
+                "Penal Oral",
+                "Especializado en Ejecución de Sanciones Penales",
+                "Tutela de Derechos Humanos",
+                "Laboral Colectivo",
+                "Laboral Individual",
+                "Constitucional",
+                "Mixtos",
+                "Especializado en mecanismos de protección para mujeres, adolescentes, niñas y niños"
+        };
+
+        Row headerRow = sheet.createRow(rowIndex++);
+        for (int i = 0; i < materias.length; i++) {
+            Cell c = headerRow.createCell(i);
+            c.setCellValue(materias[i]);
+            c.setCellStyle(header);
+        }
+
+        String[] rubros = {
+                "Número de jueces/zas [1a instancia]",
+                "Hombres (jueces 1a instancia)",
+                "Mujeres (jueces 1a instancia)",
+                "Expedientes / carpetas administrativas ingresadas",
+                "Número de juicios iniciados",
+                "Expedientes ingresados por apelación (segunda instancia)",
+                "Expedientes ingresados al Centro de Justicia Alternativa",
+                "Expedientes del Centro de Justicia Alternativa resueltos favorablemente",
+                "Número de audiencias celebradas",
+                "Remuneración mensual de jueces/zas"
+        };
+
+        for (String rubro : rubros) {
+            Row row = sheet.createRow(rowIndex++);
+            Cell rubroCell = row.createCell(0);
+            rubroCell.setCellValue(rubro);
+            rubroCell.setCellStyle(body);
+
+            for (int col = 1; col < materias.length; col++) {
+                Cell cell = row.createCell(col);
+                cell.setCellValue("");
+                cell.setCellStyle(body);
+            }
+        }
+    }
+
+    private void createSentenciasSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("3. Sentencias");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell t = titleRow.createCell(0);
+        t.setCellValue("SEGUNDA PARTE - SENTENCIAS");
+        t.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+        rowIndex++;
+
+        String[] headers = {
+                "Rubro",
+                "Condenatoria",
+                "Absolutoria",
+                "Mixtas",
+                "Terminación por causa diferente a sentencia",
+                "Definitivas",
+                "Interlocutorias",
+                "Ejecutoriadas"
+        };
+
+        Row headerRow = sheet.createRow(rowIndex++);
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = headerRow.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(header);
+        }
+
+        String[] materias = {
+                "Penal",
+                "Penal de Delitos no Graves",
+                "Penal Oral",
+                "Adolescentes",
+                "Adolescentes Oral",
+                "Civil",
+                "Civil de Cuantía Menor",
+                "Civil Oral",
+                "Mercantil",
+                "Mercantil Oral",
+                "Familiar",
+                "Familiar Oral",
+                "Tutela de Derechos Humanos",
+                "Laboral Colectivo",
+                "Laboral Individual"
+        };
+
+        for (String mat : materias) {
+            Row row = sheet.createRow(rowIndex++);
+            for (int col = 0; col < headers.length; col++) {
+                Cell c = row.createCell(col);
+                c.setCellStyle(body);
+                if (col == 0) {
+                    c.setCellValue(mat);
+                } else {
+                    c.setCellValue("");
+                }
+            }
+        }
+    }
+
+    private void createAmparosSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("4. Amparos");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("SEGUNDA PARTE - AMPAROS");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        Cell h0 = hr.createCell(0);
+        h0.setCellValue("Materia");
+        h0.setCellStyle(header);
+        Cell h1 = hr.createCell(1);
+        h1.setCellValue("Total");
+        h1.setCellStyle(header);
+
+        String[] materias = {
+                "Penal",
+                "Penal de Delitos no Graves",
+                "Penal Oral",
+                "Adolescentes",
+                "Adolescentes Oral",
+                "Civil",
+                "Civil de Cuantía Menor",
+                "Civil Oral",
+                "Mercantil",
+                "Mercantil Oral",
+                "Familiar",
+                "Familiar Oral",
+                "Tutela de Derechos Humanos",
+                "Laboral Colectivo",
+                "Laboral Individual"
+        };
+
+        for (String m : materias) {
+            Row r = sheet.createRow(rowIndex++);
+            Cell c0 = r.createCell(0);
+            c0.setCellValue(m);
+            c0.setCellStyle(body);
+            Cell c1 = r.createCell(1);
+            c1.setCellValue("");
+            c1.setCellStyle(body);
+        }
+    }
+
+    private void createDiasLaborablesSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("5. Días laborables");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("DÍAS LABORABLES");
+        tc.setCellStyle(title);
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        Cell h0 = hr.createCell(0);
+        h0.setCellValue("Rubro");
+        h0.setCellStyle(header);
+        Cell h1 = hr.createCell(1);
+        h1.setCellValue("Total días laborales");
+        h1.setCellStyle(header);
+
+        Row r = sheet.createRow(rowIndex++);
+        Cell c0 = r.createCell(0);
+        c0.setCellValue("¿Cuántos días laborales tuvieron en el poder judicial en el año?");
+        c0.setCellStyle(body);
+        Cell c1 = r.createCell(1);
+        c1.setCellValue(eventoRepository.findTotalDiasInhabilesAnioActual());
+        c1.setCellStyle(body);
+
+        autoSizeColumn(sheet, 0);
+        autoSizeColumn(sheet, 1);
+    }
+
+    private void autoSizeColumn(Sheet sheet, int columnIndex) {
+        if (sheet instanceof SXSSFSheet sxssfSheet) {
+            sxssfSheet.trackColumnForAutoSizing(columnIndex);
+            sheet.autoSizeColumn(columnIndex);
+            sxssfSheet.untrackColumnForAutoSizing(columnIndex);
+        } else {
+            sheet.autoSizeColumn(columnIndex);
+        }
+    }
+
+    private void createSistemaProcesalPenalAcusatorioSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("8. SPPA (Penal Acusatorio)");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("SISTEMA PROCESAL PENAL ACUSATORIO");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        Cell h0 = hr.createCell(0);
+        h0.setCellValue("Rubro");
+        h0.setCellStyle(header);
+        Cell h1 = hr.createCell(1);
+        h1.setCellValue("Total");
+        h1.setCellStyle(header);
+
+        String[] rubros = {
+                "1.- Número total de asuntos/expedientes ingresados en el año [Etapa de control]",
+                "1.1.- Carpetas administrativas (judicializadas, electrónicas)",
+                "1.1.1.- Con detenido",
+                "1.1.2.- Sin detenido",
+                "1.1.3.- Otros",
+                "1.2.- Exhortos",
+                "1.3.- Acción penal privada",
+                "1.4.- Medidas de protección solicitadas",
+                "1.5.- Impugnaciones a determinaciones del Ministerio Público",
+                "2.- Número total de asuntos que celebran audiencia inicial",
+                "2.1.- Asuntos sin detenido",
+                "2.2.- Asuntos con detenido",
+                "2.2.1.- No se califica de legal la detención",
+                "2.2.2.- Sí se califica de legal la detención",
+                "3.- Personas imputadas con resoluciones sobre la vinculación a proceso",
+                "3.1.- Personas imputadas con vinculación a proceso",
+                "3.2.- Personas imputadas no vinculadas a proceso",
+                "4.- Medidas cautelares",
+                "4.1.- Personas con prisión preventiva",
+                "4.2.- Personas con medidas cautelares distintas a prisión preventiva",
+                "5.- Personas imputadas que concluyen proceso por sobreseimiento",
+                "5.1.- Perdón",
+                "5.2.- Desistimiento de la acción",
+                "5.3.- Criterios de oportunidad",
+                "5.4.- Convenio",
+                "5.5.- Acuerdos reparatorios",
+                "5.6.- Suspensión condicional del proceso",
+                "5.7.- Otra causa",
+                "6.- Carpetas finalizadas por sentencia en procedimiento abreviado",
+                "7.- Carpetas que celebraron audiencia intermedia",
+                "8.- Carpetas que llegaron a juicio oral",
+                "9.- Carpetas finalizadas por sentencia en juicio oral",
+                "9.1.- Sentencias absolutorias",
+                "9.2.- Sentencias condenatorias",
+                "9.3.- Sentencias mixtas",
+                "10.- Recursos de apelación presentados ante el Tribunal de Alzada",
+                "11.- Amparos interpuestos",
+                "12.- Carpetas administrativas turnadas a jueces de ejecución",
+                "13.- Número total de audiencias",
+                "13.1.- Etapa de control",
+                "13.2.- Juicio oral",
+                "13.3.- Ejecución"
+        };
+
+        for (String rubro : rubros) {
+            Row r = sheet.createRow(rowIndex++);
+            Cell c0 = r.createCell(0);
+            c0.setCellValue(rubro);
+            c0.setCellStyle(body);
+            Cell c1 = r.createCell(1);
+            c1.setCellValue("");
+            c1.setCellStyle(body);
+        }
+    }
+
+    private void createPrincipalesDelitosSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("9. Principales delitos");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("TERCERA PARTE - PRINCIPALES DELITOS");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        Cell h0 = hr.createCell(0);
+        h0.setCellValue("Clave");
+        h0.setCellStyle(header);
+        Cell h1 = hr.createCell(1);
+        h1.setCellValue("Delito");
+        h1.setCellStyle(header);
+        Cell h2 = hr.createCell(2);
+        h2.setCellValue("Número");
+        h2.setCellStyle(header);
+
+        String[][] delitos = {
+                {"1", "Robo"},
+                {"2", "Contra la salud"},
+                {"3", "Violencia familiar"},
+                {"4", "Lesiones"},
+                {"5", "Daño en propiedad ajena"},
+                {"6", "Homicidio"},
+                {"7", "Violación"},
+                {"8", "Feminicidio"},
+                {"9", "Secuestro"},
+                {"10", "Trata de personas"},
+                {"Otros", "Otros"}
+        };
+
+        for (String[] d : delitos) {
+            Row r = sheet.createRow(rowIndex++);
+            Cell c0 = r.createCell(0);
+            c0.setCellValue(d[0]);
+            c0.setCellStyle(body);
+            Cell c1 = r.createCell(1);
+            c1.setCellValue(d[1]);
+            c1.setCellStyle(body);
+            Cell c2 = r.createCell(2);
+            c2.setCellValue("");
+            c2.setCellStyle(body);
+        }
+    }
+
+    private void createMateriaFamiliarSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("10. Materia familiar");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("MATERIA FAMILIAR");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        Cell h0 = hr.createCell(0);
+        h0.setCellValue("Rubro");
+        h0.setCellStyle(header);
+        Cell h1 = hr.createCell(1);
+        h1.setCellValue("Número");
+        h1.setCellStyle(header);
+
+        String[] rubros = {
+                "1.- No. de expedientes de divorcio tramitados en el año",
+                "2.- No. de expedientes de alimentos tramitados en el año"
+        };
+
+        for (String rubro : rubros) {
+            Row r = sheet.createRow(rowIndex++);
+            Cell c0 = r.createCell(0);
+            c0.setCellValue(rubro);
+            c0.setCellStyle(body);
+            Cell c1 = r.createCell(1);
+            c1.setCellValue("");
+            c1.setCellStyle(body);
+        }
+
+    }
+
+    private void createDerechosHumanosSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("11. Derechos humanos");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("CUARTA PARTE - DERECHOS HUMANOS");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        String[] headers = {"Rubro", "Clasificación", "Número"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = hr.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(header);
+        }
+
+        String[][] rubros = {
+                {"1.- ¿El Tribunal cuenta con una oficina de derechos humanos?", "", ""},
+                {"2.- ¿El Tribunal cuenta con Unidad de Género/Unidad de Igualdad?", "", ""},
+                {"3.- Servidores públicos capacitados en derechos humanos - Personal jurisdiccional", "Total", ""},
+                {"4.- Servidores públicos capacitados en derechos humanos - Personal jurisdiccional", "Hombres", ""},
+                {"5.- Servidores públicos capacitados en derechos humanos - Personal jurisdiccional", "Mujeres", ""},
+                {"6.- Servidores públicos capacitados en derechos humanos - Personal administrativo", "Total", ""},
+                {"7.- Servidores públicos capacitados en derechos humanos - Personal administrativo", "Hombres", ""},
+                {"8.- Servidores públicos capacitados en derechos humanos - Personal administrativo", "Mujeres", ""},
+                {"9.- Número de cursos en materia de derechos humanos celebrados en el año", "", ""},
+                {"10.- Número de eventos en materia de derechos humanos celebrados en el año", "", ""}
+        };
+
+        for (String[] rdata : rubros) {
+            Row r = sheet.createRow(rowIndex++);
+            for (int col = 0; col < headers.length; col++) {
+                Cell c = r.createCell(col);
+                c.setCellStyle(body);
+                c.setCellValue(rdata[col]);
+            }
+        }
+        autoSizeColumns(sheet, headers.length);
+    }
+
+    private void createAdolescentesSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("12. Adolescentes");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("ADOLESCENTES");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        String[] headers = {"Rubro", "Sistema Tradicional", "Sistema Oral"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = hr.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(header);
+        }
+
+        String[] rubros = {
+                "1.- No. de adolescentes remitidos",
+                "1.1.- Hombres",
+                "1.2.- Mujeres"
+        };
+
+        for (String rubro : rubros) {
+            Row r = sheet.createRow(rowIndex++);
+            for (int col = 0; col < headers.length; col++) {
+                Cell c = r.createCell(col);
+                c.setCellStyle(body);
+                if (col == 0) {
+                    c.setCellValue(rubro);
+                } else {
+                    c.setCellValue("");
+                }
+            }
+        }
+        autoSizeColumns(sheet, headers.length);
+    }
+
+    private void createConductasAdolescentesSheet(SXSSFWorkbook wb) {
+        SXSSFSheet sheet = wb.createSheet("13. Delitos adolescentes");
+
+        CellStyle title = createTitleStyle(wb);
+        CellStyle header = createHeaderStyle(wb);
+        CellStyle body = createBodyStyle(wb);
+
+        int rowIndex = 0;
+
+        Row tr = sheet.createRow(rowIndex++);
+        Cell tc = tr.createCell(0);
+        tc.setCellValue("PRINCIPALES CONDUCTAS TIPIFICADAS COMO DELITOS (ADOLESCENTES)");
+        tc.setCellStyle(title);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+
+        rowIndex++;
+
+        Row hr = sheet.createRow(rowIndex++);
+        String[] headers = {"Clave", "Delito", "Sistema Tradicional", "Sistema Oral"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = hr.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(header);
+        }
+
+        String[][] rows = {
+                {"1", "Violación equiparada"},
+                {"2", "Abuso sexual"},
+                {"3", "Contra la salud"},
+                {"4", "Violencia familiar"},
+                {"5", "Lesiones dolosas"},
+                {"6", "Lesiones calificadas"},
+                {"7", "Violación"},
+                {"8", "Robo agravado"},
+                {"9", "Portación de arma de fuego"},
+                {"10", "Robo agravado en establecimiento abierto al público"},
+                {"Otros", "Otros"}
+        };
+
+        for (String[] d : rows) {
+            Row r = sheet.createRow(rowIndex++);
+            for (int col = 0; col < headers.length; col++) {
+                Cell c = r.createCell(col);
+                c.setCellStyle(body);
+                if (col == 0) {
+                    c.setCellValue(d[0]);
+                } else if (col == 1) {
+                    c.setCellValue(d[1]);
+                } else {
+                    c.setCellValue("");
+                }
+            }
+        }
+        autoSizeColumns(sheet, headers.length);
+    }
+
+    private CellStyle createTitleStyle(Workbook wb) {
+        CellStyle style = wb.createCellStyle();
+        Font font = wb.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 14);
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        return style;
+    }
+
+    private CellStyle createHeaderStyle(Workbook wb) {
+        CellStyle style = wb.createCellStyle();
+        Font font = wb.createFont();
+        font.setBold(true);
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private CellStyle createBodyStyle(Workbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private void autoSizeColumns(Sheet sheet, int colCount) {
+        if (sheet instanceof SXSSFSheet sxssfSheet) {
+            sxssfSheet.trackAllColumnsForAutoSizing();
+
+            for (int i = 0; i < colCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            sxssfSheet.untrackAllColumnsForAutoSizing();
+        } else {
+            for (int i = 0; i < colCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+        }
     }
 }
 

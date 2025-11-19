@@ -39,6 +39,8 @@ public class ReporteResource {
             byte[] bytes = null;
             if (key != null && key.equalsIgnoreCase("PENAL")) {
                 bytes = reporteService.generateCNPPReport(startDate, endDate);
+            } else if (key != null && key.equalsIgnoreCase("ADOLESCENTES")) {
+                bytes = reporteService.generateReportePenal(startDate, endDate);
             } else {
                 bytes = reporteService.generateReport(key, startDate, endDate);
             }
