@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -151,9 +152,10 @@ class LitiganteServiceTest extends SetupServiceTest {
         audit.setFechaAlta(LocalDateTime.now());
         documento.setAudit(audit);
 
-        Page<Documento> docPage = new PageImpl<>(Collections.singletonList(documento));
+        List<Documento> docPage = new ArrayList<>();
+        docPage.add(documento);
 
-        given(documentoRepository.findPromocionesLitigante(any(), any(), any(PageRequest.class))).willReturn(docPage);
+        given(documentoRepository.findPromocionesLitigante(any(), any())).willReturn(docPage);
 
         Page<PromocionesLitiganteRecord> promociones = litiganteService.getPromocionesLitigante("", PageRequest.of(0, 10));
 

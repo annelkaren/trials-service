@@ -3,8 +3,11 @@ package mx.gob.pjpuebla.trials.litigante;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracion;
+import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
+import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRecord;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,6 +66,7 @@ public class LitiganteService {
     private final UsuarioMigracionRepository usuarioMigracionRepository;
     private final EntradasMigracionRepository entradasMigracionRepository;
     private final AcuerdosMigracionRepository acuerdosMigracionRepository;
+    private final DetallesMigracionRepository detallesMigracionRepository;
 
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter formatoTiempo = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -212,9 +217,28 @@ public class LitiganteService {
 
     public Page<PromocionesLitiganteRecord> getPromocionesLitigante(String key, Pageable pageable) {
         String userName = getLitiganteUsername();
-        Page<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, key, pageable);
-        // TODO revisar paginador
-        return docPromociones.map(documento -> {
+        List<Documento> docPromociones = documentoRepository.findPromocionesLitigante(userName, key);
+
+        // Obtiene promociones de litigantes del sistema SECGJ PHP:
+        List<PromocionesLitiganteRecord> promocionesLegacy = detallesMigracionRepository
+                .findPromocionesElectronicasLitiganteLegacy(userName)
+                .stream()
+                .map(p -> new PromocionesLitiganteRecord(
+                        p.getId(),
+                        p.getNumeroExpediente(),
+                        p.getNumeroPromocionE(),
+                        p.getUsuarioOrigen(),
+                        p.getNombreArchivo(),
+                        p.getFechaSubida(),
+                        UtilsMigracion.convertirHora(p.getHoraSubida()),
+                        p.getRutaArchivo(),
+                        p.getJuzgado()))
+                .toList();
+
+        // FIN OBTENCION DE DATOS:
+
+        // Mapeamos docPromociones a objeto List<PromocionesLitiganteRecord>
+        List<PromocionesLitiganteRecord> promocionesLitigante = docPromociones.stream().map(documento -> {
             String[] partesExpediente = documento.getCarpeta().getExpediente().split("/");
             String numeroExpediente = partesExpediente[0];
             String anioExpediente = partesExpediente.length > 1 ? partesExpediente[1] : "";
@@ -230,7 +254,22 @@ public class LitiganteService {
                     "/opt/pjp/files/" + anioExpediente + "/" + documento.getCarpeta().getJuzgado().getNombre() + "/"
                             + numeroExpediente + "/" + documento.getRuta(),
                     documento.getCarpeta().getJuzgado().getNombre());
-        });
+        }).toList();
+
+        // combinamos tanto promociones del litigante legacy (PHP) como las del sistema java:
+        List<PromocionesLitiganteRecord> combinados = new ArrayList<>();
+        combinados.addAll(promocionesLegacy);
+        combinados.addAll(promocionesLitigante);
+
+        // TODO revisar paginador
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), combinados.size());
+
+        List<PromocionesLitiganteRecord> pageContent = start >= combinados.size() ? List.of()
+                : combinados.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, combinados.size());
     }
 
     public DocumentoPromocionRecord getPromocionById(Integer promocionId) {

@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.litigante.LitigantePromocionesLegacyProjection;
+import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -361,8 +363,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
                 AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
             """)
-    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key,
-            Pageable pageable);
+    List<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key);
 
     @Query("""
                 SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END

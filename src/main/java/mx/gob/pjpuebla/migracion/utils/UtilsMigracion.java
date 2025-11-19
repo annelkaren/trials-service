@@ -1,7 +1,12 @@
 package mx.gob.pjpuebla.migracion.utils;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -180,5 +185,43 @@ public class UtilsMigracion {
         // Colapsa múltiples espacios
         x = x.replaceAll("\\s+", " ");
         return x;
+    }
+
+    public static LocalTime convertirHora(String hora){
+       if (hora == null || hora.trim().isEmpty()) {
+            return null;
+        }
+
+        // --- PASO DE NORMALIZACIÓN  ---
+        String input = hora.trim().toLowerCase();
+
+        // 1. Reemplazos inteligentes para estandarizar a "am" o "pm"
+        // Reemplaza "p. m.", "p.m.", "p.m" -> "pm"
+        input = input.replace("p. m.", "pm")
+                     .replace("p.m.", "pm")
+                     .replace("p.m", "pm")
+                     .replace("a. m.", "am")
+                     .replace("a.m.", "am")
+                     .replace("a.m", "am");
+                     
+      
+
+        List<DateTimeFormatter> formatters = Arrays.asList(
+            // Formato estándar inglés (cubre am/pm )
+            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mm a").toFormatter(Locale.ENGLISH),
+            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("h:mma").toFormatter(Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("H:mm"),
+            DateTimeFormatter.ofPattern("h:mm")
+        );
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalTime.parse(input, formatter);
+            } catch (DateTimeParseException e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 }
