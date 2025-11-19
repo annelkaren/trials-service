@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.core.etapaprocesal.EtapaProcesalRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
@@ -18,6 +19,7 @@ import mx.gob.pjpuebla.trials.core.procedimientos.Procedimiento;
 import mx.gob.pjpuebla.trials.core.rubros.Rubro;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRecord;
 import mx.gob.pjpuebla.trials.core.rubros.RubroRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -31,6 +33,8 @@ import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetaetapas.CarpetaEtapas;
@@ -95,6 +99,7 @@ public class CarpetaService {
         private final EntradasMigracionRepository entradasMigracionRepository;
         private final JuzgadoService juzgadoService;
         private final MigracionesRepository migracionesRepository;
+        private final AudienciaRepository audienciaRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -458,12 +463,8 @@ public class CarpetaService {
                 }
 
                 // obtenemos juzgado y nombre del juez :
-                Juzgado juzgado = carpeta.getJuzgado();
-                Persona juez = personaRepository.findByJuzgadoAndRolPrincipal(juzgado, "Juez").orElse(null);
-                String nombreJuez = juez != null
-                                ? juez.getNombre() + " " + juez.getApellidoPaterno() + " "
-                                                + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "")
-                                : "";
+                
+                String nombreJuez = getJuezExpediente(carpeta);
 
                 return new InfoExpedienteRecord(
                                 carpeta.getExpediente(),
@@ -485,6 +486,35 @@ public class CarpetaService {
                                                 : null,
                                 carpeta.getJuzgado().getNombre(),
                                 (carpeta.getTipoPieza() != null) ? carpeta.getTipoPieza().getTipo() : null);
+        }
+
+        private String getJuezExpediente(Carpeta carpeta) {
+                TipoSistema tipoSistema = carpeta.getTipoJuicio().getTipoSistema();
+                Materia materia = carpeta.getJuzgado().getMateria();
+
+                if (!tipoSistema.getNombre().equals("Oral") && !materia.getNombre().equals("FAMILIAR")) {
+                        Juzgado juzgado = carpeta.getJuzgado();
+                        Persona juez = personaRepository.findByJuzgadoAndRolPrincipal(juzgado, "Juez").orElse(null);
+                        return juez != null
+                                        ? juez.getNombre() + " " + juez.getApellidoPaterno() + " "
+                                                        + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno()
+                                                                        : "")
+                                        : "";
+                }
+
+                if (tipoSistema.getNombre().equals("Oral") && materia.getNombre().equals("FAMILIAR")) {
+                        Optional<Audiencia> audiencia = audienciaRepository.findFirstByCarpetaOrderByIdDesc(carpeta);
+                        Persona juez = audiencia.isPresent() ? audiencia.get().getSala().getJuez() : null;
+
+                        return audiencia.isPresent() && juez != null
+                                        ? juez.getNombre() + " "
+                                                        + juez.getApellidoPaterno() + " "
+                                                        + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "")
+                                        : "";
+                }
+
+                return "";
+
         }
 
         public static List<ParticipantesRecord> getParticipantes(List<PersonaDataRecord> participantes) {
@@ -515,24 +545,27 @@ public class CarpetaService {
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
                 Persona persona = personaService.getAuditor();
-                //Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear pieza':
+                // Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear
+                // pieza':
                 Documento promocion = documentoRepository.findById(piezaRecord.promocionId())
-                        .orElseThrow(() -> new NotFoundException("La promoción no existe", "promocionId"));
-        
-                Optional<Migraciones> migracionesOpt = migracionesRepository.findByCarpetaId(carpetaId);
-                
-                if(promocion.getMigrado().equals(Migrado.SI)  && migracionesOpt.isPresent()){
-                      Migraciones migraciones = migracionesOpt.get();
-                      if(migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
-                        throw new ConflictException("Error al crear pieza, es necesario migrar el expediente completo.");
-                      }
+                                .orElseThrow(() -> new NotFoundException("La promoción no existe", "promocionId"));
 
-                      if(migraciones.getEstatus().equals(EstadoMigracion.MIGRADO_COMPLETADO) && migraciones.getCarpeta().getPersona() != persona){
-                        throw new ConflictException("Error al crear pieza, es necesario que usted tenga asignado el expediente completo.");
-                      }
-                }       
-                
-   
+                Optional<Migraciones> migracionesOpt = migracionesRepository.findByCarpetaId(carpetaId);
+
+                if (promocion.getMigrado().equals(Migrado.SI) && migracionesOpt.isPresent()) {
+                        Migraciones migraciones = migracionesOpt.get();
+                        if (migraciones.getEstatus().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)) {
+                                throw new ConflictException(
+                                                "Error al crear pieza, es necesario migrar el expediente completo.");
+                        }
+
+                        if (migraciones.getEstatus().equals(EstadoMigracion.MIGRADO_COMPLETADO)
+                                        && migraciones.getCarpeta().getPersona() != persona) {
+                                throw new ConflictException(
+                                                "Error al crear pieza, es necesario que usted tenga asignado el expediente completo.");
+                        }
+                }
+
                 // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
                 Concepto conceptoPromocion = piezaRecord.documentos().stream()
                                 .map(documentoRepository::findById)
@@ -581,7 +614,7 @@ public class CarpetaService {
                 asignarPieza(pieza, piezaRecord.documentos());
                 movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
                 return pieza;
-                
+
         }
 
         public String consecutivoPieza(Integer carpetaId, String clavePieza) {

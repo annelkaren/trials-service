@@ -23,6 +23,8 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     Optional<Audiencia> findByCarpeta(Carpeta carpeta);
 
+    Optional<Audiencia> findFirstByCarpetaOrderByIdDesc(Carpeta carpeta);
+
     @Query("""
                 SELECT max(a.fechaAudiencia) from Audiencia a
                 WHERE a.tipoAudiencia = :tipoAudiencia
