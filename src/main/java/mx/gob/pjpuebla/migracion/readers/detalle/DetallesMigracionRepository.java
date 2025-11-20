@@ -4,11 +4,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import mx.gob.pjpuebla.trials.litigante.LitigantePromocionesLegacyProjection;
 
 public interface DetallesMigracionRepository extends JpaRepository<DetallesMigracion, Integer> {
-    
+
     @Query(value = """
             SELECT
                 CAST(COALESCE(detalle.id, dp.id) AS SIGNED) AS id,
@@ -42,7 +43,13 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                 AND u.estatus = 'A'
             WHERE u.correo = :correo
               AND COALESCE(detalle.id, dp.id) IS NOT NULL
+              AND (
+                    LOWER(juzgado.descrip) LIKE CONCAT('%', LOWER(:key), '%')
+                    OR LOWER(CONCAT(entrada.expediente, '/', entrada.amo)) LIKE CONCAT('%', LOWER(:key), '%')
+              )
             """, nativeQuery = true)
-    List<LitigantePromocionesLegacyProjection> findPromocionesElectronicasLitiganteLegacy(String correo);
+    List<LitigantePromocionesLegacyProjection> findPromocionesElectronicasLitiganteLegacy(
+            @Param("correo") String correo,
+            @Param("key") String key);
 
 }

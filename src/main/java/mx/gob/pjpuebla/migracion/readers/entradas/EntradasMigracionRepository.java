@@ -83,9 +83,13 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
                 AND entrada.status = 'A' 
                 AND usuario.estatus = 'A'
                 AND entradasUsuario.estatus = 'A'
+                AND (
+                    LOWER(juzgado.descrip) LIKE CONCAT('%', LOWER(:key), '%')
+                    OR LOWER(CONCAT(entrada.expediente, '/', entrada.amo)) LIKE CONCAT('%', LOWER(:key), '%')
+              )
             """, 
             nativeQuery = true)
-    List<LitiganteExpedientesInterface> findExpedientesRelacionadosLegacy(String correo);
+    List<LitiganteExpedientesInterface> findExpedientesRelacionadosLegacy(String correo, String key);
 
     @Query("SELECT e FROM EntradasMigracion e WHERE e.cu = :cu and e.status = 'A' order by e.id desc limit 1")
     Optional<EntradasMigracion> findByCu(String cu);

@@ -14,5 +14,4 @@ public record PromocionesLitiganteRecord(
         LocalTime horaSubida,
         String rutaArchivo,
         String juzgado
-) implements Serializable {
-}
+) implements Serializable {}
