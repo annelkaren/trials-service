@@ -12,7 +12,7 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
 
     @Query(value = """
             SELECT
-                CAST(COALESCE(detalle.id, dp.id) AS SIGNED) AS id,
+                dp.id AS id,
                 CONCAT(entrada.expediente, '/', entrada.amo) AS numeroExpediente,
                 CAST(COALESCE(detalle.id, dp.id) AS CHAR) AS numeroPromocionE,
                 u.correo AS usuarioOrigen,
@@ -22,7 +22,7 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                 END AS nombreArchivo,
                 COALESCE(detalle.fecha, dp.fecha) AS fechaSubida,
                 COALESCE(detalle.hora, dp.hora) AS horaSubida,
-                COALESCE(dp.archivo, detalle.archivo, '') AS rutaArchivo,
+                dp.archivo AS rutaArchivo,
                 juzgado.descrip AS juzgado
             FROM acuerdos.entradas entrada
             JOIN acuerdos.entradasusuario eu
