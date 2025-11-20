@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import mx.gob.pjpuebla.trials.core.bloques.Bloque;
@@ -100,4 +102,18 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
     List<Sala> findByJuzgadoAndNombreContainingIgnoreCase(Juzgado juzgado, String nombre);
     
     Sala findByJuez(Persona juez);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord(
+                s.id,  s.nombre, d.calle,d.interior, d.exterior, d.colonia, d.codigoPostal, d.municipio,d.estadoRepublica,
+                d.referencia, d.localidad
+            )
+            FROM Sala sala
+            JOIN sala.juzgado juz
+            JOIN juz.sede s
+            JOIN s.domicilio d
+            JOIN juz.materia m
+            WHERE m.nombre IN (:materias) AND juz.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+    List<SedeDomiciliosRecord> getAllUbications(@Param("materias") List<String> materias);
 }

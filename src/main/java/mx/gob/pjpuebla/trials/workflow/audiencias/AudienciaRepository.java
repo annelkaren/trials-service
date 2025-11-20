@@ -95,8 +95,16 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
     """)
     boolean existeConflicto(Long salaId, LocalDateTime inicio, LocalDateTime fin);
 
-   
     Audiencia findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia estatusAudiencia);
 
+    @Query("""
+        SELECT COUNT(a)
+        FROM Audiencia a
+        JOIN a.carpeta ca
+        JOIN ca.juzgado juz
+        JOIN juz.materia ma
+        WHERE ma.nombre IN (:materias) AND a.inicio BETWEEN :inicio AND :fin
+    """)
+    Integer findAllPenales(List<String> materias, LocalDateTime inicio, LocalDateTime fin);
 } 
 

@@ -412,4 +412,14 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
 
     Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
 
+    @Query("""
+                SELECT COUNT(d)
+                FROM Documento d
+                  JOIN d.carpeta c
+                  JOIN c.juzgado j
+                  JOIN j.materia m
+                  WHERE d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.SENTENCIA
+                  AND m.nombre IN :materias
+            """)
+    Long countDocumentosPorTipoYMaterias(@Param("materias") List<String> materias);
 }
