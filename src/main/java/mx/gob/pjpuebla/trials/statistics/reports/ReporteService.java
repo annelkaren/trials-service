@@ -225,7 +225,7 @@ public class ReporteService {
             r = addHeaderRow(s1, r, header, "Rubro", "Número", "Ubicación");
 
             // Lista de ubicaciones
-            List<SedeDomiciliosRecord> originalList = juzgadoRepository.getAllUbications(Arrays.asList("PENAL"));
+            List<SedeDomiciliosRecord> originalList = juzgadoRepository.getAllUbications(List.of("PENAL"));
             String ubicaciones = getUbications(originalList).stream()
                     .map(s -> "• " + s)
                     .collect(java.util.stream.Collectors.joining("\n"));
@@ -237,7 +237,7 @@ public class ReporteService {
             applyBordersRange(s1, rowCJ.getRowNum(), rowCJ.getRowNum(), 0, 2);
 
             //Salas de audiencias
-            List<SedeDomiciliosRecord> originalList2 = salaRepository.getAllUbications(Arrays.asList("PENAL"));
+            List<SedeDomiciliosRecord> originalList2 = salaRepository.getAllUbications(List.of("PENAL"));
             String ubicacionesSala = getUbications(originalList2).stream()
                     .map(s -> "• " + s)
                     .collect(java.util.stream.Collectors.joining("\n"));
@@ -271,7 +271,7 @@ public class ReporteService {
 
             r = addHeaderRow(s2, r, header, "Rubro", "Número");
             List<Object[]> indicadores = List.of(
-                    new Object[]{"Audiencias Celebradas", audienciaRepository.findAllPenales(Arrays.asList("PENAL"), startDate.atTime(0, 0, 0), endDate.atTime(23, 59, 59))},
+                    new Object[]{"Audiencias Celebradas", audienciaRepository.findAllPenales(List.of("PENAL"), startDate.atTime(0, 0, 0), endDate.atTime(23, 59, 59))},
                     new Object[]{"Audiencias celebradas por videoconferencia", 0},
                     new Object[]{"Personas con prisión preventiva oficiosa", 0},
                     new Object[]{"Personas con prisión preventiva justificada", 0},
@@ -309,7 +309,7 @@ public class ReporteService {
             List<Object[]> op = List.of(
                     new Object[]{"Causas Penales Judicializadas", 0},
                     new Object[]{"Audiencias de Ejecución", 0},
-                    new Object[]{"Apelaciones", carpetaRepository.countCarpetasPenales(Arrays.asList("PENAL"))}
+                    new Object[]{"Apelaciones", carpetaRepository.countCarpetasPenales(List.of("PENAL"))}
             );
             r = addTableRows(s3, r, normal, op);
 
@@ -317,7 +317,7 @@ public class ReporteService {
             r = addHeaderRow(s3, r, header, "Rubro", "Total", "Mujeres", "Hombres", "Indefinido");
             List<Object[]> sentencias = List.of(
                     new Object[]{"Sentencias dictadas (incl. procedimiento abreviado)", 0, 0, 0, 0},
-                    new Object[]{"Sentencias Condenatorias", documentoRepository.countDocumentosPorTipoYMaterias(Arrays.asList("PENAL")), 0, 0, 0},
+                    new Object[]{"Sentencias Condenatorias", documentoRepository.countDocumentosPorTipoYMaterias(List.of("PENAL")), 0, 0, 0},
                     new Object[]{"Sentencias Absolutorias", 0, 0, 0, 0},
                     new Object[]{"Sentencias Mixtas", 0, 0, 0, 0}
             );
@@ -778,7 +778,7 @@ public class ReporteService {
         h1.setCellValue("Total días laborales");
         h1.setCellStyle(header);
 
-        Row r = sheet.createRow(rowIndex++);
+        Row r = sheet.createRow(rowIndex);
         Cell c0 = r.createCell(0);
         c0.setCellValue("¿Cuántos días laborales tuvieron en el poder judicial en el año?");
         c0.setCellStyle(body);

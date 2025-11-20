@@ -43,7 +43,6 @@ import org.springframework.web.client.RestTemplate;
 
 import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -268,9 +267,7 @@ public class PersonaService {
         List<String> ids = usuarioService.findAllByRoles(roles);
         for (String id : ids) {
             Optional<Persona> juez = personaRepository.findByUsuarioUUID(Arrays.asList("PENAL"), id);
-            if (juez.isPresent()) {
-                jueces.add(juez.get());
-            }
+            juez.ifPresent(jueces::add);
         }
         for(Persona persona: jueces) {
             if(persona.getSexo().equals(Sexo.FEMENINO))

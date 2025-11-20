@@ -36,7 +36,7 @@ public class ReporteResource {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         try {
-            byte[] bytes = null;
+            byte[] bytes;
             if (key != null && key.equalsIgnoreCase("PENAL")) {
                 bytes = reporteService.generateCNPPReport(startDate, endDate);
             } else if (key != null && key.equalsIgnoreCase("ADOLESCENTES")) {
