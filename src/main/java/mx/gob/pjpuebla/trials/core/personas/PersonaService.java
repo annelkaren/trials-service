@@ -263,10 +263,10 @@ public class PersonaService {
         Map<String, Integer> map = new HashMap<>();
         int countMujeres = 0;
         int countHombres = 0;
-        List<String> roles = Arrays.asList("JUEZ");
+        List<String> roles = List.of("JUEZ");
         List<String> ids = usuarioService.findAllByRoles(roles);
         for (String id : ids) {
-            Optional<Persona> juez = personaRepository.findByUsuarioUUID(Arrays.asList("PENAL"), id);
+            Optional<Persona> juez = personaRepository.findByUsuarioUUID(List.of("PENAL"), id);
             juez.ifPresent(jueces::add);
         }
         for(Persona persona: jueces) {

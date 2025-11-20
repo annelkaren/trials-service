@@ -261,7 +261,7 @@ public class ReporteService {
                     new Object[]{"Jueces con Función de Enjuiciamiento", 0, 0, 0},
                     new Object[]{"Jueces con Función de Ejecucion", 0, 0, 0}
             );
-            r = addTableRows(s1, r, normal, jueces);
+            addTableRows(s1, r, normal, jueces);
             autosizeAllColumns(s1, 6);
 
             // ================= Hoja 2: Capítulo 2 =================
@@ -295,7 +295,7 @@ public class ReporteService {
 
             r = addBlankRow(s2, r);
             r = addHeaderRow(s2, r, header, "Implementación de Acciones Tendientes a la Justicia Digital", "Número");
-            r = addTableRows(s2, r, normal,
+            addTableRows(s2, r, normal,
                     java.util.Collections.singletonList(new Object[]{"Implementación de Acciones Tendientes a la Justicia Digital", 0})
             );
             autosizeAllColumns(s2, 4);
@@ -321,7 +321,7 @@ public class ReporteService {
                     new Object[]{"Sentencias Absolutorias", 0, 0, 0, 0},
                     new Object[]{"Sentencias Mixtas", 0, 0, 0, 0}
             );
-            r = addTableRows(s3, r, normal, sentencias);
+            addTableRows(s3, r, normal, sentencias);
             autosizeAllColumns(s3, 6);
 
             wb.write(bos);
