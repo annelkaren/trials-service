@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
-import mx.gob.pjpuebla.trials.litigante.LitigantePromocionesLegacyProjection;
-import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -412,5 +410,18 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("juzgados") List<Juzgado> juzgados);
 
     Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
+
+
+    @Query("""
+            select 
+	concat(persona.s_nombres, ' ', persona.s_apellido_paterno, ' ', persona.s_apellido_materno) nombre_completo,
+	tm.s_cargo 
+from trials.tbl_movimientos tm 
+join trials.tbl_personas persona on persona.pn_id = tm.fn_persona 
+where tm.fn_documento = :promocion_id and tm.s_estado = 'ASIGNADO'
+order by tm.pn_id limit 1;
+
+            """)
+    
 
 }

@@ -325,7 +325,12 @@ public class DocumentoResource {
     public List<CarpetaCatalogoRecord>  filtroTiposEntradas(@RequestParam String bandeja) {
         return documentoService.getTipoEntradas(bandeja);
     }
-    
-    
 
+    @GetMapping(value = "/promocionElectronica/acuse/{tipo}/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getAcusePromocionElectronica(@PathVariable String tipo, @PathVariable Integer documentoId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acuse", documentoId + "_acuse.pdf");
+        return ResponseEntity.ok().headers(headers).body(documentoService.getAcusePromocionElectronica(tipo, documentoId));
+    }
 }

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="acuse_envio" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="e1101e7e-2000-491e-b4bc-c129a6e6ece2">
+	<parameter name="p_juzgado" class="java.lang.String"/>
+	<parameter name="p_expediente" class="java.lang.String"/>
+	<parameter name="p_folio" class="java.lang.String"/>
+	<parameter name="p_fecha_envio" class="java.lang.String"/>
+	<parameter name="p_hora_envio" class="java.lang.String"/>
+	<parameter name="p_promovente" class="java.lang.String"/>
+	<parameter name="p_tipo_promocion" class="java.lang.String"/>
+	<parameter name="p_is_envio" class="java.lang.Boolean"/>
+	<parameter name="p_fecha_recepcion" class="java.lang.String"/>
+	<parameter name="p_hora_recepcion" class="java.lang.String"/>
+	<parameter name="p_puesto_recibe" class="java.lang.String"/>
+	<parameter name="p_recibe" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<background>
+		<band height="802" splitType="Stretch">
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="92" y="260" width="370" height="209" uuid="394e4d44-d2b9-40e4-aa2e-f325dcaaf743"/>
+				<imageExpression><![CDATA["logo_transparente.png"]]></imageExpression>
+			</image>
+		</band>
+	</background>
+	<title>
+		<band height="156" splitType="Stretch">
+			<staticText>
+				<reportElement x="182" y="140" width="190" height="16" uuid="fa757d0d-e71c-4887-a7d8-9dde80749741"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[PROMOCIÓN ELECTRÓNICA]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="10" width="550" height="1" uuid="3483f8cc-e8c7-4554-a2aa-f80d97c0ec09"/>
+			</rectangle>
+			<textField>
+				<reportElement x="182" y="121" width="190" height="20" uuid="d209807c-6168-4966-9cc8-81177dd6e8df"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_is_envio}.booleanValue() ? "ACUSE DE ENVÍO" : "ACUSE DE RECIBIDO"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="258" splitType="Stretch">
+			<image scaleImage="FillFrame">
+				<reportElement x="90" y="20" width="375" height="79" uuid="c36f3172-989a-415c-9fd9-400282033a97"/>
+				<imageExpression><![CDATA["logo_negro.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="200" y="108" width="154" height="30" uuid="dc4687e6-8e1e-4785-8bab-c374ef73388b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[OFICIALÍA DE PARTES]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="40" y="138" width="500" height="30" uuid="921736f3-485f-48db-a81b-07c149a56997"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{p_juzgado}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="168" width="500" height="30" uuid="76a70cd1-2a5b-4034-8703-18ef27e2339e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["EXPEDIENTE: " + $P{p_expediente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="198" width="500" height="30" uuid="5ee8bf86-a64d-417f-8e63-2922be8abf77"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["FOLIO: " + $P{p_folio}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="228" width="500" height="30" uuid="8c84e93d-ca2a-4a27-91e5-bdfedbd8be1a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["FECHA DE ENVÍO: " + $P{p_fecha_envio}  + "     " +  "HORA DE ENVÍO: " + $P{p_hora_envio}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="60">
+			<printWhenExpression><![CDATA[!$P{p_is_envio}]]></printWhenExpression>
+			<textField>
+				<reportElement x="40" y="30" width="500" height="30" uuid="cb0d1de3-c625-41dd-b549-69ed6c36faa6">
+					<printWhenExpression><![CDATA[!$P{p_is_envio}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["RECIBE: " + $P{p_recibe} +"\n" +
+$P{p_puesto_recibe}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="0" width="500" height="30" uuid="2d9f1443-fdf4-4d44-9fc9-7f330c986df6">
+					<printWhenExpression><![CDATA[!$P{p_is_envio}]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["FECHA DE RECEPCIÓN: " + $P{p_fecha_recepcion}  + "     " +  "HORA DE RECEPCIÓN: " + $P{p_hora_recepcion}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="165">
+			<textField>
+				<reportElement x="40" y="0" width="500" height="30" uuid="3d04aa94-2316-4aa2-81f9-dcf88d77515e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["PROMOVENTE: " + $P{p_promovente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="40" y="30" width="500" height="30" uuid="954cdcb2-d0e8-4d72-bace-125dc4fbaf63"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["TIPO DE PROMOCIÓN: " + $P{p_tipo_promocion}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="185" y="70" width="185" height="91" uuid="a0d7a7f5-fce3-43d4-9fae-e9cf22c3c70a"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[$P{p_folio}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+</jasperReport>
