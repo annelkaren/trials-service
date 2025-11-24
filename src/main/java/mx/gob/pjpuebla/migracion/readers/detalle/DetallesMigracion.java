@@ -23,7 +23,7 @@ public class DetallesMigracion {
 
     private String cu;
     private Integer clave;
-    private String tipo;
+    private Integer tipo;
     private LocalDate fecha;
     private String hora;
     private String anexos;

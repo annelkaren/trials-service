@@ -21,6 +21,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.AcusePromocionDetailRecord;
 
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>, JpaSpecificationExecutor<Movimiento> {
@@ -245,6 +246,25 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     Movimiento findTopByCarpetaIdOrderByFechaAsignacionDesc(Integer carpetaId);
 
     @Query("""
+                select new mx.gob.pjpuebla.trials.workflow.documentos.records.AcusePromocionDetailRecord(
+                    concat(
+                        coalesce(persona.nombre, ''), ' ',
+                        coalesce(persona.apellidoPaterno, ''), ' ',
+                        coalesce(persona.apellidoMaterno, '')
+                    ),
+                    movimiento.cargo,
+                    movimiento.fechaAsignacion
+                )
+                from Movimiento movimiento
+                join movimiento.persona persona
+                where movimiento.documento.id = :documentoId
+                  and movimiento.estado = 'ASIGNADO'
+                order by movimiento.id asc
+            """)
+    List<AcusePromocionDetailRecord> findAllAcusePromocionDetails(
+            @Param("documentoId") Integer documentoId);
+
+    @Query("""
                 SELECT m
                 FROM Movimiento m
                 LEFT JOIN m.carpeta c
@@ -365,12 +385,12 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             Pageable pageable,
             @Param("estados") List<String> estados);
 
-  @Override
-  @EntityGraph(attributePaths = {
-      "carpeta", "carpeta.juzgado", "carpeta.juzgado.materia",
-      "documento", "documento.carpeta", "documento.carpeta.juzgado", "documento.carpeta.juzgado.materia"
-  })
-  @NonNull
-  Page<Movimiento> findAll(@Nullable Specification<Movimiento> spec, @Nullable Pageable pageable);
+    @Override
+    @EntityGraph(attributePaths = {
+            "carpeta", "carpeta.juzgado", "carpeta.juzgado.materia",
+            "documento", "documento.carpeta", "documento.carpeta.juzgado", "documento.carpeta.juzgado.materia"
+    })
+    @NonNull
+    Page<Movimiento> findAll(@Nullable Specification<Movimiento> spec, @Nullable Pageable pageable);
 
 }

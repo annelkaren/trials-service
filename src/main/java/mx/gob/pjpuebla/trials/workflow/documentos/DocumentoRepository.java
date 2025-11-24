@@ -412,16 +412,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
 
 
-    @Query("""
-            select 
-	concat(persona.s_nombres, ' ', persona.s_apellido_paterno, ' ', persona.s_apellido_materno) nombre_completo,
-	tm.s_cargo 
-from trials.tbl_movimientos tm 
-join trials.tbl_personas persona on persona.pn_id = tm.fn_persona 
-where tm.fn_documento = :promocion_id and tm.s_estado = 'ASIGNADO'
-order by tm.pn_id limit 1;
 
-            """)
     
 
 }

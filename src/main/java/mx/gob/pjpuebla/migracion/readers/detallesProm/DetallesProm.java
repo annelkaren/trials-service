@@ -51,7 +51,7 @@ public class DetallesProm {
     private String acuerdo;
 
     @Column(name = "referencia")
-    private String referencia;
+    private Integer referencia;
 
     @Column(name = "atendida")
     private String atendida;

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.*;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.AcusePromocionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class LitiganteResource {
 
     private final LitiganteService litiganteService;
     private final AcuerdoService acuerdoServicePdf;
+    private final AcusePromocionService acusePromocionService;
 
     @GetMapping("/expedientes")
     public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(
@@ -120,5 +122,13 @@ public class LitiganteResource {
     @GetMapping("/pieza/{carpetaId}")
     public List<HistorialRecord> getHistorialByPieza(@PathVariable("carpetaId") Integer carpetaId){
         return litiganteService.getHistorialByPieza(carpetaId);
+    }
+
+    @GetMapping(value = "/promocionElectronica/acuse/{legacy}/{tipo}/{documentoId}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getAcusePromocionElectronica(@PathVariable Integer legacy, @PathVariable String tipo, @PathVariable Integer documentoId) throws IOException, JRException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("acuse", documentoId + "_acuse.pdf");
+        return ResponseEntity.ok().headers(headers).body(acusePromocionService.exportToPdf(legacy, tipo, documentoId));
     }
 }
