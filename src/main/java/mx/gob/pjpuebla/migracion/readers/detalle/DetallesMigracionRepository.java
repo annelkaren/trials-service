@@ -57,7 +57,7 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
 
     
     @Query("""
-            SELECT new.mx.gob.pjpuebla.trials.workflow.documentos.records.AcusePromocionDetailRecord(
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.AcusePromocionDetailRecord(
                 juzgado.descripcion,
                 concat(entrada.expediente, '/', entrada.amo),
                 detalle.id,

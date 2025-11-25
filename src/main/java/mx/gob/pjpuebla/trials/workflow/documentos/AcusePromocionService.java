@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.core.io.Resource;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracionRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
@@ -19,6 +20,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 
 import java.io.IOException;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -30,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 @Service
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AcusePromocionService {
 
         private final DocumentoRepository documentoRepository;
@@ -61,7 +64,7 @@ public class AcusePromocionService {
 
                         parameters = getParametersJava(expediente, promocion, litigante, acusePromocionDetailOpt, isEnvio);
                 }else{
-                        getParametersPhp(tipo, documentoId, isEnvio);
+                        parameters = getParametersPhp(tipo, documentoId, isEnvio);
                 }
 
                 parameters.put("p_logo_header", "jasper/logo_negro.png");
@@ -99,7 +102,7 @@ public class AcusePromocionService {
                                         DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase()
                                         .toString();
 
-                        nombreReceptor = acusePromocionDetail.nombreReceptor();
+                        nombreReceptor = acusePromocionDetail.receptor();
                         puestoReceptor = acusePromocionDetail.puestoReceptor();
                 }
 
@@ -126,24 +129,32 @@ public class AcusePromocionService {
                                 .findDetalleAcusePromocionById(detalleId);
                 Map<String, Object> parameters = new HashMap<>();
 
+
+
                 if (acusePromocionDetailOpt.isEmpty()) {
+                        log.info("No se encontró detalle de acuse de promoción para el ID: {}", detalleId);
                         return parameters;
                 }
 
                 AcusePromocionDetailRecord acusePromocionDetail = acusePromocionDetailOpt.get();
-
+                
+                String fechaRecepcion = acusePromocionDetail.fechaRecepcion() != null ? acusePromocionDetail.fechaRecepcion()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString() : "";
+                
+                String horaRecepcion = acusePromocionDetail.horaRecepcion() != null ? acusePromocionDetail.horaRecepcion() : "";
+                
                 parameters.put("p_juzgado", acusePromocionDetail.juzgado());
                 parameters.put("p_expediente", acusePromocionDetail.expediente());
-                parameters.put("p_folio", acusePromocionDetail.folio());
+                parameters.put("p_folio", acusePromocionDetail.folio().toString() );
                 parameters.put("p_fecha_envio", acusePromocionDetail.fechaEnvio());
                 parameters.put("p_hora_envio", acusePromocionDetail.horaEnvio());
                 parameters.put("p_promovente", acusePromocionDetail.promovente());
                 parameters.put("p_tipo_promocion", acusePromocionDetail.tipoPromocion());
                 parameters.put("p_is_envio", isEnvio);
-                parameters.put("p_fecha_recepcion", acusePromocionDetail.fechaRecepcion().toLocalDate().toString());
-                parameters.put("p_hora_recepcion", acusePromocionDetail.horaRecepcion().toString());
+                parameters.put("p_fecha_recepcion", fechaRecepcion);
+                parameters.put("p_hora_recepcion", horaRecepcion);
                 parameters.put("p_puesto_recibe", acusePromocionDetail.puestoReceptor());
-                parameters.put("p_recibe", acusePromocionDetail.nombreReceptor());
+                parameters.put("p_recibe", acusePromocionDetail.receptor());
 
                 return parameters;
         }

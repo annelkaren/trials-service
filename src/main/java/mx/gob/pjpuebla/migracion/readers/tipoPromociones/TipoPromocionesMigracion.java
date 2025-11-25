@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.migracion.readers.tipoPromocion;
+package mx.gob.pjpuebla.migracion.readers.tipoPromociones;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -6,7 +6,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import net.jcip.annotations.Immutable;
 
-@Table(name = "tipo_promocion")
+@Table(name = "tipo_promociones")
 @Entity
 @Data
 @Immutable
