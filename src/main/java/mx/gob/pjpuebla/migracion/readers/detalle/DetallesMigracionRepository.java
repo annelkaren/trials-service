@@ -22,8 +22,8 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                     WHEN COALESCE(detalle.archivo, dp.archivo) IS NULL THEN ''
                     ELSE 'Promoción'
                 END AS nombreArchivo,
-                COALESCE(detalle.fecha, dp.fecha) AS fechaSubida,
-                COALESCE(detalle.hora, dp.hora) AS horaSubida,
+                detalle.fecha AS fechaSubida,
+                detalle.hora AS horaSubida,
                 dp.archivo AS rutaArchivo,
                 juzgado.descrip AS juzgado,
                 detalle.id AS idDetalle
@@ -36,7 +36,6 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                 ON juzgado.codigo = entrada.juzgado
             LEFT JOIN acuerdos.detalles detalle
                 ON detalle.cu = CONVERT(entrada.cu USING latin1)
-                AND detalle.status = 'R'
             LEFT JOIN acuerdos.detalles_prom dp
                 ON dp.descrip = 'PROMOCION ELECTRONICA'
                 AND detalle.id = dp.referencia
