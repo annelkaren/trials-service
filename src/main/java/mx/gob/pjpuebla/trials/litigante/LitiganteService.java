@@ -280,7 +280,8 @@ public class LitiganteService {
                                                 UtilsMigracion.convertirHora(p.getHoraSubida()),
                                                 p.getRutaArchivo(),
                                                 p.getJuzgado(),
-                                                true ))
+                                                true,
+                                                p.getIdDetalle()))
                                 .toList();
 
                 // FIN OBTENCION DE DATOS:

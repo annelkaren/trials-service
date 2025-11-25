@@ -25,7 +25,8 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                 COALESCE(detalle.fecha, dp.fecha) AS fechaSubida,
                 COALESCE(detalle.hora, dp.hora) AS horaSubida,
                 dp.archivo AS rutaArchivo,
-                juzgado.descrip AS juzgado
+                juzgado.descrip AS juzgado,
+                detalle.id AS idDetalle
             FROM acuerdos.entradas entrada
             JOIN acuerdos.entradasusuario eu
                 ON eu.cuEntradas = entrada.cu
@@ -38,7 +39,7 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
                 AND detalle.status = 'R'
             LEFT JOIN acuerdos.detalles_prom dp
                 ON dp.descrip = 'PROMOCION ELECTRONICA'
-                AND dp.cu = CONVERT(entrada.cu USING latin1)
+                AND detalle.id = dp.referencia
                 AND dp.status = 'A'
             JOIN acuerdos.usuario u
                 ON u.idusuario = eu.idusuario
@@ -57,20 +58,20 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
     
     @Query("""
             SELECT new.mx.gob.pjpuebla.trials.workflow.documentos.records.AcusePromocionDetailRecord(
-            juzgado.descripcion,
-            concat(entrada.expediente, '/', entrada.amo),
-            detalle.id,
-            detalle.fecha,
-            detalle.hora,
-            detalle.fechaRec,
-            detalle.horaRec,
-            detalle.referencia,
-            'OFICIAL MAYOR DE JUZGADO',
-            detalle.anexos,
-            tp.nombre
+                juzgado.descripcion,
+                concat(entrada.expediente, '/', entrada.amo),
+                detalle.id,
+                detalle.fecha,
+                detalle.hora,
+                detalle.fechaRec,
+                detalle.horaRec,
+                detalle.referencia,
+                'OFICIAL MAYOR DE JUZGADO',
+                detalle.anexos,
+                tp.nombre
             )
             FROM DetallesMigracion detalle
-            LEFT JOIN DetallesProm dp on  detalle.id = dp.referencia and dp.descrip = 'PROMOCION ELECTRONICA' AND dp.status = 'A'
+            LEFT JOIN DetallesProm dp on detalle.id = dp.referencia and dp.descrip = 'PROMOCION ELECTRONICA' AND dp.status = 'A'
             JOIN EntradasMigracion entrada on entrada.cu  = detalle.cu 
             JOIN JuzgadosMigracion juzgado on juzgado.codigo = entrada.juzgado
             JOIN TipoPromocionesMigracion tp on tp.id = detalle.tipo

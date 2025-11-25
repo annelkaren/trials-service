@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public record AcusePromocionDetailRecord(
     String juzgado,
     String expediente,
-    String folio,
+    Integer folio,
     String fechaEnvio, 
     String horaEnvio,
     String nombreReceptor,
@@ -19,6 +19,6 @@ public record AcusePromocionDetailRecord(
 ) {
 
     public AcusePromocionDetailRecord(String nombreReceptor, String puestoReceptor, LocalDateTime fechaRecepcion) {
-       this("", "", "", "", "", nombreReceptor, fechaRecepcion,  "", "", puestoReceptor, "", "");
+       this("", "", null, "", "", nombreReceptor, fechaRecepcion,  "", "", puestoReceptor, "", "");
     }
 }

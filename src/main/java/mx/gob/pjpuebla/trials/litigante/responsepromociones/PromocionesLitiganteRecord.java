@@ -14,10 +14,11 @@ public record PromocionesLitiganteRecord(
         LocalTime horaSubida,
         String rutaArchivo,
         String juzgado,
-        Boolean isLegacy
+        Boolean isLegacy, 
+        Integer idDetalle
 ) implements Serializable {
 
         public PromocionesLitiganteRecord(Integer id, String numeroExpediente, String numeroPromocionE, String usuarioOrigen, String nombreArchivo, LocalDate fechaSubida, LocalTime horaSubida, String rutaArchivo, String juzgado) {
-                this(id, numeroExpediente, numeroPromocionE, usuarioOrigen, nombreArchivo, fechaSubida, horaSubida, rutaArchivo, juzgado, false);
+                this(id, numeroExpediente, numeroPromocionE, usuarioOrigen, nombreArchivo, fechaSubida, horaSubida, rutaArchivo, juzgado, false, null);
         }
 }

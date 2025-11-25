@@ -12,4 +12,5 @@ public interface  LitigantePromocionesLegacyProjection {
     String getHoraSubida();
     String getRutaArchivo();
     String getJuzgado();
+    Integer getIdDetalle();
 }

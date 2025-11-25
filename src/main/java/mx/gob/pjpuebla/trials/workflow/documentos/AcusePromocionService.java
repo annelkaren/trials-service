@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.core.io.Resource;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracionRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -34,27 +35,37 @@ public class AcusePromocionService {
         private final DocumentoRepository documentoRepository;
         private final MovimientoRepository movimientoRepository;
         private final PersonaRepository personaRepository;
+        private final DetallesMigracionRepository detallesMigracionRepository;
 
         @Value("classpath:jasper/AcusePromociones.jasper")
         private Resource acusePromocion;
 
         public byte[] exportToPdf(Integer legacy, String tipo, Integer documentoId) throws JRException, IOException {
-
-                Documento promocion = documentoRepository.findById(documentoId).orElseThrow(
-                                () -> new NotFoundException("Documento no encontrado", "documentoId"));
-
-                Carpeta expediente = promocion.getCarpeta();
-                Persona litigante = personaRepository.findByUsuario(promocion.getAudit().getUsuarioAlta()).orElseThrow(
-                                () -> new NotFoundException("Persona no encontrada", "usuario"));
-
+                Map<String, Object> parameters = new HashMap<>();
                 Boolean isEnvio = tipo.equals("envio");
 
-                Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt = movimientoRepository
+                if (legacy == 0) {
+
+                        Documento promocion = documentoRepository.findById(documentoId).orElseThrow(
+                                        () -> new NotFoundException("Documento no encontrado", "documentoId"));
+
+                        Carpeta expediente = promocion.getCarpeta();
+                        Persona litigante = personaRepository.findByUsuario(promocion.getAudit().getUsuarioAlta())
+                                        .orElseThrow(
+                                                        () -> new NotFoundException("Persona no encontrada",
+                                                                        "usuario"));
+                        
+                        Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt = movimientoRepository
                                 .findAllAcusePromocionDetails(documentoId)
                                 .stream().findFirst();
 
-                Map<String, Object> parameters = legacy == 0 ? getParametersJava(expediente, promocion, litigante,
-                                acusePromocionDetailOpt, isEnvio) : getParametersPhp(tipo,documentoId);
+                        parameters = getParametersJava(expediente, promocion, litigante, acusePromocionDetailOpt, isEnvio);
+                }else{
+                        getParametersPhp(tipo, documentoId, isEnvio);
+                }
+
+                parameters.put("p_logo_header", "jasper/logo_negro.png");
+                parameters.put("p_logo_body", "jasper/logo_transparente.png");
 
                 JasperPrint reporteJasper = JasperFillManager.fillReport(
                                 acusePromocion.getInputStream(),
@@ -73,25 +84,31 @@ public class AcusePromocionService {
                 String horaRecepcion = "";
                 String nombreReceptor = "";
                 String puestoReceptor = "";
+                String fechaEnvio = promocion.getAudit().getFechaAlta()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
+                String horaEnvio = promocion.getAudit().getFechaAlta().format(
+                                DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase()
+                                .toString();
 
                 if (acusePromocionDetailOpt.isPresent()) {
                         AcusePromocionDetailRecord acusePromocionDetail = acusePromocionDetailOpt.get();
                         fechaRecepcion = acusePromocionDetail.fechaRecepcion()
-                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
+
                         horaRecepcion = acusePromocionDetail.fechaRecepcion().format(
-                                        DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase();
+                                        DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase()
+                                        .toString();
 
                         nombreReceptor = acusePromocionDetail.nombreReceptor();
                         puestoReceptor = acusePromocionDetail.puestoReceptor();
-
                 }
 
                 Map<String, Object> parameters = new HashMap<>();
                 parameters.put("p_juzgado", expediente.getJuzgado().getNombre());
                 parameters.put("p_expediente", expediente.getExpediente());
                 parameters.put("p_folio", promocion.getFolio());
-                parameters.put("p_fecha_envio", promocion.getAudit().getFechaAlta().toString());
-                parameters.put("p_hora_envio", promocion.getAudit().getFechaAlta().toLocalTime());
+                parameters.put("p_fecha_envio", fechaEnvio);
+                parameters.put("p_hora_envio", horaEnvio);
                 parameters.put("p_promovente", litigante.getCorreoElectronico());
                 parameters.put("p_tipo_promocion", "");
                 parameters.put("p_is_envio", isEnvio);
@@ -103,13 +120,31 @@ public class AcusePromocionService {
                 return parameters;
         }
 
-        private Map<String, Object> getParametersPhp(String tipo, Integer documentoId) {
-                
-                
+        private Map<String, Object> getParametersPhp(String tipo, Integer detalleId, Boolean isEnvio) {
 
+                Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt = detallesMigracionRepository
+                                .findDetalleAcusePromocionById(detalleId);
                 Map<String, Object> parameters = new HashMap<>();
-                parameters.put("p_tipo", tipo);
-                parameters.put("p_documento_id", documentoId);
+
+                if (acusePromocionDetailOpt.isEmpty()) {
+                        return parameters;
+                }
+
+                AcusePromocionDetailRecord acusePromocionDetail = acusePromocionDetailOpt.get();
+
+                parameters.put("p_juzgado", acusePromocionDetail.juzgado());
+                parameters.put("p_expediente", acusePromocionDetail.expediente());
+                parameters.put("p_folio", acusePromocionDetail.folio());
+                parameters.put("p_fecha_envio", acusePromocionDetail.fechaEnvio());
+                parameters.put("p_hora_envio", acusePromocionDetail.horaEnvio());
+                parameters.put("p_promovente", acusePromocionDetail.promovente());
+                parameters.put("p_tipo_promocion", acusePromocionDetail.tipoPromocion());
+                parameters.put("p_is_envio", isEnvio);
+                parameters.put("p_fecha_recepcion", acusePromocionDetail.fechaRecepcion().toLocalDate().toString());
+                parameters.put("p_hora_recepcion", acusePromocionDetail.horaRecepcion().toString());
+                parameters.put("p_puesto_recibe", acusePromocionDetail.puestoReceptor());
+                parameters.put("p_recibe", acusePromocionDetail.nombreReceptor());
+
                 return parameters;
         }
 
