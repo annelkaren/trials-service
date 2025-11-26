@@ -354,10 +354,10 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Query("""
                 SELECT doc
                 FROM Documento doc
-                JOIN doc.persona p
                 JOIN doc.carpeta ca
                 JOIN ca.juzgado juz
-                WHERE LOWER(p.correoElectronico) = LOWER(:correo)
+                JOIN PersonaDocumento pd ON pd.carpeta = ca
+                WHERE LOWER(pd.correoNotificacion) = LOWER(:correo)
                 AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
                 AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
             """)
