@@ -504,7 +504,7 @@ public class CarpetaService {
 
                 if (tipoSistema.getNombre().equals("Oral") && materia.getNombre().equals("FAMILIAR")) {
                         Optional<Audiencia> audiencia = audienciaRepository.findFirstByCarpetaOrderByIdDesc(carpeta);
-                        Persona juez = audiencia.isPresent() ? audiencia.get().getSala().getJuez() : null;
+                        Persona juez = audiencia  .map(a -> a.getSala().getJuez()).orElse(null);
 
                         return audiencia.isPresent() && juez != null
                                         ? juez.getNombre() + " "

@@ -71,7 +71,7 @@ public interface DetallesMigracionRepository extends JpaRepository<DetallesMigra
             )
             FROM DetallesMigracion detalle
             LEFT JOIN DetallesProm dp on detalle.id = dp.referencia and dp.descrip = 'PROMOCION ELECTRONICA' AND dp.status = 'A'
-            JOIN EntradasMigracion entrada on entrada.cu  = detalle.cu 
+            JOIN EntradasMigracion entrada on entrada.cu  = detalle.cu
             JOIN JuzgadosMigracion juzgado on juzgado.codigo = entrada.juzgado
             JOIN TipoPromocionesMigracion tp on tp.id = detalle.tipo
             where detalle.id = :id

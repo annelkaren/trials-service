@@ -86,7 +86,7 @@ public class LitiganteService {
                                                                                                 pd.id(), "Demandado")),
                                                 notificacionesDetallesRepository.countNotificacionesPorLeer(pd.id(),
                                                                 username)))
-                                .collect(Collectors.toList());
+                                .toList();
 
                 // Busca expedientes relacionados en SECJ PHP:
                 List<LitiganteExpedientesRecord> listSecjPhp = entradasMigracionRepository

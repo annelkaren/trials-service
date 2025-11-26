@@ -17,7 +17,7 @@ public class PageableUtils {
      * Maneja nulos enviándolos al final (nullsLast).
      */
     public static <T> void ordenarLista(List<T> lista, Sort sort) {
-        
+
         if (lista == null || lista.isEmpty() || sort == null || sort.isUnsorted()) {
             return;
         }
@@ -25,32 +25,20 @@ public class PageableUtils {
         Comparator<T> comparator = null;
 
         for (Sort.Order order : sort) {
-            // 1. Creamos un comparador dinámico para la propiedad actual
+
             Comparator<T> propertyComparator = (o1, o2) -> {
                 Object v1 = getValorPorReflexion(o1, order.getProperty());
                 Object v2 = getValorPorReflexion(o2, order.getProperty());
 
-                // 2. Lógica segura para Nulos (Nulls Last)
-                if (v1 == null && v2 == null)
-                    return 0;
-                if (v1 == null)
-                    return 1; // Nulo va después
-                if (v2 == null)
-                    return -1;
+                int result = safeCompare(v1, v2);
 
-                // 3. Comparamos asumiendo que implementan Comparable (String, Long, Date, etc.)
-                if (v1 instanceof Comparable && v2 instanceof Comparable) {
-                    return ((Comparable) v1).compareTo(v2);
-                }
-                return 0; // No se pueden comparar
+                return result;
             };
 
-            // 4. Invertimos si es DESC
             if (order.isDescending()) {
                 propertyComparator = propertyComparator.reversed();
             }
 
-            // 5. Encadenamos los comparadores (para múltiples criterios)
             if (comparator == null) {
                 comparator = propertyComparator;
             } else {
@@ -58,10 +46,27 @@ public class PageableUtils {
             }
         }
 
-        // 6. Aplicamos el ordenamiento final a la lista
         if (comparator != null) {
             lista.sort(comparator);
         }
+    }
+
+    private static int safeCompare(Object v1, Object v2) {
+        if (v1 == null && v2 == null)
+            return 0;
+        if (v1 == null)
+            return 1; // nulos al final
+        if (v2 == null)
+            return -1;
+
+        if (v1 instanceof Comparable<?> c1 && v2 instanceof Comparable<?>) {
+            @SuppressWarnings("unchecked")
+            Comparable<Object> left = (Comparable<Object>) c1;
+            return left.compareTo(v2);
+        }
+
+        // Si no son comparables, los consideramos "iguales" para efectos de sort
+        return 0;
     }
 
     /**
@@ -102,8 +107,9 @@ public class PageableUtils {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-/**
-     * Convierte una lista completa en memoria a un objeto Page<T> basado en el Pageable.
+    /**
+     * Convierte una lista completa en memoria a un objeto Page<T> basado en el
+     * Pageable.
      * Se encarga de los cálculos de índices para evitar IndexOutOfBoundsException.
      */
     public static <T> Page<T> crearPagina(List<T> listaCompleta, Pageable pageable) {
@@ -116,13 +122,13 @@ public class PageableUtils {
             return new PageImpl<>(listaCompleta);
         }
 
-        // 2. Cálculo de índices 
+        // 2. Cálculo de índices
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), listaCompleta.size());
 
         // 3. Evitar romper si piden una página que no existe (start > size)
         if (start > listaCompleta.size()) {
-             return new PageImpl<>(Collections.emptyList(), pageable, listaCompleta.size());
+            return new PageImpl<>(Collections.emptyList(), pageable, listaCompleta.size());
         }
 
         // 4. Cortar la lista (SubList)

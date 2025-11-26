@@ -43,7 +43,7 @@ public class AcusePromocionService {
         private Resource acusePromocion;
 
         public byte[] exportToPdf(Integer legacy, String tipo, Integer documentoId) throws JRException, IOException {
-                Map<String, Object> parameters = new HashMap<>();
+                Map<String, Object> parameters;
                 Boolean isEnvio = tipo.equals("envio");
 
                 if (legacy == 0) {
@@ -56,13 +56,14 @@ public class AcusePromocionService {
                                         .orElseThrow(
                                                         () -> new NotFoundException("Persona no encontrada",
                                                                         "usuario"));
-                        
-                        Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt = movimientoRepository
-                                .findAllAcusePromocionDetails(documentoId)
-                                .stream().findFirst();
 
-                        parameters = getParametersJava(expediente, promocion, litigante, acusePromocionDetailOpt, isEnvio);
-                }else{
+                        Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt = movimientoRepository
+                                        .findAllAcusePromocionDetails(documentoId)
+                                        .stream().findFirst();
+
+                        parameters = getParametersJava(expediente, promocion, litigante, acusePromocionDetailOpt.orElse(null),
+                                        isEnvio);
+                } else {
                         parameters = getParametersPhp(tipo, documentoId, isEnvio);
                 }
 
@@ -80,26 +81,25 @@ public class AcusePromocionService {
         }
 
         private Map<String, Object> getParametersJava(Carpeta expediente, Documento promocion, Persona litigante,
-                        Optional<AcusePromocionDetailRecord> acusePromocionDetailOpt, Boolean isEnvio) {
+                        AcusePromocionDetailRecord acusePromocionDetail, Boolean isEnvio) {
 
                 String fechaRecepcion = "";
                 String horaRecepcion = "";
                 String nombreReceptor = "";
                 String puestoReceptor = "";
                 String fechaEnvio = promocion.getAudit().getFechaAlta()
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
-                String horaEnvio = promocion.getAudit().getFechaAlta().format(
-                                DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase()
-                                .toString();
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String horaEnvio = promocion.getAudit().getFechaAlta()
+                                .format(DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX")))
+                                .toLowerCase();
 
-                if (acusePromocionDetailOpt.isPresent()) {
-                        AcusePromocionDetailRecord acusePromocionDetail = acusePromocionDetailOpt.get();
+                if (acusePromocionDetail != null) {
                         fechaRecepcion = acusePromocionDetail.fechaRecepcion()
-                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString();
+                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-                        horaRecepcion = acusePromocionDetail.fechaRecepcion().format(
-                                        DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX"))).toLowerCase()
-                                        .toString();
+                        horaRecepcion = acusePromocionDetail.fechaRecepcion()
+                                        .format(DateTimeFormatter.ofPattern("hh:mm a", new Locale("es", "MX")))
+                                        .toLowerCase();
 
                         nombreReceptor = acusePromocionDetail.receptor();
                         puestoReceptor = acusePromocionDetail.puestoReceptor();
@@ -128,23 +128,25 @@ public class AcusePromocionService {
                                 .findDetalleAcusePromocionById(detalleId);
                 Map<String, Object> parameters = new HashMap<>();
 
-
-
                 if (acusePromocionDetailOpt.isEmpty()) {
                         log.info("No se encontró detalle de acuse de promoción para el ID: {}", detalleId);
                         return parameters;
                 }
 
                 AcusePromocionDetailRecord acusePromocionDetail = acusePromocionDetailOpt.get();
-                
-                String fechaRecepcion = acusePromocionDetail.fechaRecepcion() != null ? acusePromocionDetail.fechaRecepcion()
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd")).toString() : "";
-                
-                String horaRecepcion = acusePromocionDetail.horaRecepcion() != null ? acusePromocionDetail.horaRecepcion() : "";
-                
+
+                String fechaRecepcion = acusePromocionDetail.fechaRecepcion() != null
+                                ? acusePromocionDetail.fechaRecepcion()
+                                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                : "";
+
+                String horaRecepcion = acusePromocionDetail.horaRecepcion() != null
+                                ? acusePromocionDetail.horaRecepcion()
+                                : "";
+
                 parameters.put("p_juzgado", acusePromocionDetail.juzgado());
                 parameters.put("p_expediente", acusePromocionDetail.expediente());
-                parameters.put("p_folio", acusePromocionDetail.folio().toString() );
+                parameters.put("p_folio", acusePromocionDetail.folio().toString());
                 parameters.put("p_fecha_envio", acusePromocionDetail.fechaEnvio());
                 parameters.put("p_hora_envio", acusePromocionDetail.horaEnvio());
                 parameters.put("p_promovente", acusePromocionDetail.promovente());

@@ -218,7 +218,7 @@ public class UtilsMigracion {
             try {
                 return LocalTime.parse(input, formatter);
             } catch (DateTimeParseException e) {
-                continue;
+                // Ignoramos y probamos con el siguiente formatter
             }
         }
 
