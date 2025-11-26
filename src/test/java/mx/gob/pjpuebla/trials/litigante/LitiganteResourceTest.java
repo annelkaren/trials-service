@@ -5,6 +5,7 @@ import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.AcusePromocionService;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,8 @@ class LitiganteResourceTest {
     private LitiganteService litiganteService;
     @MockBean
     private AcuerdoService acuerdoServicePdf;
+    @MockBean 
+    private AcusePromocionService acusePromocionService;
 
     @Test 
     void getExpedientesRelacionados() throws Exception {
