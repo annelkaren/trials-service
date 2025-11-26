@@ -34,7 +34,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             """)
     Optional<Carpeta> findByExpedienteAndJuzgadoId(String expediente, Integer juzgadoId);
 
-        @Query("""
+    @Query("""
             SELECT c
             FROM Carpeta c
             WHERE COALESCE(NULLIF(TRIM(LEADING '0' FROM c.expediente), ''), '0') =:expediente
@@ -249,8 +249,9 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
 
 
     Optional<Carpeta> findByExpedienteAndJuzgado(String expediente, Juzgado juzgado);
+
     List<Carpeta> findByCarpetaPadre(Carpeta c);
-    
+
     @Query(value = """
             SELECT ca.t_fecha_alta
             FROM trials.tbl_documentos doc
@@ -291,4 +292,13 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             LIMIT 1
             """, nativeQuery = true)
     LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
+
+    @Query("""
+                SELECT COUNT(c)
+                FROM Carpeta c
+                JOIN c.juzgado j
+                JOIN j.materia m
+                WHERE c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION AND m.nombre IN :materias
+            """)
+    Long countCarpetasPenales(@Param("materias") List<String> materias);
 }

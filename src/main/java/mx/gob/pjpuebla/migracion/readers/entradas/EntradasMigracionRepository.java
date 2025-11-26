@@ -51,24 +51,24 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
                 materia.materia as materia,
                 juicio.descrip as tipoJuicio,
 
-                (SELECT nombre 
-                 FROM acuerdos.actores 
-                 WHERE clave = CONVERT(entrada.cu USING latin1) 
-                 AND tipo = 'A' 
-                 ORDER BY id 
+                (SELECT nombre
+                 FROM acuerdos.actores
+                 WHERE clave = CONVERT(entrada.cu USING latin1)
+                 AND tipo = 'A'
+                 ORDER BY id
                  LIMIT 1) as actorPrincipal,
 
-                (SELECT nombre 
-                 FROM acuerdos.actores 
-                 WHERE clave = CONVERT(entrada.cu USING latin1) 
-                 AND tipo = 'D' 
-                 ORDER BY id 
+                (SELECT nombre
+                 FROM acuerdos.actores
+                 WHERE clave = CONVERT(entrada.cu USING latin1)
+                 AND tipo = 'D'
+                 ORDER BY id
                  LIMIT 1) as demandadoPrincipal,
 
-                juzgado.descrip as juzgado, 
-                
+                juzgado.descrip as juzgado,
+            
                 CAST(null AS SIGNED) as notificacionesPendientes,
-                
+            
                 '' as sede,
                 entrada.cu as cu
             
@@ -78,9 +78,9 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
             JOIN acuerdos.usuario usuario ON usuario.idusuario = entradasUsuario.idUsuario
             JOIN acuerdos.juzgados juzgado ON entrada.juzgado = juzgado.codigo
             JOIN acuerdos.materias materia ON juzgado.materia = materia.codigo
-            WHERE 
-                usuario.correo = :correo 
-                AND entrada.status = 'A' 
+            WHERE
+                usuario.correo = :correo
+                AND entrada.status = 'A'
                 AND usuario.estatus = 'A'
                 AND entradasUsuario.estatus = 'A'
                 AND (

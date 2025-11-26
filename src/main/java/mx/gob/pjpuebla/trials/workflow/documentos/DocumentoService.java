@@ -577,7 +577,6 @@ public class DocumentoService {
         }
 
         private void createPersonaDocumento(PersonaDocumentoItemRecord persona, Carpeta carpeta) {
-
                 String tipoParte = switch (persona.tipoParte()) {
                         case 1 -> ACTOR;
                         case 2 -> DEMANDADO;
@@ -589,7 +588,6 @@ public class DocumentoService {
                         default ->
                                 throw new IllegalArgumentException("Tipo de parte no valido: " + persona.tipoParte());
                 };
-
                 PersonaDocumento entity = new PersonaDocumento();
                 entity.setNombre(persona.nombre());
                 entity.setApellidoPaterno((persona.apellidoPaterno() == null) ? "" : persona.apellidoPaterno());
