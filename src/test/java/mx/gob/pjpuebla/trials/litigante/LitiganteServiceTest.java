@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
@@ -29,17 +30,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,25 +63,49 @@ class LitiganteServiceTest extends SetupServiceTest {
         EntradasMigracionRepository entradasMigracionRepository;
         @Mock
         DetallesMigracionRepository detallesMigracionRepository;
+        @Mock
+        AcuerdosMigracionRepository acuerdosMigracionRepository;
+        @Mock
+        DetallesMigracionRepository detalleMigracionRepository;
         @InjectMocks
         LitiganteService litiganteService;
 
         @Test
         void getExpedientesRelacionados_() {
-                LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
-                                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
-                given(personaDocumentoRepository.findByUsername(any(), any(), any(PageRequest.class)))
-                                .willReturn(new PageImpl<>(Arrays.asList(litiganteExpedientesRecord),
-                                                PageRequest.of(0, 1), 1));
+                LitiganteExpedientesRecord base = new LitiganteExpedientesRecord(
+                                100,
+                                "000001/2025",
+                                "MERCANTIL",
+                                "Mercantil (Tradicional)",
+                                "", "", "Juzgado 5 Mercantil TEST",
+                                0L,
+                                "");
+
+               
+                given(personaDocumentoRepository.findByUsernameList(anyString(), anyString()))
+                                .willReturn(List.of(base));
+
+               
                 given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
-                                .willReturn(Arrays.asList("Julio Arenas", "Jorge Dominguez"));
+                                .willReturn(List.of("Julio Arenas", "Jorge Dominguez"));
+
                 given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Demandado"))
-                                .willReturn(Arrays.asList("Romina Cervantes"));
-                given(notificacionesDetallesRepository.countNotificacionesPorLeer(any(), any()))
+                                .willReturn(List.of("Romina Cervantes"));
+
+                
+                given(notificacionesDetallesRepository.countNotificacionesPorLeer(eq(100), anyString()))
                                 .willReturn(3L);
-                Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("",
-                                PageRequest.of(1, 20));
+
+               
+                given(entradasMigracionRepository.findExpedientesRelacionadosLegacy(anyString(), anyString()))
+                                .willReturn(List.of());
+
+                Pageable pageable = PageRequest.of(0, 20);
+
+               
+                Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("", pageable);
+
+              
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()

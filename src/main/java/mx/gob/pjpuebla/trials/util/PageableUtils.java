@@ -116,7 +116,7 @@ public class PageableUtils {
             return new PageImpl<>(listaCompleta);
         }
 
-        // 2. Cálculo de índices (Tu lógica encapsulada)
+        // 2. Cálculo de índices 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), listaCompleta.size());
 
