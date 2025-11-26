@@ -361,8 +361,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
                 AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
             """)
-    Page<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key,
-            Pageable pageable);
+    List<Documento> findPromocionesLitigante(@Param("correo") String correo, @Param("key") String key);
 
     @Query("""
                 SELECT CASE WHEN COUNT(doc) > 0 THEN true ELSE false END

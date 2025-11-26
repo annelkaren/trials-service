@@ -141,7 +141,6 @@ public class DocumentoService {
         private final SolicitudesProrrogasService solicitudesProrrogasService;
         private final ConfiguracionesRepository configuracionesRepository;
 
-
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
         private static final String TIPO_JUICIO_NOT_FOUND = "Tipo Juicio no encontrado: ";
@@ -775,7 +774,7 @@ public class DocumentoService {
                         case DEMANDA -> null;
                         case EXHORTO -> TipoDocumento.EXHORTO;
                         case APELACION -> TipoDocumento.APELACION;
-                        case PIEZA -> TipoDocumento.PROMOCION; 
+                        case PIEZA -> TipoDocumento.PROMOCION;
                         default -> throw new IllegalArgumentException(
                                         "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
                 };
@@ -1193,20 +1192,27 @@ public class DocumentoService {
                 String centroTrabajo = ((String) origen.get("centroTrabajo"));
                 String nombrePersona = (String) origen.get("nombrePersona");
 
-                boolean esInterno = false;
-                if (persona.getJuzgado() != null && centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
+                boolean esInterno = esPersonaInterna(persona, centroTrabajo);
 
-                        esInterno = true;
-                } else if (persona.getOficialia() != null
-                                && centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                        esInterno = true;
+                return Map.of(IS_INTERNO, esInterno, "name", nombrePersona);
+        }
+
+        private boolean esPersonaInterna(Persona persona, String centroTrabajo) {
+                if (centroTrabajo == null) {
+                        return false;
                 }
 
-                Map<String, Object> resultado = new HashMap<>();
-                resultado.put(IS_INTERNO, esInterno);
-                resultado.put("name", nombrePersona);
+                if (persona.getJuzgado() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
+                        return true;
+                }
 
-                return resultado;
+                if (persona.getOficialia() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
+                        return true;
+                }
+
+                return false;
         }
 
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable,
@@ -1369,8 +1375,10 @@ public class DocumentoService {
                                                         (isPromocion && documento != null)
                                                                         ? documento.getData().getTipoPromocion().name()
                                                                         : "",
-                                                                        (isPromocion) && documento != null ? documento.getMigrado().name()
-                                                                        : carpeta != null ? carpeta.getMigrado().name() : "");
+                                                        (isPromocion) && documento != null
+                                                                        ? documento.getMigrado().name()
+                                                                        : carpeta != null ? carpeta.getMigrado().name()
+                                                                                        : "");
                                 })
                                 .toList();
 
@@ -2145,7 +2153,7 @@ public class DocumentoService {
                                 .setFechaEntrega(docExhortoSalidaRecord.fechaEntrega())
                                 .setFechaDevolucion(docExhortoSalidaRecord.fechaDevolucion());
                 Documento documento = new Documento();
-                
+
                 documento.setData(data)
                                 .setCarpeta(carpeta)
                                 .setPersona(auditor)
@@ -2163,8 +2171,7 @@ public class DocumentoService {
         public DocumentoPromocionResponseRecord adjuntarPromocion(Integer documentoId) {
                 Documento documento = documentoRepository.findById(documentoId)
                                 .orElseThrow(() -> new NotFoundException("La promoción no existe", "documentoId"));
-               
-                 
+
                 if (documento.getEstatus() == EstadoCarpeta.ASIGNADO) {
                         documento.setEstatus(EstadoCarpeta.INTEGRADO);
                         documentoRepository.save(documento);
@@ -2174,7 +2181,7 @@ public class DocumentoService {
                 }
 
                 throw new ConflictException("No se puede integrar la promoción");
-                
+
         }
 
         @Transactional
@@ -2462,15 +2469,16 @@ public class DocumentoService {
                                 .setTipoDocumento(TipoDocumento.PROMOCION)
                                 .setRuta(promocion.ruta())
                                 .setMigrado(Migrado.SI);
-                
-                //Buscamos si esta promoción esta relacionada con un acuerdo
-                Optional<Documento> acuerdo = documentoRepository.findByTipoDocumentoAndFolio(TipoDocumento.ACUERDO, promocion.acuerdo());
 
-                if(acuerdo.isPresent()){
+                // Buscamos si esta promoción esta relacionada con un acuerdo
+                Optional<Documento> acuerdo = documentoRepository.findByTipoDocumentoAndFolio(TipoDocumento.ACUERDO,
+                                promocion.acuerdo());
+
+                if (acuerdo.isPresent()) {
                         Documento documentoAcuerdo = acuerdo.get();
                         promocionNew.setAcuerdoRespuesta(documentoAcuerdo);
                 }
-               
+
                 return documentoRepository.save(promocionNew);
         }
 
@@ -2533,25 +2541,25 @@ public class DocumentoService {
                 return documentoSentencia;
         }
 
-        public Documento findByDocumento(Integer documentoId){
+        public Documento findByDocumento(Integer documentoId) {
                 return documentoRepository.findById(documentoId).orElse(null);
         }
 
-        public Boolean isMigrado(Integer documentoId){
+        public Boolean isMigrado(Integer documentoId) {
                 Documento documento = findByDocumento(documentoId);
 
                 return documento.getMigrado().equals(Migrado.SI);
         }
 
-        public List<Documento> findDocumentosByCarpetaId(Integer carpetaId){
+        public List<Documento> findDocumentosByCarpetaId(Integer carpetaId) {
                 return documentoRepository.findByCarpetaId(carpetaId);
         }
 
-        public void saveAll(List<Documento> documentos){
+        public void saveAll(List<Documento> documentos) {
                 documentoRepository.saveAll(documentos);
         }
 
-        public Documento save(Documento documento){
+        public Documento save(Documento documento) {
                 return documentoRepository.save(documento);
         }
 

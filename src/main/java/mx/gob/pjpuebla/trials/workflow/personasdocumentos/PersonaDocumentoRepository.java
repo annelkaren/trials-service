@@ -195,6 +195,22 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
         """)
     Page<LitiganteExpedientesRecord> findByUsername(String username, String key, Pageable pageable);
 
+        @Query("""
+        SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
+         tj.nombre, '', '', juz.nombre, 0L, '')
+        FROM PersonaDocumento pd
+        JOIN pd.carpeta ca
+        JOIN ca.juzgado juz
+        JOIN ca.tipoJuicio tj
+        JOIN tj.materia ma
+        WHERE (lower(pd.correoElectronico) = :username
+        OR lower(pd.correoNotificacion) = :username)
+        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+        AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
+        GROUP BY (ca.id, ca.expediente, ma.nombre, tj.nombre, juz.nombre)
+        """)
+    List<LitiganteExpedientesRecord> findByUsernameList(String username, String key);
+
     @Query("""
         SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, CONCAT(ca.expediente, ' - ', juz.nombre),
         '', '', '', '', '', 0L, '')

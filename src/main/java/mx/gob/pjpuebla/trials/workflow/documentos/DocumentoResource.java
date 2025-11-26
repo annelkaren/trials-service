@@ -49,6 +49,7 @@ public class DocumentoResource {
     private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
 
+
     private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
 
     @PostMapping("/demanda")
@@ -325,7 +326,4 @@ public class DocumentoResource {
     public List<CarpetaCatalogoRecord>  filtroTiposEntradas(@RequestParam String bandeja) {
         return documentoService.getTipoEntradas(bandeja);
     }
-    
-    
-
 }
