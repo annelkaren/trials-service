@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.error;
 
 import java.time.LocalDateTime;
-
 import lombok.Data;
 
 @Data
@@ -22,5 +21,7 @@ public class ApiResponse<T> {
         this.timestamp = timestamp;
     }
 
- 
+    public ApiResponse(boolean success, String message, String code, int status, T data) {
+        this(success, message, code, status, data, LocalDateTime.now());
+    }
 }

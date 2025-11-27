@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import net.jcip.annotations.Immutable;
 
 @Data
@@ -66,4 +67,7 @@ public class EntradasMigracion {
     private String tipoDivorcio;
 
     private String materia;
+
+    @Column(name="estado_migracion")
+    private EstadoMigracion estadoMigracion;
 }

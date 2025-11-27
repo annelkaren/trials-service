@@ -131,8 +131,8 @@ public class PersonaResource {
     }
 
     @PutMapping("/changePassword")
-   public ResponseEntity<ApiResponse<String>> cambiarContraseña(@RequestBody CambioPasswordRecord request) {
-        ApiResponse<String> response = personaService.changePassword(request);
+   public ResponseEntity<ApiResponse<Void>> cambiarContraseña(@RequestBody CambioPasswordRecord request) {
+        ApiResponse<Void> response = personaService.changePassword(request);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 

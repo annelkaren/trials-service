@@ -506,7 +506,7 @@ public class PersonaService {
         return roleService.getRolesByUserId(userId);
     }
 
-    public ApiResponse<String> changePassword(CambioPasswordRecord request) {
+    public  ApiResponse<Void> changePassword(CambioPasswordRecord request) {
         String current = request.currentPassword();
         String nueva = request.newPassword();
         String confirmar = request.confirmPassword();

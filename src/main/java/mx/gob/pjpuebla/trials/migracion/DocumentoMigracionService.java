@@ -21,20 +21,26 @@ import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 
 // Legacy models:
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion;
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionRepository;
 import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 
 // Core:
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
+import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
@@ -61,6 +67,8 @@ import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 @Slf4j
 public class DocumentoMigracionService {
 
+    private final SalaRepository salaRepository;
+
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AnexoRepository anexoRepository;
@@ -75,6 +83,12 @@ public class DocumentoMigracionService {
     private final EstadoAcuseMapper estadoAcuseMapper; // ACL
     private final EstadoOficioMapper estadoOficioMapper; // ACL
     private final AmparoMapper amparoMapper; // ACL
+
+    private final AcuerdosMigracionRepository acuerdosMigracionRepository;
+    private final OficiosMigracionRepository oficiosMigracionRepository;
+    private final ExhortosCapitalMigracionRepository exhortosCapitalMigracionRepository;
+    private final ExhortoForaneoMigracionRepository exhortoForaneoMigracionRepository;
+    private final AmparoMigracionRepository amparoMigracionRepository;
 
     // utils:
 
@@ -108,7 +122,13 @@ public class DocumentoMigracionService {
 
             Documento created = documentoService.createAcuerdoMigracion(data);
             documentos.add(created);
+
+             // Actualiza estatus de migrado en SECGJ PHP: 
+            a.setMigrado(Migrado.SI);
         }
+
+        acuerdosMigracionRepository.saveAll(acuerdos);
+
         return documentos;
     }
 
@@ -141,7 +161,10 @@ public class DocumentoMigracionService {
 
             Documento created = documentoService.createSentenciaMigracion(data);
             documentos.add(created);
+            s.setMigrado(Migrado.SI);
         }
+
+        acuerdosMigracionRepository.saveAll(sentencias);
         return documentos;
     }
 
@@ -172,6 +195,7 @@ public class DocumentoMigracionService {
             Documento doc = documentoService.createPromocionMigracion(save);
             createAnexosDePromocion(p.getAnexos(), doc);
             documentos.add(doc);
+            p.setMigrado(Migrado.SI);
         }
         return documentos;
     }
@@ -306,7 +330,11 @@ public class DocumentoMigracionService {
             documentoDetalleRepository.save(documentoDetalle);
 
             oficios.add(documento);
+            oficioMigracion.setMigrado(Migrado.SI);
+
         });
+
+        oficiosMigracionRepository.saveAll(oficiosMigracion);
 
         return oficios;
     }
@@ -340,7 +368,10 @@ public class DocumentoMigracionService {
             documento = documentoRepository.save(documento);
 
             exhortos.add(documento);
+            exhorto.setMigrado(Migrado.SI);
         });
+
+        exhortosCapitalMigracionRepository.saveAll(exhortosCapital);
 
         return exhortos;
 
@@ -373,9 +404,11 @@ public class DocumentoMigracionService {
                     .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
 
             documento = documentoRepository.save(documento);
-
+            exhorto.setMigrado(Migrado.SI);
             exhortos.add(documento);
         });
+
+        exhortoForaneoMigracionRepository.saveAll(exhortosForaneo);
 
         return exhortos;
 
@@ -416,11 +449,16 @@ public class DocumentoMigracionService {
             documentos.add(amparoDoc);
 
             documentoRepository.save(amparoDoc);
+
+            amparo.setMigrado(Migrado.SI);
+
             PiezaRecord piezaRecord = new PiezaRecord(null, amparoMapper.mapTipoAmparo(amparo.getTipo()), null,
                     Collections.singletonList(amparoDoc.getId()));
 
             carpetaService.createPieza(carpeta.getId(), piezaRecord);
         });
+
+        amparoMigracionRepository.saveAll(amparos);
 
         return documentos;
 

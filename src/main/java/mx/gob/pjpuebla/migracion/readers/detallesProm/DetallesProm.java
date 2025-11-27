@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.migracion.readers.detallesProm;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 
 import java.time.LocalDate;
 
@@ -55,4 +56,6 @@ public class DetallesProm {
 
     @Column(name = "atendida")
     private String atendida;
+
+    private Migrado migrado;
 }
