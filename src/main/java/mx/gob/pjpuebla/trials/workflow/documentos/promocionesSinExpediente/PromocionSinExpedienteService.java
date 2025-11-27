@@ -144,6 +144,7 @@ public class PromocionSinExpedienteService {
                         try {
                                 log.info("Expediente encontrado en el SECGJ PHP, se procederá a migrar el expediente.");
                                 // SI se encuentra el expediente en el SECGJ PHP, lo migramos
+                                
                                 MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpediente(
                                                 expediente, year,
                                                 juzgado.getClaveJuzgado());

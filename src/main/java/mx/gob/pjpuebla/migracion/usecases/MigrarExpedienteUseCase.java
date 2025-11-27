@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 // Readers (legacy)
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
@@ -17,6 +19,7 @@ import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
@@ -75,12 +78,16 @@ public class MigrarExpedienteUseCase {
   private final PersonasMigracionService personasMig;
   private final CarpetaDetalleMigracionService carpetaDetalleMig;
   private final MigracionesRepository migracionesRepository;
+  private final EntradasMigracionRepository entradasMigracionRepository;
+
+  //repositories para actualizar estatus de migración:
+
 
   // Orquestador: 1 sola transacción grande (o ajusta a tu estrategia)
   @Transactional
   public void migrarExpedienteCompleto(String expediente, Integer year, String claveJuzgado) {
     var result = migrarExpediente(expediente, year, claveJuzgado);
-    migrarDocumentosExpediente(expediente, year, claveJuzgado, result.migracionId());
+    //migrarDocumentosExpediente(expediente, year, claveJuzgado, result.migracionId());
   }
 
   @Transactional
@@ -95,7 +102,17 @@ public class MigrarExpedienteUseCase {
       throw new IllegalArgumentException(
           "No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
     }
+
     EntradasMigracion entrada = entradaOptional.get();
+
+    //Validación si entrada (expediente) ya ha sido migrado.
+    if(entrada.getEstadoMigracion().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
+      Carpeta existingCarpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
+      Integer existingMigracionId = migracionesRepository.findByCarpetaId(existingCarpeta.getId())
+          .map(Migraciones::getId)
+          .orElse(null);
+      return new MigracionExpedienteResult(existingCarpeta, existingMigracionId);
+    }
 
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
 
@@ -140,6 +157,10 @@ public class MigrarExpedienteUseCase {
         puesto,
         juzgado,
         carpeta);
+
+    //Marcar entradas (expediente PHP) como migrado: 
+    entrada.setEstadoMigracion(EstadoMigracion.EXPEDIENTE_MIGRADO);
+    entradasMigracionRepository.save(entrada);
 
     return new MigracionExpedienteResult(carpeta, migracion.getId());
   }
@@ -218,5 +239,7 @@ public class MigrarExpedienteUseCase {
     migracion.setObservaciones(observaciones);
     return migracionesRepository.save(migracion);
   }
+
+  
 
 }

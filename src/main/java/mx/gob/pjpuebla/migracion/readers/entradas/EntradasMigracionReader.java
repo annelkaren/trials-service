@@ -87,7 +87,7 @@ public class EntradasMigracionReader {
         List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, detallesProm);
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, detallesProm, entrada.getEstadoMigracion());
     }
 
     /**

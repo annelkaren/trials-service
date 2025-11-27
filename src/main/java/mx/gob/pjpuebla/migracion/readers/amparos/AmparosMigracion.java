@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.migracion.readers.amparos;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
+
 import java.time.LocalDate;
 
 @Entity
@@ -73,4 +75,6 @@ public class AmparosMigracion {
 
     @Column(length = 1)
     private String estatus;
+
+    private Migrado migrado;
 }

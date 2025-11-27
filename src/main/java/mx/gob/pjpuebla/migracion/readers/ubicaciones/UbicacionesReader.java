@@ -63,13 +63,13 @@ public class UbicacionesReader {
      */
     public MovimientosMigracionRecord buscarUltimoMovimiento(String cu, String tablaUbi) {
         String sql = "SELECT " +
-                "  u.id_ubicaciones, u.cu, u.id_puesto, u.fecha, u.hora, u.status, u.estado, u.etapa, " +
-                "  u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, u.libro, u.num_foja, " +
-                "  u.obse, u.sentido, u.digitalizado_acu, p.nombre " +
+                "  u.id_ubicaciones, u.cu, u.fecha,  u.status, u.estado, " +
+                "  u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio," +
+                "  p.nombre " +
                 "FROM " + tablaUbi + " u " +
-                "JOIN acuerdos.puestos p ON u.id_puesto = p.id_puesto " + // ← alias p
-                "WHERE u.cu = :cu AND u.status = 'A' " + // ← califica columnas
-                "ORDER BY u.id_ubicaciones DESC " + // ← usa la PK/último id real
+                "JOIN acuerdos.puestos p ON u.id_puesto = p.id_puesto " +
+                "WHERE u.cu = :cu AND u.status = 'A' " + 
+                "ORDER BY u.id_ubicaciones DESC " + 
                 "LIMIT 1";
 
         try {
@@ -79,21 +79,13 @@ public class UbicacionesReader {
                     (rs, rowNum) -> new MovimientosMigracionRecord(
                             rs.getInt("id_ubicaciones"),
                             rs.getString("cu"),
-                            rs.getObject("id_puesto", Integer.class),
                             rs.getObject("fecha", LocalDate.class),
-                            rs.getString("hora"),
                             rs.getString("status"),
                             rs.getString("estado"),
-                            rs.getString("etapa"),
                             rs.getString("entrego"),
                             rs.getString("recibio"),
                             rs.getString("puesto_entrego"),
                             rs.getString("puesto_recibio"),
-                            rs.getString("libro"),
-                            rs.getObject("num_foja", Integer.class),
-                            rs.getString("obse"),
-                            rs.getString("sentido"),
-                            rs.getString("digitalizado_acu"),
                             rs.getString("nombre")));
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {
             log.error("No fue posible encontrar la tabla", e);
@@ -102,19 +94,19 @@ public class UbicacionesReader {
     }
 
     public List<MovimientosMigracionRecord> buscarPiezasByCu(String cu, String tablaUbi) {
-        String sql ="SELECT u.id_ubicaciones, u.cu, u.id_puesto, u.fecha, u.hora, u.status, u.estado, u.etapa, " +
-        "u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, u.libro, u.num_foja, " +
-        "u.obse, u.sentido, u.digitalizado_acu, p.nombre " +
+        String sql ="SELECT u.id_ubicaciones, u.cu, u.fecha, u.status, u.estado, " +
+        "u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, " +
+        "p.nombre " +
         "FROM " + tablaUbi + " u " +
         "JOIN acuerdos.puestos p ON u.id_puesto = p.id_puesto " +
         "JOIN ( " +
-        "SELECT cu, MAX(id_ubicaciones) AS max_id " +
-        "FROM " + tablaUbi + " " +
-        "WHERE /*CAST(*/cu/* AS CHAR)*/ LIKE CONCAT(:cu, '%') " + // quita el CAST si cu es VARCHAR
-        "AND /*CAST(*/cu/* AS CHAR)*/ <> :cu " +
-        "AND status = 'A' " +
-        "GROUP BY cu " +
-        ") t ON t.cu = u.cu AND t.max_id = u.id_ubicaciones " +
+            "SELECT cu, MAX(id_ubicaciones) AS max_id " +
+            "FROM " + tablaUbi + " " +
+            "WHERE /*CAST(*/cu/* AS CHAR)*/ LIKE CONCAT(:cu, '%') " + 
+            "AND /*CAST(*/cu/* AS CHAR)*/ <> :cu " +
+            "AND status = 'A' " +
+            "GROUP BY cu " +
+            ") t ON t.cu = u.cu AND t.max_id = u.id_ubicaciones " +
         "ORDER BY u.id_ubicaciones DESC";
 
         try {
@@ -124,21 +116,13 @@ public class UbicacionesReader {
                     (rs, rowNum) -> new MovimientosMigracionRecord(
                             rs.getInt("id_ubicaciones"),
                             rs.getString("cu"),
-                            rs.getObject("id_puesto", Integer.class),
                             rs.getObject("fecha", LocalDate.class),
-                            rs.getString("hora"),
                             rs.getString("status"),
                             rs.getString("estado"),
-                            rs.getString("etapa"),
                             rs.getString("entrego"),
                             rs.getString("recibio"),
                             rs.getString("puesto_entrego"),
                             rs.getString("puesto_recibio"),
-                            rs.getString("libro"),
-                            rs.getObject("num_foja", Integer.class),
-                            rs.getString("obse"),
-                            rs.getString("sentido"),
-                            rs.getString("digitalizado_acu"),
                             rs.getString("nombre")));
         } catch (Exception e) {
             log.error("Error en la consulta", e);

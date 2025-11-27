@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.migracion.readers.exhortoForaneo;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -54,4 +55,6 @@ public class ExhortoForaneoMigracion {
 
     @Column(name = "Fecha_re_1")
     private String fechaRe1;
+
+    private Migrado migrado;    
 }
