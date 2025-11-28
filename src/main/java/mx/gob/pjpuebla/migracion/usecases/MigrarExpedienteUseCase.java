@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
