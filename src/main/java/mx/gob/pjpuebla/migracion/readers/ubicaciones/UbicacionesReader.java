@@ -96,18 +96,20 @@ public class UbicacionesReader {
     public List<MovimientosMigracionRecord> buscarPiezasByCu(String cu, String tablaUbi) {
         String sql ="SELECT u.id_ubicaciones, u.cu, u.fecha, u.status, u.estado, " +
         "u.entrego, u.recibio, u.puesto_entrego, u.puesto_recibio, " +
-        "p.nombre " +
+        "p.nombre, " +
+        "SUBSTRING(u.cu, LENGTH(:cu) + 1) AS tipoPieza " +
         "FROM " + tablaUbi + " u " +
         "JOIN acuerdos.puestos p ON u.id_puesto = p.id_puesto " +
         "JOIN ( " +
             "SELECT cu, MAX(id_ubicaciones) AS max_id " +
             "FROM " + tablaUbi + " " +
-            "WHERE /*CAST(*/cu/* AS CHAR)*/ LIKE CONCAT(:cu, '%') " + 
-            "AND /*CAST(*/cu/* AS CHAR)*/ <> :cu " +
+            "WHERE cu LIKE CONCAT(:cu, '%') " + 
+            "AND cu <> :cu " +
             "AND status = 'A' " +
             "GROUP BY cu " +
             ") t ON t.cu = u.cu AND t.max_id = u.id_ubicaciones " +
         "ORDER BY u.id_ubicaciones DESC";
+
 
         try {
             return jdbcTemplate.query(
@@ -123,7 +125,8 @@ public class UbicacionesReader {
                             rs.getString("recibio"),
                             rs.getString("puesto_entrego"),
                             rs.getString("puesto_recibio"),
-                            rs.getString("nombre")));
+                            rs.getString("nombre"),
+                            rs.getString("tipoPieza")));
         } catch (Exception e) {
             log.error("Error en la consulta", e);
             return List.of();

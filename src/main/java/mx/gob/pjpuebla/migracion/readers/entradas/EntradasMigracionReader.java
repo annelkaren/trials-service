@@ -12,10 +12,10 @@ import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
-import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracion;
+import mx.gob.pjpuebla.migracion.readers.juicios.JuicioResponseRecord;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionRegistroRecord;
 import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
@@ -39,14 +39,13 @@ public class EntradasMigracionReader {
     private final JuiciosMigracionReader juiciosMigracionService;
     private final ActoresMigracionReader actoresMigracionService;
     private final DetallesPromReader detallesPromService;
-  
+
     private final UtilsMigracion utilsMigracion;
     private final UbicacionesReader ubicacionesService;
 
     // service de sistema actual:
     private final CarpetaRepository carpetaRepository;
     private final AnexoRepository anexoRepository;
-    
 
     /**
      * Busca las entradas migradas por expediente, año y juzgado.
@@ -61,24 +60,20 @@ public class EntradasMigracionReader {
     public EntradasMigracionRecord buscarPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
 
         // Buscar entrada:
-        Optional<EntradasMigracion> entradaOptional = buscarEntradasPorFiltros(expediente, amo, juzgadoCodigo);
-        if (entradaOptional.isEmpty()) {
-            throw new NotFoundException("Entrada no encontrada con los filtros proporcionados", expediente + "/" + amo + " - " + juzgadoCodigo);
-        }
-        EntradasMigracion entrada = entradaOptional.get();
+        EntradasMigracion entrada = buscarEntradasPorFiltros(expediente, amo, juzgadoCodigo);
 
         // Buscar juzgado:
-        JuzgadosMigracion juzgado = juzgadosMigracionService.requireByCodigo(juzgadoCodigo);
+        JuzgadosMigracionRegistroRecord juzgado = juzgadosMigracionService.findByCodigo(juzgadoCodigo);
 
         // Definir tabla ubicacion:
-        String tablaUbi = juzgado != null ? juzgado.getTablaUbicacion() : null;
+        String tablaUbi = juzgado != null ? juzgado.tablaUbicacion() : null;
 
         // Se obtienen las ubicaciones dependiendo del CU y de la tabla dinámica según
         // juzgado
         MovimientosMigracionRecord ubicaciones = ubicacionesService.buscarUltimoMovimiento(entrada.getCu(), tablaUbi);
 
         // Se obtiene el juicio asociado al campo `juicio` de la entrada
-        JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
+        JuicioResponseRecord juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Se obtienen los actores:
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
@@ -87,26 +82,34 @@ public class EntradasMigracionReader {
         List<DetallesProm> detallesProm = detallesPromService.buscarPorCu(entrada.getCu());
 
         // Se ensambla el registro final
-        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, detallesProm, entrada.getEstadoMigracion());
+        return new EntradasMigracionRecord(entrada, juzgado, ubicaciones, juicio, actores, detallesProm,
+                entrada.getEstadoMigracion());
     }
 
-    /**
-     * Consulta la tabla `entradas` por filtros principales.
-     *
-     * @param expediente    Número de expediente
-     * @param amo           Año
-     * @param juzgadoCodigo Código del juzgado
-     * @return Lista de entidades `EntradasMigracion`
-     */
-    public Optional<EntradasMigracion> buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
-        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
 
+    public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
+      
+        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
+        log.info("El expediente que busca es: " + expediente);
+        log.info("El expediente a buscar normalizado es: " + expedienteNormalizado);
+        Optional<EntradasMigracion> entradaOptional = entradasMigracionRepository.findTopByExpedienteNormalizado(
+                expedienteNormalizado,
+                amo,
+                juzgadoCodigo, "A");
+
+        validaOptional(entradaOptional, (expediente + "/" + amo + "/" + juzgadoCodigo));
+        return entradaOptional.get();
+    }
+
+    public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo, String juzgadoCodigo) {
+        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
         return entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expedienteNormalizado,
-                 amo, 
-                 juzgadoCodigo, "A");
-    }
+                amo,
+                juzgadoCodigo, "A");
 
+        
+    }
 
     /**
      * Busca una {@link Carpeta} por su número de expediente y juzgado.
@@ -114,7 +117,8 @@ public class EntradasMigracionReader {
      * No lanza excepciones: si no existe, devuelve {@link Optional#empty()}.
      * </p>
      *
-     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025"). No nulo ni vacío.
+     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025").
+     *                   No nulo ni vacío.
      * @param juzgado    Juzgado propietario del expediente. No nulo.
      * @return {@link Optional} con la carpeta si existe; vacío en caso contrario.
      * @throws IllegalArgumentException si los parámetros son inválidos.
@@ -126,37 +130,41 @@ public class EntradasMigracionReader {
         return carpetaRepository.findByExpedienteAndJuzgado(exp, juzgado);
     }
 
-       /**
+    /**
      * Obtiene una {@link Carpeta} por expediente y juzgado, fallando si no existe.
      * <p>
      * Útil en flujos donde la carpeta es obligatoria y se desea fallar temprano.
      * </p>
      *
-     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025"). No nulo ni vacío.
+     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025").
+     *                   No nulo ni vacío.
      * @param juzgado    Juzgado propietario del expediente. No nulo.
      * @return La carpeta encontrada (nunca {@code null}).
      * @throws IllegalArgumentException si los parámetros son inválidos.
-     * @throws NotFoundException        si no existe una carpeta con ese expediente en ese juzgado.
+     * @throws NotFoundException        si no existe una carpeta con ese expediente
+     *                                  en ese juzgado.
      */
     @Transactional(readOnly = true)
     private Carpeta requireCarpeta(String expediente, Juzgado juzgado) {
         return findCarpeta(expediente, juzgado)
                 .orElseThrow(() -> new NotFoundException(
                         "Carpeta (expediente) no encontrada para el juzgado indicado.",
-                        expediente
-                ));
+                        expediente));
     }
 
-        /**
+    /**
      * Verifica que NO exista una {@link Carpeta} con el expediente y juzgado dados.
      * <p>
-     * Útil antes de crear/insertar: si ya existe, lanza {@link ConstraintViolationException}.
+     * Útil antes de crear/insertar: si ya existe, lanza
+     * {@link ConstraintViolationException}.
      * </p>
      *
-     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025"). No nulo ni vacío.
+     * @param expediente Número de expediente normalizado (por ejemplo, "123/2025").
+     *                   No nulo ni vacío.
      * @param juzgado    Juzgado propietario del expediente. No nulo.
-     * @throws IllegalArgumentException       si los parámetros son inválidos.
-     * @throws ConstraintViolationException   si ya existe una carpeta con ese expediente en ese juzgado.
+     * @throws IllegalArgumentException     si los parámetros son inválidos.
+     * @throws ConstraintViolationException si ya existe una carpeta con ese
+     *                                      expediente en ese juzgado.
      */
     @Transactional(readOnly = true)
     public void assertExpedienteDisponible(String expediente, Juzgado juzgado) {
@@ -169,11 +177,9 @@ public class EntradasMigracionReader {
             Carpeta c = existente.get();
             throw new ConstraintViolationException(
                     "El expediente ya se encuentra en el sistema",
-                    c.getId() != null ? c.getId().toString() : exp
-            );
+                    c.getId() != null ? c.getId().toString() : exp);
         }
     }
-
 
     @Transactional
     private List<Anexo> crearAnexosMigracion(String anexos, Documento documento) {
@@ -198,5 +204,12 @@ public class EntradasMigracionReader {
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
     }
-            
+
+    private <T> void validaOptional(Optional<T> opcional, String clave) {
+        if (opcional.isEmpty()) {
+            log.error("No se encontraron resultados para la clave {}", clave);
+            throw new NotFoundException("No se encontraron resultados ", clave);
+        }
+    }
+
 }

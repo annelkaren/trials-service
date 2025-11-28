@@ -4,8 +4,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionSaveRecord;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
+import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,21 +20,44 @@ import org.springframework.web.bind.annotation.RequestBody;
 @SecurityRequirement(name = "keycloak")
 public class MigrarExpedienteResource {
 
-    private final MigrarExpedienteUseCase migrarExpediente;
+ private final MigrarExpedienteUseCase migrarExpedienteUseCase;
 
-    @PostMapping
-    public ResponseEntity<String> migrarExpedienteCompleto(@RequestBody EntradasMigracionSaveRecord request) {
-        migrarExpediente.migrarExpedienteCompleto(request.expediente(), request.year(), request.juzgado());
+    // 1) Migrar solo expediente principal
+    @PostMapping("/principal")
+    public ResponseEntity<ApiResponse<MigracionExpedienteResult>> migrarExpedientePrincipal(
+            @RequestBody @Valid EntradasMigracionSaveRecord request
+    ) {
+        MigracionExpedienteResult result = migrarExpedienteUseCase.migrarExpedientePrincipal(
+                request.expediente(),
+                request.year(),
+                request.juzgado()
+        );
 
-        return ResponseEntity.ok("Expediente migrado correctamente");
+        ApiResponse<MigracionExpedienteResult> response =
+                ApiResponseFactory.success("Expediente principal migrado correctamente", result);
+
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
     }
 
-    @PostMapping("/principal")
-    public ResponseEntity<String> migrarExpediente(@RequestBody EntradasMigracionSaveRecord request) {
+    // 2) Migrar expediente completo (expediente + documentos)
+    @PostMapping("/completo")
+    public ResponseEntity<ApiResponse<MigracionExpedienteResult>> migrarExpedienteCompleto(
+            @RequestBody @Valid EntradasMigracionSaveRecord request
+    ) {
+        MigracionExpedienteResult result = migrarExpedienteUseCase.migrarExpedienteCompleto(
+                request.expediente(),
+                request.year(),
+                request.juzgado()
+        );
 
-        migrarExpediente.migrarExpediente(request.expediente(), request.year(), request.juzgado());
+        ApiResponse<MigracionExpedienteResult> response =
+                ApiResponseFactory.success("Expediente migrado completamente (expediente + documentos)", result);
 
-        return ResponseEntity.ok("Expediente migrado correctamente");
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
     }
 
 }
