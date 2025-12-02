@@ -1,6 +1,9 @@
 package mx.gob.pjpuebla.migracion.usecases;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,26 +13,44 @@ import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 // Readers (legacy)
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.entradasUsuarios.EntradasUsuarioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
+import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracion;
+import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliarMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
+import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracion;
+import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
-
+import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionSaveRecord;
 // ACL
 import mx.gob.pjpuebla.migracion.acl.mapper.MateriaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.NotificacionMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.PartesMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.TipoSistemaMapper;
 import mx.gob.pjpuebla.migracion.acl.normalizer.ExpedienteNormalizer;
 import mx.gob.pjpuebla.migracion.acl.validate.LegacyValidators;
 
 // Core (solo modelos)
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.migracion.CarpetaDetalleMigracionService;
 import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
@@ -37,12 +58,17 @@ import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
 
 import mx.gob.pjpuebla.trials.migracion.ConceptoMigrationService;
 import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
+import mx.gob.pjpuebla.trials.migracion.JuzgadoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
+import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
+import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 
 @Service
 @RequiredArgsConstructor
@@ -62,30 +88,42 @@ public class MigrarExpedienteUseCase {
   private final ExhortosCapitalMigracionReader exhortosCapitalMigracionReader;
   private final ExhortoForaneoMigracionReader exhortosForaneosMigracionReader;
   private final AmparoMigracionReader amparoMigracionReader;
+  private final ConceptosMigracionReader conceptosReader;
+  private final ConceptosMatFamiliarMigracionReader conceptosFamReader;
+  private final EntradasUsuarioMigracionReader entradasUsuariosReader;
+  private final UsuarioMigracionReader usuarioMigracionReader;
+  private final DomicilioMigracionReader domicilioMigracionReader;
 
   // ACL
   private final MateriaMapper materiaMapper;
   private final RubrosMapper rubrosMapper;
+  private final PartesMapper partesMapper;
   private final ExpedienteNormalizer expedienteNormalizer;
+  private final TipoSistemaMapper tipoSistemaMapper;
+  private final NotificacionMapper notificacionMapper;
   private final LegacyValidators validators;
+  private final SentenciaMapper sentenciaMapper;
+  private final ResolucionMapper resolucionMapper;
 
   // Facades migración
   private final CarpetaMigracionService carpetaMig;
+  private final JuzgadoMigracionService juzgadoMig;
   private final ConceptoMigrationService conceptoMig;
   private final DocumentoMigracionService documentoMig;
   private final PersonasMigracionService personasMig;
   private final CarpetaDetalleMigracionService carpetaDetalleMig;
   private final MigracionesRepository migracionesRepository;
   private final EntradasMigracionRepository entradasMigracionRepository;
+  private final AcuerdosMigracionRepository acuerdosMigracionRepository;
 
-  //repositories para actualizar estatus de migración:
-
+  // repositories para actualizar estatus de migración:
 
   // Orquestador: 1 sola transacción grande (o ajusta a tu estrategia)
   @Transactional
   public void migrarExpedienteCompleto(String expediente, Integer year, String claveJuzgado) {
     var result = migrarExpediente(expediente, year, claveJuzgado);
-    //migrarDocumentosExpediente(expediente, year, claveJuzgado, result.migracionId());
+    // migrarDocumentosExpediente(expediente, year, claveJuzgado,
+    // result.migracionId());
   }
 
   @Transactional
@@ -103,8 +141,8 @@ public class MigrarExpedienteUseCase {
 
     EntradasMigracion entrada = entradaOptional.get();
 
-    //Validación si entrada (expediente) ya ha sido migrado.
-    if(entrada.getEstadoMigracion().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)){
+    // Validación si entrada (expediente) ya ha sido migrado.
+    if (entrada.getEstadoMigracion().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)) {
       Carpeta existingCarpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
       Integer existingMigracionId = migracionesRepository.findByCarpetaId(existingCarpeta.getId())
           .map(Migraciones::getId)
@@ -114,35 +152,42 @@ public class MigrarExpedienteUseCase {
 
     var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
 
-    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null); 
+    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null);
     var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
     validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
 
     // 2) Normalizar / requerir juzgado
     String expCompleto = expedienteNormalizer.normalizeExpediente(exp + "/" + year);
-    Juzgado juzgado = carpetaMig.requireJuzgadoActual(claveJuzgado);
+    Juzgado juzgado = juzgadoMig.requireJuzgadoActual(claveJuzgado);
     carpetaMig.assertExpedienteDisponible(expCompleto, juzgado);
 
     // 3) Último movimiento / mapeos
     var ubicUlt = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
     String materiaNombre = materiaMapper.mapMateria(juicioLg.getMateria());
+
+    var tipoSistema = tipoSistemaMapper.mapTipoSistema(juzLegacy);
     var tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion(),
-        juzLegacy);
+        tipoSistema);
 
     String estadoUltMov = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
         ? ubicUlt.estado()
         : "Archivo";
-    var concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov);
+
+    var diasConcepto = getDias(tipoJuicio, estadoUltMov);
+    var concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov, diasConcepto);
 
     // 4) Crear carpeta y documentos base
-    var carpeta = carpetaMig.createFromLegacy(entrada, ocomun, juzgado, tipoJuicio, concepto);
+    var carpeta = carpetaMig.crearCarpeta(getExpedienteCompleto(entrada), getFolio(ocomun), entrada.getCu(), juzgado,
+        tipoJuicio, concepto);
+
     var docInicial = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
     documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
 
     // 5) Detalle + personas
     carpetaDetalleMig.createCarpetaDetalle(carpeta);
     var actores = actoresReader.buscarPorClave(entrada.getCu());
-    personasMig.createFromLegacy(actores, tipoJuicio, carpeta);
+    List<ActoresMigracionSaveRecord> personasLegacy = getActoresExpediente(actores);
+    personasMig.crearPersonaLegacy(personasLegacy, tipoJuicio, carpeta);
 
     // 6) Registro de migración
     String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
@@ -156,7 +201,7 @@ public class MigrarExpedienteUseCase {
         juzgado,
         carpeta);
 
-    //Marcar entradas (expediente PHP) como migrado: 
+    // Marcar entradas (expediente PHP) como migrado:
     entrada.setEstadoMigracion(EstadoMigracion.EXPEDIENTE_MIGRADO);
     entradasMigracionRepository.save(entrada);
 
@@ -191,15 +236,15 @@ public class MigrarExpedienteUseCase {
 
     // Documentos (idealmente idempotentes)
     documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
-    documentoMig.createSentenciasFromLegacy(sentencias, carpeta);
+    crearSentenciaFromLegacy(sentencias, carpeta);
     documentoMig.createPromocionesFromLegacy(promos, carpeta);
     documentoMig.createOficiosFromLegacy(oficios, carpeta);
     documentoMig.createExhortoSalidaFromLegacy(exhortosCapital, carpeta);
     documentoMig.createExhortoEntradaFromLegacy(exhortosForaneos, carpeta);
 
     // Piezas
-    carpetaMig.createPiezaConDocumentos(carpeta, piezasLegacy);
-
+    List<Carpeta> piezas = carpetaMig.createPiezas(carpeta, piezasLegacy, getTipoPieza(entrada.getCu()));
+    createDocumentosPieza(piezas);
     // Amparos
     documentoMig.createAmparos(carpeta, amparos);
 
@@ -238,6 +283,136 @@ public class MigrarExpedienteUseCase {
     return migracionesRepository.save(migracion);
   }
 
-  
+  private String getFolio(Ocomun ocomun) {
+    return ocomun != null ? ocomun.getFolio().toString() : UUID.randomUUID().toString();
+  }
+
+  private String getExpedienteCompleto(EntradasMigracion entrada) {
+    return entrada.getExpediente() + "/" + entrada.getAmo();
+  }
+
+  public String getTipoPieza(String cu) {
+    if (cu == null) {
+      throw new IllegalArgumentException("cu no puede ser null");
+    }
+    cu = cu.trim();
+
+    int len = cu.length();
+    if (len != 16) {
+      throw new IllegalArgumentException(
+          "cu debe tener exactamente 16 caracteres; recibido " + len + ": '" + cu + "'");
+    }
+
+    // (Opcional) Validación de formato: 12 dígitos + 2 letras + 2 dígitos
+    // Ajusta el regex si tu sufijo puede variar.
+    if (!cu.matches("\\d{12}[A-Za-z]{2}\\d{2}")) {
+      throw new IllegalArgumentException(
+          "Formato de pieza (cu) inválido. Se esperaba 12 dígitos, 2 letras, 2 dígitos.");
+    }
+
+    // Si ya validaste longitud==16, es equivalente usar (12,16) o solo (12)
+    return cu.substring(12); // "AC01" por ejemplo
+  }
+
+  private void createDocumentosPieza(List<Carpeta> piezas) {
+    piezas.forEach(pieza -> {
+      // obtenemos los acuerdos, sentencias, promociones de la pieza:
+      var acuerdos = acuerdosReader.buscarAcuerdosPorCu(pieza.getCu());
+      var sentencias = acuerdosReader.buscarSentenciasPorCu(pieza.getCu());
+      var promos = detallesReader.buscarPorCu(pieza.getCu());
+
+      documentoMig.createAcuerdosFromLegacy(acuerdos, pieza, rubrosMapper);
+      crearSentenciaFromLegacy(sentencias, pieza);
+      documentoMig.createPromocionesFromLegacy(promos, pieza);
+
+    });
+  }
+
+  private int getDias(TipoJuicio tipoJuicio, String estado) {
+    String materia = tipoJuicio.getMateria() != null ? tipoJuicio.getMateria().getNombre() : "";
+    String sistema = tipoJuicio.getTipoSistema() != null ? tipoJuicio.getTipoSistema().getNombre() : "";
+
+    boolean esFamiliarOral = "FAMILIAR".equalsIgnoreCase(materia)
+        && "ORAL".equalsIgnoreCase(sistema);
+
+    if (esFamiliarOral) {
+      return conceptosFamReader.findByClave(estado)
+          .map(x -> parseDias(x.getDias()))
+          .orElse(0);
+    }
+    return conceptosReader.findByClave(estado)
+        .map(x -> parseDias(x.getDias()))
+        .orElse(0);
+  }
+
+  private int parseDias(String s) {
+    if (s == null)
+      return 0;
+    try {
+      return Integer.parseInt(s.trim());
+    } catch (NumberFormatException e) {
+      return 0;
+    }
+  }
+
+  private List<ActoresMigracionSaveRecord> getActoresExpediente(List<ActoresMigracion> actores) {
+    List<ActoresMigracionSaveRecord> actoresRecord = new ArrayList<>();
+
+    actores.forEach(a -> {
+      String tipoPartes = partesMapper.mapTipoPartesMigracion(a.getTipo());
+      TipoNotificacion tipoNotificacion = notificacionMapper.mapTipoNotificacion(a.getTipoNotificacion());
+      String correoNotificacion = entradasUsuariosReader
+          .findByClaveActorAndEstatus(a.getClaveAct())
+          .map(entradaUsuario -> {
+            int idUsuario = entradaUsuario.getIdusuario();
+            UsuarioMigracion usuario = usuarioMigracionReader
+                .findUsuarioMigracionByIdUsuarioAnEstado(idUsuario);
+
+            return (usuario != null) ? usuario.getCorreo() : "";
+          }).orElse("");
+
+      DomicilioMigracion domicilioMigracion = domicilioMigracionReader.findByCuActorAndEstado(a.getClaveAct());
+
+      String nombrePersona = a.getNombre().trim().length() < 3 ? a.getNombre().trim() + " N/E"
+          : a.getNombre().trim();
+
+      ActoresMigracionSaveRecord actorMigracionSave = new ActoresMigracionSaveRecord(
+          tipoPartes,
+          tipoNotificacion,
+          correoNotificacion,
+          domicilioMigracion,
+          nombrePersona,
+          a.getTipoPersona());
+
+      actoresRecord.add(actorMigracionSave);
+
+    });
+
+    return actoresRecord;
+
+  }
+
+  public void crearSentenciaFromLegacy(List<AcuerdosMigracion> sentencias, Carpeta carpeta){
+    List<SentenciaMigracionSaveRecord> sentenciasRecord = new ArrayList<>(); 
+    sentencias.forEach(sentencia -> {
+      TipoSentencia tipoSent = sentenciaMapper.mapTipoSentencia(sentencia.getResumen());
+      TipoResolucion tipoRes = resolucionMapper.mapTipoResolucionSentencia(sentencia.getSentencia());
+
+        sentenciasRecord.add(new SentenciaMigracionSaveRecord(
+        carpeta,
+        sentencia.getFechaResolucion(),
+        tipoSent,
+        tipoRes,
+        sentencia.getClave().toString(),
+        sentencia.getRuta(),
+        sentencia.getFecha()
+      ));
+      sentencia.setMigrado(Migrado.SI);
+    });
+
+     documentoMig.createSentenciasFromLegacy(sentenciasRecord);
+     acuerdosMigracionRepository.saveAll(sentencias);
+     
+  }
 
 }
