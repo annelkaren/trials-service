@@ -338,7 +338,7 @@ public class NotificacionService {
 
         // Guardar todos los detalles en un solo paso
         notificacionesDetallesRepository.saveAll(detalles);
-
+ 
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));

@@ -89,6 +89,7 @@ public class DocumentoMigracionService {
     private final ExhortosCapitalMigracionRepository exhortosCapitalMigracionRepository;
     private final ExhortoForaneoMigracionRepository exhortoForaneoMigracionRepository;
     private final AmparoMigracionRepository amparoMigracionRepository;
+    private final NotificacionMigracionService notificacionMigracionService;
 
     // utils:
 
@@ -125,10 +126,14 @@ public class DocumentoMigracionService {
 
              // Actualiza estatus de migrado en SECGJ PHP: 
             a.setMigrado(Migrado.SI);
+
+            // Obtener notificaciones de acuerdos y crearlas:
+             notificacionMigracionService.crearNotificacionLegacy(created, a.getClave());
+
         }
 
         acuerdosMigracionRepository.saveAll(acuerdos);
-
+       
         return documentos;
     }
 
