@@ -23,24 +23,34 @@ import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliarMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
+import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
 import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracion;
 import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
 // ACL
 import mx.gob.pjpuebla.migracion.acl.mapper.MateriaMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.NotificacionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.PartesMapper;
+import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
@@ -64,9 +74,12 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.util.Utils;
+import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 
@@ -104,6 +117,9 @@ public class MigrarExpedienteUseCase {
   private final LegacyValidators validators;
   private final SentenciaMapper sentenciaMapper;
   private final ResolucionMapper resolucionMapper;
+  private final PromocionMapper promocionMapper;
+  private final EstadoOficioMapper estadoOficioMapper;
+  private final EstadoAcuseMapper estadoAcuseMapper;
 
   // Facades migración
   private final CarpetaMigracionService carpetaMig;
@@ -115,6 +131,8 @@ public class MigrarExpedienteUseCase {
   private final MigracionesRepository migracionesRepository;
   private final EntradasMigracionRepository entradasMigracionRepository;
   private final AcuerdosMigracionRepository acuerdosMigracionRepository;
+  private final DetallesPromRepository detallesPromRepository;
+  private final OficiosMigracionRepository oficiosMigracionRepository;
 
   // repositories para actualizar estatus de migración:
 
@@ -180,7 +198,8 @@ public class MigrarExpedienteUseCase {
     var carpeta = carpetaMig.crearCarpeta(getExpedienteCompleto(entrada), getFolio(ocomun), entrada.getCu(), juzgado,
         tipoJuicio, concepto);
 
-    var docInicial = documentoMig.createDemandaInicial(ocomun, carpeta, concepto);
+    var ruta = (ocomun != null) ? ocomun.getRutaDigitalizacion() : null;
+    var docInicial = documentoMig.createDemandaInicial(carpeta, concepto, ruta);
     documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
 
     // 5) Detalle + personas
@@ -235,10 +254,11 @@ public class MigrarExpedienteUseCase {
     var amparos = amparoMigracionReader.buscarPorCu(entrada.getCu());
 
     // Documentos (idealmente idempotentes)
-    documentoMig.createAcuerdosFromLegacy(acuerdos, carpeta, rubrosMapper);
+    crearAcuerdosFromLegacy(acuerdos, carpeta);
     crearSentenciaFromLegacy(sentencias, carpeta);
-    documentoMig.createPromocionesFromLegacy(promos, carpeta);
-    documentoMig.createOficiosFromLegacy(oficios, carpeta);
+    crearPromocionesFromLegacy(promos, carpeta);
+    crearOficiosFromLegacy(oficios, carpeta);
+
     documentoMig.createExhortoSalidaFromLegacy(exhortosCapital, carpeta);
     documentoMig.createExhortoEntradaFromLegacy(exhortosForaneos, carpeta);
 
@@ -321,9 +341,9 @@ public class MigrarExpedienteUseCase {
       var sentencias = acuerdosReader.buscarSentenciasPorCu(pieza.getCu());
       var promos = detallesReader.buscarPorCu(pieza.getCu());
 
-      documentoMig.createAcuerdosFromLegacy(acuerdos, pieza, rubrosMapper);
+      crearAcuerdosFromLegacy(acuerdos, pieza);
       crearSentenciaFromLegacy(sentencias, pieza);
-      documentoMig.createPromocionesFromLegacy(promos, pieza);
+      crearPromocionesFromLegacy(promos, pieza);
 
     });
   }
@@ -392,27 +412,103 @@ public class MigrarExpedienteUseCase {
 
   }
 
-  public void crearSentenciaFromLegacy(List<AcuerdosMigracion> sentencias, Carpeta carpeta){
-    List<SentenciaMigracionSaveRecord> sentenciasRecord = new ArrayList<>(); 
+  public void crearSentenciaFromLegacy(List<AcuerdosMigracion> sentencias, Carpeta carpeta) {
+    List<SentenciaMigracionSaveRecord> sentenciasRecord = new ArrayList<>();
     sentencias.forEach(sentencia -> {
       TipoSentencia tipoSent = sentenciaMapper.mapTipoSentencia(sentencia.getResumen());
       TipoResolucion tipoRes = resolucionMapper.mapTipoResolucionSentencia(sentencia.getSentencia());
 
-        sentenciasRecord.add(new SentenciaMigracionSaveRecord(
-        carpeta,
-        sentencia.getFechaResolucion(),
-        tipoSent,
-        tipoRes,
-        sentencia.getClave().toString(),
-        sentencia.getRuta(),
-        sentencia.getFecha()
-      ));
+      sentenciasRecord.add(new SentenciaMigracionSaveRecord(
+          carpeta,
+          sentencia.getFechaResolucion(),
+          tipoSent,
+          tipoRes,
+          sentencia.getClave().toString(),
+          sentencia.getRuta(),
+          sentencia.getFecha()));
       sentencia.setMigrado(Migrado.SI);
     });
 
-     documentoMig.createSentenciasFromLegacy(sentenciasRecord);
-     acuerdosMigracionRepository.saveAll(sentencias);
-     
+    documentoMig.createSentenciasFromLegacy(sentenciasRecord);
+    acuerdosMigracionRepository.saveAll(sentencias);
+
+  }
+
+  public void crearAcuerdosFromLegacy(List<AcuerdosMigracion> acuerdos, Carpeta carpeta) {
+    List<AcuerdosMigracionSaveRecord> acuerdosRecord = new ArrayList<>();
+
+    acuerdos.forEach(a -> {
+      List<String> rubros = rubrosMapper.mapRubros(a.getResumen());
+      String rubroPrincipal = rubros.isEmpty() ? "" : rubros.get(0);
+
+      AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
+          carpeta,
+          rubroPrincipal,
+          a.getFechaResolucion(),
+          rubros,
+          a.getClave().toString(),
+          a.getRuta(),
+          a.getFecha());
+
+      ;
+      acuerdosRecord.add(data);
+      a.setMigrado(Migrado.SI);
+    });
+
+    documentoMig.createAcuerdosFromLegacy(acuerdosRecord);
+    acuerdosMigracionRepository.saveAll(acuerdos);
+  }
+
+  public void crearPromocionesFromLegacy(List<DetallesProm> promociones, Carpeta carpeta) {
+    List<DetallePromSaveRecord> promocionesRecord = new ArrayList<>();
+
+    promociones.forEach(promo -> {
+      TipoPromocion tipoPromocion = promocionMapper.mapTipoPromocion(promo.getTipo(), promo.getDescrip());
+
+      promocionesRecord.add(new DetallePromSaveRecord(
+          carpeta,
+          tipoPromocion,
+          promo.getId().toString(),
+          promo.getArchivo(),
+          promo.getAcuerdo(),
+          promo.getAnexos()));
+
+      promo.setMigrado(Migrado.SI);
+
+    });
+
+    documentoMig.createPromocionesFromLegacy(promocionesRecord);
+    detallesPromRepository.saveAll(promociones);
+  }
+
+  public void crearOficiosFromLegacy(List<OficiosMigracion> oficios, Carpeta carpeta) {
+    List<OficiosMigracionSaveRecord> oficiosRecord = new ArrayList<>();
+
+    oficios.forEach(oficio -> {
+      EstadoCarpeta estadoCarpeta = estadoOficioMapper.estadoOficioMapper(oficio.getMotivo(), oficio.getRutaOfiAcuse(),
+          oficio.getEstatusOfi());
+      EstadoAcuse estadoAcuse = estadoAcuseMapper.mapEstadoAcuse(oficio.getMotivo(), oficio.getRutaOfiAcuse());
+
+      oficiosRecord.add(new OficiosMigracionSaveRecord(
+          carpeta,
+          estadoCarpeta,
+          oficio.getOficio(),
+          oficio.getRutaOfi(),
+          oficio.getId(),
+          oficio.getDependencia(),
+          oficio.getAsunto(),
+          oficio.getFecha(),
+          oficio.getFechaEntrega(),
+          oficio.getRuta(),
+          oficio.getMotivo(),
+          estadoAcuse,
+          oficio.getNombre()));
+
+      oficio.setMigrado(Migrado.SI);
+    });
+
+    documentoMig.createOficiosFromLegacy(oficiosRecord);
+    oficiosMigracionRepository.saveAll(oficios);
   }
 
 }
