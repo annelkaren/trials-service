@@ -14,8 +14,14 @@ import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.entradasUsuarios.EntradasUsuarioMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortoCapitalMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion;
 import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracion;
@@ -33,6 +39,9 @@ import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionRecordSave;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
 import mx.gob.pjpuebla.migracion.readers.conceptos.ConceptosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.conceptos.familiar.ConceptosMatFamiliarMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
@@ -44,6 +53,7 @@ import mx.gob.pjpuebla.migracion.readers.domicilio.DomicilioMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.acl.mapper.AmparoMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
 // ACL
@@ -120,6 +130,7 @@ public class MigrarExpedienteUseCase {
   private final PromocionMapper promocionMapper;
   private final EstadoOficioMapper estadoOficioMapper;
   private final EstadoAcuseMapper estadoAcuseMapper;
+  private final AmparoMapper amparoMapper;
 
   // Facades migración
   private final CarpetaMigracionService carpetaMig;
@@ -133,6 +144,9 @@ public class MigrarExpedienteUseCase {
   private final AcuerdosMigracionRepository acuerdosMigracionRepository;
   private final DetallesPromRepository detallesPromRepository;
   private final OficiosMigracionRepository oficiosMigracionRepository;
+  private final ExhortosCapitalMigracionRepository exhortosCapitalMigracionRepository;
+  private final ExhortoForaneoMigracionRepository exhortoForaneoMigracionRepository;
+  private final AmparoMigracionRepository amparoMigracionRepository;
 
   // repositories para actualizar estatus de migración:
 
@@ -258,15 +272,14 @@ public class MigrarExpedienteUseCase {
     crearSentenciaFromLegacy(sentencias, carpeta);
     crearPromocionesFromLegacy(promos, carpeta);
     crearOficiosFromLegacy(oficios, carpeta);
-
-    documentoMig.createExhortoSalidaFromLegacy(exhortosCapital, carpeta);
-    documentoMig.createExhortoEntradaFromLegacy(exhortosForaneos, carpeta);
+    crearExhortoSalida(exhortosCapital, carpeta);
+    crearExhortoEntrada(exhortosForaneos, carpeta);
 
     // Piezas
     List<Carpeta> piezas = carpetaMig.createPiezas(carpeta, piezasLegacy, getTipoPieza(entrada.getCu()));
     createDocumentosPieza(piezas);
     // Amparos
-    documentoMig.createAmparos(carpeta, amparos);
+    crearAmparosFromLegacy(amparos, carpeta);
 
     updateMigraciones(
         migracionId,
@@ -509,6 +522,74 @@ public class MigrarExpedienteUseCase {
 
     documentoMig.createOficiosFromLegacy(oficiosRecord);
     oficiosMigracionRepository.saveAll(oficios);
+  }
+
+  public void crearExhortoSalida(List<ExhortosCapitalMigracion> exhortos, Carpeta carpeta) {
+    List<ExhortoCapitalMigracionSaveRecord> exhortosRecord = new ArrayList<>();
+
+    exhortos.forEach(exhorto -> {
+      exhortosRecord.add(new ExhortoCapitalMigracionSaveRecord(
+          exhorto.getTramite(),
+          exhorto.getDestino(),
+          exhorto.getObse(),
+          exhorto.getFechaEn(),
+          exhorto.getFechaDe(),
+          carpeta,
+          exhorto.getExhorto()));
+
+      exhorto.setMigrado(Migrado.SI);
+    });
+
+    documentoMig.createExhortoSalidaFromLegacy(exhortosRecord);
+    exhortosCapitalMigracionRepository.saveAll(exhortos);
+
+  }
+
+  public void crearExhortoEntrada(List<ExhortoForaneoMigracion> exhorto, Carpeta carpeta) {
+
+    List<ExhortoForaneoMigracionSaveRecord> exhortosRecord = new ArrayList<>();
+
+    exhorto.forEach(exhortoForaneo -> {
+      exhortosRecord.add(new ExhortoForaneoMigracionSaveRecord(
+          exhortoForaneo.getTramite(),
+          exhortoForaneo.getObse(),
+          carpeta,
+          exhortoForaneo.getExhorto()));
+
+      exhortoForaneo.setMigrado(Migrado.SI);
+    });
+
+    documentoMig.createExhortoEntradaFromLegacy(exhortosRecord);
+    exhortoForaneoMigracionRepository.saveAll(exhorto);
+  }
+
+  public void crearAmparosFromLegacy(List<AmparosMigracion> amparos, Carpeta carpeta) {
+    List<AmparoMigracionRecordSave> amparosRecord = new ArrayList<>();
+
+    amparos.forEach(amparo -> {
+      Integer amparoImpugnacion = amparoMapper.mapImpugnacion(amparo.getRevision());
+      String amparoSentido = amparoMapper.mapSentido(amparo.getConcede());
+      String sentidoImpugnacion = amparoMapper.mapSentidoImpugnacion(amparo.getImpugna());
+      String tipoAmparo = amparoMapper.mapTipoAmparo(amparo.getTipo());
+
+      amparosRecord.add(new AmparoMigracionRecordSave(
+          carpeta,
+          amparo.getFecha(),
+          amparoImpugnacion,
+          amparo.getQuejoso(),
+          null,
+          null,
+          amparoSentido,
+          sentidoImpugnacion,
+          tipoAmparo,
+          amparo.getFechaConclusion(),
+          amparo.getClave().toString()));
+
+      amparo.setMigrado(Migrado.SI);
+    });
+
+    documentoMig.createAmparosFromLegacy(amparosRecord);
+    amparoMigracionRepository.saveAll(amparos);
   }
 
 }
