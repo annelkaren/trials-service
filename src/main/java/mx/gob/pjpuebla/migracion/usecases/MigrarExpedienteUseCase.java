@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +24,16 @@ import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionR
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionRegistroRecord;
+import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracion;
 import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juicios.JuicioResponseRecord;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunReader;
+import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunResponseRecord;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionRepository;
@@ -67,10 +72,11 @@ import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.TipoSistemaMapper;
 import mx.gob.pjpuebla.migracion.acl.normalizer.ExpedienteNormalizer;
 import mx.gob.pjpuebla.migracion.acl.validate.LegacyValidators;
-
+import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 // Core (solo modelos)
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
+import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.migracion.CarpetaDetalleMigracionService;
 import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
@@ -81,6 +87,7 @@ import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.JuzgadoMigracionService;
 import mx.gob.pjpuebla.trials.migracion.PersonasMigracionService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.util.Utils;
@@ -111,20 +118,14 @@ public class MigrarExpedienteUseCase {
   private final ExhortosCapitalMigracionReader exhortosCapitalMigracionReader;
   private final ExhortoForaneoMigracionReader exhortosForaneosMigracionReader;
   private final AmparoMigracionReader amparoMigracionReader;
-  private final ConceptosMigracionReader conceptosReader;
-  private final ConceptosMatFamiliarMigracionReader conceptosFamReader;
-  private final EntradasUsuarioMigracionReader entradasUsuariosReader;
-  private final UsuarioMigracionReader usuarioMigracionReader;
-  private final DomicilioMigracionReader domicilioMigracionReader;
 
   // ACL
-  private final MateriaMapper materiaMapper;
+
   private final RubrosMapper rubrosMapper;
-  private final PartesMapper partesMapper;
+
   private final ExpedienteNormalizer expedienteNormalizer;
   private final TipoSistemaMapper tipoSistemaMapper;
-  private final NotificacionMapper notificacionMapper;
-  private final LegacyValidators validators;
+
   private final SentenciaMapper sentenciaMapper;
   private final ResolucionMapper resolucionMapper;
   private final PromocionMapper promocionMapper;
@@ -162,69 +163,44 @@ public class MigrarExpedienteUseCase {
   public MigracionExpedienteResult migrarExpediente(String exp, Integer year, String claveJuzgado) {
     String expediente = Utils.normalizarExpediente(exp);
 
-    // 1) Fetch legacy (todo local, sin estado global)
+    // 1) Obtenemos la entrada del expediente de legacy:
     Optional<EntradasMigracion> entradaOptional = entradasReader.buscarEntradasPorFiltros(expediente, year,
         claveJuzgado);
 
-    if (entradaOptional.isEmpty()) {
-      throw new IllegalArgumentException(
-          "No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
-    }
+    //valida si existe la entrada:
+    validaOptional(entradaOptional, exp + "/" + year + "/" + claveJuzgado);
 
     EntradasMigracion entrada = entradaOptional.get();
 
     // Validación si entrada (expediente) ya ha sido migrado.
-    if (entrada.getEstadoMigracion().equals(EstadoMigracion.EXPEDIENTE_MIGRADO)) {
-      Carpeta existingCarpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
-      Integer existingMigracionId = migracionesRepository.findByCarpetaId(existingCarpeta.getId())
-          .map(Migraciones::getId)
-          .orElse(null);
-      return new MigracionExpedienteResult(existingCarpeta, existingMigracionId);
-    }
+    existeExpediente(entrada, exp, year, claveJuzgado);
+ 
+    //Obtenemos datos legacy juzgado, ultimo movimiento, oficialia comun, Juicio, actores
+    JuzgadosMigracionRegistroRecord juzgadoLegacy = juzgadosReader.findByCodigo(claveJuzgado);
+    MovimientosMigracionRecord ultimoMovimientoLegacy = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzgadoLegacy.tablaUbicacion());
+    OcomunResponseRecord ocomunLegacy = ocomunReader.findByOcomun(entrada.getCu()).orElse(null);
+    JuicioResponseRecord juicioLegacy = juiciosReader.buscarJuicio(entrada.getJuicio());
+    List<ActoresMigracion> actores = actoresReader.buscarPorClave(entrada.getCu());
 
-    var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
-
-    var ocomun = ocomunReader.findByOcomun(entrada.getCu()).orElse(null);
-    var juicioLg = juiciosReader.buscarJuicio(entrada.getJuicio());
-    validators.requireNonEmpty(claveJuzgado, "claveJuzgado");
-
-    // 2) Normalizar / requerir juzgado
-    String expCompleto = expedienteNormalizer.normalizeExpediente(exp + "/" + year);
+    //Obtene datos de legacy y trasnformarlos a datos de Java:
+    TipoSistema tipoSistema = tipoSistemaMapper.mapTipoSistema(juzgadoLegacy.materiaCodigo(), juzgadoLegacy.juzgadoCodigo());
     Juzgado juzgado = juzgadoMig.requireJuzgadoActual(claveJuzgado);
-    carpetaMig.assertExpedienteDisponible(expCompleto, juzgado);
+    TipoJuicio tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(juicioLegacy.materia(), juicioLegacy.descripcion(), tipoSistema);
+    Concepto concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, ultimoMovimientoLegacy);
+    String ruta =  ocomunLegacy.rutaDigitalizacion();
+    String recibio = ultimoMovimientoLegacy.recibio();
+    String puesto = ultimoMovimientoLegacy.puestoRecibioTBLPuesto();
+    List<ActoresMigracionSaveRecord> personasLegacy = actoresReader.getActoresExpediente(actores);
 
-    // 3) Último movimiento / mapeos
-    var ubicUlt = ubicacionesReader.buscarUltimoMovimiento(entrada.getCu(), juzLegacy.getTablaUbicacion());
-    String materiaNombre = materiaMapper.mapMateria(juicioLg.getMateria());
-
-    var tipoSistema = tipoSistemaMapper.mapTipoSistema(juzLegacy);
-    var tipoJuicio = conceptoMig.findOrCreateTipoJuicioForMigration(materiaNombre, juicioLg.getDescripcion(),
-        tipoSistema);
-
-    String estadoUltMov = (ubicUlt != null && ubicUlt.estado() != null && !ubicUlt.estado().isBlank())
-        ? ubicUlt.estado()
-        : "Archivo";
-
-    var diasConcepto = getDias(tipoJuicio, estadoUltMov);
-    var concepto = conceptoMig.findOrCreateByUltimoMovimiento(tipoJuicio, estadoUltMov, diasConcepto);
-
-    // 4) Crear carpeta y documentos base
-    var carpeta = carpetaMig.crearCarpeta(getExpedienteCompleto(entrada), getFolio(ocomun), entrada.getCu(), juzgado,
+    Carpeta carpeta = carpetaMig.crearCarpeta(getExpedienteCompleto(entrada), ocomunLegacy.folio().toString(), entrada.getCu(), juzgado,
         tipoJuicio, concepto);
-
-    var ruta = (ocomun != null) ? ocomun.getRutaDigitalizacion() : null;
-    var docInicial = documentoMig.createDemandaInicial(carpeta, concepto, ruta);
-    documentoMig.createAnexos(ocomun != null ? ocomun.getAnexos() : null, docInicial);
-
-    // 5) Detalle + personas
+    Documento demandaInicial = documentoMig.createDemandaInicial(carpeta, concepto, ruta);
+    documentoMig.createAnexos(ocomunLegacy.anexos(), demandaInicial);
     carpetaDetalleMig.createCarpetaDetalle(carpeta);
-    var actores = actoresReader.buscarPorClave(entrada.getCu());
-    List<ActoresMigracionSaveRecord> personasLegacy = getActoresExpediente(actores);
     personasMig.crearPersonaLegacy(personasLegacy, tipoJuicio, carpeta);
 
     // 6) Registro de migración
-    String recibio = (ubicUlt != null) ? ubicUlt.recibio() : null;
-    String puesto = (ubicUlt != null) ? ubicUlt.puestoRecibioTBLPuesto() : null;
+
 
     var migracion = createMigraciones(
         EstadoMigracion.EXPEDIENTE_MIGRADO,
@@ -254,7 +230,7 @@ public class MigrarExpedienteUseCase {
           "No se encontraron entradas para: " + expediente + "/" + year + "/" + claveJuzgado);
     }
     EntradasMigracion entrada = entradaOptional.get();
-    var juzLegacy = juzgadosReader.requireByCodigo(claveJuzgado);
+    var juzgadoLegacy = juzgadosReader.findByCodigo(claveJuzgado);
     var carpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
 
     // Lecturas legacy
@@ -262,7 +238,7 @@ public class MigrarExpedienteUseCase {
     var sentencias = acuerdosReader.buscarSentenciasPorCu(entrada.getCu());
     var promos = detallesReader.buscarPorCu(entrada.getCu());
     var oficios = oficiosReader.buscarPorCu(entrada.getCu());
-    var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzLegacy.getTablaUbicacion());
+    var piezasLegacy = ubicacionesReader.buscarPiezasByCu(entrada.getCu(), juzgadoLegacy.tablaUbicacion());
     var exhortosCapital = exhortosCapitalMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
     var exhortosForaneos = exhortosForaneosMigracionReader.buscarPorExpAmoJuzgado(expediente, year, claveJuzgado);
     var amparos = amparoMigracionReader.buscarPorCu(entrada.getCu());
@@ -316,10 +292,6 @@ public class MigrarExpedienteUseCase {
     return migracionesRepository.save(migracion);
   }
 
-  private String getFolio(Ocomun ocomun) {
-    return ocomun != null ? ocomun.getFolio().toString() : UUID.randomUUID().toString();
-  }
-
   private String getExpedienteCompleto(EntradasMigracion entrada) {
     return entrada.getExpediente() + "/" + entrada.getAmo();
   }
@@ -361,69 +333,7 @@ public class MigrarExpedienteUseCase {
     });
   }
 
-  private int getDias(TipoJuicio tipoJuicio, String estado) {
-    String materia = tipoJuicio.getMateria() != null ? tipoJuicio.getMateria().getNombre() : "";
-    String sistema = tipoJuicio.getTipoSistema() != null ? tipoJuicio.getTipoSistema().getNombre() : "";
 
-    boolean esFamiliarOral = "FAMILIAR".equalsIgnoreCase(materia)
-        && "ORAL".equalsIgnoreCase(sistema);
-
-    if (esFamiliarOral) {
-      return conceptosFamReader.findByClave(estado)
-          .map(x -> parseDias(x.getDias()))
-          .orElse(0);
-    }
-    return conceptosReader.findByClave(estado)
-        .map(x -> parseDias(x.getDias()))
-        .orElse(0);
-  }
-
-  private int parseDias(String s) {
-    if (s == null)
-      return 0;
-    try {
-      return Integer.parseInt(s.trim());
-    } catch (NumberFormatException e) {
-      return 0;
-    }
-  }
-
-  private List<ActoresMigracionSaveRecord> getActoresExpediente(List<ActoresMigracion> actores) {
-    List<ActoresMigracionSaveRecord> actoresRecord = new ArrayList<>();
-
-    actores.forEach(a -> {
-      String tipoPartes = partesMapper.mapTipoPartesMigracion(a.getTipo());
-      TipoNotificacion tipoNotificacion = notificacionMapper.mapTipoNotificacion(a.getTipoNotificacion());
-      String correoNotificacion = entradasUsuariosReader
-          .findByClaveActorAndEstatus(a.getClaveAct())
-          .map(entradaUsuario -> {
-            int idUsuario = entradaUsuario.getIdusuario();
-            UsuarioMigracion usuario = usuarioMigracionReader
-                .findUsuarioMigracionByIdUsuarioAnEstado(idUsuario);
-
-            return (usuario != null) ? usuario.getCorreo() : "";
-          }).orElse("");
-
-      DomicilioMigracion domicilioMigracion = domicilioMigracionReader.findByCuActorAndEstado(a.getClaveAct());
-
-      String nombrePersona = a.getNombre().trim().length() < 3 ? a.getNombre().trim() + " N/E"
-          : a.getNombre().trim();
-
-      ActoresMigracionSaveRecord actorMigracionSave = new ActoresMigracionSaveRecord(
-          tipoPartes,
-          tipoNotificacion,
-          correoNotificacion,
-          domicilioMigracion,
-          nombrePersona,
-          a.getTipoPersona());
-
-      actoresRecord.add(actorMigracionSave);
-
-    });
-
-    return actoresRecord;
-
-  }
 
   public void crearSentenciaFromLegacy(List<AcuerdosMigracion> sentencias, Carpeta carpeta) {
     List<SentenciaMigracionSaveRecord> sentenciasRecord = new ArrayList<>();
@@ -590,6 +500,28 @@ public class MigrarExpedienteUseCase {
 
     documentoMig.createAmparosFromLegacy(amparosRecord);
     amparoMigracionRepository.saveAll(amparos);
+  }
+
+  private MigracionExpedienteResult existeExpediente(EntradasMigracion entrada,
+      String exp,
+      Integer year,
+      String claveJuzgado) {
+    if (!EstadoMigracion.EXPEDIENTE_MIGRADO.equals(entrada.getEstadoMigracion())) {
+      return null; 
+    }
+
+    Carpeta existingCarpeta = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
+    Integer existingMigracionId = migracionesRepository.findByCarpetaId(existingCarpeta.getId())
+        .map(Migraciones::getId)
+        .orElse(null);
+
+    return new MigracionExpedienteResult(existingCarpeta, existingMigracionId);
+  }
+
+  private <T> void validaOptional(Optional<T> opcional, String clave) {
+    if (opcional.isEmpty()) {
+      throw new NotFoundException("No se encontraron resultados", clave);
+    }
   }
 
 }

@@ -21,8 +21,8 @@ public class JuiciosMigracionReader {
      * @param idJuicio ID del juicio
      * @return Entidad `JuiciosMigracion` o null si no se encuentra
      */
-    public JuiciosMigracion buscarJuicio(String idJuicio) {
-        return juiciosMigracionRepository.findById(idJuicio).orElse(null);
+    public JuicioResponseRecord buscarJuicio(String idJuicio) {
+        return juiciosMigracionRepository.buscarPorId(idJuicio).orElse(null);
     }
 
     public TipoJuicio crearTipoJuicio(Materia materia, String nombre) {

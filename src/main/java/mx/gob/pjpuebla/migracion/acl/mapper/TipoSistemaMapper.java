@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.migracion.TipoSistemaMigracionService;
 
@@ -15,17 +14,17 @@ public class TipoSistemaMapper {
 
     private final TipoSistemaMigracionService tipoSistemaMigracionService;
 
-    public TipoSistema mapTipoSistema(JuzgadosMigracion juzgadoMigracion) {
+    public TipoSistema mapTipoSistema(String materiaCodigo, String juzgadoCodigo) {
         // SI el juzgado tiene una materia F(Familiar) y ademas el juzgado tiene clade
         // entre el 9000 y el 9900 es de un sistema oral:
-        if (juzgadoMigracion.getMateriaRealObj().getCodigo().equals("F") &&
-                (Integer.parseInt(juzgadoMigracion.getCodigo()) >= 9000
-                        && Integer.parseInt(juzgadoMigracion.getCodigo()) < 9009)) {
+        if (materiaCodigo.equals("F") &&
+                (Integer.parseInt(juzgadoCodigo) >= 9000
+                        && Integer.parseInt(juzgadoCodigo) < 9009)) {
             return tipoSistemaMigracionService.findTipoSistemaByNombre("Oral");
         }
 
         // Si el juzgado tiene una materia X (Mixta) es un sistema mixto.
-        if (juzgadoMigracion.getMateriaRealObj().getCodigo().equals("X")) {
+        if (materiaCodigo.equals("X")) {
             return tipoSistemaMigracionService.findTipoSistemaByNombre("Mixto");
             
         }

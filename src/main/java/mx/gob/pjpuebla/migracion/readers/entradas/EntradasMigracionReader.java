@@ -12,10 +12,10 @@ import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromReader;
-import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracion;
+import mx.gob.pjpuebla.migracion.readers.juicios.JuicioResponseRecord;
 import mx.gob.pjpuebla.migracion.readers.juicios.JuiciosMigracionReader;
-import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracion;
 import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionReader;
+import mx.gob.pjpuebla.migracion.readers.juzgados.JuzgadosMigracionRegistroRecord;
 import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
 import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
@@ -68,17 +68,17 @@ public class EntradasMigracionReader {
         EntradasMigracion entrada = entradaOptional.get();
 
         // Buscar juzgado:
-        JuzgadosMigracion juzgado = juzgadosMigracionService.requireByCodigo(juzgadoCodigo);
+        JuzgadosMigracionRegistroRecord juzgado = juzgadosMigracionService.findByCodigo(juzgadoCodigo);
 
         // Definir tabla ubicacion:
-        String tablaUbi = juzgado != null ? juzgado.getTablaUbicacion() : null;
+        String tablaUbi = juzgado != null ? juzgado.tablaUbicacion() : null;
 
         // Se obtienen las ubicaciones dependiendo del CU y de la tabla dinámica según
         // juzgado
         MovimientosMigracionRecord ubicaciones = ubicacionesService.buscarUltimoMovimiento(entrada.getCu(), tablaUbi);
 
         // Se obtiene el juicio asociado al campo `juicio` de la entrada
-        JuiciosMigracion juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
+        JuicioResponseRecord juicio = juiciosMigracionService.buscarJuicio(entrada.getJuicio());
 
         // Se obtienen los actores:
         List<ActoresMigracion> actores = actoresMigracionService.buscarPorClave(entrada.getCu());
