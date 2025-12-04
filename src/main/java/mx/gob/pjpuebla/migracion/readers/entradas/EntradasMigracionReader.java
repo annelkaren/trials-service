@@ -88,13 +88,16 @@ public class EntradasMigracionReader {
 
 
     public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
+      
         String expedienteNormalizado = Utils.normalizarExpediente(expediente);
+        log.info("El expediente que busca es: " + expediente);
+        log.info("El expediente a buscar normalizado es: " + expedienteNormalizado);
         Optional<EntradasMigracion> entradaOptional = entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expedienteNormalizado,
                 amo,
                 juzgadoCodigo, "A");
 
-        validaOptional(entradaOptional, expediente + "/" + amo + "/" + juzgadoCodigo);
+        validaOptional(entradaOptional, (expediente + "/" + amo + "/" + juzgadoCodigo));
         return entradaOptional.get();
     }
 
@@ -204,7 +207,8 @@ public class EntradasMigracionReader {
 
     private <T> void validaOptional(Optional<T> opcional, String clave) {
         if (opcional.isEmpty()) {
-            throw new NotFoundException("No se encontraron resultados", clave);
+            log.error("No se encontraron resultados para la clave {}", clave);
+            throw new NotFoundException("No se encontraron resultados ", clave);
         }
     }
 

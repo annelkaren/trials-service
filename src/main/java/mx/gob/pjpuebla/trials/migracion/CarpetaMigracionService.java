@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.acl.mapper.TipoPiezaMapper;
 import mx.gob.pjpuebla.migracion.readers.movimientos.MovimientosMigracionRecord;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -37,6 +38,7 @@ public class CarpetaMigracionService {
     private final JuzgadoMigracionService juzgadoMigracionService;
     private final TipoPiezaRepository tipoPiezaRepository;
     private final DocumentoRepository documentoRepository;
+    private final TipoPiezaMapper tipoPiezaMapper;
 
     @Transactional(readOnly = true)
     public void assertExpedienteDisponible(String expedienteCompleto, Juzgado juzgado) {
@@ -81,13 +83,13 @@ public class CarpetaMigracionService {
     }
 
     // Creación de piezas a expediente:
-    public List<Carpeta> createPiezas(Carpeta carpeta, List<MovimientosMigracionRecord> piezas,
-            String tipoPiezaCompleta) {
+    public List<Carpeta> createPiezas(Carpeta carpeta, List<MovimientosMigracionRecord> piezas) {
         List<Carpeta> piezasCreadas = new ArrayList<>();
 
         piezas.forEach(pieza -> {
-            TipoPieza tipoPieza = findTipoPieza(tipoPiezaCompleta.substring(0, 2), pieza.tipoPieza());
-            String expediente = carpeta.getExpediente() + "/" + tipoPiezaCompleta;
+            String tipoPiezaString = tipoPiezaMapper.getTipoPieza(pieza.cu());
+            TipoPieza tipoPieza = findTipoPieza(tipoPiezaString.substring(0,2), pieza.tipoPieza());
+            String expediente = carpeta.getExpediente() + "/" + tipoPiezaString;
 
             Carpeta piezaNew = new Carpeta()
                     .setFolio(documentoRepository.getNextValPieza().toString())
@@ -128,6 +130,8 @@ public class CarpetaMigracionService {
 
     public Carpeta findByExpYearAndClaveJuzgado(String expediente, Integer year, String claveJuzgado) {
         String expedienteCompleto = expediente + "/" + year;
+
+        log.info("El expediente que busca es: " + expedienteCompleto);
         Juzgado juzgado = juzgadoMigracionService.requireJuzgadoActual(claveJuzgado);
 
         Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, juzgado);
@@ -135,8 +139,8 @@ public class CarpetaMigracionService {
         if (carpeta.isPresent()) {
             return carpeta.get();
         } else {
-            throw new NotFoundException("No se encontró la carpeta con los datos proporcionados",
-                    expedienteCompleto + " - " + claveJuzgado);
+            return null;
+           // throw new NotFoundException("No se encontró la carpeta con los datos proporcionados",   expedienteCompleto + " - " + claveJuzgado);
         }
     }
 

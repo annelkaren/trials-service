@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.acl.mapper.AmparoMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
 import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
@@ -46,6 +47,7 @@ import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.ubicaciones.UbicacionesReader;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.migracion.CarpetaMigracionService;
 import mx.gob.pjpuebla.trials.migracion.DocumentoMigracionService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoAcuse;
@@ -56,9 +58,12 @@ import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
+import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MigrarDocumentosUseCase {
 
     // READERS legacy
@@ -88,11 +93,35 @@ public class MigrarDocumentosUseCase {
     private final AmparoMapper amparoMapper;
     private final EstadoAcuseMapper estadoAcuseMapper;
     private final EstadoOficioMapper estadoOficioMapper;
-    private final TipoPiezaMapper tipoPiezaMapper;
 
     // SERVICIOS lado trials.migracion
     private final DocumentoMigracionService documentoMig;
     private final CarpetaMigracionService carpetaMig;
+    private final MigracionesRepository migracionesRepository;
+
+    // Record auxiliar para no repedir logica:
+    public record ContextoExpedienteMigracion(
+            String exp,
+            Integer year,
+            String claveJuzgado,
+            EntradasMigracion entrada,
+            JuzgadosMigracionRegistroRecord juzgadoLegacy,
+            Carpeta carpetaPrincipal) {
+    }
+
+    private ContextoExpedienteMigracion cargarContexto(String exp, Integer year, String claveJuzgado) {
+        EntradasMigracion entrada = entradasReader.buscarEntradasPorFiltros(exp, year, claveJuzgado);
+        JuzgadosMigracionRegistroRecord juzgadoLegacy = juzgadosReader.findByCodigo(claveJuzgado);
+        Carpeta carpetaPrincipal = carpetaMig.findByExpYearAndClaveJuzgado(exp, year, claveJuzgado);
+
+        return new ContextoExpedienteMigracion(
+                exp,
+                year,
+                claveJuzgado,
+                entrada,
+                juzgadoLegacy,
+                carpetaPrincipal);
+    }
 
     @Transactional
     public EstadoMigracion migrarDocumentosExpediente(
@@ -100,6 +129,7 @@ public class MigrarDocumentosUseCase {
             Integer year,
             String claveJuzgado,
             Integer migracionId) {
+
         // 1) Reutilizamos la entrada y juzgado legacy
         EntradasMigracion entrada = entradasReader.buscarEntradasPorFiltros(exp, year, claveJuzgado);
         JuzgadosMigracionRegistroRecord juzgadoLegacy = juzgadosReader.findByCodigo(claveJuzgado);
@@ -129,34 +159,66 @@ public class MigrarDocumentosUseCase {
         migrarExhortosSalida(exhortosCapital, carpetaPrincipal);
         migrarExhortosEntrada(exhortosForaneos, carpetaPrincipal);
         migrarAmparos(amparos, carpetaPrincipal);
-        List<Carpeta> piezas = carpetaMig.createPiezas(carpetaPrincipal, piezasLegacy,
-                tipoPiezaMapper.getTipoPieza(entrada.getCu()));
+        
+        piezasLegacy.forEach(pieza ->    log.info(pieza.cu()) );
+
+        List<Carpeta> piezas = carpetaMig.createPiezas(carpetaPrincipal, piezasLegacy);
         migrarPiezas(piezas);
 
         // 5) Actualizar estado en tabla Migraciones si quieres más granularidad
-        // registroMigracionService.actualizarEstado(migracionId,
-        // EstadoMigracion.DOCUMENTOS_MIGRADOS);
+        updateMigraciones(migracionId, EstadoMigracion.MIGRADO_COMPLETADO,
+                "Se han migrado los documentos exitosamente.");
 
-        return EstadoMigracion.DOCUMENTOS_MIGRADOS;
+        return EstadoMigracion.MIGRADO_COMPLETADO;
+    }
+
+    // Metodos migrar acuerdos:
+    @Transactional
+    public void migrarAcuerdosExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+
+        List<AcuerdosMigracion> acuerdos = acuerdosReader.buscarAcuerdosPorCu(ctx.entrada().getCu());
+
+        migrarAcuerdos(acuerdos, ctx.carpetaPrincipal());
     }
 
     @Transactional
-    private void migrarPiezas(List<Carpeta> piezas) {
-        piezas.forEach(pieza -> {
-            // obtenemos los acuerdos, sentencias, promociones de la pieza:
-            var acuerdos = acuerdosReader.buscarAcuerdosPorCu(pieza.getCu());
-            var sentencias = acuerdosReader.buscarSentenciasPorCu(pieza.getCu());
-            var promos = detallesPromReader.buscarPorCu(pieza.getCu());
+    private void migrarAcuerdos(List<AcuerdosMigracion> acuerdos, Carpeta carpeta) {
+        List<AcuerdosMigracionSaveRecord> acuerdosRecord = acuerdos
+                .stream()
+                .map(a -> {
+                    List<String> rubros = rubrosMapper.mapRubros(a.getResumen());
+                    String rubroPrincipal = rubros.isEmpty() ? "" : rubros.get(0);
+                    a.setMigrado(Migrado.SI);
 
-            migrarAcuerdos(acuerdos, pieza);
-            migrarSentencias(sentencias, pieza);
-            migrarPromociones(promos, pieza);
+                    return new AcuerdosMigracionSaveRecord(
+                            carpeta,
+                            rubroPrincipal,
+                            a.getFechaResolucion(),
+                            rubros,
+                            a.getClave().toString(),
+                            a.getRuta(),
+                            a.getFecha());
+                })
+                .toList();
 
-        });
+        documentoMig.createAcuerdosFromLegacy(acuerdosRecord);
+        acuerdosMigracionRepository.saveAll(acuerdos);
+
+    }
+
+    // Metodos migrar sentencias
+    @Transactional
+    public void migrarSentenciasExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+
+        List<AcuerdosMigracion> sentencias = acuerdosReader.buscarSentenciasPorCu(ctx.entrada().getCu());
+
+        migrarSentencias(sentencias, ctx.carpetaPrincipal());
     }
 
     @Transactional
-    public void migrarSentencias(List<AcuerdosMigracion> sentencias, Carpeta carpeta) {
+    private void migrarSentencias(List<AcuerdosMigracion> sentencias, Carpeta carpeta) {
         List<SentenciaMigracionSaveRecord> sentenciasRecord = new ArrayList<>();
         sentencias.forEach(sentencia -> {
             TipoSentencia tipoSent = sentenciaMapper.mapTipoSentencia(sentencia.getResumen());
@@ -178,34 +240,18 @@ public class MigrarDocumentosUseCase {
 
     }
 
+    // Metodos migrar promociones
     @Transactional
-    public void migrarAcuerdos(List<AcuerdosMigracion> acuerdos, Carpeta carpeta) {
-        List<AcuerdosMigracionSaveRecord> acuerdosRecord = new ArrayList<>();
+    public void migrarPromocionesExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
 
-        acuerdos.forEach(a -> {
-            List<String> rubros = rubrosMapper.mapRubros(a.getResumen());
-            String rubroPrincipal = rubros.isEmpty() ? "" : rubros.get(0);
+        List<DetallesProm> promociones = detallesPromReader.buscarPorCu(ctx.entrada.getCu());
 
-            AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
-                    carpeta,
-                    rubroPrincipal,
-                    a.getFechaResolucion(),
-                    rubros,
-                    a.getClave().toString(),
-                    a.getRuta(),
-                    a.getFecha());
-
-            ;
-            acuerdosRecord.add(data);
-            a.setMigrado(Migrado.SI);
-        });
-
-        documentoMig.createAcuerdosFromLegacy(acuerdosRecord);
-        acuerdosMigracionRepository.saveAll(acuerdos);
+        migrarPromociones(promociones, ctx.carpetaPrincipal());
     }
 
     @Transactional
-    public void migrarPromociones(List<DetallesProm> promociones, Carpeta carpeta) {
+    private void migrarPromociones(List<DetallesProm> promociones, Carpeta carpeta) {
         List<DetallePromSaveRecord> promocionesRecord = new ArrayList<>();
 
         promociones.forEach(promo -> {
@@ -227,8 +273,16 @@ public class MigrarDocumentosUseCase {
         detallesPromRepository.saveAll(promociones);
     }
 
+    // Metodos migrar oficios
     @Transactional
-    public void migrarOficios(List<OficiosMigracion> oficios, Carpeta carpeta) {
+    public void migrarOficiosExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+        List<OficiosMigracion> oficios = oficiosReader.buscarPorCu(ctx.entrada.getCu());
+        migrarOficios(oficios, ctx.carpetaPrincipal());
+    }
+
+    @Transactional
+    private void migrarOficios(List<OficiosMigracion> oficios, Carpeta carpeta) {
         List<OficiosMigracionSaveRecord> oficiosRecord = new ArrayList<>();
 
         oficios.forEach(oficio -> {
@@ -259,8 +313,16 @@ public class MigrarDocumentosUseCase {
         oficiosMigracionRepository.saveAll(oficios);
     }
 
+    // Metodos migrar exhortos salida
     @Transactional
-    public void migrarExhortosSalida(List<ExhortosCapitalMigracion> exhortos, Carpeta carpeta) {
+    public void migrarExhortosSalidaExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+        List<ExhortosCapitalMigracion> exhortos = exhortosCapitalReader.buscarPorExpAmoJuzgado(exp, year, claveJuzgado);
+        migrarExhortosSalida(exhortos, ctx.carpetaPrincipal());
+    }
+
+    @Transactional
+    private void migrarExhortosSalida(List<ExhortosCapitalMigracion> exhortos, Carpeta carpeta) {
         List<ExhortoCapitalMigracionSaveRecord> exhortosRecord = new ArrayList<>();
 
         exhortos.forEach(exhorto -> {
@@ -281,8 +343,16 @@ public class MigrarDocumentosUseCase {
 
     }
 
+    // Metodos migrar exhortos entrada
     @Transactional
-    public void migrarExhortosEntrada(List<ExhortoForaneoMigracion> exhorto, Carpeta carpeta) {
+    public void migrarExhortosEntradaExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+        List<ExhortoForaneoMigracion> exhorto = exhortosForaneosReader.buscarPorExpAmoJuzgado(exp, year, claveJuzgado);
+        migrarExhortosEntrada(exhorto, ctx.carpetaPrincipal());
+    }
+
+    @Transactional
+    private void migrarExhortosEntrada(List<ExhortoForaneoMigracion> exhorto, Carpeta carpeta) {
 
         List<ExhortoForaneoMigracionSaveRecord> exhortosRecord = new ArrayList<>();
 
@@ -300,8 +370,16 @@ public class MigrarDocumentosUseCase {
         exhortosForaneosMigracionRepository.saveAll(exhorto);
     }
 
+    // Metodos migrar amparos
     @Transactional
-    public void migrarAmparos(List<AmparosMigracion> amparos, Carpeta carpeta) {
+    public void migrarAmparosExpediente(String exp, Integer year, String claveJuzgado) {
+        ContextoExpedienteMigracion ctx = cargarContexto(exp, year, claveJuzgado);
+        List<AmparosMigracion> amparos = amparosReader.buscarPorCu(ctx.entrada.getCu());
+        migrarAmparos(amparos, ctx.carpetaPrincipal());
+    }
+
+    @Transactional
+    private void migrarAmparos(List<AmparosMigracion> amparos, Carpeta carpeta) {
         List<AmparoMigracionRecordSave> amparosRecord = new ArrayList<>();
 
         amparos.forEach(amparo -> {
@@ -328,6 +406,32 @@ public class MigrarDocumentosUseCase {
 
         documentoMig.createAmparosFromLegacy(amparosRecord);
         amparoMigracionRepository.saveAll(amparos);
+    }
+
+    @Transactional
+    private Migraciones updateMigraciones(Integer migracionId, EstadoMigracion estadoMigracion, String observaciones) {
+        Migraciones migracion = migracionesRepository.findById(migracionId)
+                .orElseThrow(() -> new NotFoundException("No fue posible encontrar el registro de migración",
+                        migracionId.toString()));
+
+        migracion.setEstatus(estadoMigracion);
+        migracion.setObservaciones(observaciones);
+        return migracionesRepository.save(migracion);
+    }
+
+    @Transactional
+    private void migrarPiezas(List<Carpeta> piezas) {
+        piezas.forEach(pieza -> {
+            // obtenemos los acuerdos, sentencias, promociones de la pieza:
+            List<AcuerdosMigracion> acuerdos = acuerdosReader.buscarAcuerdosPorCu(pieza.getCu());
+            List<AcuerdosMigracion> sentencias = acuerdosReader.buscarSentenciasPorCu(pieza.getCu());
+            List<DetallesProm> promos = detallesPromReader.buscarPorCu(pieza.getCu());
+
+            migrarAcuerdos(acuerdos, pieza);
+            migrarSentencias(sentencias, pieza);
+            migrarPromociones(promos, pieza);
+
+        });
     }
 
 }
