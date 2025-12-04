@@ -136,7 +136,7 @@ public class PromocionSinExpedienteService {
                 Integer year = Integer.parseInt(promocion.getExpediente().split("/")[1]);
                 Juzgado juzgado = promocion.getJuzgado();
 
-                Optional<EntradasMigracion> entrada = entradasMigracionReader.buscarEntradasPorFiltros(
+                Optional<EntradasMigracion> entrada = entradasMigracionReader.buscarEntradasPorFiltrosProm(
                                 expediente, year, juzgado.getClaveJuzgado());
 
                 if (entrada.isPresent()) {
