@@ -19,7 +19,6 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPieza;
 import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
-import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
@@ -88,7 +87,7 @@ public class CarpetaMigracionService {
 
         piezas.forEach(pieza -> {
             String tipoPiezaString = tipoPiezaMapper.getTipoPieza(pieza.cu());
-            TipoPieza tipoPieza = findTipoPieza(tipoPiezaString.substring(0,2), pieza.tipoPieza());
+            TipoPieza tipoPieza = findTipoPieza(tipoPiezaString.substring(0, 2), pieza.tipoPieza());
             String expediente = carpeta.getExpediente() + "/" + tipoPiezaString;
 
             Carpeta piezaNew = new Carpeta()
@@ -116,32 +115,18 @@ public class CarpetaMigracionService {
     // Creación de documentos de pieza:
 
     private TipoPieza findTipoPieza(String clave, String tipo) {
-
-        // Intentamos buscar la tipo pieza en el sistema de java
-        Optional<TipoPieza> tipoPiezaJava = tipoPiezaRepository.findByClave(clave);
-
-        // verificamos si es que existe la regresamos.
-        if (tipoPiezaJava.isPresent()) {
-            return tipoPiezaJava.get();
-        }
-
-        return crearTipoPieza(clave, tipo);
+        return tipoPiezaRepository.findByClave(clave)
+                .orElseGet(() -> crearTipoPieza(clave, tipo));
     }
 
     public Carpeta findByExpYearAndClaveJuzgado(String expediente, Integer year, String claveJuzgado) {
         String expedienteCompleto = expediente + "/" + year;
 
-        log.info("El expediente que busca es: " + expedienteCompleto);
         Juzgado juzgado = juzgadoMigracionService.requireJuzgadoActual(claveJuzgado);
 
         Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, juzgado);
 
-        if (carpeta.isPresent()) {
-            return carpeta.get();
-        } else {
-            return null;
-           // throw new NotFoundException("No se encontró la carpeta con los datos proporcionados",   expedienteCompleto + " - " + claveJuzgado);
-        }
+        return carpeta.orElse(null);
     }
 
     public TipoPieza crearTipoPieza(String clave, String tipo) {

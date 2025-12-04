@@ -22,7 +22,6 @@ import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunResponseRecord;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracion;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionReader;
 import mx.gob.pjpuebla.migracion.readers.actores.ActoresMigracionSaveRecord;
-import mx.gob.pjpuebla.migracion.acl.mapper.TipoPiezaMapper;
 // ACL
 import mx.gob.pjpuebla.migracion.acl.mapper.TipoSistemaMapper;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
@@ -146,7 +145,6 @@ public class MigrarExpedienteUseCase {
   // 🔹 Use case “completo”: expediente + documentos
   @Transactional
   public MigracionExpedienteResult migrarExpedienteCompleto(String exp, Integer year, String claveJuzgado) {
-    log.info("Iniciando la migración del expediente " +  exp + "/" + year);
     // 1) Migrar expediente principal
     MigracionExpedienteResult principal = migrarExpedientePrincipal(exp, year, claveJuzgado);
 

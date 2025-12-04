@@ -30,9 +30,7 @@ public class PageableUtils {
                 Object v1 = getValorPorReflexion(o1, order.getProperty());
                 Object v2 = getValorPorReflexion(o2, order.getProperty());
 
-                int result = safeCompare(v1, v2);
-
-                return result;
+                return safeCompare(v1, v2);
             };
 
             if (order.isDescending()) {

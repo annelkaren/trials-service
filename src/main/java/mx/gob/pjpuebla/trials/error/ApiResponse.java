@@ -1,6 +1,10 @@
 package mx.gob.pjpuebla.trials.error;
 
 import java.time.LocalDateTime;
+
+import org.apache.poi.ss.formula.functions.T;
+
+import jakarta.annotation.Nullable;
 import lombok.Data;
 
 @Data
@@ -9,6 +13,7 @@ public class ApiResponse<T> {
     private String message;
     private String code;
     private int status;
+    @Nullable
     private T data;
     private LocalDateTime timestamp;
 

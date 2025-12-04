@@ -90,15 +90,13 @@ public class EntradasMigracionReader {
     public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
       
         String expedienteNormalizado = Utils.normalizarExpediente(expediente);
-        log.info("El expediente que busca es: " + expediente);
-        log.info("El expediente a buscar normalizado es: " + expedienteNormalizado);
         Optional<EntradasMigracion> entradaOptional = entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expedienteNormalizado,
                 amo,
                 juzgadoCodigo, "A");
 
         validaOptional(entradaOptional, (expediente + "/" + amo + "/" + juzgadoCodigo));
-        return entradaOptional.get();
+        return  entradaOptional.isPresent() ? entradaOptional.get() : null;
     }
 
     public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo, String juzgadoCodigo) {
