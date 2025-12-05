@@ -65,8 +65,6 @@ public class BandejasResources {
     public ResponseEntity<ApiResponse<String>> migrarDocumentos(@RequestBody BandejaRequest req) {
 
         ApiResponse<String> result = migracionesService.migrarDocumentosExpediente(req.migracionId());
-
-        // si el servicio decide que ya estaba asignado
         if (result.getCode().equals(ApiResponseFactory.SUCCESS_ALREADY_ASSIGNED)) {
             return ResponseEntity.ok(result); // 200 OK
         }

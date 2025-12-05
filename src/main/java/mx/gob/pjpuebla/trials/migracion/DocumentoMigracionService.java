@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.migracion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
@@ -11,25 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 // ACL mappers:
-import mx.gob.pjpuebla.migracion.acl.mapper.RubrosMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.SentenciaMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.AmparoMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.EstadoAcuseMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.EstadoOficioMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.PromocionMapper;
-import mx.gob.pjpuebla.migracion.acl.mapper.ResolucionMapper;
 
+
+import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortoCapitalMigracionSaveRecord;
 // Legacy models:
-import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
-import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
-import mx.gob.pjpuebla.migracion.readers.exhortoCapital.ExhortosCapitalMigracion;
-import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracion;
-import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
-import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracion;
+import mx.gob.pjpuebla.migracion.readers.exhortoForaneo.ExhortoForaneoMigracionSaveRecord;
+import mx.gob.pjpuebla.migracion.readers.oficios.OficiosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
-import mx.gob.pjpuebla.migracion.readers.amparos.AmparosMigracion;
+import mx.gob.pjpuebla.migracion.readers.amparos.AmparoMigracionRecordSave;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 
 // Core:
@@ -37,9 +29,6 @@ import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
-import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
-import mx.gob.pjpuebla.trials.util.enums.TipoSentencia;
-import mx.gob.pjpuebla.trials.util.enums.TipoResolucion;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -47,13 +36,12 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionService;
-import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 @Service
@@ -64,19 +52,12 @@ public class DocumentoMigracionService {
     private final DocumentoRepository documentoRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AnexoRepository anexoRepository;
-    private final DocumentoService documentoService;
     private final ConceptoRepository conceptoRepository;
     private final CarpetaService carpetaService;
-    private final InstitucionService institucionService;
+    private final NotificacionMigracionService notificacionMigracionService;
+    private final PersonaService personaService;
 
-    private final SentenciaMapper sentenciaMapper; // ACL
-    private final ResolucionMapper resolucionMapper; // ACL
-    private final PromocionMapper promocionMapper; // ACL
-    private final EstadoAcuseMapper estadoAcuseMapper; // ACL
-    private final EstadoOficioMapper estadoOficioMapper; // ACL
-    private final AmparoMapper amparoMapper; // ACL
-
-    // utils:
+    private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
     /*
      * -----------------------------------------------------------------------------
@@ -86,29 +67,42 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createAcuerdosFromLegacy(List<AcuerdosMigracion> acuerdos,
-            Carpeta carpeta,
-            RubrosMapper rubrosMapper) {
+    public List<Documento> createAcuerdosFromLegacy(List<AcuerdosMigracionSaveRecord> acuerdos) {
+
         if (acuerdos == null || acuerdos.isEmpty())
             return List.of();
 
         List<Documento> documentos = new ArrayList<>();
-        for (AcuerdosMigracion a : acuerdos) {
-            List<String> rubros = rubrosMapper.mapRubros(a.getResumen());
-            String rubroPrincipal = rubros.isEmpty() ? "" : rubros.get(0);
 
-            AcuerdosMigracionSaveRecord data = new AcuerdosMigracionSaveRecord(
-                    carpeta,
-                    rubroPrincipal,
-                    a.getFechaResolucion(),
-                    rubros,
-                    a.getClave().toString(),
-                    a.getRuta(),
-                    a.getFecha());
+        for (AcuerdosMigracionSaveRecord acuerdo : acuerdos) {
+            // Creación de acuerdo:
+            // Creamos información de los rubros en documentoData:
+            DocumentoData docData = new DocumentoData().setRubros(acuerdo.rubros());
 
-            Documento created = documentoService.createAcuerdoMigracion(data);
-            documentos.add(created);
+            // Creamos información del documento.
+            Documento documento = new Documento()
+                    .setCarpeta(acuerdo.carpeta())
+                    .setTipoDocumento(TipoDocumento.ACUERDO)
+                    .setEstatus(EstadoCarpeta.PUBLICADO)
+                    .setData(docData)
+                    .setFolio(acuerdo.folio())
+                    .setRuta(acuerdo.ruta())
+                    .setMigrado(Migrado.SI);
+
+            documento = documentoRepository.save(documento);
+
+            DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                    .setTipoAcuerdo(acuerdo.tipoAcuerdo())
+                    .setFechaResolucion(acuerdo.fechaResolucion())
+                    .setFechaPublicacion(acuerdo.fechaPublicacion())
+                    .setDocumento(documento);
+            documentoDetalleRepository.save(documentoDetalle);
+
+            documentos.add(documento);
+            // Obtener notificaciones de acuerdos y crearlas:
+            notificacionMigracionService.crearNotificacionLegacy(documento, Integer.parseInt((acuerdo.folio())));
         }
+
         return documentos;
     }
 
@@ -120,27 +114,31 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createSentenciasFromLegacy(List<AcuerdosMigracion> sentencias,
-            Carpeta carpeta) {
+    public List<Documento> createSentenciasFromLegacy(List<SentenciaMigracionSaveRecord> sentencias) {
         if (sentencias == null || sentencias.isEmpty())
             return List.of();
 
         List<Documento> documentos = new ArrayList<>();
-        for (AcuerdosMigracion s : sentencias) {
-            TipoSentencia tipoSent = sentenciaMapper.mapTipoSentencia(s.getResumen());
-            TipoResolucion tipoRes = resolucionMapper.mapTipoResolucionSentencia(s.getSentencia());
+        for (SentenciaMigracionSaveRecord sentencia : sentencias) {
 
-            SentenciaMigracionSaveRecord data = new SentenciaMigracionSaveRecord(
-                    carpeta,
-                    s.getFechaResolucion(),
-                    tipoSent,
-                    tipoRes,
-                    s.getClave().toString(),
-                    s.getRuta(),
-                    s.getFecha());
+            Documento documentoSentencia = new Documento()
+                    .setCarpeta(sentencia.carpeta())
+                    .setTipoDocumento(TipoDocumento.SENTENCIA)
+                    .setEstatus(EstadoCarpeta.PUBLICADO)
+                    .setFolio(sentencia.folio())
+                    .setRuta(sentencia.ruta())
+                    .setMigrado(Migrado.SI);
+            documentoSentencia = documentoRepository.save(documentoSentencia);
 
-            Documento created = documentoService.createSentenciaMigracion(data);
-            documentos.add(created);
+            DocumentoDetalle documentoDetalle = new DocumentoDetalle()
+                    .setFechaResolucion(sentencia.fechaResolucion())
+                    .setFechaPublicacion(sentencia.fechaPublicacion())
+                    .setDocumento(documentoSentencia)
+                    .setTipoSentencia(sentencia.tipoSentencia())
+                    .setTipoResolucion(sentencia.tipoResolucion());
+            documentoDetalleRepository.save(documentoDetalle);
+
+            documentos.add(documentoSentencia);
         }
         return documentos;
     }
@@ -153,25 +151,46 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createPromocionesFromLegacy(List<DetallesProm> promociones, Carpeta carpeta) {
+    public List<Documento> createPromocionesFromLegacy(List<DetallePromSaveRecord> promociones) {
         if (promociones == null || promociones.isEmpty())
             return List.of();
 
         List<Documento> documentos = new ArrayList<>();
 
-        for (DetallesProm p : promociones) {
+        for (DetallePromSaveRecord promocion : promociones) {
 
-            TipoPromocion tipoPromocion = promocionMapper.mapTipoPromocion(p.getTipo(), p.getDescrip());
+            // inicia persistencia:
+            Persona persona = personaService.getAuditor();
+            Concepto concepto = conceptoRepository.findByNombre("Adjuntar")
+                    .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar"));
 
-            DetallePromSaveRecord save = new DetallePromSaveRecord(
-                    carpeta,
-                    tipoPromocion,
-                    p.getId().toString(),
-                    p.getArchivo(),
-                    p.getAcuerdo());
-            Documento doc = documentoService.createPromocionMigracion(save);
-            createAnexosDePromocion(p.getAnexos(), doc);
-            documentos.add(doc);
+            DocumentoData docData = new DocumentoData().setTipoPromocion(promocion.tipoPromocion());
+
+            Documento promocionNew = new Documento()
+                    .setCarpeta(promocion.carpeta())
+                    .setTipoDocumento(TipoDocumento.PROMOCION)
+                    .setEstatus(EstadoCarpeta.INTEGRADO)
+                    .setData(docData)
+                    .setFolio(promocion.folio())
+                    .setRuta(promocion.ruta())
+                    .setConcepto(concepto)
+                    .setPersona(persona)
+                    .setMigrado(Migrado.SI);
+
+            promocionNew = documentoRepository.save(promocionNew);
+
+            // Buscamos si esta promoción esta relacionada con un acuerdo
+            Optional<Documento> acuerdo = documentoRepository.findByTipoDocumentoAndFolio(TipoDocumento.ACUERDO,
+                    promocion.acuerdo());
+
+            if (acuerdo.isPresent()) {
+                Documento documentoAcuerdo = acuerdo.get();
+                promocionNew.setAcuerdoRespuesta(documentoAcuerdo);
+            }
+
+            // FIn persistencia
+            createAnexosDePromocion(promocion.anexos(), promocionNew);
+            documentos.add(promocionNew);
         }
         return documentos;
     }
@@ -184,42 +203,19 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public Documento createDemandaInicial(Ocomun ocomun,
-            Carpeta carpeta,
-            Concepto concepto) {
+    public Documento createDemandaInicial(Carpeta carpeta, Concepto concepto, String rutaDigitalizacion) {
         DocumentoData data = new DocumentoData();
-        log.info("Ruta digitalizacion: {}", ocomun != null ? ocomun.getRutaDigitalizacion() : "SIN RUTA");
-        return createDocumento(null, carpeta, data,
-                ocomun != null ? ocomun.getRutaDigitalizacion() : "",
-                null, concepto, null, null);
-    }
-
-    @Transactional
-    public Documento createDocumento(TipoDocumento tipoDocumento,
-            Carpeta carpeta,
-            DocumentoData data,
-            String ruta,
-            String folio,
-            Concepto concepto,
-            Institucion institucion,
-            Documento documentoRelacionado) {
-
-        Documento doc = new Documento()
-                .setVersion(0)
-                .setTipoDocumento(tipoDocumento)
-                .setData(data)
-                .setRuta(ruta)
+        Documento demandaInicial = new Documento()
                 .setCarpeta(carpeta)
-                .setPersona(null)
-                .setFechaAsignacion(java.time.LocalDateTime.now())
+                .setTipoDocumento(null)
                 .setEstatus(EstadoCarpeta.MIGRADO)
-                .setFolio(folio)
-                .setConcepto(concepto)
-                .setInstitucion(institucion)
-                .setAcuerdoRespuesta(documentoRelacionado)
-                .setMigrado(Migrado.SI);
+                .setData(data)
+                .setFolio("")
+                .setRuta(rutaDigitalizacion)
+                .setConcepto(concepto);
+        demandaInicial = documentoRepository.save(demandaInicial);
 
-        return documentoRepository.save(doc);
+        return demandaInicial;
     }
 
     @Transactional
@@ -268,42 +264,39 @@ public class DocumentoMigracionService {
      * -----------------------------------------------------------------------------
      * -----------------
      */
-
     @Transactional
-    public List<Documento> createOficiosFromLegacy(List<OficiosMigracion> oficiosMigracion, Carpeta carpeta) {
+    public List<Documento> createOficiosFromLegacy(List<OficiosMigracionSaveRecord> oficiosMigracion) {
         List<Documento> oficios = new ArrayList<>();
 
-        oficiosMigracion.forEach(oficioMigracion -> {
+        oficiosMigracion.forEach(oficio -> {
 
             DocumentoData oficioData = new DocumentoData()
                     .setTipoOficio("Jurisdiccional")
-                    .setOficioRealizadoPor(oficioMigracion.getNombre()); 
+                    .setOficioRealizadoPor(oficio.nombre());
 
             Documento documento = new Documento()
-                    .setCarpeta(carpeta)
-                    .setFolio(oficioMigracion.getOficio().toString())
+                    .setCarpeta(oficio.carpeta())
                     .setTipoDocumento(TipoDocumento.OFICIO)
-                    .setIdHistorico(oficioMigracion.getId())
+                    .setEstatus(oficio.estadoCarpeta())
                     .setData(oficioData)
-                    .setInstitucionHistorica(oficioMigracion.getDependencia()) // nombre de la dependencia historica.
-                    .setMigrado(Migrado.SI)
-                    .setRuta(oficioMigracion.getRutaOfi()) // ruta del oficio.
-                    .setEstatus(estadoOficioMapper.estadoOficioMapper(oficioMigracion.getMotivo(),
-                            oficioMigracion.getRutaOfiAcuse(), oficioMigracion.getEstatusOfi()));
+                    .setFolio(oficio.oficio().toString())
+                    .setRuta(oficio.ruta())
+                    .setIdHistorico(oficio.folio())
+                    .setInstitucionHistorica(oficio.dependencia())
+                    .setMigrado(Migrado.SI);
 
             documento = documentoRepository.save(documento);
 
-            DocumentoDetalle documentoDetalle = new DocumentoDetalle()
-                    .setAsunto(oficioMigracion.getAsunto())
-                    .setFechaEmision(oficioMigracion.getFecha())
-                    .setFechaEntrega(oficioMigracion.getFechaEntrega())
+            DocumentoDetalle detalle = new DocumentoDetalle()
                     .setDocumento(documento)
-                    .setRuta(oficioMigracion.getRutaOfiAcuse()) // ruta del acuse.
-                    .setComentario(oficioMigracion.getMotivo())
-                    .setEstado(estadoAcuseMapper.mapEstadoAcuse(oficioMigracion.getMotivo(),
-                            oficioMigracion.getRutaOfiAcuse()));
+                    .setAsunto(oficio.asunto())
+                    .setFechaEmision(oficio.fechaEmision())
+                    .setFechaEntrega(oficio.fechaEntrega())
+                    .setRuta(oficio.ruta())
+                    .setComentario(oficio.motivo())
+                    .setEstado(oficio.estadoAcuse());
 
-            documentoDetalleRepository.save(documentoDetalle);
+            documentoDetalleRepository.save(detalle);
 
             oficios.add(documento);
         });
@@ -319,27 +312,26 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createExhortoSalidaFromLegacy(List<ExhortosCapitalMigracion> exhortosCapital,
-            Carpeta carpeta) {
+    public List<Documento> createExhortoSalidaFromLegacy(List<ExhortoCapitalMigracionSaveRecord> exhortosCapital) {
         List<Documento> exhortos = new ArrayList<>();
 
         exhortosCapital.forEach(exhorto -> {
             DocumentoData data = new DocumentoData()
-                    .setTramite(exhorto.getTramite())
-                    .setDestino(exhorto.getDestino())
-                    .setExhortoObservaciones(exhorto.getObse())
-                    .setFechaEntrega(exhorto.getFechaEn())
-                    .setFechaDevolucion(exhorto.getFechaDe());
+                    .setTramite(exhorto.tramite())
+                    .setDestino(exhorto.destino())
+                    .setExhortoObservaciones(exhorto.observaciones())
+                    .setFechaEntrega(exhorto.fechaEntrega())
+                    .setFechaDevolucion(exhorto.fechaDevolucion());
 
             Documento documento = new Documento()
                     .setData(data)
-                    .setCarpeta(carpeta)
-                    .setFolio(exhorto.getExhorto())
+                    .setCarpeta(exhorto.carpeta())
+                    .setFolio(exhorto.folio())
                     .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
 
             documento = documentoRepository.save(documento);
-
             exhortos.add(documento);
+
         });
 
         return exhortos;
@@ -354,31 +346,28 @@ public class DocumentoMigracionService {
      * -----------------
      */
     @Transactional
-    public List<Documento> createExhortoEntradaFromLegacy(List<ExhortoForaneoMigracion> exhortosForaneo,
-            Carpeta carpeta) {
+    public List<Documento> createExhortoEntradaFromLegacy(List<ExhortoForaneoMigracionSaveRecord> exhortosForaneo) {
         List<Documento> exhortos = new ArrayList<>();
 
         exhortosForaneo.forEach(exhorto -> {
             DocumentoData data = new DocumentoData()
-                    .setTramite(exhorto.getTramite())
+                    .setTramite(exhorto.tramite())
                     // .setDestino(exhorto.getDestino())
-                    .setExhortoObservaciones(exhorto.getObse());
+                    .setExhortoObservaciones(exhorto.observaciones());
             // .setFechaEntrega(exhorto.getFechaEn())
             // .setFechaDevolucion(exhorto.getFechaDe());
 
             Documento documento = new Documento()
                     .setData(data)
-                    .setCarpeta(carpeta)
-                    .setFolio(exhorto.getExhorto())
+                    .setCarpeta(exhorto.carpeta())
+                    .setFolio(exhorto.folio())
                     .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
 
             documento = documentoRepository.save(documento);
-
             exhortos.add(documento);
         });
 
         return exhortos;
-
     }
 
     /*
@@ -386,7 +375,7 @@ public class DocumentoMigracionService {
      * AMPAROS
      */
 
-    public List<Documento> createAmparos(Carpeta carpeta, List<AmparosMigracion> amparos) {
+    public List<Documento> createAmparosFromLegacy(List<AmparoMigracionRecordSave> amparos) {
 
         if (amparos == null || amparos.isEmpty()) {
             return List.of();
@@ -396,43 +385,34 @@ public class DocumentoMigracionService {
         amparos.forEach(amparo -> {
 
             DocumentoData data = new DocumentoData()
-                    .setAmparoFechaPresentacion(amparo.getFecha())
-                    .setAmparoImpugnacion(amparoMapper.mapImpugnacion(amparo.getRevision()))
-                    .setAmparoQuejoso(amparo.getQuejoso1())
+                    .setAmparoFechaPresentacion(amparo.fechaPresenteacion())
+                    .setAmparoImpugnacion(amparo.amparoImpugnacion())
+                    .setAmparoQuejoso(amparo.quejoso())
                     .setAmparoTribunalId(null) // se setea si es AD institución de tipo tribunal feneral
                     .setAmparoSalaId(null) // se setea si es AI segunda instancia - sala
-                    .setAmparoSentido(amparoMapper.mapSentido(amparo.getConcede()))
-                    .setAmparoSentidoImpugnacion(amparoMapper.mapSentidoImpugnacion(amparo.getImpugna()))
-                    .setAmparoTipo(amparoMapper.mapTipoAmparo(amparo.getTipo()))
-                    .setAmparoFechaTermino(amparo.getFechaConclusion());
+                    .setAmparoSentido(amparo.sentido())
+                    .setAmparoSentidoImpugnacion(amparo.sentidoImpugnacion())
+                    .setAmparoTipo(amparo.tipo())
+                    .setAmparoFechaTermino(amparo.fechaTermino());
 
             Documento amparoDoc = new Documento()
-                    .setCarpeta(carpeta)
+                    .setCarpeta(amparo.carpeta())
                     .setData(data)
-                    .setFolio(amparo.getClave().toString())
+                    .setFolio(amparo.folio())
                     .setEstatus(EstadoCarpeta.MIGRADO)
                     .setTipoDocumento(TipoDocumento.AMPARO)
                     .setConcepto(conceptoRepository.findByNombre("Distribución").orElseThrow());
             documentos.add(amparoDoc);
 
             documentoRepository.save(amparoDoc);
-            PiezaRecord piezaRecord = new PiezaRecord(null, amparoMapper.mapTipoAmparo(amparo.getTipo()), null,
+
+            PiezaRecord piezaRecord = new PiezaRecord(null, amparo.tipo(), null,
                     Collections.singletonList(amparoDoc.getId()));
 
-            carpetaService.createPieza(carpeta.getId(), piezaRecord);
+            carpetaService.createPieza(amparo.carpeta().getId(), piezaRecord); 
         });
 
         return documentos;
 
     }
-
-    public Integer findTribunalDistrito(String nombre) {
-        return institucionService.findByTipoInstitucion("Tribunal Federal")
-                .stream()
-                .filter(inst -> inst.nombre().equalsIgnoreCase(nombre))
-                .findFirst()
-                .map(InstitucionRecord::id)
-                .orElse(null);
-    }
-
 }

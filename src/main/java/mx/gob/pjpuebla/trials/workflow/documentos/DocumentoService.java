@@ -3,9 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionSaveRecord;
-import mx.gob.pjpuebla.migracion.readers.acuerdos.SentenciaMigracionSaveRecord;
-import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallePromSaveRecord;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
 import mx.gob.pjpuebla.trials.core.configuraciones.Configuraciones;
@@ -1202,17 +1199,13 @@ public class DocumentoService {
                         return false;
                 }
 
-                if (persona.getJuzgado() != null &&
-                                centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
-                        return true;
-                }
+                boolean concuerdaJuzgado = persona.getJuzgado() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre());
 
-                if (persona.getOficialia() != null &&
-                                centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                        return true;
-                }
+                boolean concuerdaOficialia = persona.getOficialia() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre());
 
-                return false;
+                return concuerdaJuzgado || concuerdaOficialia;
         }
 
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable,
@@ -1266,17 +1259,21 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTurnado = mov.getFechaAsignacion();
 
-                                        LocalDateTime fechaTermino = (isPromocion)
-                                                        ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento != null
-                                                                                        ? documento.getConcepto()
-                                                                                                        .getDias()
-                                                                                        : 0)
+                                        LocalDateTime fechaTermino;
+                                        if (isPromocion && documento != null) {
+                                                int dias = 0;
+                                                if (documento.getConcepto() != null) {
+                                                        dias = documento.getConcepto().getDias();
+                                                }
+                                                fechaTermino = mov.getFechaAsignacion().plusDays(dias);
+                                        } else if (carpeta != null && carpeta.getConcepto() != null) {
 
-                                                        : (carpeta != null && carpeta.getConcepto() != null)
-                                                                        ? mov.getFechaAsignacion().plusDays(
-                                                                                        carpeta.getConcepto().getDias())
-                                                                        : null;
+                                                fechaTermino = mov.getFechaAsignacion()
+                                                                .plusDays(carpeta.getConcepto().getDias());
+
+                                        } else {
+                                                fechaTermino = null;
+                                        }
 
                                         Boolean esDiaInhabil = eventosService.esDiaInHabil(
                                                         fechaTermino != null ? fechaTermino.toLocalDate() : null,
@@ -2448,97 +2445,6 @@ public class DocumentoService {
                                 .setPersona(persona);
 
                 return documentoRepository.save(documento);
-        }
-
-        public Documento createPromocionMigracion(DetallePromSaveRecord promocion) {
-
-                Persona persona = personaService.getAuditor();
-                Concepto concepto = conceptoRepository.findByNombre("Adjuntar")
-                                .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "Adjuntar"));
-
-                DocumentoData docData = new DocumentoData()
-                                .setTipoPromocion(promocion.tipoPromocion());
-
-                Documento promocionNew = new Documento()
-                                .setCarpeta(promocion.carpeta())
-                                .setFolio(promocion.folio())
-                                .setEstatus(EstadoCarpeta.INTEGRADO)
-                                .setConcepto(concepto)
-                                .setData(docData)
-                                .setPersona(persona)
-                                .setTipoDocumento(TipoDocumento.PROMOCION)
-                                .setRuta(promocion.ruta())
-                                .setMigrado(Migrado.SI);
-
-                // Buscamos si esta promoción esta relacionada con un acuerdo
-                Optional<Documento> acuerdo = documentoRepository.findByTipoDocumentoAndFolio(TipoDocumento.ACUERDO,
-                                promocion.acuerdo());
-
-                if (acuerdo.isPresent()) {
-                        Documento documentoAcuerdo = acuerdo.get();
-                        promocionNew.setAcuerdoRespuesta(documentoAcuerdo);
-                }
-
-                return documentoRepository.save(promocionNew);
-        }
-
-        @Transactional
-        public Documento createAcuerdoMigracion(AcuerdosMigracionSaveRecord acuerdo) {
-                // Creamos información de los rubros en documentoData:
-                DocumentoData docData = new DocumentoData()
-                                .setRubros(acuerdo.rubros());
-
-                // Creamos información del documento.
-                Documento documento = new Documento()
-                                .setCarpeta(acuerdo.carpeta())
-                                .setTipoDocumento(TipoDocumento.ACUERDO)
-                                .setEstatus(EstadoCarpeta.PUBLICADO)
-                                .setData(docData)
-                                .setFolio(acuerdo.folio())
-                                .setRuta(acuerdo.ruta())
-                                .setMigrado(Migrado.SI);
-
-                documento = documentoRepository.save(documento);
-
-                DocumentoDetalle documentoDetalle = new DocumentoDetalle()
-                                .setTipoAcuerdo(acuerdo.tipoAcuerdo())
-                                .setFechaResolucion(acuerdo.fechaResolucion())
-                                .setEtapaProcesal("")
-                                .setResumen("")
-                                .setFechaPublicacion(acuerdo.fechaPublicacion())
-                                .setDocumento(documento);
-
-                documentoDetalleRepository.save(documentoDetalle);
-
-                return documento;
-
-        }
-
-        @Transactional
-        public Documento createSentenciaMigracion(SentenciaMigracionSaveRecord sentencia) {
-                // Creamos documento:
-                Documento documentoSentencia = new Documento()
-                                .setCarpeta(sentencia.carpeta())
-                                .setTipoDocumento(TipoDocumento.SENTENCIA)
-                                .setEstatus(EstadoCarpeta.PUBLICADO)
-                                .setFolio(sentencia.folio())
-                                .setRuta(sentencia.ruta())
-                                .setMigrado(Migrado.SI);
-
-                documentoSentencia = documentoRepository.save(documentoSentencia);
-
-                DocumentoDetalle documentoDetalle = new DocumentoDetalle()
-                                .setFechaResolucion(sentencia.fechaResolucion())
-                                .setEtapaProcesal("")
-                                .setTipoSentencia(sentencia.tipoSentencia())
-                                .setTipoResolucion(sentencia.tipoResolucion())
-                                .setExtractoSentencia("")
-                                .setDocumento(documentoSentencia)
-                                .setFechaPublicacion(sentencia.fechaPublicacion());
-
-                documentoDetalleRepository.save(documentoDetalle);
-
-                return documentoSentencia;
         }
 
         public Documento findByDocumento(Integer documentoId) {

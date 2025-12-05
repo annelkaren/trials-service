@@ -38,8 +38,8 @@ import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracion;
 import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
-import mx.gob.pjpuebla.migracion.readers.ocomun.Ocomun;
 import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunRepository;
+import mx.gob.pjpuebla.migracion.readers.ocomun.OcomunResponseRecord;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -238,7 +238,7 @@ public class AcuerdosService {
            
             AcuerdosMigracion acuerdo = acuerdoOptional.get();
 
-            Optional<Ocomun> ocomunOptional = ocomunRepository.findTopByCuAndEstatusOrderByIdDesc(cu, "A");
+            Optional<OcomunResponseRecord> ocomunOptional = ocomunRepository.findTopByCuAndEstatusOrderByIdDesc(cu, "A");
             List<DetallesProm> detallesProm = detallesPromRepository.findByCuAndStatus(cu, "A");
             /*
              * En SCGJ PHP el resumen son los rubros, debemos normalizarlos para
@@ -267,11 +267,11 @@ public class AcuerdosService {
             // obtenemos la demanda inicial para unir las promociones, esta seria la primera
             // promocion:
             if (ocomunOptional.isPresent()) {
-                Ocomun ocomun = ocomunOptional.get();
+                 OcomunResponseRecord ocomunRecord = ocomunOptional.get();
                 promocionesRelacionadas.add(0, new AcuerdoPromocionesRecord(
-                        ocomun.getId(),
+                        ocomunRecord.id(),
                         "Demanda inicial ",
-                        ocomun.getRutaDigitalizacion(),
+                        ocomunRecord.rutaDigitalizacion(),
                         "",
                         null));
             }

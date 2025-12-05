@@ -16,7 +16,9 @@ public class CarpetaDetalleMigracionService {
 
     @Transactional
     public CarpetaDetalle createCarpetaDetalle(Carpeta c){
-        return carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(c));
+        CarpetaDetalle detalle = new CarpetaDetalle();
+        detalle.setCarpeta(c);
+        return carpetaDetalleRepository.save(detalle);
     }
 
 }

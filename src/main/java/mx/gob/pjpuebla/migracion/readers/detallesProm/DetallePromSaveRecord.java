@@ -8,5 +8,6 @@ public record DetallePromSaveRecord(
     TipoPromocion tipoPromocion,
     String folio,
     String ruta,
-    String acuerdo
+    String acuerdo,
+    String anexos
 ) {}

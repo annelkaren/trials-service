@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.migracion.usecases.MigrarDocumentosUseCase;
 import mx.gob.pjpuebla.migracion.usecases.MigrarExpedienteUseCase;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -41,6 +42,7 @@ public class MigracionesService {
     private final CarpetaService carpetaService;
     private final DocumentoService documentoService;
     private final MigrarExpedienteUseCase migrarExpedienteUseCase;
+    private final MigrarDocumentosUseCase migrarDocumentosUseCase;
 
     @Transactional(readOnly = true)
     public Page<BandejaMigracionResponse> listar(BandejaMigracionFilter filter, Pageable pageable) {
@@ -158,7 +160,7 @@ public class MigracionesService {
         Integer year = Integer.parseInt( carpeta.getExpediente().split("/")[1]);
         String claveJuzgado = migracion.getJuzgado().getClaveJuzgado();
 
-        EstadoMigracion estadoMigracion = migrarExpedienteUseCase.migrarDocumentosExpediente(expediente, year, claveJuzgado, migracionId);
+        EstadoMigracion estadoMigracion = migrarDocumentosUseCase.migrarDocumentosExpediente(expediente, year, claveJuzgado, migracionId);
         
         if(!estadoMigracion.equals(EstadoMigracion.MIGRADO_COMPLETADO)){
                 throw new InternalServerError("No se pudo migrar el expediente.");

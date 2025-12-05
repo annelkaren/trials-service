@@ -22,13 +22,11 @@ import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoPromocionRecord;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetalles;
 import mx.gob.pjpuebla.trials.workflow.notificaciondetalle.NotificacionesDetallesRepository;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.NotificacionRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.AuditorAware;
@@ -54,7 +52,6 @@ public class LitiganteService {
         private final AuditorAware<Jwt> auditorAware;
         private final PersonaDocumentoRepository personaDocumentoRepository;
         private final NotificacionesDetallesRepository notificacionesDetallesRepository;
-        private final NotificacionRepository notificacionRepository;
         private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
         private final DocumentoRepository documentoRepository;
         private final DocumentoContenidoRepository documentoContenidoRepository;
@@ -72,7 +69,7 @@ public class LitiganteService {
 
         public Page<LitiganteExpedientesRecord> getExpedientesRelacionados(String key, Pageable pageable) {
                 String username = getLitiganteUsername();
-                
+
                 List<LitiganteExpedientesRecord> page = personaDocumentoRepository.findByUsernameList(username, key);
                 List<LitiganteExpedientesRecord> list = page.stream()
                                 .map(pd -> pd.additionalData(
@@ -145,7 +142,6 @@ public class LitiganteService {
                                 .notificacionesLitigante(userName);
                 List<AcuerdoSentenciaRecord> combinados = new ArrayList<>(list);
                 combinados.addAll(listNotiSecjPhp);
-               
 
                 // Primero ordenamos todo junto para que las fechas se mezclen bien
                 PageableUtils.ordenarLista(combinados, pageable.getSort());
@@ -164,7 +160,7 @@ public class LitiganteService {
                         List<NotificacionesDetalles> todasLasEntidades) {
                 // Extraemos los IDs que se están mostrando en esta página
                 Set<Integer> idsEnPantalla = registrosVisibles.stream()
-                                .map(AcuerdoSentenciaRecord::notificacionId) 
+                                .map(AcuerdoSentenciaRecord::notificacionId)
                                 .collect(Collectors.toSet());
 
                 List<NotificacionesDetalles> paraActualizar = new ArrayList<>();
@@ -243,15 +239,16 @@ public class LitiganteService {
                 Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(
                                 carpetaId,
                                 Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA), pageable);
-                List<DocumentoResponseRecord> list = new ArrayList<>();
-                for (Documento doc : documentos.getContent()) {
-                        DocumentoDetalle detalle = documentoDetalleRepository.findByDocumentoId(doc.getId()).get();
-                        list.add(new DocumentoResponseRecord(
+                List<DocumentoResponseRecord> list = documentos.getContent()
+                                .stream()
+                                .flatMap(doc -> documentoDetalleRepository.findByDocumentoId(doc.getId())
+                                .map(detalle -> new DocumentoResponseRecord(
                                         String.valueOf(doc.getId()),
                                         detalle.getFechaResolucion(),
                                         doc.getData().getRubros().toString().replace("[", "").replace("]", ""),
-                                        "/api/litigante/documento/" + doc.getId()));
-                }
+                                        "/api/litigante/documento/" + doc.getId()))
+                                .stream())
+                                .toList();
 
                 return new PageImpl<>(list, pageable, documentos.getTotalElements());
         }

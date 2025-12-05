@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.migracion.readers.exhortoCapital;
 import jakarta.persistence.*;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -53,4 +54,6 @@ public class ExhortosCapitalMigracion {
 
     @Column(name = "personal", nullable = false)
     private String personal;
+
+    private Migrado migrado;
 }
