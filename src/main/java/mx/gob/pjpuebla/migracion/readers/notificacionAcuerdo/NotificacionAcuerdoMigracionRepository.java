@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface NotificacionAcuerdoMigracionRepository extends JpaRepository<NotificacionAcuerdoMigracion, Integer> {
     
 
-    public List<NotificacionAcuerdoMigracion> findByClaveAcuerdoAndStatus(Integer clave, String status);
+    List<NotificacionAcuerdoMigracion> findByClaveAcuerdoAndStatus(Integer clave, String status);
 
 }

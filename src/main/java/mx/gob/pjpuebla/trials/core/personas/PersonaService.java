@@ -269,10 +269,10 @@ public class PersonaService {
             Optional<Persona> juez = personaRepository.findByUsuarioUUID(List.of("PENAL"), id);
             juez.ifPresent(jueces::add);
         }
-        for(Persona persona: jueces) {
-            if(persona.getSexo().equals(Sexo.FEMENINO))
+        for (Persona persona : jueces) {
+            if (persona.getSexo().equals(Sexo.FEMENINO))
                 countMujeres += 1;
-            if(persona.getSexo().equals(Sexo.MASCULINO))
+            if (persona.getSexo().equals(Sexo.MASCULINO))
                 countHombres += 1;
 
         }
@@ -428,14 +428,20 @@ public class PersonaService {
     }
 
     private String setRolPrincipal(List<RoleRecord> roles, String rolPrincipal) {
+
         if (roles.isEmpty()) {
             return "-";
         }
+
         if (roles.size() == 1) {
             return roles.get(0).name();
-        } else {
-            return roles.stream().filter(rol -> rol.id().equals(rolPrincipal)).findFirst().get().name();
         }
+
+        return roles.stream()
+                .filter(rol -> rol.id().equals(rolPrincipal))
+                .findFirst()
+                .map(RoleRecord::name)
+                .orElse("-");
     }
 
     public boolean verifyIfUserExistsAndIsLitigante(String username) {
@@ -506,7 +512,7 @@ public class PersonaService {
         return roleService.getRolesByUserId(userId);
     }
 
-    public  ApiResponse<Void> changePassword(CambioPasswordRecord request) {
+    public ApiResponse<Void> changePassword(CambioPasswordRecord request) {
         String current = request.currentPassword();
         String nueva = request.newPassword();
         String confirmar = request.confirmPassword();

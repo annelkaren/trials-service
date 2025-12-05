@@ -1199,17 +1199,13 @@ public class DocumentoService {
                         return false;
                 }
 
-                if (persona.getJuzgado() != null &&
-                                centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre())) {
-                        return true;
-                }
+                boolean concuerdaJuzgado = persona.getJuzgado() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getJuzgado().getNombre());
 
-                if (persona.getOficialia() != null &&
-                                centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre())) {
-                        return true;
-                }
+                boolean concuerdaOficialia = persona.getOficialia() != null &&
+                                centroTrabajo.equalsIgnoreCase(persona.getOficialia().getNombre());
 
-                return false;
+                return concuerdaJuzgado || concuerdaOficialia;
         }
 
         public Page<DocumentoAsignadoResponseRecord> getAllAsignado(String key, Long personaId, Pageable pageable,

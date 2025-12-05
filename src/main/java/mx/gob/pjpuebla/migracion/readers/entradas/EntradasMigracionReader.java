@@ -86,27 +86,27 @@ public class EntradasMigracionReader {
                 entrada.getEstadoMigracion());
     }
 
-
     public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
-      
-        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
-        Optional<EntradasMigracion> entradaOptional = entradasMigracionRepository.findTopByExpedienteNormalizado(
-                expedienteNormalizado,
-                amo,
-                juzgadoCodigo, "A");
 
-        validaOptional(entradaOptional, (expediente + "/" + amo + "/" + juzgadoCodigo));
-        return  entradaOptional.isPresent() ? entradaOptional.get() : null;
+        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
+
+        return entradasMigracionRepository
+                .findTopByExpedienteNormalizado(expedienteNormalizado, amo, juzgadoCodigo, "A")
+                .orElseThrow(() -> {
+                    String clave = expedienteNormalizado + "-" + amo + "-" + juzgadoCodigo;
+                    log.error("No se encontraron resultados para la clave {}", clave);
+                    return new NotFoundException("No se encontraron resultados", clave);
+                });
     }
 
-    public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo, String juzgadoCodigo) {
+    public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo,
+            String juzgadoCodigo) {
         String expedienteNormalizado = Utils.normalizarExpediente(expediente);
         return entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expedienteNormalizado,
                 amo,
                 juzgadoCodigo, "A");
 
-        
     }
 
     /**
@@ -201,13 +201,6 @@ public class EntradasMigracionReader {
                 .toList();
 
         return toSave.isEmpty() ? List.of() : anexoRepository.saveAll(toSave);
-    }
-
-    private <T> void validaOptional(Optional<T> opcional, String clave) {
-        if (opcional.isEmpty()) {
-            log.error("No se encontraron resultados para la clave {}", clave);
-            throw new NotFoundException("No se encontraron resultados ", clave);
-        }
     }
 
 }

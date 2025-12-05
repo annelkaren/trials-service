@@ -1,10 +1,7 @@
 package mx.gob.pjpuebla.trials.error;
 
 import java.time.LocalDateTime;
-
-import org.apache.poi.ss.formula.functions.T;
-
-import jakarta.annotation.Nullable;
+import org.springframework.lang.Nullable;
 import lombok.Data;
 
 @Data
@@ -15,9 +12,10 @@ public class ApiResponse<T> {
     private int status;
     @Nullable
     private T data;
+
     private LocalDateTime timestamp;
 
-    public ApiResponse(boolean success, String message, String code, int status, T data, LocalDateTime timestamp) {
+    public ApiResponse(boolean success, String message, String code, int status,  @Nullable T data, LocalDateTime timestamp) {
         this.success = success;
         this.message = message;
         this.code = code;
@@ -26,7 +24,7 @@ public class ApiResponse<T> {
         this.timestamp = timestamp;
     }
 
-    public ApiResponse(boolean success, String message, String code, int status, T data) {
+    public ApiResponse(boolean success, String message, String code, int status, @Nullable T data) {
         this(success, message, code, status, data, LocalDateTime.now());
     }
 }
