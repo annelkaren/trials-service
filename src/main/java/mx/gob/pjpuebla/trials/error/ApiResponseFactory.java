@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.error;
 
-
 public class ApiResponseFactory {
 
     // Códigos de negocio
@@ -33,7 +32,7 @@ public class ApiResponseFactory {
     }
 
     public static ApiResponse<Void> error(String message, String code, int status) {
-        return error(message, code, status);
+        return new ApiResponse<>(false, message, code, status);
     }
 
     public static ApiResponse<Void> error(String message, String code) {
@@ -47,6 +46,7 @@ public class ApiResponseFactory {
     public static ApiResponse<Void> unprocessable(String message) {
         return error(message, VALIDATION_ERROR, HTTP_UNPROCESSABLE);
     }
+
     public static ApiResponse<Void> conflict(String message) {
         return error(message, CONFLICT, HTTP_CONFLICT);
     }

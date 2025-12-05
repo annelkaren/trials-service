@@ -1259,17 +1259,21 @@ public class DocumentoService {
 
                                         LocalDateTime fechaTurnado = mov.getFechaAsignacion();
 
-                                        LocalDateTime fechaTermino = (isPromocion)
-                                                        ? mov.getFechaAsignacion()
-                                                                        .plusDays(documento != null
-                                                                                        ? documento.getConcepto()
-                                                                                                        .getDias()
-                                                                                        : 0)
+                                        LocalDateTime fechaTermino;
+                                        if (isPromocion && documento != null) {
+                                                int dias = 0;
+                                                if (documento.getConcepto() != null) {
+                                                        dias = documento.getConcepto().getDias();
+                                                }
+                                                fechaTermino = mov.getFechaAsignacion().plusDays(dias);
+                                        } else if (carpeta != null && carpeta.getConcepto() != null) {
 
-                                                        : (carpeta != null && carpeta.getConcepto() != null)
-                                                                        ? mov.getFechaAsignacion().plusDays(
-                                                                                        carpeta.getConcepto().getDias())
-                                                                        : null;
+                                                fechaTermino = mov.getFechaAsignacion()
+                                                                .plusDays(carpeta.getConcepto().getDias());
+
+                                        } else {
+                                                fechaTermino = null;
+                                        }
 
                                         Boolean esDiaInhabil = eventosService.esDiaInHabil(
                                                         fechaTermino != null ? fechaTermino.toLocalDate() : null,
