@@ -33,7 +33,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 c.folio,
                 c.expediente,
                 m.fechaAsignacion,
-                j.nombre,
+                coalesce(j.nombre, jc.nombre),
                 d.data,
                 d.folio,
                 d.tipoDocumento,
@@ -49,6 +49,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                         LEFT JOIN Documento d on d = m.documento and d.estatus = :estadoCarpeta
                         LEFT JOIN Juzgado j on j = m.juzgado
                         LEFT JOIN Carpeta cd on cd = d.carpeta
+                        LEFT JOIN Juzgado jc on jc = c.juzgado
                         LEFT JOIN Oficialia o on o = m.persona.oficialia
                         WHERE m.uuid = :uuid
                         ORDER BY j.id, c.tipoCarpeta, c.id, d.id""")

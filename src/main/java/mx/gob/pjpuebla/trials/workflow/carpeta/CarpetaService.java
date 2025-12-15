@@ -108,7 +108,7 @@ public class CarpetaService {
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
-        public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
+        public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId, Integer isApelacion) {
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
 
@@ -121,6 +121,8 @@ public class CarpetaService {
                         carpetaOptional = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente,
                                         juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
+                        log.info("Buscando expediente: " + Utils.normalizarExpediente(expediente) + " con juzgado id: " + finalJuzgadoId);
+                        
                         carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
                                         Utils.normalizarExpediente(expediente), finalJuzgadoId);
                 }
@@ -128,6 +130,9 @@ public class CarpetaService {
                 if (carpetaOptional.isPresent()) {
 
                         return getDataCarpeta(carpetaOptional.get());
+                } else if(carpetaOptional.isEmpty() && isApelacion == 1){
+                        return new CarpetaResponseRecord(404,
+                                        "El expediente no existe en el sistema");
                 } else {
                         // Busca en SECJ PHP:
                         String expedientePart = Utils.normalizarExpediente(expediente.split("/")[0]);

@@ -2121,7 +2121,7 @@ public class DocumentoService {
                 String[] expediente = doc.getCarpeta().getExpediente().split("/");
 
                 CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
-                                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId());
+                                doc.getCarpeta().getExpediente(), doc.getCarpeta().getJuzgado().getId(), 0);
 
                 List<String> anexos = anexoRepository.findNombresAnexosByDocumentoId(docId);
 

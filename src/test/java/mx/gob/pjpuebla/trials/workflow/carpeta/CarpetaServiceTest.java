@@ -216,7 +216,7 @@ class CarpetaServiceTest {
                                 .thenReturn(Optional.of(e));
 
                 CarpetaResponseRecord carpetaResponseRecord = target
-                                .getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
+                                .getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1, 0);
 
                 assertThat(carpetaResponseRecord)
                                 .isOfAnyClassIn(CarpetaResponseRecord.class)
@@ -234,7 +234,7 @@ class CarpetaServiceTest {
 
                 NotFoundException assertThrows = assertThrows(
                                 NotFoundException.class,
-                                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1));
+                                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1, 0));
                 assertThat(assertThrows.getMessage()).contains("Juzgado no encontrado");
         }
 
