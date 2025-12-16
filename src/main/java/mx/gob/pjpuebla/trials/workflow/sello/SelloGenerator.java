@@ -90,7 +90,7 @@ public class SelloGenerator {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", false);
         parameters.put("expediente", promo.getExpediente());
-        parameters.put("fechaHoraRecepcion", promo.getAudit().getFechaAlta().toString());
+        parameters.put("fechaHoraRecepcion", getDate(promo.getAudit().getFechaAlta()));
         parameters.put("juzgadoProcedencia", promo.getJuzgado().getNombre());
         parameters.put("folio", promo.getFolio());
         parameters.put("documentoFolio", "P." + promo.getFolio());
