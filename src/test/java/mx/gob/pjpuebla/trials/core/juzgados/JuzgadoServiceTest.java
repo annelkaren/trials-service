@@ -387,7 +387,7 @@ class JuzgadoServiceTest {
         assertThat(resultJuzgadoApelacion).isEqualTo(juzgadoSegundaInstancia);
 
         List<Juzgado> juzgadoExhorto = Collections.singletonList(juzgado);
-        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.NO_APLICA);
+        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.EXHORTO);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(juzgadoExhorto);
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto, juzgadoExhorto);
