@@ -107,7 +107,6 @@ public class ReporteService {
             }
 
             wb.write(bos);
-            wb.dispose();
             return bos.toByteArray();
         } catch (Exception ex) {
             return new byte[0];
@@ -325,7 +324,6 @@ public class ReporteService {
             autosizeAllColumns(s3, 6);
 
             wb.write(bos);
-            wb.dispose();
             return bos.toByteArray();
 
         } catch (Exception ex) {

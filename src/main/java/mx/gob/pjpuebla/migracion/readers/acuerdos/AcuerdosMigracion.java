@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 
 /**
  * Entidad que representa los acuerdos migrados desde la base de datos secundaria.
@@ -41,4 +42,6 @@ public class AcuerdosMigracion {
     
     @Column(name = "juzgado_aux")
     private String juzgadoAux;           // Juzgado auxiliar si existe
+
+    private Migrado migrado;               // Indicador de migración 
 }

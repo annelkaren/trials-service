@@ -183,7 +183,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                     WHEN c.n_tipo_carpeta = 2 THEN 'A' || '.' ||  c.s_folio
                     ELSE '' || c.s_folio
                 END AS qr,
-                c.s_expediente || '\n' || LOWER(juzgado.s_nombre)  expediente
+                c.s_expediente || CHR(10) || LOWER(juzgado.s_nombre)  expediente
 
             FROM tbl_carpetas c
             JOIN tbl_juzgados juzgado on juzgado.pn_id = c.fn_juzgado

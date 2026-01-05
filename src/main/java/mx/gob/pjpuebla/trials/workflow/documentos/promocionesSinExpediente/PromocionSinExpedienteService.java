@@ -136,7 +136,7 @@ public class PromocionSinExpedienteService {
                 Integer year = Integer.parseInt(promocion.getExpediente().split("/")[1]);
                 Juzgado juzgado = promocion.getJuzgado();
 
-                Optional<EntradasMigracion> entrada = entradasMigracionReader.buscarEntradasPorFiltros(
+                Optional<EntradasMigracion> entrada = entradasMigracionReader.buscarEntradasPorFiltrosProm(
                                 expediente, year, juzgado.getClaveJuzgado());
 
                 if (entrada.isPresent()) {
@@ -144,8 +144,10 @@ public class PromocionSinExpedienteService {
                         try {
                                 log.info("Expediente encontrado en el SECGJ PHP, se procederá a migrar el expediente.");
                                 // SI se encuentra el expediente en el SECGJ PHP, lo migramos
-                                MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpediente(
-                                                expediente, year,
+                                
+                                MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpedienteCompleto(
+                                                promocion.getExpediente().split("/")[0],
+                                                year,
                                                 juzgado.getClaveJuzgado());
 
                                 // Actualizamos estatus de la promoción sin expediente
@@ -192,7 +194,7 @@ public class PromocionSinExpedienteService {
                         Carpeta carpeta = new Carpeta()
                                         .setJuzgado(juzgado)
                                         .setTipoJuicio(tipoJuicioTradicional)
-                                        .setExpediente(expediente + "/" + year)
+                                        .setExpediente(promocion.getExpediente() + "/" + year)
                                         .setFolio(promocion.getFolio())
                                         .setTipoCarpeta(TipoCarpeta.DEMANDA)
                                         .setEstatus(EstadoCarpeta.ASIGNADO)
