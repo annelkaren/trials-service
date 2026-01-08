@@ -1,5 +1,6 @@
-<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
-<jasperReport name="newSello" language="java" pageWidth="612" pageHeight="792" orientation="Landscape" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="68de2dd3-5a61-46bf-a0bf-d1bb3b950c85">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="newSello" pageWidth="612" pageHeight="792" orientation="Landscape" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="68de2dd3-5a61-46bf-a0bf-d1bb3b950c85">
 	<parameter name="nombreEntidad" class="java.lang.String"/>
 	<parameter name="nombreJuzgado" class="java.lang.String"/>
 	<parameter name="expediente" class="java.lang.String"/>
@@ -29,226 +30,468 @@
 	<parameter name="isOralidad" class="java.lang.Boolean"/>
 	<parameter name="isApelacion" class="java.lang.Boolean"/>
 	<parameter name="juzgadoProcedencia" class="java.lang.String"/>
-	<query language="sql"><![CDATA[]]></query>
-	<background height="600" splitType="Stretch">
-		<element kind="image" uuid="11874e22-3bae-4b92-8b8a-6a1920929dc7" x="213" y="166" width="240" height="220" hImageAlign="Left">
-			<expression><![CDATA[$P{marcaAgua}]]></expression>
-		</element>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<background>
+		<band height="600" splitType="Stretch">
+			<image hAlign="Left">
+				<reportElement x="213" y="166" width="240" height="220" uuid="11874e22-3bae-4b92-8b8a-6a1920929dc7"/>
+				<imageExpression><![CDATA[$P{marcaAgua}]]></imageExpression>
+			</image>
+		</band>
 	</background>
-	<title height="2" splitType="Stretch"/>
-	<pageHeader height="1" splitType="Stretch"/>
-	<columnHeader height="166" splitType="Stretch">
-		<element kind="image" uuid="5c1e1cf8-9295-4b17-96b5-e22c6dd5f913" x="11" y="7" width="539" height="100" hImageAlign="Center" vImageAlign="Middle">
-			<expression><![CDATA[$P{logotipoHeder}]]></expression>
-		</element>
-		<element kind="textField" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac" x="50" y="111" width="460" height="30" fontSize="16.0" bold="true" hTextAlign="Center">
-			<expression><![CDATA[$P{nombreEntidad}]]></expression>
-		</element>
-		<element kind="textField" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a" x="199" y="144" width="163" height="20" hTextAlign="Center" vTextAlign="Justified">
-			<expression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></expression>
-		</element>
+	<title>
+		<band height="2" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="1" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="166" splitType="Stretch">
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="11" y="7" width="539" height="100" uuid="5c1e1cf8-9295-4b17-96b5-e22c6dd5f913"/>
+				<imageExpression><![CDATA[$P{logotipoHeder}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="50" y="111" width="460" height="30" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac"/>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nombreEntidad}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="199" y="144" width="163" height="20" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a"/>
+				<textElement textAlignment="Center" verticalAlignment="Justified"/>
+				<textFieldExpression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></textFieldExpression>
+			</textField>
+		</band>
 	</columnHeader>
 	<detail>
-		<band height="207" splitType="Stretch">
+		<band height="201" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-			<element kind="component" uuid="40ef3353-60d2-4d81-9e1a-740aab9f9c2e" x="46" y="10" width="163" height="133">
-				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$P{documentoFolio}]]></codeExpression>
-				</component>
-			</element>
-			<element kind="textField" uuid="58554b20-7964-4ba8-bb88-ddbf5a971ad3" x="210" y="10" width="341" height="30" fontSize="12.0" bold="true" hTextAlign="Left">
-				<expression><![CDATA[$P{nombreJuzgado}]]></expression>
-			</element>
-			<element kind="textField" uuid="ddf426cf-c518-412a-b604-0c6d6717c74f" x="210" y="47" width="78" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Carpeta Digital:"]]></expression>
-			</element>
-			<element kind="textField" uuid="c449779f-9f77-43e5-b11b-39bb18e6bf82" stretchType="ContainerHeight" x="288" y="47" width="262" height="18" textAdjust="StretchHeight" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{expediente}]]></expression>
-			</element>
-			<element kind="textField" uuid="c0069a05-694b-48af-9e86-480eb5af1856" x="210" y="67" width="29" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Juez:"]]></expression>
-			</element>
-			<element kind="textField" uuid="e33173f2-d76f-4337-99c1-bac2e1d777ce" stretchType="ContainerBottom" x="239" y="67" width="301" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{juez}]]></expression>
-			</element>
-			<element kind="textField" uuid="ca2ce383-2aac-4bda-ae8c-e682f93d69c6" x="210" y="87" width="331" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Fecha y hora de recepción: " + "<b>" +  $P{fechaHoraRecepcion} + "</b>"]]></expression>
-			</element>
-			<element kind="staticText" uuid="2a10a4b0-13a9-4783-88e0-6168edaad6e0" x="210" y="107" width="28" height="19" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="46" y="10" width="163" height="133" uuid="40ef3353-60d2-4d81-9e1a-740aab9f9c2e"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" errorCorrectionLevel="M">
+					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+			<textField>
+				<reportElement x="210" y="10" width="341" height="30" uuid="58554b20-7964-4ba8-bb88-ddbf5a971ad3"/>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nombreJuzgado}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="47" width="78" height="18" uuid="ddf426cf-c518-412a-b604-0c6d6717c74f">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Carpeta Digital:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="ContainerHeight" x="288" y="47" width="262" height="18" uuid="c449779f-9f77-43e5-b11b-39bb18e6bf82">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="67" width="29" height="18" uuid="c0069a05-694b-48af-9e86-480eb5af1856">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Juez:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="ContainerBottom" x="239" y="67" width="301" height="18" uuid="e33173f2-d76f-4337-99c1-bac2e1d777ce">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{juez}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="87" width="331" height="18" uuid="ca2ce383-2aac-4bda-ae8c-e682f93d69c6">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fecha y hora de recepción: " + "<b>" +  $P{fechaHoraRecepcion} + "</b>"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="210" y="107" width="28" height="19" uuid="2a10a4b0-13a9-4783-88e0-6168edaad6e0">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
 				<text><![CDATA[Folio: ]]></text>
-			</element>
-			<element kind="textField" uuid="9fdd6434-0d7b-45f1-abae-cbcdb5c5d78b" x="238" y="107" width="278" height="19" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{folio}]]></expression>
-			</element>
-			<element kind="textField" uuid="b3a51fcc-1fba-44eb-987a-b2da393a33d1" x="77" y="144" width="100" height="30" bold="true" hTextAlign="Center">
-				<expression><![CDATA[$P{capturista}]]></expression>
-			</element>
-			<element kind="textField" uuid="41930836-3c7d-4559-b12a-3162614678ac" x="210" y="155" width="306" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Fecha y hora de Audiencia: " + "<b>" +$P{fechaHoraAudiencia}+ "</b>"]]></expression>
-			</element>
-			<element kind="textField" uuid="54aaa48b-684f-44a2-ac6c-528971ba4e73" x="210" y="173" width="74" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Tipo de Juicio:"]]></expression>
-			</element>
-			<element kind="textField" uuid="b99bdf9c-1198-4f11-a5c3-dace2f769e84" x="284" y="173" width="246" height="30" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{tipoJuicio}]]></expression>
-			</element>
-			<element kind="textField" uuid="07f409d1-6962-4273-a966-8ef2d3bfa9ca" x="237" y="136" width="279" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{sala}]]></expression>
-			</element>
-			<element kind="textField" uuid="cac8868e-a195-444a-ad34-0f56b8bf3291" x="210" y="136" width="28" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Sala:"]]></expression>
-			</element>
+			</staticText>
+			<textField>
+				<reportElement x="238" y="107" width="278" height="19" uuid="9fdd6434-0d7b-45f1-abae-cbcdb5c5d78b">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="77" y="144" width="100" height="30" uuid="b3a51fcc-1fba-44eb-987a-b2da393a33d1"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="145" width="306" height="18" uuid="41930836-3c7d-4559-b12a-3162614678ac">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fecha y hora de Audiencia: " + "<b>" +$P{fechaHoraAudiencia}+ "</b>"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="163" width="74" height="18" uuid="54aaa48b-684f-44a2-ac6c-528971ba4e73">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Tipo de Juicio:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="284" y="163" width="246" height="30" uuid="b99bdf9c-1198-4f11-a5c3-dace2f769e84">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{tipoJuicio}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="237" y="126" width="279" height="18" uuid="07f409d1-6962-4273-a966-8ef2d3bfa9ca">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{sala}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="210" y="126" width="28" height="18" uuid="cac8868e-a195-444a-ad34-0f56b8bf3291">
+					<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Sala:"]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="174">
 			<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-			<element kind="component" uuid="5bbc92ac-3392-410f-875e-97d0f2744e26" x="48" y="7" width="160" height="130">
-				<component kind="barcode4j:QRCode" errorCorrectionLevel="M">
-					<codeExpression><![CDATA[$P{documentoFolio}]]></codeExpression>
-				</component>
-			</element>
-			<element kind="textField" uuid="03ae701f-69d2-41cf-84ba-7b9696e9f0c9" x="209" y="5" width="344" height="30" fontSize="12.0" bold="true" hTextAlign="Left">
-				<expression><![CDATA[$P{nombreJuzgado}]]></expression>
-			</element>
-			<element kind="textField" uuid="914354aa-1c94-4aa8-b4ef-994de1f7a506" stretchType="ContainerHeight" x="268" y="43" width="280" height="19" textAdjust="StretchHeight" bold="true">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{expediente}]]></expression>
-			</element>
-			<element kind="textField" uuid="b55eaee4-f285-4315-b291-e0c7700758c9" x="209" y="44" width="58" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{isApelacion} ? "TOCA:" : "Expediente:"]]></expression>
-			</element>
-			<element kind="textField" uuid="bc7817e1-74ab-4ea1-bac6-ddcbc445cd8b" x="209" y="63" width="339" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Fecha y hora de recepción: " + "<b>" +  $P{fechaHoraRecepcion} + "</b>"]]></expression>
-			</element>
-			<element kind="staticText" uuid="e4417b35-a55b-428d-86e7-cb32655d41ed" x="209" y="83" width="28" height="19" bold="false">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="48" y="7" width="160" height="130" uuid="5bbc92ac-3392-410f-875e-97d0f2744e26"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" errorCorrectionLevel="M">
+					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+			<textField>
+				<reportElement x="209" y="5" width="344" height="30" uuid="03ae701f-69d2-41cf-84ba-7b9696e9f0c9"/>
+				<textElement textAlignment="Left">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nombreJuzgado}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="ContainerHeight" x="268" y="43" width="280" height="19" uuid="914354aa-1c94-4aa8-b4ef-994de1f7a506">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="209" y="44" width="58" height="18" uuid="b55eaee4-f285-4315-b291-e0c7700758c9">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{isApelacion} ? "TOCA:" : "Expediente:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="209" y="63" width="339" height="18" uuid="bc7817e1-74ab-4ea1-bac6-ddcbc445cd8b">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fecha y hora de recepción: " + "<b>" +  $P{fechaHoraRecepcion} + "</b>"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="209" y="83" width="28" height="19" uuid="e4417b35-a55b-428d-86e7-cb32655d41ed">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
 				<text><![CDATA[Folio: ]]></text>
-			</element>
-			<element kind="textField" uuid="a4c21d76-9630-400f-9a63-fa64540094a2" x="238" y="83" width="212" height="19" bold="true">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{folio}]]></expression>
-			</element>
-			<element kind="staticText" uuid="89f981b0-80d5-4fa4-b0dd-2e13687a3457" x="210" y="103" width="50" height="20" bold="true">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+			</staticText>
+			<textField>
+				<reportElement x="238" y="83" width="212" height="19" uuid="a4c21d76-9630-400f-9a63-fa64540094a2">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="210" y="103" width="50" height="20" uuid="89f981b0-80d5-4fa4-b0dd-2e13687a3457">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
 				<text><![CDATA[Anexos:]]></text>
-			</element>
-			<element kind="textField" uuid="41dbef73-f2dc-4ed5-a2b1-c2b8b33c70c4" stretchType="ContainerHeight" x="210" y="123" width="288" height="46" markup="html" textAdjust="StretchHeight">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{anexos}]]></expression>
-			</element>
-			<element kind="textField" uuid="11500104-10ec-4e8d-aed1-3a4257561253" x="77" y="139" width="100" height="30" bold="true" hTextAlign="Center">
-				<expression><![CDATA[$P{capturista}]]></expression>
-			</element>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="ContainerHeight" x="210" y="123" width="288" height="46" uuid="41dbef73-f2dc-4ed5-a2b1-c2b8b33c70c4">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html"/>
+				<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="77" y="139" width="100" height="30" uuid="11500104-10ec-4e8d-aed1-3a4257561253"/>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="21">
-			<element kind="staticText" uuid="dec979d2-9065-4334-b075-7a963fd5590b" stretchType="ContainerHeight" x="211" y="1" width="139" height="20" bold="true">
-				<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+			<staticText>
+				<reportElement stretchType="ContainerHeight" x="211" y="1" width="139" height="20" uuid="dec979d2-9065-4334-b075-7a963fd5590b">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
 				<text><![CDATA[Juzgado de procedencia:]]></text>
-			</element>
-			<element kind="textField" uuid="5feea861-0a38-4da5-99f6-99d696d5127a" x="333" y="1" width="160" height="20">
-				<expression><![CDATA[$P{juzgadoProcedencia}]]></expression>
-			</element>
+			</staticText>
+			<textField>
+				<reportElement x="333" y="1" width="160" height="20" uuid="5feea861-0a38-4da5-99f6-99d696d5127a">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{juzgadoProcedencia}]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="247">
+		<band height="297" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-			<element kind="textField" uuid="6146abb6-7c51-4a80-855a-0b50a92fc2f3" stretchType="ContainerBottom" x="100" y="28" width="147" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{curpActor} != null && !$P{curpActor}.trim().isEmpty() ? $P{curpActor} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="b8552913-b2ea-4e33-918a-4b1d7fb1045c" x="52" y="9" width="30" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Actor:"]]></expression>
-			</element>
-			<element kind="textField" uuid="941a2099-4eaa-4cf6-abd0-bfdf5fb0b4e2" x="52" y="66" width="48" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["- Correo:"]]></expression>
-			</element>
-			<element kind="textField" uuid="74721ab2-4d0b-46bb-8232-6c7d66904374" x="52" y="47" width="49" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["- Celular:"]]></expression>
-			</element>
-			<element kind="staticText" uuid="690b591f-5a0e-4fa5-97d4-5f3005d6a8ae" x="52" y="109" width="50" height="19" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<text><![CDATA[Anexos:]]></text>
-			</element>
-			<element kind="textField" uuid="dc799aac-d730-4ecc-b30e-6344817efdd6" stretchType="ContainerHeight" x="52" y="130" width="410" height="39" markup="html" textAdjust="StretchHeight">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{anexos}]]></expression>
-			</element>
-			<element kind="textField" uuid="75fd38d9-47d8-4e71-b4b1-8081e8b86904" x="299" y="9" width="62" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["Demandado:"]]></expression>
-			</element>
-			<element kind="textField" uuid="0fde7329-e6ea-4d4e-bf95-5b67187c5b71" stretchType="ContainerBottom" x="83" y="9" width="159" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{actor}]]></expression>
-			</element>
-			<element kind="textField" uuid="e5864774-327e-43ef-ac82-01890cfc4b1c" x="52" y="28" width="47" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["- CURP:"]]></expression>
-			</element>
-			<element kind="textField" uuid="270a968d-1a1c-4c8e-a010-cff6afddb32f" stretchType="ContainerBottom" x="102" y="47" width="147" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{celularActor} != null && !$P{celularActor}.trim().isEmpty() ? $P{celularActor} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="452081c3-ac68-4ed7-9e4f-46fd4acc09b3" x="299" y="49" width="59" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["- Domicilio:"]]></expression>
-			</element>
-			<element kind="textField" uuid="143fb74b-b176-4317-83d3-21841776ece2" stretchType="ContainerHeight" x="52" y="89" width="410" height="20" markup="html" textAdjust="StretchHeight">
-				<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
-				<expression><![CDATA[$P{domiciliofamiliar}]]></expression>
-			</element>
-			<element kind="textField" uuid="6179a437-db31-47a4-815f-a391e9988601" stretchType="ContainerHeight" x="52" y="180" width="410" height="62" markup="html" textAdjust="StretchHeight" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[(("<b>Relación de Expedientes: <br/></b>" +$P{relacionExpediente} == null || $P{relacionExpediente}.trim().isEmpty()) ? " " : $P{relacionExpediente})
-]]></expression>
-			</element>
-			<element kind="textField" uuid="771cbad0-e6a8-4361-9981-cb8f950c57d9" x="299" y="29" width="46" height="18" markup="html" bold="false">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA["- CURP:"]]></expression>
-			</element>
-			<element kind="textField" uuid="9f396a15-abbd-40e3-96a8-0ef025ed8290" stretchType="ContainerBottom" x="101" y="66" width="148" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{correoActor}   != null && !$P{correoActor}.trim().isEmpty() ? $P{correoActor} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="c6a5d58b-a527-4e77-a7d5-b46fede8df0b" stretchType="ElementGroupHeight" x="359" y="49" width="147" height="36" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{domicilioDemandado}  != null && !$P{domicilioDemandado}.trim().isEmpty() ? $P{domicilioDemandado} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="7b184d52-b9d3-407a-8b25-206055716870" stretchType="ContainerBottom" x="361" y="9" width="148" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{demandado}  != null && !$P{demandado}.trim().isEmpty() ? $P{demandado} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="89cbd371-d900-4d4e-b415-f5341d6b49f9" stretchType="ContainerBottom" x="346" y="29" width="160" height="18" bold="true">
-				<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
-				<expression><![CDATA[$P{curpDemandado}  != null && !$P{curpDemandado}.trim().isEmpty() ? $P{curpDemandado} : "-"]]></expression>
-			</element>
+			<frame>
+				<reportElement positionType="Float" x="0" y="0" width="572" height="24" uuid="6da6a347-5df3-44d5-acc1-4fb0d30a9b9d"/>
+				<textField>
+					<reportElement x="49" y="0" width="30" height="18" uuid="b8552913-b2ea-4e33-918a-4b1d7fb1045c">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Actor:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="80" y="0" width="159" height="18" uuid="0fde7329-e6ea-4d4e-bf95-5b67187c5b71">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{actor}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="296" y="0" width="62" height="18" uuid="75fd38d9-47d8-4e71-b4b1-8081e8b86904">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Demandado:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="358" y="0" width="148" height="18" uuid="7b184d52-b9d3-407a-8b25-206055716870">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{demandado}  != null && !$P{demandado}.trim().isEmpty() ? $P{demandado} : "-"]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" stretchType="ElementGroupHeight" x="0" y="24" width="572" height="247" uuid="958d65eb-aa6e-4a4b-9042-a82adda09619">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textField>
+					<reportElement stretchType="ContainerBottom" x="100" y="0" width="179" height="18" uuid="6146abb6-7c51-4a80-855a-0b50a92fc2f3">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{curpActor} != null && !$P{curpActor}.trim().isEmpty() ? $P{curpActor} : "-"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="52" y="38" width="48" height="18" uuid="941a2099-4eaa-4cf6-abd0-bfdf5fb0b4e2">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["- Correo:"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="52" y="19" width="49" height="18" uuid="74721ab2-4d0b-46bb-8232-6c7d66904374">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["- Celular:"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="52" y="101" width="50" height="19" uuid="690b591f-5a0e-4fa5-97d4-5f3005d6a8ae">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[Anexos:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="ContainerHeight" x="52" y="122" width="410" height="39" uuid="dc799aac-d730-4ecc-b30e-6344817efdd6">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html"/>
+					<textFieldExpression><![CDATA[$P{anexos}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="52" y="0" width="47" height="18" uuid="e5864774-327e-43ef-ac82-01890cfc4b1c">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement stretchType="ContainerBottom" x="102" y="19" width="177" height="18" uuid="270a968d-1a1c-4c8e-a010-cff6afddb32f">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{celularActor} != null && !$P{celularActor}.trim().isEmpty() ? $P{celularActor} : "-"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="299" y="21" width="59" height="18" uuid="452081c3-ac68-4ed7-9e4f-46fd4acc09b3">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["- Domicilio:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="ContainerHeight" x="52" y="76" width="410" height="24" uuid="143fb74b-b176-4317-83d3-21841776ece2">
+						<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html"/>
+					<textFieldExpression><![CDATA[$P{domiciliofamiliar}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="ContainerHeight" x="52" y="172" width="410" height="62" uuid="6179a437-db31-47a4-815f-a391e9988601">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[(("<b>Relación de Expedientes: <br/></b>" +$P{relacionExpediente} == null || $P{relacionExpediente}.trim().isEmpty()) ? " " : $P{relacionExpediente})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="299" y="1" width="46" height="18" uuid="771cbad0-e6a8-4361-9981-cb8f950c57d9">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["- CURP:"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement stretchType="ContainerBottom" x="101" y="38" width="178" height="22" uuid="9f396a15-abbd-40e3-96a8-0ef025ed8290">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{correoActor}   != null && !$P{correoActor}.trim().isEmpty() ? $P{correoActor} : "-"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement stretchType="ElementGroupHeight" x="359" y="21" width="147" height="48" uuid="c6a5d58b-a527-4e77-a7d5-b46fede8df0b">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{domicilioDemandado}  != null && !$P{domicilioDemandado}.trim().isEmpty() ? $P{domicilioDemandado} : "-"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement stretchType="ContainerBottom" x="346" y="1" width="160" height="18" uuid="89cbd371-d900-4d4e-b415-f5341d6b49f9">
+						<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{curpDemandado}  != null && !$P{curpDemandado}.trim().isEmpty() ? $P{curpDemandado} : "-"]]></textFieldExpression>
+				</textField>
+			</frame>
 		</band>
 	</detail>
-	<columnFooter height="97" splitType="Stretch">
-		<element kind="staticText" uuid="d28b9f84-34f0-4a61-b049-43600cddea7c" x="46" y="2" width="150" height="19" bold="true">
-			<text><![CDATA[CADENA DE VERIFICACION]]></text>
-		</element>
-		<element kind="textField" uuid="b33f811c-37ff-4335-a7a4-56d771565e03" x="46" y="22" width="510" height="30">
-			<expression><![CDATA[$P{cadenaVerificacion}]]></expression>
-		</element>
-		<element kind="staticText" uuid="0d25209d-552b-4440-a124-1eebeeb3a78f" x="46" y="54" width="510" height="35" fontSize="10.0" bold="true">
-			<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
-			<text><![CDATA[Por cuestión de orden, deberá presentarse en el Juzgado de Oralidad Familiar 20 minutos antes de la hora señalada para el desahogo de su audiencia.]]></text>
-		</element>
+	<columnFooter>
+		<band height="97" splitType="Stretch">
+			<staticText>
+				<reportElement x="46" y="2" width="150" height="19" uuid="d28b9f84-34f0-4a61-b049-43600cddea7c"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[CADENA DE VERIFICACION]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="46" y="22" width="510" height="30" uuid="b33f811c-37ff-4335-a7a4-56d771565e03"/>
+				<textFieldExpression><![CDATA[$P{cadenaVerificacion}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="46" y="54" width="510" height="35" uuid="0d25209d-552b-4440-a124-1eebeeb3a78f">
+					<printWhenExpression><![CDATA[$P{isOralidad}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Por cuestión de orden, deberá presentarse en el Juzgado de Oralidad Familiar 20 minutos antes de la hora señalada para el desahogo de su audiencia.]]></text>
+			</staticText>
+		</band>
 	</columnFooter>
 </jasperReport>

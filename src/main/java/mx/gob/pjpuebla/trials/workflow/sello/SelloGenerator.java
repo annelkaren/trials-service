@@ -130,7 +130,7 @@ public class SelloGenerator {
                 ? expedienteRelacionados
                 : "";
         String juzgadoProcedencia = documento.getCarpeta().getJuzgado().getNombre();
-
+        System.out.println("ES ORALIDAD FAMILIAR ?  " + isOralidadFamiliar);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("expediente", expediente);
@@ -325,8 +325,8 @@ public class SelloGenerator {
 
         if (carpetaOptional.isPresent()) {
             Carpeta carpeta = carpetaOptional.get();
-            if (documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("oralidad")
-                    && documento.getCarpeta().getTipoJuicio().getNombre().toLowerCase().contains("familiar")) {
+            String tipoJuicio = documento.getCarpeta().getTipoJuicio().getNombre();
+            if (tipoJuicio.toLowerCase().contains("oralidad") && tipoJuicio.toLowerCase().contains("familiar")) {
                 List<JuzgadoTipoJuiciosRecord> listTipoJuicios = juzgadoRepository
                         .findTipoJuiciosByJuzgadoId(documento.getCarpeta().getJuzgado().getId());
                 List<String> listInicialesTipoJuicio = obtenerIniciales(listTipoJuicios);
