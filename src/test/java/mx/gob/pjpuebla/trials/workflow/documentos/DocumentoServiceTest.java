@@ -806,7 +806,7 @@ class DocumentoServiceTest {
                                                 listPage.size()));
 
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
-                                PageRequest.of(0, listPage.size()), "" );
+                                PageRequest.of(0, listPage.size()));
 
                 assertThat(page.getContent())
                                 .hasSize(1)
@@ -1017,8 +1017,7 @@ class DocumentoServiceTest {
 
                 given(etiquetaService.renderEtiquetaRecepcion(any(), any(Carpeta.class))).willReturn("Promocion");
                 given(personaService.getAuditor()).willReturn(persona);
-                given(movimientoService.getBandejaRecepcion(any(), any(), any(), any(), any(), any())).willReturn(page);
-
+                
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
                 IndicadoresRecord result = documentoService.getIndicadores();

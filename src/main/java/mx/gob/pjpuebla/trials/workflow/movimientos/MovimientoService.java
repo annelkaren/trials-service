@@ -127,10 +127,7 @@ public class MovimientoService {
                 tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
     }
 
-    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-                                                String motivos, Persona personaId) {
-        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
-    }
+
 
     public void createMotivo(MotivoRecord motivoRecord) {
         Persona currentUser = personaService.getAuditor();

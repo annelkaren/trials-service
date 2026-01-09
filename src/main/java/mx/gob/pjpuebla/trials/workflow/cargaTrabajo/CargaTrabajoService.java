@@ -49,7 +49,7 @@ public class CargaTrabajoService {
 
         // Obtener los datos y transformarlos en DTOs en un solo paso
         List<CargaTrabajoDTO> cargaTrabajoDTOList = documentoService
-                .getAllBandejaRecepcion("", Pageable.unpaged(), null)
+                .getAllBandejaRecepcion("", Pageable.unpaged())
                 .getContent()
                 .stream()
                 .map(item -> mapearADTO(item, fechaHoy, nombrePersona))

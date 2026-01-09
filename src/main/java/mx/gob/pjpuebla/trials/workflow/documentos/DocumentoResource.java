@@ -166,9 +166,8 @@ public class DocumentoResource {
     @GetMapping("/bandeja/recepcion")
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
-        return this.documentoService.getAllBandejaRecepcion(key, pageable, tipoEntrada);
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.documentoService.getAllBandejaRecepcion(key, pageable);
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
