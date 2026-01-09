@@ -77,6 +77,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -1030,57 +1031,113 @@ public class DocumentoService {
                         return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
                                         tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
                 }
-                return renderData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp,
-                                tipoEntradaDoc, tipoEntradaCarp);
+                return renderData(key, pageable, currentUser);
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
-                        TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp,
-                        TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
-                Page<Movimiento> page = movimientoService.getBandejaRecepcion(
-                                pageable,
+        private Pageable translateBandejaRecepcionPageable(Pageable pageable) {
+
+                // Default si no viene sort
+                if (pageable.getSort() == null || pageable.getSort().isUnsorted()) {
+                        return PageRequest.of(
+                                        pageable.getPageNumber(),
+                                        pageable.getPageSize(),
+                                        JpaSort.unsafe(Sort.Direction.DESC, "m.fechaAsignacion"));
+                }
+
+                Sort translated = Sort.unsorted();
+
+                for (Sort.Order order : pageable.getSort()) {
+                        Sort part = mapBandejaRecepcionSort(order);
+                        if (part != null) {
+                                translated = translated.and(part);
+                        }
+                }
+
+                // Si mandaron puras columnas no permitidas -> default
+                if (translated.isUnsorted()) {
+                        translated = JpaSort.unsafe(Sort.Direction.DESC, "m.fechaAsignacion");
+                }
+
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), translated);
+        }
+
+        private Sort mapBandejaRecepcionSort(Sort.Order order) {
+                String prop = order.getProperty();
+                Sort.Direction dir = order.getDirection();
+
+                return switch (prop) {
+
+                        // ✅ folio (puede venir de c, cd o d)
+                        case "folio" -> JpaSort.unsafe(dir,
+                                        "coalesce(c.folio, cd.folio, d.folio)");
+
+                        // ✅ expediente (c o cd)
+                        case "expediente" -> JpaSort.unsafe(dir,
+                                        "coalesce(c.expediente, cd.expediente)");
+
+                        // ✅ fechaHoraEnvio (en el record) = m.fechaAsignacion
+                        case "fechaHoraEnvio", "fechaHoraTurnado" -> JpaSort.unsafe(dir,
+                                        "m.fechaAsignacion");
+
+                        // ✅ origen (si tu record usa PERSONA como origen)
+                        // Mejor ordenar por apellidos/nombre en vez del concat.
+                        case "origen" -> JpaSort.unsafe(dir,
+                                        "coalesce(p.apellidoPaterno, '') , coalesce(p.apellidoMaterno, '') , coalesce(p.nombre, '')");
+
+                        // ✅ concepto (promo -> d.concepto.nombre, else c.concepto.nombre o
+                        // cd.concepto.nombre)
+                        case "concepto", "motivoTurnado" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) then d.concepto.nombre "
+                                                        +
+                                                        " when (c is not null) then c.concepto.nombre " +
+                                                        " else cd.concepto.nombre " +
+                                                        "end");
+
+                        // ✅ tipoEntrada (v1: PROMOCION vs tipoCarpeta)
+                        // Nota: tu query para tipoEntrada lo construye con:
+                        // promo -> 'PROMOCION'
+                        // else -> concat(tipoCarpeta,'')
+                        case "tipoEntrada" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) then 'PROMOCION' "
+                                                        +
+                                                        " when (c is not null) then cast(c.tipoCarpeta as string) " +
+                                                        " else cast(cd.tipoCarpeta as string) " +
+                                                        "end");
+
+                        // ✅ tipoPromocion (JSONB)
+                        case "tipoPromocion" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) "
+                                                        +
+                                                        " then function('jsonb_extract_path_text', d.data, 'tipoPromocion') "
+                                                        +
+                                                        " else '' " +
+                                                        "end");
+
+                        // ❌ no permitido -> ignora
+                        default -> null;
+                };
+        }
+
+        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser) {
+                long n = movimientoRepository.countBandejaRecepcionWhereOnly(
                                 currentUser.getJuzgado().getId(),
                                 EstadoCarpeta.TURNADO,
                                 key,
                                 EstadoCarpeta.TURNADO.name(),
-                                currentUser,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                folioTemp,
-                                tipoEntradaDoc,
-                                tipoEntradaCarp);
+                                currentUser);
+                log.warn("COUNT BANDEJA WHERE ONLY = {}", n);
 
-                List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
-                                .map(movimiento -> {
-                                        Carpeta carpeta = movimiento.getCarpeta();
-
-                                        String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
-                                                        carpeta);
-
-                                        String origen = movimiento.getPersona().getNombre() + " "
-                                                        + movimiento.getPersona().getApellidoPaterno() + " "
-                                                        + ((movimiento.getPersona().getApellidoMaterno() != null)
-                                                                        ? movimiento.getPersona().getApellidoMaterno()
-                                                                        : "");
-
-                                        return new DocumentoBandejaRecepcionRecord(
-                                                        carpeta.getId(),
-                                                        null,
-                                                        carpeta.getFolio(),
-                                                        carpeta.getExpediente(),
-                                                        tipoEntrada.replace("Promocion", "Promoción"),
-                                                        origen,
-                                                        carpeta.getConcepto().getNombre(),
-                                                        movimiento.getFechaAsignacion(),
-                                                        true,
-                                                        carpeta.getPrioridad(),
-                                                        carpeta.getHoras(),
-                                                        carpeta.getConcepto().getId(),
-                                                        null);
-                                })
-                                .toList();
-
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                Pageable fixed = translateBandejaRecepcionPageable(pageable); // para sort expediente/folio/etc
+                return movimientoRepository.getBandejaRecepcionPro(
+                                fixed,
+                                currentUser.getJuzgado().getId(),
+                                EstadoCarpeta.TURNADO,
+                                key,
+                                EstadoCarpeta.TURNADO.name(),
+                                currentUser);
         }
 
         private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,

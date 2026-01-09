@@ -128,10 +128,8 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-                                                String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
-                                                Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
-        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
-                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
+                                                String motivos, Persona personaId) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
     }
 
     public void createMotivo(MotivoRecord motivoRecord) {
