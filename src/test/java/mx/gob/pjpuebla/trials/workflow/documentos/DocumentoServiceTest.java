@@ -187,7 +187,6 @@ class DocumentoServiceTest {
         private EventoService eventosService;
         @Mock
         private SolicitudesProrrogasService solicitudesProrrogasService;
- 
 
         @Mock
         private ConfiguracionesRepository configuracionesRepository;
@@ -330,7 +329,7 @@ class DocumentoServiceTest {
 
                 Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
                 given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(),
-                                any(), any(), any() ))
+                                any(), any(), any()))
                                 .willReturn(movimientoPage);
 
                 // Act
@@ -794,8 +793,9 @@ class DocumentoServiceTest {
 
                 given(personaService.getAuditor()).willReturn(persona);
                 given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
-               
-                //given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(), any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
+
+                // given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(),
+                // any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
 
                 List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
                 List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
@@ -805,7 +805,8 @@ class DocumentoServiceTest {
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 
-                Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion("",
+                Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(
+                                "", null, null, null, null, null, null, null,
                                 PageRequest.of(0, listPage.size()));
 
                 assertThat(page.getContent())
@@ -825,7 +826,7 @@ class DocumentoServiceTest {
                 Map<String, Object> origenPrincipal = Map.of(
                                 "centroTrabajo", "prueba",
                                 "nombrePersona", persona.getJuzgado().getNombre());
-                                
+
                 given(movimientoService.getOrigen(any(), any())).willReturn(origenPrincipal);
                 Map<String, Object> origen = documentoService.getOrigen(movimiento, persona);
                 assertThat(origen.get("name").toString()).contains(persona.getJuzgado().getNombre());
@@ -838,7 +839,7 @@ class DocumentoServiceTest {
                 Oficialia oficialia = new Oficialia().setNombre("Oficialia 1").setId(2);
                 Movimiento movimiento = new Movimiento().setOficialia(oficialia);
                 Persona persona = new Persona().setOficialia(oficialia).setNombre("Juan");
-                 Map<String, Object> origenPrincipal = Map.of(
+                Map<String, Object> origenPrincipal = Map.of(
                                 "centroTrabajo", "prueba",
                                 "nombrePersona", oficialia.getNombre());
 
@@ -852,7 +853,7 @@ class DocumentoServiceTest {
         void getOrigen_invalid() {
                 Movimiento movimiento = new Movimiento();
                 Persona persona = new Persona();
-                 Map<String, Object> origenPrincipal= Map.of(
+                Map<String, Object> origenPrincipal = Map.of(
                                 "centroTrabajo", "prueba",
                                 "nombrePersona", "");
 
@@ -1017,7 +1018,7 @@ class DocumentoServiceTest {
 
                 given(etiquetaService.renderEtiquetaRecepcion(any(), any(Carpeta.class))).willReturn("Promocion");
                 given(personaService.getAuditor()).willReturn(persona);
-                
+
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
                 IndicadoresRecord result = documentoService.getIndicadores();
@@ -1111,8 +1112,8 @@ class DocumentoServiceTest {
                                                 listPage.size()));
                 given(personaService.getAuditor())
                                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
-                Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("",null,
-                                PageRequest.of(1, listPage.size()), null );
+                Page<DocumentoAsignadoResponseRecord> page = documentoService.getAllAsignado("", null,
+                                PageRequest.of(1, listPage.size()), null);
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()

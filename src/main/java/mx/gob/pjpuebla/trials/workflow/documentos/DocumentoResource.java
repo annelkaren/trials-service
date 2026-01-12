@@ -22,6 +22,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,11 +32,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 
 @RequiredArgsConstructor
 @RestController
@@ -48,7 +48,6 @@ public class DocumentoResource {
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacion2Service;
     private final OficioService oficioService;
-
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
 
@@ -166,8 +165,15 @@ public class DocumentoResource {
     @GetMapping("/bandeja/recepcion")
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(
             @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "origen", required = false) String origen,
+            @RequestParam(value = "concepto", required = false) String concepto, // motivo turnado
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo,
             @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllBandejaRecepcion(key, pageable);
+        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo, pageable);
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
@@ -179,7 +185,8 @@ public class DocumentoResource {
     @GetMapping("/bandeja/asignados")
     public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable, @RequestParam(value = "personaId", required = false) Long personaId,
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "personaId", required = false) Long personaId,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
         return this.documentoService.getAllAsignado(key, personaId, pageable, tipoEntrada);
     }
@@ -322,7 +329,7 @@ public class DocumentoResource {
     }
 
     @GetMapping("/filtroBandeja")
-    public List<CarpetaCatalogoRecord>  filtroTiposEntradas(@RequestParam String bandeja) {
+    public List<CarpetaCatalogoRecord> filtroTiposEntradas(@RequestParam String bandeja) {
         return documentoService.getTipoEntradas(bandeja);
     }
 }

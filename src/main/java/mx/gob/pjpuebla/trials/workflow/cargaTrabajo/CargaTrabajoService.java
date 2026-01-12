@@ -47,9 +47,9 @@ public class CargaTrabajoService {
         // Extraer la construcción del nombre a un método separado
         final String nombrePersona = construirNombreCompleto(personaService.getAuditor());
 
-        // Obtener los datos y transformarlos en DTOs en un solo paso
+        // Obtener los datos y transformarlos en DTOs en un solo pasos
         List<CargaTrabajoDTO> cargaTrabajoDTOList = documentoService
-                .getAllBandejaRecepcion("", Pageable.unpaged())
+                .getAllBandejaRecepcion("", null, null, null, null, null, null, null, Pageable.unpaged())
                 .getContent()
                 .stream()
                 .map(item -> mapearADTO(item, fechaHoy, nombrePersona))

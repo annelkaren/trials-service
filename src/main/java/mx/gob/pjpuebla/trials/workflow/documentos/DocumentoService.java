@@ -85,6 +85,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -146,6 +147,25 @@ public class DocumentoService {
         private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
         private Persona personaAsignada = null;
+
+        // funciones para validar busqueda por QR:
+        private static final Pattern CMD = Pattern.compile("^\\s*([dapeDAPE])\\s*\\.\\s*(.+)\\s*$");
+
+        private static String normalizeKey(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
+
+        record CmdFilter(String letra, String folio) {
+        }
+
+        private static CmdFilter parseCmd(String key) {
+                if (key == null)
+                        return null;
+                var m = CMD.matcher(key.trim());
+                if (!m.matches())
+                        return null;
+                return new CmdFilter(m.group(1).toUpperCase(), m.group(2).trim());
+        }
 
         @Transactional(readOnly = true)
         public Page<DocumentoGridRecord> getAll(String key, Pageable pageable, String tipoEntradaFilter) {
@@ -1005,7 +1025,9 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta());
         }
 
-        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable) {
+        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key,
+                        String folio, String expediente, String tipoEntrada, String origen, String concepto,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo, Pageable pageable) {
 
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
@@ -1022,7 +1044,8 @@ public class DocumentoService {
                         return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
                                         tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
                 }
-                return renderData(key, pageable, currentUser);
+                return renderData(key, pageable, currentUser,
+                                folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
         }
 
         private Pageable translateBandejaRecepcionPageable(Pageable pageable) {
@@ -1112,37 +1135,48 @@ public class DocumentoService {
                 };
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser) {
+        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
+                        String folio, String expediente, String tipoEntrada, String origen, String concepto,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo) {
 
-                key = (key != null) ? key.toLowerCase() : "";
+                folio = norm(folio);
+                expediente = norm(expediente);
+                tipoEntrada = normUpper(tipoEntrada); // DEMANDA, PROMOCION, etc.
+                origen = norm(origen);
+                concepto = norm(concepto);
+
+                key = normalizeKey(key);
+
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
                 Integer juzgadoId = currentUser.getJuzgado().getId();
                 EstadoCarpeta estado = EstadoCarpeta.TURNADO;
                 String motivos = EstadoCarpeta.TURNADO.name();
 
-                // ✅ Modo SIN paginación
                 if (pageable == null || pageable.isUnpaged()) {
                         List<DocumentoBandejaRecepcionRecord> list = movimientoRepository.getBandejaRecepcionList(
-                                        juzgadoId,
-                                        estado,
-                                        key,
-                                        motivos,
-                                        currentUser);
-
-                        // ✅ devolvemos Page para no cambiar el contrato del controller
-                        return new PageImpl<>(list);
+                                        juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos, currentUser,
+                                        folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
+                        return new PageImpl<>(list, Pageable.unpaged(), list.size());
                 }
 
-                // ✅ Modo paginado normal (con sort traducido)
-                Pageable fixed = translateBandejaRecepcionPageable(pageable);
-
+                Pageable pageableWithFilter = translateBandejaRecepcionPageable(pageable);
                 return movimientoRepository.getBandejaRecepcionPage(
-                                fixed,
-                                juzgadoId,
-                                estado,
-                                key,
-                                motivos,
-                                currentUser);
+                                pageableWithFilter, juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos,
+                                currentUser,
+                                folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
+        }
+
+        // metodos de filtros:
+        private String norm(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
+
+        private String normUpper(String s) {
+                return (s == null) ? null : s.trim().toUpperCase();
         }
 
         private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
@@ -1645,7 +1679,8 @@ public class DocumentoService {
                 Integer totalRecibidosAyer = 0;
                 Integer totalOldies = 0;
 
-                Page<DocumentoBandejaRecepcionRecord> page = getAllBandejaRecepcion("", Pageable.unpaged());
+                Page<DocumentoBandejaRecepcionRecord> page = getAllBandejaRecepcion("", null, null, null, null, null,
+                                null, null, Pageable.unpaged());
 
                 totalPendientes = page.getSize();
 
@@ -1686,7 +1721,8 @@ public class DocumentoService {
                         }
                         case "RECEPCION" -> {
                                 Page<DocumentoBandejaRecepcionRecord> page;
-                                page = getAllBandejaRecepcion(null, Pageable.unpaged());
+                                page = getAllBandejaRecepcion("", null, null, null, null, null, null, null,
+                                                Pageable.unpaged());
                                 yield page.getContent().stream()
                                                 .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
                                                                 item.tipoEntrada()))
