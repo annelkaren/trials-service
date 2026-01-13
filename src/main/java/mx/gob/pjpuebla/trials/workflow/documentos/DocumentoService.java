@@ -1026,26 +1026,18 @@ public class DocumentoService {
         }
 
         public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key,
-                        String folio, String expediente, String tipoEntrada, String origen, String concepto,
+                        String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo, Pageable pageable) {
 
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
-                Object[] resultado = procesarTipoCarpeta(key);
-                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
-                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
-                Integer folioTemp = (Integer) resultado[2];
 
-                // Filtro:
-                TipoDocumento tipoEntradaDoc = null;
-                TipoCarpeta tipoEntradaCarp = null;
 
                 if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-                        return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
-                                        tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
+                        return renderOficialMayorData(key, pageable, currentUser);
                 }
                 return renderData(key, pageable, currentUser,
-                                folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
+                                folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
         }
 
         private Pageable translateBandejaRecepcionPageable(Pageable pageable) {
@@ -1136,14 +1128,14 @@ public class DocumentoService {
         }
 
         private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
-                        String folio, String expediente, String tipoEntrada, String origen, String concepto,
+                        String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo) {
 
                 folio = norm(folio);
                 expediente = norm(expediente);
                 tipoEntrada = normUpper(tipoEntrada); // DEMANDA, PROMOCION, etc.
                 origen = norm(origen);
-                concepto = norm(concepto);
+                motivoTurnado = norm(motivoTurnado);
 
                 key = normalizeKey(key);
 
@@ -1159,7 +1151,7 @@ public class DocumentoService {
                 if (pageable == null || pageable.isUnpaged()) {
                         List<DocumentoBandejaRecepcionRecord> list = movimientoRepository.getBandejaRecepcionList(
                                         juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos, currentUser,
-                                        folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
+                                        folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
                         return new PageImpl<>(list, Pageable.unpaged(), list.size());
                 }
 
@@ -1167,7 +1159,7 @@ public class DocumentoService {
                 return movimientoRepository.getBandejaRecepcionPage(
                                 pageableWithFilter, juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos,
                                 currentUser,
-                                folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo);
+                                folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
         }
 
         // metodos de filtros:
@@ -1179,9 +1171,7 @@ public class DocumentoService {
                 return (s == null) ? null : s.trim().toUpperCase();
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
-                        Persona currentUser, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
-                        Integer folioTemp, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable, Persona currentUser) {
 
                 Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
                                 pageable,
@@ -1189,12 +1179,7 @@ public class DocumentoService {
                                 List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
                                 key,
                                 List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
-                                currentUser,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                folioTemp,
-                                tipoEntradaDoc,
-                                tipoEntradaCarp);
+                                currentUser);
 
                 List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
                                 .map(movimiento -> {

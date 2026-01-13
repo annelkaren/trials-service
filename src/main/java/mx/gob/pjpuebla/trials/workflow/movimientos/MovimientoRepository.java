@@ -152,7 +152,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
               OR (d IS NOT NULL AND jcd.id = :juzgadoId)
             )
 
-
             AND (
             (
               COALESCE(:cmdLetra, '') = '' AND (
@@ -270,8 +269,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
       AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
       AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
 
-
-            ORDER BY m.fechaAsignacion DESC
             """;
 
   public static final String QUERY_COUNT_BANDEJA_RECEPCION = """
@@ -425,6 +422,370 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
               """;
 
+  public static final String QUERY_BANDEJA_RECEPCION_OFICIAL_MAYOR = """
+      SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord(
+        CASE
+          WHEN c IS NOT NULL THEN c.id
+          ELSE cd.id
+        END,
+
+        CASE WHEN d IS NOT NULL THEN d.id ELSE NULL END,
+
+        CASE
+          WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN d.folio
+          WHEN c IS NOT NULL THEN c.folio
+          ELSE cd.folio
+        END,
+
+        CASE
+          WHEN c IS NOT NULL THEN c.expediente
+          ELSE cd.expediente
+        END,
+
+        CASE
+          WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+          WHEN c IS NOT NULL THEN
+            CASE c.tipoCarpeta
+              WHEN 0 THEN 'DEMANDA'
+              WHEN 1 THEN 'EXHORTO'
+              WHEN 2 THEN 'APELACION'
+              WHEN 3 THEN 'DESPACHO'
+              WHEN 4 THEN 'APELACION_MUNICIPAL'
+              WHEN 5 THEN 'AMPARO'
+              WHEN 6 THEN 'CARTA_ROGATORIA'
+              WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+              WHEN 8 THEN 'OFICIO'
+              WHEN 9 THEN 'PIEZA'
+              ELSE ''
+            END
+          ELSE
+            CASE cd.tipoCarpeta
+              WHEN 0 THEN 'DEMANDA'
+              WHEN 1 THEN 'EXHORTO'
+              WHEN 2 THEN 'APELACION'
+              WHEN 3 THEN 'DESPACHO'
+              WHEN 4 THEN 'APELACION_MUNICIPAL'
+              WHEN 5 THEN 'AMPARO'
+              WHEN 6 THEN 'CARTA_ROGATORIA'
+              WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+              WHEN 8 THEN 'OFICIO'
+              WHEN 9 THEN 'PIEZA'
+              ELSE ''
+            END
+        END,
+
+        concat(p.nombre,' ',p.apellidoPaterno,' ',coalesce(p.apellidoMaterno,'')),
+
+        CASE
+          WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.nombre
+          WHEN c IS NOT NULL THEN cc.nombre
+          ELSE cdc.nombre
+        END,
+
+        m.fechaAsignacion,
+
+        CASE
+          WHEN :userJuzgadoNombre IS NOT NULL AND LOWER(COALESCE(o.nombre, j.nombre, '')) = LOWER(:userJuzgadoNombre) THEN true
+          WHEN :userOficialiaNombre IS NOT NULL AND LOWER(COALESCE(o.nombre, j.nombre, '')) = LOWER(:userOficialiaNombre) THEN true
+          ELSE false
+        END,
+
+        CASE
+          WHEN c IS NOT NULL THEN c.prioridad
+          ELSE cd.prioridad
+        END,
+
+        CASE
+          WHEN c IS NOT NULL THEN c.horas
+          ELSE cd.horas
+        END,
+
+
+        CASE
+          WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.id
+          WHEN c IS NOT NULL THEN cc.id
+          ELSE cdc.id
+        END,
+
+        CASE
+          WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN
+            CASE cast(function('jsonb_extract_path_text', d.data, 'tipoPromocion') as integer)
+              WHEN 0 THEN 'OFICIO'
+              WHEN 1 THEN 'ESCRITO'
+              WHEN 2 THEN 'CORREO_ELECTRONICO'
+              ELSE ''
+            END
+          ELSE ''
+        END
+      )
+      FROM Movimiento m
+      LEFT JOIN m.carpeta c
+      LEFT JOIN c.juzgado jc
+      LEFT JOIN c.concepto cc
+      LEFT JOIN m.documento d
+      LEFT JOIN d.concepto dc
+      LEFT JOIN d.carpeta cd
+      LEFT JOIN cd.juzgado jcd
+      LEFT JOIN cd.concepto cdc
+      JOIN m.persona p
+      LEFT JOIN m.juzgado j
+      LEFT JOIN m.oficialia o
+      WHERE (
+        (c IS NOT NULL AND c.estatus IN :estado)
+        OR (d IS NOT NULL AND d.estatus IN :estado)
+      )
+      AND m.fechaAsignacion = (
+        SELECT MAX(m2.fechaAsignacion)
+        FROM Movimiento m2
+        WHERE (
+          (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id)
+          OR (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
+        )
+        AND (m2.estado <> 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
+      )
+      AND m.estado IN (:motivos)
+      AND (
+        (c IS NOT NULL AND jc.id = :juzgadoId)
+        OR (d IS NOT NULL AND jcd.id = :juzgadoId)
+      )
+
+      AND (
+        (
+          COALESCE(:cmdLetra,'') = '' AND (
+            COALESCE(:key,'') = '' OR
+            LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(COALESCE(j.nombre, o.nombre, jc.nombre, jcd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(p.nombre) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(p.apellidoPaterno) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(CONCAT(p.nombre,' ',p.apellidoPaterno,' ',COALESCE(p.apellidoMaterno,''))) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(
+              CASE
+                WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.nombre
+                WHEN c IS NOT NULL THEN cc.nombre
+                ELSE cdc.nombre
+              END
+            ) LIKE CONCAT('%', COALESCE(:key,''), '%')
+          )
+        )
+        OR
+        (
+          COALESCE(:cmdLetra,'') <> '' AND COALESCE(:cmdFolio,'') <> '' AND (
+            (
+              UPPER(:cmdLetra) = 'P'
+              AND d IS NOT NULL
+              AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+              AND LOWER(d.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'D'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'A'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'E'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.EXHORTO
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+          )
+        )
+      )
+
+      AND (:folio = '' OR LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', :folio, '%'))
+      AND (:expediente = '' OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', :expediente, '%'))
+      AND (
+        :tipoEntrada = '' OR
+        UPPER(
+          CASE
+            WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+            WHEN c IS NOT NULL THEN
+              CASE c.tipoCarpeta
+                WHEN 0 THEN 'DEMANDA'
+                WHEN 1 THEN 'EXHORTO'
+                WHEN 2 THEN 'APELACION'
+                WHEN 3 THEN 'DESPACHO'
+                WHEN 4 THEN 'APELACION_MUNICIPAL'
+                WHEN 5 THEN 'AMPARO'
+                WHEN 6 THEN 'CARTA_ROGATORIA'
+                WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                WHEN 8 THEN 'OFICIO'
+                WHEN 9 THEN 'PIEZA'
+                ELSE ''
+              END
+            ELSE
+              CASE cd.tipoCarpeta
+                WHEN 0 THEN 'DEMANDA'
+                WHEN 1 THEN 'EXHORTO'
+                WHEN 2 THEN 'APELACION'
+                WHEN 3 THEN 'DESPACHO'
+                WHEN 4 THEN 'APELACION_MUNICIPAL'
+                WHEN 5 THEN 'AMPARO'
+                WHEN 6 THEN 'CARTA_ROGATORIA'
+                WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                WHEN 8 THEN 'OFICIO'
+                WHEN 9 THEN 'PIEZA'
+                ELSE ''
+              END
+          END
+        ) = :tipoEntrada
+      )
+      AND (:origen = '' OR LOWER(CONCAT(p.nombre,' ',p.apellidoPaterno,' ',COALESCE(p.apellidoMaterno,''))) LIKE CONCAT('%', :origen, '%'))
+      AND (
+        :motivoTurnado = '' OR
+        LOWER(
+          CASE
+            WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.nombre
+            WHEN c IS NOT NULL THEN cc.nombre
+            ELSE cdc.nombre
+          END
+        ) LIKE CONCAT('%', :motivoTurnado, '%')
+      )
+      AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
+      AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
+      """;
+
+  public static final String QUERY_COUNT_BANDEJA_RECEPCION_OFICIAL_MAYOR = """
+      SELECT COUNT(m)
+      FROM Movimiento m
+      LEFT JOIN m.carpeta c
+      LEFT JOIN c.juzgado jc
+      LEFT JOIN c.concepto cc
+      LEFT JOIN m.documento d
+      LEFT JOIN d.concepto dc
+      LEFT JOIN d.carpeta cd
+      LEFT JOIN cd.juzgado jcd
+      LEFT JOIN cd.concepto cdc
+      JOIN m.persona p
+      LEFT JOIN m.juzgado j
+      LEFT JOIN m.oficialia o
+      WHERE (
+        (c IS NOT NULL AND c.estatus IN :estado)
+        OR (d IS NOT NULL AND d.estatus IN :estado)
+      )
+      AND m.fechaAsignacion = (
+        SELECT MAX(m2.fechaAsignacion)
+        FROM Movimiento m2
+        WHERE (
+          (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id)
+          OR (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
+        )
+        AND (m2.estado <> 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
+      )
+      AND m.estado IN (:motivos)
+      AND (
+        (c IS NOT NULL AND jc.id = :juzgadoId)
+        OR (d IS NOT NULL AND jcd.id = :juzgadoId)
+      )
+      AND (
+        (
+          COALESCE(:cmdLetra,'') = '' AND (
+            COALESCE(:key,'') = '' OR
+            LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(COALESCE(j.nombre, o.nombre, jc.nombre, jcd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(p.nombre) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(p.apellidoPaterno) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(CONCAT(p.nombre,' ',p.apellidoPaterno,' ',COALESCE(p.apellidoMaterno,''))) LIKE CONCAT('%', COALESCE(:key,''), '%')
+            OR LOWER(
+              CASE
+                WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.nombre
+                WHEN c IS NOT NULL THEN cc.nombre
+                ELSE cdc.nombre
+              END
+            ) LIKE CONCAT('%', COALESCE(:key,''), '%')
+          )
+        )
+        OR
+        (
+          COALESCE(:cmdLetra,'') <> '' AND COALESCE(:cmdFolio,'') <> '' AND (
+            (
+              UPPER(:cmdLetra) = 'P'
+              AND d IS NOT NULL
+              AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+              AND LOWER(d.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'D'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'A'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+            OR (
+              UPPER(:cmdLetra) = 'E'
+              AND c IS NOT NULL
+              AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.EXHORTO
+              AND LOWER(c.folio) LIKE CONCAT('%', LOWER(:cmdFolio), '%')
+            )
+          )
+        )
+      )
+      AND (:folio = '' OR LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', :folio, '%'))
+      AND (:expediente = '' OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', :expediente, '%'))
+      AND (
+        :tipoEntrada = '' OR
+        UPPER(
+          CASE
+            WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+            WHEN c IS NOT NULL THEN
+              CASE c.tipoCarpeta
+                WHEN 0 THEN 'DEMANDA'
+                WHEN 1 THEN 'EXHORTO'
+                WHEN 2 THEN 'APELACION'
+                WHEN 3 THEN 'DESPACHO'
+                WHEN 4 THEN 'APELACION_MUNICIPAL'
+                WHEN 5 THEN 'AMPARO'
+                WHEN 6 THEN 'CARTA_ROGATORIA'
+                WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                WHEN 8 THEN 'OFICIO'
+                WHEN 9 THEN 'PIEZA'
+                ELSE ''
+              END
+            ELSE
+              CASE cd.tipoCarpeta
+                WHEN 0 THEN 'DEMANDA'
+                WHEN 1 THEN 'EXHORTO'
+                WHEN 2 THEN 'APELACION'
+                WHEN 3 THEN 'DESPACHO'
+                WHEN 4 THEN 'APELACION_MUNICIPAL'
+                WHEN 5 THEN 'AMPARO'
+                WHEN 6 THEN 'CARTA_ROGATORIA'
+                WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                WHEN 8 THEN 'OFICIO'
+                WHEN 9 THEN 'PIEZA'
+                ELSE ''
+              END
+          END
+        ) = :tipoEntrada
+      )
+      AND (:origen = '' OR LOWER(CONCAT(p.nombre,' ',p.apellidoPaterno,' ',COALESCE(p.apellidoMaterno,''))) LIKE CONCAT('%', :origen, '%'))
+      AND (
+        :motivoTurnado = '' OR
+        LOWER(
+          CASE
+            WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN dc.nombre
+            WHEN c IS NOT NULL THEN cc.nombre
+            ELSE cdc.nombre
+          END
+        ) LIKE CONCAT('%', :motivoTurnado, '%')
+      )
+      AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
+      AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
+      """;
+
   @Query("""
       SELECT new mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoSalidaRecord (
           m.uuid,
@@ -454,58 +815,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                   ORDER BY j.id, c.tipoCarpeta, c.id, d.id""")
   List<MovimientoSalidaRecord> getSalidas(UUID uuid, EstadoCarpeta estadoCarpeta);
 
-  @Query("""
-          SELECT m
-          FROM Movimiento m
-          LEFT JOIN m.carpeta c
-          LEFT JOIN c.juzgado jc
-          LEFT JOIN m.documento d
-          LEFT JOIN d.carpeta cd
-          LEFT JOIN cd.juzgado jcd
-          JOIN FETCH m.persona p
-          LEFT JOIN m.juzgado j
-          LEFT JOIN m.oficialia o
-          WHERE (
-              (c IS NOT NULL AND c.estatus IN :estado)
-              OR (d IS NOT NULL AND d.estatus IN :estado)
-          )
-          AND m.fechaAsignacion = (
-              SELECT MAX(m2.fechaAsignacion)
-              FROM Movimiento m2
-              WHERE (
-                  ((m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                  (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
-                  AND (m2.estado != 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
-               )
-          )
-          AND m.estado IN (:motivos)
-
-          AND (
-              (c IS NOT NULL AND jc.id = :juzgadoId)
-              OR (d IS NOT NULL AND jcd.id = :juzgadoId)
-          )
-          AND (
-              LOWER(c.folio) LIKE %:key%
-              OR LOWER(c.expediente) LIKE %:key%
-              OR LOWER(d.folio) LIKE %:key%
-              OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
-              OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
-              OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
-              OR (
-              (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
-                   OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
-          )
-          AND (
-          (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
-          OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
-          OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
-          OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
-      )
-          order by m.fechaAsignacion desc
-      """)
+  @Query(value = QUERY_BANDEJA_RECEPCION_OFICIAL_MAYOR, countQuery = QUERY_COUNT_BANDEJA_RECEPCION_OFICIAL_MAYOR)
   Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-      String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
-      TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+      String key, List<String> motivos, Persona personaId);
 
   @Query(value = QUERY_BANDEJA_RECEPCION, countQuery = QUERY_COUNT_BANDEJA_RECEPCION)
   Page<DocumentoBandejaRecepcionRecord> getBandejaRecepcionPage(

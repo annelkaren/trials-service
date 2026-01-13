@@ -121,10 +121,8 @@ public class MovimientoService {
     }
 
     public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-                                                   String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre,
-                                                   TipoDocumento tipoDocumentoNombre, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
-        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
-                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
+                                                   String key, List<String> motivos, Persona personaId) {
+        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
     }
 
 

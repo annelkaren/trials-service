@@ -169,11 +169,11 @@ public class DocumentoResource {
             @RequestParam(value = "expediente", required = false) String expediente,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
             @RequestParam(value = "origen", required = false) String origen,
-            @RequestParam(value = "concepto", required = false) String concepto, // motivo turnado
+            @RequestParam(value = "motivoTurnado", required = false) String motivoTurnado, 
             @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
             @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo,
             @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, concepto, fechaFrom, fechaTo, pageable);
+        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo, pageable);
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
