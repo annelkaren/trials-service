@@ -9,14 +9,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 
+
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -88,12 +90,41 @@ class MovimientosRepositoryTest extends AuditConfigTest {
     @Test
     void getAllBandejaRecepcion(){
         Persona persona = PersonaSetUp.createPersona();
-        Page<Movimiento> page = movimientoRepository.getAllBandejaRecepcion(
-                PageRequest.of(0, 20),
-                51, Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
-                "",
-                Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
-                persona);
+        Integer juzgadoId = 51;
+        List<EstadoCarpeta> estados = Arrays.asList(EstadoCarpeta.RECEPCION, EstadoCarpeta.TURNADO);
+        String key = "";
+        String motivo = "";
+        String cmdLetra = "";
+        String cmdFolio = "";
+        String folio = "";
+        String expediente = "";
+        String tipoEntrada = "";
+        String origen = "";
+        List<String> motivosTurnado = List.of("dsd");
+        LocalDateTime fechaFrom = LocalDateTime.now();
+        LocalDateTime fechaTo = LocalDateTime.now();
+        String userJuzgadoNombre = "";
+        String userOficialiaNombre = "";
+
+        Page<DocumentoBandejaRecepcionRecord> page = movimientoRepository.getBandejaRecepcionOficialMayor(
+            PageRequest.of(0, 20)
+            , juzgadoId
+            , estados
+            , key
+            , motivosTurnado
+            , persona
+            , cmdLetra
+            , cmdFolio
+            , folio
+            , expediente
+            , tipoEntrada
+            , origen
+            , motivo
+            , fechaFrom
+            , fechaTo
+            , userJuzgadoNombre
+            , userOficialiaNombre
+        );
         assertThat(page.getSize()).isPositive();
     }
 }

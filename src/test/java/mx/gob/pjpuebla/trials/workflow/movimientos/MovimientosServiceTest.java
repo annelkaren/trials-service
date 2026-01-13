@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,23 +103,6 @@ class MovimientosServiceTest {
         assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
     }
 
-    @Test
-    void getAllBandejaRecepcion(){
-        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1)).setFolio("1");
-        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
-        List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
-        List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
-        Persona persona = PersonaSetUp.createPersona();
-        given(movimientoRepository.getAllBandejaRecepcion(
-                PageRequest.of(0, 1),
-                1, list, "", motivos, persona))
-                .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
-
-
-        Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos, persona);
-        assertThat(result.getSize()).isPositive();
-    }
 
     @Test
     void testCreateMotivoWithoutPromocion() {

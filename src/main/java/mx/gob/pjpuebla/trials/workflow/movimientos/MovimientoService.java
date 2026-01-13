@@ -120,12 +120,6 @@ public class MovimientoService {
                 .setJuzgado(persona.getJuzgado());
     }
 
-    public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-                                                   String key, List<String> motivos, Persona personaId) {
-        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId);
-    }
-
-
 
     public void createMotivo(MotivoRecord motivoRecord) {
         Persona currentUser = personaService.getAuditor();
