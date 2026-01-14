@@ -1188,9 +1188,11 @@ public class DocumentoService {
                 List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
                 List<String> motivos = List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
 
-                String userJuzgadoNombre = currentUser.getJuzgado() != null ? currentUser.getJuzgado().getNombre().toLowerCase()
+                String userJuzgadoNombre = currentUser.getJuzgado() != null
+                                ? currentUser.getJuzgado().getNombre().toLowerCase()
                                 : null;
-                String userOficialiaNombre = currentUser.getOficialia() != null ? currentUser.getOficialia().getNombre().toLowerCase()
+                String userOficialiaNombre = currentUser.getOficialia() != null
+                                ? currentUser.getOficialia().getNombre().toLowerCase()
 
                                 : null;
 
@@ -1204,24 +1206,27 @@ public class DocumentoService {
                                 userJuzgadoNombre, userOficialiaNombre);
         }
 
-        protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+        protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento) {
 
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
                 }
 
-                if (carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
+                Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta() : null;
+
+                if (carpeta != null && carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
                         return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
                 }
                 try {
-                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(carpeta.getTipoCarpeta().name());
-                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
+                        String tipoCarpeta = carpeta != null ? carpeta.getTipoCarpeta().name() : "";
+                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(tipoCarpeta);
+                        Integer carpetaId = carpeta != null ? carpeta.getId() : null;
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpetaId, tipoDocumento);
 
                 } catch (Exception e) {
                         log.error("Error: ", e);
                         return new Documento().setId(0);
                 }
-
         }
 
         protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
@@ -1716,12 +1721,14 @@ public class DocumentoService {
                 return folio;
         }
 
-        public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
+        public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer movimientoId) {
+                // Buscamos el movimiento para obtenr su documento:
+                Movimiento movimiento = movimientoRepository.findById(movimientoId)
+                                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
+                                                movimientoId.toString()));
+                Documento doc = getDocumentoForRenderOficialMayor(movimiento);
 
-                Documento doc = documentoRepository.findById(id)
-                                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
-
-                List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+                List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(doc.getId());
                 addAnexoExtra(anexosActuales, doc);
                 String origen = (String) movimientoService.getOrigen(
                                 (doc.getTipoDocumento() != null) ? doc.getId() : null,

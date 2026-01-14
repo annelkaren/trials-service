@@ -786,7 +786,7 @@ class DocumentoServiceTest {
                                 "centroTrabajo", "prueba",
                                 "nombrePersona", "Juan Pérez");
 
-                given(documentoService.getDocumentoForRenderOficialMayor(movimiento, movimiento.getCarpeta()))
+                given(documentoService.getDocumentoForRenderOficialMayor(movimiento))
                                 .willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
 
                 given(movimientoService.getOrigen(any(), any())).willReturn(origen);

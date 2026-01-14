@@ -229,9 +229,9 @@ public class DocumentoResource {
         return this.documentoService.getIndicadoresAsignados();
     }
 
-    @GetMapping("/bandeja/recepcion/anexos/{id}")
-    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer id) {
-        return documentoService.getDataDocumentoRecepcion(id);
+    @GetMapping("/bandeja/recepcion/anexos/{movimientoId}")
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer movimientoId) {
+        return documentoService.getDataDocumentoRecepcion(movimientoId);
     }
 
     @GetMapping(value = "/documentos/oficio/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
