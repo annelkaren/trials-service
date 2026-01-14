@@ -86,6 +86,22 @@ public class TipoJuicioService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
+    @Transactional
+    public List<TipoJuicioRecord> getAll(){
+        Persona usuario = personaService.getAuditor();
+        Integer oficialiaId = usuario.getOficialia() != null ? usuario.getOficialia().getId() : null;
+        Integer juzgadoId = usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null;
+        Integer centroTrabajoId  = oficialiaId != null ? oficialiaId : juzgadoId;
+        
+        if (centroTrabajoId == null) {
+            throw new NotFoundException("No se pudo obtener el Centro de Trabajo", "Centro de Trabajo");
+        }
+
+        return tipoJuicioRepository.findTipoJuicioAll(oficialiaId, juzgadoId);
+
+    }
+
+
     public List<TipoJuicioMateriaRecord> findTipoJuiciosByMateria(Integer materiaId) {
         List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
         return tipoJuicios.stream()
