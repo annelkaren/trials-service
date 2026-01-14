@@ -1148,14 +1148,9 @@ public class DocumentoService {
                 EstadoCarpeta estado = EstadoCarpeta.TURNADO;
                 String motivos = EstadoCarpeta.TURNADO.name();
 
-                if (pageable == null || pageable.isUnpaged()) {
-                        List<DocumentoBandejaRecepcionRecord> list = movimientoRepository.getBandejaRecepcionList(
-                                        juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos, currentUser,
-                                        folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
-                        return new PageImpl<>(list, Pageable.unpaged(), list.size());
-                }
+                Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged()) ? Pageable.unpaged()
+                                : translateBandejaRecepcionPageable(pageable);
 
-                Pageable pageableWithFilter = translateBandejaRecepcionPageable(pageable);
                 return movimientoRepository.getBandejaRecepcionPage(
                                 pageableWithFilter, juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos,
                                 currentUser,

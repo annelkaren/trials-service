@@ -30,6 +30,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
   public static final String QUERY_BANDEJA_RECEPCION = """
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord(
+              m.id,
               CASE
                 WHEN c IS NOT NULL THEN c.id
                 ELSE cd.id
@@ -419,6 +420,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
   public static final String QUERY_BANDEJA_RECEPCION_OFICIAL_MAYOR = """
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoBandejaRecepcionRecord(
+              m.id,
               CASE
                 WHEN c IS NOT NULL THEN c.id
                 ELSE cd.id
@@ -881,22 +883,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
       LocalDateTime fechaFrom,
       LocalDateTime fechaTo);
 
-  @Query(value = QUERY_BANDEJA_RECEPCION)
-  List<DocumentoBandejaRecepcionRecord> getBandejaRecepcionList(
-      Integer juzgadoId,
-      EstadoCarpeta estado,
-      String key,
-      String cmdLetra,
-      String cmdFolio,
-      String motivos,
-      Persona personaId,
-      String folio,
-      String expediente,
-      String tipoEntrada,
-      String origen,
-      String motivoTurnado,
-      LocalDateTime fechaFrom,
-      LocalDateTime fechaTo);
 
   @Query("""
           SELECT m
