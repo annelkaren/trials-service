@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.ArchivoJudicialProjection;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -86,7 +87,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
             """)
     Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio,
-            TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
+                                                    TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
@@ -163,8 +164,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             ORDER BY m.fechaAsignacion ASC
             """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
-            Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
-            TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+                                           Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
+                                           TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
@@ -255,7 +256,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Modifying
     @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
     void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId,
-            @Param("documentoId") Integer documentoId);
+                                       @Param("documentoId") Integer documentoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord(
@@ -330,10 +331,10 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                   AND c.juzgado.id = :juzgadoId
             """)
     Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento,
-            Integer juzgadoId);
+                                                         Integer juzgadoId);
 
     Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento,
-            LocalDateTime fechaAlta);
+                                                                   LocalDateTime fechaAlta);
 
     Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
 
@@ -349,7 +350,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     Page<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento,
-            Pageable pageable);
+                                                      Pageable pageable);
 
     @Query("""
                 SELECT doc
@@ -372,8 +373,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND LOWER(p.correoElectronico) = LOWER(:correo)
             """)
     boolean existsByExpedienteAndAcuerdoAndAsociateCorreo(@Param("expediente") String expediente,
-            @Param("numeroAcuerdo") String numeroAcuerdo,
-            @Param("correo") String correo);
+                                                          @Param("numeroAcuerdo") String numeroAcuerdo,
+                                                          @Param("correo") String correo);
 
     @Query("""
                 SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
@@ -421,4 +422,81 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                   AND m.nombre IN :materias
             """)
     Long countDocumentosPorTipoYMaterias(@Param("materias") List<String> materias);
+
+    @Query(
+            value = """
+                    SELECT
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.pn_id
+                            ELSE c.pn_id
+                        END AS id,
+
+                        j.s_nombre AS juzgado,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN 'DOCUMENTO'
+                            ELSE 'CARPETA'
+                        END AS tipo,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.n_tipo_documento
+                            ELSE c.n_tipo_carpeta
+                        END AS tipoId,
+
+                        c.s_expediente AS expediente,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.t_fecha_alta
+                            ELSE c.t_fecha_alta
+                        END AS fechaAlta,
+
+                        COALESCE(
+                            STRING_AGG(a.s_nombre, E'\\n' ORDER BY a.s_nombre),
+                            ''
+                        ) AS anexos
+
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c ON c.pn_id = d.fn_carpeta
+                    JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+                    LEFT JOIN trials.tbl_anexos a ON a.fn_documento = d.pn_id
+
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 13
+                        )
+                        OR
+                        (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 13
+                        )
+
+                    GROUP BY
+                        d.pn_id,
+                        c.pn_id,
+                        j.s_nombre,
+                        d.n_tipo_documento,
+                        c.n_tipo_carpeta,
+                        c.s_expediente,
+                        d.t_fecha_alta,
+                        c.t_fecha_alta
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM tbl_documentos d
+                    JOIN tbl_carpetas c ON c.pn_id = d.fn_carpeta
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 13
+                        )
+                        OR
+                        (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 13
+                        )
+                    """,
+            nativeQuery = true
+    )
+    Page<ArchivoJudicialProjection> findArchivoJudicialList(Pageable pageable);
 }

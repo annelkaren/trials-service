@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.ArchivoJudicialHistoricoProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -104,8 +105,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 order by m.fechaAsignacion desc
             """)
     Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
-            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
-            TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+                                            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+                                            TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     @Query("""
                 SELECT m
@@ -155,8 +156,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 ORDER BY m.fechaAsignacion DESC
             """)
     Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
-            String motivos, Persona personaId, TipoCarpeta tipoCarpeta,
-            TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+                                         String motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+                                         TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     @Query("""
                 SELECT m
@@ -224,8 +225,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             )
             """)
     Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable,
-            TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc,
-            TipoCarpeta tipoEntradaCarp);
+                                          TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc,
+                                          TipoCarpeta tipoEntradaCarp);
 
     Movimiento findFirstByCarpetaIdOrderByIdAsc(Integer documentoId);
 
@@ -301,7 +302,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
                 )
             """)
     Page<Movimiento> getBandejaDevueltos(Pageable pageable, List<Juzgado> juzgados, EstadoCarpeta estado, String key,
-            String motivos);
+                                         String motivos);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse(
@@ -393,4 +394,60 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
     @NonNull
     Page<Movimiento> findAll(@Nullable Specification<Movimiento> spec, @Nullable Pageable pageable);
 
+    @Query(
+            value = """
+                    SELECT
+                        mov.pn_id AS id,
+                        CASE
+                            WHEN mov.fn_documento IS NOT NULL THEN 'DOCUMENTO'
+                            ELSE 'CARPETA'
+                        END AS tipoEntidad,
+
+                        CASE
+                            WHEN mov.fn_documento IS NOT NULL THEN d.s_folio
+                            ELSE c.s_folio
+                        END AS folio,
+
+                        c.s_expediente AS expediente,
+
+                        mov.s_estado AS estadoMovimiento,
+
+                        mat.s_nombre AS materia,
+
+                        CASE
+                            WHEN mov.fn_documento IS NOT NULL THEN d.n_tipo_documento
+                            ELSE c.n_tipo_carpeta
+                        END AS tipoId,
+
+                        mov.t_fecha_asignacion AS fechaHora
+
+                    FROM trials.tbl_movimientos mov
+
+                    LEFT JOIN trials.tbl_documentos d
+                        ON d.pn_id = mov.fn_documento
+
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = COALESCE(d.fn_carpeta, mov.fn_carpeta)
+
+                    JOIN trials.tbl_juzgados j
+                        ON j.pn_id = c.fn_juzgado
+
+                    JOIN trials.tbl_materias mat
+                        ON mat.pn_id = j.fn_materia
+
+                    WHERE mov.s_estado LIKE '%ARCHIVO_JUDICIAL%'
+
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM trials.tbl_movimientos mov
+                    LEFT JOIN trials.tbl_documentos d
+                        ON d.pn_id = mov.fn_documento
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = COALESCE(d.fn_carpeta, mov.fn_carpeta)
+                    WHERE mov.s_estado LIKE '%ARCHIVO_JUDICIAL%'
+                    """,
+            nativeQuery = true
+    )
+    Page<ArchivoJudicialHistoricoProjection> findHistoricoArchivoJudicial(Pageable pageable);
 }

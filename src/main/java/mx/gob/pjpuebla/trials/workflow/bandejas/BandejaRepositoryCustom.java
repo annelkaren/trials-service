@@ -31,4 +31,9 @@ public interface BandejaRepositoryCustom {
             Integer juzgadoId,
             Integer oficialiaId);
 
+    Page<BandejaEntradaResponse> findArchivoJudicialHistorial(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro);
+
 }

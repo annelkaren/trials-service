@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.bandejas;
 
 import static mx.gob.pjpuebla.trials.workflow.bandejas.BandejaCriteriaHelper.*;
+
 import java.util.List;
 
 import jakarta.annotation.Nullable;
@@ -64,230 +65,292 @@ import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 @Repository
 public class BandejaRepositoryCustomImpl implements BandejaRepositoryCustom {
 
-        @PersistenceContext
-        private EntityManager em;
+    @PersistenceContext
+    private EntityManager em;
 
-        /**
-         * Consulta principal que devuelve la bandeja paginada.
-         *
-         * @param pageable    paginación y orden
-         * @param estados     estados de movimiento permitidos (p.ej.
-         *                    CAPTURA/EDICION/DEVUELTO_A_OFICIALIA)
-         * @param filtro      filtros opcionales de la bandeja
-         * @param juzgadoId   ámbito del usuario (juzgado) o {@code null}
-         * @param oficialiaId ámbito del usuario (oficialía) o {@code null}
-         */
-        @Override
-        public Page<BandejaEntradaResponse> findBandejaEntradas(
-                        Pageable pageable,
-                        List<String> estados,
-                        @Nullable BandejaEntradaFilter filtro,
-                        Integer juzgadoId,
-                        Integer oficialiaId) {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+    /**
+     * Consulta principal que devuelve la bandeja paginada.
+     *
+     * @param pageable    paginación y orden
+     * @param estados     estados de movimiento permitidos (p.ej.
+     *                    CAPTURA/EDICION/DEVUELTO_A_OFICIALIA)
+     * @param filtro      filtros opcionales de la bandeja
+     * @param juzgadoId   ámbito del usuario (juzgado) o {@code null}
+     * @param oficialiaId ámbito del usuario (oficialía) o {@code null}
+     */
+    @Override
+    public Page<BandejaEntradaResponse> findBandejaEntradas(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro,
+            Integer juzgadoId,
+            Integer oficialiaId) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
 
-                // ======================
-                // SELECT (contenido)
-                // ======================
-                CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
-                Root<Movimiento> m = cq.from(Movimiento.class);
+        // ======================
+        // SELECT (contenido)
+        // ======================
+        CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
+        Root<Movimiento> m = cq.from(Movimiento.class);
 
-                // ---- LEFT JOINs (no perder filas cuando alguna relación es opcional) ----
-                var j = BandejaCriteriaSupport.buildJoins(m);
+        // ---- LEFT JOINs (no perder filas cuando alguna relación es opcional) ----
+        var j = BandejaCriteriaSupport.buildJoins(m);
 
-                // ---- Predicados base ----
-                Predicate baseEstados = m.get("estado").in(estados);
-                Predicate ultimoMovimiento = BandejaCriteriaSupport.ultimoMovimientoPorEstados(cb, cq, j, estados);
+        // ---- Predicados base ----
+        Predicate baseEstados = m.get("estado").in(estados);
+        Predicate ultimoMovimiento = BandejaCriteriaSupport.ultimoMovimientoPorEstados(cb, cq, j, estados);
 
-                // Estatus OK (idéntico a JPQL original: carpeta→cMov.estatus,
-                // documento→doc.estatus)
-                List<EstadoCarpeta> ESTATUS_OK = byOrdinals(EstadoCarpeta.class, 0, 14);
-                Predicate estatusOk = cb.or(
-                                cb.and(cb.isNotNull(j.cMov().get("id")), j.cMov().get("estatus").in(ESTATUS_OK)),
-                                cb.and(cb.isNotNull(j.doc().get("id")), j.doc().get("estatus").in(ESTATUS_OK)));
+        // Estatus OK (idéntico a JPQL original: carpeta→cMov.estatus,
+        // documento→doc.estatus)
+        List<EstadoCarpeta> ESTATUS_OK = byOrdinals(EstadoCarpeta.class, 0, 14);
+        Predicate estatusOk = cb.or(
+                cb.and(cb.isNotNull(j.cMov().get("id")), j.cMov().get("estatus").in(ESTATUS_OK)),
+                cb.and(cb.isNotNull(j.doc().get("id")), j.doc().get("estatus").in(ESTATUS_OK)));
 
-                // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
-                Predicate scope = buildScopePredicate(cb, j.jMov(), j.oMov(), juzgadoId, oficialiaId);
+        // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
+        Predicate scope = buildScopePredicate(cb, j.jMov(), j.oMov(), juzgadoId, oficialiaId);
 
-                // ---- Filtros adicionales del record ----
-                Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
+        // ---- Filtros adicionales del record ----
+        Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
 
-                // ---- Campos calculados (expresiones) usados en el SELECT ----
-                Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
-                Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
+        // ---- Campos calculados (expresiones) usados en el SELECT ----
+        Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
+        Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
 
-                // ---- SELECT y where final (DTO por constructor) ----
-                cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
-                cq.where(cb.and(baseEstados, estatusOk, ultimoMovimiento, scope, filtrosExtras));
+        // ---- SELECT y where final (DTO por constructor) ----
+        cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
+        cq.where(cb.and(baseEstados, estatusOk, ultimoMovimiento, scope, filtrosExtras));
 
-                // ---- ORDER BY global (antes de paginar) ----
-                var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
-                cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
-                                : orders);
+        // ---- ORDER BY global (antes de paginar) ----
+        var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
+        cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
+                : orders);
 
-                TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
-                typed.setFirstResult((int) pageable.getOffset());
-                typed.setMaxResults(pageable.getPageSize());
-                List<BandejaEntradaResponse> content = typed.getResultList();
+        TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
+        typed.setFirstResult((int) pageable.getOffset());
+        typed.setMaxResults(pageable.getPageSize());
+        List<BandejaEntradaResponse> content = typed.getResultList();
 
-                // ======================
-                // COUNT (mismo WHERE)
-                // ======================
-                CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
-                Root<Movimiento> mC = countQ.from(Movimiento.class);
+        // ======================
+        // COUNT (mismo WHERE)
+        // ======================
+        CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
+        Root<Movimiento> mC = countQ.from(Movimiento.class);
 
-                var jc = BandejaCriteriaSupport.buildJoins(mC);
+        var jc = BandejaCriteriaSupport.buildJoins(mC);
 
-                Predicate baseEstadosC = mC.get("estado").in(estados);
-                Predicate ultimoMovimientoC = BandejaCriteriaSupport.ultimoMovimientoPorEstados(cb, countQ, jc,
-                                estados);
-                Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
+        Predicate baseEstadosC = mC.get("estado").in(estados);
+        Predicate ultimoMovimientoC = BandejaCriteriaSupport.ultimoMovimientoPorEstados(cb, countQ, jc,
+                estados);
+        Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
 
-                List<EstadoCarpeta> ESTATUS_OK_C = byOrdinals(EstadoCarpeta.class, 0, 14);
-                Predicate estatusOkC = cb.or(
-                                cb.and(cb.isNotNull(jc.cMov().get("id")), jc.cMov().get("estatus").in(ESTATUS_OK_C)),
-                                cb.and(cb.isNotNull(jc.doc().get("id")), jc.doc().get("estatus").in(ESTATUS_OK_C)));
+        List<EstadoCarpeta> ESTATUS_OK_C = byOrdinals(EstadoCarpeta.class, 0, 14);
+        Predicate estatusOkC = cb.or(
+                cb.and(cb.isNotNull(jc.cMov().get("id")), jc.cMov().get("estatus").in(ESTATUS_OK_C)),
+                cb.and(cb.isNotNull(jc.doc().get("id")), jc.doc().get("estatus").in(ESTATUS_OK_C)));
 
-                Predicate scopeC = buildScopePredicate(cb, jc.jMov(), jc.oMov(), juzgadoId, oficialiaId);
+        Predicate scopeC = buildScopePredicate(cb, jc.jMov(), jc.oMov(), juzgadoId, oficialiaId);
 
-                countQ.select(cb.countDistinct(mC));
-                countQ.where(cb.and(baseEstadosC, estatusOkC, ultimoMovimientoC, scopeC, filtrosExtrasC));
+        countQ.select(cb.countDistinct(mC));
+        countQ.where(cb.and(baseEstadosC, estatusOkC, ultimoMovimientoC, scopeC, filtrosExtrasC));
 
-                long total = em.createQuery(countQ).getSingleResult();
+        long total = em.createQuery(countQ).getSingleResult();
 
-                return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    /**
+     * Consulta principal que devuelve la bandeja paginada.
+     *
+     * @param pageable    paginación y orden
+     * @param estados     estados de movimiento permitidos (p.ej.
+     *                    CAPTURA/EDICION/DEVUELTO_A_OFICIALIA)
+     * @param filtro      filtros opcionales de la bandeja
+     * @param juzgadoId   ámbito del usuario (juzgado) o {@code null}
+     * @param oficialiaId ámbito del usuario (oficialía) o {@code null}
+     */
+    @Override
+    public Page<BandejaEntradaResponse> findBandejaSalida(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro,
+            Integer juzgadoId,
+            Integer oficialiaId) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        // ======================
+        // SELECT (contenido)
+        // ======================
+        CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
+        Root<Movimiento> m = cq.from(Movimiento.class);
+
+        // ---- LEFT JOINs (no perder filas cuando alguna relación es opcional) ----
+        var j = BandejaCriteriaSupport.buildJoins(m);
+
+        // ---- Predicados base ----
+        Predicate ultimoMovimiento = BandejaCriteriaSupport.ultimoMovimientoGlobal(cb, cq, j);
+
+        // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
+        Predicate scope = buildScopePredicate(cb, j.jMov(), j.oMov(), juzgadoId, oficialiaId);
+
+        // ---- Filtros adicionales del record ----
+        Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
+
+        Predicate esSalida = cb.equal(m.get("estado"), "SALIDA");
+
+        // ---- Campos calculados (expresiones) usados en el SELECT ----
+        Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
+        Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
+
+        // ---- SELECT y WHERE final (DTO por constructor) ----
+        cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
+        cq.where(cb.and(esSalida, ultimoMovimiento, scope, filtrosExtras));
+        // ---- ORDER BY global (antes de paginar) ----
+        var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
+        cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
+                : orders);
+
+        TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
+        typed.setFirstResult((int) pageable.getOffset());
+        typed.setMaxResults(pageable.getPageSize());
+        List<BandejaEntradaResponse> content = typed.getResultList();
+
+        // --- COUNT (mismo WHERE que el SELECT) ---
+        CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
+        Root<Movimiento> mC = countQ.from(Movimiento.class);
+
+        var jc = BandejaCriteriaSupport.buildJoins(mC);
+
+        // Igual que en SELECT:
+        Predicate ultimoMovimientoC = BandejaCriteriaSupport.ultimoMovimientoGlobal(cb, countQ, jc);
+        // estados)
+        Predicate esSalidaC = cb.equal(mC.get("estado"), "SALIDA");
+        Predicate scopeC = buildScopePredicate(cb, jc.jMov(), jc.oMov(), juzgadoId, oficialiaId);
+        Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
+
+        countQ.select(cb.count(mC)); // o cb.countDistinct(mC) si lo prefieres
+        countQ.where(cb.and(esSalidaC, ultimoMovimientoC, scopeC, filtrosExtrasC));
+
+        long total = em.createQuery(countQ).getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BandejaEntradaResponse> findBandejaHistorial(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro,
+            Integer juzgadoId,
+            Integer oficialiaId) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        // SELECT (contenido)
+        CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
+        Root<Movimiento> m = cq.from(Movimiento.class);
+
+        // ✅ JOINs centralizados
+        var j = BandejaCriteriaSupport.buildJoins(m);
+
+        // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
+        Predicate scope = BandejaCriteriaSupport.scopeRelaxed(cb, j, juzgadoId, oficialiaId);
+
+        // ---- Filtros adicionales del record ----
+        Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
+
+        // ---- Campos calculados (expresiones) usados en el SELECT ----
+        Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
+        Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
+
+        cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
+        cq.where(cb.and(scope, filtrosExtras));
+
+        // ---- ORDER BY global (antes de paginar) ----
+        var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
+        cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
+                : orders);
+
+        TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
+        typed.setFirstResult((int) pageable.getOffset());
+        typed.setMaxResults(pageable.getPageSize());
+        List<BandejaEntradaResponse> content = typed.getResultList();
+
+        // --- COUNT (mismo WHERE que el SELECT) ---
+        CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
+        Root<Movimiento> mC = countQ.from(Movimiento.class);
+
+        var jc = BandejaCriteriaSupport.buildJoins(mC);
+
+        Predicate scopeC = BandejaCriteriaSupport.scopeRelaxed(cb, jc, juzgadoId, oficialiaId);
+        Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
+
+        countQ.select(cb.count(mC));
+        countQ.where(cb.and(scopeC, filtrosExtrasC));
+
+        long total = em.createQuery(countQ).getSingleResult();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<BandejaEntradaResponse> findArchivoJudicialHistorial(
+            Pageable pageable,
+            List<String> estados,
+            @Nullable BandejaEntradaFilter filtro) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        // SELECT (contenido)
+        CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
+        Root<Movimiento> m = cq.from(Movimiento.class);
+        Predicate estadoPredicate = cb.conjunction();
+
+        if (estados != null && !estados.isEmpty()) {
+            estadoPredicate = m.get("estado").in(estados);
         }
 
-        /**
-         * Consulta principal que devuelve la bandeja paginada.
-         *
-         * @param pageable    paginación y orden
-         * @param estados     estados de movimiento permitidos (p.ej.
-         *                    CAPTURA/EDICION/DEVUELTO_A_OFICIALIA)
-         * @param filtro      filtros opcionales de la bandeja
-         * @param juzgadoId   ámbito del usuario (juzgado) o {@code null}
-         * @param oficialiaId ámbito del usuario (oficialía) o {@code null}
-         */
-        @Override
-        public Page<BandejaEntradaResponse> findBandejaSalida(
-                        Pageable pageable,
-                        List<String> estados,
-                        @Nullable BandejaEntradaFilter filtro,
-                        Integer juzgadoId,
-                        Integer oficialiaId) {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+        // ✅ JOINs centralizados
+        var j = BandejaCriteriaSupport.buildJoins(m);
 
-                // ======================
-                // SELECT (contenido)
-                // ======================
-                CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
-                Root<Movimiento> m = cq.from(Movimiento.class);
+        // ---- Filtros adicionales del record ----
+        Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
 
-                // ---- LEFT JOINs (no perder filas cuando alguna relación es opcional) ----
-                var j = BandejaCriteriaSupport.buildJoins(m);
+        // ---- Campos calculados (expresiones) usados en el SELECT ----
+        Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
+        Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
 
-                // ---- Predicados base ----
-                Predicate ultimoMovimiento = BandejaCriteriaSupport.ultimoMovimientoGlobal(cb, cq, j);
+        cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
+        cq.where(cb.and(filtrosExtras, estadoPredicate));
 
-                // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
-                Predicate scope = buildScopePredicate(cb, j.jMov(), j.oMov(), juzgadoId, oficialiaId);
+        // ---- ORDER BY global (antes de paginar) ----
+        var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
+        cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
+                : orders);
 
-                // ---- Filtros adicionales del record ----
-                Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
+        TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
+        typed.setFirstResult((int) pageable.getOffset());
+        typed.setMaxResults(pageable.getPageSize());
+        List<BandejaEntradaResponse> content = typed.getResultList();
 
-                Predicate esSalida = cb.equal(m.get("estado"), "SALIDA");
+        // --- COUNT (mismo WHERE que el SELECT) ---
+        CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
+        Root<Movimiento> mC = countQ.from(Movimiento.class);
 
-                // ---- Campos calculados (expresiones) usados en el SELECT ----
-                Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
-                Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
 
-                // ---- SELECT y WHERE final (DTO por constructor) ----
-                cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
-                cq.where(cb.and(esSalida, ultimoMovimiento, scope, filtrosExtras));
-                // ---- ORDER BY global (antes de paginar) ----
-                var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
-                cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
-                                : orders);
+        var jc = BandejaCriteriaSupport.buildJoins(mC);
 
-                TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
-                typed.setFirstResult((int) pageable.getOffset());
-                typed.setMaxResults(pageable.getPageSize());
-                List<BandejaEntradaResponse> content = typed.getResultList();
+        Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
 
-                // --- COUNT (mismo WHERE que el SELECT) ---
-                CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
-                Root<Movimiento> mC = countQ.from(Movimiento.class);
+        Predicate estadoPredicateC = cb.conjunction();
 
-                var jc = BandejaCriteriaSupport.buildJoins(mC);
-
-                // Igual que en SELECT:
-                Predicate ultimoMovimientoC = BandejaCriteriaSupport.ultimoMovimientoGlobal(cb, countQ, jc);
-                // estados)
-                Predicate esSalidaC = cb.equal(mC.get("estado"), "SALIDA"); 
-                Predicate scopeC = buildScopePredicate(cb, jc.jMov(), jc.oMov(), juzgadoId, oficialiaId);
-                Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
-
-                countQ.select(cb.count(mC)); // o cb.countDistinct(mC) si lo prefieres
-                countQ.where(cb.and(esSalidaC, ultimoMovimientoC, scopeC, filtrosExtrasC));
-
-                long total = em.createQuery(countQ).getSingleResult();
-
-                return new PageImpl<>(content, pageable, total);
+        if (estados != null && !estados.isEmpty()) {
+            estadoPredicateC = mC.get("estado").in(estados);
         }
 
-        @Override
-        public Page<BandejaEntradaResponse> findBandejaHistorial(
-                        Pageable pageable,
-                        List<String> estados,
-                        @Nullable BandejaEntradaFilter filtro,
-                        Integer juzgadoId,
-                        Integer oficialiaId) {
-                CriteriaBuilder cb = em.getCriteriaBuilder();
+        countQ.select(cb.count(mC));
+        countQ.where(cb.and(filtrosExtrasC, estadoPredicateC));
 
-                // SELECT (contenido)
-                CriteriaQuery<BandejaEntradaResponse> cq = cb.createQuery(BandejaEntradaResponse.class);
-                Root<Movimiento> m = cq.from(Movimiento.class);
+        long total = em.createQuery(countQ).getSingleResult();
 
-                // ✅ JOINs centralizados
-                var j = BandejaCriteriaSupport.buildJoins(m);
-
-                // Scope por usuario (o.id = :oficialiaId OR j.id = :juzgadoId)
-                Predicate scope = BandejaCriteriaSupport.scopeRelaxed(cb, j, juzgadoId, oficialiaId);
-
-                // ---- Filtros adicionales del record ----
-                Predicate filtrosExtras = BandejaCriteriaSupport.filters(cb, cq, j, filtro);
-
-                // ---- Campos calculados (expresiones) usados en el SELECT ----
-                Expression<Integer> idDocumentoFinal = buildIdDocumentoExpr(cb, cq, j.doc(), j.cMov());
-                Expression<Boolean> hasFile = buildHasFileExpr(cb, cq, j.doc(), j.cMov());
-
-                cq.select(ProjectionMapper.bandejaResponse(cb, cq, j, idDocumentoFinal, hasFile, null));
-                cq.where(cb.and(scope, filtrosExtras));
-
-                // ---- ORDER BY global (antes de paginar) ----
-                var orders = OrderMapper.mapSort(pageable.getSort(), cb, j);
-                cq.orderBy(orders.isEmpty() ? List.of(cb.desc(j.m().get("fechaAsignacion")), cb.desc(j.m().get("id")))
-                                : orders);
-
-                TypedQuery<BandejaEntradaResponse> typed = em.createQuery(cq);
-                typed.setFirstResult((int) pageable.getOffset());
-                typed.setMaxResults(pageable.getPageSize());
-                List<BandejaEntradaResponse> content = typed.getResultList();
-
-                // --- COUNT (mismo WHERE que el SELECT) ---
-                CriteriaQuery<Long> countQ = cb.createQuery(Long.class);
-                Root<Movimiento> mC = countQ.from(Movimiento.class);
-
-                var jc = BandejaCriteriaSupport.buildJoins(mC);
-
-                Predicate scopeC = BandejaCriteriaSupport.scopeRelaxed(cb, jc, juzgadoId, oficialiaId);
-                Predicate filtrosExtrasC = BandejaCriteriaSupport.filters(cb, countQ, jc, filtro);
-
-                countQ.select(cb.count(mC));
-                countQ.where(cb.and(scopeC, filtrosExtrasC));
-
-                long total = em.createQuery(countQ).getSingleResult();
-
-                return new PageImpl<>(content, pageable, total);
-        }
+        return new PageImpl<>(content, pageable, total);
+    }
 }
