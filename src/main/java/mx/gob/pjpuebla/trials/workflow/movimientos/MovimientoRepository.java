@@ -264,7 +264,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
 
       AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
       AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
-      """;
+""";
 
   @Query(value = QUERY_BANDEJA_RECEPCION_UNIFICADA)
   Page<DocumentoBandejaRecepcionRecord> getBandejaRecepcionUnifiedPage(

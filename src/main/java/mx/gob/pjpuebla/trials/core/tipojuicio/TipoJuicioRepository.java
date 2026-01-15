@@ -55,7 +55,7 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
             new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(tj.materia.id, INITCAP(LOWER(tj.materia.nombre)))
             )
             FROM TipoJuicio tj
-            WHERE tj.estado = Estado.ACTIVE 
+            WHERE tj.estado = Estado.ACTIVE
                             AND CASE WHEN :oficialiaId IS NOT NULL
                 THEN
                     (SELECT COUNT(1) FROM Oficialia o where o.id = :oficialiaId

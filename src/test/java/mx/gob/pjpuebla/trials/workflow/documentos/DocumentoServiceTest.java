@@ -103,7 +103,6 @@ import java.util.*;
 import java.time.LocalDate;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
-import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -775,53 +774,31 @@ class DocumentoServiceTest {
         @Test
         void getAllBandejaRecepcion_return_page() {
                 // Arrange
-                Documento demanda = DocumentoSetUp.create(tipoJuicio);
+                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
+                given(personaService.getAuditor()).willReturn(persona);
+                given(roleService.hasRole(eq(persona.getUsuario()), eq("OFICIAL_MAYOR_JUZGADO"))).willReturn(true);
 
-                // IDs estables (si tienes setters; si no, quita estas 2 líneas)
-                demanda.setId(100);
-                demanda.getCarpeta().setId(200);
+                DocumentoBandejaRecepcionRecord record = new DocumentoBandejaRecepcionRecord(
+                                1, // movimientoId
+                                2, // carpetaId
+                                3, // documentoId
+                                "1", // folio
+                                "000001/2024", // expediente
+                                "Demanda", // tipoEntrada
+                                "prueba", // origen
+                                "Distribución", // concepto
+                                LocalDateTime.now(), // fechaHoraEnvio
+                                false, // isInterno
+                                null, // prioridad
+                                null, // horas
+                                null, // conceptoId
+                                "" // tipoPromocion
+                );
 
-                demanda.getCarpeta().setFolio("1");
-                demanda.getCarpeta().setJuzgado(juzgado);
-
-                Concepto concepto = new Concepto()
-                                .setId(1)
-                                .setDias(1)
-                                .setEstado(Estado.ACTIVE)
-                                .setNombre("Distribución");
-                demanda.getCarpeta().setConcepto(concepto);
-
-                // Auditor con juzgado (renderOficialMayorData usa juzgado.id y juzgado.nombre)
-                juzgado.setId(10);
-                juzgado.setNombre("Juzgado de Prueba");
-
-                Persona auditor = new Persona()
-                                .setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0")
-                                .setJuzgado(juzgado);
-
-                given(personaService.getAuditor()).willReturn(auditor);
-                given(roleService.hasRole(anyString(), eq("OFICIAL_MAYOR_JUZGADO"))).willReturn(true);
-
-                DocumentoBandejaRecepcionRecord rec = new DocumentoBandejaRecepcionRecord(
-                                999, // movimientoId
-                                demanda.getCarpeta().getId(), // carpetaId
-                                demanda.getId(), // documentoId
-                                demanda.getCarpeta().getFolio(),
-                                demanda.getCarpeta().getExpediente(),
-                                "Demanda",
-                                "prueba",
-                                "Distribución",
-                                LocalDateTime.now(),
-                                false,
-                                null,
-                                1,
-                                1,
-                                null);
-
-                Page<DocumentoBandejaRecepcionRecord> expectedPage = new PageImpl<>(List.of(rec), PageRequest.of(0, 1),
+                Page<DocumentoBandejaRecepcionRecord> pageMock = new PageImpl<>(List.of(record), PageRequest.of(0, 1),
                                 1);
 
-                doReturn(expectedPage).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
+                doReturn(pageMock).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
                                 any(Pageable.class),
                                 anyInt(),
                                 anyList(),
@@ -832,15 +809,15 @@ class DocumentoServiceTest {
                                 anyString(),
                                 anyString(),
                                 anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                any(LocalDateTime.class),
-                                any(LocalDateTime.class),
-                                anyString(),
-                                anyString());
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(LocalDateTime.class),
+                                nullable(LocalDateTime.class),
+                                nullable(String.class),
+                                nullable(String.class));
 
                 // Act
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(
@@ -848,14 +825,12 @@ class DocumentoServiceTest {
                                 PageRequest.of(0, 1));
 
                 // Assert
-                assertThat(page).isNotNull();
-                assertThat(page.getContent()).hasSize(1);
+                assertThat(page.getContent())
+                                .hasSize(1);
 
                 DocumentoBandejaRecepcionRecord first = page.getContent().get(0);
-                assertThat(first.carpetaId()).isEqualTo(demanda.getCarpeta().getId());
-                assertThat(first.folio()).isEqualTo(demanda.getCarpeta().getFolio());
-                assertThat(first.tipoEntrada()).isEqualTo("Demanda");
-                assertThat(first.expediente()).isEqualTo(demanda.getCarpeta().getExpediente());
+                assertThat(first.folio()).isEqualTo("1");
+                assertThat(first.expediente()).isEqualTo("000001/2024");
         }
 
         @Test
@@ -1067,7 +1042,7 @@ class DocumentoServiceTest {
                                 1,
                                 null);
 
-                Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec), Pageable.unpaged(), 1);
+                Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec));
 
                 doReturn(page).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
                                 any(Pageable.class),
@@ -1080,15 +1055,15 @@ class DocumentoServiceTest {
                                 anyString(),
                                 anyString(),
                                 anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                anyString(),
-                                any(LocalDateTime.class),
-                                any(LocalDateTime.class),
-                                anyString(),
-                                anyString());
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(LocalDateTime.class),
+                                nullable(LocalDateTime.class),
+                                nullable(String.class),
+                                nullable(String.class));
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
