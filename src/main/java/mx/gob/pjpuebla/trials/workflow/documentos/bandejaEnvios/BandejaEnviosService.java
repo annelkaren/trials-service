@@ -60,10 +60,6 @@ public class BandejaEnviosService {
 
         List<BandejaEnviosRecord> response = documentoRepository.findAllOficiosBandejaSalida(key,
                 isOficialMayorOficialia, juzgados);
-        
-        response.stream().forEach(r ->  {
-            System.out.println(r.folio());
-        });
 
         return new PageImpl<>(response, pageable, response.size());
     }
