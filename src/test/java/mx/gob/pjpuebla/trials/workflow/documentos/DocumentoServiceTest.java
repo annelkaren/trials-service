@@ -103,6 +103,7 @@ import java.util.*;
 import java.time.LocalDate;
 
 import static mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosSetUp.createJuzgadoFolios;
+import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -820,24 +821,26 @@ class DocumentoServiceTest {
                 Page<DocumentoBandejaRecepcionRecord> expectedPage = new PageImpl<>(List.of(rec), PageRequest.of(0, 1),
                                 1);
 
-                doReturn(expectedPage).when(movimientoRepository).getBandejaRecepcionOficialMayor(
+                doReturn(expectedPage).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
                                 any(Pageable.class),
                                 anyInt(),
                                 anyList(),
+                                any(Persona.class),
+                                anyBoolean(),
                                 anyString(),
                                 anyList(),
-                                any(Persona.class),
                                 anyString(),
                                 anyString(),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(LocalDateTime.class),
-                                nullable(LocalDateTime.class),
-                                nullable(String.class),
-                                nullable(String.class));
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                any(LocalDateTime.class),
+                                any(LocalDateTime.class),
+                                anyString(),
+                                anyString());
 
                 // Act
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(
@@ -1066,24 +1069,26 @@ class DocumentoServiceTest {
 
                 Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec), Pageable.unpaged(), 1);
 
-                doReturn(page).when(movimientoRepository).getBandejaRecepcionOficialMayor(
+                doReturn(page).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
                                 any(Pageable.class),
                                 anyInt(),
                                 anyList(),
+                                any(Persona.class),
+                                anyBoolean(),
                                 anyString(),
                                 anyList(),
-                                any(Persona.class),
                                 anyString(),
                                 anyString(),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(String.class),
-                                nullable(LocalDateTime.class),
-                                nullable(LocalDateTime.class),
-                                nullable(String.class),
-                                nullable(String.class));
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                anyString(),
+                                any(LocalDateTime.class),
+                                any(LocalDateTime.class),
+                                anyString(),
+                                anyString());
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 

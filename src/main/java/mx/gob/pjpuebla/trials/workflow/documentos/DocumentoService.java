@@ -1127,13 +1127,14 @@ public class DocumentoService {
                 };
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
+        private Page<DocumentoBandejaRecepcionRecord> renderData(
+                        String key, Pageable pageable, Persona currentUser,
                         String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo) {
 
                 folio = norm(folio);
                 expediente = norm(expediente);
-                tipoEntrada = normUpper(tipoEntrada); // DEMANDA, PROMOCION, etc.
+                tipoEntrada = normUpper(tipoEntrada);
                 origen = norm(origen);
                 motivoTurnado = norm(motivoTurnado);
 
@@ -1145,16 +1146,43 @@ public class DocumentoService {
                 String keyGlobal = (cmd != null) ? "" : norm(key);
 
                 Integer juzgadoId = currentUser.getJuzgado().getId();
-                EstadoCarpeta estado = EstadoCarpeta.TURNADO;
-                String motivos = EstadoCarpeta.TURNADO.name();
 
-                Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged()) ? Pageable.unpaged()
+                // normal
+                List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO);
+                boolean isOficialMayor = false;
+
+                // normal usa motivoSingle + destino obligatorio
+                String motivoSingle = EstadoCarpeta.TURNADO.name();
+                List<String> motivosList = List.of(); // dummy, no se usa en normal
+
+                // en normal isInterno siempre true como en tu query actual
+                String userJuzgadoNombre = null;
+                String userOficialiaNombre = null;
+
+                Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
+                                ? Pageable.unpaged()
                                 : translateBandejaRecepcionPageable(pageable);
 
-                return movimientoRepository.getBandejaRecepcionPage(
-                                pageableWithFilter, juzgadoId, estado, keyGlobal, cmdLetra, cmdFolio, motivos,
+                return movimientoRepository.getBandejaRecepcionUnifiedPage(
+                                pageableWithFilter,
+                                juzgadoId,
+                                estados,
                                 currentUser,
-                                folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
+                                isOficialMayor,
+                                motivoSingle,
+                                motivosList,
+                                norm(keyGlobal),
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                tipoEntrada,
+                                origen,
+                                motivoTurnado,
+                                fechaFrom,
+                                fechaTo,
+                                userJuzgadoNombre,
+                                userOficialiaNombre);
         }
 
         // metodos de filtros:
@@ -1166,8 +1194,8 @@ public class DocumentoService {
                 return (s == null) ? null : s.trim().toUpperCase();
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
-                        Persona currentUser,
+        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(
+                        String key, Pageable pageable, Persona currentUser,
                         String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo) {
 
@@ -1191,19 +1219,40 @@ public class DocumentoService {
                 String userJuzgadoNombre = currentUser.getJuzgado() != null
                                 ? currentUser.getJuzgado().getNombre().toLowerCase()
                                 : null;
+
                 String userOficialiaNombre = currentUser.getOficialia() != null
                                 ? currentUser.getOficialia().getNombre().toLowerCase()
-
                                 : null;
 
-                Pageable p = (pageable == null || pageable.isUnpaged()) ? Pageable.unpaged()
+                boolean isOficialMayor = true;
+
+                // dummy en oficial mayor (no se usa)
+                String motivoSingle = "";
+
+                Pageable p = (pageable == null || pageable.isUnpaged())
+                                ? Pageable.unpaged()
                                 : translateBandejaRecepcionPageable(pageable);
 
-                return movimientoRepository.getBandejaRecepcionOficialMayor(
-                                p, juzgadoId, estados, norm(keyGlobal), motivos, currentUser,
-                                cmdLetra, cmdFolio,
-                                folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo,
-                                userJuzgadoNombre, userOficialiaNombre);
+                return movimientoRepository.getBandejaRecepcionUnifiedPage(
+                                p,
+                                juzgadoId,
+                                estados,
+                                currentUser,
+                                isOficialMayor,
+                                motivoSingle,
+                                motivos,
+                                norm(keyGlobal),
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                tipoEntrada,
+                                origen,
+                                motivoTurnado,
+                                fechaFrom,
+                                fechaTo,
+                                userJuzgadoNombre,
+                                userOficialiaNombre);
         }
 
         protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento) {
