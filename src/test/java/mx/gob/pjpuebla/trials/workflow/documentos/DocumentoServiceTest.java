@@ -89,6 +89,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
@@ -111,6 +112,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -771,47 +773,86 @@ class DocumentoServiceTest {
 
         @Test
         void getAllBandejaRecepcion_return_page() {
+                // Arrange
                 Documento demanda = DocumentoSetUp.create(tipoJuicio);
+
+                // IDs estables (si tienes setters; si no, quita estas 2 líneas)
+                demanda.setId(100);
+                demanda.getCarpeta().setId(200);
 
                 demanda.getCarpeta().setFolio("1");
                 demanda.getCarpeta().setJuzgado(juzgado);
-                Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
+
+                Concepto concepto = new Concepto()
+                                .setId(1)
+                                .setDias(1)
+                                .setEstado(Estado.ACTIVE)
                                 .setNombre("Distribución");
-
                 demanda.getCarpeta().setConcepto(concepto);
-                Movimiento movimiento = new Movimiento().setCarpeta(demanda.getCarpeta()).setMotivo("RECEPCION");
-                List<Movimiento> listPage = Collections.singletonList(movimiento);
-                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
-                Map<String, Object> origen = Map.of(
-                                "centroTrabajo", "prueba",
-                                "nombrePersona", "Juan Pérez");
 
-                given(documentoService.getDocumentoForRenderOficialMayor(movimiento))
-                                .willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
+                // Auditor con juzgado (renderOficialMayorData usa juzgado.id y juzgado.nombre)
+                juzgado.setId(10);
+                juzgado.setNombre("Juzgado de Prueba");
 
-                given(movimientoService.getOrigen(any(), any())).willReturn(origen);
+                Persona auditor = new Persona()
+                                .setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0")
+                                .setJuzgado(juzgado);
 
-                given(personaService.getAuditor()).willReturn(persona);
-                given(roleService.hasRole(any(String.class), any(String.class))).willReturn(true);
+                given(personaService.getAuditor()).willReturn(auditor);
+                given(roleService.hasRole(anyString(), eq("OFICIAL_MAYOR_JUZGADO"))).willReturn(true);
 
-                // given(documentoRepository.findByCarpetaIdAndTipoDocumento(any(),
-                // any())).willReturn(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio()));
+                DocumentoBandejaRecepcionRecord rec = new DocumentoBandejaRecepcionRecord(
+                                999, // movimientoId
+                                demanda.getCarpeta().getId(), // carpetaId
+                                demanda.getId(), // documentoId
+                                demanda.getCarpeta().getFolio(),
+                                demanda.getCarpeta().getExpediente(),
+                                "Demanda",
+                                "prueba",
+                                "Distribución",
+                                LocalDateTime.now(),
+                                false,
+                                null,
+                                1,
+                                1,
+                                null);
 
-                List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
-                List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
-            
+                Page<DocumentoBandejaRecepcionRecord> expectedPage = new PageImpl<>(List.of(rec), PageRequest.of(0, 1),
+                                1);
 
+                doReturn(expectedPage).when(movimientoRepository).getBandejaRecepcionOficialMayor(
+                                any(Pageable.class),
+                                anyInt(),
+                                anyList(),
+                                anyString(),
+                                anyList(),
+                                any(Persona.class),
+                                anyString(),
+                                anyString(),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(LocalDateTime.class),
+                                nullable(LocalDateTime.class),
+                                nullable(String.class),
+                                nullable(String.class));
+
+                // Act
                 Page<DocumentoBandejaRecepcionRecord> page = documentoService.getAllBandejaRecepcion(
                                 "", null, null, null, null, null, null, null,
-                                PageRequest.of(0, listPage.size()));
+                                PageRequest.of(0, 1));
 
-                assertThat(page.getContent())
-                                .hasSize(1)
-                                .first()
-                                .hasFieldOrPropertyWithValue("carpetaId", demanda.getId())
-                                .hasFieldOrPropertyWithValue("folio", demanda.getCarpeta().getFolio())
-                                .hasFieldOrPropertyWithValue("tipoEntrada", "Demanda")
-                                .hasFieldOrPropertyWithValue("expediente", demanda.getCarpeta().getExpediente());
+                // Assert
+                assertThat(page).isNotNull();
+                assertThat(page.getContent()).hasSize(1);
+
+                DocumentoBandejaRecepcionRecord first = page.getContent().get(0);
+                assertThat(first.carpetaId()).isEqualTo(demanda.getCarpeta().getId());
+                assertThat(first.folio()).isEqualTo(demanda.getCarpeta().getFolio());
+                assertThat(first.tipoEntrada()).isEqualTo("Demanda");
+                assertThat(first.expediente()).isEqualTo(demanda.getCarpeta().getExpediente());
         }
 
         @Test
@@ -996,29 +1037,60 @@ class DocumentoServiceTest {
 
         @Test
         void getIndicadores_success() {
-                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0");
-                Documento demanda = DocumentoSetUp.create(tipoJuicio).setTipoDocumento(TipoDocumento.PROMOCION);
-                demanda.getCarpeta().setFolio("1");
-                demanda.getCarpeta().setJuzgado(juzgado);
-                Concepto concepto = new Concepto().setId(1).setDias(1).setEstado(Estado.ACTIVE)
-                                .setNombre("Distribución");
-                demanda.getCarpeta().setConcepto(concepto);
-                Movimiento movimiento = new Movimiento()
-                                .setCarpeta(demanda.getCarpeta())
-                                .setMotivo("RECEPCION")
-                                .setFechaAsignacion(LocalDateTime.now())
-                                .setPersona(persona)
-                                .setDocumento(demanda);
-                List<Movimiento> listPage = Collections.singletonList(movimiento);
-                Page<Movimiento> page = new PageImpl<>(listPage);
+                // Arrange
+                juzgado.setId(10);
+                juzgado.setNombre("Juzgado de Prueba");
 
-                given(etiquetaService.renderEtiquetaRecepcion(any(), any(Carpeta.class))).willReturn("Promocion");
+                Persona persona = new Persona()
+                                .setUsuario("d8945bc4-af8e-4eb0-b742-7ee13beb43e0")
+                                .setJuzgado(juzgado);
+
                 given(personaService.getAuditor()).willReturn(persona);
+                given(roleService.hasRole(anyString(), eq("OFICIAL_MAYOR_JUZGADO"))).willReturn(true);
+
+                DocumentoBandejaRecepcionRecord rec = new DocumentoBandejaRecepcionRecord(
+                                999, // movimientoId
+                                200, // carpetaId
+                                100, // documentoId
+                                "1", // folio
+                                "EXP-1", // expediente
+                                "Promocion", // tipoEntrada
+                                "prueba", // origen
+                                "Distribución", // concepto
+                                LocalDateTime.now(), // fechaHoraEnvio (hoy)
+                                false,
+                                null,
+                                1,
+                                1,
+                                null);
+
+                Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec), Pageable.unpaged(), 1);
+
+                doReturn(page).when(movimientoRepository).getBandejaRecepcionOficialMayor(
+                                any(Pageable.class),
+                                anyInt(),
+                                anyList(),
+                                anyString(),
+                                anyList(),
+                                any(Persona.class),
+                                anyString(),
+                                anyString(),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(String.class),
+                                nullable(LocalDateTime.class),
+                                nullable(LocalDateTime.class),
+                                nullable(String.class),
+                                nullable(String.class));
 
                 IndicadoresRecord expected = new IndicadoresRecord(1, 1, 0, 0);
 
+                // Act
                 IndicadoresRecord result = documentoService.getIndicadores();
 
+                // Assert
                 assertThat(result).isEqualTo(expected);
         }
 
@@ -1125,27 +1197,46 @@ class DocumentoServiceTest {
 
         @Test
         void getDataDocumentoRecepcion() {
-                Integer documentoId = 1;
-                List<AnexoRecepcionRecord> anexos = new ArrayList<>();
+                // Arrange
+                Integer movimientoId = 1;
 
-                // Agregar instancias de AnexoRecepcionRecord a la lista
+                Documento doc = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())
+                                .setTipoDocumento(TipoDocumento.PROMOCION)
+                                .setFolio("1");
+                doc.setId(10); // si puedes, para que el repo de anexos use este id
+                doc.getCarpeta().setExpediente("000001/2024");
+
+                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("user");
+                Movimiento movimiento = new Movimiento()
+                                .setId(movimientoId)
+                                .setDocumento(doc)
+                                .setPersona(persona);
+
+                List<AnexoRecepcionRecord> anexos = new ArrayList<>();
                 anexos.add(new AnexoRecepcionRecord(1, EstadoAnexo.ASIGNADO, "Anexo 1"));
                 anexos.add(new AnexoRecepcionRecord(2, EstadoAnexo.ASIGNADO, "Anexo 2"));
                 anexos.add(new AnexoRecepcionRecord(3, EstadoAnexo.ASIGNADO, "Anexo 3"));
-                given(documentoRepository.findById(documentoId))
-                                .willReturn(Optional.of(DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio())
-                                                .setTipoDocumento(TipoDocumento.PROMOCION).setFolio("1")));
 
-                given(anexoRepository.findAnexosByDocumentoId(documentoId))
-                                .willReturn(anexos);
+                given(movimientoRepository.findById(movimientoId)).willReturn(Optional.of(movimiento));
+                given(anexoRepository.findAnexosByDocumentoId(doc.getId())).willReturn(anexos);
 
-                DocumentoRecepcionRecord doc = documentoService.getDataDocumentoRecepcion(documentoId);
+                Map<String, Object> origenMap = Map.of("centroTrabajo", "prueba");
+                given(movimientoService.getOrigen(any(), any())).willReturn(origenMap);
 
-                assertNotNull(doc, "El DocumentoRecepcionRecord no debe ser nulo");
-                assertEquals("1", doc.folio(), "El folio del documento no es el esperado");
-                assertEquals("000001/2024", doc.expediente(), "El expediente del documento no es el esperado");
-                assertEquals(StringUtils.capitalize(TipoDocumento.PROMOCION.name().toLowerCase()), doc.tipoEntrada(),
-                                "El tipo de documento no es el esperado");
+                // Spy local SOLO para este test
+                DocumentoService spyService = Mockito.spy(documentoService);
+                doReturn(doc).when(spyService).getDocumentoForRenderOficialMayor(any(Movimiento.class));
+
+                // Act
+                DocumentoRecepcionRecord result = spyService.getDataDocumentoRecepcion(movimientoId);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals("1", result.folio());
+                assertEquals("000001/2024", result.expediente());
+                assertEquals("Promocion", result.tipoEntrada()); // capitalize(promocion)
+                assertEquals("prueba", result.origen());
+                assertEquals(3, result.anexos().size());
         }
 
         @Test
