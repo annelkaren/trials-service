@@ -23,6 +23,8 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     Optional<Audiencia> findByCarpeta(Carpeta carpeta);
 
+    List<Audiencia> findByCarpeta_id(Integer carpetaId);
+
     Optional<Audiencia> findFirstByCarpetaOrderByIdDesc(Carpeta carpeta);
 
     @Query("""

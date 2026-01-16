@@ -21,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RequiredArgsConstructor
@@ -126,5 +129,11 @@ public class AudienciaResource {
 
         return ResponseEntity.ok(esInhabil);
     }
+
+    @GetMapping("/audiencias/programadas/{carpetaId}")
+    public Audiencia getAudienciasProgramadas(@PathVariable Integer carpetaId) {
+        return audienciaService.getAudienciasProgramadas(carpetaId);
+    }
+    
     
 }

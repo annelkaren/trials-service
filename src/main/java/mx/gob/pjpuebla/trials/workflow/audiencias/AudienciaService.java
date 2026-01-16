@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -76,7 +77,6 @@ public class AudienciaService {
         private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
         private static final String EXTENSION_ARCHIVO = ".pdf";
 
-
         public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
                 Sala sala = salaRepository.findById(salaAudienciaRecord.id())
                                 .orElseThrow(() -> new NotFoundException(SALA_NOT_FOUND,
@@ -142,48 +142,58 @@ public class AudienciaService {
                 Page<Audiencia> page = audienciaRepository.findByJuzgado(juzgado, key, pageable);
 
                 List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
-                        .map(item -> {
-                                String nombreCompleto = item.getSala().getJuez().getNombre() + " "
-                                        + item.getSala().getJuez().getApellidoPaterno();
+                                .map(item -> {
+                                        String nombreCompleto = item.getSala().getJuez().getNombre() + " "
+                                                        + item.getSala().getJuez().getApellidoPaterno();
 
-                                if (item.getSala().getJuez().getApellidoMaterno() != null) {
-                                        nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
-                                }
+                                        if (item.getSala().getJuez().getApellidoMaterno() != null) {
+                                                nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
+                                        }
 
-                                List<AsistenciaPersonaDocumento> personasDocumento = personaDocumentoRepository.findByCarpetaId(item.getCarpeta().getId())
-                                        .stream()
-                                        .map(pd -> {
-                                                AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
-                                                        .findByPersonaDocumentoIdAndAudienciaId(pd.getId(), item.getId());
+                                        List<AsistenciaPersonaDocumento> personasDocumento = personaDocumentoRepository
+                                                        .findByCarpetaId(item.getCarpeta().getId())
+                                                        .stream()
+                                                        .map(pd -> {
+                                                                AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
+                                                                                .findByPersonaDocumentoIdAndAudienciaId(
+                                                                                                pd.getId(),
+                                                                                                item.getId());
 
-                                                return new AsistenciaPersonaDocumento(
-                                                        pd.getId(),
-                                                        pd.getNombre(),
-                                                        pd.getApellidoPaterno(),
-                                                        pd.getApellidoMaterno(),
-                                                        pd.getRol().name(),
-                                                        pd.getTipoPartes().getNombre(),
-                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getAsistencia() : null,
-                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getDocumentoIdentificacion().getName() : null
-                                                );
-                                        })
-                                        .collect(Collectors.toList());
+                                                                return new AsistenciaPersonaDocumento(
+                                                                                pd.getId(),
+                                                                                pd.getNombre(),
+                                                                                pd.getApellidoPaterno(),
+                                                                                pd.getApellidoMaterno(),
+                                                                                pd.getRol().name(),
+                                                                                pd.getTipoPartes().getNombre(),
+                                                                                asistenciaAudiencia != null
+                                                                                                ? asistenciaAudiencia
+                                                                                                                .getAsistencia()
+                                                                                                : null,
+                                                                                asistenciaAudiencia != null
+                                                                                                ? asistenciaAudiencia
+                                                                                                                .getDocumentoIdentificacion()
+                                                                                                                .getName()
+                                                                                                : null);
+                                                        })
+                                                        .collect(Collectors.toList());
 
-                                return new AudienciasGeneralesResponseRecord(
-                                        item.getId(),
-                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
-                                        nombreCompleto,
-                                        item.getCarpeta().getExpediente(),
-                                        item.getCarpeta().getId(),
-                                        item.getSala().getNombre(),
-                                        item.getFechaAudiencia(),
-                                        item.getEstatusAudiencia(),
-                                        juzgado.getId(),
-                                        item.getCarpeta().getTipoJuicio().getNombre(),
-                                        personasDocumento
-                                );
-                        })
-                        .toList();
+                                        return new AudienciasGeneralesResponseRecord(
+                                                        item.getId(),
+                                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
+                                                        nombreCompleto,
+                                                        item.getCarpeta().getExpediente(),
+                                                        item.getCarpeta().getId(),
+                                                        item.getSala().getNombre(),
+                                                        item.getFechaAudiencia(),
+                                                        item.getEstatusAudiencia(),
+                                                        juzgado.getId(),
+                                                        item.getCarpeta().getTipoJuicio().getNombre(),
+                                                        personasDocumento,
+                                                        item.getInicio().toLocalTime().toString(),
+                                                        item.getFin().toLocalTime().toString());
+                                })
+                                .toList();
 
                 return new PageImpl<>(list, pageable, page.getTotalElements());
         }
@@ -266,9 +276,15 @@ public class AudienciaService {
                                         .orElseThrow(() -> new IllegalArgumentException(AUDIENCIA_NOT_FOUND));
 
                         if (isInicio) {
+                                if (audiencia.getInicio() != null) {
+                                        throw new ConflictException("La audiencia ya tiene una hora de inicio");
+                                }
                                 audiencia.setInicio(hora);
                                 audienciaRepository.save(audiencia);
                         } else {
+                                if (audiencia.getFin() != null) {
+                                        throw new ConflictException("La audiencia ya tiene una hora de fin");
+                                }
                                 audiencia.setFin(hora);
                                 audienciaRepository.save(audiencia);
                         }
@@ -358,18 +374,16 @@ public class AudienciaService {
                 LocalDateTime fechaInicio = LocalDateTime.parse(fechaHoraStr, formatter);
                 LocalDateTime fechaFin = fechaInicio.plusMinutes(request.duracion());
                 return !audienciaRepository.existeConflicto(
-                        request.salaId(),
-                        fechaInicio,
-                        fechaFin
-                );
+                                request.salaId(),
+                                fechaInicio,
+                                fechaFin);
         }
-
 
         public void guardarArchivo(MultipartFile file, Integer audienciaId) {
                 this.basePath = rootFolder + "/digitalizacion/";
 
                 Audiencia audiencia = audienciaRepository.findById(audienciaId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                                () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
                 validarArchivo(file);
 
@@ -387,13 +401,14 @@ public class AudienciaService {
                 } catch (IOException e) {
                         log.error("Error al guardar el archivo: {}", e.getMessage(), e);
                         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Error al guardar el archivo en el servidor", e);
+                                        "Error al guardar el archivo en el servidor", e);
                 }
 
                 audiencia.setRuta(nombreUnicoArchivo);
                 audienciaRepository.save(audiencia);
 
-                new DigitalizacionRecord(audiencia.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+                new DigitalizacionRecord(audiencia.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
+                                nombreUnicoArchivo);
         }
 
         private void validarArchivo(MultipartFile file) {
@@ -406,20 +421,23 @@ public class AudienciaService {
                 }
 
                 if (file.getSize() > MAX_FILE_SIZE) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede superar los 50 MB.");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "El archivo no puede superar los 50 MB.");
                 }
         }
+
         public byte[] getAudienciaDocumento(Integer audienciaId) throws IOException {
                 this.basePath = this.rootFolder + "/digitalizacion/";
 
                 Audiencia audiencia = audienciaRepository.findById(audienciaId).orElse(null);
-            assert audiencia != null;
-            Path rutaArchivo = crearDirectorio(audiencia).resolve(audiencia.getRuta());
+                assert audiencia != null;
+                Path rutaArchivo = crearDirectorio(audiencia).resolve(audiencia.getRuta());
 
                 if (Files.exists(rutaArchivo)) {
                         return Files.readAllBytes(rutaArchivo);
                 } else {
-                        throw new IOException("El archivo relacionado con la audiencia " + audiencia.getId() + " no existe en el directorio");
+                        throw new IOException("El archivo relacionado con la audiencia " + audiencia.getId()
+                                        + " no existe en el directorio");
                 }
         }
 
@@ -435,18 +453,42 @@ public class AudienciaService {
                 String numero = expediente.substring(0, expediente.length() - 4);
                 numero = String.format("%06d", Integer.parseInt(numero));
                 String juzgado = obtenerJuzgado(audiencia);
-                return Paths.get(basePath,  year, juzgado, numero, "actaminima");
+                return Paths.get(basePath, year, juzgado, numero, "actaminima");
         }
 
         private String obtenerJuzgado(Audiencia audiencia) {
-                return audiencia.getCarpeta().getJuzgado().getNombre() != null ? audiencia.getCarpeta().getJuzgado().getNombre() : "Desconocido";
+                return audiencia.getCarpeta().getJuzgado().getNombre() != null
+                                ? audiencia.getCarpeta().getJuzgado().getNombre()
+                                : "Desconocido";
         }
 
         public Audiencia obtenerUltimaAudienciaDesahogada() {
-        Audiencia audiencia = audienciaRepository.findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia.DESAHOGADA);
-        if (audiencia == null) {
-            throw new EntityNotFoundException("No se encontró una audiencia desahogada.");
+                Audiencia audiencia = audienciaRepository
+                                .findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia.DESAHOGADA);
+                if (audiencia == null) {
+                        throw new EntityNotFoundException("No se encontró una audiencia desahogada.");
+                }
+                return audiencia;
         }
-        return audiencia;
-    }
+
+        public List<AudienciasGeneralesResponseRecord> getAudienciasProgramadas(Integer carpetaId) {
+                return audienciaRepository.findByCarpeta_id(carpetaId)
+                                .stream()
+                                .map(item -> new AudienciasGeneralesResponseRecord(
+                                                item.getId(),
+                                                item.getTipoAudiencia().getNombre(),
+                                                "",
+                                                item.getCarpeta().getExpediente(),
+                                                carpetaId,
+                                                "",
+                                                item.getFechaAudiencia(),
+                                                item.getEstatusAudiencia(),
+                                                null,
+                                                "",
+                                                null,
+                                                "",
+                                                ""))
+                                .toList();
+        }
+
 }
