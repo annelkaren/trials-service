@@ -471,24 +471,8 @@ public class AudienciaService {
                 return audiencia;
         }
 
-        public List<AudienciasGeneralesResponseRecord> getAudienciasProgramadas(Integer carpetaId) {
-                return audienciaRepository.findByCarpeta_id(carpetaId)
-                                .stream()
-                                .map(item -> new AudienciasGeneralesResponseRecord(
-                                                item.getId(),
-                                                item.getTipoAudiencia().getNombre(),
-                                                "",
-                                                item.getCarpeta().getExpediente(),
-                                                carpetaId,
-                                                "",
-                                                item.getFechaAudiencia(),
-                                                item.getEstatusAudiencia(),
-                                                null,
-                                                "",
-                                                null,
-                                                "",
-                                                ""))
-                                .toList();
+        public List<AudienciaProgramadaRecord> getAudienciasProgramadas(Integer carpetaId) {
+                return audienciaRepository.findProgramadasByCarpetaId(carpetaId);
         }
 
 }
