@@ -50,6 +50,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -368,11 +370,19 @@ public class AudienciaService {
         }
 
         public boolean validarDisponibilidad(ValidarDisponibilidadRequestRecord request) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                                .appendPattern("yyyy-MM-dd'T'HH:mm")
+                                .optionalStart()
+                                .appendPattern(":ss")
+                                .optionalEnd()
+                                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                                .toFormatter();
 
                 String fechaHoraStr = request.fecha() + "T" + request.hora();
                 LocalDateTime fechaInicio = LocalDateTime.parse(fechaHoraStr, formatter);
+
                 LocalDateTime fechaFin = fechaInicio.plusMinutes(request.duracion());
+
                 return !audienciaRepository.existeConflicto(
                                 request.salaId(),
                                 fechaInicio,

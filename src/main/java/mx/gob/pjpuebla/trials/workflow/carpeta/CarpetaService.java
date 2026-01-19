@@ -672,22 +672,19 @@ public class CarpetaService {
                         throw new NotFoundException("No hay registro del detalle de la carpeta", "docId");
                 }
 
-                String nombre = carpeta.getPersona().getNombre() + " " +
-                                (carpeta.getPersona().getApellidoPaterno() != null
+                Persona persona = carpeta.getPersona();
+                String nombre = persona.getNombre() + " " +
+                                (persona.getApellidoPaterno() != null
                                                 ? carpeta.getPersona().getApellidoPaterno() + " "
                                                 : "")
                                 +
-                                (carpeta.getPersona().getApellidoMaterno() != null
+                                (persona.getApellidoMaterno() != null
                                                 ? carpeta.getPersona().getApellidoMaterno()
-                                                : "")
-                                + ", ";
+                                                : "")  + ", ";
 
-                String rol = (carpeta.getPersona().getOcupacion() != null ? carpeta.getPersona().getOcupacion() + ", "
-                                : "");
+                String rol = (persona.getOcupacion() != null ? persona.getOcupacion() + ", "  : "");
 
-                String ubicacion = carpeta.getPersona().getJuzgado() != null
-                                ? carpeta.getPersona().getJuzgado().getNombre()
-                                : carpeta.getPersona().getOficialia().getNombre();
+                String ubicacion = persona.getJuzgado() != null ? persona.getJuzgado().getNombre() : persona.getOficialia().getNombre();
 
                 return new InfoExpedienteDetalleRecord(
                                 carpeta.getDeterminacionJurisdiccional() != null
