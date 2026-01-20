@@ -7,6 +7,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,6 +18,7 @@ import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesPromRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvio;
@@ -29,6 +31,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.ResponseGenericRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +39,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -562,6 +567,15 @@ public class DigitalizacionService {
         }
 
         return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
+    }
+
+    public ResponseGenericRecord  autorizarRedigitalizacion(Integer documentoId){
+        Documento documento = documentoRepository.findById(documentoId).orElseThrow(
+                () -> new NotFoundException("No se pudo encontrar el documento con ID: ", documentoId.toString()));
+        
+        documento.setRuta(null);
+        documentoRepository.save(documento);
+        return new ResponseGenericRecord("Autorización registrada exitosamente", "OK");
     }
 
 }

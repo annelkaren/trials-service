@@ -341,4 +341,9 @@ public class DocumentoResource {
     public List<CarpetaCatalogoRecord> filtroTiposEntradas(@RequestParam String bandeja) {
         return documentoService.getTipoEntradas(bandeja);
     }
+
+    @PatchMapping("/bandeja/entrada/redigitalizacion/{documentoId}")
+    public ResponseGenericRecord getBandejaDevueltos(@PathVariable Integer documentoId) {
+        return this.digitalizacion2Service.autorizarRedigitalizacion(documentoId);
+    }
 }
