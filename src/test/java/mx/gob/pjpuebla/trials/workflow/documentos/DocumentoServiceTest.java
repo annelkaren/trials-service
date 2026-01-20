@@ -320,22 +320,17 @@ class DocumentoServiceTest {
                 Carpeta carpeta = CarpetaSetUp.create();
                 carpeta.setJuzgado(JuzgadoSetUp.createJuzgado());
                 carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-                Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+              
+                // DocumentoGridRecord mock
+                BandejaEntradaRecord documentoGrid = new BandejaEntradaRecord(null, null, null, null, null, null, null, null, null, null, false, null);
 
-                // Movimiento mock
-                Movimiento movimiento = new Movimiento();
-                movimiento.setDocumento(documento);
-                movimiento.setCarpeta(carpeta);
-                movimiento.setEstado("ENTRADA");
-                movimiento.setMotivo("Prueba");
+                Page<BandejaEntradaRecord> documentoGPage = new PageImpl<>(List.of(documentoGrid), pageable, 1);
 
-                Page<Movimiento> movimientoPage = new PageImpl<>(List.of(movimiento), pageable, 1);
-                given(movimientoService.getAllBandejaEntrada(any(Pageable.class), eq(1), any(), eq(""), any(), any(),
-                                any(), any(), any()))
-                                .willReturn(movimientoPage);
+                given(movimientoRepository.getAllBandejaEntrada(pageable, null, null, null, null, null, null, null, null, null, null)
+                        ).willReturn(documentoGPage);
 
                 // Act
-                Page<DocumentoGridRecord> result = documentoService.getAll(null, pageable, "Todas");
+                Page<BandejaEntradaRecord> result = documentoService.getAll(null, null, null, null, null, null, pageable);
 
                 // Assert
                 assertThat(result).isNotNull();

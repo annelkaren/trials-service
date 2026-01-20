@@ -112,11 +112,19 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
     }
 
-    @GetMapping("/bandeja/entrada2")
-    public Page<DocumentoGridRecord> getAll(Pageable pageable,
+    @GetMapping("/bandeja/entrada")
+    public Page<BandejaEntradaRecord> getAll(
+            Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
-            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
-        return this.documentoService.getAll(key, pageable, tipoEntrada);
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+                
+       return documentoService.getAll(key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, pageable);
     }
 
     @GetMapping("/bandeja/salida2")
@@ -169,11 +177,12 @@ public class DocumentoResource {
             @RequestParam(value = "expediente", required = false) String expediente,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
             @RequestParam(value = "origen", required = false) String origen,
-            @RequestParam(value = "motivoTurnado", required = false) String motivoTurnado, 
+            @RequestParam(value = "motivoTurnado", required = false) String motivoTurnado,
             @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
             @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo,
             @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo, pageable);
+        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, motivoTurnado,
+                fechaFrom, fechaTo, pageable);
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")

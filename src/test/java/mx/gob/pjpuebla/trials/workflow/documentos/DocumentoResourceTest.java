@@ -231,7 +231,7 @@ class DocumentoResourceTest {
         String tipoEntrada = "DEMANDA";
         String materiaNombre = "MERCANTIL";
 
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
+        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, 1, folio, expediente,
                 materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "", "");
 
         given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
