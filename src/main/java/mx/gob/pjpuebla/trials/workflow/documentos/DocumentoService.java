@@ -167,68 +167,45 @@ public class DocumentoService {
                 return new CmdFilter(m.group(1).toUpperCase(), m.group(2).trim());
         }
 
-@Transactional(readOnly = true)
-public Page<BandejaEntradaRecord> getAll(
-        String key,
-        String folio,
-        String expediente,
-        String materia,
-        String tipoEntrada,
-        String organoJurisdiccional,
-        Pageable pageable
-) {
+        @Transactional(readOnly = true)
+        public Page<BandejaEntradaRecord> getBandejaEntrada(String key, String folio, String expediente,
+                        String materia, String tipoEntrada, String organoJurisdiccional, Pageable pageable) {
 
-    // ✅ Sort (ya lo tienes)
-    Pageable pageableWithSort = (pageable == null || pageable.isUnpaged())
-            ? Pageable.unpaged()
-            : mapSortBandejaEntrada(pageable);
+                Pageable pageableWithSort = mapSortBandejaEntrada(pageable);
 
-    // ✅ Normalización columnas (como en recepción)
-    folio = norm(folio);
-    expediente = norm(expediente);
-    materia = norm(materia);
+                // Normalización columnas
+                folio = norm(folio);
+                expediente = norm(expediente);
+                materia = norm(materia);
+                tipoEntrada = normUpper(tipoEntrada);
+                organoJurisdiccional = norm(organoJurisdiccional);
+                key = normalizeKey(key);
 
-    // si quieres que tipoEntrada sea tolerante a mayúsculas:
-    // en query lo estás usando como LIKE con UPPER(...), entonces aquí lo puedes mandar en upper
-    tipoEntrada = normUpper(tipoEntrada);
+                // filtro especial "Sello"
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
 
-    organoJurisdiccional = norm(organoJurisdiccional);
+                // cuando hay cmd, el global se apaga
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
-    // ✅ key global normalizado igual que Recepción
-    key = normalizeKey(key);
+                Persona currentUser = personaService.getAuditor();
+                Integer juzgadoId = getJuzgadoId(currentUser);
+                Integer oficialiaId = getOficialiaId(currentUser);
 
-    // ✅ cmd igual que Recepción (reutiliza parseCmd)
-    CmdFilter cmd = parseCmd(key);
-    String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
-    String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
-
-    // cuando hay cmd, el global se apaga
-    String keyGlobal = (cmd != null) ? "" : norm(key);
-
-    // ✅ user context
-    Persona currentUser = personaService.getAuditor();
-    Integer juzgadoId = getJuzgadoId(currentUser);
-    Integer oficialiaId = getOficialiaId(currentUser);
-
-    return movimientoRepository.getAllBandejaEntrada(
-            pageableWithSort,
-            juzgadoId,
-            oficialiaId,
-
-            // buscador + cmd
-            norm(keyGlobal),
-            cmdLetra,
-            cmdFolio,
-
-            // filtros por columna
-            folio,
-            expediente,
-            materia,
-            tipoEntrada,
-            organoJurisdiccional
-    );
-}
-
+                return movimientoRepository.getAllBandejaEntrada(
+                                pageableWithSort,
+                                juzgadoId,
+                                oficialiaId,
+                                keyGlobal,
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                materia,
+                                tipoEntrada,
+                                organoJurisdiccional);
+        }
 
         private Pageable mapSortBandejaEntrada(Pageable pageable) {
                 Sort original = pageable.getSort();
@@ -312,41 +289,104 @@ public Page<BandejaEntradaRecord> getAll(
                 return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
         }
 
+        private Pageable translateBandejaSalidaPageable(Pageable pageable) {
+                if (pageable == null || pageable.isUnpaged())
+                        return Pageable.unpaged();
+
+                Sort incoming = pageable.getSort();
+                Sort mapped = Sort.unsorted();
+
+                for (Sort.Order o : incoming) {
+                        String p = o.getProperty();
+                        boolean asc = o.isAscending();
+
+                        Sort s = switch (p) {
+                                case "folio" -> JpaSort.unsafe("COALESCE(c.folio, doc.folio, '')");
+                                case "expediente" ->
+                                        JpaSort.unsafe("COALESCE(c.expediente, doc_carpeta.expediente, '')");
+                                case "materia" -> JpaSort.unsafe("COALESCE(matc.nombre, matd.nombre, '')");
+                                case "organoJurisdiccional", "juzgado" ->
+                                        JpaSort.unsafe("COALESCE(jc.nombre, jd.nombre, '')");
+                                case "fechaRegistro" ->
+                                        JpaSort.unsafe("COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta)");
+                                case "estatus" -> JpaSort.unsafe("COALESCE(c.estatus, doc_carpeta.estatus)");
+                                case "selloEstatus" ->
+                                        JpaSort.unsafe("COALESCE(c.selloEstatus, doc_carpeta.selloEstatus)");
+
+                                case "tipoEntrada" -> JpaSort.unsafe(
+                                                "LOWER(" +
+                                                                " (CASE " +
+                                                                "   WHEN doc IS NOT NULL AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION' "
+                                                                +
+                                                                "   WHEN c IS NOT NULL THEN " +
+                                                                "     (CASE c.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION' WHEN 3 THEN 'DESPACHO' "
+                                                                +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO' WHEN 6 THEN 'CARTA_ROGATORIA' "
+                                                                +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' "
+                                                                +
+                                                                "       ELSE '' END) " +
+                                                                "   ELSE " +
+                                                                "     (CASE doc_carpeta.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION' WHEN 3 THEN 'DESPACHO' "
+                                                                +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO' WHEN 6 THEN 'CARTA_ROGATORIA' "
+                                                                +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' "
+                                                                +
+                                                                "       ELSE '' END) " +
+                                                                " END)" +
+                                                                ")");
+
+                                default -> null; // ignora propiedades desconocidas
+                        };
+
+                        if (s != null) {
+                                mapped = mapped.and(asc ? s.ascending() : s.descending());
+                        }
+                }
+
+                // ✅ default: fechaRegistro desc + m.id desc (estable)
+                if (mapped.isUnsorted()) {
+                        mapped = JpaSort.unsafe("COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta)").descending()
+                                        .and(JpaSort.unsafe("m.id").descending());
+                } else {
+                        mapped = mapped.and(JpaSort.unsafe("m.id").descending());
+                }
+
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
+        }
+
         @Transactional(readOnly = true)
-        public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
-                Object[] resultado = procesarTipoCarpeta(key);
-                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
-                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
-                Integer folio = (Integer) resultado[2];
+        public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, String folio, String expediente,
+                        String materia, String tipoEntrada, String organoJurisdiccional, LocalDateTime fechaFrom,
+                        LocalDateTime fechaTo, Pageable pageable) {
+
+                folio = norm(folio);
+                expediente = norm(expediente);
+                materia = norm(materia);
+                tipoEntrada = normUpper(tipoEntrada);
+                organoJurisdiccional = norm(organoJurisdiccional);
+                key = normalizeKey(key);
+
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
                 Persona persona = personaService.getAuditor();
-                Page<DocumentoSalidaRecord> page = documentoRepository.findByEstatusSalida(
-                                key,
-                                (persona.getOficialia() != null) ? persona.getOficialia().getId() : null,
-                                (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null,
-                                folio,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                pageable);
-                List<DocumentoSalidaResponseRecord> list = page.getContent().stream()
-                                .map(item -> new DocumentoSalidaResponseRecord(
-                                                item.movid(),
-                                                item.id(),
-                                                item.folio(),
-                                                item.expediente(),
-                                                item.juzgadoId(),
-                                                item.juzgado(),
-                                                item.materia(),
-                                                ((item.tipoCarpeta() != null) ? item.tipoCarpeta().name()
-                                                                : ((item.tipoDocumento() != null)
-                                                                                ? item.tipoDocumento().name()
-                                                                                : null)),
-                                                item.fechaRegistro(),
-                                                item.selloEstatus(),
-                                                item.estatus()))
-                                .toList();
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : -1;
+                Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : -1;
+
+                Pageable pageableWithSort = translateBandejaSalidaPageable(pageable);
+
+                return documentoRepository.getBandejaSalidaPage(
+                                pageableWithSort,
+                                norm(keyGlobal), cmdLetra, cmdFolio,
+                                folio, expediente, materia, tipoEntrada, organoJurisdiccional,
+                                fechaFrom, fechaTo,
+                                oficialiaId, juzgadoId);
         }
 
         public DocumentoRecord updateStatus(Integer id, Integer status) {
@@ -1778,7 +1818,7 @@ public Page<BandejaEntradaRecord> getAll(
                                                 .distinct()
                                                 .toList();
                         }
-                      
+
                         case "RECEPCION" -> {
                                 Page<DocumentoBandejaRecepcionRecord> page;
                                 page = getAllBandejaRecepcion("", null, null, null, null, null, null, null,

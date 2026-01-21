@@ -330,7 +330,7 @@ class DocumentoServiceTest {
                         ).willReturn(documentoGPage);
 
                 // Act
-                Page<BandejaEntradaRecord> result = documentoService.getAll(null, null, null, null, null, null, pageable);
+                Page<BandejaEntradaRecord> result = documentoService.getBandejaEntrada(null, null, null, null, null, null, pageable);
 
                 // Assert
                 assertThat(result).isNotNull();
@@ -734,29 +734,26 @@ class DocumentoServiceTest {
 
         @Test
         void getAll_bandeja_salida_success() {
-                DocumentoSalidaRecord documentoRecord = new DocumentoSalidaRecord(
-                                1,
-                                1,
-                                "1",
-                                "000001/2024",
-                                1,
-                                "Juzgado Primero",
-                                "LABORAL",
-                                TipoCarpeta.DEMANDA,
-                                null,
-                                LocalDateTime.now(),
-                                SelloEstatus.VALIDO,
-                                EstadoCarpeta.TURNADO);
-                List<DocumentoSalidaRecord> listPage = Collections.singletonList(documentoRecord);
+                DocumentoSalidaResponseRecord documentoRecord = new DocumentoSalidaResponseRecord(null, null, null, null, null, null, null, null, null, null, null);
+                List<DocumentoSalidaResponseRecord> listPage = Collections.singletonList(documentoRecord);
 
-                given(documentoRepository.findByEstatusSalida(any(), any(), any(), any(), any(), any(), any()))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
-                                                listPage.size()));
+                given(documentoRepository.getBandejaSalidaPage(any(Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), any(LocalDateTime.class), any(LocalDateTime.class), anyInt(), anyInt() ))
+                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+                
                 given(personaService.getAuditor())
                                 .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
 
-                Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida("",
-                                PageRequest.of(1, listPage.size()));
+                Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida(
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class),
+                        any(Pageable.class));
+
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()

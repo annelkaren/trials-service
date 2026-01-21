@@ -279,7 +279,9 @@ class DocumentoResourceTest {
                 SelloEstatus.VALIDO,
                 EstadoCarpeta.TURNADO);
 
-        given(documentoService.getAllBandejaSalida(any(String.class), any(PageRequest.class)))
+        given(documentoService.getAllBandejaSalida(anyString(),anyString(), anyString(), anyString(), anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class), 
+         any(PageRequest.class)))
+         
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
         mockMvc.perform(
                         get("/api/workflow/bandeja/salida2")
