@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoSalidaResponseRecord(
-        Integer movid,
+        Integer movimientoId,
         Integer id,
         String folio,
         String expediente,
