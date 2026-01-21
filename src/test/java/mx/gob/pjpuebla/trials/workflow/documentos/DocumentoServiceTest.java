@@ -792,7 +792,7 @@ class DocumentoServiceTest {
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
-                                .hasFieldOrPropertyWithValue("movid", documentoRecord.movid())
+                                .hasFieldOrPropertyWithValue("movimientoId", documentoRecord.movimientoId())
                                 .hasFieldOrPropertyWithValue("id", documentoRecord.id())
                                 .hasFieldOrPropertyWithValue("expediente", documentoRecord.expediente())
                                 .hasFieldOrPropertyWithValue("materia", documentoRecord.materia());
