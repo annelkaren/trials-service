@@ -108,8 +108,64 @@ public class CarpetaService {
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
-        public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId, Integer isApelacion) {
-                if(isApelacion == null) isApelacion = 0;
+        public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
+                // Usar una variable auxiliar para la modificación de juzgadoId
+                final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
+
+                Juzgado juzgado = this.juzgadoRepository.findById(finalJuzgadoId)
+                                .orElseThrow(() -> new NotFoundException("Juzgado no encontrado",
+                                                expediente + " - " + finalJuzgadoId));
+                Carpeta carpeta;
+                if (juzgado.getMateria().getNombre().toLowerCase().contains("penal")
+                                || juzgado.getMateria().getNombre().toLowerCase().contains("justicia")) {
+                        carpeta = carpetaRepository
+                                        .findByExpedienteAndJuzgadoIdPenal(expediente, juzgado.getNomenclatura(),
+                                                        finalJuzgadoId)
+                                        .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
+                                                        expediente + " - " + finalJuzgadoId));
+                } else {
+                        carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(expediente, finalJuzgadoId)
+                                        .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
+                                                        expediente + " - " + finalJuzgadoId));
+                }
+                               // validaciones nuevas para penal:
+                String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
+                boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal")
+                                || nombreMateria.equals("Justicia para adolescentes");
+
+                String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
+                String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
+                String tipoJuicio = carpeta.getTipoJuicio().getNombre();
+
+                List<String> victimas = null;
+                List<String> imputados = null;
+                Estado estadoJuzgado = carpeta.getJuzgado().getEstado();
+
+                if (isMateriaPenalOrJusticiaPA) {
+                        victimas = personaDocumentoRepository
+                                        .findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), VICTIMA_LABEL,
+                                                        List.of(Rol.PRINCIPAL))
+                                        .stream()
+                                        .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo()
+                                                        : persona.nombre() + " " + persona.apellidoPaterno() + " "
+                                                                        + persona.apellidoPaterno())
+                                        .toList();
+
+                        imputados = personaDocumentoRepository
+                                        .findPersonaAndTipoParteByCarpetaIdPenal(carpeta.getId(), IMPUTADO_LABEL,
+                                                        List.of(Rol.PRINCIPAL))
+                                        .stream()
+                                        .map(persona -> persona.pseudonimo() != null ? persona.pseudonimo()
+                                                        : persona.nombre() + " " + persona.apellidoPaterno() + " "
+                                                                        + persona.apellidoPaterno())
+                                        .toList();
+                }
+                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados,
+                                estadoJuzgado, carpeta.getEstatus().getEtiqueta());
+        }
+
+        public CarpetaResponsePromSinExpediente getCarpetaPromocionSinExpediente(String expediente, Integer juzgadoId,
+                        Integer isApelacion) {
 
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
@@ -123,17 +179,29 @@ public class CarpetaService {
                         carpetaOptional = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente,
                                         juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
-                        log.info("Buscando expediente: " + Utils.normalizarExpediente(expediente) + " con juzgado id: " + finalJuzgadoId);
-                        
+                        log.info("Buscando expediente: " + Utils.normalizarExpediente(expediente) + " con juzgado id: "
+                                        + finalJuzgadoId);
+
                         carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
                                         Utils.normalizarExpediente(expediente), finalJuzgadoId);
                 }
 
                 if (carpetaOptional.isPresent()) {
-
-                        return getDataCarpeta(carpetaOptional.get());
-                } else if(carpetaOptional.isEmpty() && isApelacion == 1){
-                        return new CarpetaResponseRecord(404,
+                        CarpetaResponseRecord carpetaResponse = getDataCarpeta(carpetaOptional.get());
+                        return new CarpetaResponsePromSinExpediente(
+                                carpetaResponse.idCarpeta(), 
+                                carpetaResponse.actor(),
+                                carpetaResponse.demandado(),
+                                carpetaResponse.tipoJuicio(),
+                                carpetaResponse.victimas(),
+                                carpetaResponse.imputados(),
+                                carpetaResponse.estadoJuzgado(),
+                                carpetaResponse.estadoCarpeta(),
+                                Integer.valueOf(200),
+                                "carpeta encontrada");
+                
+                } else if (carpetaOptional.isEmpty() && isApelacion == 1) {
+                        return new CarpetaResponsePromSinExpediente(404,
                                         "El expediente no existe en el sistema");
                 } else {
                         // Busca en SECJ PHP:
@@ -149,11 +217,11 @@ public class CarpetaService {
 
                         if (entrada.isPresent()) {
                                 // El expediente existe en SECJ PHP
-                                return new CarpetaResponseRecord(200,
+                                return new CarpetaResponsePromSinExpediente(200,
                                                 "¿El expediente no ha sido importado, desea recepciónar la promoción sin expediente?");
                         } else {
                                 // El expediente no existe en SECJ PHP
-                                return new CarpetaResponseRecord(404,
+                                return new CarpetaResponsePromSinExpediente(404,
                                                 "El expediente no existe, desea aun así recepcionar la promoción?");
                         }
                 }
@@ -198,7 +266,7 @@ public class CarpetaService {
 
                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas,
                                 imputados,
-                                estadoJuzgado, carpeta.getEstatus().getEtiqueta(), 200, "Carpeta encontrada");
+                                estadoJuzgado, carpeta.getEstatus().getEtiqueta());
         }
 
         private Integer obtenerJuzgadoIdFinal(Integer juzgadoId) {
@@ -470,7 +538,7 @@ public class CarpetaService {
                 }
 
                 // obtenemos juzgado y nombre del juez :
-                
+
                 String nombreJuez = getJuezExpediente(carpeta);
 
                 return new InfoExpedienteRecord(
@@ -511,12 +579,13 @@ public class CarpetaService {
 
                 if (tipoSistema.getNombre().equals("Oral") && materia.getNombre().equals("FAMILIAR")) {
                         Optional<Audiencia> audiencia = audienciaRepository.findFirstByCarpetaOrderByIdDesc(carpeta);
-                        Persona juez = audiencia  .map(a -> a.getSala().getJuez()).orElse(null);
+                        Persona juez = audiencia.map(a -> a.getSala().getJuez()).orElse(null);
 
                         return audiencia.isPresent() && juez != null
                                         ? juez.getNombre() + " "
                                                         + juez.getApellidoPaterno() + " "
-                                                        + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno() : "")
+                                                        + (juez.getApellidoMaterno() != null ? juez.getApellidoMaterno()
+                                                                        : "")
                                         : "";
                 }
 
@@ -674,22 +743,21 @@ public class CarpetaService {
                         throw new NotFoundException("No hay registro del detalle de la carpeta", "docId");
                 }
 
-                String nombre = carpeta.getPersona().getNombre() + " " +
-                                (carpeta.getPersona().getApellidoPaterno() != null
+                Persona persona = carpeta.getPersona();
+                String nombre = persona.getNombre() + " " +
+                                (persona.getApellidoPaterno() != null
                                                 ? carpeta.getPersona().getApellidoPaterno() + " "
                                                 : "")
                                 +
-                                (carpeta.getPersona().getApellidoMaterno() != null
+                                (persona.getApellidoMaterno() != null
                                                 ? carpeta.getPersona().getApellidoMaterno()
                                                 : "")
                                 + ", ";
 
-                String rol = (carpeta.getPersona().getOcupacion() != null ? carpeta.getPersona().getOcupacion() + ", "
-                                : "");
+                String rol = (persona.getOcupacion() != null ? persona.getOcupacion() + ", " : "");
 
-                String ubicacion = carpeta.getPersona().getJuzgado() != null
-                                ? carpeta.getPersona().getJuzgado().getNombre()
-                                : carpeta.getPersona().getOficialia().getNombre();
+                String ubicacion = persona.getJuzgado() != null ? persona.getJuzgado().getNombre()
+                                : persona.getOficialia().getNombre();
 
                 return new InfoExpedienteDetalleRecord(
                                 carpeta.getDeterminacionJurisdiccional() != null
@@ -1072,7 +1140,7 @@ public class CarpetaService {
                 String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
                 String tipoJuicio = carpeta.getTipoJuicio().getNombre();
                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, null, null,
-                                carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta(), null, "");
+                                carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta());
         }
 
         public void devolverArchivoJudicial(List<Integer> ids) {

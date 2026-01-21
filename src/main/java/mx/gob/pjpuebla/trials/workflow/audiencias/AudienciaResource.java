@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
@@ -126,5 +127,11 @@ public class AudienciaResource {
 
         return ResponseEntity.ok(esInhabil);
     }
+
+    @GetMapping("/audiencias/programadas/{carpetaId}")
+    public List<AudienciaProgramadaRecord> getAudienciasProgramadas(@PathVariable Integer carpetaId) {
+        return audienciaService.getAudienciasProgramadas(carpetaId);
+    }
+    
     
 }

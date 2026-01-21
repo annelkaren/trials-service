@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoGridRecord(
-        Integer id,
+        Integer movimientoId,
+        Integer documentoId,
         String folio,
         String expediente,
         String materia,

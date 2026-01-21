@@ -199,44 +199,48 @@ class CarpetaServiceTest {
                 tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
         }
 
-        @Test
-        void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
-                EntradasMigracion e = new EntradasMigracion();
-                
+@Test
+void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
+   
+    juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
+    given(juzgadoRepository.findById(anyInt()))
+        .willReturn(Optional.of(juzgado));
 
-                juzgado.setMateria(new Materia().setNombre("TEST"));
-       
-                given(carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(any(), any()))
-                                .willReturn(Optional.ofNullable(validCarpeta));
+  
+    validCarpeta.setJuzgado(juzgado);
 
-                given(juzgadoService.requiredJuzgadoById(anyInt()))
-                                .willReturn(juzgado);
+    given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
+        .willReturn(Optional.of(validCarpeta));
 
-                lenient().when(entradasMigracionRepository.findTopByExpedienteNormalizado(anyString(), anyInt(), anyString(), anyString()))
-                                .thenReturn(Optional.of(e));
+ 
+    // Act
+    CarpetaResponseRecord resp =
+        target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
 
-                CarpetaResponseRecord carpetaResponseRecord = target
-                                .getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1, 0);
+    // Assert
+    assertThat(resp)
+        .isInstanceOf(CarpetaResponseRecord.class)
+        .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
+        .hasFieldOrPropertyWithValue("actor", "")
+        .hasFieldOrPropertyWithValue("demandado", "");
+}
 
-                assertThat(carpetaResponseRecord)
-                                .isOfAnyClassIn(CarpetaResponseRecord.class)
-                                .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
-                                .hasFieldOrPropertyWithValue("actor", "")
-                                .hasFieldOrPropertyWithValue("demandado", "");
-        }
 
-        @Test
-        void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
+@Test
+void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
+    Integer juzgadoId = 1;
 
-                Integer juzgadoId = 1;
-                when(juzgadoService.requiredJuzgadoById(juzgadoId))
-                                .thenThrow(new NotFoundException("Juzgado no encontrado", "1"));
+    given(juzgadoRepository.findById(anyInt()))
+        .willReturn(Optional.empty());
 
-                NotFoundException assertThrows = assertThrows(
-                                NotFoundException.class,
-                                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", 1, 0));
-                assertThat(assertThrows.getMessage()).contains("Juzgado no encontrado");
-        }
+    NotFoundException ex = assertThrows(
+        NotFoundException.class,
+        () -> target.getCarpetaResponseByNumExpYearJuzgado("1", juzgadoId)
+    );
+
+    assertThat(ex.getMessage()).contains("Juzgado no encontrado");
+}
+
 
         @Test
         void getPersonaDocumentoById_return_carpetaId() {

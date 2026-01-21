@@ -8,8 +8,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.HistorialRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 import java.util.*;
 
@@ -144,11 +142,6 @@ public class MovimientoService {
 
     }
 
-    public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
-                                                 String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
-        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
-                tipoDocumento, folio, tipoEntradaDoc, tipoEntradaCarp);
-    }
 
     //metodo para prueba de refactor bandeja de entrada:
     public Page<BandejaEntradaResponse> getBandejaEntrada(Pageable pageable) {

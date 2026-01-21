@@ -121,7 +121,7 @@ class MovimientosRepositoryTest extends AuditConfigTest {
         String userJuzgadoNombre = "";
         String userOficialiaNombre = "";
 
-        Page<DocumentoBandejaRecepcionRecord> page = movimientoRepository.getBandejaRecepcionUnifiedPage( PageRequest.of(0, 20), juzgadoId, estados, persona, false, motivo, motivosTurnado, key, cmdLetra, cmdFolio, folio, expediente, tipoEntrada, origen, motivo, fechaFrom, fechaTo, userJuzgadoNombre, userOficialiaNombre);
+        Page<DocumentoBandejaRecepcionRecord> page = movimientoRepository.getBandejaRecepcionPage( PageRequest.of(0, 20), juzgadoId, estados, persona, false, motivo, motivosTurnado, key, cmdLetra, cmdFolio, folio, expediente, tipoEntrada, origen, motivo, fechaFrom, fechaTo, userJuzgadoNombre, userOficialiaNombre);
 
         assertThat(page).isNotNull();
         assertThat(page.getContent()).isNotNull();

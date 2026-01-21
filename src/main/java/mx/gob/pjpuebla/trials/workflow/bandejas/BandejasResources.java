@@ -12,8 +12,6 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoMigracion;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaMigracionResponse;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.BandejaRequest;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFilter;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesService;
 
 import org.springframework.data.domain.Page;
@@ -21,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.HttpStatus;
@@ -33,7 +30,6 @@ import org.springframework.http.HttpStatus;
 public class BandejasResources {
 
     private final MigracionesService migracionesService;
-    private final BandejasService bandejasService;
 
     @GetMapping("/migracion")
     public Page<BandejaMigracionResponse> bandeja(
@@ -70,22 +66,6 @@ public class BandejasResources {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result); 
-    }
-
-    // Bandeja de entrada:
-    @GetMapping("/entrada")
-    public Page<BandejaEntradaResponse> listarBandejaEntrada(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
-        return bandejasService.listarBandejaEntrada(filtros, pageable);
-    }
-
-    @GetMapping("/salida")
-    public Page<BandejaEntradaResponse> listarBandejaSalida(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
-        return bandejasService.listarBandejaSalida(filtros, pageable);
-    }
-
-    @GetMapping("/historial")
-    public Page<BandejaEntradaResponse> listarBandejaHistorial(@ModelAttribute BandejaEntradaFilter filtros, Pageable pageable) {
-        return bandejasService.listarBandejaHistorial(filtros, pageable);
     }
     
 }
