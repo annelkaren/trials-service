@@ -1751,13 +1751,13 @@ class DocumentoServiceTest {
                 List<String> anexos = List.of("Anexo1", "Anexo2");
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 CarpetaResponseRecord carpetaResponseRecord = new CarpetaResponseRecord(
-                                1, "actor 1", "demandado 1", null, null, null, null, null, null, null);
+                                1, "actor 1", "demandado 1", null, null, null, null, null);
 
                 DocumentoData documentoData = new DocumentoData().setTipoPromocion(TipoPromocion.ESCRITO);
                 documento.setData(documentoData);
 
                 given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
-                given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any(), any()))
+                given(carpetaService.getCarpetaResponseByNumExpYearJuzgado(any(), any()))
                                 .willReturn(carpetaResponseRecord);
                 given(anexoRepository.findNombresAnexosByDocumentoId(anyInt())).willReturn(anexos);
 

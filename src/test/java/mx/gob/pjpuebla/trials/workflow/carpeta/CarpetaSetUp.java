@@ -63,7 +63,7 @@ public class CarpetaSetUp {
     }
 
     public static CarpetaResponseRecord createCarpetaResponseRecord(){
-        return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2", null, null, null, null, null, null, null);
+        return new CarpetaResponseRecord(1, "Persona1 Apellido1 Apellido1", "Persona2 Apellido2 Apellido2", null, null, null, null, null);
     }
 
     public static ApelacionPersonaRecord apelacionPersonaRecord() {
