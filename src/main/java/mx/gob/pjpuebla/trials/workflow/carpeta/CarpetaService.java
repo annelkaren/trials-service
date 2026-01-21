@@ -109,6 +109,8 @@ public class CarpetaService {
         private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
         public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId, Integer isApelacion) {
+                if(isApelacion == null) isApelacion = 0;
+
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
 
