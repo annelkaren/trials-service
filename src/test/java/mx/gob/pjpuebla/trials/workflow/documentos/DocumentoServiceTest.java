@@ -326,7 +326,7 @@ class DocumentoServiceTest {
 
                 Page<BandejaEntradaRecord> documentoGPage = new PageImpl<>(List.of(documentoGrid), pageable, 1);
 
-                given(movimientoRepository.getAllBandejaEntrada(pageable, null, null, null, null, null, null, null, null, null, null)
+                given(movimientoRepository.getBandejaEntradaPage(pageable, null, null, null, null, null, null, null, null, null, null)
                         ).willReturn(documentoGPage);
 
                 // Act
@@ -547,17 +547,33 @@ class DocumentoServiceTest {
                 TipoCarpeta tipoCarpeta1 = TipoCarpeta.DEMANDA;
                 documento1.getCarpeta().setTipoCarpeta(tipoCarpeta1);
 
-                Movimiento movimiento1 = new Movimiento().setDocumento(documento1)
-                                .setEstado(EstadoCarpeta.CAPTURA.name());
-                List<Movimiento> listPage = Arrays.asList(movimiento1);
-                Page<Movimiento> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                BandejaHistorialRecord bandejaHistorial = new BandejaHistorialRecord(null, null, null, null, null, null, null, null, null);
+
+                List<BandejaHistorialRecord> listPage = Arrays.asList(bandejaHistorial);
+
+                Page<BandejaHistorialRecord> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                 listPage.size());
 
-                given(movimientoRepository.getAllBandejaHistorial(any(), any(), any(), any(Pageable.class)))
+                given(movimientoRepository.getBandejaHistorialPage(
+                        any(Pageable.class),
+                        anyInt(),
+                        anyInt(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class)
+                ))
                                 .willReturn(pageDocumentos);
+
                 given(personaService.getAuditor()).willReturn(new Persona());
 
-                Page<DocumentoGridRecord> result = documentoService.getAllHistorial(null, PageRequest.of(0, 10));
+                Page<BandejaHistorialRecord> result = documentoService.getAllHistorial(null, null, null, null, null, null, null, null, null);
 
                 assertThat(result.getContent())
                                 .hasSize(1)
@@ -737,7 +753,7 @@ class DocumentoServiceTest {
                 DocumentoSalidaResponseRecord documentoRecord = new DocumentoSalidaResponseRecord(null, null, null, null, null, null, null, null, null, null, null);
                 List<DocumentoSalidaResponseRecord> listPage = Collections.singletonList(documentoRecord);
 
-                given(documentoRepository.getBandejaSalidaPage(any(Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), any(LocalDateTime.class), any(LocalDateTime.class), anyInt(), anyInt() ))
+                given(movimientoRepository.getBandejaSalidaPage(any(Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), any(LocalDateTime.class), any(LocalDateTime.class), anyInt(), anyInt() ))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
                 
                 given(personaService.getAuditor())
@@ -790,7 +806,7 @@ class DocumentoServiceTest {
                 Page<DocumentoBandejaRecepcionRecord> pageMock = new PageImpl<>(List.of(record), PageRequest.of(0, 1),
                                 1);
 
-                doReturn(pageMock).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
+                doReturn(pageMock).when(movimientoRepository).getBandejaRecepcionPage(
                                 any(Pageable.class),
                                 anyInt(),
                                 anyList(),
@@ -1036,7 +1052,7 @@ class DocumentoServiceTest {
 
                 Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec));
 
-                doReturn(page).when(movimientoRepository).getBandejaRecepcionUnifiedPage(
+                doReturn(page).when(movimientoRepository).getBandejaRecepcionPage(
                                 any(Pageable.class),
                                 anyInt(),
                                 anyList(),

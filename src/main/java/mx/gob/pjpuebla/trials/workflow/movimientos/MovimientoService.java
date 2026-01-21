@@ -8,8 +8,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.HistorialRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 
 import java.util.*;
 

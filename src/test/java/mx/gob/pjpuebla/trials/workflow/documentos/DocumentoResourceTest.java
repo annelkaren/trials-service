@@ -231,10 +231,19 @@ class DocumentoResourceTest {
         String tipoEntrada = "DEMANDA";
         String materiaNombre = "MERCANTIL";
 
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, 1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "", "");
+        BandejaHistorialRecord documentoGridRecord = new BandejaHistorialRecord(null, folio, expediente, materiaNombre, tipoEntrada, null, estatus, tipoEntrada, materiaNombre);
 
-        given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
+        given(documentoService.getAllHistorial(
+                        any(Pageable.class),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class)
+        ))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(

@@ -136,7 +136,8 @@ public class DocumentoResource {
             @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
             @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
 
-        return this.documentoService.getAllBandejaSalida(key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaFrom, fechaTo, pageable);
+        return this.documentoService.getAllBandejaSalida(key, folio, expediente, materia, tipoEntrada,
+                organoJurisdiccional, fechaFrom, fechaTo, pageable);
     }
 
     @PatchMapping("/bandeja/{id}/status/{status}")
@@ -144,11 +145,18 @@ public class DocumentoResource {
         return this.documentoService.updateStatus(id, status);
     }
 
-    @GetMapping(value = "/bandeja/historial2", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<DocumentoGridRecord> getAllHistorial(
+    @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<BandejaHistorialRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return documentoService.getAllHistorial(key, pageable);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+        return documentoService.getAllHistorial(pageable, key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaFrom, fechaTo);
     }
 
     @PostMapping(value = "/documento/promocion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

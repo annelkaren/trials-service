@@ -12,7 +12,7 @@ public record DocumentoSalidaResponseRecord(
         String folio,
         String expediente,
         Integer juzgadoId,
-        String juzgado,
+        String organoJurisdiccional, //juzgado, se cambia nombre para mentener semantica con el front end.
         String materia,
         String tipoEntrada,
         LocalDateTime fechaRegistro,
