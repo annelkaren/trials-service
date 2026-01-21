@@ -312,25 +312,44 @@ class DocumentoServiceTest {
         @Test
         void getAll_return_page() {
                 Pageable pageable = PageRequest.of(0, 10);
+
                 Persona persona = PersonaSetUp.createPersona();
                 persona.setJuzgado(JuzgadoSetUp.createJuzgado());
                 persona.setOficialia(null);
                 given(personaService.getAuditor()).willReturn(persona);
 
-                Carpeta carpeta = CarpetaSetUp.create();
-                carpeta.setJuzgado(JuzgadoSetUp.createJuzgado());
-                carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
-              
-                // DocumentoGridRecord mock
-                BandejaEntradaRecord documentoGrid = new BandejaEntradaRecord(null, null, null, null, null, null, null, null, null, null, false, null);
+                BandejaEntradaRecord documentoGrid = new BandejaEntradaRecord(
+                                1,
+                                1,
+                                "CARPETA",
+                                "DOC",
+                                "FOLIO-1",
+                                "EXP-1",
+                                "MATERIA",
+                                LocalDateTime.now(),
+                                SelloEstatus.VALIDO,
+                                EstadoCarpeta.CAPTURA,
+                                false,
+                                "TIPO_ENTRADA");
 
                 Page<BandejaEntradaRecord> documentoGPage = new PageImpl<>(List.of(documentoGrid), pageable, 1);
 
-                given(movimientoRepository.getBandejaEntradaPage(pageable, null, null, null, null, null, null, null, null, null, null)
-                        ).willReturn(documentoGPage);
+                given(movimientoRepository.getBandejaEntradaPage(
+                                any(Pageable.class),
+                                eq(1),
+                                isNull(),
+                                isNull(),
+                                eq(""),
+                                eq(""),
+                                isNull(),
+                                isNull(),
+                                isNull(),
+                                isNull(),
+                                isNull())).willReturn(documentoGPage);
 
                 // Act
-                Page<BandejaEntradaRecord> result = documentoService.getBandejaEntrada(null, null, null, null, null, null, pageable);
+                Page<BandejaEntradaRecord> result = documentoService.getBandejaEntrada(null, null, null, null, null,
+                                null, pageable);
 
                 // Assert
                 assertThat(result).isNotNull();
@@ -535,45 +554,41 @@ class DocumentoServiceTest {
 
         @Test
         void getAllHistorial() {
-                Documento documento1 = DocumentoSetUp.create(tipoJuicio);
-                documento1.getCarpeta().setFolio("Folio1");
-                documento1.getCarpeta().setExpediente("Expediente1");
-                documento1.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
+                Pageable pageable = PageRequest.of(0, 10);
 
-                Juzgado juzgado1 = new Juzgado();
-                documento1.getCarpeta().setJuzgado(juzgado1);
-                documento1.getCarpeta().getJuzgado().setMateria(MateriaSetUp.createMateria());
+                BandejaHistorialRecord bandejaHistorial = new BandejaHistorialRecord(
+                                1,
+                                "Folio1",
+                                "Expediente1",
+                                "",
+                                "",
+                                null,
+                                EstadoCarpeta.CAPTURA,
+                                "s",
+                                "" // ajusta según tu constructor real
+                );
 
-                TipoCarpeta tipoCarpeta1 = TipoCarpeta.DEMANDA;
-                documento1.getCarpeta().setTipoCarpeta(tipoCarpeta1);
+                List<BandejaHistorialRecord> listPage = List.of(bandejaHistorial);
 
-                BandejaHistorialRecord bandejaHistorial = new BandejaHistorialRecord(null, null, null, null, null, null, null, null, null);
-
-                List<BandejaHistorialRecord> listPage = Arrays.asList(bandejaHistorial);
-
-                Page<BandejaHistorialRecord> pageDocumentos = new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                Page<BandejaHistorialRecord> pageDocumentos = new PageImpl<>(
+                                listPage,
+                                pageable,
                                 listPage.size());
 
                 given(movimientoRepository.getBandejaHistorialPage(
-                        any(Pageable.class),
-                        anyInt(),
-                        anyInt(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(LocalDateTime.class),
-                        any(LocalDateTime.class)
-                ))
-                                .willReturn(pageDocumentos);
+                                any(Pageable.class),
+                                any(), // oficialiaId (Integer)
+                                any(), // juzgadoId (Integer)
+                                any(), any(), any(),
+                                any(), any(), any(), any(), any(),
+                                any(), any())).willReturn(pageDocumentos);
 
+                // si no te interesa el usuario, OK con Persona vacía, pero debe no romper
+                // getJuzgadoId/getOficialiaId
                 given(personaService.getAuditor()).willReturn(new Persona());
 
-                Page<BandejaHistorialRecord> result = documentoService.getAllHistorial(null, null, null, null, null, null, null, null, null);
+                Page<BandejaHistorialRecord> result = documentoService.getAllHistorial(
+                                pageable, null, null, null, null, null, null, null, null);
 
                 assertThat(result.getContent())
                                 .hasSize(1)
@@ -750,25 +765,29 @@ class DocumentoServiceTest {
 
         @Test
         void getAll_bandeja_salida_success() {
-                DocumentoSalidaResponseRecord documentoRecord = new DocumentoSalidaResponseRecord(null, null, null, null, null, null, null, null, null, null, null);
+                DocumentoSalidaResponseRecord documentoRecord = new DocumentoSalidaResponseRecord(
+                                null, null, null, null, null, null, null, null, null, null, null);
                 List<DocumentoSalidaResponseRecord> listPage = Collections.singletonList(documentoRecord);
 
-                given(movimientoRepository.getBandejaSalidaPage(any(Pageable.class), any(), any(), any(), any(), any(), any(), any(), any(), any(LocalDateTime.class), any(LocalDateTime.class), anyInt(), anyInt() ))
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
-                
+                given(movimientoRepository.getBandejaSalidaPage(
+                                any(Pageable.class),
+                                any(), any(), any(),
+                                any(), any(), any(), any(), any(),
+                                any(), any(),
+                                anyInt(), anyInt()))
+                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                                                listPage.size()));
+
                 given(personaService.getAuditor())
-                                .willReturn(new Persona().setId(1L).setJuzgado(juzgado));
+                                .willReturn(new Persona().setId(1L).setJuzgado(juzgado)); // asegúrate que
+                                                                                          // juzgado.getId() no sea null
+
+                Pageable pageable = PageRequest.of(0, 10);
 
                 Page<DocumentoSalidaResponseRecord> page = documentoService.getAllBandejaSalida(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(LocalDateTime.class),
-                        any(LocalDateTime.class),
-                        any(Pageable.class));
+                                null, null, null, null, null, null,
+                                null, null,
+                                pageable);
 
                 assertThat(page.getContent())
                                 .hasSize(1)
