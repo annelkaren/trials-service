@@ -247,7 +247,7 @@ class DocumentoResourceTest {
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(
-                        get("/api/workflow/bandeja/historial2")
+                        get("/api/workflow/bandeja/historial")
                                 .param("folio", folio)
                                 .param("expediente", expediente)
                                 .param("estatus", estatus.name())
@@ -293,7 +293,7 @@ class DocumentoResourceTest {
          
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
         mockMvc.perform(
-                        get("/api/workflow/bandeja/salida2")
+                        get("/api/workflow/bandeja/salida")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
