@@ -1271,7 +1271,7 @@ class DocumentoServiceTest {
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 
                 given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class),
-                                any(Pageable.class)))
+                                any(Pageable.class), any(List.class)))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 
@@ -1314,7 +1314,7 @@ class DocumentoServiceTest {
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 
                 given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class),
-                                any(Pageable.class)))
+                                any(Pageable.class), any(List.class)))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 

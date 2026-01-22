@@ -845,7 +845,7 @@ public class DocumentoService {
                         Pageable pageable, String key, String folio, String expediente,
                         String materia, String tipoEntrada, String organoJurisdiccional,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo) {
-                                
+
                 Persona currentUser = personaService.getAuditor();
                 Integer juzgadoId = getJuzgadoId(currentUser);
                 Integer oficialiaId = getOficialiaId(currentUser);
@@ -863,7 +863,7 @@ public class DocumentoService {
                 String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
                 String keyGlobal = (cmd != null) ? "" : norm(key);
 
-                Pageable pageableWithSort = mapSortBandejaEntrada(pageable); 
+                Pageable pageableWithSort = mapSortBandejaEntrada(pageable);
 
                 return movimientoRepository.getBandejaHistorialPage(
                                 pageableWithSort,
@@ -1533,7 +1533,6 @@ public class DocumentoService {
                 return new PageImpl<>(list, pageable, page.getTotalElements());
         }
 
-
         private String getObservaciones(Carpeta carpeta, String observaciones) {
                 if (carpeta == null) {
                         return observaciones;
@@ -1856,9 +1855,13 @@ public class DocumentoService {
 
         public Page<OficioResponseRecord> getAllOficios(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
+                Persona persona = personaService.getAuditor();
+                List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
+                                : persona.getOficialia().getJuzgados();
 
                 Page<OficioResponseRecord> page = documentoRepository.findAllByTipoDocumento(key, TipoDocumento.OFICIO,
-                                pageable);
+                                pageable, juzgados);
+
                 List<OficioResponseRecord> list = page.getContent().stream()
                                 .map(item -> new OficioResponseRecord(
                                                 item.docId(),

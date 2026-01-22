@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
@@ -85,8 +86,13 @@ public class NotificacionService {
                 return Page.empty(pageable);
             }
         }
+
+        Persona personaAuth = personaService.getAuditor();
+        List<Juzgado> juzgados = personaAuth.getJuzgado() != null ? List.of(personaAuth.getJuzgado())
+                : personaAuth.getOficialia().getJuzgados();
+
         Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, estadoNotificacion,
-                pageable);
+                pageable, juzgados);
 
         List<NotificacionRecord> list = page.getContent().stream()
                 .map(notificacion -> {
@@ -304,7 +310,7 @@ public class NotificacionService {
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
-            
+
             TipoNotificacion notificacionSeleccionada = persona.getTipoNotificacion();
             EstadoNotificacion estadoNotificacion = determinarEstadoNotificacion(notificacionSeleccionada);
 
@@ -338,20 +344,19 @@ public class NotificacionService {
 
         // Guardar todos los detalles en un solo paso
         notificacionesDetallesRepository.saveAll(detalles);
- 
+
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
     }
 
     private EstadoNotificacion determinarEstadoNotificacion(TipoNotificacion tipo) {
-    return switch (tipo) {
-        case CORREO_ELECTRONICO -> EstadoNotificacion.POR_LEER;
-        case DOMICILIO -> EstadoNotificacion.POR_NOTIFICAR;
-        default -> EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
-    };
-}
-
+        return switch (tipo) {
+            case CORREO_ELECTRONICO -> EstadoNotificacion.POR_LEER;
+            case DOMICILIO -> EstadoNotificacion.POR_NOTIFICAR;
+            default -> EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+        };
+    }
 
     private void createLitigante(PersonaDocumento personaDocumento, String email) {
         Persona persona = new Persona();
@@ -364,8 +369,7 @@ public class NotificacionService {
         persona.setEstado(Estado.ACTIVE);
         persona.setRolPrincipal("LITIGANTE");
 
-        personaService.createLitigante(persona, Collections.singletonList(new RoleRecord("LITIGANTE", "LITIGANTE"))
- );
+        personaService.createLitigante(persona, Collections.singletonList(new RoleRecord("LITIGANTE", "LITIGANTE")));
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,

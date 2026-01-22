@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.notificaciones;
 
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
 import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
@@ -20,8 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOMICILIOS.sql",
@@ -81,7 +82,10 @@ class NotificacionRepositoryTest extends AuditConfigTest {
 
         TipoNotificacion tipo = TipoNotificacion.ESTRADO;
         EstadoNotificacion estado = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
-        Page<Notificacion> result = notificacionRepository.getNotificacionByTipo(tipo, estado, PageRequest.of(0, 20));
+        List<Juzgado> juzgados = List.of(JuzgadoSetUp.createJuzgado());
+
+        Page<Notificacion> result = notificacionRepository.getNotificacionByTipo(tipo, estado, PageRequest.of(0, 20),
+                juzgados);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isNotEmpty();
@@ -103,6 +107,7 @@ class NotificacionRepositoryTest extends AuditConfigTest {
         assertThat(documentoDetalleRecord.fechaResolucion()).isEqualTo("1990-10-10");
         assertThat(documentoDetalleRecord.fechaPublicacion()).isEqualTo("1990-10-10");
     }
+
     @Test
     void testCountNotificacionesByListaEstradoId() {
         Integer listaEstradoId = 1;
@@ -114,19 +119,22 @@ class NotificacionRepositoryTest extends AuditConfigTest {
     @Test
     void testFindByNotificacionDocumentoId() {
         Pageable pageable = PageRequest.of(0, 20);
-        Page<NotificacionesDetalles> result = notificacionesDetallesRepository.findByNotificacionDocumentoId(6, pageable);
+        Page<NotificacionesDetalles> result = notificacionesDetallesRepository.findByNotificacionDocumentoId(6,
+                pageable);
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isNotEmpty();
     }
 
-    @Test void testFindNotificacionesTurnado() {
+    @Test
+    void testFindNotificacionesTurnado() {
         Integer carpetaId = 1;
         List<Notificacion> notificaciones = notificacionRepository.findNotificacionesTurnado(carpetaId);
         assertThat(notificaciones)
                 .isNotNull()
                 .isNotEmpty()
-                .allMatch(notificacion ->
-                (notificacion.getTipoNotificacion() == TipoNotificacion.ESTRADO && notificacion.getEstadoNotificacion() != EstadoNotificacion.ASIGNADO)
-                        || (notificacion.getTipoNotificacion() == TipoNotificacion.DOMICILIO && notificacion.getEstadoNotificacion() != EstadoNotificacion.NOTIFICADOS));
+                .allMatch(notificacion -> (notificacion.getTipoNotificacion() == TipoNotificacion.ESTRADO
+                        && notificacion.getEstadoNotificacion() != EstadoNotificacion.ASIGNADO)
+                        || (notificacion.getTipoNotificacion() == TipoNotificacion.DOMICILIO
+                                && notificacion.getEstadoNotificacion() != EstadoNotificacion.NOTIFICADOS));
     }
 }
