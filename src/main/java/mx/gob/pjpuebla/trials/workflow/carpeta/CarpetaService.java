@@ -128,7 +128,7 @@ public class CarpetaService {
                                         .orElseThrow(() -> new NotFoundException("Carpeta no encontrada",
                                                         expediente + " - " + finalJuzgadoId));
                 }
-                               // validaciones nuevas para penal:
+                // validaciones nuevas para penal:
                 String nombreMateria = carpeta.getJuzgado().getMateria().getNombre();
                 boolean isMateriaPenalOrJusticiaPA = nombreMateria.equals("Penal")
                                 || nombreMateria.equals("Justicia para adolescentes");
@@ -160,7 +160,7 @@ public class CarpetaService {
                                                                         + persona.apellidoPaterno())
                                         .toList();
                 }
-                 return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados,
+                return new CarpetaResponseRecord(carpeta.getId(), actor, demandado, tipoJuicio, victimas, imputados,
                                 estadoJuzgado, carpeta.getEstatus().getEtiqueta());
         }
 
@@ -189,17 +189,17 @@ public class CarpetaService {
                 if (carpetaOptional.isPresent()) {
                         CarpetaResponseRecord carpetaResponse = getDataCarpeta(carpetaOptional.get());
                         return new CarpetaResponsePromSinExpediente(
-                                carpetaResponse.idCarpeta(), 
-                                carpetaResponse.actor(),
-                                carpetaResponse.demandado(),
-                                carpetaResponse.tipoJuicio(),
-                                carpetaResponse.victimas(),
-                                carpetaResponse.imputados(),
-                                carpetaResponse.estadoJuzgado(),
-                                carpetaResponse.estadoCarpeta(),
-                                Integer.valueOf(200),
-                                "carpeta encontrada");
-                
+                                        carpetaResponse.idCarpeta(),
+                                        carpetaResponse.actor(),
+                                        carpetaResponse.demandado(),
+                                        carpetaResponse.tipoJuicio(),
+                                        carpetaResponse.victimas(),
+                                        carpetaResponse.imputados(),
+                                        carpetaResponse.estadoJuzgado(),
+                                        carpetaResponse.estadoCarpeta(),
+                                        Integer.valueOf(200),
+                                        "carpeta encontrada");
+
                 } else if (carpetaOptional.isEmpty() && isApelacion == 1) {
                         return new CarpetaResponsePromSinExpediente(404,
                                         "El expediente no existe en el sistema");
@@ -620,6 +620,59 @@ public class CarpetaService {
         }
 
         public Carpeta createPieza(Integer carpetaId, PiezaRecord piezaRecord) {
+                Persona persona = personaService.getAuditor();
+
+                // Obtenemos el concepto que tiene la promoción para colocarselo a la pieza:
+                Concepto conceptoPromocion = piezaRecord.documentos().stream()
+                                .map(documentoRepository::findById)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .filter(doc -> TipoDocumento.PROMOCION.equals(doc.getTipoDocumento()))
+                                .map(Documento::getConcepto)
+                                .findFirst()
+                                .orElse(conceptoRepository.findByNombre("Nueva creación")
+                                                .orElseThrow(() -> new IllegalStateException(
+                                                                "El concepto 'Nueva creación' no se encontró en la base de datos")));
+
+                Carpeta carpetaPadre = carpetaRepository.findById(carpetaId)
+                                .orElseThrow(() -> new NotFoundException("La Carpeta no existe", "carpetaId"));
+                TipoPieza tipoPieza = tipoPiezaRepository
+                                .findByIdOrClave(piezaRecord.tipoPiezaId(), piezaRecord.clavePieza())
+                                .stream().findFirst()
+                                .orElseThrow(() -> new NotFoundException("El Tipo de Pieza no existe", "tipoPieza"));
+
+                if (piezaRecord.documentos().isEmpty()) {
+                        throw new NotFoundException("No se puede crear una pieza vacía", "documentos");
+                }
+
+                Carpeta pieza = new Carpeta();
+
+                String numeroPieza = carpetaPadre.getExpediente() + "/"
+                                + consecutivoPieza(carpetaId, tipoPieza.getClave());
+
+                pieza.setFolio(documentoRepository.getNextValPieza().toString());
+                pieza.setExpediente(numeroPieza);
+                pieza.setCarpetaPadre(carpetaPadre);
+                pieza.setFechaAsignacion(LocalDateTime.now());
+                pieza.setTipoCarpeta(TipoCarpeta.PIEZA);
+                pieza.setPersona(persona);
+                pieza.setSelloEstatus(SelloEstatus.VALIDO);
+                pieza.setEstatus(EstadoCarpeta.ASIGNADO);
+                pieza.setJuzgado(carpetaPadre.getJuzgado());
+                pieza.setTipoJuicio(carpetaPadre.getTipoJuicio());
+                pieza.setTipoPieza(tipoPieza);
+                pieza.setConcepto(conceptoPromocion);
+                pieza.setAudit(new Audit());
+
+                pieza = carpetaRepository.save(pieza);
+
+                asignarPieza(pieza, piezaRecord.documentos());
+                movimientoService.createMovimento(pieza, null, persona, "", EstadoCarpeta.ASIGNADO.name());
+                return pieza;
+
+        }
+
+        public Carpeta createPiezaMigracion(Integer carpetaId, PiezaRecord piezaRecord) {
                 Persona persona = personaService.getAuditor();
                 // Obtenemos el registro de la promoción a la cual se quiere adjuntar 'crear
                 // pieza':
