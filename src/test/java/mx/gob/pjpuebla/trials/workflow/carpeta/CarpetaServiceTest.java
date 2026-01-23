@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
-import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
@@ -199,48 +198,42 @@ class CarpetaServiceTest {
                 tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
         }
 
-@Test
-void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
-   
-    juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
-    given(juzgadoRepository.findById(anyInt()))
-        .willReturn(Optional.of(juzgado));
+        @Test
+        void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
 
-  
-    validCarpeta.setJuzgado(juzgado);
+                juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
+                given(juzgadoRepository.findById(anyInt()))
+                                .willReturn(Optional.of(juzgado));
 
-    given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
-        .willReturn(Optional.of(validCarpeta));
+                validCarpeta.setJuzgado(juzgado);
 
- 
-    // Act
-    CarpetaResponseRecord resp =
-        target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
+                given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
+                                .willReturn(Optional.of(validCarpeta));
 
-    // Assert
-    assertThat(resp)
-        .isInstanceOf(CarpetaResponseRecord.class)
-        .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
-        .hasFieldOrPropertyWithValue("actor", "")
-        .hasFieldOrPropertyWithValue("demandado", "");
-}
+                // Act
+                CarpetaResponseRecord resp = target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
 
+                // Assert
+                assertThat(resp)
+                                .isInstanceOf(CarpetaResponseRecord.class)
+                                .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
+                                .hasFieldOrPropertyWithValue("actor", "")
+                                .hasFieldOrPropertyWithValue("demandado", "");
+        }
 
-@Test
-void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
-    Integer juzgadoId = 1;
+        @Test
+        void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
+                Integer juzgadoId = 1;
 
-    given(juzgadoRepository.findById(anyInt()))
-        .willReturn(Optional.empty());
+                given(juzgadoRepository.findById(anyInt()))
+                                .willReturn(Optional.empty());
 
-    NotFoundException ex = assertThrows(
-        NotFoundException.class,
-        () -> target.getCarpetaResponseByNumExpYearJuzgado("1", juzgadoId)
-    );
+                NotFoundException ex = assertThrows(
+                                NotFoundException.class,
+                                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", juzgadoId));
 
-    assertThat(ex.getMessage()).contains("Juzgado no encontrado");
-}
-
+                assertThat(ex.getMessage()).contains("Juzgado no encontrado");
+        }
 
         @Test
         void getPersonaDocumentoById_return_carpetaId() {
@@ -824,7 +817,6 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 .setExpediente(expediente)
                                 .setCarpetaPadre(validCarpeta);
 
-                given(migracionesRepository.findByCarpetaId(anyInt())).willReturn(m);
                 given(carpetaRepository.findById(any())).willReturn(Optional.of(validCarpeta));
                 given(tipoPiezaRepository.findByIdOrClave(any(), eq("AD")))
                                 .willReturn(Collections.singletonList(tipoPieza));
@@ -834,6 +826,7 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 given(carpetaRepository.save(any())).willReturn(piezaTmp);
                 given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
                 given(conceptoRepository.findByNombre("Nueva creación")).willReturn(Optional.of(concepto));
+                given(carpetaRepository.getNumeroPieza(anyInt(), anyString())).willReturn(1);
                 piezaTmp = target.createPieza(carpetaPadreId, piezaRecord);
                 assertThat(piezaTmp).isNotNull()
                                 .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");
@@ -935,22 +928,34 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 .setCujus("Saul Perez")
                                 .setTipoJuicio(tipoJuicio);
 
+                List<LibroGobiernoRecord> records = List.of(new LibroGobiernoRecord(1, "000001/2024",
+                                LocalDateTime.now(), "Tipo Juicio", "Actor", "Demandado", true, "Saul Perez"));
+                Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(records);
+
                 given(personaService.getAuditor()).willReturn(persona);
-                given(carpetaRepository.findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"),
-                                eq(PageRequest.of(0, 10))))
-                                .willReturn(carpetaPage);
+                given(carpetaRepository.findLibroGobierno(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()))
+                                .willReturn(libroGobiernoPage);
 
-                given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
-
-                Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
+                Page<LibroGobiernoRecord> result = target.libroDeGobierno(PageRequest.of(0, 10), "000001/2024", null,
+                                null, null, null, null, null, null);
 
                 assertThat(result).isNotNull();
 
                 verify(personaService).getAuditor();
-                verify(carpetaRepository).findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"),
-                                eq(PageRequest.of(0, 10)));
-
-                verify(carpetaDetalleRepository, times(1)).findByCarpetaId(any());
+                verify(carpetaRepository).findLibroGobierno(any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any(), any(), any());
         }
 
         @Test

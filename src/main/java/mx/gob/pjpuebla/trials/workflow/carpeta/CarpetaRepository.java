@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.BandejaRecepcionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.LibroGobiernoRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +26,233 @@ import java.util.Optional;
 
 @Repository
 public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
+    String QUERY_LIBRO_GOBIERNO = """
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.LibroGobiernoRecord(
+                            c.id,
+                            c.expediente,
+                            c.audit.fechaAlta,
+                            tj.nombre,(SELECT MIN(
+                                CONCAT(
+                                  COALESCE(pd.nombre, ''), ' ',
+                                  COALESCE(pd.apellidoPaterno, ''), ' ',
+                                  COALESCE(pd.apellidoMaterno, '')
+                                )
+                              )
+                              FROM PersonaDocumento pd
+                              JOIN pd.tipoPartes tp
+                              WHERE pd.carpeta.id = c.id
+                                AND tp.nombre = 'Actor'
+                                AND pd.rol = mx.gob.pjpuebla.trials.util.enums.Rol.PRINCIPAL
+                            ),
+                            (SELECT MIN(
+                                CONCAT(
+                                  COALESCE(pd.nombre, ''), ' ',
+                                  COALESCE(pd.apellidoPaterno, ''), ' ',
+                                  COALESCE(pd.apellidoMaterno, '')
+                                )
+                              )
+                              FROM PersonaDocumento pd
+                              JOIN pd.tipoPartes tp
+                              WHERE pd.carpeta.id = c.id
+                                AND tp.nombre = 'Demandado'
+                                AND pd.rol = mx.gob.pjpuebla.trials.util.enums.Rol.PRINCIPAL
+                            ),
+
+                            CASE
+                              WHEN c.persona.id = :userId AND c.estatus = :estadoAsignado THEN true
+                              ELSE false
+                            END,
+
+                            cd.cujus
+                        )
+                        FROM Carpeta c
+                        JOIN c.tipoJuicio tj
+                        JOIN c.juzgado j
+                        LEFT JOIN CarpetaDetalle cd ON cd.carpeta.id = c.id
+                        WHERE
+
+            c.juzgado IN (:juzgados)
+                        AND (
+                          COALESCE(:expediente,'') = '' OR
+                          LOWER(c.expediente)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:expediente,'')), '%')
+                        )
+
+                      AND c.audit.fechaAlta >= COALESCE(:fechaFrom, c.audit.fechaAlta)
+                      AND c.audit.fechaAlta <= COALESCE(:fechaTo,   c.audit.fechaAlta)
+
+
+                        AND (
+                          COALESCE(:tipoJuicio,'') = '' OR
+                          LOWER(tj.nombre)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:tipoJuicio,'')), '%')
+                        )
+
+                        AND (
+                          COALESCE(:cujus,'') = '' OR
+                          LOWER(COALESCE(cd.cujus,''))
+
+            LIKE CONCAT('%', LOWER(COALESCE(:cujus,'')), '%')
+                        )
+
+                        AND (
+                          COALESCE(:actor,'') = ''
+
+            OR EXISTS (
+                            SELECT 1
+                            FROM PersonaDocumento pd
+                            JOIN pd.tipoPartes tp
+                            WHERE pd.carpeta.id = c.id
+                              AND tp.nombre = 'Actor'
+                              AND (
+                                LOWER(pd.nombre)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%') OR
+                                LOWER(pd.apellidoPaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%') OR
+                                LOWER(pd.apellidoMaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%')
+                              )
+                          )
+                        )
+
+                        AND (
+                          COALESCE(:demandado,'') = ''
+
+            OR EXISTS (
+                            SELECT 1
+                            FROM PersonaDocumento pd
+                            JOIN pd.tipoPartes tp
+                            WHERE pd.carpeta.id = c.id
+                              AND tp.nombre = 'Demandado'
+                              AND (
+                                LOWER(pd.nombre)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%') OR
+                                LOWER(pd.apellidoPaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%') OR
+                                LOWER(pd.apellidoMaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%')
+                              )
+                          )
+                        )
+
+                        AND (
+                          COALESCE(:key,'') = '' OR (
+                            LOWER(c.expediente)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+
+            OR LOWER(tj.nombre)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+
+            OR LOWER(COALESCE(cd.cujus,''))
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+
+            OR EXISTS (
+                              SELECT 1
+                              FROM PersonaDocumento pd
+                              WHERE pd.carpeta.id = c.id
+                                AND (
+                                  LOWER(pd.nombre)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+
+            OR LOWER(pd.apellidoPaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+
+            OR LOWER(pd.apellidoMaterno)
+
+            LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                                )
+                            )
+                          )
+                        )
+                    """;
+
+    public static final String COUNT_LIBRO_GOBIERNO = """
+            SELECT COUNT(c.id)
+            FROM Carpeta c
+            JOIN c.tipoJuicio tj
+            JOIN c.juzgado j
+            LEFT JOIN CarpetaDetalle cd ON cd.carpeta.id = c.id
+            WHERE c.juzgado IN (:juzgados)
+
+            AND (
+              COALESCE(:expediente,'') = '' OR
+              LOWER(c.expediente) LIKE CONCAT('%', LOWER(COALESCE(:expediente,'')), '%')
+            )
+
+            AND c.audit.fechaAlta >= COALESCE(:fechaFrom, c.audit.fechaAlta)
+            AND c.audit.fechaAlta <= COALESCE(:fechaTo,   c.audit.fechaAlta)
+
+            AND (
+              COALESCE(:tipoJuicio,'') = '' OR
+              LOWER(tj.nombre) LIKE CONCAT('%', LOWER(COALESCE(:tipoJuicio,'')), '%')
+            )
+
+            AND (
+              COALESCE(:cujus,'') = '' OR
+              LOWER(COALESCE(cd.cujus,'')) LIKE CONCAT('%', LOWER(COALESCE(:cujus,'')), '%')
+            )
+
+            AND (
+              COALESCE(:actor,'') = '' OR EXISTS (
+                SELECT 1
+                FROM PersonaDocumento pd
+                JOIN pd.tipoPartes tp
+                WHERE pd.carpeta.id = c.id
+                  AND tp.nombre = 'Actor'
+                  AND (
+                    LOWER(pd.nombre) LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%') OR
+                    LOWER(pd.apellidoPaterno) LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%') OR
+                    LOWER(pd.apellidoMaterno) LIKE CONCAT('%', LOWER(COALESCE(:actor,'')), '%')
+                  )
+              )
+            )
+
+            AND (
+              COALESCE(:demandado,'') = '' OR EXISTS (
+                SELECT 1
+                FROM PersonaDocumento pd
+                JOIN pd.tipoPartes tp
+                WHERE pd.carpeta.id = c.id
+                  AND tp.nombre = 'Demandado'
+                  AND (
+                    LOWER(pd.nombre) LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%') OR
+                    LOWER(pd.apellidoPaterno) LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%') OR
+                    LOWER(pd.apellidoMaterno) LIKE CONCAT('%', LOWER(COALESCE(:demandado,'')), '%')
+                  )
+              )
+            )
+
+            AND (
+              COALESCE(:key,'') = '' OR (
+                LOWER(c.expediente) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                OR LOWER(tj.nombre) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                OR LOWER(COALESCE(cd.cujus,'')) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                OR EXISTS (
+                  SELECT 1
+                  FROM PersonaDocumento pd
+                  WHERE pd.carpeta.id = c.id
+                    AND (
+                      LOWER(pd.nombre) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                      OR LOWER(pd.apellidoPaterno) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                      OR LOWER(pd.apellidoMaterno) LIKE CONCAT('%', LOWER(COALESCE(:key,'')), '%')
+                    )
+                )
+              )
+            )
+            """;
 
     @Query("""
             SELECT c
@@ -41,7 +269,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             AND c.juzgado.id = :juzgadoId
             """)
     Optional<Carpeta> findByExpedienteNormalizadoAndJuzgadoId(String expediente, Integer juzgadoId);
-
 
     @Query("""
             SELECT c
@@ -141,11 +368,11 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             )
             """)
     Page<Carpeta> findByJuzgado(@Param("juzgados") List<Juzgado> juzgados,
-                                @Param("key") String key,
-                                Pageable pageable);
+            @Param("key") String key,
+            Pageable pageable);
 
     Optional<Carpeta> findByExpedienteAndJuzgadoIdAndEstatus(String expediente, Integer juzgadoId,
-                                                             EstadoCarpeta estado);
+            EstadoCarpeta estado);
 
     @Query(value = """
             WITH jueces_penal AS (
@@ -220,7 +447,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             AND di.id = :distritoId
             """)
     List<LitiganteExpedientesRecord> getExpedientesByMateria(Integer materiaId, String expediente,
-                                                             Integer distritoId);
+            Integer distritoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.litigante.responselitigante.PiezaRecord(
@@ -246,7 +473,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                 WHERE m.estado = :bandeja
             """)
     List<String> findDistinctTipoEntradaByBandeja(@Param("bandeja") String bandeja);
-
 
     Optional<Carpeta> findByExpedienteAndJuzgado(String expediente, Juzgado juzgado);
 
@@ -292,6 +518,25 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
             LIMIT 1
             """, nativeQuery = true)
     LocalDateTime getDatesByTipoJuicio(List<Integer> tipoJuicios);
+
+    @Query(value = QUERY_LIBRO_GOBIERNO, countQuery = COUNT_LIBRO_GOBIERNO)
+    Page<LibroGobiernoRecord> findLibroGobierno(
+            @Param("juzgados") List<Juzgado> juzgados,
+
+            @Param("key") String key,
+            @Param("expediente") String expediente,
+
+            @Param("fechaFrom") LocalDateTime fechaFrom,
+            @Param("fechaTo") LocalDateTime fechaTo,
+
+            @Param("tipoJuicio") String tipoJuicio,
+            @Param("actor") String actor,
+            @Param("demandado") String demandado,
+            @Param("cujus") String cujus,
+
+            @Param("userId") Long userId,
+            @Param("estadoAsignado") EstadoCarpeta estadoAsignado,
+            Pageable pageable);
 
     @Query("""
                 SELECT COUNT(c)

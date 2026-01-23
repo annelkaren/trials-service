@@ -60,7 +60,10 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,6 +110,14 @@ public class CarpetaService {
         private static final String IMPUTADO_LABEL = "Imputados";
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
+
+        private static String normalizeKey(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
+
+        private String norm(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
 
         public CarpetaResponseRecord getCarpetaResponseByNumExpYearJuzgado(String expediente, Integer juzgadoId) {
                 // Usar una variable auxiliar para la modificación de juzgadoId
@@ -1084,42 +1095,79 @@ public class CarpetaService {
                                 pieza.getEstatus());
         }
 
-        public Page<LibroGobiernoRecord> libroDeGobierno(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
+        public Page<LibroGobiernoRecord> libroDeGobierno(
+                        Pageable pageable, String key, String expediente,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo, String descripcion,
+                        String actorFilter, String demandadoFilter, String cujus) {
+
+                key = normalizeKey(key);
+                expediente = norm(expediente);
+                String tipoJuicio = norm(descripcion);
+                actorFilter = norm(actorFilter);
+                demandadoFilter = norm(demandadoFilter);
+                cujus = norm(cujus);
+
                 Persona persona = personaService.getAuditor();
 
-                Page<Carpeta> carpetas;
+                List<Juzgado> juzgados = persona.getJuzgado() != null
+                                ? List.of(persona.getJuzgado())
+                                : persona.getOficialia().getJuzgados();
 
-                if (persona.getJuzgado() != null) {
-                        List<Juzgado> juzgado = Collections.singletonList(persona.getJuzgado());
-                        carpetas = carpetaRepository.findByJuzgado(juzgado, key, pageable);
-                } else {
-                        Integer oficialiaId = persona.getOficialia().getId();
-                        List<Estado> estados = List.of(Estado.ACTIVE);
-                        List<Juzgado> juzgados = juzgadoRepository.findByOficialiaIdAndEstadoIn(oficialiaId, estados);
+                juzgados = juzgados.stream()
+                                .filter(j -> j.getEstado().equals(Estado.ACTIVE))
+                                .toList();
 
-                        carpetas = carpetaRepository.findByJuzgado(juzgados, key, pageable);
+                Pageable mappedPageable = mapSortLibroGobierno(pageable);
+
+                return carpetaRepository.findLibroGobierno(
+                                juzgados,
+                                key,
+                                expediente,
+                                fechaFrom,
+                                fechaTo,
+                                tipoJuicio,
+                                actorFilter,
+                                demandadoFilter,
+                                cujus,
+                                persona.getId().longValue(),
+                                EstadoCarpeta.ASIGNADO,
+                                mappedPageable);
+        }
+
+        private Pageable mapSortLibroGobierno(Pageable pageable) {
+                if (pageable == null || pageable.isUnpaged())
+                        return Pageable.unpaged();
+
+                Sort incoming = pageable.getSort();
+                Sort mapped = Sort.unsorted();
+
+                for (Sort.Order o : incoming) {
+                        String p = o.getProperty();
+                        boolean asc = o.isAscending();
+
+                        Sort s = switch (p) {
+                                case "numExpediente", "expediente" -> JpaSort.unsafe("c.expediente");
+                                case "fechaHora" -> JpaSort.unsafe("c.audit.fechaAlta");
+                                case "tipoJuicio" -> JpaSort.unsafe("tj.nombre");
+                                case "cujus" -> JpaSort.unsafe("COALESCE(cd.cujus,'')");
+                                case "asignado" -> JpaSort.unsafe(
+                                                "CASE WHEN c.persona.id = :userId AND c.estatus = :estadoAsignado THEN 1 ELSE 0 END");
+                                default -> null;
+                        };
+
+                        if (s != null)
+                                mapped = mapped.and(asc ? s.ascending() : s.descending());
                 }
 
-                return carpetas.map(carpeta -> {
-                        String actor = getNombrePersonaByIdAndParte(carpeta.getId(), ACTOR_LABEL);
-                        String demandado = getNombrePersonaByIdAndParte(carpeta.getId(), DEMANDADO_LABEL);
-                        CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
+                // default
+                if (mapped.isUnsorted()) {
+                        mapped = JpaSort.unsafe("c.audit.fechaAlta").descending()
+                                        .and(JpaSort.unsafe("c.id").descending());
+                } else {
+                        mapped = mapped.and(JpaSort.unsafe("c.id").descending());
+                }
 
-                        return new LibroGobiernoRecord(
-                                        carpeta.getId(),
-                                        carpeta.getExpediente(),
-                                        (carpeta.getAudit() != null && carpeta.getAudit().getFechaAlta() != null)
-                                                        ? carpeta.getAudit().getFechaAlta()
-                                                        : null,
-                                        carpeta.getTipoJuicio() != null ? carpeta.getTipoJuicio().getNombre()
-                                                        : "Sin Tipo de Juicio",
-                                        actor,
-                                        demandado,
-                                        carpeta.getPersona().equals(persona)
-                                                        && carpeta.getEstatus() == EstadoCarpeta.ASIGNADO,
-                                        carpetaDetalle != null ? Objects.toString(carpetaDetalle.getCujus(), "") : "");
-                });
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
         }
 
         public SentenciaPublicaResponseRecord getCarpetaByExpedienteAndSentencia(String expediente) {

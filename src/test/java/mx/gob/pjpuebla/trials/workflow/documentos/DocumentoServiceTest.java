@@ -1269,6 +1269,9 @@ class DocumentoServiceTest {
                                 "000001/2025");
 
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
+                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("user");
+
+                given(personaService.getAuditor()).willReturn(persona);
 
                 given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class),
                                 any(Pageable.class), any(List.class)))
@@ -1296,6 +1299,10 @@ class DocumentoServiceTest {
                                 .setInstitucion(new Institucion().setNombre("institucion1"))
                                 .setEstatus(EstadoCarpeta.CREADO)
                                 .setData(new DocumentoData().setFechaEmision(LocalDate.now()));
+
+                Persona persona = new Persona().setJuzgado(juzgado).setUsuario("user");
+
+                given(personaService.getAuditor()).willReturn(persona);
 
                 OficioResponseRecord oficioResponseRecord = new OficioResponseRecord(
                                 1,

@@ -107,6 +107,10 @@ class NotificacionServiceTest {
                 notificacion.setTipoNotificacion(TipoNotificacion.ESTRADO);
                 List<Juzgado> juzgados = List.of(JuzgadoSetUp.createJuzgado());
 
+                Persona personaAuth = new Persona().setJuzgado(juzgados.get(0)).setUsuario("user");
+
+                given(personaService.getAuditor()).willReturn(personaAuth);
+
                 // Mock del repositorio
                 Page<Notificacion> notificacionPage = new PageImpl<>(List.of(notificacion), pageable, 1);
                 when(notificacionRepository.getNotificacionByTipo(
@@ -192,6 +196,10 @@ class NotificacionServiceTest {
                 // Mock del repositorio de DocumentoDetalle
                 when(documentoDetalleRepository.findByDocumentoId(1)).thenReturn(Optional.of(documentoDetalle));
 
+                Persona personaAuth = new Persona().setJuzgado(juzgados.get(0)).setUsuario("user");
+
+                given(personaService.getAuditor()).willReturn(personaAuth);
+
                 PersonaDocumento persona = new PersonaDocumento();
                 persona.setId(1)
                                 .setTipoNotificacion(TipoNotificacion.CORREO_ELECTRONICO)
@@ -250,6 +258,10 @@ class NotificacionServiceTest {
                 // Mock the Page of Notificaciones
                 Page<Notificacion> notificacionesPage = new PageImpl<>(List.of(notificacion), pageable, 1);
                 List<Juzgado> juzgados = List.of(JuzgadoSetUp.createJuzgado());
+
+                Persona personaAuth = new Persona().setJuzgado(juzgados.get(0)).setUsuario("user");
+
+                given(personaService.getAuditor()).willReturn(personaAuth);
 
                 when(notificacionRepository.getNotificacionByTipo(
                                 TipoNotificacion.ESTRADO, EstadoNotificacion.PENDIENTE_DE_ASIGNAR, pageable, juzgados))
