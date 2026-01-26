@@ -2,8 +2,6 @@ package mx.gob.pjpuebla.trials.workflow.archivojudicial;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFilter;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaHistorialRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

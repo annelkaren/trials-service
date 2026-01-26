@@ -6,7 +6,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -23,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Transactional
@@ -109,8 +106,8 @@ public class ArchivoJudicialService {
         tipoEntrada = documentoService.normUpper(tipoEntrada);
         organoJurisdiccional = documentoService.norm(organoJurisdiccional);
 
-        key = documentoService.normalizeKey(key);
-        CmdFilter cmd = documentoService.parseCmd(key);
+        key = DocumentoService.normalizeKey(key);
+        CmdFilter cmd = DocumentoService.parseCmd(key);
 
         String cmdLetra = (cmd != null) ? documentoService.normUpper(cmd.letra()) : "";
         String cmdFolio = (cmd != null) ? documentoService.norm(cmd.folio()).toLowerCase() : "";
@@ -123,19 +120,11 @@ public class ArchivoJudicialService {
                 documentoService.norm(keyGlobal), cmdLetra, cmdFolio,
                 folio, expediente, materia, tipoEntrada, organoJurisdiccional,
                 fechaFrom, fechaTo);
-
     }
-
-    private Integer getJuzgadoId(Persona currentUser) {
-        return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
-    }
-   // public Page<BandejaEntradaResponse> getHistorico(BandejaEntradaFilter filter, Pageable pageable) {
-    //    return bandejaRepository.findArchivoJudicialHistorial(pageable, List.of("ARCHIVO_JUDICIAL", "ARCHIVO_JUDICIAL_RECIBIDO", "ARCHIVO_JUDICIAL_SOLICIT"), filter);
-    //}
 
     public String recibirExpedientes(List<RecibirExpedienteRecord> list) {
         Persona auditor = personaService.getAuditor();
-        Integer counter = 0;
+        int counter = 0;
         for (RecibirExpedienteRecord record : list) {
             if (record.tipo().toUpperCase().contains("CARPETA")) {
                 Carpeta carpeta = carpetaRepository.findById(record.id()).orElse(null);
