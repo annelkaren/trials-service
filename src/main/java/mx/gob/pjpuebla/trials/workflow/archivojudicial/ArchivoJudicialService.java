@@ -6,13 +6,15 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.workflow.bandejas.BandejaRepository;
-import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaHistorialRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.CmdFilter;
+import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Transactional
@@ -29,10 +33,11 @@ import java.util.List;
 public class ArchivoJudicialService {
 
     private final DocumentoRepository documentoRepository;
-    private final BandejaRepository bandejaRepository;
     private final CarpetaRepository carpetaRepository;
     private final MovimientoService movimientoService;
+    private final MovimientoRepository movimientoRepository;
     private final PersonaService personaService;
+    private final DocumentoService documentoService;
 
     public Page<ArchivoJudicialRecord> getAll(Pageable pageable) {
         return documentoRepository.findArchivoJudicialList(pageable)
@@ -88,9 +93,45 @@ public class ArchivoJudicialService {
         return String.valueOf(Math.max(dias, 0));
     }
 
-    public Page<BandejaEntradaResponse> getHistorico(BandejaEntradaFilter filter, Pageable pageable) {
-        return bandejaRepository.findArchivoJudicialHistorial(pageable, List.of("ARCHIVO_JUDICIAL", "ARCHIVO_JUDICIAL_RECIBIDO", "ARCHIVO_JUDICIAL_SOLICIT"), filter);
+    @Transactional(readOnly = true)
+    public Page<BandejaHistorialRecord> getAllHistorial(
+            Pageable pageable, String key, String folio, String expediente,
+            String materia, String tipoEntrada, String organoJurisdiccional,
+            LocalDateTime fechaFrom, LocalDateTime fechaTo) {
+
+        Persona currentUser = personaService.getAuditor();
+        Integer juzgadoId = documentoService.getJuzgadoId(currentUser);
+        Integer oficialiaId = documentoService.getOficialiaId(currentUser);
+
+        folio = documentoService.norm(folio);
+        expediente = documentoService.norm(expediente);
+        materia = documentoService.norm(materia);
+        tipoEntrada = documentoService.normUpper(tipoEntrada);
+        organoJurisdiccional = documentoService.norm(organoJurisdiccional);
+
+        key = documentoService.normalizeKey(key);
+        CmdFilter cmd = documentoService.parseCmd(key);
+
+        String cmdLetra = (cmd != null) ? documentoService.normUpper(cmd.letra()) : "";
+        String cmdFolio = (cmd != null) ? documentoService.norm(cmd.folio()).toLowerCase() : "";
+        String keyGlobal = (cmd != null) ? "" : documentoService.norm(key);
+
+        Pageable pageableWithSort = documentoService.mapSortBandejaEntrada(pageable);
+        return movimientoRepository.getBandejaHistorialArchivoJudicial(
+                pageableWithSort,
+                oficialiaId, juzgadoId,
+                documentoService.norm(keyGlobal), cmdLetra, cmdFolio,
+                folio, expediente, materia, tipoEntrada, organoJurisdiccional,
+                fechaFrom, fechaTo);
+
     }
+
+    private Integer getJuzgadoId(Persona currentUser) {
+        return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
+    }
+   // public Page<BandejaEntradaResponse> getHistorico(BandejaEntradaFilter filter, Pageable pageable) {
+    //    return bandejaRepository.findArchivoJudicialHistorial(pageable, List.of("ARCHIVO_JUDICIAL", "ARCHIVO_JUDICIAL_RECIBIDO", "ARCHIVO_JUDICIAL_SOLICIT"), filter);
+    //}
 
     public String recibirExpedientes(List<RecibirExpedienteRecord> list) {
         Persona auditor = personaService.getAuditor();

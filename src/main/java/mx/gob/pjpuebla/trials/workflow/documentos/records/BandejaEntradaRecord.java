@@ -1,22 +1,22 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import java.time.LocalDateTime;
+
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.SelloEstatus;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
-public record DocumentoSalidaResponseRecord(
+public record BandejaEntradaRecord(
         Integer movimientoId,
-        Integer id,
+        Integer documentoId,
         String folio,
         String expediente,
-        Integer juzgadoId,
-        String organoJurisdiccional, //juzgado, se cambia nombre para mentener semantica con el front end.
         String materia,
         String tipoEntrada,
+        String organoJurisdiccional,
         LocalDateTime fechaRegistro,
         SelloEstatus selloEstatus,
-        EstadoCarpeta estatus
-) implements Serializable {
-}
+        EstadoCarpeta estatus,
+        boolean hasFile,
+        String motivoDevolucion
+
+) {}

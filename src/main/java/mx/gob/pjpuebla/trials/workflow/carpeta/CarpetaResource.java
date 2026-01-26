@@ -30,6 +30,7 @@ public class CarpetaResource {
     public ResponseEntity<CarpetaResponseRecord> getCarpetaByExpedienteAndJuzgadoId(
             @RequestParam String numExpediente,
             @RequestParam Integer year,
+            @RequestParam (required = false, name="isApelacion") Integer isApelacion,
             @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId) {
 
         CarpetaResponseRecord carpetaResponseRecord = carpetaService.getCarpetaResponseByNumExpYearJuzgado(
@@ -37,7 +38,17 @@ public class CarpetaResource {
         return ResponseEntity.ok(carpetaResponseRecord);
     }
 
-    
+    @GetMapping("/promocion-sin-expediente")
+    public ResponseEntity<CarpetaResponsePromSinExpediente> getCarpetaPromocionSinExpediente(
+            @RequestParam String numExpediente,
+            @RequestParam Integer year,
+            @RequestParam (required = false, name="isApelacion") Integer isApelacion,
+            @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId) {
+
+        CarpetaResponsePromSinExpediente carpetaResponseRecord = carpetaService.getCarpetaPromocionSinExpediente(
+                numExpediente + "/" + year, juzgadoId, isApelacion);
+        return ResponseEntity.ok(carpetaResponseRecord);
+    }
 
 
     @GetMapping(value = "/personas/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)

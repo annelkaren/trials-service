@@ -77,6 +77,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,6 +85,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -146,121 +148,242 @@ public class DocumentoService {
 
         private Persona personaAsignada = null;
 
+        // funciones para validar busqueda por QR:
+        private static final Pattern CMD = Pattern.compile("^\\s*([dapeDAPE])\\s*\\.\\s*(.+)\\s*$");
+
+        public static String normalizeKey(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
+
+        public static CmdFilter parseCmd(String key) {
+                if (key == null)
+                        return null;
+                var m = CMD.matcher(key.trim());
+                if (!m.matches())
+                        return null;
+                return new CmdFilter(m.group(1).toUpperCase(), m.group(2).trim());
+        }
+
         @Transactional(readOnly = true)
-        public Page<DocumentoGridRecord> getAll(String key, Pageable pageable, String tipoEntradaFilter) {
-                key = (key != null) ? key.toLowerCase() : "";
-                Object[] resultado = procesarTipoCarpeta(key);
-                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
-                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
-                Integer folioTemp = (Integer) resultado[2];
+        public Page<BandejaEntradaRecord> getBandejaEntrada(String key, String folio, String expediente,
+                        String materia, String tipoEntrada, String organoJurisdiccional, Pageable pageable) {
+
+                Pageable pageableWithSort = mapSortBandejaEntrada(pageable);
+
+                // Normalización columnas
+                folio = norm(folio);
+                expediente = norm(expediente);
+                materia = norm(materia);
+                tipoEntrada = normUpper(tipoEntrada);
+                organoJurisdiccional = norm(organoJurisdiccional);
+                key = normalizeKey(key);
+
+                // filtro especial "Sello"
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+
+                // cuando hay cmd, el global se apaga
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
                 Persona currentUser = personaService.getAuditor();
                 Integer juzgadoId = getJuzgadoId(currentUser);
                 Integer oficialiaId = getOficialiaId(currentUser);
 
-                TipoDocumento tipoEntradaDoc = null;
-                TipoCarpeta tipoEntradaCarp = null;
+                return movimientoRepository.getBandejaEntradaPage(
+                                pageableWithSort,
+                                juzgadoId,
+                                oficialiaId,
+                                keyGlobal,
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                materia,
+                                tipoEntrada,
+                                organoJurisdiccional);
+        }
 
-                try {
-                        tipoEntradaDoc = TipoDocumento.valueOf(tipoEntradaFilter.toUpperCase());
-                } catch (Exception e) {
-                        try {
-                                tipoEntradaCarp = TipoCarpeta.valueOf(tipoEntradaFilter.toUpperCase());
-                        } catch (Exception ignored) {
+        public Pageable mapSortBandejaEntrada(Pageable pageable) {
+                Sort original = pageable.getSort();
+
+                // ✅ fallback: fechaAsignacion desc + id desc (sin COALESCE)
+                if (original == null || original.isUnsorted()) {
+                        Sort fallback = JpaSort.unsafe("m.fechaAsignacion").descending()
+                                        .and(JpaSort.unsafe("m.id").descending());
+                        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), fallback);
+                }
+
+                List<Sort> parts = new ArrayList<>();
+
+                original.forEach(order -> {
+                        Sort.Direction dir = order.getDirection();
+                        String prop = order.getProperty();
+
+                        Sort mapped = switch (prop) {
+                                case "folio" -> JpaSort.unsafe("LOWER(COALESCE(c.folio, d.folio, cd.folio, ''))");
+                                case "expediente" -> JpaSort.unsafe("LOWER(COALESCE(c.expediente, cd.expediente, ''))");
+                                case "materia" -> JpaSort.unsafe("LOWER(COALESCE(mjc.nombre, mjcd.nombre, ''))");
+                                case "organoJurisdiccional" ->
+                                        JpaSort.unsafe("LOWER(COALESCE(jc.nombre, jcd.nombre, ''))");
+                                case "fechaRegistro", "fechaHora" ->
+                                        JpaSort.unsafe("COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta)");
+
+                                case "tipoEntrada" -> JpaSort.unsafe(
+                                                "LOWER(" +
+                                                                " (CASE " +
+                                                                "   WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION' "
+                                                                +
+                                                                "   WHEN c IS NOT NULL THEN " +
+                                                                "     (CASE c.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' " +
+                                                                "       WHEN 1 THEN 'EXHORTO' " +
+                                                                "       WHEN 2 THEN 'APELACION' " +
+                                                                "       WHEN 3 THEN 'DESPACHO' " +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' " +
+                                                                "       WHEN 5 THEN 'AMPARO' " +
+                                                                "       WHEN 6 THEN 'CARTA_ROGATORIA' " +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' "
+                                                                +
+                                                                "       WHEN 8 THEN 'OFICIO' " +
+                                                                "       WHEN 9 THEN 'PIEZA' " +
+                                                                "       ELSE '' " +
+                                                                "     END) " +
+                                                                "   ELSE " +
+                                                                "     (CASE cd.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' " +
+                                                                "       WHEN 1 THEN 'EXHORTO' " +
+                                                                "       WHEN 2 THEN 'APELACION' " +
+                                                                "       WHEN 3 THEN 'DESPACHO' " +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' " +
+                                                                "       WHEN 5 THEN 'AMPARO' " +
+                                                                "       WHEN 6 THEN 'CARTA_ROGATORIA' " +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' "
+                                                                +
+                                                                "       WHEN 8 THEN 'OFICIO' " +
+                                                                "       WHEN 9 THEN 'PIEZA' " +
+                                                                "       ELSE '' " +
+                                                                "     END) " +
+                                                                " END) " +
+                                                                ")");
+
+                                default -> null;
+                        };
+
+                        if (mapped != null) {
+                                parts.add(dir.isAscending() ? mapped.ascending() : mapped.descending());
+                        }
+                });
+
+                Sort finalSort = parts.isEmpty()
+                                ? JpaSort.unsafe("m.fechaAsignacion").descending()
+                                                .and(JpaSort.unsafe("m.id").descending())
+                                : parts.stream().reduce(Sort::and).orElse(Sort.unsorted());
+
+                // ✅ desempate estable
+                finalSort = finalSort.and(JpaSort.unsafe("m.id").descending());
+
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
+        }
+
+        private Pageable translateBandejaSalidaPageable(Pageable pageable) {
+                if (pageable == null || pageable.isUnpaged())
+                        return Pageable.unpaged();
+
+                Sort incoming = pageable.getSort();
+                Sort mapped = Sort.unsorted();
+
+                for (Sort.Order o : incoming) {
+                        String p = o.getProperty();
+                        boolean asc = o.isAscending();
+
+                        Sort s = switch (p) {
+                                case "folio" -> JpaSort.unsafe("COALESCE(c.folio, doc.folio, '')");
+                                case "expediente" ->
+                                        JpaSort.unsafe("COALESCE(c.expediente, doc_carpeta.expediente, '')");
+                                case "materia" -> JpaSort.unsafe("COALESCE(matc.nombre, matd.nombre, '')");
+                                case "organoJurisdiccional", "juzgado" ->
+                                        JpaSort.unsafe("COALESCE(jc.nombre, jd.nombre, '')");
+                                case "fechaRegistro" ->
+                                        JpaSort.unsafe("COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta)");
+                                case "estatus" -> JpaSort.unsafe("COALESCE(c.estatus, doc_carpeta.estatus)");
+                                case "selloEstatus" ->
+                                        JpaSort.unsafe("COALESCE(c.selloEstatus, doc_carpeta.selloEstatus)");
+
+                                case "tipoEntrada" -> JpaSort.unsafe(
+                                                "LOWER(" +
+                                                                " (CASE " +
+                                                                "   WHEN doc IS NOT NULL AND doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION' "
+                                                                +
+                                                                "   WHEN c IS NOT NULL THEN " +
+                                                                "     (CASE c.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION' WHEN 3 THEN 'DESPACHO' "
+                                                                +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO' WHEN 6 THEN 'CARTA_ROGATORIA' "
+                                                                +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' "
+                                                                +
+                                                                "       ELSE '' END) " +
+                                                                "   ELSE " +
+                                                                "     (CASE doc_carpeta.tipoCarpeta " +
+                                                                "       WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION' WHEN 3 THEN 'DESPACHO' "
+                                                                +
+                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO' WHEN 6 THEN 'CARTA_ROGATORIA' "
+                                                                +
+                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' "
+                                                                +
+                                                                "       ELSE '' END) " +
+                                                                " END)" +
+                                                                ")");
+
+                                default -> null; // ignora propiedades desconocidas
+                        };
+
+                        if (s != null) {
+                                mapped = mapped.and(asc ? s.ascending() : s.descending());
                         }
                 }
 
-                Page<Movimiento> page = movimientoService.getAllBandejaEntrada(
-                                pageable,
-                                juzgadoId,
-                                oficialiaId,
-                                key,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                folioTemp,
-                                tipoEntradaDoc,
-                                tipoEntradaCarp);
+                // ✅ default: fechaRegistro desc + m.id desc (estable)
+                if (mapped.isUnsorted()) {
+                        mapped = JpaSort.unsafe("COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta)").descending()
+                                        .and(JpaSort.unsafe("m.id").descending());
+                } else {
+                        mapped = mapped.and(JpaSort.unsafe("m.id").descending());
+                }
 
-                List<DocumentoGridRecord> list = page.getContent()
-                                .stream()
-                                .map(movimiento -> {
-                                        Carpeta carpeta = movimiento.getCarpeta();
-                                        Documento documento = movimiento.getDocumento();
-
-                                        String folio;
-                                        String estaEnJuzgado = estadoExpedienteBandejaHistorial(movimiento.getEstado());
-                                        String materia;
-                                        String tipoEntrada;
-
-                                        if (carpeta == null) {
-                                                carpeta = documento.getCarpeta();
-                                        }
-
-                                        if (documento == null) {
-                                                documento = getDocumentoWhenIsNull(carpeta);
-                                        }
-
-                                        TipoDocumento tipoDocumento = documento.getTipoDocumento();
-                                        folio = getFolioBandejas(carpeta, documento);
-                                        materia = getMateriaExpediente(carpeta);
-                                        tipoEntrada = getTipoEntrada(carpeta, documento);
-
-                                        EstadoCarpeta estadoCarpeta = (tipoDocumento != null) ? documento.getEstatus()
-                                                        : carpeta.getEstatus();
-
-                                        return new DocumentoGridRecord(
-                                                        documento.getId(),
-                                                        folio,
-                                                        carpeta.getExpediente(),
-                                                        materia,
-                                                        tipoEntrada,
-                                                        documento.getAudit().getFechaAlta(),
-                                                        carpeta.getSelloEstatus(),
-                                                        estadoCarpeta,
-                                                        documento.getRuta() != null,
-                                                        documento.getCarpeta().getJuzgado().getNombre(),
-                                                        estaEnJuzgado,
-                                                        movimiento.getMotivo());
-                                }).toList();
-
-                return new PageImpl<>(list, pageable, list.size());
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
         }
 
         @Transactional(readOnly = true)
-        public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
-                Object[] resultado = procesarTipoCarpeta(key);
-                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
-                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
-                Integer folio = (Integer) resultado[2];
+        public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(String key, String folio, String expediente,
+                        String materia, String tipoEntrada, String organoJurisdiccional, LocalDateTime fechaFrom,
+                        LocalDateTime fechaTo, Pageable pageable) {
+
+                folio = norm(folio);
+                expediente = norm(expediente);
+                materia = norm(materia);
+                tipoEntrada = normUpper(tipoEntrada);
+                organoJurisdiccional = norm(organoJurisdiccional);
+                key = normalizeKey(key);
+
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
                 Persona persona = personaService.getAuditor();
-                Page<DocumentoSalidaRecord> page = documentoRepository.findByEstatusSalida(
-                                key,
-                                (persona.getOficialia() != null) ? persona.getOficialia().getId() : null,
-                                (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null,
-                                folio,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                pageable);
-                List<DocumentoSalidaResponseRecord> list = page.getContent().stream()
-                                .map(item -> new DocumentoSalidaResponseRecord(
-                                                item.movid(),
-                                                item.id(),
-                                                item.folio(),
-                                                item.expediente(),
-                                                item.juzgadoId(),
-                                                item.juzgado(),
-                                                item.materia(),
-                                                ((item.tipoCarpeta() != null) ? item.tipoCarpeta().name()
-                                                                : ((item.tipoDocumento() != null)
-                                                                                ? item.tipoDocumento().name()
-                                                                                : null)),
-                                                item.fechaRegistro(),
-                                                item.selloEstatus(),
-                                                item.estatus()))
-                                .toList();
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                Integer oficialiaId = (persona.getOficialia() != null) ? persona.getOficialia().getId() : -1;
+                Integer juzgadoId = (persona.getJuzgado() != null) ? persona.getJuzgado().getId() : -1;
+
+                Pageable pageableWithSort = translateBandejaSalidaPageable(pageable);
+
+                return movimientoRepository.getBandejaSalidaPage(
+                                pageableWithSort,
+                                norm(keyGlobal), cmdLetra, cmdFolio,
+                                folio, expediente, materia, tipoEntrada, organoJurisdiccional,
+                                fechaFrom, fechaTo,
+                                oficialiaId, juzgadoId);
         }
 
         public DocumentoRecord updateStatus(Integer id, Integer status) {
@@ -714,96 +837,44 @@ public class DocumentoService {
                 return numExpedienteExhorto;
         }
 
-        public Page<DocumentoGridRecord> getAllHistorial(String key, Pageable pageable) {
-
-                // Obtenemos variables para la consulta al repository:
+        @Transactional(readOnly = true)
+        public Page<BandejaHistorialRecord> getAllHistorial(
+                        Pageable pageable, String key, String folio, String expediente,
+                        String materia, String tipoEntrada, String organoJurisdiccional,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo) {
+                                
                 Persona currentUser = personaService.getAuditor();
                 Integer juzgadoId = getJuzgadoId(currentUser);
                 Integer oficialiaId = getOficialiaId(currentUser);
-                key = (key != null) ? key.toLowerCase() : "";
-                Page<Movimiento> page = movimientoRepository.getAllBandejaHistorial(key, juzgadoId, oficialiaId,
-                                pageable);
 
-                // Mapeamos resultado de la connsulta
-                List<DocumentoGridRecord> listaDocumentoRecords = page.getContent().stream()
-                                .map(movimiento -> {
+                folio = norm(folio);
+                expediente = norm(expediente);
+                materia = norm(materia);
+                tipoEntrada = normUpper(tipoEntrada);
+                organoJurisdiccional = norm(organoJurisdiccional);
 
-                                        Carpeta carpeta = movimiento.getCarpeta();
-                                        Documento documento = movimiento.getDocumento();
-                                        String folio;
-                                        String estaEnJuzgado = estadoExpedienteBandejaHistorial(movimiento.getEstado());
-                                        String materia;
-                                        String tipoEntrada;
+                key = normalizeKey(key);
+                CmdFilter cmd = parseCmd(key);
 
-                                        if (carpeta == null) {
-                                                carpeta = documento.getCarpeta();
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : norm(key);
 
-                                        }
+                Pageable pageableWithSort = mapSortBandejaEntrada(pageable); 
 
-                                        if (documento == null) {
-                                                documento = getDocumentoWhenIsNull(carpeta);
-                                        }
-
-                                        materia = getMateriaExpediente(carpeta);
-                                        tipoEntrada = getTipoEntrada(carpeta, documento);
-                                        folio = getFolioBandejas(carpeta, documento);
-
-                                        return new DocumentoGridRecord(
-                                                        documento.getId(),
-                                                        folio,
-                                                        carpeta.getExpediente(),
-                                                        materia,
-                                                        tipoEntrada,
-                                                        movimiento.getFechaAsignacion(),
-                                                        null,
-                                                        EstadoCarpeta.valueOf(movimiento.getEstado()),
-                                                        false,
-                                                        "",
-                                                        estaEnJuzgado,
-                                                        movimiento.getMotivo());
-                                }).toList();
-
-                return new PageImpl<>(listaDocumentoRecords, pageable, page.getTotalElements());
+                return movimientoRepository.getBandejaHistorialPage(
+                                pageableWithSort,
+                                oficialiaId, juzgadoId,
+                                norm(keyGlobal), cmdLetra, cmdFolio,
+                                folio, expediente, materia, tipoEntrada, organoJurisdiccional,
+                                fechaFrom, fechaTo);
         }
 
-        private Documento getDocumentoWhenIsNull(Carpeta carpeta) {
-                TipoDocumento tipoDocumento = switch (carpeta.getTipoCarpeta()) {
-                        case DEMANDA -> null;
-                        case EXHORTO -> TipoDocumento.EXHORTO;
-                        case APELACION -> TipoDocumento.APELACION;
-                        case PIEZA -> TipoDocumento.PROMOCION;
-                        default -> throw new IllegalArgumentException(
-                                        "TipoCarpeta no reconocido: " + carpeta.getTipoCarpeta());
-                };
-
-                return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
-        }
-
-        private String estadoExpedienteBandejaHistorial(String estado) {
-                return !(estado.equals("CAPTURA") ||
-                                estado.equals("SALIDA") ||
-                                estado.equals("DEVUELTO_A_OFICIALIA")) ? "En juzgado" : "";
-        }
-
-        private String getTipoEntrada(Carpeta carpeta, Documento documento) {
-                return (documento.getTipoDocumento() != null)
-                                ? StringUtils.capitalize(documento.getTipoDocumento().name().toLowerCase())
-                                : StringUtils.capitalize(carpeta.getTipoCarpeta().name().toLowerCase());
-        }
-
-        private String getMateriaExpediente(Carpeta carpeta) {
-                return StringUtils.capitalize(carpeta.getJuzgado().getMateria().getNombre().toLowerCase());
-        }
-
-        private String getFolioBandejas(Carpeta carpeta, Documento documento) {
-                return carpeta != null ? carpeta.getFolio() : documento.getFolio();
-        }
-
-        private Integer getJuzgadoId(Persona currentUser) {
+        public Integer getJuzgadoId(Persona currentUser) {
                 return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
         }
 
-        private Integer getOficialiaId(Persona currentUser) {
+        public Integer getOficialiaId(Persona currentUser) {
                 return (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
         }
 
@@ -1004,181 +1075,257 @@ public class DocumentoService {
                                 documento.getCarpeta().getTipoCarpeta());
         }
 
-        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key, Pageable pageable,
-                        String tipoEntradaFilter) {
+        public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(String key,
+                        String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo, Pageable pageable) {
 
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona currentUser = personaService.getAuditor();
-                Object[] resultado = procesarTipoCarpeta(key);
-                TipoCarpeta tipoCarpetaNombre = (TipoCarpeta) resultado[0];
-                TipoDocumento tipoDocumentoNombre = (TipoDocumento) resultado[1];
-                Integer folioTemp = (Integer) resultado[2];
 
-                // Filtro:
-                TipoDocumento tipoEntradaDoc = null;
-                TipoCarpeta tipoEntradaCarp = null;
-                try {
-                        tipoEntradaDoc = TipoDocumento.valueOf(tipoEntradaFilter.toUpperCase());
-                } catch (Exception e) {
-                        try {
-                                tipoEntradaCarp = TipoCarpeta.valueOf(tipoEntradaFilter.toUpperCase());
-                        } catch (Exception ignored) {
+                if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
+                        return renderOficialMayorData(key, pageable, currentUser,
+                                        folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
+                }
+                return renderData(key, pageable, currentUser,
+                                folio, expediente, tipoEntrada, origen, motivoTurnado, fechaFrom, fechaTo);
+        }
+
+        private Pageable translateBandejaRecepcionPageable(Pageable pageable) {
+
+                // Default si no viene sort
+                if (pageable.getSort() == null || pageable.getSort().isUnsorted()) {
+                        return PageRequest.of(
+                                        pageable.getPageNumber(),
+                                        pageable.getPageSize(),
+                                        JpaSort.unsafe(Sort.Direction.DESC, "m.fechaAsignacion"));
+                }
+
+                Sort translated = Sort.unsorted();
+
+                for (Sort.Order order : pageable.getSort()) {
+                        Sort part = mapBandejaRecepcionSort(order);
+                        if (part != null) {
+                                translated = translated.and(part);
                         }
                 }
 
-                if (roleService.hasRole(currentUser.getUsuario(), "OFICIAL_MAYOR_JUZGADO")) {
-                        return renderOficialMayorData(key, pageable, currentUser, tipoCarpetaNombre,
-                                        tipoDocumentoNombre, folioTemp, tipoEntradaDoc, tipoEntradaCarp);
+                // Si mandaron puras columnas no permitidas -> default
+                if (translated.isUnsorted()) {
+                        translated = JpaSort.unsafe(Sort.Direction.DESC, "m.fechaAsignacion");
                 }
-                return renderData(key, pageable, currentUser, tipoCarpetaNombre, tipoDocumentoNombre, folioTemp,
-                                tipoEntradaDoc, tipoEntradaCarp);
+
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), translated);
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderData(String key, Pageable pageable, Persona currentUser,
-                        TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre, Integer folioTemp,
-                        TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
-                Page<Movimiento> page = movimientoService.getBandejaRecepcion(
-                                pageable,
-                                currentUser.getJuzgado().getId(),
-                                EstadoCarpeta.TURNADO,
-                                key,
-                                EstadoCarpeta.TURNADO.name(),
+        private Sort mapBandejaRecepcionSort(Sort.Order order) {
+                String prop = order.getProperty();
+                Sort.Direction dir = order.getDirection();
+
+                return switch (prop) {
+
+                        // ✅ folio (puede venir de c, cd o d)
+                        case "folio" -> JpaSort.unsafe(dir,
+                                        "coalesce(c.folio, cd.folio, d.folio)");
+
+                        // ✅ expediente (c o cd)
+                        case "expediente" -> JpaSort.unsafe(dir,
+                                        "coalesce(c.expediente, cd.expediente)");
+
+                        // ✅ fechaHoraEnvio (en el record) = m.fechaAsignacion
+                        case "fechaHoraEnvio", "fechaHoraTurnado" -> JpaSort.unsafe(dir,
+                                        "m.fechaAsignacion");
+
+                        // ✅ origen (si tu record usa PERSONA como origen)
+                        // Mejor ordenar por apellidos/nombre en vez del concat.
+                        case "origen" -> JpaSort.unsafe(dir,
+                                        "coalesce(p.apellidoPaterno, '') , coalesce(p.apellidoMaterno, '') , coalesce(p.nombre, '')");
+
+                        // ✅ concepto (promo -> d.concepto.nombre, else c.concepto.nombre o
+                        // cd.concepto.nombre)
+                        case "concepto", "motivoTurnado" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) then d.concepto.nombre "
+                                                        +
+                                                        " when (c is not null) then c.concepto.nombre " +
+                                                        " else cd.concepto.nombre " +
+                                                        "end");
+
+                        // ✅ tipoEntrada (v1: PROMOCION vs tipoCarpeta)
+                        // Nota: tu query para tipoEntrada lo construye con:
+                        // promo -> 'PROMOCION'
+                        // else -> concat(tipoCarpeta,'')
+                        case "tipoEntrada" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) then 'PROMOCION' "
+                                                        +
+                                                        " when (c is not null) then cast(c.tipoCarpeta as string) " +
+                                                        " else cast(cd.tipoCarpeta as string) " +
+                                                        "end");
+
+                        // ✅ tipoPromocion (JSONB)
+                        case "tipoPromocion" -> JpaSort.unsafe(dir,
+                                        "case " +
+                                                        " when (d is not null and d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION) "
+                                                        +
+                                                        " then function('jsonb_extract_path_text', d.data, 'tipoPromocion') "
+                                                        +
+                                                        " else '' " +
+                                                        "end");
+
+                        // ❌ no permitido -> ignora
+                        default -> null;
+                };
+        }
+
+        private Page<DocumentoBandejaRecepcionRecord> renderData(
+                        String key, Pageable pageable, Persona currentUser,
+                        String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo) {
+
+                folio = norm(folio);
+                expediente = norm(expediente);
+                tipoEntrada = normUpper(tipoEntrada);
+                origen = norm(origen);
+                motivoTurnado = norm(motivoTurnado);
+
+                key = normalizeKey(key);
+
+                CmdFilter cmd = parseCmd(key);
+                String cmdLetra = (cmd != null) ? normUpper(cmd.letra()) : "";
+                String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : norm(key);
+
+                Integer juzgadoId = currentUser.getJuzgado().getId();
+
+                // normal
+                List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO);
+                boolean isOficialMayor = false;
+
+                // normal usa motivoSingle + destino obligatorio
+                String motivoSingle = EstadoCarpeta.TURNADO.name();
+                List<String> motivosList = List.of(); // dummy, no se usa en normal
+
+                // en normal isInterno siempre true como en tu query actual
+                String userJuzgadoNombre = null;
+                String userOficialiaNombre = null;
+
+                Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
+                                ? Pageable.unpaged()
+                                : translateBandejaRecepcionPageable(pageable);
+
+                return movimientoRepository.getBandejaRecepcionPage(
+                                pageableWithFilter,
+                                juzgadoId,
+                                estados,
                                 currentUser,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                folioTemp,
-                                tipoEntradaDoc,
-                                tipoEntradaCarp);
-
-                List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
-                                .map(movimiento -> {
-                                        Carpeta carpeta = movimiento.getCarpeta();
-
-                                        String tipoEntrada = etiquetaService.renderEtiquetaRecepcion("nuevoNombre",
-                                                        carpeta);
-
-                                        String origen = movimiento.getPersona().getNombre() + " "
-                                                        + movimiento.getPersona().getApellidoPaterno() + " "
-                                                        + ((movimiento.getPersona().getApellidoMaterno() != null)
-                                                                        ? movimiento.getPersona().getApellidoMaterno()
-                                                                        : "");
-
-                                        return new DocumentoBandejaRecepcionRecord(
-                                                        carpeta.getId(),
-                                                        null,
-                                                        carpeta.getFolio(),
-                                                        carpeta.getExpediente(),
-                                                        tipoEntrada.replace("Promocion", "Promoción"),
-                                                        origen,
-                                                        carpeta.getConcepto().getNombre(),
-                                                        movimiento.getFechaAsignacion(),
-                                                        true,
-                                                        carpeta.getPrioridad(),
-                                                        carpeta.getHoras(),
-                                                        carpeta.getConcepto().getId(),
-                                                        null);
-                                })
-                                .toList();
-
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                                isOficialMayor,
+                                motivoSingle,
+                                motivosList,
+                                norm(keyGlobal),
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                tipoEntrada,
+                                origen,
+                                motivoTurnado,
+                                fechaFrom,
+                                fechaTo,
+                                userJuzgadoNombre,
+                                userOficialiaNombre);
         }
 
-        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(String key, Pageable pageable,
-                        Persona currentUser, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
-                        Integer folioTemp, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+        // metodos de filtros:
+        public String norm(String s) {
+                return (s == null) ? null : s.trim().toLowerCase();
+        }
 
-                Page<Movimiento> page = movimientoService.getAllBandejaRecepcion(
-                                pageable,
-                                currentUser.getJuzgado().getId(),
-                                List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION),
-                                key,
-                                List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name()),
+        public String normUpper(String s) {
+                return (s == null) ? null : s.trim().toUpperCase();
+        }
+
+        private Page<DocumentoBandejaRecepcionRecord> renderOficialMayorData(
+                        String key, Pageable pageable, Persona currentUser,
+                        String folio, String expediente, String tipoEntrada, String origen, String motivoTurnado,
+                        LocalDateTime fechaFrom, LocalDateTime fechaTo) {
+
+                folio = norm(folio);
+                expediente = norm(expediente);
+                tipoEntrada = normUpper(tipoEntrada);
+                origen = norm(origen);
+                motivoTurnado = norm(motivoTurnado);
+
+                key = normalizeKey(key);
+                CmdFilter cmd = parseCmd(key);
+
+                String cmdLetra = (cmd != null) ? cmd.letra().toUpperCase() : "";
+                String cmdFolio = (cmd != null) ? cmd.folio().toLowerCase() : "";
+                String keyGlobal = (cmd != null) ? "" : normalizeKey(key);
+
+                Integer juzgadoId = currentUser.getJuzgado().getId();
+                List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
+                List<String> motivos = List.of(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
+
+                String userJuzgadoNombre = currentUser.getJuzgado() != null
+                                ? currentUser.getJuzgado().getNombre().toLowerCase()
+                                : null;
+
+                String userOficialiaNombre = currentUser.getOficialia() != null
+                                ? currentUser.getOficialia().getNombre().toLowerCase()
+                                : null;
+
+                boolean isOficialMayor = true;
+
+                // dummy en oficial mayor (no se usa)
+                String motivoSingle = "";
+
+                Pageable p = (pageable == null || pageable.isUnpaged())
+                                ? Pageable.unpaged()
+                                : translateBandejaRecepcionPageable(pageable);
+
+                return movimientoRepository.getBandejaRecepcionPage(
+                                p,
+                                juzgadoId,
+                                estados,
                                 currentUser,
-                                tipoCarpetaNombre,
-                                tipoDocumentoNombre,
-                                folioTemp,
-                                tipoEntradaDoc,
-                                tipoEntradaCarp);
-
-                List<DocumentoBandejaRecepcionRecord> list = page.getContent().stream()
-                                .map(movimiento -> {
-                                        Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta()
-                                                        : movimiento.getDocumento().getCarpeta();
-
-                                        Map<String, Object> map = getOrigen(movimiento, currentUser);
-                                        Documento documento = getDocumentoForRenderOficialMayor(movimiento, carpeta);
-
-                                        boolean isPromocion = documento != null && documento.getTipoDocumento() != null
-                                                        && documento.getTipoDocumento().equals(TipoDocumento.PROMOCION);
-
-                                        String folio;
-                                        String tipoEntrada;
-                                        String concepto;
-                                        String expediente;
-                                        Integer carpetaId;
-                                        Integer documentoId = documento != null ? documento.getId() : null;
-                                        Integer conceptoId;
-                                        String tipoPromocion = "";
-
-                                        // Si documento no es null, se obtienen los valores correspondientes
-                                        if (documento != null && isPromocion) {
-                                                folio = documento.getFolio();
-                                                tipoEntrada = documento.getTipoDocumento().name();
-                                                concepto = documento.getConcepto().getNombre();
-                                                conceptoId = documento.getConcepto().getId();
-                                                expediente = documento.getCarpeta().getExpediente();
-                                                carpetaId = documento.getCarpeta().getId();
-                                                tipoPromocion = documento.getData().getTipoPromocion().name();
-                                        } else {
-                                                // Si documento es null, se toman los valores de carpeta
-
-                                                folio = carpeta.getFolio();
-                                                tipoEntrada = carpeta.getTipoCarpeta().getEtiqueta();
-                                                concepto = carpeta.getConcepto().getNombre();
-                                                conceptoId = carpeta.getConcepto().getId();
-                                                expediente = carpeta.getExpediente();
-                                                carpetaId = carpeta.getId();
-                                        }
-
-                                        return new DocumentoBandejaRecepcionRecord(
-                                                        carpetaId,
-                                                        documentoId,
-                                                        folio,
-                                                        expediente,
-                                                        StringUtils.capitalize(tipoEntrada.toLowerCase()),
-                                                        map.get("name").toString(),
-                                                        concepto,
-                                                        movimiento.getFechaAsignacion(),
-                                                        (Boolean) map.get(IS_INTERNO),
-                                                        null,
-                                                        null,
-                                                        conceptoId,
-                                                        tipoPromocion);
-
-                                })
-                                .toList();
-
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                                isOficialMayor,
+                                motivoSingle,
+                                motivos,
+                                norm(keyGlobal),
+                                cmdLetra,
+                                cmdFolio,
+                                folio,
+                                expediente,
+                                tipoEntrada,
+                                origen,
+                                motivoTurnado,
+                                fechaFrom,
+                                fechaTo,
+                                userJuzgadoNombre,
+                                userOficialiaNombre);
         }
 
-        protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento, Carpeta carpeta) {
+        protected Documento getDocumentoForRenderOficialMayor(Movimiento movimiento) {
 
                 if (movimiento.getDocumento() != null) {
                         return movimiento.getDocumento();
                 }
 
-                if (carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
+                Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta() : null;
+
+                if (carpeta != null && carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
                         return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
                 }
                 try {
-                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(carpeta.getTipoCarpeta().name());
-                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpeta.getId(), tipoDocumento);
+                        String tipoCarpeta = carpeta != null ? carpeta.getTipoCarpeta().name() : "";
+                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(tipoCarpeta);
+                        Integer carpetaId = carpeta != null ? carpeta.getId() : null;
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpetaId, tipoDocumento);
 
                 } catch (Exception e) {
                         log.error("Error: ", e);
                         return new Documento().setId(0);
                 }
-
         }
 
         protected Map<String, Object> getOrigen(Movimiento movimiento, Persona persona) {
@@ -1383,12 +1530,6 @@ public class DocumentoService {
                 return new PageImpl<>(list, pageable, page.getTotalElements());
         }
 
-        private LocalDateTime getFechaTermino(Movimiento movimiento, Documento documento, Carpeta carpeta) {
-                Concepto concepto = (documento != null) ? documento.getConcepto() : carpeta.getConcepto();
-                int aumentoDeDias = (concepto != null) ? concepto.getDias() : 0;
-
-                return movimiento.getFechaAsignacion().plusDays(aumentoDeDias);
-        }
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
                 if (carpeta == null) {
@@ -1583,7 +1724,8 @@ public class DocumentoService {
                 Integer totalRecibidosAyer = 0;
                 Integer totalOldies = 0;
 
-                Page<DocumentoBandejaRecepcionRecord> page = getAllBandejaRecepcion("", Pageable.unpaged(), "Todas");
+                Page<DocumentoBandejaRecepcionRecord> page = getAllBandejaRecepcion("", null, null, null, null, null,
+                                null, null, Pageable.unpaged());
 
                 totalPendientes = page.getSize();
 
@@ -1614,17 +1756,11 @@ public class DocumentoService {
                                                 .distinct()
                                                 .toList();
                         }
-                        case "ENTRADA" -> {
-                                Page<DocumentoGridRecord> page = getAll(null, Pageable.unpaged(), "Todas");
-                                yield page.getContent().stream()
-                                                .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
-                                                                item.tipoEntrada()))
-                                                .distinct()
-                                                .toList();
-                        }
+
                         case "RECEPCION" -> {
                                 Page<DocumentoBandejaRecepcionRecord> page;
-                                page = getAllBandejaRecepcion(null, Pageable.unpaged(), "Todas");
+                                page = getAllBandejaRecepcion("", null, null, null, null, null, null, null,
+                                                Pageable.unpaged());
                                 yield page.getContent().stream()
                                                 .map(item -> new CarpetaCatalogoRecord(item.tipoEntrada(),
                                                                 item.tipoEntrada()))
@@ -1671,12 +1807,14 @@ public class DocumentoService {
                 return folio;
         }
 
-        public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer id) {
+        public DocumentoRecepcionRecord getDataDocumentoRecepcion(Integer movimientoId) {
+                // Buscamos el movimiento para obtenr su documento:
+                Movimiento movimiento = movimientoRepository.findById(movimientoId)
+                                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
+                                                movimientoId.toString()));
+                Documento doc = getDocumentoForRenderOficialMayor(movimiento);
 
-                Documento doc = documentoRepository.findById(id)
-                                .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, DOC_ID + id));
-
-                List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(id);
+                List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(doc.getId());
                 addAnexoExtra(anexosActuales, doc);
                 String origen = (String) movimientoService.getOrigen(
                                 (doc.getTipoDocumento() != null) ? doc.getId() : null,

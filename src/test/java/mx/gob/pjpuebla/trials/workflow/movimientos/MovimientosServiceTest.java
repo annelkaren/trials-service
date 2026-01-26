@@ -30,9 +30,7 @@ import static org.mockito.Mockito.verify;
 
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+
 
 import java.util.*;
 import java.time.LocalDateTime;
@@ -102,23 +100,6 @@ class MovimientosServiceTest {
         assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
     }
 
-    @Test
-    void getAllBandejaRecepcion(){
-        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1)).setFolio("1");
-        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
-        List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
-        List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
-        Persona persona = PersonaSetUp.createPersona();
-        given(movimientoRepository.getAllBandejaRecepcion(
-                PageRequest.of(0, 1),
-                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3, null, TipoCarpeta.DEMANDA))
-                .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
-
-
-        Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3, null, TipoCarpeta.DEMANDA);
-        assertThat(result.getSize()).isPositive();
-    }
 
     @Test
     void testCreateMotivoWithoutPromocion() {

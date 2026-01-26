@@ -33,8 +33,13 @@ public class TipoJuicioResource {
     ) {
 
         return tipoJuicioService.getAllActiveByCentroTrabajo(pageable);
-
     }
+
+    @GetMapping("/all")
+    public List<TipoJuicioRecord> obtenerTodosSinPaginacion() {
+        return tipoJuicioService.getAll();
+    }
+    
 
     @GetMapping(value = "/oralidad", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TipoJuicioDemandasRecord> getTiposJuiciosOralidad() {

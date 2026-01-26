@@ -231,14 +231,23 @@ class DocumentoResourceTest {
         String tipoEntrada = "DEMANDA";
         String materiaNombre = "MERCANTIL";
 
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "", "");
+        BandejaHistorialRecord documentoGridRecord = new BandejaHistorialRecord(null, folio, expediente, materiaNombre, tipoEntrada, null, estatus, tipoEntrada, materiaNombre);
 
-        given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
+        given(documentoService.getAllHistorial(
+                        any(Pageable.class),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class)
+        ))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(
-                        get("/api/workflow/bandeja/historial2")
+                        get("/api/workflow/bandeja/historial")
                                 .param("folio", folio)
                                 .param("expediente", expediente)
                                 .param("estatus", estatus.name())
@@ -279,10 +288,12 @@ class DocumentoResourceTest {
                 SelloEstatus.VALIDO,
                 EstadoCarpeta.TURNADO);
 
-        given(documentoService.getAllBandejaSalida(any(String.class), any(PageRequest.class)))
+        given(documentoService.getAllBandejaSalida(anyString(),anyString(), anyString(), anyString(), anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class), 
+         any(PageRequest.class)))
+         
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
         mockMvc.perform(
-                        get("/api/workflow/bandeja/salida2")
+                        get("/api/workflow/bandeja/salida")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

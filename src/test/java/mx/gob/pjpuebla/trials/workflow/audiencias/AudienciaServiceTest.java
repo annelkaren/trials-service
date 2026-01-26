@@ -209,7 +209,8 @@ class AudienciaServiceTest {
 
         Carpeta carpeta = new Carpeta().setExpediente("000001/2024").setTipoJuicio(TipoJuicioSetUp.createTipoJuicio());
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(), sala, null, tipoAudiencia, carpeta);
-
+        audiencia.setInicio(LocalDateTime.of(2026, 1, 21, 10, 0));
+        audiencia.setFin(LocalDateTime.of(2026, 1, 21, 11, 0));
         AsistenciaAudiencia asistenciaAudiencia = new AsistenciaAudiencia();
         asistenciaAudiencia.setAsistencia(Asistencia.SI);
         asistenciaAudiencia.setDocumentoIdentificacion(DocumentoIdentificacionSetUp.createDocIdentificacion());

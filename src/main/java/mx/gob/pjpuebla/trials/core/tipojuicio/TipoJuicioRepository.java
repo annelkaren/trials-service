@@ -45,6 +45,35 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
             """)
     Page<TipoJuicio> findByCentroTrabajo(Integer oficialiaId, Integer juzgadoId, Pageable pageable);
 
+
+    
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRecord(
+            tj.id,
+            tj.nombre,
+            new mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord(tj.tipoSistema.id, tj.tipoSistema.nombre),
+            new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(tj.materia.id, INITCAP(LOWER(tj.materia.nombre)))
+            )
+            FROM TipoJuicio tj
+            WHERE tj.estado = Estado.ACTIVE
+                            AND CASE WHEN :oficialiaId IS NOT NULL
+                THEN
+                    (SELECT COUNT(1) FROM Oficialia o where o.id = :oficialiaId
+                    AND EXISTS (
+                        SELECT j FROM Juzgado j where j.id in (select tmpo.id from o.juzgados tmpo ) and tj.id in (select tmpj.id from j.tipoJuicios tmpj)
+                    ))
+                WHEN :juzgadoId IS NOT NULL THEN
+                    (SELECT COUNT(1) FROM Juzgado jj where jj.id = :juzgadoId and tj.id in (select tmpj.id from jj.tipoJuicios tmpj))
+                ELSE
+                    0
+                END > 0
+            AND tj.tipoJuicioPadreOral IS NULL AND
+            tj.tipoJuicioPadreTrad IS NULL
+            AND INITCAP(LOWER(tj.materia.nombre)) != 'Exhorto'
+            """)
+    List<TipoJuicioRecord> findTipoJuicioAll(Integer oficialiaId, Integer juzgadoId);
+
+
     @Query("SELECT tj FROM TipoJuicio tj WHERE tj.materia.id = :materiaId AND tj.tipoJuicioPadreOral IS NULL AND tj.tipoJuicioPadreTrad IS NULL")
     List<TipoJuicio> findByMateriaId(@Param("materiaId") Integer materiaId);
 

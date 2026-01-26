@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaProgramadaRecord;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,25 @@ import org.springframework.data.repository.query.Param;
 public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     Optional<Audiencia> findByCarpeta(Carpeta carpeta);
+
+    List<Audiencia> findByCarpeta_id(Integer carpetaId);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaProgramadaRecord(
+                true,
+                a.fechaAudiencia,
+                a.sala.nombre,
+                a.tipoAudiencia.nombre,
+                concat(
+                    a.sala.juez.nombre, ' ', a.sala.juez.apellidoPaterno, ' ', 
+                    COALESCE(a.sala.juez.apellidoMaterno, '') ) 
+            )
+            FROM Audiencia a
+            WHERE a.carpeta.id = :carpetaId
+            AND  a.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            AND a.fechaAudiencia >= CURRENT_TIMESTAMP
+            """)
+    List<AudienciaProgramadaRecord> findProgramadasByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     Optional<Audiencia> findFirstByCarpetaOrderByIdDesc(Carpeta carpeta);
 

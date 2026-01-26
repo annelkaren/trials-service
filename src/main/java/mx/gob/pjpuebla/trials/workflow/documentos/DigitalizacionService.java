@@ -29,6 +29,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.ResponseGenericRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -562,6 +563,15 @@ public class DigitalizacionService {
         }
 
         return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
+    }
+
+    public ResponseGenericRecord  autorizarRedigitalizacion(Integer documentoId){
+        Documento documento = documentoRepository.findById(documentoId).orElseThrow(
+                () -> new NotFoundException("No se pudo encontrar el documento con ID: ", documentoId.toString()));
+        
+        documento.setRuta(null);
+        documentoRepository.save(documento);
+        return new ResponseGenericRecord("Autorización registrada exitosamente", "OK");
     }
 
 }

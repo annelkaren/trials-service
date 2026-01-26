@@ -41,55 +41,6 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             + "ORDER BY doc.audit.fechaAlta ASC")
     Page<Documento> findByEstatusCaptura(String key, Pageable pageable);
 
-    @Query("""
-             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord(
-                m.id,
-                COALESCE(c.id, doc_carpeta.id),
-                COALESCE(c.folio, doc.folio),
-                COALESCE(c.expediente, doc_carpeta.expediente),
-                COALESCE(jc.id, jd.id),
-                COALESCE(jc.nombre, jd.nombre),
-                COALESCE(matc.nombre, matd.nombre),
-                c.tipoCarpeta,
-                doc.tipoDocumento,
-                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta),
-                COALESCE(c.selloEstatus, doc_carpeta.selloEstatus),
-                COALESCE(c.estatus, doc_carpeta.estatus)
-            )
-            FROM Movimiento m
-            LEFT JOIN m.carpeta c
-            LEFT JOIN c.juzgado jc
-            LEFT JOIN jc.materia matc
-            LEFT JOIN m.documento doc
-            LEFT JOIN doc.carpeta doc_carpeta
-            LEFT JOIN doc_carpeta.juzgado jd
-            LEFT JOIN jd.materia matd
-            WHERE m.fechaAsignacion = (
-                SELECT MAX(m2.fechaAsignacion)
-                FROM Movimiento m2
-                WHERE
-                (
-                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
-                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
-                )
-            )
-            AND m.estado = 'SALIDA'
-            AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
-             AND (
-                  (
-                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
-                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND doc.tipoDocumento = :tipoDocumento))
-                   OR lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
-                   OR lower(COALESCE(c.folio, doc.folio)) = lower(:key)
-                   OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%
-               )
-            ORDER BY
-                COALESCE(jc.nombre, jd.nombre) ASC,
-                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta) DESC,
-                COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
-            """)
-    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio,
-                                                    TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord(
@@ -166,8 +117,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             ORDER BY m.fechaAsignacion ASC
             """)
     Page<Movimiento> findByPersonaAsignada(String key, Integer juzgadoId, Persona personaAsignada, boolean isOficial,
-                                           Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
-                                           TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+            Pageable pageable, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio,
+            TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
@@ -258,7 +209,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     @Modifying
     @Query("UPDATE Documento doc SET doc.acuerdoRespuesta = null WHERE doc.carpeta.id = :carpetaId AND doc.acuerdoRespuesta.id = :documentoId")
     void actualizacionAcuerdoRespuesta(@Param("carpetaId") Integer carpetaId,
-                                       @Param("documentoId") Integer documentoId);
+            @Param("documentoId") Integer documentoId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord(
@@ -333,10 +284,10 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                   AND c.juzgado.id = :juzgadoId
             """)
     Optional<Documento> findByExpedienteAndTipoDocumento(String expediente, TipoDocumento tipoDocumento,
-                                                         Integer juzgadoId);
+            Integer juzgadoId);
 
     Integer countByCarpetaIdAndTipoDocumentoAndAuditFechaAltaAfter(Integer carpetaId, TipoDocumento tipoDocumento,
-                                                                   LocalDateTime fechaAlta);
+            LocalDateTime fechaAlta);
 
     Integer countByCarpetaIdAndTipoDocumentoAndEstatus(int carpetaId, TipoDocumento tipo, EstadoCarpeta estado);
 
@@ -352,7 +303,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
     Optional<Documento> findSentenciaPublicadaByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     Page<Documento> findByCarpetaIdAndTipoDocumentoIn(Integer carpetaId, List<TipoDocumento> tiposDocumento,
-                                                      Pageable pageable);
+            Pageable pageable);
 
     @Query("""
                 SELECT doc
@@ -375,8 +326,8 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                 AND LOWER(p.correoElectronico) = LOWER(:correo)
             """)
     boolean existsByExpedienteAndAcuerdoAndAsociateCorreo(@Param("expediente") String expediente,
-                                                          @Param("numeroAcuerdo") String numeroAcuerdo,
-                                                          @Param("correo") String correo);
+            @Param("numeroAcuerdo") String numeroAcuerdo,
+            @Param("correo") String correo);
 
     @Query("""
                 SELECT new mx.gob.pjpuebla.trials.workflow.documentos.bandejaEnvios.records.BandejaEnviosRecord(
@@ -402,10 +353,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                     OR :isOficialMayorOficialia = false
                     )
                 AND juzgado IN :juzgados
-                AND (
-                        (:key = '' AND documentoDetalle.estadoEnvio IS NOT NULL) OR
-                        (:key != '' )
-                    )
+
             """)
     List<BandejaEnviosRecord> findAllOficiosBandejaSalida(
             @Param("key") String key,

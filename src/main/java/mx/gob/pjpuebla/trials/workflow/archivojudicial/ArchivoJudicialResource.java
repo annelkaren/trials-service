@@ -4,11 +4,15 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaFilter;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaHistorialRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -37,11 +41,18 @@ public class ArchivoJudicialResource {
         return this.archivoJudicialService.getSolicitudes(pageable);
     }
 
-    @GetMapping("/historico")
-    public Page<BandejaEntradaResponse> getHistorico(
-            @ModelAttribute BandejaEntradaFilter filtros,
-            @PageableDefault(size = 20) Pageable pageable) {
-        return this.archivoJudicialService.getHistorico(filtros, pageable);
+    @GetMapping(value = "/historico", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<BandejaHistorialRecord> getAllHistorial(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+        return this.archivoJudicialService.getAllHistorial(pageable, key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaFrom, fechaTo);
     }
 
     @PostMapping

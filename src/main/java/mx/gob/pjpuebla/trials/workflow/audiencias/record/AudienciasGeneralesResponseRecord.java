@@ -17,6 +17,9 @@ public record AudienciasGeneralesResponseRecord(
         EstatusAudiencia estatus,
         Integer juzgado,
         String tipoJuicio,
-        List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento
+        List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento,
+        String horaInicioAudiencia,
+        String horaFinAudiencia
+
 ) implements Serializable {
 }
