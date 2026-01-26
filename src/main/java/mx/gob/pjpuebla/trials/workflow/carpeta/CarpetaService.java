@@ -33,6 +33,8 @@ import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.Paquete;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.PaqueteRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
@@ -51,7 +53,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovi
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
-import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -103,6 +104,7 @@ public class CarpetaService {
         private final JuzgadoService juzgadoService;
         private final MigracionesRepository migracionesRepository;
         private final AudienciaRepository audienciaRepository;
+    private final PaqueteRepository paqueteRepository;
 
         private static final String ACTOR_LABEL = "Actor";
         private static final String DEMANDADO_LABEL = "Demandado";
@@ -200,16 +202,16 @@ public class CarpetaService {
                 if (carpetaOptional.isPresent()) {
                         CarpetaResponseRecord carpetaResponse = getDataCarpeta(carpetaOptional.get());
                         return new CarpetaResponsePromSinExpediente(
-                                        carpetaResponse.idCarpeta(),
-                                        carpetaResponse.actor(),
-                                        carpetaResponse.demandado(),
-                                        carpetaResponse.tipoJuicio(),
-                                        carpetaResponse.victimas(),
-                                        carpetaResponse.imputados(),
-                                        carpetaResponse.estadoJuzgado(),
-                                        carpetaResponse.estadoCarpeta(),
-                                        Integer.valueOf(200),
-                                        "carpeta encontrada");
+                                carpetaResponse.idCarpeta(),
+                                carpetaResponse.actor(),
+                                carpetaResponse.demandado(),
+                                carpetaResponse.tipoJuicio(),
+                                carpetaResponse.victimas(),
+                                carpetaResponse.imputados(),
+                                carpetaResponse.estadoJuzgado(),
+                                carpetaResponse.estadoCarpeta(),
+                                Integer.valueOf(200),
+                                "carpeta encontrada");
 
                 } else if (carpetaOptional.isEmpty() && isApelacion == 1) {
                         return new CarpetaResponsePromSinExpediente(404,
@@ -1224,12 +1226,17 @@ public class CarpetaService {
 
         }
 
-        @Transactional
-        public void actualizarEstado(List<Integer> ids) {
-                List<Carpeta> carpetas = carpetaRepository.findAllById(ids);
-                carpetas.forEach(carpeta -> carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL));
-                carpetaRepository.saveAll(carpetas);
-        }
+    @Transactional
+    public void actualizarEstado(List<Integer> ids) {
+        Persona auditor = personaService.getAuditor();
+        List<Carpeta> carpetas = carpetaRepository.findAllById(ids);
+        carpetas.forEach(carpeta -> {
+            carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL);
+
+            movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.ARCHIVO_JUDICIAL.name());
+        });
+        carpetaRepository.saveAll(carpetas);
+    }
 
         public CarpetaResponseRecord getCarpetaByExpedienteAndEstado(String expediente,
                         EstadoCarpeta estado) {
@@ -1252,27 +1259,32 @@ public class CarpetaService {
                                 carpeta.getJuzgado().getEstado(), carpeta.getEstatus().getEtiqueta());
         }
 
-        public void devolverArchivoJudicial(List<Integer> ids) {
-                for (Integer id : ids) {
-                        Movimiento ultimoMovimiento = movimientoRepository
-                                        .findTopByCarpetaIdOrderByFechaAsignacionDesc(id);
+    private Paquete createPaquete(Boolean urgente, LocalDate fechaTermino) {
+        Paquete paquete = new Paquete();
+        paquete.setUrgente((urgente) ? Urgente.SI : Urgente.NO);
+        paquete.setFechaEnvio(LocalDateTime.now());
+        paquete.setFechaTermino(fechaTermino);
+        Integer ultimoId = paqueteRepository.findMaxPaqueteId();
+        paquete.setPaqueteId((ultimoId == null) ? 1 : ultimoId + 1);
+        Persona auditor = personaService.getAuditor();
+        paquete.setUsuarioAlta(auditor);
+        return paqueteRepository.save(paquete);
+    }
 
-                        if (ultimoMovimiento != null) {
-                                EstadoCarpeta estado = EstadoCarpeta.valueOf(ultimoMovimiento.getEstado());
-
-                                Optional<Carpeta> carpetaOptional = carpetaRepository.findById(id);
-                                if (carpetaOptional.isPresent()) {
-                                        Carpeta carpeta = carpetaOptional.get();
-                                        carpeta.setEstatus(estado);
-                                        carpetaRepository.save(carpeta);
-                                } else {
-                                        throw new RuntimeException("Carpeta no encontrada con ID: " + id);
-                                }
-                        } else {
-                                throw new RuntimeException("No se encontró movimiento para la carpeta con ID: " + id);
-                        }
-                }
+    public void devolverArchivoJudicial(List<Integer> ids, Boolean urgente, LocalDate fechaTermino) {
+        Paquete paquete = createPaquete(urgente, fechaTermino);
+        for (Integer id : ids) {
+            Carpeta carpeta = carpetaRepository.findById(id).orElse(null);
+            if (carpeta != null) {
+                carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
+                carpeta.setPaquete(paquete);
+                carpetaRepository.save(carpeta);
+                movimientoService.createMovimento(carpeta, null, paquete.getUsuarioAlta(), null, EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT.name());
+            } else {
+                throw new RuntimeException("No se encontró la carpeta con ID: " + id);
+            }
         }
+    }
 
         public Optional<Carpeta> getExpediente(String expediente, Juzgado juzgado) {
                 return carpetaRepository.findByExpedienteAndJuzgado(expediente, juzgado);

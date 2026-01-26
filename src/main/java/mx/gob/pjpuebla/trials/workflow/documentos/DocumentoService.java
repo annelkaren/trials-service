@@ -151,14 +151,11 @@ public class DocumentoService {
         // funciones para validar busqueda por QR:
         private static final Pattern CMD = Pattern.compile("^\\s*([dapeDAPE])\\s*\\.\\s*(.+)\\s*$");
 
-        private static String normalizeKey(String s) {
+        public static String normalizeKey(String s) {
                 return (s == null) ? null : s.trim().toLowerCase();
         }
 
-        record CmdFilter(String letra, String folio) {
-        }
-
-        private static CmdFilter parseCmd(String key) {
+        public static CmdFilter parseCmd(String key) {
                 if (key == null)
                         return null;
                 var m = CMD.matcher(key.trim());
@@ -207,7 +204,7 @@ public class DocumentoService {
                                 organoJurisdiccional);
         }
 
-        private Pageable mapSortBandejaEntrada(Pageable pageable) {
+        public Pageable mapSortBandejaEntrada(Pageable pageable) {
                 Sort original = pageable.getSort();
 
                 // ✅ fallback: fechaAsignacion desc + id desc (sin COALESCE)
@@ -873,11 +870,11 @@ public class DocumentoService {
                                 fechaFrom, fechaTo);
         }
 
-        private Integer getJuzgadoId(Persona currentUser) {
+        public Integer getJuzgadoId(Persona currentUser) {
                 return (currentUser.getJuzgado() != null) ? currentUser.getJuzgado().getId() : null;
         }
 
-        private Integer getOficialiaId(Persona currentUser) {
+        public Integer getOficialiaId(Persona currentUser) {
                 return (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
         }
 
@@ -1239,11 +1236,11 @@ public class DocumentoService {
         }
 
         // metodos de filtros:
-        private String norm(String s) {
+        public String norm(String s) {
                 return (s == null) ? null : s.trim().toLowerCase();
         }
 
-        private String normUpper(String s) {
+        public String normUpper(String s) {
                 return (s == null) ? null : s.trim().toUpperCase();
         }
 

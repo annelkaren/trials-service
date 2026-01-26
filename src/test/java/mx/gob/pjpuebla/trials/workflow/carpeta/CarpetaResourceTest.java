@@ -139,7 +139,7 @@ class CarpetaResourceTest {
                                                 "Observacion 1",
                                                 "recomendacion 1"));
                 List<DocumentoRecord> responseRecord = List.of(
-                                new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
+                new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
 
                 when(mockCarpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord))
                                 .thenReturn(responseRecord);
@@ -461,9 +461,9 @@ class CarpetaResourceTest {
                                 .andExpect(status().isOk());
         }
 
-        @Test
-        void testActualizarEstado_Success() throws Exception {
-                List<Integer> ids = Arrays.asList(1, 2, 3);
+    @Test
+    void testActualizarEstado_Success() throws Exception {
+        List<Integer> ids = Arrays.asList(1, 2, 3);
 
                 doNothing().when(mockCarpetaService).actualizarEstado(ids);
 
@@ -504,12 +504,20 @@ class CarpetaResourceTest {
         void testDevolverCarpetas_Success() throws Exception {
                 List<Integer> ids = List.of(1, 2, 3);
 
-                doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids);
+        String json = """
+                {
+                  "ids": [1, 2, 3],
+                  "urgente": true,
+                  "fechaTermino": "2026-01-25"
+                }
+                """;
 
-                mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("[1, 2, 3]"))
-                                .andExpect(status().isOk());
-        }
+        doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids, true, LocalDate.now());
+
+        mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+    }
 
 }

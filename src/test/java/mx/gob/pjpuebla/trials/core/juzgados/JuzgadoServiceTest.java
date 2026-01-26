@@ -251,7 +251,10 @@ class JuzgadoServiceTest {
     void update_return_sede_notFound_exception() {
         given(materiaRepository.findById(juzgado.getMateria().getId()))
                 .willReturn(Optional.ofNullable(juzgado.getMateria()));
-
+        given(juzgadoRepository.findById(juzgado.getId()))
+                .willReturn(Optional.of(juzgado));
+        given(sedeRepository.findById(juzgado.getSede().getId()))
+                .willReturn(Optional.empty());
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.update(juzgado)
@@ -387,7 +390,7 @@ class JuzgadoServiceTest {
         assertThat(resultJuzgadoApelacion).isEqualTo(juzgadoSegundaInstancia);
 
         List<Juzgado> juzgadoExhorto = Collections.singletonList(juzgado);
-        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.NO_APLICA);
+        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.EXHORTO);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(juzgadoExhorto);
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto, juzgadoExhorto);

@@ -71,8 +71,9 @@ public class JuzgadoService {
                         juzgado.getId(),
                         juzgado.getNombre(),
                         juzgado.getEstado(),
-                        StringUtils
-                                .capitalize(StringUtils.stripAccents(juzgado.getMateria().getNombre()).toLowerCase())))
+                        (juzgado.getMateria() != null) ?
+                                StringUtils
+                                        .capitalize(StringUtils.stripAccents(juzgado.getMateria().getNombre()).toLowerCase()) : "- Archivo Judicial"))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -104,7 +105,7 @@ public class JuzgadoService {
                 juzgado.getVersion(),
                 juzgado.getNombre(),
                 juzgado.getEstado(),
-                juzgado.getMateria().getId(),
+                (juzgado.getMateria() != null) ? juzgado.getMateria().getId() : null,
                 juzgado.getSede().getId(),
                 juzgado.getMaxAsignacionesRonda(),
                 juzgado.getContadorAsignaciones(),
@@ -125,45 +126,51 @@ public class JuzgadoService {
         if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
+        if (juzgado.getInstanciaJuzgado() != InstanciaJuzgado.NO_APLICA) { //NO ES ARCHIVO JUDICIAL
+            Materia materia = materiaRepository.findById(juzgado.getMateria().getId())
+                    .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
+            juzgado.setMateria(materia);
 
-        Materia materia = materiaRepository.findById(juzgado.getMateria().getId())
-                .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
-        juzgado.setMateria(materia);
+            juzgado.setContadorAsignaciones(0);
+            if (juzgado.getMaxAsignacionesRonda() == null) {
+                juzgado.setMaxAsignacionesRonda(2);
+            }
+
+            juzgado.setInstanciaJuzgado(TipoCarpeta.EXHORTO.name().equalsIgnoreCase(materia.getNombre())
+                    ? InstanciaJuzgado.EXHORTO
+                    : juzgado.getInstanciaJuzgado());
+        } else {
+            juzgado.setMateria(null);
+        }
 
         Sede sede = sedeRepository.findById(juzgado.getSede().getId())
                 .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId"));
         juzgado.setSede(sede);
 
-        juzgado.setContadorAsignaciones(0);
-        if (juzgado.getMaxAsignacionesRonda() == null) {
-            juzgado.setMaxAsignacionesRonda(2);
+        if (juzgado.getInstanciaJuzgado() != InstanciaJuzgado.NO_APLICA) { //NO ES ARCHIVO JUDICIAL
+            List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
+            List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
+            juzgado.setTipoJuicios(tipojuicios);
+
+            // Llena JuzgadoFolios para insertar en tabla JUZGADO_FOLIOS: crea folio para
+            // exhorto_entrada
+            // Añadir otra linea juzgadoFolios.add(); para añadir otro tipo de folio
+            List<JuzgadoFolios> juzgadoFolios = new ArrayList<>();
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DEMANDA).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.EXHORTO).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DESPACHO).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION_MUNICIPAL).setJuzgado(juzgado));
+            juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
+            juzgado.setJuzgadoFolios(juzgadoFolios);
         }
-        List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
-        List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
-        juzgado.setTipoJuicios(tipojuicios);
-
-        // Llena JuzgadoFolios para insertar en tabla JUZGADO_FOLIOS: crea folio para
-        // exhorto_entrada
-        // Añadir otra linea juzgadoFolios.add(); para añadir otro tipo de folio
-        List<JuzgadoFolios> juzgadoFolios = new ArrayList<>();
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DEMANDA).setJuzgado(juzgado));
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.EXHORTO).setJuzgado(juzgado));
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION).setJuzgado(juzgado));
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.DESPACHO).setJuzgado(juzgado));
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.APELACION_MUNICIPAL).setJuzgado(juzgado));
-        juzgadoFolios.add(new JuzgadoFolios().setTipoCarpeta(TipoCarpeta.AMPARO).setJuzgado(juzgado));
-        juzgado.setJuzgadoFolios(juzgadoFolios);
-
-        juzgado.setInstanciaJuzgado(TipoCarpeta.EXHORTO.name().equalsIgnoreCase(materia.getNombre())
-                ? InstanciaJuzgado.NO_APLICA
-                : juzgado.getInstanciaJuzgado());
 
         juzgado = juzgadoRepository.save(juzgado);
         return new JuzgadoRecordItem(
                 juzgado.getId(),
                 juzgado.getNombre(),
                 juzgado.getEstado(),
-                juzgado.getMateria().getNombre());
+                (juzgado.getMateria() != null) ? juzgado.getMateria().getNombre() : "");
     }
 
     public JuzgadoRecordItem update(Juzgado juzgado) {
@@ -172,24 +179,28 @@ public class JuzgadoService {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
         try {
-            juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId())
-                    .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+            if (juzgado.getInstanciaJuzgado() == InstanciaJuzgado.NO_APLICA) {
+                juzgado.setMateria(null);
+                juzgado.setTipoJuicios(null);
+            } else {
+                juzgado.setMateria(materiaRepository.findById(juzgado.getMateria().getId())
+                        .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId")));
+                Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId())
+                        .orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, "juzgadoId"));
+                juzgado.setContadorAsignaciones(juzgadoAsignaciones.getContadorAsignaciones());
+                List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
+                List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
+                juzgado.setTipoJuicios(tipojuicios);
+            }
             juzgado.setSede(sedeRepository.findById(juzgado.getSede().getId())
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
-            Juzgado juzgadoAsignaciones = juzgadoRepository.findById(juzgado.getId())
-                    .orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, "juzgadoId"));
-
-            List<Integer> tjIds = juzgado.getTipoJuicios().stream().map(TipoJuicio::getId).toList();
-            List<TipoJuicio> tipojuicios = tipoJuicioRepository.findAllById(tjIds);
-            juzgado.setTipoJuicios(tipojuicios);
-            juzgado.setContadorAsignaciones(juzgadoAsignaciones.getContadorAsignaciones());
             juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
             juzgado = juzgadoRepository.save(juzgado);
             return new JuzgadoRecordItem(
                     juzgado.getId(),
                     juzgado.getNombre(),
                     juzgado.getEstado(),
-                    juzgado.getMateria().getNombre());
+                    (juzgado.getMateria() != null) ? juzgado.getMateria().getNombre() : "");
         } catch (OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Juzgado.class.getSimpleName());
         }
@@ -205,7 +216,7 @@ public class JuzgadoService {
     }
 
     public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado,
-            TipoJuicio tipoJuicio) {
+                                       TipoJuicio tipoJuicio) {
         List<Carpeta> carpetas = new ArrayList<>();
         TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId())
                 .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
@@ -253,7 +264,7 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
             reason = "No hay sala disponible para asignar.";
         } else if (TipoCarpeta.EXHORTO.name().toUpperCase().equals(tipoCarpeta.name())) {
-            instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+            instanciaJuzgado = InstanciaJuzgado.EXHORTO;
             reason = "No se encontró un Juzgado de la materia " + tipoJuicio.getMateria().getNombre()
                     + " para asignar. ";
         } else {
@@ -302,7 +313,7 @@ public class JuzgadoService {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
 
         } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
-            instanciaJuzgado = InstanciaJuzgado.NO_APLICA;
+            instanciaJuzgado = InstanciaJuzgado.EXHORTO;
         } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }

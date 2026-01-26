@@ -645,6 +645,217 @@ public final class BandejasQueries {
 
             AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
             AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
+            AND m.estado IN (
+              'ARCHIVO_JUDICIAL_RECIBIDO',
+              'ARCHIVO_JUDICIAL',
+              'ARCHIVO_JUDICIAL_SOLICIT'
+            )
+            """;
+
+    public static final String QUERY_BANDEJA_HISTORIAL_ARCHIVO_JUDICIAL = """
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaHistorialRecord(
+              m.id,
+              COALESCE(c.folio, d.folio, cd.folio, ''),
+              COALESCE(c.expediente, cd.expediente, ''),
+              COALESCE(matc.nombre, matd.nombre, ''),
+              CASE
+                WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+                WHEN c IS NOT NULL THEN
+                  CASE c.tipoCarpeta
+                    WHEN 0 THEN 'DEMANDA'
+                    WHEN 1 THEN 'EXHORTO'
+                    WHEN 2 THEN 'APELACION'
+                    WHEN 3 THEN 'DESPACHO'
+                    WHEN 4 THEN 'APELACION_MUNICIPAL'
+                    WHEN 5 THEN 'AMPARO'
+                    WHEN 6 THEN 'CARTA_ROGATORIA'
+                    WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                    WHEN 8 THEN 'OFICIO'
+                    WHEN 9 THEN 'PIEZA'
+                  ELSE ''
+                  END
+                ELSE
+                  CASE cd.tipoCarpeta
+                    WHEN 0 THEN 'DEMANDA'
+                    WHEN 1 THEN 'EXHORTO'
+                    WHEN 2 THEN 'APELACION'
+                    WHEN 3 THEN 'DESPACHO'
+                    WHEN 4 THEN 'APELACION_MUNICIPAL'
+                    WHEN 5 THEN 'AMPARO'
+                    WHEN 6 THEN 'CARTA_ROGATORIA'
+                    WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                    WHEN 8 THEN 'OFICIO'
+                    WHEN 9 THEN 'PIEZA'
+                  ELSE ''
+                  END
+              END,
+
+              m.fechaAsignacion,
+              CASE
+                WHEN COALESCE(d.tipoDocumento, d2.tipoDocumento) IS NOT NULL THEN COALESCE(d.estatus, d2.estatus)
+                ELSE COALESCE(c.estatus, cd.estatus)
+              END,
+
+              COALESCE(jc.nombre, jcd.nombre, ''),
+              m.estado
+            )
+            FROM Movimiento m
+            LEFT JOIN m.carpeta c
+            LEFT JOIN c.juzgado jc
+            LEFT JOIN jc.materia matc
+
+            LEFT JOIN m.documento d
+            LEFT JOIN d.carpeta cd
+            LEFT JOIN cd.juzgado jcd
+            LEFT JOIN jcd.materia matd
+
+            LEFT JOIN m.juzgado j
+            LEFT JOIN m.oficialia o
+
+            LEFT JOIN Documento d2
+              ON d2.carpeta = c
+             AND (
+                  (c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA AND d2.tipoDocumento IS NULL)
+               OR (c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.EXHORTO AND d2.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.EXHORTO)
+               OR (c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION AND d2.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.APELACION)
+               OR (c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.PIEZA AND d2.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION)
+             )
+
+            WHERE (
+              (:oficialiaId IS null AND :juzgadoId IS null)
+              OR (:oficialiaId IS NOT null AND o.id = :oficialiaId)
+              OR (:juzgadoId IS NOT null AND j.id = :juzgadoId)
+            )
+
+            AND (
+              (
+                COALESCE(:cmdLetra,'') = '' AND (
+                  COALESCE(:key,'') = '' OR
+                  LOWER(COALESCE(c.folio, d.folio, cd.folio, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                  OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                  OR LOWER(COALESCE(matc.nombre, matd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                  OR LOWER(COALESCE(jc.nombre, jcd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                  OR LOWER(
+                    CASE
+                      WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+                      WHEN c IS NOT NULL THEN
+                        CASE c.tipoCarpeta
+                          WHEN 0 THEN 'DEMANDA'
+                          WHEN 1 THEN 'EXHORTO'
+                          WHEN 2 THEN 'APELACION'
+                          WHEN 3 THEN 'DESPACHO'
+                          WHEN 4 THEN 'APELACION_MUNICIPAL'
+                          WHEN 5 THEN 'AMPARO'
+                          WHEN 6 THEN 'CARTA_ROGATORIA'
+                          WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                          WHEN 8 THEN 'OFICIO'
+                          WHEN 9 THEN 'PIEZA'
+                          ELSE ''
+                        END
+                      ELSE
+                        CASE cd.tipoCarpeta
+                          WHEN 0 THEN 'DEMANDA'
+                          WHEN 1 THEN 'EXHORTO'
+                          WHEN 2 THEN 'APELACION'
+                          WHEN 3 THEN 'DESPACHO'
+                          WHEN 4 THEN 'APELACION_MUNICIPAL'
+                          WHEN 5 THEN 'AMPARO'
+                          WHEN 6 THEN 'CARTA_ROGATORIA'
+                          WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                          WHEN 8 THEN 'OFICIO'
+                          WHEN 9 THEN 'PIEZA'
+                          ELSE ''
+                        END
+                    END
+                  ) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                )
+              )
+              OR
+              (
+                COALESCE(:cmdLetra,'') <> '' AND COALESCE(:cmdFolio,'') <> '' AND (
+                  (
+                    UPPER(COALESCE(:cmdLetra,'')) = 'P'
+                    AND d IS NOT NULL
+                    AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION
+                    AND LOWER(d.folio) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
+                  )
+                  OR (
+                    UPPER(COALESCE(:cmdLetra,'')) = 'D'
+                    AND c IS NOT NULL
+                    AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA
+                    AND LOWER(c.folio) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
+                  )
+                  OR (
+                    UPPER(COALESCE(:cmdLetra,'')) = 'A'
+                    AND c IS NOT NULL
+                    AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION
+                    AND LOWER(c.folio) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
+                  )
+                  OR (
+                    UPPER(COALESCE(:cmdLetra,'')) = 'E'
+                    AND c IS NOT NULL
+                    AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.EXHORTO
+                    AND LOWER(c.folio) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
+                  )
+                )
+              )
+            )
+
+            AND (
+              COALESCE(:folio,'') = '' OR
+              LOWER(COALESCE(c.folio, d.folio, cd.folio, '')) LIKE CONCAT('%', LOWER(COALESCE(:folio,'')), '%')
+            )
+            AND (
+              COALESCE(:expediente,'') = '' OR
+              LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', LOWER(COALESCE(:expediente,'')), '%')
+            )
+            AND (
+              COALESCE(:materia,'') = '' OR
+              LOWER(COALESCE(matc.nombre, matd.nombre, '')) LIKE CONCAT('%', LOWER(COALESCE(:materia,'')), '%')
+            )
+            AND (
+              COALESCE(:organoJurisdiccional,'') = '' OR
+              LOWER(COALESCE(jc.nombre, jcd.nombre, '')) LIKE CONCAT('%', LOWER(COALESCE(:organoJurisdiccional,'')), '%')
+            )
+            AND (
+              COALESCE(:tipoEntrada,'') = '' OR
+              UPPER(
+                CASE
+                  WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
+                  WHEN c IS NOT NULL THEN
+                    CASE c.tipoCarpeta
+                      WHEN 0 THEN 'DEMANDA'
+                      WHEN 1 THEN 'EXHORTO'
+                      WHEN 2 THEN 'APELACION'
+                      WHEN 3 THEN 'DESPACHO'
+                      WHEN 4 THEN 'APELACION_MUNICIPAL'
+                      WHEN 5 THEN 'AMPARO'
+                      WHEN 6 THEN 'CARTA_ROGATORIA'
+                      WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                      WHEN 8 THEN 'OFICIO'
+                      WHEN 9 THEN 'PIEZA'
+                      ELSE ''
+                    END
+                  ELSE
+                    CASE cd.tipoCarpeta
+                      WHEN 0 THEN 'DEMANDA'
+                      WHEN 1 THEN 'EXHORTO'
+                      WHEN 2 THEN 'APELACION'
+                      WHEN 3 THEN 'DESPACHO'
+                      WHEN 4 THEN 'APELACION_MUNICIPAL'
+                      WHEN 5 THEN 'AMPARO'
+                      WHEN 6 THEN 'CARTA_ROGATORIA'
+                      WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
+                      WHEN 8 THEN 'OFICIO'
+                      WHEN 9 THEN 'PIEZA'
+                      ELSE ''
+                    END
+                END
+              ) LIKE CONCAT('%', UPPER(COALESCE(:tipoEntrada,'')), '%')
+            )
+
+            AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
+            AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
             """;
 
     public static final String QUERY_BANDEJA_RECEPCION = """
