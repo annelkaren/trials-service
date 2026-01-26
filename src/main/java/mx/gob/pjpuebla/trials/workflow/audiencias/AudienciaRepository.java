@@ -33,8 +33,8 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
                 a.sala.nombre,
                 a.tipoAudiencia.nombre,
                 concat(
-                    a.sala.juez.nombre, ' ', a.sala.juez.apellidoPaterno, ' ', 
-                    COALESCE(a.sala.juez.apellidoMaterno, '') ) 
+                    a.sala.juez.nombre, ' ', a.sala.juez.apellidoPaterno, ' ',
+                    COALESCE(a.sala.juez.apellidoMaterno, '') )
             )
             FROM Audiencia a
             WHERE a.carpeta.id = :carpetaId

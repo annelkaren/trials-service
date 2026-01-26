@@ -2,6 +2,9 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.ArchivoJudicialProjection;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.RecibidosProjection;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.SolicitudesProjection;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoNotificadosRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdoPromocionesRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.acuerdos.records.AcuerdosRecord;
@@ -25,6 +28,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 @Repository
 public interface DocumentoRepository extends JpaRepository<Documento, Integer>, SecuenciaRepositoryCustom {
 
@@ -368,4 +372,328 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                   AND m.nombre IN :materias
             """)
     Long countDocumentosPorTipoYMaterias(@Param("materias") List<String> materias);
+
+    @Query(
+            value = """
+                    SELECT
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.pn_id
+                            ELSE c.pn_id
+                        END AS id,
+
+                        j.s_nombre AS juzgado,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN 'DOCUMENTO'
+                            ELSE 'CARPETA'
+                        END AS tipo,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.n_tipo_documento
+                            ELSE c.n_tipo_carpeta
+                        END AS tipoId,
+
+                        c.s_expediente AS expediente,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.t_fecha_alta
+                            ELSE c.t_fecha_alta
+                        END AS fechaAlta,
+
+                        COALESCE(
+                            STRING_AGG(a.s_nombre, E'\\n' ORDER BY a.s_nombre),
+                            ''
+                        ) AS anexos,
+                        p.n_paquete_id AS paqueteId
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c ON c.pn_id = d.fn_carpeta
+                    JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+                    LEFT JOIN trials.tbl_anexos a ON a.fn_documento = d.pn_id
+                    LEFT JOIN trials.tbl_paquetes p
+                        ON p.pn_id = COALESCE(d.fn_paquete, c.fn_paquete)
+
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 13
+                        )
+                        OR
+                        (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 13
+                        )
+
+                    GROUP BY
+                        d.pn_id,
+                        c.pn_id,
+                        j.s_nombre,
+                        d.n_tipo_documento,
+                        c.n_tipo_carpeta,
+                        c.s_expediente,
+                        d.t_fecha_alta,
+                        c.t_fecha_alta,
+                        p.n_paquete_id
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM tbl_documentos d
+                    JOIN tbl_carpetas c ON c.pn_id = d.fn_carpeta
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 13
+                        )
+                        OR
+                        (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 13
+                        )
+                    """,
+            nativeQuery = true
+    )
+    Page<ArchivoJudicialProjection> findArchivoJudicialList(Pageable pageable);
+
+    @Query(
+            value = """
+                    SELECT
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.pn_id
+                            ELSE c.pn_id
+                        END AS id,
+
+                        j.s_nombre AS juzgado,
+
+                        c.s_expediente AS expediente,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN 'DOCUMENTO'
+                            ELSE 'CARPETA'
+                        END AS tipo,
+
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.n_tipo_documento
+                            ELSE c.n_tipo_carpeta
+                        END AS tipoId,
+
+                        mov_rec.t_fecha_asignacion AS fechaRecepcion,
+
+                        act.actorNombre AS actorPrincipal,
+                        dem.demandadoNombre AS demandadoPrincipal,
+                        paq.n_paquete_id AS paqueteId
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = d.fn_carpeta
+                    JOIN trials.tbl_juzgados j
+                        ON j.pn_id = c.fn_juzgado
+                    LEFT JOIN trials.tbl_paquetes paq
+                        ON paq.pn_id = COALESCE(d.fn_paquete, c.fn_paquete)
+
+                    LEFT JOIN LATERAL (
+                        SELECT m.t_fecha_asignacion
+                        FROM trials.tbl_movimientos m
+                        WHERE m.s_estado = 'ARCHIVO_JUDICIAL_RECIBIDO'
+                          AND (
+                              (m.fn_documento IS NOT NULL AND m.fn_documento = d.pn_id)
+                              OR
+                              (m.fn_carpeta IS NOT NULL AND m.fn_carpeta = c.pn_id)
+                          )
+                        ORDER BY m.t_fecha_asignacion DESC
+                        LIMIT 1
+                    ) mov_rec ON TRUE
+
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            COALESCE(
+                                NULLIF(
+                                    CONCAT_WS(
+                                        ' ',
+                                        p.s_nombres,
+                                        p.s_apellido_paterno,
+                                        p.s_apellido_materno
+                                    ),
+                                    ''
+                                ),
+                                p.s_pseudonimo
+                            ) AS actorNombre
+                        FROM trials.tbl_personas_documentos p
+                        JOIN trials.tbl_tipo_partes tp
+                            ON tp.pn_id = p.fn_tipo_parte
+                        WHERE p.fn_carpeta = c.pn_id
+                          AND p.n_rol = 0
+                          AND tp.s_nombre = 'Actor'
+                        ORDER BY p.pn_id
+                        LIMIT 1
+                    ) act ON TRUE
+
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            COALESCE(
+                                NULLIF(
+                                    CONCAT_WS(
+                                        ' ',
+                                        p.s_nombres,
+                                        p.s_apellido_paterno,
+                                        p.s_apellido_materno
+                                    ),
+                                    ''
+                                ),
+                                p.s_pseudonimo
+                            ) AS demandadoNombre
+                        FROM trials.tbl_personas_documentos p
+                        JOIN trials.tbl_tipo_partes tp
+                            ON tp.pn_id = p.fn_tipo_parte
+                        WHERE p.fn_carpeta = c.pn_id
+                          AND p.n_rol = 0
+                          AND tp.s_nombre = 'Demandado'
+                        ORDER BY p.pn_id
+                        LIMIT 1
+                    ) dem ON TRUE
+
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 16
+                        )
+                        OR (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 16
+                        )
+
+                    ORDER BY mov_rec.t_fecha_asignacion DESC
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = d.fn_carpeta
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 16
+                        )
+                        OR (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 16
+                        )
+                    """,
+            nativeQuery = true
+    )
+    Page<RecibidosProjection> findArchivoJudicialRecibidos(Pageable pageable);
+
+    @Query(
+            value = """
+                    SELECT
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.pn_id
+                            ELSE c.pn_id
+                        END AS id,
+                        j.s_nombre AS juzgado,
+                        c.s_expediente AS expediente,
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN 'DOCUMENTO'
+                            ELSE 'CARPETA'
+                        END AS tipo,
+                        CASE
+                            WHEN d.n_tipo_documento IS NOT NULL THEN d.n_tipo_documento
+                            ELSE c.n_tipo_carpeta
+                        END AS tipoId,
+                        act.actorNombre       AS actorPrincipal,
+                        dem.demandadoNombre  AS demandadoPrincipal,
+                        p.n_urgente           AS urgente,
+                        p.t_fecha_envio       AS fechaSolicitud
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = d.fn_carpeta
+                    JOIN trials.tbl_juzgados j
+                        ON j.pn_id = c.fn_juzgado
+                    LEFT JOIN trials.tbl_paquetes p
+                        ON p.pn_id = COALESCE(d.fn_paquete, c.fn_paquete)
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            m.t_fecha_asignacion
+                        FROM trials.tbl_movimientos m
+                        WHERE m.s_estado = 'ARCHIVO_JUDICIAL_SOLICIT'
+                          AND (
+                              (m.fn_documento IS NOT NULL AND m.fn_documento = d.pn_id)
+                              OR
+                              (m.fn_carpeta IS NOT NULL AND m.fn_carpeta = c.pn_id)
+                          )
+                        ORDER BY m.t_fecha_asignacion DESC
+                        LIMIT 1
+                    ) mov_rec ON TRUE
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            COALESCE(
+                                NULLIF(
+                                    CONCAT_WS(
+                                        ' ',
+                                        p.s_nombres,
+                                        p.s_apellido_paterno,
+                                        p.s_apellido_materno
+                                    ),
+                                    ''
+                                ),
+                                p.s_pseudonimo
+                            ) AS actorNombre
+                        FROM trials.tbl_personas_documentos p
+                        JOIN trials.tbl_tipo_partes tp
+                            ON tp.pn_id = p.fn_tipo_parte
+                        WHERE p.fn_carpeta = c.pn_id
+                          AND p.n_rol = 0
+                          AND tp.s_nombre = 'Actor'
+                        ORDER BY p.pn_id
+                        LIMIT 1
+                    ) act ON TRUE
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            COALESCE(
+                                NULLIF(
+                                    CONCAT_WS(
+                                        ' ',
+                                        p.s_nombres,
+                                        p.s_apellido_paterno,
+                                        p.s_apellido_materno
+                                    ),
+                                    ''
+                                ),
+                                p.s_pseudonimo
+                            ) AS demandadoNombre
+                        FROM trials.tbl_personas_documentos p
+                        JOIN trials.tbl_tipo_partes tp
+                            ON tp.pn_id = p.fn_tipo_parte
+                        WHERE p.fn_carpeta = c.pn_id
+                          AND p.n_rol = 0
+                          AND tp.s_nombre = 'Demandado'
+                        ORDER BY p.pn_id
+                        LIMIT 1
+                    ) dem ON TRUE
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 17
+                        )
+                        OR (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 17
+                        )
+                    ORDER BY p.t_fecha_envio DESC;
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM trials.tbl_documentos d
+                    JOIN trials.tbl_carpetas c
+                        ON c.pn_id = d.fn_carpeta
+                    WHERE
+                        (
+                            d.n_tipo_documento IS NOT NULL
+                            AND d.n_estado = 17
+                        )
+                        OR (
+                            d.n_tipo_documento IS NULL
+                            AND c.n_estado = 17
+                        )
+                    """,
+            nativeQuery = true
+    )
+    Page<SolicitudesProjection> findArchivoJudicialSolicitudes(Pageable pageable);
 }

@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.workflow.carpeta;
 
-import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracion;
 import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
 import mx.gob.pjpuebla.trials.core.conceptos.Concepto;
 import mx.gob.pjpuebla.trials.core.conceptos.ConceptoRepository;
@@ -40,6 +39,8 @@ import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.core.usuarios.Usuario;
+import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -48,6 +49,8 @@ import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoSetUp;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.Paquete;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.PaqueteRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
@@ -97,6 +100,8 @@ class CarpetaServiceTest {
 
         @Mock
         CarpetaRepository carpetaRepository;
+        @Mock
+        PaqueteRepository paqueteRepository;
         @Mock
         PersonaDocumentoRepository personaDocumentoRepository;
         @InjectMocks
@@ -201,18 +206,18 @@ class CarpetaServiceTest {
 
 @Test
 void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
-   
+
     juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
     given(juzgadoRepository.findById(anyInt()))
         .willReturn(Optional.of(juzgado));
 
-  
+
     validCarpeta.setJuzgado(juzgado);
 
     given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
         .willReturn(Optional.of(validCarpeta));
 
- 
+
     // Act
     CarpetaResponseRecord resp =
         target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
@@ -1024,31 +1029,62 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 verify(carpetaRepository, times(1)).saveAll(Arrays.asList(carpeta1, carpeta2, carpeta3));
         }
 
-        @Test
-        void devolverArchivoJudicialTest() {
-                List<Integer> ids = Arrays.asList(1, 2);
-                Movimiento movimiento1 = new Movimiento();
-                movimiento1.setEstado("ARCHIVO_JUDICIAL");
-                Movimiento movimiento2 = new Movimiento();
-                movimiento2.setEstado("ASIGNADO");
+    @Test
+    void devolverArchivoJudicialTest() {
+        // ---------- GIVEN ----------
+        List<Integer> ids = Arrays.asList(1, 2);
+        LocalDate fechaTermino = LocalDate.now();
+        Boolean urgente = true;
 
-                Carpeta carpeta1 = new Carpeta();
-                carpeta1.setId(1);
-                Carpeta carpeta2 = new Carpeta();
-                carpeta2.setId(2);
+        Carpeta carpeta1 = new Carpeta();
+        carpeta1.setId(1);
 
-                given(movimientoRepository.findTopByCarpetaIdOrderByFechaAsignacionDesc(1)).willReturn(movimiento1);
-                given(movimientoRepository.findTopByCarpetaIdOrderByFechaAsignacionDesc(2)).willReturn(movimiento2);
-                given(carpetaRepository.findById(1)).willReturn(Optional.of(carpeta1));
-                given(carpetaRepository.findById(2)).willReturn(Optional.of(carpeta2));
+        Carpeta carpeta2 = new Carpeta();
+        carpeta2.setId(2);
 
-                target.devolverArchivoJudicial(ids);
+        given(carpetaRepository.findById(1))
+                .willReturn(Optional.of(carpeta1));
+        given(carpetaRepository.findById(2))
+                .willReturn(Optional.of(carpeta2));
+        given(paqueteRepository.save(any(Paquete.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
 
-                assertThat(carpeta1.getEstatus()).isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL);
-                assertThat(carpeta2.getEstatus()).isEqualTo(EstadoCarpeta.ASIGNADO);
+        // Para createPaquete()
+        given(paqueteRepository.findMaxPaqueteId()).willReturn(10);
 
-                verify(movimientoRepository, times(2)).findTopByCarpetaIdOrderByFechaAsignacionDesc(anyInt());
-                verify(carpetaRepository, times(2)).findById(anyInt());
-                verify(carpetaRepository, times(2)).save(any(Carpeta.class));
-        }
+        Persona usuarioMock = new Persona();
+        given(personaService.getAuditor()).willReturn(usuarioMock);
+
+        // ---------- WHEN ----------
+        target.devolverArchivoJudicial(ids, urgente, fechaTermino);
+
+        // ---------- THEN ----------
+        assertThat(carpeta1.getEstatus())
+                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
+        assertThat(carpeta2.getEstatus())
+                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
+
+        assertThat(carpeta1.getPaquete()).isNotNull();
+        assertThat(carpeta2.getPaquete()).isNotNull();
+
+        assertThat(carpeta1.getPaquete())
+                .isSameAs(carpeta2.getPaquete()); // mismo paquete
+
+        assertThat(carpeta1.getPaquete().getUrgente()).isNotNull();
+        assertThat(carpeta1.getPaquete().getFechaTermino())
+                .isEqualTo(fechaTermino);
+
+        verify(carpetaRepository, times(2))
+                .save(any(Carpeta.class));
+
+        verify(movimientoService, times(2))
+                .createMovimento(
+                        any(Carpeta.class),
+                        isNull(),
+                        any(),
+                        isNull(),
+                        eq(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT.name())
+                );
+    }
+
 }

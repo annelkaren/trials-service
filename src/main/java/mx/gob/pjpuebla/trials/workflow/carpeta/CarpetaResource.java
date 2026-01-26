@@ -173,9 +173,9 @@ public class CarpetaResource {
     }
 
     @PostMapping("/devolver/archivo-judicial")
-    public ResponseEntity<String> devolverCarpetas(@RequestBody List<Integer> ids) {
+    public ResponseEntity<String> devolverCarpetas(@RequestBody DevolverArchivoJudicialRequest request) {
         try {
-            carpetaService.devolverArchivoJudicial(ids);
+            carpetaService.devolverArchivoJudicial(request.ids(), request.urgente(), request.fechaTermino());
             return ResponseEntity.ok("Estados de carpetas actualizados correctamente.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al actualizar los estados: " + e.getMessage());
