@@ -192,9 +192,6 @@ public class CarpetaService {
                         carpetaOptional = carpetaRepository.findByExpedienteAndJuzgadoIdPenal(expediente,
                                         juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
-                        log.info("Buscando expediente: " + Utils.normalizarExpediente(expediente) + " con juzgado id: "
-                                        + finalJuzgadoId);
-
                         carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
                                         Utils.normalizarExpediente(expediente), finalJuzgadoId);
                 }
@@ -213,7 +210,7 @@ public class CarpetaService {
                                 Integer.valueOf(200),
                                 "carpeta encontrada");
 
-                } else if (carpetaOptional.isEmpty() && isApelacion == 1) {
+                } else if (isApelacion == 1) {
                         return new CarpetaResponsePromSinExpediente(404,
                                         "El expediente no existe en el sistema");
                 } else {

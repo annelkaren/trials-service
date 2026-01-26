@@ -207,7 +207,6 @@ public class DocumentoService {
         public Pageable mapSortBandejaEntrada(Pageable pageable) {
                 Sort original = pageable.getSort();
 
-                // ✅ fallback: fechaAsignacion desc + id desc (sin COALESCE)
                 if (original == null || original.isUnsorted()) {
                         Sort fallback = JpaSort.unsafe("m.fechaAsignacion").descending()
                                         .and(JpaSort.unsafe("m.id").descending());
@@ -1203,11 +1202,7 @@ public class DocumentoService {
 
                 // normal usa motivoSingle + destino obligatorio
                 String motivoSingle = EstadoCarpeta.TURNADO.name();
-                List<String> motivosList = List.of(); // dummy, no se usa en normal
-
-                // en normal isInterno siempre true como en tu query actual
-                String userJuzgadoNombre = null;
-                String userOficialiaNombre = null;
+                List<String> motivosList = List.of(); 
 
                 Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
                                 ? Pageable.unpaged()
@@ -1231,8 +1226,8 @@ public class DocumentoService {
                                 motivoTurnado,
                                 fechaFrom,
                                 fechaTo,
-                                userJuzgadoNombre,
-                                userOficialiaNombre);
+                                null,
+                                null);
         }
 
         // metodos de filtros:
