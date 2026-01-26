@@ -17,4 +17,6 @@ public interface ArchivoJudicialProjection {
     LocalDate getFechaAlta();
 
     String getAnexos();
+
+    Integer getPaqueteId();
 }

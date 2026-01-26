@@ -9,6 +9,7 @@ public record ArchivoJudicialRecord(
         String tipoId,
         String expediente,
         LocalDate fechaAlta,
-        String anexos
+        String anexos,
+        Integer paquete
 ) {
 }

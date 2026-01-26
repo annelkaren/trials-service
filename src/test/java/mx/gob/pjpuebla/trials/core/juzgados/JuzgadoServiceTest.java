@@ -251,7 +251,10 @@ class JuzgadoServiceTest {
     void update_return_sede_notFound_exception() {
         given(materiaRepository.findById(juzgado.getMateria().getId()))
                 .willReturn(Optional.ofNullable(juzgado.getMateria()));
-
+        given(juzgadoRepository.findById(juzgado.getId()))
+                .willReturn(Optional.of(juzgado));
+        given(sedeRepository.findById(juzgado.getSede().getId()))
+                .willReturn(Optional.empty());
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.update(juzgado)

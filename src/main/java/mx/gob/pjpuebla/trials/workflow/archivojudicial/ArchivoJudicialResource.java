@@ -7,10 +7,9 @@ import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaRe
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,10 +25,27 @@ public class ArchivoJudicialResource {
         return this.archivoJudicialService.getAll(pageable);
     }
 
+    @GetMapping("/recibidos")
+    public Page<RecibidosRecord> getRecibidos(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.archivoJudicialService.getRecibidos(pageable);
+    }
+
+    @GetMapping("/solicitudes")
+    public Page<SolicitudesRecord> getSolicitudes(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return this.archivoJudicialService.getSolicitudes(pageable);
+    }
+
     @GetMapping("/historico")
     public Page<BandejaEntradaResponse> getHistorico(
             @ModelAttribute BandejaEntradaFilter filtros,
             @PageableDefault(size = 20) Pageable pageable) {
         return this.archivoJudicialService.getHistorico(filtros, pageable);
+    }
+
+    @PostMapping
+    public String recibirExpedientes(@RequestBody List<RecibirExpedienteRecord> list) {
+        return archivoJudicialService.recibirExpedientes(list);
     }
 }
