@@ -949,12 +949,12 @@ class CarpetaServiceTest {
                                 .willReturn(libroGobiernoPage);
 
                 Page<LibroGobiernoRecord> result = target.libroDeGobierno(PageRequest.of(0, 10), "000001/2024", null,
-                                null, null, null, null, null, null);
+                                null,  null, null, null, null, null);
 
                 assertThat(result).isNotNull();
 
                 verify(personaService).getAuditor();
-                verify(carpetaRepository).findLibroGobierno(any(), any(), any(), any(), any(), any(), any(), any(),
+                verify(carpetaRepository).findLibroGobierno(any(), any(), any(),  any(), any(), any(), any(), any(),
                                 any(), any(), any(), any());
         }
 

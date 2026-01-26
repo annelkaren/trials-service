@@ -36,8 +36,12 @@ public class SelloCaratulaService {
     private JasperPrint getReport(Documento documento) throws IOException, JRException {
 
         String[] expendienteYear = documento.getCarpeta().getExpediente().split("/");
+        // TODO: Se modifica por el momenrto el flujo de obtención de actores principales
+        // En atención de EL Ing. Alfonso se muesrra el primer actor principal y demandado encontrado y si hay mas de uno se coloca la leyenda "y otros."
+
         String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
         String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+
         String procedencia = getExhortoPromocion(documento);
 
         if (documento.getCarpeta().getTipoPieza()!=null){
@@ -74,8 +78,9 @@ public class SelloCaratulaService {
 
     public String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
-
+        List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+        PersonaDocumentoRecord persona = personas.get(0);
+       
         if (persona == null) {
             return "";
         }
@@ -84,7 +89,12 @@ public class SelloCaratulaService {
         String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
         String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
 
-        return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+        String nombreFormateado = String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+        if(personas.size() > 1){
+            return String.format("%s y otros.", nombreFormateado);
+        }
+
+        return nombreFormateado;
     }
 
     private String tipoDocumentoFolio(Documento documento) {

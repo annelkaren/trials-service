@@ -427,7 +427,7 @@ class CarpetaResourceTest {
                 Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
                 when(mockCarpetaService.libroDeGobierno(any(Pageable.class), anyString(), anyString(),
-                                any(LocalDateTime.class), any(LocalDateTime.class), anyString(), anyString(),
+                                any(LocalDate.class), any(LocalDate.class), anyString(), anyString(),
                                 anyString(), anyString()))
                                 .thenReturn(libroGobiernoPage);
 

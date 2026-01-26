@@ -75,14 +75,11 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                         AND (
                           COALESCE(:expediente,'') = '' OR
                           LOWER(c.expediente)
-
-            LIKE CONCAT('%', LOWER(COALESCE(:expediente,'')), '%')
+                          LIKE CONCAT('%', LOWER(COALESCE(:expediente,'')), '%')
                         )
 
-                      AND c.audit.fechaAlta >= COALESCE(:fechaFrom, c.audit.fechaAlta)
+                       AND c.audit.fechaAlta >= COALESCE(:fechaFrom, c.audit.fechaAlta)
                       AND c.audit.fechaAlta <= COALESCE(:fechaTo,   c.audit.fechaAlta)
-
-
                         AND (
                           COALESCE(:tipoJuicio,'') = '' OR
                           LOWER(tj.nombre)

@@ -119,6 +119,7 @@ public class SelloGenerator {
         String verificationCode = generateVerificationCode(documento, anexos, date);
         expedientesSet.add(documento.getCarpeta().getExpediente());
 
+        //TODO: se coloca momentaneamente la primera persona principal y demandada en el sello.
         PersonaDocumentoRecord actor = getInfoPersona(documento.getCarpeta().getId(), "Actor");
         PersonaDocumentoRecord demandado = getInfoPersona(documento.getCarpeta().getId(), "Demandado");
         ExtraAudienciaSelloRecord audiencia = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
@@ -396,8 +397,10 @@ public class SelloGenerator {
 
     public PersonaDocumentoRecord getInfoPersona(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
-        PersonaDocumentoRecord personaDocumentoRecord = personaDocumentoRepository
+        List<PersonaDocumentoRecord> personasDocumentosRecord = personaDocumentoRepository
                 .findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+
+        PersonaDocumentoRecord personaDocumentoRecord = personasDocumentosRecord.get(0);
 
         if (personaDocumentoRecord == null) {
             return new PersonaDocumentoRecord("", "", "", "", "", "", "", "", "", parte, null, id);

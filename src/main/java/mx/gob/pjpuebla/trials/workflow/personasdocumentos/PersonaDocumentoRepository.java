@@ -44,7 +44,7 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             AND pd.rol IN :rol
             AND tp.nombre = :parte
             """)
-    PersonaDocumentoRecord findPersonaAndTipoParteByCarpetaId(
+    List<PersonaDocumentoRecord> findPersonaAndTipoParteByCarpetaId(
             @Param("carpetaId") Integer carpetaId,
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);

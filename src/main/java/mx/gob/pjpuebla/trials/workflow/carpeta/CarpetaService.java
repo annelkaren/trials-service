@@ -1097,7 +1097,7 @@ public class CarpetaService {
 
         public Page<LibroGobiernoRecord> libroDeGobierno(
                         Pageable pageable, String key, String expediente,
-                        LocalDateTime fechaFrom, LocalDateTime fechaTo, String descripcion,
+                        LocalDate fechaFrom, LocalDate fechaTo, String descripcion,
                         String actorFilter, String demandadoFilter, String cujus) {
 
                 key = normalizeKey(key);
@@ -1106,6 +1106,14 @@ public class CarpetaService {
                 actorFilter = norm(actorFilter);
                 demandadoFilter = norm(demandadoFilter);
                 cujus = norm(cujus);
+
+                // operamos fechas:
+                LocalDateTime from = (fechaFrom != null) ? fechaFrom.atStartOfDay() : null;
+
+                LocalDateTime to = null;
+                if (fechaFrom != null && fechaTo == null) {
+                        to = fechaFrom.plusDays(1).atStartOfDay(); // EXCLUSIVO ✅
+                }
 
                 Persona persona = personaService.getAuditor();
 
@@ -1123,8 +1131,8 @@ public class CarpetaService {
                                 juzgados,
                                 key,
                                 expediente,
-                                fechaFrom,
-                                fechaTo,
+                                from,
+                                to,
                                 tipoJuicio,
                                 actorFilter,
                                 demandadoFilter,

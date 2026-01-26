@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -140,15 +141,15 @@ public class CarpetaResource {
     public Page<LibroGobiernoRecord> getLibroDeGobierno(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
-            @RequestParam(value = "expediente", required = false) String expediente,
-            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
-            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo,
+            @RequestParam(value = "numExpediente", required = false) String numExpediente,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaTo,
             @RequestParam(value = "descripcion", required = false) String descripcion,
             @RequestParam(value = "actor", required = false) String actor,
             @RequestParam(value = "demandado", required = false) String demandado,
             @RequestParam(value = "cujus", required = false) String cujus) {
         return carpetaService.libroDeGobierno(
-                pageable, key, expediente, fechaFrom, fechaTo,
+                pageable, key, numExpediente, fechaFrom, fechaTo,
                 descripcion, actor, demandado, cujus);
     }
 
