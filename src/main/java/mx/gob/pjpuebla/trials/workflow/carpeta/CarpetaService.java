@@ -53,6 +53,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecepcionMovi
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
+import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -337,14 +338,18 @@ public class CarpetaService {
                 return personaDocumentoRepository.findPersonaDocumentoByCarpetaId(carpetaId);
         }
 
-        public BandejaRecepcionRecord getBandejaRecepcionByDocumentoId(Integer documentoId) {
+        public BandejaRecepcionRecord getBandejaRecepcionByDocumentoId(Integer movimientoId) {
 
-                Documento documento = validacionBandejaRecepcion(documentoId);
+                 Movimiento movimiento = movimientoRepository.findById(movimientoId)
+                                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
+                                                movimientoId.toString()));
+
+                Documento documento = validacionBandejaRecepcion(movimiento);
 
                 // Buscar la bandeja de recepción por id del documento
                 BandejaRecepcionRecord bandeja = carpetaRepository.findByDocumentoId(documento.getId());
                 if (bandeja == null) {
-                        throw new NotFoundException("No se encontró la carpeta con el documentoId: " + documentoId,
+                        throw new NotFoundException("No se encontró la carpeta con el documentoId: " + documento.getId(),
                                         "documentoId");
                 }
 
@@ -366,7 +371,12 @@ public class CarpetaService {
                 List<DocumentoRecord> documentosResponse = new ArrayList<>();
 
                 for (DocumentoRecepcionMovimientosRecord recepcion : docRecepcionMovimientosRecord) {
-                        Documento documento = validacionBandejaRecepcion(recepcion.documentoId());
+
+                         Movimiento movimiento = movimientoRepository.findById(recepcion.movimientoId())
+                                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
+                                                recepcion.movimientoId().toString()));
+
+                        Documento documento = validacionBandejaRecepcion(movimiento);
 
                         // Validar anexos faltantes
                         List<String> anexosFaltantes = Optional.ofNullable(recepcion.anexos())
@@ -430,15 +440,35 @@ public class CarpetaService {
                 return documentosResponse;
         }
 
-        public Documento validacionBandejaRecepcion(Integer documentoId) {
+        private Documento getDocumentoFromMovimiento(Movimiento movimiento){
+                   if (movimiento.getDocumento() != null) {
+                        return movimiento.getDocumento();
+                }
+
+                 Carpeta carpeta = movimiento.getCarpeta() != null ? movimiento.getCarpeta() : null;
+
+                if (carpeta != null && carpeta.getTipoCarpeta().equals(TipoCarpeta.DEMANDA)) {
+                        return documentoRepository.findByCarpetaIdAndTipoDocumentoIsNull(carpeta.getId());
+                }
+                try {
+                        String tipoCarpeta = carpeta != null ? carpeta.getTipoCarpeta().name() : "";
+                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(tipoCarpeta);
+                        Integer carpetaId = carpeta != null ? carpeta.getId() : null;
+                        return documentoRepository.findByCarpetaIdAndTipoDocumento(carpetaId, tipoDocumento);
+
+                } catch (Exception e) {
+                        log.error("Error: ", e);
+                        return new Documento().setId(0);
+                }
+
+        }
+
+        public Documento validacionBandejaRecepcion(Movimiento movimiento) {
 
                 // Buscar y validar la existencia de la persona y el documento
                 Persona persona = personaService.getAuditor();
 
-                Documento documento = documentoRepository.findById(documentoId)
-                                .orElseThrow(() -> new NotFoundException(
-                                                "No se encontró el documento asociado al documentoId: " + documentoId,
-                                                "documentoId"));
+                Documento documento = getDocumentoFromMovimiento(movimiento);
 
                 // Verificar permisos de acceso al juzgado
                 Juzgado juzgado = persona.getJuzgado();

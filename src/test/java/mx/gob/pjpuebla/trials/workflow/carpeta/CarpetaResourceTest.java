@@ -137,7 +137,7 @@ class CarpetaResourceTest {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1", 1));
                 List<DocumentoRecord> responseRecord = List.of(
                 new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
 

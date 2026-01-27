@@ -360,7 +360,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                        1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 documento.setTipoDocumento(TipoDocumento.PROMOCION);
                 Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
@@ -395,7 +396,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                        1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
                 Persona persona = PersonaSetUp.createPersona();
@@ -428,7 +430,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                         1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 Persona persona = PersonaSetUp.createPersona();
                 Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
@@ -457,7 +460,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                        1));
                 Persona persona = PersonaSetUp.createPersona();
                 Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
                 persona.setJuzgado(juzgado1);
