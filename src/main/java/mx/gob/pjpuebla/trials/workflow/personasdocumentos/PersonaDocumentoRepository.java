@@ -104,6 +104,8 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
                 @Param("rol") List<Rol> rol);
 
     List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+    
+    List<PersonaDocumento> findByCurpAndTipoPartesId(String curp, Integer tipoParte);
 
     @Query("""
              SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
