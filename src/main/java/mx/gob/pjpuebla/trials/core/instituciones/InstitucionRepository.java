@@ -36,7 +36,8 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                         d.localidad,
                         d.colonia,
                         d.codigoPostal,
-                        d.referencia
+                        d.referencia,
+                        d.ciudad
                     )
                 )
                 FROM Institucion i

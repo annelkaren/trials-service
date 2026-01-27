@@ -604,7 +604,9 @@ public class CarpetaService {
         }
 
         public static List<ParticipantesRecord> getParticipantes(List<PersonaDataRecord> participantes) {
+                
                 Map<String, List<ParticipanteDataRecord>> agrupadoPorTipo = new HashMap<>();
+                
                 for (PersonaDataRecord participante : participantes) {
                         String nombreCompleto = Stream
                                         .of(participante.nombre(), participante.apellidoPaterno(),
@@ -619,7 +621,8 @@ public class CarpetaService {
                         if (!nombreCompleto.isEmpty()) {
                                 ParticipanteDataRecord persona = new ParticipanteDataRecord(participante.id(),
                                                 nombreCompleto,
-                                                participante.rol());
+                                                participante.rol(),
+                                                participante.notificacionData());
                                 agrupadoPorTipo.computeIfAbsent(participante.tipoPartesNombre(), k -> new ArrayList<>())
                                                 .add(persona);
                         }

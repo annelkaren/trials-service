@@ -78,7 +78,7 @@ class SedeServiceTest {
         Sede example = sede;
         Pageable pageable = PageRequest.of(0, 10);
         Long idDoimicilioRecord = (long) 1;
-        DomicilioRecord domRecord = new DomicilioRecord(idDoimicilioRecord, "calle", "exterior", "interior", "estadoRepublica", "municipio", "localidad", "Colonia", "Codigo postal", "Referencia");
+        DomicilioRecord domRecord = new DomicilioRecord(idDoimicilioRecord, "calle", "exterior", "interior", "estadoRepublica", "municipio", "localidad", "Colonia", "Codigo postal", "Referencia", "Ciudad");
 
         SedeDomicilioRecordResponse record = new SedeDomicilioRecordResponse(
             1, 

@@ -624,7 +624,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                 "Gómez",
                                 "TipoParte1",
                                 Rol.PRINCIPAL,
-                                "");
+                                "",
+                        null);
                 PersonaDataRecord participante2 = new PersonaDataRecord(
                                 2,
                                 "Maria",
@@ -632,7 +633,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
                                 "Sánchez",
                                 "TipoParte2",
                                 Rol.PRINCIPAL,
-                                "");
+                                "",
+                         null);
 
                 given(carpetaRepository.findById(any())).willReturn(Optional.of(documento.getCarpeta()));
                 given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))

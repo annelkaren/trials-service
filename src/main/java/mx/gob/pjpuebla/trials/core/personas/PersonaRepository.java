@@ -21,7 +21,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id, o.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
-                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
+                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia, dom.ciudad),
                 p.usuario, null
             )
             FROM Persona p
@@ -39,7 +39,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.apellidoMaterno, p.curp, p.rfc, p.fechaNacimiento, p.correoElectronico, p.telefono,
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id, o.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
-                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia),
+                dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia, dom.ciudad),
                 p.usuario, null
             )
             FROM Persona p
