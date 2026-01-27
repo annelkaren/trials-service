@@ -108,6 +108,12 @@ public class InstitucionResource {
         return this.institucionService.getAllByEstadoAutocomplete(new Institucion().setNombre(nombre), pageable);
     }
 
+
+    @GetMapping("/all")
+    public List<InstitucionRecord> getAllInstitucionesList() {
+        return this.institucionService.getAllInstitucionesList();
+    }
+    
     /**
      * Obtiene todas las instituciones de tipo "Tribunal Federal".
      *

@@ -1196,11 +1196,9 @@ public class DocumentoService {
 
                 Integer juzgadoId = currentUser.getJuzgado().getId();
 
-                // normal
                 List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO);
                 boolean isOficialMayor = false;
 
-                // normal usa motivoSingle + destino obligatorio
                 String motivoSingle = EstadoCarpeta.TURNADO.name();
                 List<String> motivosList = List.of(); 
 

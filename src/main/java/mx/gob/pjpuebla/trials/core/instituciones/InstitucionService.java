@@ -87,4 +87,8 @@ public class InstitucionService {
         return institucionRepository.findByTipoInstitucion(tipo);
     }
 
+    public List<InstitucionRecord> getAllInstitucionesList() {
+        return institucionRepository.getInstitucionesList();
+    }
+
 }
