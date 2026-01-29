@@ -4,6 +4,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,10 @@ import mx.gob.pjpuebla.trials.core.bloques.BloqueRepository;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartes;
@@ -50,7 +53,9 @@ public class SalaService {
     private final PersonaDocumentoRepository personaDocumentoRepository;
     private final EventoService eventoService;
     private final PersonaService personaService;
-    private static final Integer TIEMPO_ESPERA_AUDIENCIA =  3;
+    private final SalaPersonaRepository salaPersonaRepository;
+
+    private static final Integer TIEMPO_ESPERA_AUDIENCIA = 3;
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
@@ -59,13 +64,16 @@ public class SalaService {
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 
         Page<Sala> page = salaRepository.findAll(Example.of(example, exampleMatcher), pageable);
+        Persona persona = personaService.getAuditor();
 
         List<SalaRecord> list = page.getContent().stream()
+                .filter(sala -> {
+                    return sala.getJuzgado().equals(persona.getJuzgado());
+                })
                 .map(sala -> new SalaRecord(
                         sala.getId(),
                         sala.getNombre(),
-                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
-                                + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno() : ""),
+                        getNameJuez(sala),
                         sala.getJuzgado().getNombre(),
                         new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
                                 sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
@@ -77,8 +85,17 @@ public class SalaService {
 
     }
 
-    public List<SalaRecord> getAllByJuzgado(){
-        //Traemos las salas relacionadas al juzgado de la persona logueda.
+    private String getNameJuez(Sala sala) {
+        Persona juez = sala.getJuez();
+        if (juez != null) {
+            return juez.getNombre() + " " + juez.getApellidoPaterno() + " "
+                    + ((juez.getApellidoMaterno() != null) ? juez.getApellidoMaterno() : "");
+        }
+        return "Por asignar";
+    }
+
+    public List<SalaRecord> getAllByJuzgado() {
+        // Traemos las salas relacionadas al juzgado de la persona logueda.
         Integer juzgadoId = personaService.getAuditor().getJuzgado().getId();
 
         return salaRepository.findByJuzgado(juzgadoId);
@@ -87,11 +104,27 @@ public class SalaService {
     @Transactional(readOnly = true)
     public SalaRecordResponse findById(Integer id) {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        return salaRepository.findByIdAndEstadoIn(id, estados)
+
+        return  salaRepository.findByIdAndEstadoIn(id, estados)
+                .map(base -> {
+                    List<SecretariosSalasRecord> secretarios = salaPersonaRepository.getSecretariosFromSala(id);
+                    return new SalaRecordResponse(
+                            base.id(), base.nombre(), base.estado(), base.version(),
+                            base.juez(), base.juzgado(), base.bloque(),
+                            secretarios);
+
+                })
                 .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId"));
     }
 
     public Integer create(Sala sala) {
+
+        Optional<Sala> salaOptional = salaRepository.findById(sala.getId());
+        Optional<Sala> salaOptionalJuez = salaRepository.findByJuezId(sala.getJuez().getId());
+
+        if (salaOptionalJuez.isPresent() && !salaOptional.get().getJuez().getId().equals(sala.getJuez().getId())) {
+            throw new ConflictException("El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+        }
 
         sala.setJuez(juezRepository.findById(sala.getJuez().getId()).orElse(null));
         sala.setBloque(bloqueRepository.findById(sala.getBloque().getId()).orElse(null));
@@ -104,6 +137,12 @@ public class SalaService {
 
     public Integer update(Sala sala) {
         try {
+            Optional<Sala> salaOptional = salaRepository.findById(sala.getId());
+            Optional<Sala> salaOptionalJuez = salaRepository.findByJuezId(sala.getJuez().getId());
+
+            if (salaOptionalJuez.isPresent() && !salaOptional.get().getJuez().getId().equals(sala.getJuez().getId())) {
+                throw new ConflictException("El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+            }
 
             sala.setJuez(juezRepository.findById(sala.getJuez().getId()).orElse(null));
             sala.setBloque(bloqueRepository.findById(sala.getBloque().getId()).orElse(null));
@@ -132,40 +171,42 @@ public class SalaService {
 
     /***
      * 
-     * @param juzgado Juzgado del Distrito
+     * @param juzgado       Juzgado del Distrito
      * @param tipoAudiencia Tipo de Audiencia de Oralidad
-     * @return SalaAudienciaRecord Primera sala disponible del Juzgado según la configuración del bloque
+     * @return SalaAudienciaRecord Primera sala disponible del Juzgado según la
+     *         configuración del bloque
      */
-    public SalaAudienciaRecord asignarSala(Juzgado juzgado, TipoAudiencia tipoAudiencia){
+    public SalaAudienciaRecord asignarSala(Juzgado juzgado, TipoAudiencia tipoAudiencia) {
         LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
         LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(juzgado, tipoAudiencia);
         List<Bloque> bloques = bloqueRepository.findBloquesSalasJuzgado(juzgado);
 
-        if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){
+        if (ultimaFechaAudiencia != null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)) {
             fecha = ultimaFechaAudiencia.toLocalDate();
         }
 
         int max = 3;
         int intentos = 0;
 
-        while(intentos <= max){
+        while (intentos <= max) {
 
-            if (eventoService.esDiaInHabil(fecha, juzgado, null)==Boolean.TRUE){
+            if (eventoService.esDiaInHabil(fecha, juzgado, null) == Boolean.TRUE) {
                 fecha = eventoService.siguienteDiaHabil(fecha, juzgado, null);
             }
 
-            for (Bloque bloque: bloques){
+            for (Bloque bloque : bloques) {
                 List<BloqueCitaItem> citas = bloque.getData().getCitas();
-    
-                for (BloqueCitaItem cita: citas){
+
+                for (BloqueCitaItem cita : citas) {
                     LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
 
                     Sala salaDisponible = this.findSalaDisponible(fechaHoraAudiencia, bloque, juzgado);
-    
-                    if (salaDisponible!=null){
-                        return new SalaAudienciaRecord(salaDisponible.getId(), salaDisponible.getNombre(), 
-                        salaDisponible.getJuez().getId(), salaDisponible.getJuez().getNombre(), juzgado.getNombre(), 
-                        bloque.getId(), fechaHoraAudiencia);
+
+                    if (salaDisponible != null) {
+                        return new SalaAudienciaRecord(salaDisponible.getId(), salaDisponible.getNombre(),
+                                salaDisponible.getJuez().getId(), salaDisponible.getJuez().getNombre(),
+                                juzgado.getNombre(),
+                                bloque.getId(), fechaHoraAudiencia);
                     }
                 }
             }
@@ -177,27 +218,39 @@ public class SalaService {
         throw new NotFoundException("No existe una sala disponible", "Sala");
     }
 
-    public Sala findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado){
+    public Sala findSalaDisponible(LocalDateTime fechaAudiencia, Bloque bloque, Juzgado juzgado) {
         Optional<Sala> salaDisponible = salaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)
-            .stream().findFirst();
+                .stream().findFirst();
 
         return salaDisponible.orElse(null);
     }
 
-    public SalaAudienciaRecord asignarSalaConexidad(PersonaDocumentoRecord actor, PersonaDocumentoRecord demandado, TipoJuicio tipoJuicio, TipoAudiencia tipoAudiencia){
+    public SalaAudienciaRecord asignarSalaConexidad(PersonaDocumentoRecord actor, PersonaDocumentoRecord demandado,
+            TipoJuicio tipoJuicio, TipoAudiencia tipoAudiencia) {
         List<Carpeta> carpetas = new ArrayList<>();
         String nombreMateria = tipoJuicio.getMateria().getNombre();
 
-        TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId(nombreMateria.equals("PENAL") || nombreMateria.equals("JUSTICIA PARA ADOLESCENTES") ? "Victimas" : "Actor", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte()));
-        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId(nombreMateria.equals("PENAL") || nombreMateria.equals("JUSTICIA PARA ADOLESCENTES") ? "Imputados" :"Demandado", tipoJuicio.getId()).orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte()));
+        TipoPartes actorParte = tipoPartesRepository
+                .findByNombreAndTipoJuicioId(
+                        nombreMateria.equals("PENAL") || nombreMateria.equals("JUSTICIA PARA ADOLESCENTES") ? "Victimas"
+                                : "Actor",
+                        tipoJuicio.getId())
+                .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte()));
+        TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId(
+                nombreMateria.equals("PENAL") || nombreMateria.equals("JUSTICIA PARA ADOLESCENTES") ? "Imputados"
+                        : "Demandado",
+                tipoJuicio.getId())
+                .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte()));
 
         List<PersonaDocumento> registrosActor = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(), actorParte.getId());
+                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(),
+                        actorParte.getId());
 
         List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
-                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(), demandado.pseudonimo(), demandadoParte.getId());
+                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(),
+                        demandado.pseudonimo(), demandadoParte.getId());
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
@@ -215,7 +268,7 @@ public class SalaService {
 
             audiencia = audienciaRepository.findByCarpeta(tmp.getCarpeta());
 
-            if (audiencia.isPresent()){
+            if (audiencia.isPresent()) {
                 return asignarAudiencia(audiencia.get().getSala(), tipoAudiencia);
             }
         }
@@ -223,39 +276,39 @@ public class SalaService {
         return null;
     }
 
-
     /***
      * 
-     * @param sala Sala de Audiencia 
+     * @param sala          Sala de Audiencia
      * @param tipoAudiencia Tipo de Audiencia de Oralidad
      * @return SalaAudienciaRecord Primer horario disponible de la Sala
      */
-    public SalaAudienciaRecord asignarAudiencia(Sala sala, TipoAudiencia tipoAudiencia){
+    public SalaAudienciaRecord asignarAudiencia(Sala sala, TipoAudiencia tipoAudiencia) {
         LocalDate fecha = LocalDate.now().plusDays(TIEMPO_ESPERA_AUDIENCIA);
-        LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(sala.getJuzgado(), tipoAudiencia);
+        LocalDateTime ultimaFechaAudiencia = audienciaRepository.getFechaUltimaAudiencia(sala.getJuzgado(),
+                tipoAudiencia);
         Bloque bloque = sala.getBloque();
         int max = 3;
         int intentos = 0;
 
-        if (ultimaFechaAudiencia!=null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)){
+        if (ultimaFechaAudiencia != null && ultimaFechaAudiencia.toLocalDate().isAfter(fecha)) {
             fecha = ultimaFechaAudiencia.toLocalDate();
         }
- 
+
         List<BloqueCitaItem> citas = bloque.getData().getCitas();
 
-        while(intentos<=max){
+        while (intentos <= max) {
 
-            if (eventoService.esDiaInHabil(fecha, sala.getJuzgado(), null)==Boolean.TRUE){
+            if (eventoService.esDiaInHabil(fecha, sala.getJuzgado(), null) == Boolean.TRUE) {
                 fecha = eventoService.siguienteDiaHabil(fecha, sala.getJuzgado(), null);
             }
 
-            for (BloqueCitaItem cita: citas){
+            for (BloqueCitaItem cita : citas) {
                 LocalDateTime fechaHoraAudiencia = LocalDateTime.of(fecha, cita.getHoraCitas());
-    
-                if (checkHoraDisponible(fechaHoraAudiencia, sala)==Boolean.TRUE){
+
+                if (checkHoraDisponible(fechaHoraAudiencia, sala) == Boolean.TRUE) {
                     return new SalaAudienciaRecord(sala.getId(), sala.getNombre(),
-                    sala.getJuez().getId(), sala.getJuez().getNombre(), sala.getJuzgado().getNombre(),
-                    bloque.getId(), fechaHoraAudiencia);
+                            sala.getJuez().getId(), sala.getJuez().getNombre(), sala.getJuzgado().getNombre(),
+                            bloque.getId(), fechaHoraAudiencia);
                 }
             }
 
@@ -263,11 +316,11 @@ public class SalaService {
             intentos++;
         }
 
-        throw new NotFoundException("No hay Horario disponible", "Sala");    
-        
+        throw new NotFoundException("No hay Horario disponible", "Sala");
+
     }
 
-    public Boolean checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala){
+    public Boolean checkHoraDisponible(LocalDateTime fechaAudiencia, Sala sala) {
         Optional<Sala> salaDisponible = salaRepository.checkHoraDisponible(fechaAudiencia, sala);
 
         if (salaDisponible.isPresent())
@@ -290,7 +343,9 @@ public class SalaService {
                 .map(sala -> new SalaRecord(
                         sala.getId(),
                         sala.getNombre(),
-                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno() : ""),
+                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
+                                + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno()
+                                        : ""),
                         sala.getJuzgado().getNombre(),
                         new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
                                 sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),

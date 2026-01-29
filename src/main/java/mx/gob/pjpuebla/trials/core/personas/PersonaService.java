@@ -241,6 +241,7 @@ public class PersonaService {
         List<JuezRecord> jueces = new ArrayList<>();
         List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
         List<String> ids = usuarioService.findAllByRoles(roles);
+
         for (String id : ids) {
             Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId,
                     List.of(Estado.ACTIVE));
@@ -254,6 +255,24 @@ public class PersonaService {
                 }
             }
         }
+        return jueces;
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
+    public List<JuezRecord> findAllJuecesFromSala(Integer juzgadoId) {
+        List<JuezRecord> jueces = new ArrayList<>();
+        List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        List<Persona> juecesTemp = personaRepository.findByUsuarioInAndJuzgadoIdAndEstadoIn(ids, juzgadoId,
+                List.of(Estado.ACTIVE));
+
+        for (Persona juez : juecesTemp) {
+            String name = juez.getNombre() + " " + juez.getApellidoPaterno();
+            name += ((juez.getApellidoMaterno() != null) ? " " + juez.getApellidoMaterno() : "");
+            JuezRecord juezRecord = new JuezRecord(juez.getId(), name);
+            jueces.add(juezRecord);
+        }
+
         return jueces;
     }
 
@@ -408,6 +427,32 @@ public class PersonaService {
                 "",
                 "",
                 roleService.getRolesByUserId(p.getUsuario()).get(0).name())).toList();
+    }
+
+    public List<PersonaRecordResponse> getSecretarios(Integer juzgadoId) {
+        Persona personaLogueada = getAuditor();
+
+        List<String> ids = usuarioService.findAllByRoles(List.of("SECRETARIO"));
+        List<PersonaRecordResponse> secretarios = new ArrayList<>();
+
+        for (String usuarioId : ids) {
+            Optional<Persona> secretario = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(usuarioId, juzgadoId,
+                    List.of(Estado.ACTIVE));
+            if (secretario.isPresent()) {
+                Persona secretarioObj = secretario.get();
+                secretarios.add(new PersonaRecordResponse(secretarioObj.getId(),
+                        secretarioObj.getNombre() + " " + secretarioObj.getApellidoPaterno() + " "
+                                + secretarioObj.getApellidoMaterno(),
+                        secretarioObj.getCorreoElectronico(),
+                        secretarioObj.getCelular(),
+                        secretarioObj.getJuzgado().getNombre(),
+                        secretarioObj.getEstado().name(),
+                        secretarioObj.getRolPrincipal()));
+            }
+        }
+
+        return secretarios;
+
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {
