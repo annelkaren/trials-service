@@ -80,6 +80,32 @@ public class UsuarioService {
         return jueces;
     }
 
+    public List<String> findAllByRolesRealm(List<String> roleNames) {
+    if (roleNames == null || roleNames.isEmpty()) return List.of();
+
+    Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+
+    // Evita duplicados si un usuario tiene 2 roles de los que buscas
+    Set<String> userIds = new LinkedHashSet<>();
+
+    var realm = keycloak.realm(keycloakSecurityUtil.realm);
+
+    for (String roleName : roleNames) {
+        if (roleName == null || roleName.isBlank()) continue;
+
+        
+        List<UserRepresentation> members = realm.roles()
+                .get(roleName)
+                .getUserMembers();
+
+        for (UserRepresentation u : members) {
+            userIds.add(u.getId());
+        }
+    }
+
+    return new ArrayList<>(userIds);
+}
+
     public String findByUsernameAndRol(String username, String rol) {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
         List<UserRepresentation> users = keycloak.realm(keycloakSecurityUtil.realm).users().searchByUsername(username, true);
