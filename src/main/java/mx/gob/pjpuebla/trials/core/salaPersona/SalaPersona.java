@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.core.salaPersona;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -22,13 +24,14 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
+import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Entity
 @Data
 @EntityListeners(AuditListener.class)
 @Table(name = "TBL_SALAS_PERSONAS", schema = "trials")
-public class SalaPersona {
+public class SalaPersona implements Serializable, Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sala_personas_seq_gen")

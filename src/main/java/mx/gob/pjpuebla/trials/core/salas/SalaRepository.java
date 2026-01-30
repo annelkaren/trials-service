@@ -75,7 +75,8 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
     long countByJuzgadoId(int juzgadoId);
 
     List<Sala> findAllByJuezId(Long id);
-    Optional<Sala> findByJuezId(Long id);
+    
+    Optional<Sala> findByJuezId(Integer id);
 
     List<Sala> findByJuzgado(Juzgado juzgado);
 

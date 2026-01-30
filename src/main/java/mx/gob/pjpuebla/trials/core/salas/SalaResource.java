@@ -50,7 +50,7 @@ public class SalaResource {
     }
 
     @PutMapping
-    public Integer update(@RequestBody Sala sala) {
+    public Integer update(@RequestBody SalaRecordSave sala) {
         return this.salaService.update(sala);
     }
 

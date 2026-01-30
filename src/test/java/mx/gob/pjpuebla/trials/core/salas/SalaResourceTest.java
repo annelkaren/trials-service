@@ -108,7 +108,8 @@ class SalaResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockSalaService.update(SalaSetUp.createSala(Estado.ACTIVE)))
+        SalaRecordSave salaRecordSave = new SalaRecordSave(null, null, null, null, null, null);
+        given(mockSalaService.update(salaRecordSave))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(

@@ -169,22 +169,25 @@ class SalaServiceTest {
 
     @Test
     void update() {
+        SalaRecordSave salaRecordSave = new SalaRecordSave(any(), any(), any(), any(), any(), any());
         given(mockSalaRepository.save(sala))
                 .willReturn(sala);
 
-        Integer response = salaService.update(sala);
+        Integer response = salaService.update(salaRecordSave);
 
         assertThat(response).isEqualTo(sala.getId());
     }
 
     @Test
     void update_return_optimistic_exception() {
+        Integer juez = 1;
+        SalaRecordSave salaRecordSave = new SalaRecordSave(any(), any(), any(), any(), any(), any());
         given(mockSalaRepository.save(sala)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
-
+        
         InvalidVersionException assertThrows = assertThrows(
                 InvalidVersionException.class,
                 () -> {
-                    salaService.update(sala);
+                    salaService.update(salaRecordSave);
                 });
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
