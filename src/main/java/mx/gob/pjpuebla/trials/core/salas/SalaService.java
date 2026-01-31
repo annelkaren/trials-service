@@ -122,22 +122,53 @@ public class SalaService {
                 .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId"));
     }
 
-    public Integer create(Sala sala) {
+    public Integer create(SalaRecordSave salaRecord) {
 
-        Optional<Sala> salaOptional = salaRepository.findById(sala.getId());
-        Optional<Sala> salaOptionalJuez = salaRepository.findByJuezId(sala.getJuez().getId().intValue());
+        Sala sala =  new Sala();
 
-        if (salaOptionalJuez.isPresent() && !salaOptional.get().getJuez().getId().equals(sala.getJuez().getId())) {
-            throw new ConflictException("El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+        // Validar juez no asignado a otra sala (distinta a esta)
+        if (salaRecord.juezId() != null) {
+            validaJuezAsignadoAOtraSala(salaRecord.juezId(), null);
         }
+       
+        sala = construirSala(salaRecord, sala);
 
-        sala.setJuez(juezRepository.findById(sala.getJuez().getId()).orElse(null));
-        sala.setBloque(bloqueRepository.findById(sala.getBloque().getId()).orElse(null));
-        sala.setJuzgado(juzgadoRepository.findById(sala.getJuzgado().getId()).orElse(null));
-        sala.setNombre(getNameOfSala(sala));
+        if(salaRecord.secretarios().size() > 0) {
+            actualizarSecretariosEnSala(sala.getId(), salaRecord.secretarios());
+        }
 
         sala = salaRepository.save(sala);
         return sala.getId();
+    }
+
+    private void validaJuezAsignadoAOtraSala(Integer juezId, Integer salaId) {
+        salaRepository.findByJuezId(juezId)
+                .ifPresent(salaConEseJuez -> {
+
+                    if (salaId != null && !salaConEseJuez.getId().equals(salaId)) {
+                        throw new ConflictException(
+                                "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+                    }else {
+                        throw new ConflictException(
+                                "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+                    }
+                });
+    }
+
+    private Sala construirSala(SalaRecordSave salaRecord, Sala sala) {
+         Persona juez = salaRecord.juezId() != null
+                ? juezRepository.findById(salaRecord.juezId().longValue()).orElse(null)
+                : null;
+        Bloque bloque = bloqueRepository.findById(salaRecord.bloqueId()).orElse(null);
+        Juzgado juzgado = juzgadoRepository.findById(salaRecord.juzgadoId()).orElse(null);
+
+        sala.setJuez(juez);
+        sala.setBloque(bloque);
+        sala.setJuzgado(juzgado);
+        sala.setNombre(getNameOfSala(sala));
+
+
+        return sala;
     }
 
     @Transactional
@@ -148,24 +179,10 @@ public class SalaService {
 
             // Validar juez no asignado a otra sala (distinta a esta)
             if (salaRecord.juezId() != null) {
-                salaRepository.findByJuezId(salaRecord.juezId())
-                        .ifPresent(salaConEseJuez -> {
-                            if (!salaConEseJuez.getId().equals(sala.getId())) {
-                                throw new ConflictException(
-                                        "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
-                            }
-                        });
+                validaJuezAsignadoAOtraSala(salaRecord.juezId(), sala.getId());
             }
 
-            Persona juez = salaRecord.juezId() != null
-                    ? juezRepository.findById(salaRecord.juezId().longValue()).orElse(null)
-                    : null;
-            Bloque bloque = bloqueRepository.findById(salaRecord.bloqueId()).orElse(null);
-            Juzgado juzgado = juzgadoRepository.findById(salaRecord.juzgadoId()).orElse(null);
-
-            sala.setJuez(juez);
-            sala.setBloque(bloque);
-            sala.setJuzgado(juzgado);
+            sala = construirSala(salaRecord, sala);
 
             actualizarSecretariosEnSala(sala.getId(), salaRecord.secretarios());
 
@@ -180,40 +197,57 @@ public class SalaService {
     @Transactional
     private void actualizarSecretariosEnSala(Integer salaId, List<Long> secretarios) {
 
-        // 0) null-safe
-        List<Long> incomingList = (secretarios == null) ? List.of() : secretarios;
-        Set<Long> incomingIds = new HashSet<>(incomingList);
+        // 0) null-safe + dedupe (Set)
+        Set<Long> incomingIds = (secretarios == null) ? Set.of() : new HashSet<>(secretarios);
 
-        // 1) cargar existentes de esa sala (con persona ya cargada)
+        // 1) cargar existentes de esa sala (idealmente JOIN FETCH persona)
         List<SalaPersona> existentes = salaPersonaRepository.findAllBySalaIdWithPersona(salaId);
 
         // 2) indexar por personaId para búsquedas O(1)
-        Map<Long, SalaPersona> porPersonaId = new HashMap<>();
+        Map<Long, SalaPersona> porPersonaId = new HashMap<>(existentes.size() * 2);
         for (SalaPersona sp : existentes) {
-            Long personaId = sp.getPersona().getId();
-            porPersonaId.put(personaId, sp);
+            porPersonaId.put(sp.getPersona().getId(), sp);
         }
 
-        // 3) activar o insertar los que vienen
+        // 3) precargar datos necesarios (rolPrincipal) en UNA sola consulta
+        Map<Long, String> rolPorPersonaId = incomingIds.isEmpty()
+                ? Map.of()
+                : juezRepository.findAllById(incomingIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                Persona::getId,
+                                Persona::getRolPrincipal));
+
+        if (rolPorPersonaId.size() != incomingIds.size()) {
+            Set<Long> faltantes = new HashSet<>(incomingIds);
+            faltantes.removeAll(rolPorPersonaId.keySet());
+            throw new IllegalArgumentException("Personas inexistentes: " + faltantes);
+        }
+
+        // 4) activar o insertar los que vienen
+        Sala salaRef = salaRepository.getReferenceById(salaId);
+
         for (Long personaId : incomingIds) {
             SalaPersona sp = porPersonaId.get(personaId);
 
             if (sp != null) {
-                // ya existía, solo activar
+                // ya existía → activar
                 sp.setEstado(Estado.ACTIVE);
+
+                // si quieres asegurar rol actualizado (por si cambió el rolPrincipal)
+                sp.setRol(rolPorPersonaId.get(personaId));
             } else {
-                // no existía, insertar nueva relación SalaPersona
+                // no existía → insertar nueva relación
                 SalaPersona nuevo = new SalaPersona();
 
-                // evita ir a BD por el objeto completo: reference proxy por id
-                Sala salaRef = salaRepository.getReferenceById(salaId);
+                // proxy barato (sin SELECT)
                 Persona personaRef = juezRepository.getReferenceById(personaId);
-                // ^^^ Si tienes personaRepository, úsalo mejor:
-                // personaRepository.getReferenceById(personaId)
 
                 nuevo.setSala(salaRef);
                 nuevo.setPersona(personaRef);
-                nuevo.setRol(personaRef.getRolPrincipal());
+
+                // rol tomado del map precargado (NO del proxy)
+                nuevo.setRol(rolPorPersonaId.get(personaId));
+
                 nuevo.setEstado(Estado.ACTIVE);
 
                 existentes.add(nuevo);
@@ -221,7 +255,7 @@ public class SalaService {
             }
         }
 
-        // 4) desactivar los existentes que NO vienen en la lista
+        // 5) desactivar los existentes que NO vienen en la lista
         for (SalaPersona sp : existentes) {
             Long personaId = sp.getPersona().getId();
             if (!incomingIds.contains(personaId)) {
@@ -229,7 +263,7 @@ public class SalaService {
             }
         }
 
-        // 5) persistir todo en batch lógico
+        // 6) persistir todo en un solo flush/commit (por estar en @Transactional)
         salaPersonaRepository.saveAll(existentes);
     }
 
