@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.enums.Rol;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
@@ -36,18 +37,22 @@ public class SelloCaratulaService {
     private JasperPrint getReport(Documento documento) throws IOException, JRException {
 
         String[] expendienteYear = documento.getCarpeta().getExpediente().split("/");
-        // TODO: Se modifica por el momenrto el flujo de obtención de actores principales
-        // En atención de EL Ing. Alfonso se muesrra el primer actor principal y demandado encontrado y si hay mas de uno se coloca la leyenda "y otros."
+        // TODO: Se modifica por el momenrto el flujo de obtención de actores
+        // principales
+        // En atención de EL Ing. Alfonso se muesrra el primer actor principal y
+        // demandado encontrado y si hay mas de uno se coloca la leyenda "y otros."
+        boolean isPieza = documento.getCarpeta().getTipoPieza() == null;
+        String actor, demandado;
+        if (isPieza) {
+            actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+            demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        } else {
+            actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Actor");
+            demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Demandado");
 
-        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
-        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        }
 
         String procedencia = getExhortoPromocion(documento);
-
-        if (documento.getCarpeta().getTipoPieza()!=null){
-            actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Actor");
-            demandado= getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Demandado");
-        }
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
@@ -63,7 +68,7 @@ public class SelloCaratulaService {
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
 
-        if (documento.getCarpeta().getTipoPieza()!= null){
+        if (documento.getCarpeta().getTipoPieza() != null) {
             parameters.put("tipoPieza", documento.getCarpeta().getTipoPieza().getTipo());
         }
 
@@ -75,12 +80,12 @@ public class SelloCaratulaService {
                 new JREmptyDataSource());
     }
 
-
     public String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
-        List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+        List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte,
+                rol);
         PersonaDocumentoRecord persona = personas.get(0);
-       
+
         if (persona == null) {
             return "";
         }
@@ -90,7 +95,7 @@ public class SelloCaratulaService {
         String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
 
         String nombreFormateado = String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
-        if(personas.size() > 1){
+        if (personas.size() > 1) {
             return String.format("%s y otros.", nombreFormateado);
         }
 
