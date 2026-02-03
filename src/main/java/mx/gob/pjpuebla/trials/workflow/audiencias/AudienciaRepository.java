@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaOralidadFamiliarRecord;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaProgramadaRecord;
+import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,6 +93,45 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             """)
     Page<Audiencia> findByJuzgado(@Param("juzgado") Juzgado juzgado, @Param("key") String key, Pageable pageable);
     
+    //TODO evaluar si incluir asistenciaPersonaDocumento
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
+            audiencia.id,
+            tipoAudiencia.nombre,
+            CASE 
+                WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                ELSE 'Por asignar'
+            END,
+            carpeta.expediente,
+            carpeta.id,
+            sala.nombre,
+            audiencia.fechaAudiencia,
+            audiencia.estatusAudiencia,
+            juzgadoSala.id,
+            tipoJuicio.nombre,
+            null,
+            audiencia.inicio,
+            audiencia.fin
+
+            )
+            FROM Audiencia audiencia
+            JOIN audiencia.carpeta carpeta
+            JOIN carpeta.tipoJuicio tipoJuicio
+            JOIN audiencia.tipoAudiencia tipoAudiencia
+            JOIN audiencia.sala sala
+            JOIN sala.juzgado juzgadoSala
+            LEFT JOIN sala.juez juez
+            WHERE juzgadoSala = :juzgado
+             AND audiencia.estado = 0
+            AND (
+                :key IS NULL
+                OR lower(carpeta.expediente) LIKE %:key%
+                OR lower(tipoAudiencia.nombre) LIKE %:key%
+                OR lower(sala.nombre) LIKE %:key%
+            )
+            """)
+    Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(Pageable pageable, @Param("juzgado") Juzgado juzgado, @Param("key") String key);
+
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord(
             a.inicio,

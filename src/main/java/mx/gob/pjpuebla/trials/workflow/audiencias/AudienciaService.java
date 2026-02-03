@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersona;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
@@ -72,6 +74,7 @@ public class AudienciaService {
         private final CarpetaRepository carpetaRepository;
         private final PersonaDocumentoRepository personaDocumentoRepository;
         private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
+        private final SalaPersonaRepository salaPersonaRepository;
         @Value("${app.root-folder}")
         private String rootFolder; // Ruta raíz de la digitalización
         private String basePath; // Ruta base para la digitalización
@@ -140,64 +143,10 @@ public class AudienciaService {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
+                String rolPrincipal = persona.getRolPrincipal();
+                List<SalaPersona> salasPersonas = salaPersonaRepository.findAllByPersonaId(persona.getId().intValue());
 
-                Page<Audiencia> page = audienciaRepository.findByJuzgado(juzgado, key, pageable);
-
-                List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
-                                .map(item -> {
-                                        String nombreCompleto = item.getSala().getJuez().getNombre() + " "
-                                                        + item.getSala().getJuez().getApellidoPaterno();
-
-                                        if (item.getSala().getJuez().getApellidoMaterno() != null) {
-                                                nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
-                                        }
-
-                                        List<AsistenciaPersonaDocumento> personasDocumento = personaDocumentoRepository
-                                                        .findByCarpetaId(item.getCarpeta().getId())
-                                                        .stream()
-                                                        .map(pd -> {
-                                                                AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
-                                                                                .findByPersonaDocumentoIdAndAudienciaId(
-                                                                                                pd.getId(),
-                                                                                                item.getId());
-
-                                                                return new AsistenciaPersonaDocumento(
-                                                                                pd.getId(),
-                                                                                pd.getNombre(),
-                                                                                pd.getApellidoPaterno(),
-                                                                                pd.getApellidoMaterno(),
-                                                                                pd.getRol().name(),
-                                                                                pd.getTipoPartes().getNombre(),
-                                                                                asistenciaAudiencia != null
-                                                                                                ? asistenciaAudiencia
-                                                                                                                .getAsistencia()
-                                                                                                : null,
-                                                                                asistenciaAudiencia != null
-                                                                                                ? asistenciaAudiencia
-                                                                                                                .getDocumentoIdentificacion()
-                                                                                                                .getName()
-                                                                                                : null);
-                                                        })
-                                                        .collect(Collectors.toList());
-
-                                        return new AudienciasGeneralesResponseRecord(
-                                                        item.getId(),
-                                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
-                                                        nombreCompleto,
-                                                        item.getCarpeta().getExpediente(),
-                                                        item.getCarpeta().getId(),
-                                                        item.getSala().getNombre(),
-                                                        item.getFechaAudiencia(),
-                                                        item.getEstatusAudiencia(),
-                                                        juzgado.getId(),
-                                                        item.getCarpeta().getTipoJuicio().getNombre(),
-                                                        personasDocumento,
-                                                        item.getInicio().toLocalTime().toString(),
-                                                        item.getFin().toLocalTime().toString());
-                                })
-                                .toList();
-
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                return audienciaRepository.findAudienciasGenerales(pageable, juzgado, key);
         }
 
         public void deleteAudiencia(Integer id) {

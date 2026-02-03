@@ -35,4 +35,6 @@ public interface SalaPersonaRepository extends JpaRepository<SalaPersona, Intege
     List<SalaPersona> findAllBySalaIdWithPersona(Integer salaId);
 
     List<SalaPersona> findAllBySala_Id(Integer salaId);
+
+    List<SalaPersona> findAllByPersonaId(Integer personaId);
 }
