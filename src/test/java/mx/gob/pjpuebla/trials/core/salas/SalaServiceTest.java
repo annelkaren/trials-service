@@ -218,8 +218,7 @@ class SalaServiceTest {
                 .willReturn(Optional.of(bloque));
         given(juzgadoRepository.findById(sala.getJuzgado().getId()))
                 .willReturn(Optional.of(juzgado));
-        given(mockSalaRepository.countByJuzgadoId(sala.getJuzgado().getId()))
-                .willReturn(0L);
+
         given(mockSalaRepository.getReferenceById(sala.getId()))
                 .willReturn(sala);
         given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
@@ -253,8 +252,7 @@ class SalaServiceTest {
                 .willReturn(Optional.of(bloque));
         given(juzgadoRepository.findById(sala.getJuzgado().getId()))
                 .willReturn(Optional.of(juzgado));
-        given(mockSalaRepository.countByJuzgadoId(sala.getJuzgado().getId()))
-                .willReturn(0L);
+    
         given(mockSalaRepository.getReferenceById(sala.getId()))
                 .willReturn(sala);
         given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))

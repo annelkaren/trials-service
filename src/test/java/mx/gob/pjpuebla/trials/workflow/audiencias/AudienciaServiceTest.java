@@ -13,6 +13,7 @@ import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -95,6 +96,9 @@ class AudienciaServiceTest {
 
     @Mock
     private AsistenciaAudienciaRepository asistenciaAudienciaRepository;
+
+    @Mock
+    private SalaPersonaRepository salaPersonaRepository;
 
     @InjectMocks
     private AudienciaService audienciaService;
@@ -195,6 +199,7 @@ class AudienciaServiceTest {
         Juzgado juzgado = new Juzgado();
         persona.setJuzgado(juzgado);
         when(personaService.getAuditor()).thenReturn(persona);
+        when(salaPersonaRepository.findAllByPersonaId(anyInt())).thenReturn(Collections.emptyList());
 
         Persona juez = new Persona();
         juez.setNombre("Juez 1");
@@ -224,14 +229,24 @@ class AudienciaServiceTest {
         personaDocumento.setRol(Rol.PRINCIPAL);
         personaDocumento.setTipoPartes(TipoPartesSetUp.createTipoPartes());
 
-        when(personaDocumentoRepository.findByCarpetaId(audiencia.getCarpeta().getId()))
-                .thenReturn(Collections.singletonList(personaDocumento));
-        when(asistenciaAudienciaRepository.findByPersonaDocumentoIdAndAudienciaId(eq(1), eq(audiencia.getId())))
-                .thenReturn(asistenciaAudiencia);
-
-        List<Audiencia> audiencias = Collections.singletonList(audiencia);
-        Page<Audiencia> pageAudiencias = new PageImpl<>(audiencias, PageRequest.of(0, 10), audiencias.size());
-        when(audienciaRepository.findByJuzgado(eq(juzgado), anyString(), any(Pageable.class)))
+        AudienciasGeneralesResponseRecord responseRecord = new AudienciasGeneralesResponseRecord(
+                audiencia.getId(),
+                tipoAudiencia.getNombre(),
+                nombreCompletoJuez,
+                carpeta.getExpediente(),
+                carpeta.getId(),
+                sala.getNombre(),
+                audiencia.getFechaAudiencia(),
+                audiencia.getEstatusAudiencia(),
+                null,
+                null,
+                Collections.emptyList(),
+                audiencia.getInicio(),
+                audiencia.getFin()
+        );
+        Page<AudienciasGeneralesResponseRecord> pageAudiencias =
+                new PageImpl<>(Collections.singletonList(responseRecord), PageRequest.of(0, 10), 1);
+        when(audienciaRepository.findAudienciasGenerales(any(Pageable.class), eq(juzgado), anyString()))
                 .thenReturn(pageAudiencias);
 
         Page<AudienciasGeneralesResponseRecord> result = audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
