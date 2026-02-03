@@ -81,7 +81,7 @@ class SalaResourceTest {
     @Test
     void create_success() throws Exception {
         Integer expectedId = 1;
-        given(mockSalaService.create(SalaSetUp.createSala(Estado.ACTIVE)))
+        given(mockSalaService.create(any(SalaRecordSave.class)))
                 .willReturn(expectedId);
 
         mockMvc.perform(
@@ -95,7 +95,7 @@ class SalaResourceTest {
     @Test
     void update_success() throws Exception {
         Integer expectedId = 1;
-        given(mockSalaService.create(SalaSetUp.createSala(Estado.ACTIVE)))
+        given(mockSalaService.update(any(SalaRecordSave.class)))
                 .willReturn(expectedId);
 
         mockMvc.perform(
@@ -108,7 +108,8 @@ class SalaResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockSalaService.update(SalaSetUp.createSala(Estado.ACTIVE)))
+        SalaRecordSave salaRecordSave = new SalaRecordSave(null, null, null, null, null, null);
+        given(mockSalaService.update(salaRecordSave))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(

@@ -207,7 +207,6 @@ public class DocumentoService {
         public Pageable mapSortBandejaEntrada(Pageable pageable) {
                 Sort original = pageable.getSort();
 
-                // ✅ fallback: fechaAsignacion desc + id desc (sin COALESCE)
                 if (original == null || original.isUnsorted()) {
                         Sort fallback = JpaSort.unsafe("m.fechaAsignacion").descending()
                                         .and(JpaSort.unsafe("m.id").descending());
@@ -842,7 +841,7 @@ public class DocumentoService {
                         Pageable pageable, String key, String folio, String expediente,
                         String materia, String tipoEntrada, String organoJurisdiccional,
                         LocalDateTime fechaFrom, LocalDateTime fechaTo) {
-                                
+
                 Persona currentUser = personaService.getAuditor();
                 Integer juzgadoId = getJuzgadoId(currentUser);
                 Integer oficialiaId = getOficialiaId(currentUser);
@@ -860,7 +859,7 @@ public class DocumentoService {
                 String cmdFolio = (cmd != null) ? norm(cmd.folio()).toLowerCase() : "";
                 String keyGlobal = (cmd != null) ? "" : norm(key);
 
-                Pageable pageableWithSort = mapSortBandejaEntrada(pageable); 
+                Pageable pageableWithSort = mapSortBandejaEntrada(pageable);
 
                 return movimientoRepository.getBandejaHistorialPage(
                                 pageableWithSort,
@@ -1197,17 +1196,11 @@ public class DocumentoService {
 
                 Integer juzgadoId = currentUser.getJuzgado().getId();
 
-                // normal
                 List<EstadoCarpeta> estados = List.of(EstadoCarpeta.TURNADO);
                 boolean isOficialMayor = false;
 
-                // normal usa motivoSingle + destino obligatorio
                 String motivoSingle = EstadoCarpeta.TURNADO.name();
-                List<String> motivosList = List.of(); // dummy, no se usa en normal
-
-                // en normal isInterno siempre true como en tu query actual
-                String userJuzgadoNombre = null;
-                String userOficialiaNombre = null;
+                List<String> motivosList = List.of(); 
 
                 Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
                                 ? Pageable.unpaged()
@@ -1231,8 +1224,8 @@ public class DocumentoService {
                                 motivoTurnado,
                                 fechaFrom,
                                 fechaTo,
-                                userJuzgadoNombre,
-                                userOficialiaNombre);
+                                null,
+                                null);
         }
 
         // metodos de filtros:
@@ -1529,7 +1522,6 @@ public class DocumentoService {
                 personaAsignada = null;
                 return new PageImpl<>(list, pageable, page.getTotalElements());
         }
-
 
         private String getObservaciones(Carpeta carpeta, String observaciones) {
                 if (carpeta == null) {
@@ -1853,9 +1845,13 @@ public class DocumentoService {
 
         public Page<OficioResponseRecord> getAllOficios(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
+                Persona persona = personaService.getAuditor();
+                List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
+                                : persona.getOficialia().getJuzgados();
 
                 Page<OficioResponseRecord> page = documentoRepository.findAllByTipoDocumento(key, TipoDocumento.OFICIO,
-                                pageable);
+                                pageable, juzgados);
+
                 List<OficioResponseRecord> list = page.getContent().stream()
                                 .map(item -> new OficioResponseRecord(
                                                 item.docId(),

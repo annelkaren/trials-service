@@ -241,6 +241,7 @@ public class PersonaService {
         List<JuezRecord> jueces = new ArrayList<>();
         List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
         List<String> ids = usuarioService.findAllByRoles(roles);
+
         for (String id : ids) {
             Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId,
                     List.of(Estado.ACTIVE));
@@ -255,6 +256,13 @@ public class PersonaService {
             }
         }
         return jueces;
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
+    public List<JuezRecord> findAllJuecesFromSala(Integer juzgadoId) {
+        List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
+        List<String> ids = usuarioService.findAllByRolesRealm(roles);
+        return personaRepository.findByUsuarioInAndJuzgadoIdAndEstadoIn(ids, juzgadoId, List.of(Estado.ACTIVE));
     }
 
     @Transactional(transactionManager = "primaryTransactionManager")
@@ -408,6 +416,12 @@ public class PersonaService {
                 "",
                 "",
                 roleService.getRolesByUserId(p.getUsuario()).get(0).name())).toList();
+    }
+
+    public List<PersonaRecordResponse> getSecretarios(Integer juzgadoId) {
+        List<String> ids = usuarioService.findAllByRolesRealm(List.of("SECRETARIO"));
+        return personaRepository.getSecretariosOfJuzgado(ids, juzgadoId, List.of(Estado.ACTIVE));
+
     }
 
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {

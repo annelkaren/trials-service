@@ -215,11 +215,22 @@ public class JuzgadoService {
         }
     }
 
+/**
+ * Obtiene la ConexidadJuzgado asociada a la persona DocumentoItemRecord
+ * que se encuentra en la base de datos.
+ *
+ * @param actor PersonaDocumentoItemRecord del actor
+ * @param demandado PersonaDocumentItemRecord del demandado
+ * @param tipoJuicio tipo de juicio al que se relaciona con el actor
+ * @return la ConexidadJuzgado asociada al actor, o null si no se encuentra
+ */
     public Juzgado getConexidadJuzgado(PersonaDocumentoItemRecord actor, PersonaDocumentoItemRecord demandado,
                                        TipoJuicio tipoJuicio) {
         List<Carpeta> carpetas = new ArrayList<>();
+
         TipoPartes actorParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Actor", tipoJuicio.getId())
                 .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", actor.tipoParte().toString()));
+        
         TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId())
                 .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte().toString()));
 
@@ -232,6 +243,19 @@ public class JuzgadoService {
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
                         demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(),
                         demandado.pseudonimo(), demandadoParte.getId());
+        
+        //SI el tipo de juicio es familiar oralidad se busca por CURP.
+        if(tipoJuicio.getTipoSistema().getNombre().equals("Oral")){
+                List<PersonaDocumento> registrosActorCurp = personaDocumentoRepository
+                        .findByCurpAndTipoPartesId(actor.curp(), actorParte.getId());
+
+                List<PersonaDocumento> registrosDemandadoCurp = personaDocumentoRepository
+                        .findByCurpAndTipoPartesId(demandado.curp(), demandadoParte.getId());
+                
+                registrosActor.addAll(registrosActorCurp);
+                registrosDemandado.addAll(registrosDemandadoCurp);
+
+        }
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;

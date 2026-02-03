@@ -39,8 +39,6 @@ import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
-import mx.gob.pjpuebla.trials.core.usuarios.Usuario;
-import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -204,48 +202,42 @@ class CarpetaServiceTest {
                 tipoJuicio = TipoJuicioSetUp.createTipoJuicio(tipoSistema, materia);
         }
 
-@Test
-void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
+        @Test
+        void getCarpetaResponseByNumExpYearJuzgado_return_CarpetaResponseRecord() {
 
-    juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
-    given(juzgadoRepository.findById(anyInt()))
-        .willReturn(Optional.of(juzgado));
+                juzgado.setMateria(new Materia().setNombre("TEST")); // no penal
+                given(juzgadoRepository.findById(anyInt()))
+                                .willReturn(Optional.of(juzgado));
 
+                validCarpeta.setJuzgado(juzgado);
 
-    validCarpeta.setJuzgado(juzgado);
+                given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
+                                .willReturn(Optional.of(validCarpeta));
 
-    given(carpetaRepository.findByExpedienteAndJuzgadoId(anyString(), anyInt()))
-        .willReturn(Optional.of(validCarpeta));
+                // Act
+                CarpetaResponseRecord resp = target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
 
+                // Assert
+                assertThat(resp)
+                                .isInstanceOf(CarpetaResponseRecord.class)
+                                .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
+                                .hasFieldOrPropertyWithValue("actor", "")
+                                .hasFieldOrPropertyWithValue("demandado", "");
+        }
 
-    // Act
-    CarpetaResponseRecord resp =
-        target.getCarpetaResponseByNumExpYearJuzgado("000001/2024", 1);
+        @Test
+        void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
+                Integer juzgadoId = 1;
 
-    // Assert
-    assertThat(resp)
-        .isInstanceOf(CarpetaResponseRecord.class)
-        .hasFieldOrPropertyWithValue("idCarpeta", validCarpeta.getId())
-        .hasFieldOrPropertyWithValue("actor", "")
-        .hasFieldOrPropertyWithValue("demandado", "");
-}
+                given(juzgadoRepository.findById(anyInt()))
+                                .willReturn(Optional.empty());
 
+                NotFoundException ex = assertThrows(
+                                NotFoundException.class,
+                                () -> target.getCarpetaResponseByNumExpYearJuzgado("1", juzgadoId));
 
-@Test
-void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
-    Integer juzgadoId = 1;
-
-    given(juzgadoRepository.findById(anyInt()))
-        .willReturn(Optional.empty());
-
-    NotFoundException ex = assertThrows(
-        NotFoundException.class,
-        () -> target.getCarpetaResponseByNumExpYearJuzgado("1", juzgadoId)
-    );
-
-    assertThat(ex.getMessage()).contains("Juzgado no encontrado");
-}
-
+                assertThat(ex.getMessage()).contains("Juzgado no encontrado");
+        }
 
         @Test
         void getPersonaDocumentoById_return_carpetaId() {
@@ -272,6 +264,7 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
                 Persona persona = PersonaSetUp.createPersona();
                 Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
+                Movimiento movimiento = new Movimiento().setDocumento(documento);
 
                 // Relacionando juzgado de persona y documento
                 persona.setJuzgado(juzgado1);
@@ -279,12 +272,13 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
-                given(documentoRepository.findById(documentoId))
-                                .willReturn(Optional.of(documento));
+
                 given(carpetaRepository.findByDocumentoId(documento.getId()))
                                 .willReturn(bandejaRecepcion);
                 given(carpetaRepository.findAnexosByDocumentoId(bandejaRecepcion.documentoId()))
                                 .willReturn(anexosRecepcion);
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
 
                 BandejaRecepcionRecord result = target.getBandejaRecepcionByDocumentoId(documentoId);
 
@@ -299,16 +293,14 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
 
         @Test
         void getBandejaRecepcionByDocumentoId_DocumentoNotFound_ThrowsNotFoundException() {
-                Integer documentoId = 1;
+                Integer movimientoId = 1;
 
-                Persona persona = PersonaSetUp.createPersona();
-                given(personaService.getAuditor())
-                                .willReturn(persona);
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.empty());
+                given(movimientoRepository.findById(movimientoId))
+                                .willReturn(Optional.empty());
 
-                assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
+                assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(movimientoId))
                                 .isInstanceOf(NotFoundException.class)
-                                .hasMessageContaining("No se encontró el documento asociado al documentoId");
+                                .hasMessageContaining("Movimiento no encontrado");
         }
 
         @Test
@@ -317,13 +309,16 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
 
                 Persona persona = PersonaSetUp.createPersona();
                 Documento documento = DocumentoSetUp.create(tipoJuicio);
+                Movimiento movimiento = new Movimiento().setDocumento(documento);
 
                 persona.setJuzgado(JuzgadoSetUp.createJuzgado());
                 documento.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado().setId(13));
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
 
                 assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
                                 .isInstanceOf(ResponseStatusException.class)
@@ -341,11 +336,15 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
 
                 persona.setJuzgado(juzgado1);
                 documento.getCarpeta().setJuzgado(juzgado1);
+                Movimiento movimiento = new Movimiento().setDocumento(documento);
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+
                 given(carpetaRepository.findByDocumentoId(documento.getId())).willReturn(null);
+
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
 
                 assertThatThrownBy(() -> target.getBandejaRecepcionByDocumentoId(documentoId))
                                 .isInstanceOf(NotFoundException.class)
@@ -363,7 +362,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                                1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 documento.setTipoDocumento(TipoDocumento.PROMOCION);
                 Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
@@ -372,12 +372,15 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 persona.setJuzgado(juzgado2);
                 documento.getCarpeta().setJuzgado(juzgado2);
                 documento.getCarpeta().setConcepto(concepto);
+                Movimiento movimiento = new Movimiento().setDocumento(documento);
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
                 given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+
                 given(documentoRepository.save(any(Documento.class))).willReturn(documento);
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
 
                 List<DocumentoRecord> response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord);
 
@@ -398,7 +401,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                                1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 Anexo anexo = AnexoSetUp.createAnexo().setEstado(EstadoAnexo.RECIBIDO);
                 Persona persona = PersonaSetUp.createPersona();
@@ -406,13 +410,15 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 persona.setJuzgado(juzgado2);
                 documento.getCarpeta().setJuzgado(juzgado2);
                 documento.getCarpeta().setConcepto(concepto);
+                Movimiento movimiento = new Movimiento().setDocumento(documento);
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
                 given(anexoRepository.findById(1)).willReturn(Optional.of(anexo));
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+               
                 given(documentoRepository.save(any(Documento.class))).willReturn(documento);
-
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
                 List<DocumentoRecord> response = target.actualizarInformacionAnexos(docRecepcionMovimientosRecord);
 
                 assertThat(response).isNotNull();
@@ -431,17 +437,22 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                                1));
                 Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
                 Persona persona = PersonaSetUp.createPersona();
                 Juzgado juzgado2 = JuzgadoSetUp.createJuzgado();
                 persona.setJuzgado(juzgado2);
                 documento.getCarpeta().setJuzgado(juzgado2);
+                 Movimiento movimiento = new Movimiento().setDocumento(documento);
+
 
                 given(personaService.getAuditor())
                                 .willReturn(persona);
                 given(anexoRepository.findById(1)).willReturn(Optional.empty());
-                given(documentoRepository.findById(documentoId)).willReturn(Optional.of(documento));
+                
+                given(movimientoRepository.findById(documentoId))
+                                .willReturn(Optional.of(movimiento));
 
                 NotFoundException exception = assertThrows(NotFoundException.class,
                                 () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord));
@@ -460,10 +471,12 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1",
+                                                1));
                 Persona persona = PersonaSetUp.createPersona();
                 Juzgado juzgado1 = JuzgadoSetUp.createJuzgado();
                 persona.setJuzgado(juzgado1);
+                
 
                 lenient().when(personaService.getAuditor())
                                 .thenReturn(persona);
@@ -473,8 +486,7 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 () -> target.actualizarInformacionAnexos(docRecepcionMovimientosRecord));
 
                 assertThat(exception.getMessage())
-                                .isEqualTo("404 NOT_FOUND \"No se encontró el documento asociado al documentoId: "
-                                                + documentoId + "\"");
+                                .isEqualTo("404 NOT_FOUND \"Movimiento no encontrado\"");
         }
 
         @Test
@@ -627,7 +639,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 "Gómez",
                                 "TipoParte1",
                                 Rol.PRINCIPAL,
-                                "");
+                                "",
+                                null);
                 PersonaDataRecord participante2 = new PersonaDataRecord(
                                 2,
                                 "Maria",
@@ -635,7 +648,8 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 "Sánchez",
                                 "TipoParte2",
                                 Rol.PRINCIPAL,
-                                "");
+                                "",
+                                null);
 
                 given(carpetaRepository.findById(any())).willReturn(Optional.of(documento.getCarpeta()));
                 given(personaDocumentoRepository.findPersonaDocumentoDataByCarpetaId(any()))
@@ -829,7 +843,6 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 .setExpediente(expediente)
                                 .setCarpetaPadre(validCarpeta);
 
-                given(migracionesRepository.findByCarpetaId(anyInt())).willReturn(m);
                 given(carpetaRepository.findById(any())).willReturn(Optional.of(validCarpeta));
                 given(tipoPiezaRepository.findByIdOrClave(any(), eq("AD")))
                                 .willReturn(Collections.singletonList(tipoPieza));
@@ -839,6 +852,7 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 given(carpetaRepository.save(any())).willReturn(piezaTmp);
                 given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
                 given(conceptoRepository.findByNombre("Nueva creación")).willReturn(Optional.of(concepto));
+                given(carpetaRepository.getNumeroPieza(anyInt(), anyString())).willReturn(1);
                 piezaTmp = target.createPieza(carpetaPadreId, piezaRecord);
                 assertThat(piezaTmp).isNotNull()
                                 .hasFieldOrPropertyWithValue("expediente", "000001/2024/AD01");
@@ -940,22 +954,34 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                                 .setCujus("Saul Perez")
                                 .setTipoJuicio(tipoJuicio);
 
+                List<LibroGobiernoRecord> records = List.of(new LibroGobiernoRecord(1, "000001/2024",
+                                LocalDateTime.now(), "Tipo Juicio", "Actor", "Demandado", true, "Saul Perez"));
+                Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(records);
+
                 given(personaService.getAuditor()).willReturn(persona);
-                given(carpetaRepository.findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"),
-                                eq(PageRequest.of(0, 10))))
-                                .willReturn(carpetaPage);
+                given(carpetaRepository.findLibroGobierno(
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any(),
+                                any()))
+                                .willReturn(libroGobiernoPage);
 
-                given(carpetaDetalleRepository.findByCarpetaId(any())).willReturn(carpetaDetalle);
-
-                Page<LibroGobiernoRecord> result = target.libroDeGobierno("000001/2024", PageRequest.of(0, 10));
+                Page<LibroGobiernoRecord> result = target.libroDeGobierno(PageRequest.of(0, 10), "000001/2024", null,
+                                null, null, null, null, null, null);
 
                 assertThat(result).isNotNull();
 
                 verify(personaService).getAuditor();
-                verify(carpetaRepository).findByJuzgado(eq(Collections.singletonList(juzgado)), eq("000001/2024"),
-                                eq(PageRequest.of(0, 10)));
-
-                verify(carpetaDetalleRepository, times(1)).findByCarpetaId(any());
+                verify(carpetaRepository).findLibroGobierno(any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any(), any(), any());
         }
 
         @Test
@@ -1029,62 +1055,61 @@ void getCarpetaResponseByNumExpYearJuzgado_return_not_found() {
                 verify(carpetaRepository, times(1)).saveAll(Arrays.asList(carpeta1, carpeta2, carpeta3));
         }
 
-    @Test
-    void devolverArchivoJudicialTest() {
-        // ---------- GIVEN ----------
-        List<Integer> ids = Arrays.asList(1, 2);
-        LocalDate fechaTermino = LocalDate.now();
-        Boolean urgente = true;
+        @Test
+        void devolverArchivoJudicialTest() {
+                // ---------- GIVEN ----------
+                List<Integer> ids = Arrays.asList(1, 2);
+                LocalDate fechaTermino = LocalDate.now();
+                Boolean urgente = true;
 
-        Carpeta carpeta1 = new Carpeta();
-        carpeta1.setId(1);
+                Carpeta carpeta1 = new Carpeta();
+                carpeta1.setId(1);
 
-        Carpeta carpeta2 = new Carpeta();
-        carpeta2.setId(2);
+                Carpeta carpeta2 = new Carpeta();
+                carpeta2.setId(2);
 
-        given(carpetaRepository.findById(1))
-                .willReturn(Optional.of(carpeta1));
-        given(carpetaRepository.findById(2))
-                .willReturn(Optional.of(carpeta2));
-        given(paqueteRepository.save(any(Paquete.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
+                given(carpetaRepository.findById(1))
+                                .willReturn(Optional.of(carpeta1));
+                given(carpetaRepository.findById(2))
+                                .willReturn(Optional.of(carpeta2));
+                given(paqueteRepository.save(any(Paquete.class)))
+                                .willAnswer(invocation -> invocation.getArgument(0));
 
-        // Para createPaquete()
-        given(paqueteRepository.findMaxPaqueteId()).willReturn(10);
+                // Para createPaquete()
+                given(paqueteRepository.findMaxPaqueteId()).willReturn(10);
 
-        Persona usuarioMock = new Persona();
-        given(personaService.getAuditor()).willReturn(usuarioMock);
+                Persona usuarioMock = new Persona();
+                given(personaService.getAuditor()).willReturn(usuarioMock);
 
-        // ---------- WHEN ----------
-        target.devolverArchivoJudicial(ids, urgente, fechaTermino);
+                // ---------- WHEN ----------
+                target.devolverArchivoJudicial(ids, urgente, fechaTermino);
 
-        // ---------- THEN ----------
-        assertThat(carpeta1.getEstatus())
-                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
-        assertThat(carpeta2.getEstatus())
-                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
+                // ---------- THEN ----------
+                assertThat(carpeta1.getEstatus())
+                                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
+                assertThat(carpeta2.getEstatus())
+                                .isEqualTo(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT);
 
-        assertThat(carpeta1.getPaquete()).isNotNull();
-        assertThat(carpeta2.getPaquete()).isNotNull();
+                assertThat(carpeta1.getPaquete()).isNotNull();
+                assertThat(carpeta2.getPaquete()).isNotNull();
 
-        assertThat(carpeta1.getPaquete())
-                .isSameAs(carpeta2.getPaquete()); // mismo paquete
+                assertThat(carpeta1.getPaquete())
+                                .isSameAs(carpeta2.getPaquete()); // mismo paquete
 
-        assertThat(carpeta1.getPaquete().getUrgente()).isNotNull();
-        assertThat(carpeta1.getPaquete().getFechaTermino())
-                .isEqualTo(fechaTermino);
+                assertThat(carpeta1.getPaquete().getUrgente()).isNotNull();
+                assertThat(carpeta1.getPaquete().getFechaTermino())
+                                .isEqualTo(fechaTermino);
 
-        verify(carpetaRepository, times(2))
-                .save(any(Carpeta.class));
+                verify(carpetaRepository, times(2))
+                                .save(any(Carpeta.class));
 
-        verify(movimientoService, times(2))
-                .createMovimento(
-                        any(Carpeta.class),
-                        isNull(),
-                        any(),
-                        isNull(),
-                        eq(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT.name())
-                );
-    }
+                verify(movimientoService, times(2))
+                                .createMovimento(
+                                                any(Carpeta.class),
+                                                isNull(),
+                                                any(),
+                                                isNull(),
+                                                eq(EstadoCarpeta.ARCHIVO_JUDICIAL_SOLICIT.name()));
+        }
 
 }

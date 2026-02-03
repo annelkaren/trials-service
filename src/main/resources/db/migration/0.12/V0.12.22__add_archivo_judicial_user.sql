@@ -8,19 +8,19 @@ FROM TRIALS.TBL_ESTADO_CIVIL AS EC, TRIALS.TBL_ESCOLARIDADES AS E WHERE EC.S_NOM
 UPDATE TRIALS.TBL_MENUS SET S_ROL = S_ROL || ',ARCHIVO_JUDICIAL' WHERE S_NOMBRE = 'Bandeja' and S_LINK = '';
 
 INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
-VALUES (51, 'Histórico', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/historico', 3, 4);
+VALUES (52, 'Histórico', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/historico', 3, 4);
 
 INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
-VALUES (52, 'Archivo Judicial', 'ARCHIVO_JUDICIAL', '', 7, null);
+VALUES (53, 'Archivo Judicial', 'ARCHIVO_JUDICIAL', '', 7, null);
 
 INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
-VALUES (53, 'Envío', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/envio', 1, 4);
+VALUES (54, 'Envío', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/envio', 1, 4);
 
 INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
-VALUES (54, 'Solicitudes', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/solicitudes', 2, 4);
+VALUES (55, 'Solicitudes', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/solicitudes', 2, 4);
 
 INSERT INTO TRIALS.TBL_MENUS (PN_ID, S_NOMBRE, S_ROL, S_LINK, N_ORDER, FN_PARENT)
-VALUES (55, 'Consulta', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/recibidos', 5, 52);
+VALUES (56, 'Consulta', 'ARCHIVO_JUDICIAL', '/api/archivojudicial/bandeja/recibidos', 5, 53);
 
 CREATE SEQUENCE IF NOT EXISTS TRIALS.SEQ_PAQUETE_ID START WITH 100;
 ALTER SEQUENCE TRIALS.SEQ_PAQUETE_ID INCREMENT BY 1;

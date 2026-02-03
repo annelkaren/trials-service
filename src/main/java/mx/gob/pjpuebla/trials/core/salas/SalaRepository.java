@@ -24,12 +24,14 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,
                 new mx.gob.pjpuebla.trials.core.personas.JuezRecord(juez.id, COALESCE(juez.nombre, '') || ' ' || COALESCE(juez.apellidoPaterno, '') || ' ' ||COALESCE(juez.apellidoMaterno, '')),
                 new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(juzgado.id, juzgado.nombre, juzgado.estado, juzgado.materia.nombre),
-                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal)
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(bloque.id, bloque.horaInicial, bloque.horaFinal),
+                null
             )
             FROM Sala s
             LEFT JOIN s.juez juez
             LEFT JOIN s.juzgado juzgado
             LEFT JOIN s.bloque bloque
+
             WHERE s.id = :id AND s.estado IN :estados
             """)
     Optional<SalaRecordResponse> findByIdAndEstadoIn(Integer id, List<Estado> estados);
@@ -73,6 +75,8 @@ List<SalaRecord> findByJuzgado(Integer juzgadoId);
     long countByJuzgadoId(int juzgadoId);
 
     List<Sala> findAllByJuezId(Long id);
+    
+    Optional<Sala> findByJuezId(Integer id);
 
     List<Sala> findByJuzgado(Juzgado juzgado);
 

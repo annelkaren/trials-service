@@ -15,6 +15,7 @@ public record DomicilioRecord(
         String localidad,
         String colonia,
         String codigoPostal,
-        String referencia
+        String referencia,
+        String ciudad
 ) implements Serializable {
 }

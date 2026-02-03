@@ -9,5 +9,6 @@ public record DocumentoRecepcionMovimientosRecord(
     Integer documentoId,
     List<AnexoBandejaRecepcionRecord> anexos,
     String observaciones,
-    String recomendaciones
+    String recomendaciones,
+    Integer movimientoId
 ) implements Serializable {}

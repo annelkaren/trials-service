@@ -409,7 +409,7 @@ public class DocumentoMigracionService {
             PiezaRecord piezaRecord = new PiezaRecord(null, amparo.tipo(), null,
                     Collections.singletonList(amparoDoc.getId()));
 
-            carpetaService.createPieza(amparo.carpeta().getId(), piezaRecord); 
+            carpetaService.createPiezaMigracion(amparo.carpeta().getId(), piezaRecord); 
         });
 
         return documentos;

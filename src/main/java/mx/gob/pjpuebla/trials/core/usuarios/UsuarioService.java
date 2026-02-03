@@ -36,15 +36,32 @@ public class UsuarioService {
     public String create(Persona persona) {
         UserRepresentation userRepresentation = mapUser(persona);
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+
         try (Response response = keycloak.realm(keycloakSecurityUtil.realm).users().create(userRepresentation)) {
+
             if (response.getStatus() == HttpStatus.CREATED.value()) {
-                sendMail(userRepresentation.getEmail(),
+                 String userId = response.getLocation()
+                    .getPath()
+                    .replaceAll(".*/([^/]+)$", "$1");
+
+                //Controlamos cualquier excepción que pueda derivar del envio de correo para no interrumplir flujo de creación de usuario:
+                try {
+                     sendMail(userRepresentation.getEmail(),
                         userRepresentation.getCredentials().get(0).getValue(),
                        userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
-                return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+
+                } catch (Exception ex) {
+                    log.error("No se pudo enviar correo de bienvenida al usuario {}",
+                        userRepresentation.getEmail(), ex);
+                }
+               
+
+                return userId;
+
             } else {
                 throw new UserAlreadyExistException("El correo electrónico proporcionado ya se encuentra registrado", persona.getCorreoElectronico());
             }
+
         }
     }
 
@@ -62,6 +79,32 @@ public class UsuarioService {
 
         return jueces;
     }
+
+    public List<String> findAllByRolesRealm(List<String> roleNames) {
+    if (roleNames == null || roleNames.isEmpty()) return List.of();
+
+    Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+
+    // Evita duplicados si un usuario tiene 2 roles de los que buscas
+    Set<String> userIds = new LinkedHashSet<>();
+
+    var realm = keycloak.realm(keycloakSecurityUtil.realm);
+
+    for (String roleName : roleNames) {
+        if (roleName == null || roleName.isBlank()) continue;
+
+        
+        List<UserRepresentation> members = realm.roles()
+                .get(roleName)
+                .getUserMembers();
+
+        for (UserRepresentation u : members) {
+            userIds.add(u.getId());
+        }
+    }
+
+    return new ArrayList<>(userIds);
+}
 
     public String findByUsernameAndRol(String username, String rol) {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();

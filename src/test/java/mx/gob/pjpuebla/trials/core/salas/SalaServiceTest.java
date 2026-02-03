@@ -21,7 +21,9 @@ import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.materias.MateriaSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.core.sedes.SedeRepository;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
@@ -81,6 +83,10 @@ class SalaServiceTest {
     EventoRepository eventoRepository;
     @Mock
     EventoService eventoService;
+    @Mock
+    PersonaService personaService;
+    @Mock
+    SalaPersonaRepository salaPersonaRepository;
     @InjectMocks
     SalaService salaService;
 
@@ -112,6 +118,8 @@ class SalaServiceTest {
         salaLocal.setJuzgado(juzgado);
         salaLocal.setJuez(juez);
 
+        juez.setJuzgado(juzgado);
+
         sala = salaLocal;
         salaRecordResponse = SalaSetUp.salaRecordResponse();
     }
@@ -119,6 +127,9 @@ class SalaServiceTest {
     @Test
     void getAll_return_page() {
         List<Sala> listPage = Collections.singletonList(sala);
+
+        given(personaService.getAuditor()).willReturn(juez);
+
         given(mockSalaRepository.findAll(any(Example.class), any(PageRequest.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
@@ -134,6 +145,8 @@ class SalaServiceTest {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
                 .willReturn(Optional.of(salaRecordResponse));
+        given(salaPersonaRepository.getSecretariosFromSala(sala.getId()))
+                .willReturn(Collections.emptyList());
 
         SalaRecordResponse result = salaService.findById(sala.getId());
         assertThat(result).isOfAnyClassIn(SalaRecordResponse.class)
@@ -157,34 +170,102 @@ class SalaServiceTest {
         assertThat(assertThrows.getMessage()).contains("Sala no encontrada");
     }
 
+   
     @Test
     void create() {
-        given(mockSalaRepository.save(sala))
+    SalaRecordSave salaRecordSave = new SalaRecordSave(
+                sala.getId(),
+                sala.getBloque().getId(),
+                sala.getEstado(),
+                sala.getJuez().getId().intValue(),
+                sala.getJuzgado().getId(),
+                null);
+        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                .willReturn(Optional.empty());
+        given(personaRepository.findById(sala.getJuez().getId()))
+                .willReturn(Optional.of(juez));
+        given(bloqueRepository.findById(sala.getBloque().getId()))
+                .willReturn(Optional.of(bloque));
+        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                .willReturn(Optional.of(juzgado));
+        given(mockSalaRepository.countByJuzgadoId(sala.getJuzgado().getId()))
+                .willReturn(0L);
+        given(mockSalaRepository.save(any(Sala.class)))
                 .willReturn(sala);
 
-        Integer response = salaService.create(sala);
+        Integer response = salaService.create(salaRecordSave);
 
         assertThat(response).isEqualTo(sala.getId());
     }
 
     @Test
     void update() {
-        given(mockSalaRepository.save(sala))
+           SalaRecordSave salaRecordSave = new SalaRecordSave(
+                sala.getId(),
+                sala.getBloque().getId(),
+                sala.getEstado(),
+                sala.getJuez().getId().intValue(),
+                sala.getJuzgado().getId(),
+                null);
+
+        given(mockSalaRepository.findById(sala.getId()))
+                .willReturn(Optional.of(sala));
+        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                .willReturn(Optional.empty());
+        given(personaRepository.findById(sala.getJuez().getId()))
+                .willReturn(Optional.of(juez));
+        given(bloqueRepository.findById(sala.getBloque().getId()))
+                .willReturn(Optional.of(bloque));
+        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                .willReturn(Optional.of(juzgado));
+
+        given(mockSalaRepository.getReferenceById(sala.getId()))
+                .willReturn(sala);
+        given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
+                .willReturn(Collections.emptyList());
+        given(salaPersonaRepository.saveAll(any()))
+                .willReturn(Collections.emptyList());
+        given(mockSalaRepository.save(any(Sala.class)))
                 .willReturn(sala);
 
-        Integer response = salaService.update(sala);
+        Integer response = salaService.update(salaRecordSave);
 
         assertThat(response).isEqualTo(sala.getId());
     }
 
     @Test
     void update_return_optimistic_exception() {
-        given(mockSalaRepository.save(sala)).willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
-
+           SalaRecordSave salaRecordSave = new SalaRecordSave(
+                sala.getId(),
+                sala.getBloque().getId(),
+                sala.getEstado(),
+                sala.getJuez().getId().intValue(),
+                sala.getJuzgado().getId(),
+                null);
+        given(mockSalaRepository.findById(sala.getId()))
+                .willReturn(Optional.of(sala));
+        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                .willReturn(Optional.empty());
+        given(personaRepository.findById(sala.getJuez().getId()))
+                .willReturn(Optional.of(juez));
+        given(bloqueRepository.findById(sala.getBloque().getId()))
+                .willReturn(Optional.of(bloque));
+        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                .willReturn(Optional.of(juzgado));
+    
+        given(mockSalaRepository.getReferenceById(sala.getId()))
+                .willReturn(sala);
+        given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
+                .willReturn(Collections.emptyList());
+        given(salaPersonaRepository.saveAll(any()))
+                .willReturn(Collections.emptyList());
+        given(mockSalaRepository.save(any(Sala.class)))
+                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
+        
         InvalidVersionException assertThrows = assertThrows(
                 InvalidVersionException.class,
                 () -> {
-                    salaService.update(sala);
+                    salaService.update(salaRecordSave);
                 });
 
         assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");

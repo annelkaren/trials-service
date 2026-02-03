@@ -20,7 +20,8 @@ import java.util.List;
 @Repository
 public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumento, Integer> {
 
-    List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+    List<PersonaDocumento> findByNombreAndApellidoPaternoAndApellidoMaternoAndPseudonimoAndTipoPartesId(String nombre,
+            String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
@@ -44,12 +45,12 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             AND pd.rol IN :rol
             AND tp.nombre = :parte
             """)
-    PersonaDocumentoRecord findPersonaAndTipoParteByCarpetaId(
+    List<PersonaDocumentoRecord> findPersonaAndTipoParteByCarpetaId(
             @Param("carpetaId") Integer carpetaId,
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);
 
-        @Query("""
+    @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
                 pd.nombre,
                 pd.apellidoPaterno,
@@ -76,34 +77,37 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
             @Param("parte") String parte,
             @Param("rol") List<Rol> rol);
 
-            @Query("""
-                SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
-                    pd.nombre,
-                    pd.apellidoPaterno,
-                    pd.apellidoMaterno,
-                    pd.pseudonimo,
-                    pd.tipoPersona,
-                    pd.curp,
-                    pd.domicilio,
-                    pd.celular,
-                    pd.correoElectronico,
-                    tp.nombre,
-                    tp.id,
-                    c.id
-                )
-                FROM PersonaDocumento pd
-                JOIN pd.carpeta c
-                JOIN pd.tipoPartes tp
-                WHERE c.id = :carpetaId
-                AND pd.rol IN :rol
-                AND tp.nombre = :parte
-                """)
-        List<PersonaDocumentoRecord> findPersonaAndTipoParteByCarpetaIdPenal(
-                @Param("carpetaId") Integer carpetaId,
-                @Param("parte") String parte,
-                @Param("rol") List<Rol> rol);
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
+                pd.nombre,
+                pd.apellidoPaterno,
+                pd.apellidoMaterno,
+                pd.pseudonimo,
+                pd.tipoPersona,
+                pd.curp,
+                pd.domicilio,
+                pd.celular,
+                pd.correoElectronico,
+                tp.nombre,
+                tp.id,
+                c.id
+            )
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta c
+            JOIN pd.tipoPartes tp
+            WHERE c.id = :carpetaId
+            AND pd.rol IN :rol
+            AND tp.nombre = :parte
+            """)
+    List<PersonaDocumentoRecord> findPersonaAndTipoParteByCarpetaIdPenal(
+            @Param("carpetaId") Integer carpetaId,
+            @Param("parte") String parte,
+            @Param("rol") List<Rol> rol);
 
-    List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+    List<PersonaDocumento> findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+            String nombre, String apellidoPaterno, String apellidoMaterno, String pseudonimo, Integer tipoParte);
+
+    List<PersonaDocumento> findByCurpAndTipoPartesId(String curp, Integer tipoParte);
 
     @Query("""
              SELECT new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord(
@@ -146,94 +150,122 @@ public interface PersonaDocumentoRepository extends JpaRepository<PersonaDocumen
     List<ApelacionRecordResponse> findPersonaDocumentoByCarpetaId(Integer carpetaId);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord(c.expediente, j.nombre, tj.nombre)
-        FROM PersonaDocumento pd
-        JOIN pd.carpeta c
-        JOIN c.juzgado j
-        JOIN c.tipoJuicio tj
-        JOIN tj.materia m
-        WHERE lower(pd.nombre) = lower(:nombreA)
-        AND lower(pd.apellidoPaterno) = lower(:apellidoP)
-        AND lower(pd.apellidoMaterno) = lower(:apellidoM)
-        AND m.id = :materiaId
-        """)
-    List<RelacionExpedientesRecord> getAllExpedienteRelacionadosByPersonaId(@Param("nombreA") String nombreA, @Param("apellidoM") String apellidoM, @Param("apellidoP") String apellidoP, @Param("materiaId") Integer materiaId);
-
+            SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord(c.expediente, j.nombre, tj.nombre)
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta c
+            JOIN c.juzgado j
+            JOIN c.tipoJuicio tj
+            JOIN tj.materia m
+            WHERE lower(pd.nombre) = lower(:nombreA)
+            AND lower(pd.apellidoPaterno) = lower(:apellidoP)
+            AND lower(pd.apellidoMaterno) = lower(:apellidoM)
+            AND m.id = :materiaId
+            """)
+    List<RelacionExpedientesRecord> getAllExpedienteRelacionadosByPersonaId(@Param("nombreA") String nombreA,
+            @Param("apellidoM") String apellidoM, @Param("apellidoP") String apellidoP,
+            @Param("materiaId") Integer materiaId);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.carpeta.records.PersonaDataRecord(
-                pd.id,
-                pd.nombre,
-                pd.apellidoPaterno,
-                pd.apellidoMaterno,
-                pd.tipoPartes.nombre,
-                pd.rol,
-                pd.pseudonimo
+              pd.id,
+              pd.nombre,
+              pd.apellidoPaterno,
+              pd.apellidoMaterno,
+              pd.tipoPartes.nombre,
+              pd.rol,
+              pd.pseudonimo,
+              new mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoDetalleNotificacionRecord(
+                CASE
+                  WHEN pd.tipoNotificacion = 0 THEN 'Estrado'
+                  WHEN pd.tipoNotificacion = 1 THEN 'Correo electrónico'
+                  WHEN pd.tipoNotificacion = 2 THEN 'Domicilio'
+                  WHEN pd.tipoNotificacion = 3 THEN 'Ninguno'
+                  WHEN pd.tipoNotificacion = 4 THEN 'Domicilio emplazamiento'
+                  WHEN pd.tipoNotificacion = 5 THEN 'Exhorto'
+                  WHEN pd.tipoNotificacion = 6 THEN 'Edictos'
+                  ELSE 'No registrada'
+                END,
+                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
+                  dom.id,
+                  dom.calle,
+                  dom.exterior,
+                  dom.interior,
+                  dom.estadoRepublica,
+                  dom.municipio,
+                  dom.localidad,
+                  dom.colonia,
+                  dom.codigoPostal,
+                  dom.referencia,
+                  dom.ciudad
+                ),
+                pd.correoNotificacion
+              )
             )
             FROM PersonaDocumento pd
+            LEFT JOIN pd.fnDomicilio dom
             WHERE pd.carpeta.id = :carpetaId
             """)
-    List<PersonaDataRecord> findPersonaDocumentoDataByCarpetaId(Integer carpetaId);
+    List<PersonaDataRecord> findPersonaDocumentoDataByCarpetaId(@Param("carpetaId") Integer carpetaId);
 
     List<PersonaDocumento> findByCarpetaIdAndRolAndTipoPartesNombre(Integer id, Rol rol, String parte);
 
     List<PersonaDocumento> findByCarpetaId(Integer carpetaId);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
-         tj.nombre, '', '', juz.nombre, 0L, '')
-        FROM PersonaDocumento pd
-        JOIN pd.carpeta ca
-        JOIN ca.juzgado juz
-        JOIN ca.tipoJuicio tj
-        JOIN tj.materia ma
-        WHERE (lower(pd.correoElectronico) = :username
-        OR lower(pd.correoNotificacion) = :username)
-        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
-        AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
-        GROUP BY (ca.id, ca.expediente, ma.nombre, tj.nombre, juz.nombre)
-        """)
+            SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
+             tj.nombre, '', '', juz.nombre, 0L, '')
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN ca.juzgado juz
+            JOIN ca.tipoJuicio tj
+            JOIN tj.materia ma
+            WHERE (lower(pd.correoElectronico) = :username
+            OR lower(pd.correoNotificacion) = :username)
+            AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+            AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
+            GROUP BY (ca.id, ca.expediente, ma.nombre, tj.nombre, juz.nombre)
+            """)
     Page<LitiganteExpedientesRecord> findByUsername(String username, String key, Pageable pageable);
 
-        @Query("""
-        SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
-         tj.nombre, '', '', juz.nombre, 0L, '')
-        FROM PersonaDocumento pd
-        JOIN pd.carpeta ca
-        JOIN ca.juzgado juz
-        JOIN ca.tipoJuicio tj
-        JOIN tj.materia ma
-        WHERE (lower(pd.correoElectronico) = :username
-        OR lower(pd.correoNotificacion) = :username)
-        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
-        AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
-        GROUP BY (ca.id, ca.expediente, ma.nombre, tj.nombre, juz.nombre)
-        """)
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, ca.expediente,  ma.nombre,
+             tj.nombre, '', '', juz.nombre, 0L, '')
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN ca.juzgado juz
+            JOIN ca.tipoJuicio tj
+            JOIN tj.materia ma
+            WHERE (lower(pd.correoElectronico) = :username
+            OR lower(pd.correoNotificacion) = :username)
+            AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+            AND (lower(juz.nombre) LIKE %:key% OR lower(ca.expediente) LIKE %:key%)
+            GROUP BY (ca.id, ca.expediente, ma.nombre, tj.nombre, juz.nombre)
+            """)
     List<LitiganteExpedientesRecord> findByUsernameList(String username, String key);
 
     @Query("""
-        SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, CONCAT(ca.expediente, ' - ', juz.nombre),
-        '', '', '', '', '', 0L, '')
-        FROM PersonaDocumento pd
-        JOIN pd.carpeta ca
-        JOIN ca.juzgado juz
-        WHERE (lower(pd.correoElectronico) = :username
-        OR lower(pd.correoNotificacion) = :username)
-        AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
-        GROUP BY (ca.id, ca.expediente, juz.nombre)
-        ORDER BY juz.nombre, ca.expediente
-        """)
+            SELECT new mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord(ca.id, CONCAT(ca.expediente, ' - ', juz.nombre),
+            '', '', '', '', '', 0L, '')
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN ca.juzgado juz
+            WHERE (lower(pd.correoElectronico) = :username
+            OR lower(pd.correoNotificacion) = :username)
+            AND tipoNotificacion = mx.gob.pjpuebla.trials.util.enums.TipoNotificacion.CORREO_ELECTRONICO
+            GROUP BY (ca.id, ca.expediente, juz.nombre)
+            ORDER BY juz.nombre, ca.expediente
+            """)
     List<LitiganteExpedientesRecord> findAllByUsername(String username);
 
     @Query("""
-        SELECT CONCAT(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno)
-        FROM PersonaDocumento pd
-        JOIN pd.carpeta ca
-        JOIN ca.tipoJuicio tj
-        JOIN pd.tipoPartes tp
-        WHERE pd.rol = mx.gob.pjpuebla.trials.util.enums.Rol.PRINCIPAL
-        and ca.id = :carpetaId and tp.nombre = :tipoParte
-        """)
+            SELECT CONCAT(pd.nombre, ' ', pd.apellidoPaterno, ' ', pd.apellidoMaterno)
+            FROM PersonaDocumento pd
+            JOIN pd.carpeta ca
+            JOIN ca.tipoJuicio tj
+            JOIN pd.tipoPartes tp
+            WHERE pd.rol = mx.gob.pjpuebla.trials.util.enums.Rol.PRINCIPAL
+            and ca.id = :carpetaId and tp.nombre = :tipoParte
+            """)
     List<String> findTipoPartePrincipalByCarpetaId(Integer carpetaId, String tipoParte);
 
     @Query("""

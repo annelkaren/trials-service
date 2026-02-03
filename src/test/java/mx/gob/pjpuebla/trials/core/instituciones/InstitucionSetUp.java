@@ -32,7 +32,7 @@ public class InstitucionSetUp {
         Domicilio dom = DomicilioSetUp.createDomicilio();
         DomicilioRecord domRecord = new DomicilioRecord(dom.getId(), dom.getCalle(), dom.getExterior(),
                 dom.getInterior(), dom.getEstadoRepublica(), dom.getMunicipio(), dom.getLocalidad(), dom.getColonia(),
-                dom.getCodigoPostal(), dom.getReferencia());
+                dom.getCodigoPostal(), dom.getReferencia(), dom.getCiudad());
 
         return new InstitucionRecordResponse(
                 1,

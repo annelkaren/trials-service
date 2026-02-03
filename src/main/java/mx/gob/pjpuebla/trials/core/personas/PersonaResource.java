@@ -15,8 +15,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.List;
+
 
 
 @RequiredArgsConstructor
@@ -53,6 +53,11 @@ public class PersonaResource {
     @GetMapping("/jueces/{juzgadoId}")
     public List<JuezRecord> getJueces(@PathVariable Integer juzgadoId) {
         return this.personaService.findAllJueces(juzgadoId);
+    }
+
+    @GetMapping("/jueces/{juzgadoId}/sala")
+    public List<JuezRecord> getJuecesBySala(@PathVariable Integer juzgadoId) {
+        return this.personaService.findAllJuecesFromSala(juzgadoId);
     }
 
     @GetMapping("/jueces/materia/{materiaId}")
@@ -123,6 +128,11 @@ public class PersonaResource {
     @GetMapping("/mensajeros")
     public List<PersonaRecordResponse> findAllMensajeros(){
         return personaService.findAllMensajeros();
+    }
+
+    @GetMapping("/secretarios/{juzgadoId}")
+    public List<PersonaRecordResponse> getSecretarios(@PathVariable Integer juzgadoId) {
+        return personaService.getSecretarios(juzgadoId);
     }
 
     @GetMapping("/centroTrabajo/login")

@@ -137,7 +137,7 @@ class CarpetaResourceTest {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
+                                                "recomendacion 1", 1));
                 List<DocumentoRecord> responseRecord = List.of(
                 new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
 
@@ -426,7 +426,9 @@ class CarpetaResourceTest {
                                 ""));
                 Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
-                when(mockCarpetaService.libroDeGobierno(anyString(), any(Pageable.class)))
+                when(mockCarpetaService.libroDeGobierno(any(Pageable.class), anyString(), anyString(),
+                                any(LocalDate.class), any(LocalDate.class), anyString(), anyString(),
+                                anyString(), anyString()))
                                 .thenReturn(libroGobiernoPage);
 
                 mockMvc.perform(get("/api/workflow/carpeta/librogobierno")
