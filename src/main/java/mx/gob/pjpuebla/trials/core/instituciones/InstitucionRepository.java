@@ -119,7 +119,7 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
     Pageable pageable, List<Estado> estados);
 
     @Query("""
-            SELECT 
+            SELECT
                 new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord(
                     i.id,
                     i.nombre,

@@ -98,7 +98,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
             audiencia.id,
             tipoAudiencia.nombre,
-            CASE 
+            CASE
                 WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
                 ELSE 'Por asignar'
             END,

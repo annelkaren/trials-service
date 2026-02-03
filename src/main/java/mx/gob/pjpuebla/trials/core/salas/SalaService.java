@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -124,14 +125,13 @@ public class SalaService {
 
     public Integer create(SalaRecordSave salaRecord) {
 
-        Sala sala = new Sala();
-
         // Validar juez no asignado a otra sala (distinta a esta)
         if (salaRecord.juezId() != null) {
             validaJuezAsignadoAOtraSala(salaRecord.juezId(), null);
         }
 
-        sala = construirSala(salaRecord, sala);
+        Sala sala = construirSala(salaRecord, new Sala());
+        ;
         sala = salaRepository.save(sala);
 
         if (salaRecord.secretarios() != null && !salaRecord.secretarios().isEmpty()) {
@@ -144,10 +144,9 @@ public class SalaService {
     private void validaJuezAsignadoAOtraSala(Integer juezId, Integer salaIdActual) {
         salaRepository.findByJuezId(juezId)
                 .ifPresent(salaConEseJuez -> {
-                    boolean esOtraSala = (salaIdActual == null) || !salaConEseJuez.getId().equals(salaIdActual);
-                    if (esOtraSala) {
+                    if (!Objects.equals(salaConEseJuez.getId(), salaIdActual)) {
                         throw new ConflictException(
-                                "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
+                                "El juez seleccionado tiene una sala asignada, por favor elija otro.");
                     }
                 });
     }
@@ -186,7 +185,7 @@ public class SalaService {
                 validaJuezAsignadoAOtraSala(salaRecord.juezId(), sala.getId());
             }
 
-            sala = construirSala(salaRecord, sala);
+            construirSala(salaRecord, sala);
 
             actualizarSecretariosEnSala(sala.getId(), salaRecord.secretarios());
 
