@@ -45,7 +45,7 @@ public class SalaResource {
     }
 
     @PostMapping
-    public Integer create(@RequestBody @Valid Sala sala) {
+    public Integer create(@RequestBody SalaRecordSave sala) {
         return this.salaService.create(sala);
     }
 

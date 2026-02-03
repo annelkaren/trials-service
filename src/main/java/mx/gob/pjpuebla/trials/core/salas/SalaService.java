@@ -124,31 +124,28 @@ public class SalaService {
 
     public Integer create(SalaRecordSave salaRecord) {
 
-        Sala sala =  new Sala();
+        Sala sala = new Sala();
 
         // Validar juez no asignado a otra sala (distinta a esta)
         if (salaRecord.juezId() != null) {
             validaJuezAsignadoAOtraSala(salaRecord.juezId(), null);
         }
-       
-        sala = construirSala(salaRecord, sala);
 
-        if(salaRecord.secretarios().size() > 0) {
+        sala = construirSala(salaRecord, sala);
+        sala = salaRepository.save(sala);
+
+        if (salaRecord.secretarios() != null && !salaRecord.secretarios().isEmpty()) {
             actualizarSecretariosEnSala(sala.getId(), salaRecord.secretarios());
         }
 
-        sala = salaRepository.save(sala);
         return sala.getId();
     }
 
-    private void validaJuezAsignadoAOtraSala(Integer juezId, Integer salaId) {
+    private void validaJuezAsignadoAOtraSala(Integer juezId, Integer salaIdActual) {
         salaRepository.findByJuezId(juezId)
                 .ifPresent(salaConEseJuez -> {
-
-                    if (salaId != null && !salaConEseJuez.getId().equals(salaId)) {
-                        throw new ConflictException(
-                                "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
-                    }else {
+                    boolean esOtraSala = (salaIdActual == null) || !salaConEseJuez.getId().equals(salaIdActual);
+                    if (esOtraSala) {
                         throw new ConflictException(
                                 "El juez seleccionado tiene una sala asignada, por favor eliga otro.");
                     }
@@ -156,17 +153,24 @@ public class SalaService {
     }
 
     private Sala construirSala(SalaRecordSave salaRecord, Sala sala) {
-         Persona juez = salaRecord.juezId() != null
+        Persona juez = salaRecord.juezId() != null
                 ? juezRepository.findById(salaRecord.juezId().longValue()).orElse(null)
                 : null;
-        Bloque bloque = bloqueRepository.findById(salaRecord.bloqueId()).orElse(null);
-        Juzgado juzgado = juzgadoRepository.findById(salaRecord.juzgadoId()).orElse(null);
+
+        Bloque bloque = bloqueRepository.findById(salaRecord.bloqueId())
+                .orElseThrow(() -> new NotFoundException("Bloque no encontrado", "bloqueId: " + salaRecord.bloqueId()));
+
+        Juzgado juzgado = juzgadoRepository.findById(salaRecord.juzgadoId())
+                .orElseThrow(
+                        () -> new NotFoundException("Juzgado no encontrado", "juzgadoId: " + salaRecord.juzgadoId()));
 
         sala.setJuez(juez);
         sala.setBloque(bloque);
         sala.setJuzgado(juzgado);
-        sala.setNombre(getNameOfSala(sala));
-
+        sala.setEstado(salaRecord.estado());
+        if (sala.getId() == null) {
+            sala.setNombre(getNameOfSala(sala));
+        }
 
         return sala;
     }
