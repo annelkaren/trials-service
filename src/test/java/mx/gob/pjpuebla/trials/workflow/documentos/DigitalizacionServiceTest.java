@@ -37,6 +37,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import org.junit.jupiter.api.io.TempDir;
 
 @Slf4j
 class DigitalizacionServiceTest {
@@ -55,6 +56,9 @@ class DigitalizacionServiceTest {
 
     private Path createdDirectory;
 
+    @TempDir
+    Path tempDir;
+
     @InjectMocks
     private DigitalizacionService digitalizacionService;
 
@@ -65,7 +69,7 @@ class DigitalizacionServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", "/opt/pjp/files");
+        ReflectionTestUtils.setField(digitalizacionService, "rootFolder", tempDir.toString());
     }
 
     /**
@@ -128,7 +132,8 @@ class DigitalizacionServiceTest {
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         assertNotNull(createdDirectory);
-        assertTrue(createdDirectory.toString().contains("/2024/JuzgadoTEST/000001"));
+        String normalizedPath = createdDirectory.toString().replace("\\", "/");
+        assertTrue(normalizedPath.contains("2024/JuzgadoTEST/000001"));
     }
 
     /**
@@ -148,7 +153,9 @@ class DigitalizacionServiceTest {
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         assertNotNull(createdDirectory);
-        assertTrue(createdDirectory.toString().contains("JuzgadoTEST/E000006"));
+        String normalizedPath = createdDirectory.toString().replace("\\", "/");
+        String currentYear = String.valueOf(java.time.LocalDate.now().getYear());
+        assertTrue(normalizedPath.contains(currentYear + "/JuzgadoTEST/E000006/2024"));
     }
 
     /**
@@ -199,6 +206,7 @@ class DigitalizacionServiceTest {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        documento.setData(DocumentoSetUp.createDocumentoData("Jurisdiccional"));
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
         long expectedFileSize = fileMock.getSize();
 
@@ -271,6 +279,7 @@ class DigitalizacionServiceTest {
         documento.setMigrado(Migrado.NO);
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        documento.setData(DocumentoSetUp.createDocumentoData("Jurisdiccional"));
 
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
@@ -298,6 +307,7 @@ class DigitalizacionServiceTest {
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
         documento.setMigrado(Migrado.NO);
+        documento.setData(DocumentoSetUp.createDocumentoData("Jurisdiccional"));
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
 
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
@@ -372,6 +382,7 @@ class DigitalizacionServiceTest {
         createdDirectory = digitalizacionService.crearDirectorio(documento);
 
         assertNotNull(createdDirectory);
-        assertTrue(createdDirectory.toString().contains("/2024/JuzgadoTEST/000001/Audiencias/1/Asistencia"));
+        String normalizedPath = createdDirectory.toString().replace("\\", "/");
+        assertTrue(normalizedPath.contains("2024/JuzgadoTEST/000001/Audiencias/1/Asistencia"));
     }
 }
