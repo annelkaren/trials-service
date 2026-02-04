@@ -197,6 +197,13 @@ public class DigitalizacionService {
                 || documento.getEstatus() == EstadoCarpeta.EDICION)) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
         } else {
+            if (documento.getData().getTipoOficio().equals("Administrativo")) {
+                documentoRepository.save(documento);
+
+                return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
+                        nombreUnicoArchivo);
+            }
+
             if (documento.getCarpeta().getEstatus() == EstadoCarpeta.DEVUELTO_A_OFICIALIA
                     || documento.getCarpeta().getEstatus() == EstadoCarpeta.EDICION) {
                 documento.getCarpeta().setEstatus(EstadoCarpeta.CAPTURA);
@@ -550,13 +557,12 @@ public class DigitalizacionService {
         return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
     }
 
-    public byte[] getPromocionMigrada(Integer promocionId){
+    public byte[] getPromocionMigrada(Integer promocionId) {
         Optional<DetallesProm> detallesProm = detallesPromRepository.findById(promocionId);
-        if(detallesProm.isEmpty()){
+        if (detallesProm.isEmpty()) {
             throw new NotFoundException("El archivo no existe en el servidor", promocionId.toString());
         }
-        String ruta =  detallesProm.get().getArchivo();
-         
+        String ruta = detallesProm.get().getArchivo();
 
         if (ruta.contentEquals("172.16.6.11")) {
             throw new NotFoundException("El archivo no existe en el servidor", ruta);
@@ -565,10 +571,10 @@ public class DigitalizacionService {
         return ftpDownloader.downloadFromFullUrl("ftp://" + ruta);
     }
 
-    public ResponseGenericRecord  autorizarRedigitalizacion(Integer documentoId){
+    public ResponseGenericRecord autorizarRedigitalizacion(Integer documentoId) {
         Documento documento = documentoRepository.findById(documentoId).orElseThrow(
                 () -> new NotFoundException("No se pudo encontrar el documento con ID: ", documentoId.toString()));
-        
+
         documento.setRuta(null);
         documentoRepository.save(documento);
         return new ResponseGenericRecord("Autorización registrada exitosamente", "OK");

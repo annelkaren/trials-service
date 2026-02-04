@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -26,8 +27,14 @@ public class DocumentoDetalleService {
     private String rootFolder;
 
     public DigitalizacionRecord digitalizacionAcuse(DocumentoDetalleRecord documento) {
-        Documento doc = documentoRepository.findById(documento.documentoId()).orElse(null);
-        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId()).orElse(null);
+        
+        Documento doc = documentoRepository.findById(documento.documentoId())
+            .orElseThrow(() -> new NotFoundException("El id del documento no ha sido encontrado", "ID: " + documento.documentoId()));
+            
+
+        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId())
+            .orElseThrow(() -> new NotFoundException("El detalle del documento no ha sido encontrado", "ID: " + doc.getId()));
+        
         DigitalizacionRecord digitalizacion = digitalizacion2Service.guardarArchivo(documento.file(), documento.documentoId());
 
 

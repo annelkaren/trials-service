@@ -81,6 +81,7 @@ public class MigrarExpedienteUseCase {
     // 1) Entrada y validación de estado
     EntradasMigracion entrada = entradasReader.buscarEntradasPorFiltros(exp, year, claveJuzgado);
     MigracionExpedienteResult migracionExpedienteResult = expedienteFueMigrado(entrada, exp, year, claveJuzgado);
+    
     if (migracionExpedienteResult != null) {
       return migracionExpedienteResult;
     }
@@ -177,10 +178,12 @@ public class MigrarExpedienteUseCase {
   }
 
 
-  private MigracionExpedienteResult expedienteFueMigrado(EntradasMigracion entrada,
+  private MigracionExpedienteResult expedienteFueMigrado(
+      EntradasMigracion entrada,
       String exp,
       Integer year,
       String claveJuzgado) {
+
     if (!EstadoMigracion.EXPEDIENTE_MIGRADO.equals(entrada.getEstadoMigracion())) {
       return null;
     }

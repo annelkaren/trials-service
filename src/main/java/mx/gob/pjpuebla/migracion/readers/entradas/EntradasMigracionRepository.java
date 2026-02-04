@@ -29,7 +29,7 @@ public interface EntradasMigracionRepository extends JpaRepository<EntradasMigra
     @Query("""
                 SELECT e
                 FROM EntradasMigracion e
-                WHERE COALESCE(NULLIF(TRIM(LEADING '0' FROM e.expediente), ''), '0') = :expediente
+                WHERE e.expediente = :expediente
                   AND e.amo = :amo
                   AND e.juzgado = :juzgado
                   AND e.status = :status

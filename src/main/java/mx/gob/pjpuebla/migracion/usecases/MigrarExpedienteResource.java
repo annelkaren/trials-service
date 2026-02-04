@@ -43,7 +43,7 @@ public class MigrarExpedienteResource {
 
     // 2) Migrar expediente completo (expediente + documentos)
     @PostMapping("/completo")
-    public ResponseEntity<ApiResponse<MigracionExpedienteResult>> migrarExpedienteCompleto(
+    public ResponseEntity<String> migrarExpedienteCompleto(
             @RequestBody @Valid EntradasMigracionSaveRecord request
     ) {
         MigracionExpedienteResult result = migrarExpedienteUseCase.migrarExpedienteCompleto(
@@ -52,12 +52,14 @@ public class MigrarExpedienteResource {
                 request.juzgado()
         );
 
-        ApiResponse<MigracionExpedienteResult> response =
-                ApiResponseFactory.success("Expediente migrado completamente (expediente + documentos)", result);
+        if(result == null) {
+            return ResponseEntity.status(500).body("Ha ocurrido un error al migrar el expediente");
+        }
+        
 
         return ResponseEntity
-                .status(response.getStatus())
-                .body(response);
+                .status(200)
+                .body("Expediente migrado correctamente");
     }
 
 }
