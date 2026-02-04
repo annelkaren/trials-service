@@ -88,8 +88,8 @@ public class EntradasMigracionReader {
 
     public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
 
-        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
-
+        String expedienteNormalizado = expediente;
+        
         return entradasMigracionRepository
                 .findTopByExpedienteNormalizado(expedienteNormalizado, amo, juzgadoCodigo, "A")
                 .orElseThrow(() -> {
@@ -101,7 +101,7 @@ public class EntradasMigracionReader {
 
     public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo,
             String juzgadoCodigo) {
-        String expedienteNormalizado = Utils.normalizarExpediente(expediente);
+        String expedienteNormalizado = expediente;
         return entradasMigracionRepository.findTopByExpedienteNormalizado(
                 expedienteNormalizado,
                 amo,

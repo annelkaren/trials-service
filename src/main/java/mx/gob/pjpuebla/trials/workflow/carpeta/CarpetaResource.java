@@ -45,11 +45,10 @@ public class CarpetaResource {
     public ResponseEntity<CarpetaResponsePromSinExpediente> getCarpetaPromocionSinExpediente(
             @RequestParam String numExpediente,
             @RequestParam Integer year,
-            @RequestParam(required = false, name = "isApelacion") Integer isApelacion,
             @RequestParam(required = false, name = "idJuzgado") Integer juzgadoId) {
 
         CarpetaResponsePromSinExpediente carpetaResponseRecord = carpetaService.getCarpetaPromocionSinExpediente(
-                numExpediente + "/" + year, juzgadoId, isApelacion);
+                numExpediente + "/" + year, juzgadoId);
         return ResponseEntity.ok(carpetaResponseRecord);
     }
 

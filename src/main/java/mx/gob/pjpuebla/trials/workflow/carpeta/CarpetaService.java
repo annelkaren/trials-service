@@ -178,8 +178,7 @@ public class CarpetaService {
                                 estadoJuzgado, carpeta.getEstatus().getEtiqueta());
         }
 
-        public CarpetaResponsePromSinExpediente getCarpetaPromocionSinExpediente(String expediente, Integer juzgadoId,
-                        Integer isApelacion) {
+        public CarpetaResponsePromSinExpediente getCarpetaPromocionSinExpediente(String expediente, Integer juzgadoId) {
 
                 // Usar una variable auxiliar para la modificación de juzgadoId
                 final Integer finalJuzgadoId = obtenerJuzgadoIdFinal(juzgadoId);
@@ -194,7 +193,7 @@ public class CarpetaService {
                                         juzgado.getNomenclatura(), finalJuzgadoId);
                 } else {
                         carpetaOptional = carpetaRepository.findByExpedienteNormalizadoAndJuzgadoId(
-                                        Utils.normalizarExpediente(expediente), finalJuzgadoId);
+                                        expediente, finalJuzgadoId);
                 }
 
                 if (carpetaOptional.isPresent()) {
@@ -210,13 +209,11 @@ public class CarpetaService {
                                 carpetaResponse.estadoCarpeta(),
                                 Integer.valueOf(200),
                                 "carpeta encontrada");
+                }
 
-                } else if (isApelacion == 1) {
-                        return new CarpetaResponsePromSinExpediente(404,
-                                        "El expediente no existe en el sistema");
-                } else {
+                else {
                         // Busca en SECJ PHP:
-                        String expedientePart = Utils.normalizarExpediente(expediente.split("/")[0]);
+                        String expedientePart = expediente.split("/")[0];
                         Integer year = Integer.parseInt(expediente.split("/")[1]);
 
                         log.info("Expediente: {}, Year: {}, Juzgado: {}", expedientePart, year,
