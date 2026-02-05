@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.eventos.EventoService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
-import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudiencia;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import org.springframework.data.domain.Page;
@@ -22,9 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-
-
-
 
 @RequiredArgsConstructor
 @RestController

@@ -22,7 +22,6 @@ import mx.gob.pjpuebla.migracion.utils.UtilsMigracion;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -87,13 +86,11 @@ public class EntradasMigracionReader {
     }
 
     public EntradasMigracion buscarEntradasPorFiltros(String expediente, Integer amo, String juzgadoCodigo) {
-
-        String expedienteNormalizado = expediente;
         
         return entradasMigracionRepository
-                .findTopByExpedienteNormalizado(expedienteNormalizado, amo, juzgadoCodigo, "A")
+                .findTopByExpedienteNormalizado(expediente, amo, juzgadoCodigo, "A")
                 .orElseThrow(() -> {
-                    String clave = expedienteNormalizado + "-" + amo + "-" + juzgadoCodigo;
+                    String clave = expediente + "-" + amo + "-" + juzgadoCodigo;
                     log.error("No se encontraron resultados para la clave {}", clave);
                     return new NotFoundException("No se encontraron resultados", clave);
                 });
@@ -101,9 +98,8 @@ public class EntradasMigracionReader {
 
     public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo,
             String juzgadoCodigo) {
-        String expedienteNormalizado = expediente;
         return entradasMigracionRepository.findTopByExpedienteNormalizado(
-                expedienteNormalizado,
+                expediente,
                 amo,
                 juzgadoCodigo, "A");
 

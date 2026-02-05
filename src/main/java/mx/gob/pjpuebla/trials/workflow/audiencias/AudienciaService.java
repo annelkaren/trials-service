@@ -4,7 +4,6 @@ import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
-import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersona;
 import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;

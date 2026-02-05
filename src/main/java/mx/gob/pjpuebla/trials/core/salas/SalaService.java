@@ -131,7 +131,6 @@ public class SalaService {
         }
 
         Sala sala = construirSala(salaRecord, new Sala());
-        ;
         sala = salaRepository.save(sala);
 
         if (salaRecord.secretarios() != null && !salaRecord.secretarios().isEmpty()) {

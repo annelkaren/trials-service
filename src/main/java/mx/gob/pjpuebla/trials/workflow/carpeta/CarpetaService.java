@@ -27,7 +27,6 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;

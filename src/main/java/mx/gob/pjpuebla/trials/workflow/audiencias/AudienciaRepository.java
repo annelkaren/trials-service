@@ -17,7 +17,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
-import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersona;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -132,8 +131,7 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
                  OR lower(sala.nombre) LIKE %:key%
              )
             AND ( (:esSecretario = false OR sala.id IN :salaIdsPermitidas) )
-
-             """)
+        """)
     Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(
             Pageable pageable,
             @Param("juzgado") Juzgado juzgado,
