@@ -197,7 +197,7 @@ public class DigitalizacionService {
                 || documento.getEstatus() == EstadoCarpeta.EDICION)) {
             documento.setEstatus(EstadoCarpeta.CAPTURA);
         } else {
-            if (documento.getData().getTipoOficio().equals("Administrativo")) {
+            if (documento.getData() != null && documento.getData().getTipoOficio().equals("Administrativo")) {
                 documentoRepository.save(documento);
 
                 return new DigitalizacionRecord(documento.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
