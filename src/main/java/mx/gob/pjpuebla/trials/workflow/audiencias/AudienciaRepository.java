@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersona;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.util.enums.EstatusAudiencia;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -92,45 +93,52 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             )
             """)
     Page<Audiencia> findByJuzgado(@Param("juzgado") Juzgado juzgado, @Param("key") String key, Pageable pageable);
-    
-    //TODO evaluar si incluir asistenciaPersonaDocumento
-    @Query("""
-            SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
-            audiencia.id,
-            tipoAudiencia.nombre,
-            CASE
-                WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
-                ELSE 'Por asignar'
-            END,
-            carpeta.expediente,
-            carpeta.id,
-            sala.nombre,
-            audiencia.fechaAudiencia,
-            audiencia.estatusAudiencia,
-            juzgadoSala.id,
-            tipoJuicio.nombre,
-            null,
-            audiencia.inicio,
-            audiencia.fin
 
-            )
-            FROM Audiencia audiencia
-            JOIN audiencia.carpeta carpeta
-            JOIN carpeta.tipoJuicio tipoJuicio
-            JOIN audiencia.tipoAudiencia tipoAudiencia
-            JOIN audiencia.sala sala
-            JOIN sala.juzgado juzgadoSala
-            LEFT JOIN sala.juez juez
-            WHERE juzgadoSala = :juzgado
-             AND audiencia.estado = 0
-            AND (
-                :key IS NULL
-                OR lower(carpeta.expediente) LIKE %:key%
-                OR lower(tipoAudiencia.nombre) LIKE %:key%
-                OR lower(sala.nombre) LIKE %:key%
-            )
-            """)
-    Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(Pageable pageable, @Param("juzgado") Juzgado juzgado, @Param("key") String key);
+    // TODO evaluar si incluir asistenciaPersonaDocumento
+    @Query("""
+                                    SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
+                                    audiencia.id,
+                                    tipoAudiencia.nombre,
+                                    CASE
+                                        WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                                        ELSE 'Por asignar'
+                                    END,
+                                    carpeta.expediente,
+                                    carpeta.id,
+                                    sala.nombre,
+                                    audiencia.fechaAudiencia,
+                                    audiencia.estatusAudiencia,
+                                    juzgadoSala.id,
+                                    tipoJuicio.nombre,
+                                    null,
+                                    audiencia.inicio,
+                                    audiencia.fin
+
+                                    )
+                                    FROM Audiencia audiencia
+                                    JOIN audiencia.carpeta carpeta
+                                    JOIN carpeta.tipoJuicio tipoJuicio
+                                    JOIN audiencia.tipoAudiencia tipoAudiencia
+                                    JOIN audiencia.sala sala
+                                    JOIN sala.juzgado juzgadoSala
+                                    LEFT JOIN sala.juez juez
+                                    WHERE juzgadoSala = :juzgado
+                                     AND audiencia.estado = 0
+                                    AND (
+                                        :key IS NULL
+                                        OR lower(carpeta.expediente) LIKE %:key%
+                                        OR lower(tipoAudiencia.nombre) LIKE %:key%
+                                        OR lower(sala.nombre) LIKE %:key%
+                                    )
+                                   AND ( (:esSecretario = false OR sala.id IN :salaIdsPermitidas) )
+
+                                    """)
+    Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(
+            Pageable pageable,
+            @Param("juzgado") Juzgado juzgado,
+            @Param("key") String key,
+            @Param("salaIdsPermitidas") List<Integer> salaIdsPermitidas,
+            @Param("esSecretario") boolean esSecretario);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciaAgendaRecord(
@@ -144,27 +152,26 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
     List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, Date fechaAudiencia);
 
     @Query("""
-        SELECT COUNT(a) > 0
-        FROM Audiencia a
-        WHERE a.sala.id = :salaId
-          AND (
-            (:inicio BETWEEN a.inicio AND a.fin)
-            OR (:fin BETWEEN a.inicio AND a.fin)
-            OR (a.inicio BETWEEN :inicio AND :fin)
-          )
-    """)
+                SELECT COUNT(a) > 0
+                FROM Audiencia a
+                WHERE a.sala.id = :salaId
+                  AND (
+                    (:inicio BETWEEN a.inicio AND a.fin)
+                    OR (:fin BETWEEN a.inicio AND a.fin)
+                    OR (a.inicio BETWEEN :inicio AND :fin)
+                  )
+            """)
     boolean existeConflicto(Long salaId, LocalDateTime inicio, LocalDateTime fin);
 
     Audiencia findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia estatusAudiencia);
 
     @Query("""
-        SELECT COUNT(a)
-        FROM Audiencia a
-        JOIN a.carpeta ca
-        JOIN ca.juzgado juz
-        JOIN juz.materia ma
-        WHERE ma.nombre IN (:materias) AND a.inicio BETWEEN :inicio AND :fin
-    """)
+                SELECT COUNT(a)
+                FROM Audiencia a
+                JOIN a.carpeta ca
+                JOIN ca.juzgado juz
+                JOIN juz.materia ma
+                WHERE ma.nombre IN (:materias) AND a.inicio BETWEEN :inicio AND :fin
+            """)
     Integer findAllPenales(List<String> materias, LocalDateTime inicio, LocalDateTime fin);
-} 
-
+}
