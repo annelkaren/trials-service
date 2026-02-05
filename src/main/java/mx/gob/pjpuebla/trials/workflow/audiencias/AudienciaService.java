@@ -449,4 +449,8 @@ public class AudienciaService {
                 return audienciaRepository.findProgramadasByCarpetaId(carpetaId);
         }
 
+        public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(Integer carpetaId, Integer audienciaId){
+                return audienciaRepository.findParticipantesByAudienciaId(carpetaId, audienciaId);
+        }
+
 }
