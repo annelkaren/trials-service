@@ -131,7 +131,6 @@ public class SalaService {
         }
 
         Sala sala = construirSala(salaRecord, new Sala());
-        ;
         sala = salaRepository.save(sala);
 
         if (salaRecord.secretarios() != null && !salaRecord.secretarios().isEmpty()) {
@@ -457,9 +456,7 @@ public class SalaService {
                 .map(sala -> new SalaRecord(
                         sala.getId(),
                         sala.getNombre(),
-                        sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
-                                + ((sala.getJuez().getApellidoMaterno() != null) ? sala.getJuez().getApellidoMaterno()
-                                        : ""),
+                        getNameJuez(sala),
                         sala.getJuzgado().getNombre(),
                         new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
                                 sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),

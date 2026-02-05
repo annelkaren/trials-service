@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
-
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
@@ -40,6 +38,12 @@ public class AudienciaResource {
             @PageableDefault(size = 20) Pageable pageable) {
         return this.audienciaService.getAllAudienciasGenerales(key, pageable);
     }
+
+    @GetMapping("/participantes/audiencia/{audienciaId}/carpeta/{carpetaId}")
+    public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(@PathVariable Integer audienciaId, @PathVariable Integer carpetaId) {
+        return this.audienciaService.getParticipantesAudiencia(carpetaId, audienciaId);
+    }
+    
 
     @DeleteMapping("/bandeja/audienciasgenerales/{id}")
     public void delete(@PathVariable Integer id) {

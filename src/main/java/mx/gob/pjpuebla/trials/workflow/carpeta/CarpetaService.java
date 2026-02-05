@@ -27,7 +27,6 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.Utils;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -1209,20 +1208,16 @@ public class CarpetaService {
 
         public SentenciaPublicaResponseRecord getCarpetaByExpedienteAndSentencia(String expediente) {
                 Persona auditor = personaService.getAuditor();
+
                 if (auditor == null || auditor.getJuzgado() == null) {
                         throw new IllegalArgumentException("No se puede determinar el juzgado.");
                 }
 
-                Documento documento = documentoRepository
-                                .findByExpedienteAndTipoDocumento(expediente, TipoDocumento.SENTENCIA,
-                                                auditor.getJuzgado().getId())
-                                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada o le falta sentencia",
-                                                expediente));
+                Documento documento = documentoRepository.findByExpedienteAndTipoDocumento(expediente, TipoDocumento.SENTENCIA, auditor.getJuzgado().getId())
+                                .orElseThrow(() -> new NotFoundException("Carpeta no encontrada o le falta sentencia", expediente));
 
                 DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documento.getId())
-                                .orElseThrow(
-                                                () -> new NotFoundException("Detalle documento no encontrado",
-                                                                documento.getId().toString()));
+                                .orElseThrow(() -> new NotFoundException("Detalle documento no encontrado", documento.getId().toString()));
 
                 String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), ACTOR_LABEL);
                 String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), DEMANDADO_LABEL);

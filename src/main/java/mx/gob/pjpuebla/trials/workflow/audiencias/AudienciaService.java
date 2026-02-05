@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
-import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersona;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
@@ -139,10 +139,28 @@ public class AudienciaService {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
-                String rolPrincipal = persona.getRolPrincipal();
-                List<SalaPersona> salasPersonas = salaPersonaRepository.findAllByPersonaId(persona.getId().intValue());
+                List<RoleRecord> rolesPrincipales = personaService.getRolesByUser(persona.getUsuario());
 
-                return audienciaRepository.findAudienciasGenerales(pageable, juzgado, key);
+                boolean esSecretario = rolesPrincipales.stream()
+                                .map(RoleRecord::name) 
+                                .filter(Objects::nonNull)
+                                .map(String::trim)
+                                .map(String::toUpperCase)
+                                .anyMatch(r -> r.equals("SECRETARIO"));
+
+                List<Integer> salaIdsPermitidas = List.of();
+
+                if (esSecretario) {
+                        salaIdsPermitidas = salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(
+                                        persona.getId().intValue(),
+                                        Estado.ACTIVE);
+
+                        if (salaIdsPermitidas.isEmpty()) {
+                                return Page.empty(pageable);
+                        }
+                }
+
+                return audienciaRepository.findAudienciasGenerales(pageable, juzgado, key, salaIdsPermitidas, esSecretario);
         }
 
         public void deleteAudiencia(Integer id) {
@@ -428,6 +446,10 @@ public class AudienciaService {
 
         public List<AudienciaProgramadaRecord> getAudienciasProgramadas(Integer carpetaId) {
                 return audienciaRepository.findProgramadasByCarpetaId(carpetaId);
+        }
+
+        public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(Integer carpetaId, Integer audienciaId){
+                return audienciaRepository.findParticipantesByAudienciaId(carpetaId, audienciaId);
         }
 
 }

@@ -9,7 +9,7 @@ public final class BandejasQueries {
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaEntradaRecord(
               m.id,
               COALESCE(d.id, d2.id),
-              COALESCE(c.folio, d.folio, cd.folio, ''),
+              COALESCE(d.folio, c.folio, cd.folio, ''),
               COALESCE(c.expediente, cd.expediente, ''),
               COALESCE(mjc.nombre, mjcd.nombre, ''),
 
@@ -99,7 +99,7 @@ public final class BandejasQueries {
               (
                 COALESCE(:cmdLetra, '') = '' AND (
                   COALESCE(:key, '') = '' OR
-                  LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
+                  LOWER(COALESCE(d.folio, c.folio, cd.folio, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
                   OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
                   OR LOWER(COALESCE(mjc.nombre, mjcd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
                   OR LOWER(COALESCE(jc.nombre, jcd.nombre, j.nombre, o.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
@@ -178,7 +178,7 @@ public final class BandejasQueries {
 
             AND (
               COALESCE(:folio, '') = '' OR
-              LOWER(COALESCE(c.folio, cd.folio, d.folio, '')) LIKE CONCAT('%', LOWER(COALESCE(:folio,'')), '%')
+              LOWER(COALESCE(d.folio, c.folio, cd.folio, '')) LIKE CONCAT('%', LOWER(COALESCE(:folio,'')), '%')
             )
 
             AND (

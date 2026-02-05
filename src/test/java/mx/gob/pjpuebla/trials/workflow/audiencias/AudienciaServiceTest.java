@@ -9,6 +9,7 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
@@ -61,7 +62,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -198,14 +201,18 @@ class AudienciaServiceTest {
     void getAllAudienciasGenerales_ReturnPage() {
         Juzgado juzgado = new Juzgado();
         persona.setJuzgado(juzgado);
+        persona.setUsuario("user-1");
         when(personaService.getAuditor()).thenReturn(persona);
-        when(salaPersonaRepository.findAllByPersonaId(anyInt())).thenReturn(Collections.emptyList());
+        when(personaService.getRolesByUser(persona.getUsuario()))
+                .thenReturn(List.of(new RoleRecord("1", "SECRETARIO")));
+        when(salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(eq(persona.getId().intValue()), eq(Estado.ACTIVE)))
+                .thenReturn(List.of(1));
 
         Persona juez = new Persona();
         juez.setNombre("Juez 1");
         juez.setApellidoPaterno("");
         juez.setApellidoMaterno("");
-        Sala sala = new Sala().setNombre("Sala 1").setJuez(juez);
+        Sala sala = new Sala().setId(1).setNombre("Sala 1").setJuez(juez);
 
         String nombreCompletoJuez = juez.getNombre() + " " + juez.getApellidoPaterno();
         if (juez.getApellidoMaterno() != null) {
@@ -246,7 +253,7 @@ class AudienciaServiceTest {
         );
         Page<AudienciasGeneralesResponseRecord> pageAudiencias =
                 new PageImpl<>(Collections.singletonList(responseRecord), PageRequest.of(0, 10), 1);
-        when(audienciaRepository.findAudienciasGenerales(any(Pageable.class), eq(juzgado), anyString()))
+        when(audienciaRepository.findAudienciasGenerales(any(Pageable.class), eq(juzgado), anyString(), anyList(), anyBoolean()))
                 .thenReturn(pageAudiencias);
 
         Page<AudienciasGeneralesResponseRecord> result = audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
@@ -260,6 +267,26 @@ class AudienciaServiceTest {
                 .hasFieldOrPropertyWithValue("numCarpeta", carpeta.getExpediente())
                 .hasFieldOrPropertyWithValue("fechaHora", audiencia.getFechaAudiencia())
                 .hasFieldOrPropertyWithValue("estatus", audiencia.getEstatusAudiencia());
+    }
+
+    @Test
+    void getAllAudienciasGenerales_ReturnEmpty_WhenSecretaryHasNoSalas() {
+        Juzgado juzgado = new Juzgado();
+        persona.setJuzgado(juzgado);
+        persona.setUsuario("user-2");
+
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(personaService.getRolesByUser(persona.getUsuario()))
+                .thenReturn(List.of(new RoleRecord("1", "SECRETARIO")));
+        when(salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(eq(persona.getId().intValue()), eq(Estado.ACTIVE)))
+                .thenReturn(Collections.emptyList());
+
+        Page<AudienciasGeneralesResponseRecord> result =
+                audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).isEmpty();
+        verify(audienciaRepository, never())
+                .findAudienciasGenerales(any(Pageable.class), any(Juzgado.class), anyString(), anyList(), anyBoolean());
     }
 
     @Test

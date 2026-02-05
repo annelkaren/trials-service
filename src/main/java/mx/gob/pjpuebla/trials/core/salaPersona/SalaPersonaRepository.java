@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import mx.gob.pjpuebla.trials.core.salas.SecretariosSalasRecord;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 public interface SalaPersonaRepository extends JpaRepository<SalaPersona, Integer> {
 
@@ -36,5 +38,13 @@ public interface SalaPersonaRepository extends JpaRepository<SalaPersona, Intege
 
     List<SalaPersona> findAllBySala_Id(Integer salaId);
 
-    List<SalaPersona> findAllByPersonaId(Integer personaId);
+    @Query("""
+                SELECT sp.sala.id
+                FROM SalaPersona sp
+                WHERE sp.persona.id = :personaId
+                  AND sp.estado = :estado
+            """)
+    List<Integer> findSalaIdsByPersonaIdAndEstado(
+            @Param("personaId") Integer personaId,
+            @Param("estado") Estado estado);
 }
