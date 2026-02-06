@@ -245,6 +245,7 @@ public class JuzgadoService {
                         demandado.pseudonimo(), demandadoParte.getId());
         
         //SI el tipo de juicio es familiar oralidad se busca por CURP.
+        /*
         if(tipoJuicio.getTipoSistema().getNombre().equals("Oral")){
                 List<PersonaDocumento> registrosActorCurp = personaDocumentoRepository
                         .findByCurpAndTipoPartesId(actor.curp(), actorParte.getId());
@@ -256,6 +257,7 @@ public class JuzgadoService {
                 registrosDemandado.addAll(registrosDemandadoCurp);
 
         }
+        */
 
         if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
             return null;
