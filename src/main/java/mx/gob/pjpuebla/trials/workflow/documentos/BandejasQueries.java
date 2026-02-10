@@ -153,7 +153,7 @@ public final class BandejasQueries {
                          (c IS NOT NULL AND c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA)
                       OR (cd IS NOT NULL AND cd.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.DEMANDA)
                     )
-                    AND LOWER(COALESCE(c.folio, cd.folio, '')) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
+                    AND LOWER(COALESCE(c.folio, '')) LIKE CONCAT('%', LOWER(COALESCE(:cmdFolio,'')), '%')
                   )
                   OR (
                     UPPER(COALESCE(:cmdLetra,'')) = 'A'
