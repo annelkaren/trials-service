@@ -645,11 +645,7 @@ public final class BandejasQueries {
 
             AND m.fechaAsignacion >= COALESCE(:fechaFrom, m.fechaAsignacion)
             AND m.fechaAsignacion <= COALESCE(:fechaTo,   m.fechaAsignacion)
-            AND m.estado IN (
-              'ARCHIVO_JUDICIAL_RECIBIDO',
-              'ARCHIVO_JUDICIAL',
-              'ARCHIVO_JUDICIAL_SOLICIT'
-            )
+            
             """;
 
     public static final String QUERY_BANDEJA_HISTORIAL_ARCHIVO_JUDICIAL = """
