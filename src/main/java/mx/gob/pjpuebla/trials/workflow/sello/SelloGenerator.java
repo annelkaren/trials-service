@@ -131,7 +131,7 @@ public class SelloGenerator {
                 ? expedienteRelacionados
                 : "";
         String juzgadoProcedencia = documento.getCarpeta().getJuzgado().getNombre();
-        System.out.println("ES ORALIDAD FAMILIAR ?  " + isOralidadFamiliar);
+       
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("expediente", expediente);
