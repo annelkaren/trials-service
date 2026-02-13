@@ -71,11 +71,13 @@ public class SalaService {
 
         Page<Sala> page = salaRepository.findAll(Example.of(example, exampleMatcher), pageable);
         Persona persona = personaService.getAuditor();
+        Juzgado juzgadoPersona = persona != null ? persona.getJuzgado() : null;
 
         List<SalaRecord> list = page.getContent().stream()
-                .filter(sala -> {
-                    return sala.getJuzgado().equals(persona.getJuzgado());
-                })
+                .filter(sala -> juzgadoPersona == null
+                        || juzgadoPersona.getId() == null
+                        || (sala.getJuzgado() != null
+                                && Objects.equals(sala.getJuzgado().getId(), juzgadoPersona.getId())))
                 .map(sala -> new SalaRecord(
                         sala.getId(),
                         sala.getNombre(),
@@ -87,7 +89,11 @@ public class SalaService {
 
                 .toList();
 
-        return new PageImpl<>(list, pageable, page.getTotalElements());
+        long totalElements = (juzgadoPersona != null && juzgadoPersona.getId() != null)
+                ? list.size()
+                : page.getTotalElements();
+
+        return new PageImpl<>(list, pageable, totalElements);
 
     }
 
