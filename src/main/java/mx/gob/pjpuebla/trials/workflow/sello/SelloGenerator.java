@@ -131,6 +131,7 @@ public class SelloGenerator {
                 ? expedienteRelacionados
                 : "";
         String juzgadoProcedencia = documento.getCarpeta().getJuzgado().getNombre();
+        String prioridad = getPrioridad(documento);
        
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
@@ -163,6 +164,7 @@ public class SelloGenerator {
         parameters.put("relacionExpediente", relacionExpediente);
         parameters.put("juez", audiencia.nombreJuez());
         parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
+        parameters.put("prioridad", prioridad);
 
         isPromocionOralidadExhorto = false;
         isOralidadFamiliar = false;
@@ -173,6 +175,15 @@ public class SelloGenerator {
                 sello.getInputStream(),
                 parameters,
                 new JREmptyDataSource());
+    }
+
+    private String getPrioridad(Documento documento){
+        String prioridad = "Normal";
+        if(documento.getData() != null && documento.getData().getPrioridad() != null){
+            prioridad = documento.getData().getPrioridad().name();
+        }
+
+        return prioridad;
     }
 
     private String getFolio(Documento documento) {

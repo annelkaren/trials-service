@@ -164,8 +164,10 @@ public class DocumentoResource {
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson)
             throws JsonProcessingException {
+
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,
                 DocumentoPromocionRecord.class);
+                
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 

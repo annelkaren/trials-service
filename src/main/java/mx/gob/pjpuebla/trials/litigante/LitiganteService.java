@@ -324,7 +324,8 @@ public class LitiganteService {
                                                 promocionId.toString()));
                 return new DocumentoPromocionRecord(promocion.getCarpeta().getId(), TipoPromocion.CORREO_ELECTRONICO,
                                 null,
-                                contenido.getTexto());
+                                contenido.getTexto(),
+                                Prioridad.NORMAL);
         }
 
         public Page<LibroGobiernoRecord> getConsultaLibroGobierno(

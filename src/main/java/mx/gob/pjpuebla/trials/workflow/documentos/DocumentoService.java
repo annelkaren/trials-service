@@ -889,6 +889,7 @@ public class DocumentoService {
                 documento.setFolio(getFolio("P"));
                 DocumentoData documentoData = new DocumentoData();
                 documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
+                documentoData.setPrioridad(documentoPromocionRecord.prioridad());
                 documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO))
                                 ? EstadoCarpeta.RECEPCION
                                 : EstadoCarpeta.ASIGNADO);
