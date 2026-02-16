@@ -63,12 +63,15 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
                         ELSE false
                       END,
 
-                      cd.cujus
+                      cd.cujus,
+                      m.estatus,
+                      c.migrado
                   )
                   FROM Carpeta c
                   JOIN c.tipoJuicio tj
                   JOIN c.juzgado j
                   LEFT JOIN CarpetaDetalle cd ON cd.carpeta.id = c.id
+                  LEFT JOIN Migraciones m ON m.carpeta.id = c.id
                   WHERE
 
       c.juzgado IN (:juzgados)

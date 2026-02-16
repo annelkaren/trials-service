@@ -1140,7 +1140,7 @@ public class CarpetaService {
 
                 LocalDateTime to = null;
                 if (fechaFrom != null && fechaTo == null) {
-                        to = fechaFrom.plusDays(1).atStartOfDay(); // EXCLUSIVO ✅
+                        to = fechaFrom.plusDays(1).atStartOfDay(); 
                 }
 
                 Persona persona = personaService.getAuditor();
