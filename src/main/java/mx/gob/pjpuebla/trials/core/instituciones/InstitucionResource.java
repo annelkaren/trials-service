@@ -123,4 +123,9 @@ public class InstitucionResource {
     public List<InstitucionRecord> getByTipoInstitucion() {
         return this.institucionService.findByTipoInstitucion("Tribunal Federal");
     }
+
+    @GetMapping("/tribunales/{tipo}")
+    public List<InstitucionRecord> getAllTribunalesByTipo(@PathVariable String tipo) {
+        return this.institucionService.findByTipoInstitucion(tipo);
+    }
 }

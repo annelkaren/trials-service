@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -278,6 +280,12 @@ public class DocumentoResource {
         return documentoService.createAmparo(amparoRecord);
 
     }
+
+    @PostMapping(value = "/documentos/registro/expediente/sinAntecedente")
+    public CarpetaResponseRecord registrarExpedienteSinAntecedentes(@RequestBody ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+        return documentoService.createExpedienteSinAntecedentes(expedienteSinAntecedentesRecord);
+    }
+    
 
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(

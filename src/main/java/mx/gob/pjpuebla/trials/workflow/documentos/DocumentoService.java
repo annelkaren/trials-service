@@ -1201,7 +1201,7 @@ public class DocumentoService {
                 boolean isOficialMayor = false;
 
                 String motivoSingle = EstadoCarpeta.TURNADO.name();
-                List<String> motivosList = List.of(); 
+                List<String> motivosList = List.of();
 
                 Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
                                 ? Pageable.unpaged()
@@ -2602,6 +2602,48 @@ public class DocumentoService {
 
         public Documento save(Documento documento) {
                 return documentoRepository.save(documento);
+        }
+
+
+
+        @Transactional
+        public CarpetaResponseRecord createExpedienteSinAntecedentes(ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+                TipoJuicio tipoJuicio = getTipoJuicioById(expedienteSinAntecedentesRecord.tipoJuicioId());
+                Persona persona = personaService.getAuditor();
+
+                Carpeta carpeta = new Carpeta()
+                                .setTipoJuicio(tipoJuicio)
+                                .setJuzgado(persona.getJuzgado())
+                                .setFolio(getFolio("D"))
+                                .setTipoCarpeta(TipoCarpeta.DEMANDA)
+                                .setExpediente(expedienteSinAntecedentesRecord.expediente() + "/" + expedienteSinAntecedentesRecord.year())
+                                .setEstatus(EstadoCarpeta.ASIGNADO)
+                                .setSelloEstatus(SelloEstatus.VALIDO)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona)
+                                .setMigrado(Migrado.NO)
+                                .setCu(getCu(persona.getJuzgado(), expedienteSinAntecedentesRecord.expediente()));
+
+                carpeta = carpetaRepository.save(carpeta);
+
+                Documento documento = new Documento()
+                        .setCarpeta(carpeta)
+                        .setMigrado(Migrado.NO)
+                        .setFechaAsignacion(LocalDateTime.now())
+                        .setPersona(persona);
+
+                documentoRepository.save(documento);
+
+                return new CarpetaResponseRecord(
+                        carpeta.getId(),
+                        "No registrado",
+                        "No registrado",
+                        tipoJuicio.getNombre(),
+                        null,
+                        null,
+                        Estado.ACTIVE,
+                        EstadoCarpeta.ASIGNADO.getEtiqueta()
+                );
         }
 
 }
