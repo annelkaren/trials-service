@@ -25,6 +25,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.PromocionSinExpedienteEnum;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
@@ -75,6 +76,10 @@ public class PromocionSinExpediente implements Serializable, Auditable {
 
     @Column(name = "N_TIPO_PROMOCION")
     private TipoPromocion tipoPromocion;
+
+    @Enumerated
+    @Column(name = "N_PRIORIDAD")
+    private Prioridad prioridad = Prioridad.NORMAL; 
 
     @JoinColumn(name = "FN_CARPETA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

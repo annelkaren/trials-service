@@ -87,7 +87,10 @@ public class SelloGenerator {
                 promo.getFolio(),
                 getDate(promo.getAudit().getFechaAlta()),
                 anexos);
+        String prioridad = promo.getPrioridad().name();
+
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("prioridad", prioridad);
         parameters.put("isApelacion", false);
         parameters.put("expediente", promo.getExpediente());
         parameters.put("fechaHoraRecepcion", getDate(promo.getAudit().getFechaAlta()));
@@ -357,7 +360,7 @@ public class SelloGenerator {
                 expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                expediente = carpeta.getExpediente() + " - Promocion";
+                expediente = carpeta.getExpediente() + " - Promoción";
                 isPromocionOralidadExhorto = false;
             } else {
                 expediente = documento.getCarpeta().getExpediente();
@@ -395,7 +398,7 @@ public class SelloGenerator {
                 expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                expediente = carpeta.getExpediente() + " - Promocion";
+                expediente = carpeta.getExpediente() + " - Promoción";
                 isPromocionOralidadExhorto = false;
             } else {
                 expediente = documento.getCarpeta().getExpediente();
