@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -191,4 +194,7 @@ public class CarpetaResource {
             return ResponseEntity.badRequest().body("Error al actualizar los estados: " + e.getMessage());
         }
     }
+
+
+    
 }

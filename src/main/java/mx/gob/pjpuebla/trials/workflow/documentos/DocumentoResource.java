@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/workflow")
@@ -370,4 +371,13 @@ public class DocumentoResource {
     public ResponseGenericRecord getBandejaDevueltos(@PathVariable Integer documentoId) {
         return this.digitalizacion2Service.autorizarRedigitalizacion(documentoId);
     }
+
+    @GetMapping(value = "/documentos/carpeta/{carpetaId}/tipoEntrada/{tipoEntrada}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer carpetaId, @PathVariable String tipoEntrada) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", carpetaId + "_sello.pdf");
+        return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloFromCarpetaId(carpetaId, tipoEntrada));
+    }
+    
 }

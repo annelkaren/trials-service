@@ -363,7 +363,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
                         @Param("juzgados") List<Juzgado> juzgados);
 
         Optional<Documento> findByTipoDocumentoAndFolio(TipoDocumento tipodocumento, String folio);
-
+        Optional<Documento> findByTipoDocumentoAndCarpetaId(TipoDocumento tipoDocumento, Integer carpetaId);
     @Query("""
                 SELECT COUNT(d)
                 FROM Documento d

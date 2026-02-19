@@ -461,7 +461,8 @@ public class DocumentoService {
                 movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
                 // Actualiza carga de juzgados.
-                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
+                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados,
+                                tipoJuicio);
 
                 return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
                                 documento.getCarpeta().getTipoCarpeta());
@@ -2525,8 +2526,10 @@ public class DocumentoService {
                         }
                         return juzgadoConexidad;
                 } else {
+
                         Juzgado juzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.DEMANDA,
                                         juzgadosRelacionados);
+                                        
                         if (!juzgadosRelacionados.contains(juzgadoDemanda)) {
                                 throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
                                                 "juzgadoPorJuicio");

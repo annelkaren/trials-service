@@ -103,5 +103,8 @@ public class Juzgado implements Serializable, Auditable {
 
     @Column(name = "S_TABLA_UBI")
     private String tablaUbicacion;
+
+    @Transient
+    private List<JuzgadoContadorConfig> contadoresJuzgados;
 }
 

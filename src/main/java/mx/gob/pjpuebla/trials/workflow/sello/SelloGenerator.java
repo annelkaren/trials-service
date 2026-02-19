@@ -66,6 +66,15 @@ public class SelloGenerator {
     private String expedienteRelacionados;
     private final Set<String> expedientesSet = new HashSet<>();
 
+    public byte[] getSelloFromCarpetaId(Integer carpetaId, String tipoEntrada) throws JRException, IOException {
+
+        TipoDocumento tipoEntradaEnum = tipoEntrada.equals("Demanda") ? null : TipoDocumento.valueOf(tipoEntrada);
+        Documento documento = documentoRepository.findByTipoDocumentoAndCarpetaId(tipoEntradaEnum, carpetaId)
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "carpetaId"));
+
+        return exportToPdf(documento.getId());
+    }
+
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
         if (documento.getCarpeta().getSelloEstatus() == SelloEstatus.NO_VALIDO) {

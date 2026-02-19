@@ -49,20 +49,20 @@
 		<band height="1" splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="166" splitType="Stretch">
+		<band height="186" splitType="Stretch">
 			<image hAlign="Center" vAlign="Middle">
 				<reportElement x="11" y="7" width="539" height="100" uuid="5c1e1cf8-9295-4b17-96b5-e22c6dd5f913"/>
 				<imageExpression><![CDATA[$P{logotipoHeder}]]></imageExpression>
 			</image>
-			<textField>
-				<reportElement x="50" y="111" width="460" height="30" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="50" y="111" width="460" height="49" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac"/>
 				<textElement textAlignment="Center">
-					<font size="16" isBold="true"/>
+					<font size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{nombreEntidad}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="199" y="144" width="163" height="20" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a"/>
+				<reportElement x="199" y="165" width="163" height="20" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a"/>
 				<textElement textAlignment="Center" verticalAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></textFieldExpression>
 			</textField>
@@ -290,7 +290,7 @@
 				<textElement markup="html">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Prioridad: " ]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Prioridad: "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="ContainerHeight" x="268" y="61" width="280" height="19" uuid="7e3bf71e-26e0-4b0f-b50e-122c8f2e723d">
