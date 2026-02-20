@@ -9,6 +9,7 @@ import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.workflow.documentos.anexosoficios.AnexoOficioService;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoService;
 
@@ -26,6 +27,7 @@ public class OficioService {
 
     private final DocumentoContenidoService documentoContenidoService;
     private final AcuerdoService acuerdoService;
+    private final AnexoOficioService anexoOficioService;
 
     public byte[] getOficio(Integer oficioId) throws IOException {
         DocumentoContenido documentoContenido = documentoContenidoService.getContenidoByOficioId(oficioId);
@@ -92,6 +94,6 @@ public class OficioService {
         acuerdoService.procesarHTMLConImagenes(documentoContenido.getTexto(), document);
 
         document.close();
-        return baos.toByteArray();
+        return anexoOficioService.mergeOficioConAnexos(oficioId, baos.toByteArray());
     }
 }
