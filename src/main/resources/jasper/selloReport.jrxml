@@ -30,6 +30,7 @@
 	<parameter name="isOralidad" class="java.lang.Boolean"/>
 	<parameter name="isApelacion" class="java.lang.Boolean"/>
 	<parameter name="juzgadoProcedencia" class="java.lang.String"/>
+	<parameter name="prioridad" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -48,27 +49,27 @@
 		<band height="1" splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="166" splitType="Stretch">
+		<band height="186" splitType="Stretch">
 			<image hAlign="Center" vAlign="Middle">
 				<reportElement x="11" y="7" width="539" height="100" uuid="5c1e1cf8-9295-4b17-96b5-e22c6dd5f913"/>
 				<imageExpression><![CDATA[$P{logotipoHeder}]]></imageExpression>
 			</image>
-			<textField>
-				<reportElement x="50" y="111" width="460" height="30" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="50" y="111" width="460" height="49" uuid="87d74fd7-12b4-4856-ae93-863c24de00ac"/>
 				<textElement textAlignment="Center">
-					<font size="16" isBold="true"/>
+					<font size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{nombreEntidad}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="199" y="144" width="163" height="20" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a"/>
+				<reportElement x="199" y="165" width="163" height="20" uuid="be0e461b-7cc2-4130-8f0b-59ff4be0e13a"/>
 				<textElement textAlignment="Center" verticalAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$P{reimpresion} ? "Reimpresion" : ""]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="201" splitType="Stretch">
+		<band height="238" splitType="Stretch">
 			<printWhenExpression><![CDATA[$P{isOralProExh}]]></printWhenExpression>
 			<componentElement>
 				<reportElement x="46" y="10" width="163" height="133" uuid="40ef3353-60d2-4d81-9e1a-740aab9f9c2e"/>
@@ -199,7 +200,7 @@
 				<textFieldExpression><![CDATA["Sala:"]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="174">
+		<band height="186">
 			<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 			<componentElement>
 				<reportElement x="48" y="7" width="160" height="130" uuid="5bbc92ac-3392-410f-875e-97d0f2744e26"/>
@@ -207,7 +208,7 @@
 					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="209" y="5" width="344" height="30" uuid="03ae701f-69d2-41cf-84ba-7b9696e9f0c9"/>
 				<textElement textAlignment="Left">
 					<font size="12" isBold="true"/>
@@ -233,7 +234,7 @@
 				<textFieldExpression><![CDATA[$P{isApelacion} ? "TOCA:" : "Expediente:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="209" y="63" width="339" height="18" uuid="bc7817e1-74ab-4ea1-bac6-ddcbc445cd8b">
+				<reportElement x="209" y="80" width="339" height="18" uuid="bc7817e1-74ab-4ea1-bac6-ddcbc445cd8b">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
@@ -242,7 +243,7 @@
 				<textFieldExpression><![CDATA["Fecha y hora de recepción: " + "<b>" +  $P{fechaHoraRecepcion} + "</b>"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="209" y="83" width="28" height="19" uuid="e4417b35-a55b-428d-86e7-cb32655d41ed">
+				<reportElement x="209" y="100" width="28" height="19" uuid="e4417b35-a55b-428d-86e7-cb32655d41ed">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -251,7 +252,7 @@
 				<text><![CDATA[Folio: ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="238" y="83" width="212" height="19" uuid="a4c21d76-9630-400f-9a63-fa64540094a2">
+				<reportElement x="238" y="100" width="212" height="19" uuid="a4c21d76-9630-400f-9a63-fa64540094a2">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -260,7 +261,7 @@
 				<textFieldExpression><![CDATA[$P{folio}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="210" y="103" width="50" height="20" uuid="89f981b0-80d5-4fa4-b0dd-2e13687a3457">
+				<reportElement x="210" y="120" width="50" height="20" uuid="89f981b0-80d5-4fa4-b0dd-2e13687a3457">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -269,7 +270,7 @@
 				<text><![CDATA[Anexos:]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ContainerHeight" x="210" y="123" width="288" height="46" uuid="41dbef73-f2dc-4ed5-a2b1-c2b8b33c70c4">
+				<reportElement stretchType="ContainerHeight" x="210" y="140" width="288" height="46" uuid="41dbef73-f2dc-4ed5-a2b1-c2b8b33c70c4">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html"/>
@@ -282,22 +283,23 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{capturista}]]></textFieldExpression>
 			</textField>
-		</band>
-		<band height="21">
-			<staticText>
-				<reportElement stretchType="ContainerHeight" x="211" y="1" width="139" height="20" uuid="dec979d2-9065-4334-b075-7a963fd5590b">
+			<textField>
+				<reportElement x="209" y="62" width="58" height="18" uuid="4ad52405-1901-4cf9-a6f6-9c78225aea89">
+					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="html">
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Prioridad: "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="ContainerHeight" x="268" y="61" width="280" height="19" uuid="7e3bf71e-26e0-4b0f-b50e-122c8f2e723d">
 					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Juzgado de procedencia:]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="333" y="1" width="160" height="20" uuid="5feea861-0a38-4da5-99f6-99d696d5127a">
-					<printWhenExpression><![CDATA[!$P{isOralProExh}]]></printWhenExpression>
-				</reportElement>
-				<textFieldExpression><![CDATA[$P{juzgadoProcedencia}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{prioridad}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="297" splitType="Stretch">

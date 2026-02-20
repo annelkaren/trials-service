@@ -461,7 +461,8 @@ public class DocumentoService {
                 movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
 
                 // Actualiza carga de juzgados.
-                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
+                juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados,
+                                tipoJuicio);
 
                 return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
                                 documento.getCarpeta().getTipoCarpeta());
@@ -889,6 +890,7 @@ public class DocumentoService {
                 documento.setFolio(getFolio("P"));
                 DocumentoData documentoData = new DocumentoData();
                 documentoData.setTipoPromocion(documentoPromocionRecord.tipoPromocion());
+                documentoData.setPrioridad(documentoPromocionRecord.prioridad());
                 documento.setEstatus((documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO))
                                 ? EstadoCarpeta.RECEPCION
                                 : EstadoCarpeta.ASIGNADO);
@@ -1200,7 +1202,7 @@ public class DocumentoService {
                 boolean isOficialMayor = false;
 
                 String motivoSingle = EstadoCarpeta.TURNADO.name();
-                List<String> motivosList = List.of(); 
+                List<String> motivosList = List.of();
 
                 Pageable pageableWithFilter = (pageable == null || pageable.isUnpaged())
                                 ? Pageable.unpaged()
@@ -2524,8 +2526,10 @@ public class DocumentoService {
                         }
                         return juzgadoConexidad;
                 } else {
+
                         Juzgado juzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.DEMANDA,
                                         juzgadosRelacionados);
+                                        
                         if (!juzgadosRelacionados.contains(juzgadoDemanda)) {
                                 throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
                                                 "juzgadoPorJuicio");
@@ -2601,6 +2605,48 @@ public class DocumentoService {
 
         public Documento save(Documento documento) {
                 return documentoRepository.save(documento);
+        }
+
+
+
+        @Transactional
+        public CarpetaResponseRecord createExpedienteSinAntecedentes(ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+                TipoJuicio tipoJuicio = getTipoJuicioById(expedienteSinAntecedentesRecord.tipoJuicioId());
+                Persona persona = personaService.getAuditor();
+
+                Carpeta carpeta = new Carpeta()
+                                .setTipoJuicio(tipoJuicio)
+                                .setJuzgado(persona.getJuzgado())
+                                .setFolio(getFolio("D"))
+                                .setTipoCarpeta(TipoCarpeta.DEMANDA)
+                                .setExpediente(expedienteSinAntecedentesRecord.expediente() + "/" + expedienteSinAntecedentesRecord.year())
+                                .setEstatus(EstadoCarpeta.ASIGNADO)
+                                .setSelloEstatus(SelloEstatus.VALIDO)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona)
+                                .setMigrado(Migrado.NO)
+                                .setCu(getCu(persona.getJuzgado(), expedienteSinAntecedentesRecord.expediente()));
+
+                carpeta = carpetaRepository.save(carpeta);
+
+                Documento documento = new Documento()
+                        .setCarpeta(carpeta)
+                        .setMigrado(Migrado.NO)
+                        .setFechaAsignacion(LocalDateTime.now())
+                        .setPersona(persona);
+
+                documentoRepository.save(documento);
+
+                return new CarpetaResponseRecord(
+                        carpeta.getId(),
+                        "No registrado",
+                        "No registrado",
+                        tipoJuicio.getNombre(),
+                        null,
+                        null,
+                        Estado.ACTIVE,
+                        EstadoCarpeta.ASIGNADO.getEtiqueta()
+                );
         }
 
 }

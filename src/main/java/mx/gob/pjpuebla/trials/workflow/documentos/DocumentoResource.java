@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -34,6 +35,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+
+
 
 @RequiredArgsConstructor
 @RestController
@@ -164,8 +167,10 @@ public class DocumentoResource {
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson)
             throws JsonProcessingException {
+
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,
                 DocumentoPromocionRecord.class);
+                
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 
@@ -277,6 +282,12 @@ public class DocumentoResource {
 
     }
 
+    @PostMapping(value = "/documentos/registro/expediente/sinAntecedente")
+    public CarpetaResponseRecord registrarExpedienteSinAntecedentes(@RequestBody ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+        return documentoService.createExpedienteSinAntecedentes(expedienteSinAntecedentesRecord);
+    }
+    
+
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(
             @RequestPart("documentoSaveRecord") String documentoSaveRecordJson,
@@ -360,4 +371,13 @@ public class DocumentoResource {
     public ResponseGenericRecord getBandejaDevueltos(@PathVariable Integer documentoId) {
         return this.digitalizacion2Service.autorizarRedigitalizacion(documentoId);
     }
+
+    @GetMapping(value = "/documentos/carpeta/{carpetaId}/tipoEntrada/{tipoEntrada}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer carpetaId, @PathVariable String tipoEntrada) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", carpetaId + "_sello.pdf");
+        return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloFromCarpetaId(carpetaId, tipoEntrada));
+    }
+    
 }

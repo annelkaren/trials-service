@@ -66,6 +66,15 @@ public class SelloGenerator {
     private String expedienteRelacionados;
     private final Set<String> expedientesSet = new HashSet<>();
 
+    public byte[] getSelloFromCarpetaId(Integer carpetaId, String tipoEntrada) throws JRException, IOException {
+
+        TipoDocumento tipoEntradaEnum = tipoEntrada.equals("Demanda") ? null : TipoDocumento.valueOf(tipoEntrada);
+        Documento documento = documentoRepository.findByTipoDocumentoAndCarpetaId(tipoEntradaEnum, carpetaId)
+            .orElseThrow(() -> new NotFoundException("Documento no encontrado", "carpetaId"));
+
+        return exportToPdf(documento.getId());
+    }
+
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
         if (documento.getCarpeta().getSelloEstatus() == SelloEstatus.NO_VALIDO) {
@@ -87,7 +96,10 @@ public class SelloGenerator {
                 promo.getFolio(),
                 getDate(promo.getAudit().getFechaAlta()),
                 anexos);
+        String prioridad = promo.getPrioridad().name();
+
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("prioridad", prioridad);
         parameters.put("isApelacion", false);
         parameters.put("expediente", promo.getExpediente());
         parameters.put("fechaHoraRecepcion", getDate(promo.getAudit().getFechaAlta()));
@@ -131,6 +143,7 @@ public class SelloGenerator {
                 ? expedienteRelacionados
                 : "";
         String juzgadoProcedencia = documento.getCarpeta().getJuzgado().getNombre();
+        String prioridad = getPrioridad(documento);
        
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
@@ -163,6 +176,7 @@ public class SelloGenerator {
         parameters.put("relacionExpediente", relacionExpediente);
         parameters.put("juez", audiencia.nombreJuez());
         parameters.put("isOralidad", isOralidadFamiliar); // es oralidad familiar
+        parameters.put("prioridad", prioridad);
 
         isPromocionOralidadExhorto = false;
         isOralidadFamiliar = false;
@@ -173,6 +187,15 @@ public class SelloGenerator {
                 sello.getInputStream(),
                 parameters,
                 new JREmptyDataSource());
+    }
+
+    private String getPrioridad(Documento documento){
+        String prioridad = "Normal";
+        if(documento.getData() != null && documento.getData().getPrioridad() != null){
+            prioridad = documento.getData().getPrioridad().name();
+        }
+
+        return prioridad;
     }
 
     private String getFolio(Documento documento) {
@@ -346,7 +369,7 @@ public class SelloGenerator {
                 expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                expediente = carpeta.getExpediente() + " - Promocion";
+                expediente = carpeta.getExpediente() + " - Promoción";
                 isPromocionOralidadExhorto = false;
             } else {
                 expediente = documento.getCarpeta().getExpediente();
@@ -384,7 +407,7 @@ public class SelloGenerator {
                 expediente = carpeta.getExpediente() + " - Exhorto";
                 isPromocionOralidadExhorto = false;
             } else if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PROMOCION)) {
-                expediente = carpeta.getExpediente() + " - Promocion";
+                expediente = carpeta.getExpediente() + " - Promoción";
                 isPromocionOralidadExhorto = false;
             } else {
                 expediente = documento.getCarpeta().getExpediente();

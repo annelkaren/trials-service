@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
@@ -59,5 +60,6 @@ public class DocumentoData implements Serializable {
     private Integer carpetaHistorica;
     private Boolean expedienteReasignado;
     private String oficioRealizadoPor;
+    private Prioridad prioridad;
 }
 

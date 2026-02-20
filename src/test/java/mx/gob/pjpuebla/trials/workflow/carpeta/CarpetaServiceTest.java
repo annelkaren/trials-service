@@ -955,7 +955,7 @@ class CarpetaServiceTest {
                                 .setTipoJuicio(tipoJuicio);
 
                 List<LibroGobiernoRecord> records = List.of(new LibroGobiernoRecord(1, "000001/2024",
-                                LocalDateTime.now(), "Tipo Juicio", "Actor", "Demandado", true, "Saul Perez"));
+                                LocalDateTime.now(), "Tipo Juicio", "Actor", "Demandado", true, "Saul Perez", EstadoMigracion.MIGRADO_COMPLETADO, Migrado.SI));
                 Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(records);
 
                 given(personaService.getAuditor()).willReturn(persona);

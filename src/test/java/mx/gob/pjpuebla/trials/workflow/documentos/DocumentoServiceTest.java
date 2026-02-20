@@ -624,7 +624,7 @@ class DocumentoServiceTest {
                 List<String> anexos = List.of("Anexo1", "Anexo2");
                 DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1,
                                 TipoPromocion.OFICIO,
-                                anexos, null);
+                                anexos, null, Prioridad.NORMAL);
                 DocumentoPromocionResponseRecord documentoResponse = documentoService
                                 .createPromocion(documentoPromocionRecord, null);
 
@@ -663,7 +663,7 @@ class DocumentoServiceTest {
                 List<String> anexos = List.of("Anexo1", "Anexo2");
                 DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1,
                                 TipoPromocion.CORREO_ELECTRONICO,
-                                anexos, null);
+                                anexos, null, Prioridad.NORMAL);
                 DocumentoPromocionResponseRecord documentoResponse = documentoService
                                 .createPromocion(documentoPromocionRecord, multipartFile);
 

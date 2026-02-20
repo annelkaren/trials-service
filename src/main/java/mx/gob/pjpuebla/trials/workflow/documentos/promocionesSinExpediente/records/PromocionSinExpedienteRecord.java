@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.promocionesSinExpediente.reco
 
 import java.util.List;
 
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 public record PromocionSinExpedienteRecord(
@@ -9,6 +10,7 @@ public record PromocionSinExpedienteRecord(
     Integer juzgadoId,
     TipoPromocion tipoPromocion,
     Integer year,
-    List<String> anexos
+    List<String> anexos,
+    Prioridad prioridad
 ) {}
 

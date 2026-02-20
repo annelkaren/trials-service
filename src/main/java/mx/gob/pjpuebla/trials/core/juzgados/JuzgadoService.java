@@ -23,6 +23,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
+import mx.gob.pjpuebla.trials.workflow.contadoresJuzgados.ContadorJuzgado;
+import mx.gob.pjpuebla.trials.workflow.contadoresJuzgados.ContadorJuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
@@ -54,6 +56,7 @@ public class JuzgadoService {
     private final TipoPartesRepository tipoPartesRepository;
     private final JuzgadoFoliosRepository juzgadoFoliosRepository;
     private final PersonaService personaService;
+    private final ContadorJuzgadoRepository contadorJuzgadoRepository;
 
     private static final Random RANDOM = new Random();
 
@@ -92,10 +95,19 @@ public class JuzgadoService {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
         Juzgado juzgado = juzgadoRepository.findByIdAndEstadoIn(id, estados)
                 .orElseThrow(() -> new NotFoundException(JUZGADO_NOT_FOUND, "juzgadoId"));
-        List<TipoJuicioRecord> tipoJuicios = juzgado.getTipoJuicios().stream()
+        List<TipoJuicioRecord> tipoJuicios = Optional.ofNullable(juzgado.getTipoJuicios()).orElse(List.of()).stream()
                 .map(tj -> new TipoJuicioRecord(
                         tj.getId(),
                         tj.getNombre(), null, null))
+                .toList();
+        List<JuzgadoContadorConfig> contadoresJuzgados = contadorJuzgadoRepository
+                .findByJuzgadoIdAndEstado(juzgado.getId(), Estado.ACTIVE)
+                .stream()
+                .map(c -> new JuzgadoContadorConfig(
+                        c.getTipoJuicio().getId(),
+                        c.getTipoJuicio().getNombre(),
+                        c.getMaxAsignaciones(),
+                        c.getContadorAsignaciones()))
                 .toList();
         if (juzgado.getInstanciaJuzgado() == null) {
             throw new IllegalStateException("InstanciaJuzgado no debe ser null");
@@ -110,7 +122,8 @@ public class JuzgadoService {
                 juzgado.getMaxAsignacionesRonda(),
                 juzgado.getContadorAsignaciones(),
                 juzgado.getInstanciaJuzgado().ordinal(),
-                tipoJuicios);
+                tipoJuicios,
+                contadoresJuzgados);
     }
 
     public Juzgado findJuzgadoById(Integer id) {
@@ -123,6 +136,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem create(Juzgado juzgado) {
+        List<JuzgadoContadorConfig> contadoresPayload = juzgado.getContadoresJuzgados();
         if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
@@ -166,6 +180,8 @@ public class JuzgadoService {
         }
 
         juzgado = juzgadoRepository.save(juzgado);
+        juzgado.setContadoresJuzgados(contadoresPayload);
+        syncContadoresJuzgados(juzgado);
         return new JuzgadoRecordItem(
                 juzgado.getId(),
                 juzgado.getNombre(),
@@ -174,6 +190,7 @@ public class JuzgadoService {
     }
 
     public JuzgadoRecordItem update(Juzgado juzgado) {
+        List<JuzgadoContadorConfig> contadoresPayload = juzgado.getContadoresJuzgados();
         Optional<Juzgado> test = juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre());
         if (test.isPresent() && !Objects.equals(test.get().getId(), juzgado.getId())) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
@@ -196,6 +213,8 @@ public class JuzgadoService {
                     .orElseThrow(() -> new NotFoundException("Sede no encontrada", "sedeId")));
             juzgado.setInstanciaJuzgado(juzgado.getInstanciaJuzgado());
             juzgado = juzgadoRepository.save(juzgado);
+            juzgado.setContadoresJuzgados(contadoresPayload);
+            syncContadoresJuzgados(juzgado);
             return new JuzgadoRecordItem(
                     juzgado.getId(),
                     juzgado.getNombre(),
@@ -283,6 +302,7 @@ public class JuzgadoService {
     }
 
     public Juzgado getJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
+
         InstanciaJuzgado instanciaJuzgado;
         String reason;
 
@@ -300,6 +320,10 @@ public class JuzgadoService {
 
         if (juzgadosRelacionados.isEmpty()) {
             throw new NotFoundException(reason, "juzgadosRelacionados");
+        }
+
+        if (isCasoEspecialContadorJuzgado(tipoJuicio, tipoCarpeta)) {
+            return getJuzgadoConContadorEspecial(tipoJuicio, juzgadosRelacionados);
         }
 
         List<Juzgado> juzgados = juzgadoRepository.findJuzgadosMenosAsignaciones(tipoJuicio.getMateria(),
@@ -327,9 +351,124 @@ public class JuzgadoService {
 
     }
 
+    private Juzgado getJuzgadoConContadorEspecial(TipoJuicio tipoJuicio, List<Juzgado> juzgadosRelacionados) {
+        List<Integer> juzgadosIds = juzgadosRelacionados.stream().map(Juzgado::getId).toList();
+        List<Juzgado> juzgados = contadorJuzgadoRepository.findJuzgadosMenosAsignaciones(juzgadosIds, tipoJuicio.getId());
+
+        if (juzgados.isEmpty()) {
+            revisarCargaContadoresJuzgados(tipoJuicio.getId(), juzgadosIds);
+            juzgados = contadorJuzgadoRepository.findJuzgadosMenosAsignaciones(juzgadosIds, tipoJuicio.getId());
+        }
+
+        if (juzgados.isEmpty()) {
+            throw new NotFoundException(
+                    "No hay contadores de juzgado disponibles para el tipo de juicio seleccionado",
+                    tipoJuicio.getNombre());
+        }
+
+        return juzgados.get(RANDOM.nextInt(juzgados.size()));
+    }
+
+    private boolean isCasoEspecialContadorJuzgado(TipoJuicio tipoJuicio, TipoCarpeta tipoCarpeta) {
+        if (!TipoCarpeta.DEMANDA.equals(tipoCarpeta) || tipoJuicio == null || tipoJuicio.getMateria() == null) {
+            return false;
+        }
+        String materia = Optional.ofNullable(tipoJuicio.getMateria().getNombre()).orElse("").toLowerCase();
+        String nombreTipoJuicio = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
+        return materia.contains("mercantil") && nombreTipoJuicio.contains("oral");
+    }
+
+    private void syncContadoresJuzgados(Juzgado juzgado) {
+        List<ContadorJuzgado> contadoresActivos = contadorJuzgadoRepository.findByJuzgadoIdAndEstado(juzgado.getId(), Estado.ACTIVE);
+        Map<Integer, ContadorJuzgado> contadorByTipoJuicioId = contadoresActivos.stream()
+                .collect(Collectors.toMap(c -> c.getTipoJuicio().getId(), c -> c, (left, right) -> left));
+
+        List<TipoJuicio> tipoJuicios = Optional.ofNullable(juzgado.getTipoJuicios()).orElse(List.of());
+        Set<Integer> tipoJuiciosEspeciales = tipoJuicios.stream()
+                .filter(tj -> isJuicioMercantilOral(juzgado.getMateria(), tj))
+                .map(TipoJuicio::getId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, JuzgadoContadorConfig> configuracionByTipoJuicioId = Optional.ofNullable(juzgado.getContadoresJuzgados())
+                .orElse(List.of())
+                .stream()
+                .filter(cfg -> cfg.getTipoJuicioId() != null)
+                .collect(Collectors.toMap(JuzgadoContadorConfig::getTipoJuicioId, cfg -> cfg, (left, right) -> right));
+
+        if (!tipoJuiciosEspeciales.isEmpty()) {
+            List<String> faltantes = tipoJuicios.stream()
+                    .filter(tj -> tipoJuiciosEspeciales.contains(tj.getId()))
+                    .filter(tj -> {
+                        JuzgadoContadorConfig config = configuracionByTipoJuicioId.get(tj.getId());
+                        return config == null || config.getMaxAsignaciones() == null || config.getMaxAsignaciones() < 0;
+                    })
+                    .map(tj -> tj.getId() + " - " + tj.getNombre())
+                    .toList();
+
+            if (!faltantes.isEmpty()) {
+                throw new ConflictException(
+                        "Debe capturar el maximo de asignaciones para cada tipo de juicio oral mercantil. Faltantes: "
+                                + String.join(", ", faltantes));
+            }
+        }
+
+        for (Integer tipoJuicioId : tipoJuiciosEspeciales) {
+            JuzgadoContadorConfig config = configuracionByTipoJuicioId.get(tipoJuicioId);
+            ContadorJuzgado contador = contadorByTipoJuicioId.get(tipoJuicioId);
+
+            if (contador == null) {
+                contador = new ContadorJuzgado();
+                contador.setJuzgado(juzgado);
+                contador.setTipoJuicio(tipoJuicioRepository.findById(tipoJuicioId)
+                        .orElseThrow(() -> new NotFoundException("Tipo de juicio no encontrado", "tipoJuicioId")));
+                contador.setContadorAsignaciones(0);
+            }
+
+            contador.setMaxAsignaciones(config.getMaxAsignaciones());
+            if (config.getContadorAsignaciones() != null && config.getContadorAsignaciones() >= 0) {
+                contador.setContadorAsignaciones(config.getContadorAsignaciones());
+            }
+            contador.setEstado(Estado.ACTIVE);
+            contadorJuzgadoRepository.save(contador);
+        }
+
+        for (ContadorJuzgado contador : contadoresActivos) {
+            if (!tipoJuiciosEspeciales.contains(contador.getTipoJuicio().getId())) {
+                contador.setEstado(Estado.INACTIVE);
+                contadorJuzgadoRepository.save(contador);
+            }
+        }
+    }
+
+    private boolean isJuicioMercantilOral(Materia materia, TipoJuicio tipoJuicio) {
+        if (materia == null || tipoJuicio == null) {
+            return false;
+        }
+        String materiaNombre = Optional.ofNullable(materia.getNombre()).orElse("").toLowerCase();
+        String tipoJuicioNombre = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
+        return materiaNombre.contains("mercantil") && tipoJuicioNombre.contains("oral");
+    }
+
     public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
         juzgadoRepository.actualizarContadorAsignaciones(juzgado.getId());
         revisarCargaJuzgados(juzgado.getMateria(), tipoCarpeta, juzgadosRelacionados);
+    }
+
+    public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados,
+                                TipoJuicio tipoJuicio) {
+        if (isCasoEspecialContadorJuzgado(tipoJuicio, tipoCarpeta)) {
+            int rows = contadorJuzgadoRepository.actualizarContadorAsignaciones(juzgado.getId(), tipoJuicio.getId());
+            if (rows == 0) {
+                throw new NotFoundException(
+                        "No existe contador configurado para el juzgado y tipo de juicio seleccionado",
+                        "contadorJuzgado");
+            }
+            revisarCargaContadoresJuzgados(
+                    tipoJuicio.getId(),
+                    juzgadosRelacionados.stream().map(Juzgado::getId).toList());
+            return;
+        }
+        actualizarCarga(juzgado, tipoCarpeta, juzgadosRelacionados);
     }
 
     public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
@@ -353,6 +492,20 @@ public class JuzgadoService {
 
         if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
             juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
+        }
+    }
+
+    private void revisarCargaContadoresJuzgados(Integer tipoJuicioId, List<Integer> juzgadosIds) {
+        if (juzgadosIds == null || juzgadosIds.isEmpty()) {
+            return;
+        }
+        int totalAsignaciones = contadorJuzgadoRepository.sumContadorAsignaciones(juzgadosIds, tipoJuicioId);
+        int totalMaxAsignaciones = contadorJuzgadoRepository.sumMaxAsignaciones(juzgadosIds, tipoJuicioId);
+        int totalJuzgadosMenosAsignaciones = contadorJuzgadoRepository
+                .findJuzgadosMenosAsignaciones(juzgadosIds, tipoJuicioId).size();
+
+        if (totalMaxAsignaciones > 0 && totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
+            contadorJuzgadoRepository.reiniciarContadorAsignaciones(juzgadosIds, tipoJuicioId);
         }
     }
 

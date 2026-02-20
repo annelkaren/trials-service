@@ -86,7 +86,8 @@ public class PromocionSinExpedienteService {
                                 .setAnexos(String.join(", ", promocion.anexos()))
                                 .setEstado(PromocionSinExpedienteEnum.REGISTRADO)
                                 .setTipoRegistro(null)
-                                .setTipoPromocion(promocion.tipoPromocion());
+                                .setTipoPromocion(promocion.tipoPromocion())
+                                .setPrioridad(promocion.prioridad());
 
                 promocionSinExp = promocionSinExpedienteRepository.save(promocionSinExp);
                 PromocionSinExpedienteSaveRecord saveRecord = new PromocionSinExpedienteSaveRecord(

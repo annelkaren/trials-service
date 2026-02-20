@@ -423,7 +423,9 @@ class CarpetaResourceTest {
                                 "Actor",
                                 "Demandado",
                                 Boolean.TRUE,
-                                ""));
+                                "",
+                                EstadoMigracion.MIGRADO_COMPLETADO,
+                                Migrado.SI));
                 Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
                 when(mockCarpetaService.libroDeGobierno(any(Pageable.class), anyString(), anyString(),
