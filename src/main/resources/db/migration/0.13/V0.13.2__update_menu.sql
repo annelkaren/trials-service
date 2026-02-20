@@ -1,0 +1,3 @@
+UPDATE TRIALS.TBL_MENUS
+SET S_NOMBRE = 'Impresiones'
+WHERE S_NOMBRE = 'Etiquetas';

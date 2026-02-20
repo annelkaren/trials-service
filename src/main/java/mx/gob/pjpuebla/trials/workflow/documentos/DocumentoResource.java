@@ -111,6 +111,32 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
     }
 
+    @GetMapping(value = "/documentos/impresion", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DocumentoImpresionCarpetaRecord getDocumentosImpresion(
+            @RequestParam String expediente,
+            @RequestParam Integer year) {
+        return documentoService.getDocumentosImpresion(expediente, year);
+    }
+
+    @PostMapping(value = "/documentos/impresion/sellos", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> printSellosMasivos(
+            @RequestBody DocumentoImpresionMasivaRequestRecord request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sellos", "sellos_masivos.pdf");
+        return ResponseEntity.ok().headers(headers).body(documentoService.printSellosMasivos(request.documentoIds()));
+    }
+
+    @PostMapping(value = "/documentos/impresion/caratulas", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> printCaratulasMasivas(
+            @RequestBody DocumentoImpresionMasivaRequestRecord request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("caratulas", "caratulas_masivas.pdf");
+        return ResponseEntity.ok().headers(headers)
+                .body(documentoService.printCaratulasMasivas(request.documentoIds()));
+    }
+
     @GetMapping("/bandeja/entrada")
     public Page<BandejaEntradaRecord> getBandejaEntrada(
             Pageable pageable,
