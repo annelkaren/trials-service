@@ -18,3 +18,5 @@ Thumbs.db
 /target/
 .qodana/
 .vscode/
+
+Dockerfile.*
