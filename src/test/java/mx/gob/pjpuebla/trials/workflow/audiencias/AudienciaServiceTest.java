@@ -28,6 +28,8 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -103,6 +105,9 @@ class AudienciaServiceTest {
     @Mock
     private SalaPersonaRepository salaPersonaRepository;
 
+    @Mock
+    private CarpetaDetalleRepository carpetaDetalleRepository;
+
     @InjectMocks
     private AudienciaService audienciaService;
 
@@ -112,6 +117,7 @@ class AudienciaServiceTest {
     private TipoAudiencia tipoAudiencia;
     private Carpeta carpeta;
     private Documento documento;
+    private CarpetaDetalle carpetaDetalle;
     private Persona persona;
     private TipoJuicio tipoJuicio;
     private Etiqueta tipoJuicioEtiqueta;
@@ -127,6 +133,9 @@ class AudienciaServiceTest {
         tipoJuicio = TipoJuicioSetUp.createTipoJuicioOralFamiliar();
         persona = PersonaSetUp.createPersona();
         documento = DocumentoSetUp.create_data(tipoJuicio);
+        carpetaDetalle = new CarpetaDetalle()
+                .setCarpeta(carpeta)
+                .setUltimoDomicilioFamiliar("Domicilio Familiar Test");
         tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
         ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
     }
@@ -173,6 +182,7 @@ class AudienciaServiceTest {
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
         when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
+        when(carpetaDetalleRepository.findByCarpetaId(carpeta.getId())).thenReturn(carpetaDetalle);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -180,7 +190,7 @@ class AudienciaServiceTest {
         assertThat(entity.nombreJuez()).isEqualTo("Juan Perez ");
         assertThat(entity.nombreSala()).isEqualTo("1");
         assertThat(entity.nombreTipoJuicio()).isEqualTo("Familiar Oralidad (Alimentos)");
-        assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Example Domicilio</b>");
+        assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Domicilio Familiar Test</b>");
     }
 
 
@@ -188,6 +198,7 @@ class AudienciaServiceTest {
     void DomicilioByaudiencias_isEmpty() {
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(null);
         when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(null);
+        when(carpetaDetalleRepository.findByCarpetaId(carpeta.getId())).thenReturn(carpetaDetalle);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
         assertThat(entity).isNotNull();

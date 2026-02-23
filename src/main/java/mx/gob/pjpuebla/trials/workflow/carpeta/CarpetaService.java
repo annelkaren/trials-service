@@ -850,7 +850,6 @@ public class CarpetaService {
 
                 String ubicacion = persona.getJuzgado() != null ? persona.getJuzgado().getNombre()
                                 : persona.getOficialia().getNombre();
-
                 return new InfoExpedienteDetalleRecord(
                                 carpeta.getDeterminacionJurisdiccional() != null
                                                 ? carpeta.getDeterminacionJurisdiccional().name()
@@ -895,6 +894,11 @@ public class CarpetaService {
                                 carpetaDetalle.getFechaPresentacionImputado() != null
                                                 ? carpetaDetalle.getFechaPresentacionImputado().format(pattern)
                                                 : null,
+                                carpetaDetalle.getUltimoDomicilioFamiliar(),
+                                carpetaDetalle.getDomicilioAcreedor(),
+                                carpetaDetalle.getDomicilioFamiliar(),
+                                carpetaDetalle.getDomicilioDemandado(),
+                                carpetaDetalle.getDomicilioMenorEdad(),
                                 carpetaDetalle.getTipoJuicio() != null ? carpetaDetalle.getTipoJuicio().getId() : null,
                                 carpetaDetalle.getTipoJuicio() != null ? carpetaDetalle.getTipoJuicio().getNombre()
                                                 : null,
@@ -929,15 +933,17 @@ public class CarpetaService {
 
                 }
                 // edita rubros
-                Set<Rubro> rubros = detalle.rubros().stream()
-                                .map(rubroRecord -> rubroRepository.findById(rubroRecord.id())
-                                                .orElseThrow(
-                                                                () -> new IllegalArgumentException(
-                                                                                "Rubro no encontrado con id: "
-                                                                                                + rubroRecord.id())))
-                                .collect(Collectors.toSet());
+                if (detalle.rubros() != null) {
+                        Set<Rubro> rubros = detalle.rubros().stream()
+                                        .map(rubroRecord -> rubroRepository.findById(rubroRecord.id())
+                                                        .orElseThrow(
+                                                                        () -> new IllegalArgumentException(
+                                                                                        "Rubro no encontrado con id: "
+                                                                                                        + rubroRecord.id())))
+                                        .collect(Collectors.toSet());
 
-                carpeta.setRubros(rubros);
+                        carpeta.setRubros(rubros);
+                }
 
                 // edita etapa procesal
                 // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino
@@ -967,8 +973,6 @@ public class CarpetaService {
                         }
                 }
 
-                // TODO falta actualizar domicilios para Familiar Oralidad
-
                 carpetaDetalle
                                 .setAsunto(detalle.asunto())
                                 .setObservaciones(detalle.observaciones())
@@ -987,19 +991,18 @@ public class CarpetaService {
                                 .setEntidad(detalle.entidad())
                                 .setMunicipio(detalle.municipio())
                                 .setLocalidad(detalle.localidad())
-                                .setFechaRegistro(
-                                                detalle.fechaRegistro() != null
-                                                                ? (LocalDate.parse(detalle.fechaRegistro(),
-                                                                                pattern))
-                                                                : null)
+                                .setFechaRegistro(detalle.fechaRegistro())
                                 .setHoraFormal(detalle.horaFormal())
                                 .setHoraMaterial(detalle.horaMaterial())
                                 .setLugarDisposicion(detalle.lugarDisposicion())
                                 .setPresentacionImputado(detalle.presentacionImputado())
                                 .setSolicitudAudiencia(detalle.solicitudAudiencia())
-                                .setFechaPresentacionImputado(detalle.fechaPresentacionImputado() != null
-                                                ? (LocalDate.parse(detalle.fechaPresentacionImputado(), pattern))
-                                                : null)
+                                .setFechaPresentacionImputado(detalle.fechaPresentacionImputado())
+                                .setUltimoDomicilioFamiliar(detalle.ultimoDomicilioFamiliar())
+                                .setDomicilioAcreedor(detalle.domicilioAcreedor())
+                                .setDomicilioFamiliar(detalle.domicilioFamiliar())
+                                .setDomicilioDemandado(detalle.domicilioDemandado())
+                                .setDomicilioMenorEdad(detalle.domicilioMenorEdad())
                                 .setCujus(detalle.cujus())
                                 .setFechaEjecutoria(detalle.fechaEjecutoria());
 

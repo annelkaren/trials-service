@@ -8,6 +8,8 @@ import java.util.List;
 public record DocumentoResponseRecord(
         PersonaDocumentoRecord actor,
         PersonaDocumentoRecord demandado,
+        String ultimoDomicilioFamiliar,
+        String domicilioAcreedor,
         List<String> anexos,
         DocumentoData general,
         String tipoJuicio,
