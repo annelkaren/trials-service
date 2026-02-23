@@ -11,9 +11,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DocumentoData implements Serializable {
 
@@ -22,6 +24,9 @@ public class DocumentoData implements Serializable {
     private String nombreAbogado;
     private String cedulaAbogado;
     private String correoAbogado;
+    private String domicilio;
+    private String ultimoDomicilioFamiliar;
+    private String domicilioFamiliar;
     private TipoPromocion tipoPromocion;
     private String exhortoObservaciones;
     private String exhortoProcedencia;
@@ -42,6 +47,8 @@ public class DocumentoData implements Serializable {
     private String amparoTipo;
     private String pieza;
     private EstadoCarpeta estadoPieza;
+    private String domicilioAcreedor;
+    private String domicilioDemandado;
     private String tramite;
     private String destino;
     private LocalDate fechaEntrega;

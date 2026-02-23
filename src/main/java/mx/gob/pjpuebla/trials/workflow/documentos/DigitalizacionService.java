@@ -437,6 +437,8 @@ public class DigitalizacionService {
      * @param message El mensaje de error si el valor es nulo.
      */
     private void validateNotNull(Object value, String message) {
+      
+
         if (value == null) {
             throw new IllegalArgumentException(message);
         }

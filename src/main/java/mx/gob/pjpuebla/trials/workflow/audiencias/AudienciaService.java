@@ -12,9 +12,9 @@ import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
@@ -68,6 +68,7 @@ public class AudienciaService {
         private final PersonaService personaService;
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final CarpetaRepository carpetaRepository;
+        private final CarpetaDetalleRepository carpetaDetalleRepository;
         private final PersonaDocumentoRepository personaDocumentoRepository;
         private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
         private final SalaPersonaRepository salaPersonaRepository;
@@ -118,9 +119,10 @@ public class AudienciaService {
                                                         : "");
                 }
 
-                String calle = Optional.of(documento)
-                                .map(Documento::getData)
-                                .map(DocumentoData::getDomicilio)
+                String calle = Optional.ofNullable(carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId()))
+                                .map(detalle -> detalle.getUltimoDomicilioFamiliar() != null
+                                                ? detalle.getUltimoDomicilioFamiliar()
+                                                : detalle.getDomicilioFamiliar())
                                 .orElse("");
 
                 Etiqueta etiqueta = etiquetaRepository.findByTipoJuicioIdAndNombre(
