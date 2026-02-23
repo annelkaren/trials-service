@@ -119,6 +119,26 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "T_FECHA_PRESENTACION_IMPUTADO")
     private LocalDate fechaPresentacionImputado;
 
+    @Size(max = 300)
+    @Column(name = "S_ULTIMO_DOMICILIO_FAMILIAR")
+    private String ultimoDomicilioFamiliar;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_ACREEDOR")
+    private String domicilioAcreedor;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_FAMILIAR")
+    private String domicilioFamiliar;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_DEMANDADO")
+    private String domicilioDemandado;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_MENOR_EDAD")
+    private String domicilioMenorEdad;
+
     @Column(name = "S_CUJUS")
     private String cujus;
 

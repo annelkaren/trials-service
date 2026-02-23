@@ -1455,6 +1455,8 @@ class DocumentoServiceTest {
                 DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
                                 actorRecord,
                                 demandadoRecord,
+                                "",
+                                "",
                                 anexos,
                                 tipoJuicio.getId(),
                                 documentoData);
@@ -1514,6 +1516,8 @@ class DocumentoServiceTest {
                 DocumentoSaveRecord documentoSaveRecord = new DocumentoSaveRecord(
                                 actorRecord,
                                 demandadoRecord,
+                                "",
+                                "",
                                 anexos,
                                 tipoJuicio.getId(),
                                 documentoData);

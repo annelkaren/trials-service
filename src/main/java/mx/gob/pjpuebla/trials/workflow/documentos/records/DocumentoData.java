@@ -22,7 +22,6 @@ public class DocumentoData implements Serializable {
     private String nombreAbogado;
     private String cedulaAbogado;
     private String correoAbogado;
-    private String domicilio;
     private TipoPromocion tipoPromocion;
     private String exhortoObservaciones;
     private String exhortoProcedencia;
@@ -43,7 +42,6 @@ public class DocumentoData implements Serializable {
     private String amparoTipo;
     private String pieza;
     private EstadoCarpeta estadoPieza;
-    private String domicilioAcreedor;
     private String tramite;
     private String destino;
     private LocalDate fechaEntrega;

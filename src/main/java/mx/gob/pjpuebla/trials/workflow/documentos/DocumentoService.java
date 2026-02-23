@@ -452,7 +452,15 @@ public class DocumentoService {
                                 generateNumExpediente(juzgadoDemanda, TipoCarpeta.DEMANDA), persona);
 
                 // Llama al metodo crear documento para la creación de un documento dinamico.
-                Documento documento = crearDocumento(carpeta, documentoRecord.general(), persona);
+                DocumentoData datosGenerales = documentoRecord.general();
+                String ultimoDomicilioFamiliar = null;
+                String domicilioAcreedor = null;
+                if (esMateriaFamiliar(tipoJuicio)) {
+                        ultimoDomicilioFamiliar = documentoRecord.ultimoDomicilioFamiliar();
+                        domicilioAcreedor = documentoRecord.domicilioAcreedor();
+                }
+
+                Documento documento = crearDocumento(carpeta, datosGenerales, persona);
 
                 // Llama metodo para crear anexos.
                 addAnexos(documentoRecord.anexos(), documento);
@@ -465,7 +473,18 @@ public class DocumentoService {
                 createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
                 // Crea una carpeta detalle.
-                carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
+                CarpetaDetalle carpetaDetalle = new CarpetaDetalle().setCarpeta(carpeta);
+                if (esMateriaFamiliar(tipoJuicio)) {
+                        carpetaDetalle
+                                        .setUltimoDomicilioFamiliar(ultimoDomicilioFamiliar)
+                                        .setDomicilioAcreedor(domicilioAcreedor)
+                                        .setDomicilioFamiliar(ultimoDomicilioFamiliar)
+                                        .setDomicilioDemandado(
+                                                        documentoRecord.demandado() != null
+                                                                        ? documentoRecord.demandado().domicilio()
+                                                                        : null);
+                }
+                carpetaDetalleRepository.save(carpetaDetalle);
 
                 // Crea Movimiento.
                 movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
@@ -800,7 +819,12 @@ public class DocumentoService {
                                 demandado = persona;
                         }
                 }
-                return new DocumentoResponseRecord(actor, demandado, anexos, documento.getData(),
+                DocumentoData datosGenerales = documento.getData() != null ? documento.getData() : new DocumentoData();
+                CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+                String ultimoDomicilioFamiliar = carpetaDetalle != null ? carpetaDetalle.getUltimoDomicilioFamiliar() : null;
+                String domicilioAcreedor = carpetaDetalle != null ? carpetaDetalle.getDomicilioAcreedor() : null;
+                return new DocumentoResponseRecord(actor, demandado, ultimoDomicilioFamiliar, domicilioAcreedor,
+                                anexos, datosGenerales,
                                 documento.getCarpeta().getTipoJuicio().getNombre(),
                                 documento.getCarpeta().getTipoJuicio().getId());
         }
@@ -2693,6 +2717,13 @@ public class DocumentoService {
                         throw new NotFoundException("La persona no está relacionada con ninguna oficialía",
                                         "persona.getOficialia()");
                 }
+        }
+
+        private boolean esMateriaFamiliar(TipoJuicio tipoJuicio) {
+                return tipoJuicio != null
+                                && tipoJuicio.getMateria() != null
+                                && tipoJuicio.getMateria().getNombre() != null
+                                && tipoJuicio.getMateria().getNombre().toUpperCase().contains("FAMILIAR");
         }
 
         private TipoJuicio getTipoJuicioById(Integer tipoJuicioId) {
