@@ -187,7 +187,8 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
                     END,
                     tp.nombre,
                     aa.asistencia,
-                    di.name
+                    di.name,
+                    aa.urlDocumento
                 )
                 FROM PersonaDocumento pd
                 JOIN pd.carpeta c

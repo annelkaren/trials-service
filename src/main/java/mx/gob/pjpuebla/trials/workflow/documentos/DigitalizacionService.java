@@ -237,6 +237,28 @@ public class DigitalizacionService {
         }
     }
 
+    public byte[] getDocumentoAsistenciaByRuta(Integer carpetaId, Integer audienciaId, String nombreArchivo) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/";
+
+        Carpeta carpeta = carpetaRepository.findById(carpetaId).orElse(null);
+        validateNotNull(carpeta, "No pudo ser obtenida la carpeta con ID: " + carpetaId);
+        validateNotNull(audienciaId, "El id de audiencia no puede ser nulo");
+        validateNotNull(nombreArchivo, "El nombre del archivo no puede ser nulo");
+
+        String year = obtenerDatosExpediente(carpeta.getExpediente())[1].trim();
+        String juzgado = carpeta.getJuzgado().getNombre().replace(" ", "");
+        String expediente = obtenerDatosExpediente(carpeta.getExpediente())[0];
+
+        Path rutaArchivo = Paths.get(basePath, year, juzgado, expediente, "Audiencias",
+                audienciaId.toString(), "Asistencia", nombreArchivo);
+
+        if (Files.exists(rutaArchivo)) {
+            return Files.readAllBytes(rutaArchivo);
+        } else {
+            throw new IOException("El archivo " + nombreArchivo + " no existe en el directorio");
+        }
+    }
+
     /**
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
