@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import lombok.Setter;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.migracion.readers.detallesProm.DetallesProm;
@@ -92,6 +94,7 @@ public class DigitalizacionService {
     private final CarpetaRepository carpetaRepository;
     private final DocumentoDetalleRepository documentoDetalleRepository;
     private final AudienciaService audienciaService;
+    private final AudienciaRepository audienciaRepository;
     private final FtpDownloader ftpDownloader;
     private final DetallesPromRepository detallesPromRepository;
     private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
@@ -135,7 +138,8 @@ public class DigitalizacionService {
 
         if (Objects.equals(documento.getTipoDocumento(), TipoDocumento.PRUEBA_AUDIENCIA)) {
             // Solo mientras se define la audiencia a la que corresponde
-            Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
+            Audiencia audiencia = audienciaRepository.findById(audienciaId)
+            .orElseThrow(() -> new EntityNotFoundException("Audiencia no encontrada para ID: " + audienciaId));
             String numAudiencia = String.valueOf(audiencia.getId());
 
             String ruta = construirRutaAudienciaPruebas(juzgado, carpeta.getExpediente(), numAudiencia);

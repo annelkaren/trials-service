@@ -47,7 +47,8 @@ class AudienciaPruebasResourceTest {
                 "Descripción del documento",
                 "Objeto del documento", // objeto
                 "http://example.com/documento.pdf",
-                1001
+                1001,
+                1 // Assuming 1 as a default value for the missing 10th Integer argument
         );
         String audienciaPruebaRequestJson = new ObjectMapper().writeValueAsString(audienciaPruebaRequest);
 
