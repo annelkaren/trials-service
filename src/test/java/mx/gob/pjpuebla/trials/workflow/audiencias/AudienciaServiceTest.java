@@ -260,7 +260,9 @@ class AudienciaServiceTest {
                 null,
                 Collections.emptyList(),
                 audiencia.getInicio(),
-                audiencia.getFin()
+                audiencia.getFin(),
+                null,
+                null
         );
         Page<AudienciasGeneralesResponseRecord> pageAudiencias =
                 new PageImpl<>(Collections.singletonList(responseRecord), PageRequest.of(0, 10), 1);

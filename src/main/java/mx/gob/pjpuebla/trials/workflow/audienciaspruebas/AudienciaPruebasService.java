@@ -19,6 +19,7 @@ import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebas;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebasRepository;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.AudienciaPruebaRequestRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
@@ -43,6 +44,7 @@ public class AudienciaPruebasService {
     private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
     private final AudienciaService audienciaService;
+    private final AudienciaRepository audienciaRepository;
 
     @Value("${app.root-folder}")
     private String rootFolder; // Ruta raíz de la digitalización
@@ -50,8 +52,10 @@ public class AudienciaPruebasService {
 
     @Transactional
     public AudienciaPruebas createAudienciaPrueba(AudienciaPruebaRequestRecord audienciaPruebaRequest, MultipartFile file) {
-        // Asignación de Audiencia temporal hasta que se defina a que audiencia corresponde
-        Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
+        digitalizacionService.setAudienciaId(audienciaPruebaRequest.audienciaId());
+                
+        Audiencia audiencia = audienciaRepository.findById(audienciaPruebaRequest.audienciaId())
+            .orElseThrow(() -> new EntityNotFoundException("Audiencia no encontrada para ID: " + audienciaPruebaRequest.audienciaId()));
 
         TipoPruebas tipoPrueba = tipoPruebaRepository.findById(audienciaPruebaRequest.tipoPruebaId())
                 .orElseThrow(() -> new EntityNotFoundException("TipoPrueba no encontrado para ID: " + audienciaPruebaRequest.tipoPruebaId()));

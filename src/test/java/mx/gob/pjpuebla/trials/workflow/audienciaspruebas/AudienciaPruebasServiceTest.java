@@ -123,7 +123,8 @@ class AudienciaPruebasServiceTest {
             "Descripción del documento",
             "Objeto del documento",
             "http://example.com/documento.pdf",
-            1001 // idCarpeta
+            1001, // idCarpeta
+            1 // Assuming 1 as a default value for the missing 10th Integer argument
     );
 
         MultipartFile file = mock(MultipartFile.class);
