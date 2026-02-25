@@ -20,7 +20,7 @@ import java.io.IOException;
 @Service
 public class DocumentoDetalleService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DigitalizacionService digitalizacion2Service;
+    private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
 
     @Value("${app.root-folder}")
@@ -35,7 +35,7 @@ public class DocumentoDetalleService {
         DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId())
             .orElseThrow(() -> new NotFoundException("El detalle del documento no ha sido encontrado", "ID: " + doc.getId()));
         
-        DigitalizacionRecord digitalizacion = digitalizacion2Service.guardarArchivo(documento.file(), documento.documentoId());
+        DigitalizacionRecord digitalizacion = digitalizacionService.guardarDocumento(documento.file(), documento.documentoId());
 
 
 
@@ -55,7 +55,7 @@ public class DocumentoDetalleService {
     }
 
     public byte[] getAcuse(Integer documentoId) throws IOException {
-        byte[] archivo = digitalizacion2Service.getDocumento(documentoId);
+        byte[] archivo = digitalizacionService.getDocumento(documentoId);
 
         if(archivo != null){
             return archivo;

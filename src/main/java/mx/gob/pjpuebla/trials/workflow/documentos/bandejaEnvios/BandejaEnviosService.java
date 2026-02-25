@@ -93,7 +93,7 @@ public class BandejaEnviosService {
     public BandejaEnvioRecordResponse digitalizarAcuseOficioOCP(MultipartFile file, Integer documentoId){
         
         // Intentamos guardar el documento.
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivo(file, documentoId);
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarDocumento(file, documentoId);
         if(digitalizacionRecord.rutaArchivo() != null){
             //si se guardo el documento actualizamos el estatus a digitalizado en documentoDetalle (en el estatus envio).
             DocumentoDetalle documentoDetalle = documentoDetalleRepository.findByDocumentoId(documentoId)
@@ -110,3 +110,4 @@ public class BandejaEnviosService {
     }
 
 }
+

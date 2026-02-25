@@ -14,15 +14,13 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -40,12 +38,8 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,12 +66,7 @@ public class AudienciaService {
         private final PersonaDocumentoRepository personaDocumentoRepository;
         private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
         private final SalaPersonaRepository salaPersonaRepository;
-        @Value("${app.root-folder}")
-        private String rootFolder; // Ruta raíz de la digitalización
-        private String basePath; // Ruta base para la digitalización
-        private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
-        private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
-        private static final String EXTENSION_ARCHIVO = ".pdf";
+        private final DigitalizacionService digitalizacionService;
 
         public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
                 Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -353,88 +342,12 @@ public class AudienciaService {
                                 fechaInicio,
                                 fechaFin);
         }
-
         public void guardarArchivo(MultipartFile file, Integer audienciaId) {
-                this.basePath = rootFolder + "/digitalizacion/";
-
-                Audiencia audiencia = audienciaRepository.findById(audienciaId).orElseThrow(
-                                () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-                validarArchivo(file);
-
-                Path rutaArchivo = crearDirectorio(audiencia);
-                String nombreUnicoArchivo = generarNombreArchivo();
-
-                try {
-                        if (!Files.exists(rutaArchivo)) {
-                                Files.createDirectories(rutaArchivo);
-                        }
-
-                        Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
-                        log.info("Archivo cargado en el servidor con nombre: {}", nombreUnicoArchivo);
-
-                } catch (IOException e) {
-                        log.error("Error al guardar el archivo: {}", e.getMessage(), e);
-                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                                        "Error al guardar el archivo en el servidor", e);
-                }
-
-                audiencia.setRuta(nombreUnicoArchivo);
-                audienciaRepository.save(audiencia);
-
-                new DigitalizacionRecord(audiencia.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(),
-                                nombreUnicoArchivo);
-        }
-
-        private void validarArchivo(MultipartFile file) {
-                if (file.isEmpty()) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede estar vacío.");
-                }
-
-                if (file.getContentType() == null || !TIPO_ARCHIVOS_PERMITIDOS.contains(file.getContentType())) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo debe ser un PDF.");
-                }
-
-                if (file.getSize() > MAX_FILE_SIZE) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "El archivo no puede superar los 50 MB.");
-                }
+                digitalizacionService.guardarActaMinimaAudiencia(file, audienciaId);
         }
 
         public byte[] getAudienciaDocumento(Integer audienciaId) throws IOException {
-                this.basePath = this.rootFolder + "/digitalizacion/";
-
-                Audiencia audiencia = audienciaRepository.findById(audienciaId).orElse(null);
-                assert audiencia != null;
-                Path rutaArchivo = crearDirectorio(audiencia).resolve(audiencia.getRuta());
-
-                if (Files.exists(rutaArchivo)) {
-                        return Files.readAllBytes(rutaArchivo);
-                } else {
-                        throw new IOException("El archivo relacionado con la audiencia " + audiencia.getId()
-                                        + " no existe en el directorio");
-                }
-        }
-
-        private String generarNombreArchivo() {
-                return "audiencia_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
-        }
-
-        private Path crearDirectorio(Audiencia audiencia) {
-                this.basePath = this.rootFolder + "/digitalizacion/";
-                String expediente = audiencia.getCarpeta().getExpediente();
-                expediente = expediente.replace("/", "");
-                String year = expediente.substring(expediente.length() - 4);
-                String numero = expediente.substring(0, expediente.length() - 4);
-                numero = String.format("%06d", Integer.parseInt(numero));
-                String juzgado = obtenerJuzgado(audiencia);
-                return Paths.get(basePath, year, juzgado, numero, "actaminima");
-        }
-
-        private String obtenerJuzgado(Audiencia audiencia) {
-                return audiencia.getCarpeta().getJuzgado().getNombre() != null
-                                ? audiencia.getCarpeta().getJuzgado().getNombre()
-                                : "Desconocido";
+                return digitalizacionService.getActaMinimaAudiencia(audienciaId);
         }
 
         public Audiencia obtenerUltimaAudienciaDesahogada() {
@@ -455,3 +368,6 @@ public class AudienciaService {
         }
 
 }
+
+
+
