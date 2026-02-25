@@ -31,6 +31,7 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
 import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
@@ -50,7 +51,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -108,6 +108,9 @@ class AudienciaServiceTest {
     @Mock
     private CarpetaDetalleRepository carpetaDetalleRepository;
 
+    @Mock
+    private DigitalizacionService digitalizacionService;
+
     @InjectMocks
     private AudienciaService audienciaService;
 
@@ -137,7 +140,6 @@ class AudienciaServiceTest {
                 .setCarpeta(carpeta)
                 .setUltimoDomicilioFamiliar("Domicilio Familiar Test");
         tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
-        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
     }
 
     @Test
@@ -479,29 +481,17 @@ class AudienciaServiceTest {
     }
     @Test
     void testGuardarArchivo(){
-        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
-        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
-        audiencia.setId(1);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
-
-        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
-        audienciaService.guardarArchivo(fileMock, audiencia.getId());
-
-        verify(audienciaRepository).findById(audiencia.getId());
-        verify(audienciaRepository).save(any(Audiencia.class));
+        audienciaService.guardarArchivo(fileMock, 1);
+        verify(digitalizacionService).guardarActaMinimaAudiencia(fileMock, 1);
     }
 
     @Test
     void testGetActaMinima() throws IOException {
-        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
-        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
-        audiencia.setId(1);
-        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
-        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
-        audienciaService.guardarArchivo(fileMock, audiencia.getId());
-
-        byte[] resultado = audienciaService.getAudienciaDocumento(audiencia.getId());
+        given(digitalizacionService.getActaMinimaAudiencia(1)).willReturn(new byte[] { 1, 2, 3 });
+        byte[] resultado = audienciaService.getAudienciaDocumento(1);
         assertNotNull(resultado);
+        verify(digitalizacionService).getActaMinimaAudiencia(1);
     }
 
     @Test

@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
 
@@ -49,6 +50,9 @@ class DigitalizacionServiceTest {
     private DocumentoRepository documentoRepository;
 
     @Mock
+    private DocumentoDetalleRepository documentoDetalleRepository;
+
+    @Mock
     private Persona persona;
 
     @Mock
@@ -80,16 +84,19 @@ class DigitalizacionServiceTest {
     void testCrearDirectorio_OficioAdministrativo() {
         DocumentoData docData = DocumentoSetUp.createDocumentoData("Administrativo");
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
 
 
         documento.setCarpeta(null);
         documento.setTipoDocumento(TipoDocumento.OFICIO);
         documento.setData(docData);
 
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
         given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
-  
-        createdDirectory = digitalizacionService.crearDirectorio(documento);
+
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
+        createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
         assertNotNull(createdDirectory);
         assertTrue(createdDirectory.toString().contains("oficiosAdministrativos"));
@@ -103,14 +110,17 @@ class DigitalizacionServiceTest {
     void testCrearDirectorio_OficioJurisdiccional() {
         DocumentoData docData = DocumentoSetUp.createDocumentoData("Jurisdiccional");
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.OFICIO);
         documento.setTipoDocumento(TipoDocumento.OFICIO);
         documento.setData(docData);
 
+        given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
         given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
-  
-        createdDirectory = digitalizacionService.crearDirectorio(documento);
+
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
+        createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
         assertNotNull(createdDirectory);
         assertTrue(createdDirectory.toString().contains("oficiosJurisdiccionales"));
@@ -123,13 +133,16 @@ class DigitalizacionServiceTest {
     void testCreateDirectorio_Demanda() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         Persona persona = PersonaSetUp.createPersona();
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
 
-        createdDirectory = digitalizacionService.crearDirectorio(documento);
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
+        createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
         assertNotNull(createdDirectory);
         String normalizedPath = createdDirectory.toString().replace("\\", "/");
@@ -142,6 +155,8 @@ class DigitalizacionServiceTest {
     @Test
     void testCreateDirectorio_Exhorto() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        documento.setTipoDocumento(TipoDocumento.PROMOCION);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         Persona persona = PersonaSetUp.createPersona();
         
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
@@ -150,7 +165,8 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-        createdDirectory = digitalizacionService.crearDirectorio(documento);
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
+        createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
         assertNotNull(createdDirectory);
         String normalizedPath = createdDirectory.toString().replace("\\", "/");
@@ -163,9 +179,10 @@ class DigitalizacionServiceTest {
      */
     @Test
     void testCrearDirectorio_DocumentoNulo() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            digitalizacionService.crearDirectorio(null);
-        });
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
+        given(documentoRepository.findById(any())).willReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> digitalizacionService.guardarDocumento(fileMock, 999));
     }
 
     /**
@@ -175,11 +192,12 @@ class DigitalizacionServiceTest {
     @Test
     void testCrearDirectorio_CarpetaNula() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         documento.setCarpeta(null);
+        documento.setTipoDocumento(null);
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            digitalizacionService.crearDirectorio(documento);
-        }, "El documento no puede tener una carpeta nula");
+        assertThrows(IllegalArgumentException.class, () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
     }
 
     /**
@@ -189,11 +207,12 @@ class DigitalizacionServiceTest {
     @Test
     void testCrearDirectorio_TipoDocumentoNulo() {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         documento.setTipoDocumento(null);
+        documento.setCarpeta(null);
+        given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
-        assertThrows(NullPointerException.class, () -> {
-            digitalizacionService.crearDirectorio(documento);
-        }, "TipoDocumento no puede ser nulo.");
+        assertThrows(IllegalArgumentException.class, () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
     }
 
     /**
@@ -213,7 +232,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-        DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
 
         verify(documentoRepository).findById(documento.getId());
         verify(documentoRepository).save(any(Documento.class));
@@ -241,7 +260,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            digitalizacionService.guardarArchivo(fileMock, documento.getId());
+            digitalizacionService.guardarDocumento(fileMock, documento.getId());
         });
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
@@ -262,7 +281,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
-                () -> digitalizacionService.guardarArchivo(fileMock, documento.getId()));
+                () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
         assertEquals("El archivo no puede superar los 50 MB.", exception.getReason());
@@ -286,7 +305,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-        DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
 
         createdDirectory = Paths.get(result.rutaArchivo());
 
@@ -313,7 +332,7 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-        DigitalizacionRecord result = digitalizacionService.guardarArchivo(fileMock, documento.getId());
+        DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
 
         createdDirectory = Paths.get(result.rutaArchivo());
 
@@ -378,8 +397,9 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-        digitalizacionService.setAudienciaId(1);
-        createdDirectory = digitalizacionService.crearDirectorio(documento);
+        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(10, "file", "application/pdf");
+        DigitalizacionRecord result = digitalizacionService.guardarDocumentoAsistencia(fileMock, documento.getId(), 1);
+        createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
         assertNotNull(createdDirectory);
         String normalizedPath = createdDirectory.toString().replace("\\", "/");
