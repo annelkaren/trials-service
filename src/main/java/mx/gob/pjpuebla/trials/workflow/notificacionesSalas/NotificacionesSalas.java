@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -11,14 +12,17 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
-import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioNotificacionesSalas;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -52,7 +56,7 @@ public class NotificacionesSalas implements Serializable, Auditable {
 
     @Column(name = "n_estado")
     @Enumerated
-    private EstadoEnvioNotificacionesSalas estado;
+    private Estado estado;
 
     @Column(name = "t_fecha_envio")
     private LocalDateTime fechaEnvio;
@@ -62,6 +66,10 @@ public class NotificacionesSalas implements Serializable, Auditable {
 
     @Column(name = "t_fecha_entrega")
     private LocalDateTime fechaEntrega;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "N_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
+    private EmailLog emailLog;
 
     @Accessors(chain = false)
     @Embedded

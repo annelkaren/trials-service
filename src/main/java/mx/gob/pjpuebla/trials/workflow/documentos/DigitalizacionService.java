@@ -237,7 +237,7 @@ public class DigitalizacionService {
 
     public byte[] getArchivoNotificacionSala(String rutaArchivo, String tipoSala) throws IOException {
         validateNotNull(rutaArchivo, "La ruta del archivo no puede ser nula");
-        log.info("Accediento a la ruta : " + getBasePath() + '/' + NOTIFICACIONES_SALA_DIR + '/' + tipoSala + '/' +  rutaArchivo);
+       
         Path fullPath = Paths.get(getBasePath(), NOTIFICACIONES_SALA_DIR, tipoSala, rutaArchivo);
         if (Files.exists(fullPath)) {
             return Files.readAllBytes(fullPath);

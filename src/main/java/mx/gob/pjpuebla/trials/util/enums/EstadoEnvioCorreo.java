@@ -3,7 +3,7 @@ package mx.gob.pjpuebla.trials.util.enums;
 import lombok.Getter;
 
 @Getter
-public enum EstadoEnvioNotificacionesSalas {
+public enum EstadoEnvioCorreo {
     PENDIENTE("Pendiente"),
     ENVIADO("Enviado"),
     RECIBIDO("Recibido"),
@@ -11,7 +11,7 @@ public enum EstadoEnvioNotificacionesSalas {
 
     private final String etiqueta;
 
-    EstadoEnvioNotificacionesSalas(String etiqueta){
+    EstadoEnvioCorreo(String etiqueta){
         this.etiqueta = etiqueta;
     }
     

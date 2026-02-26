@@ -70,6 +70,9 @@ public class NotificacionesSalasServices {
         notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
         notificacion = notificacionesSalasRepository.save(notificacion);
 
+        //Aqui intentamos enviar el correo con SEND PULS:
+        
+
         return new NotificacionesSalasRecord(
                 notificacion.getId(),
                 notificacion.getExpediente(),
