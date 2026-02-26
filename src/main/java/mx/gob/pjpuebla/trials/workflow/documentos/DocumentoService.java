@@ -1124,7 +1124,7 @@ public class DocumentoService {
                 documento = documentoRepository.save(documento);
                 if (persona.getOficialia() == null
                                 && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
-                        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                        digitalizacionService.guardarDocumento(multipartFile, documento.getId());
                 }
                 // promoción desde el portal del litigante
                 if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
@@ -2449,7 +2449,7 @@ public class DocumentoService {
                 addAnexos(documentoRecord.anexos(), documento);
                 carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
 
-                digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                digitalizacionService.guardarDocumento(multipartFile, documento.getId());
 
                 return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
                                 documento.getCarpeta().getTipoCarpeta());
@@ -2508,7 +2508,7 @@ public class DocumentoService {
                                 .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
                 documento = documentoRepository.save(documento);
                 if (multipartFile != null) {
-                        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                        digitalizacionService.guardarDocumento(multipartFile, documento.getId());
                 }
                 movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
                 return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(),
@@ -2546,7 +2546,7 @@ public class DocumentoService {
                                 .setAcuerdoRespuesta(docSentencia);
                 docSentenciaPublica = documentoRepository.save(docSentenciaPublica);
 
-                digitalizacionService.guardarArchivo(multipartFile, docSentenciaPublica.getId());
+                digitalizacionService.guardarDocumento(multipartFile, docSentenciaPublica.getId());
         }
 
         public AmparoGetRecord getAmparoById(Integer id) {
@@ -2871,3 +2871,4 @@ public class DocumentoService {
         }
 
 }
+

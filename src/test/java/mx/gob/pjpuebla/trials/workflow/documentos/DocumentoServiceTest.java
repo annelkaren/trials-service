@@ -1670,7 +1670,7 @@ class DocumentoServiceTest {
                                 .willReturn(Optional.of(demandado));
                 given(anexoRepository.save(any())).willReturn(AnexoSetUp.createAnexo());
                 given(carpetaRepository.save(any())).willReturn(demanda.getCarpeta());
-                given(digitalizacionService.guardarArchivo(any(), any()))
+                given(digitalizacionService.guardarDocumento(any(), any()))
                                 .willReturn(new DigitalizacionRecord(demanda.getId(), "ruta/del/archivo",
                                                 "archivo.pdf"));
                 concepto.setId(1).setNombre("Distribución");
@@ -1709,7 +1709,7 @@ class DocumentoServiceTest {
                 verify(personaService).getAuditor();
                 verify(carpetaRepository).save(any());
                 verify(documentoRepository).save(any());
-                verify(digitalizacionService).guardarArchivo(multipartFile, demanda.getId());
+                verify(digitalizacionService).guardarDocumento(multipartFile, demanda.getId());
                 verify(movimientoService).createMovimento(any(), any(), any(), any(), any());
         }
 
@@ -1881,7 +1881,7 @@ class DocumentoServiceTest {
                 verify(personaService).getAuditor();
                 verify(documentoRepository).findById(1);
                 verify(documentoRepository).save(any(Documento.class));
-                verify(digitalizacionService).guardarArchivo(multipartFile, docSentenciaSave.getId());
+                verify(digitalizacionService).guardarDocumento(multipartFile, docSentenciaSave.getId());
         }
 
         @Test
@@ -2053,3 +2053,5 @@ class DocumentoServiceTest {
                 assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/EJE/PUEBLA");
         }
 }
+
+
