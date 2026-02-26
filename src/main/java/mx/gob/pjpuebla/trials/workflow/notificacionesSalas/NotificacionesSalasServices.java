@@ -40,21 +40,61 @@ public class NotificacionesSalasServices {
                         item.correoElectronico(),
                         item.fechaTermino(),
                         item.rutaArchivo(),
-                        getNombreArchivo(item.rutaArchivo()),
+                        item.rutaArchivo(),
                         item.fechaEnvio(),
                         item.fechaLectura(),
                         item.fechaEntrega()));
     }
 
     @Transactional
-    public NotificacionesSalasRecord createNotificacion(
-            String numeroExpediente,
-            String tipoSala,
+    public NotificacionesSalasRecord createNotificacion(String numeroExpediente, String tipoSala,
             String nombreDestinatario,
-            String correoElectronico,
-            LocalDate fechaTermino,
-            MultipartFile archivo) {
+            String correoElectronico, LocalDate fechaTermino, MultipartFile archivo) {
+        
+        validaciones(numeroExpediente, tipoSala, nombreDestinatario, correoElectronico, archivo);
+            
+        NotificacionesSalas notificacion = new NotificacionesSalas()
+            .setExpediente(numeroExpediente.trim())
+            .setTipoSala(tipoSala.trim())
+            .setNombreDestinatario(nombreDestinatario.trim())
+            .setCorreoDestinatario(correoElectronico.trim())
+            .setFechaTermino(fechaTermino != null ? fechaTermino.atStartOfDay() : null)
+            .setFechaEnvio(LocalDateTime.now())
+            .setEstado(EstadoEnvioNotificacionesSalas.ENVIADO);
 
+        notificacion = notificacionesSalasRepository.save(notificacion);
+
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService
+            .guardarArchivoNotificacionSala(archivo, notificacion.getId(), tipoSala);
+
+        notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
+        notificacion = notificacionesSalasRepository.save(notificacion);
+
+        return new NotificacionesSalasRecord(
+                notificacion.getId(),
+                notificacion.getExpediente(),
+                notificacion.getTipoSala(),
+                notificacion.getNombreDestinatario(),
+                notificacion.getCorreoDestinatario(),
+                notificacion.getFechaTermino(),
+                notificacion.getRutaArchivo(),
+                notificacion.getRutaArchivo(),
+                notificacion.getFechaEnvio(),
+                notificacion.getFechaLectura(),
+                notificacion.getFechaEntrega());
+    }
+
+    public byte[] downloadArchivo(Integer idNotificacionSala) throws java.io.IOException {
+        NotificacionesSalas notificacion = notificacionesSalasRepository.findById(idNotificacionSala)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
+
+        if (notificacion.getRutaArchivo() == null || notificacion.getRutaArchivo().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
+        }
+        return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo(), notificacion.getTipoSala());
+    }
+
+    private void validaciones(String numeroExpediente, String tipoSala, String nombreDestinatario, String correoElectronico, MultipartFile archivo) {
         if (numeroExpediente == null || numeroExpediente.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");
         }
@@ -73,51 +113,6 @@ public class NotificacionesSalasServices {
         if (archivo == null || archivo.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo es obligatorio.");
         }
-
-        NotificacionesSalas notificacion = new NotificacionesSalas();
-        notificacion.setExpediente(numeroExpediente.trim());
-        notificacion.setTipoSala(tipoSala.trim());
-        notificacion.setNombreDestinatario(nombreDestinatario.trim());
-        notificacion.setCorreoDestinatario(correoElectronico.trim());
-        notificacion.setFechaTermino(fechaTermino != null ? fechaTermino.atStartOfDay() : null);
-        notificacion.setFechaEnvio(LocalDateTime.now());
-        notificacion.setEstado(EstadoEnvioNotificacionesSalas.ENVIADO);
-
-        notificacion = notificacionesSalasRepository.save(notificacion);
-
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService
-                .guardarArchivoNotificacionSala(archivo, notificacion.getId());
-        notificacion.setRutaArchivo(digitalizacionRecord.rutaArchivo());
-        notificacion = notificacionesSalasRepository.save(notificacion);
-
-        return new NotificacionesSalasRecord(
-                notificacion.getId(),
-                notificacion.getExpediente(),
-                notificacion.getTipoSala(),
-                notificacion.getNombreDestinatario(),
-                notificacion.getCorreoDestinatario(),
-                notificacion.getFechaTermino(),
-                notificacion.getRutaArchivo(),
-                getNombreArchivo(notificacion.getRutaArchivo()),
-                notificacion.getFechaEnvio(),
-                notificacion.getFechaLectura(),
-                notificacion.getFechaEntrega());
     }
 
-    public byte[] downloadArchivo(Integer idNotificacionSala) throws java.io.IOException {
-        NotificacionesSalas notificacion = notificacionesSalasRepository.findById(idNotificacionSala)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
-
-        if (notificacion.getRutaArchivo() == null || notificacion.getRutaArchivo().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
-        }
-        return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo());
-    }
-
-    private String getNombreArchivo(String rutaArchivo) {
-        if (rutaArchivo == null || rutaArchivo.isBlank()) {
-            return null;
-        }
-        return java.nio.file.Paths.get(rutaArchivo).getFileName().toString();
-    }
 }

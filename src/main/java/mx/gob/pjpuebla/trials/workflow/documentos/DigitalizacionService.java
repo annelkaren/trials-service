@@ -45,18 +45,28 @@ import java.util.UUID;
 /**
  * Servicio de almacenamiento y lectura de archivos digitalizados.
  *
- * <p>Base de rutas en disco: {rootFolder}/digitalizacion.</p>
+ * <p>
+ * Base de rutas en disco: {rootFolder}/digitalizacion.
+ * </p>
  *
- * <p>Rutas de documentos:
+ * <p>
+ * Rutas de documentos:
  * 1) DEMANDA/APELACION: {year}/{juzgado}/{expediente}
  * 2) EXHORTO: {year}/{juzgado}/{expedienteOriginal}
  * 3) OFICIO Administrativo: {year}/{oficialia}/oficiosAdministrativos
- * 4) OFICIO Jurisdiccional: {year}/{juzgado}/{expediente}/oficiosJurisdiccionales
- * 5) SENTENCIA_PUBLICA: {year}/{juzgado}/{expediente}/SentenciaPublica/{documentoId}
- * 6) DOCUMENTO_IDENTIFICACION: {year}/{juzgado}/{expediente}/Audiencias/{audienciaId}/Asistencia
- * 7) PRUEBA_AUDIENCIA: {year}/{juzgado}/{expediente}/Audiencias/{audienciaId}/Pruebas
- * 8) Acta minima de audiencia: {year}/{juzgado}/{expedienteFormateado}/actaminima
- * 9) Fotografias de sede: sedes/{sedeId}</p>
+ * 4) OFICIO Jurisdiccional:
+ * {year}/{juzgado}/{expediente}/oficiosJurisdiccionales
+ * 5) SENTENCIA_PUBLICA:
+ * {year}/{juzgado}/{expediente}/SentenciaPublica/{documentoId}
+ * 6) DOCUMENTO_IDENTIFICACION:
+ * {year}/{juzgado}/{expediente}/Audiencias/{audienciaId}/Asistencia
+ * 7) PRUEBA_AUDIENCIA:
+ * {year}/{juzgado}/{expediente}/Audiencias/{audienciaId}/Pruebas
+ * 8) Acta minima de audiencia:
+ * {year}/{juzgado}/{expedienteFormateado}/actaminima
+ * 9) Fotografias de sede: sedes/{sedeId}
+ * </p>
+ * 10) Archivo de Notificacion sala:
  */
 @Slf4j
 @Service
@@ -81,6 +91,7 @@ public class DigitalizacionService {
     private static final String AUDIENCIAS_DIR = "Audiencias";
     private static final String ASISTENCIA_DIR = "Asistencia";
     private static final String PRUEBAS_DIR = "Pruebas";
+    private static final String NOTIFICACIONES_SALA_DIR = "notificacionesSalas";
 
     private enum StorageUseCase {
         DOCUMENTO,
@@ -100,12 +111,14 @@ public class DigitalizacionService {
             return new StorageRequest(StorageUseCase.DOCUMENTO, documentoId, null, null, null);
         }
 
-        static StorageRequest asistencia(Integer documentoId, Integer carpetaId, Integer audienciaId, String nombreArchivo) {
+        static StorageRequest asistencia(Integer documentoId, Integer carpetaId, Integer audienciaId,
+                String nombreArchivo) {
             return new StorageRequest(StorageUseCase.ASISTENCIA_AUDIENCIA, documentoId, carpetaId, audienciaId,
                     nombreArchivo);
         }
 
-        static StorageRequest pruebaAudiencia(Integer documentoId, Integer carpetaId, Integer audienciaId, String nombreArchivo) {
+        static StorageRequest pruebaAudiencia(Integer documentoId, Integer carpetaId, Integer audienciaId,
+                String nombreArchivo) {
             return new StorageRequest(StorageUseCase.PRUEBA_AUDIENCIA, documentoId, carpetaId, audienciaId,
                     nombreArchivo);
         }
@@ -169,11 +182,13 @@ public class DigitalizacionService {
         return store(file, StorageRequest.documento(documentoId));
     }
 
-    public DigitalizacionRecord guardarDocumentoAsistencia(MultipartFile file, Integer documentoId, Integer audienciaId) {
+    public DigitalizacionRecord guardarDocumentoAsistencia(MultipartFile file, Integer documentoId,
+            Integer audienciaId) {
         return store(file, StorageRequest.asistencia(documentoId, null, audienciaId, null));
     }
 
-    public DigitalizacionRecord guardarDocumentoPruebaAudiencia(MultipartFile file, Integer documentoId, Integer audienciaId) {
+    public DigitalizacionRecord guardarDocumentoPruebaAudiencia(MultipartFile file, Integer documentoId,
+            Integer audienciaId) {
         return store(file, StorageRequest.pruebaAudiencia(documentoId, null, audienciaId, null));
     }
 
@@ -185,7 +200,8 @@ public class DigitalizacionService {
         return load(StorageRequest.documento(documentoId));
     }
 
-    public byte[] getDocumentoAsistencia(Integer carpetaId, Integer audienciaId, String nombreArchivo) throws IOException {
+    public byte[] getDocumentoAsistencia(Integer carpetaId, Integer audienciaId, String nombreArchivo)
+            throws IOException {
         return load(StorageRequest.asistencia(null, carpetaId, audienciaId, nombreArchivo));
     }
 
@@ -196,6 +212,37 @@ public class DigitalizacionService {
 
     public byte[] getActaMinimaAudiencia(Integer audienciaId) throws IOException {
         return load(StorageRequest.actaMinima(audienciaId));
+    }
+
+    public DigitalizacionRecord guardarArchivoNotificacionSala(MultipartFile file, Integer notificacionSalaId,
+            String tipoSala) {
+
+        validarArchivo(file);
+        validateNotNull(notificacionSalaId, "El id de la notificacion de sala no puede ser nulo");
+
+        String relativeDirectory = Paths.get(NOTIFICACIONES_SALA_DIR, tipoSala).toString();
+
+        Path destinationDir = crearDirectorios(Paths.get(getBasePath(), relativeDirectory));
+
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+
+        String nombreUnicoArchivo = "NOTIFICACION_SALA_" + UUID.randomUUID()
+                + (extension == null || extension.isBlank() ? "" : "." + extension);
+
+        String relativePath = Paths.get(relativeDirectory, nombreUnicoArchivo).toString();
+
+        writeFile(destinationDir.resolve(nombreUnicoArchivo), file, "Error al guardar el archivo en el servidor");
+        return new DigitalizacionRecord(notificacionSalaId, relativePath, nombreUnicoArchivo);
+    }
+
+    public byte[] getArchivoNotificacionSala(String rutaArchivo, String tipoSala) throws IOException {
+        validateNotNull(rutaArchivo, "La ruta del archivo no puede ser nula");
+        log.info("Accediento a la ruta : " + getBasePath() + '/' + NOTIFICACIONES_SALA_DIR + '/' + tipoSala + '/' +  rutaArchivo);
+        Path fullPath = Paths.get(getBasePath(), NOTIFICACIONES_SALA_DIR, tipoSala, rutaArchivo);
+        if (Files.exists(fullPath)) {
+            return Files.readAllBytes(fullPath);
+        }
+        throw new IOException("El archivo " + rutaArchivo + " no existe en el directorio");
     }
 
     private DigitalizacionRecord store(MultipartFile file, StorageRequest request) {
@@ -367,7 +414,6 @@ public class DigitalizacionService {
                 + " no existe en el directorio");
     }
 
-
     /**
      * Genera un nombre único para el archivo basado en el tipo de documento y un
      * UUID.
@@ -453,7 +499,8 @@ public class DigitalizacionService {
         } else if ("Jurisdiccional".equals(tipoOficio)) {
             String expediente = obtenerDatosExpediente(documento.getCarpeta().getExpediente())[0];
             return crearDirectorios(
-                    Paths.get(getBasePath(), construirRutaExpediente(year, juzgado, expediente), "oficiosJurisdiccionales"));
+                    Paths.get(getBasePath(), construirRutaExpediente(year, juzgado, expediente),
+                            "oficiosJurisdiccionales"));
         }
 
         throw new IllegalArgumentException("Tipo de oficio no soportado: " + tipoOficio);
@@ -589,9 +636,8 @@ public class DigitalizacionService {
      * @param message El mensaje de error si el valor es nulo.
      */
     private void validateNotNull(Object value, String message) {
-        if (value == null) {
+        if (value == null)
             throw new IllegalArgumentException(message);
-        }
     }
 
     private String getBasePath() {
@@ -738,7 +784,3 @@ public class DigitalizacionService {
     }
 
 }
-
-
-
-
