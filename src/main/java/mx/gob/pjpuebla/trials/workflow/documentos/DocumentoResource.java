@@ -47,7 +47,7 @@ public class DocumentoResource {
     private final SelloGenerator selloGenerator;
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
-    private final DigitalizacionService digitalizacion2Service;
+    private final DigitalizacionService digitalizacionService;
     private final OficioService oficioService;
 
     @PostMapping("/demanda")
@@ -84,7 +84,7 @@ public class DocumentoResource {
     public DigitalizacionRecord digitizationDocument(
             @RequestParam("file") MultipartFile file,
             @PathVariable("documentoId") Integer documentoId) {
-        return digitalizacion2Service.guardarArchivo(file, documentoId);
+        return digitalizacionService.guardarDocumento(file, documentoId);
     }
 
     @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -92,7 +92,7 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getDocumento(documentoId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
     }
 
     @GetMapping(value = "/documentos/digitalizacion/legacy/{promocionId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,7 +100,7 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", promocionId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getPromocionMigrada(promocionId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getPromocionMigrada(promocionId));
     }
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -395,7 +395,7 @@ public class DocumentoResource {
 
     @PatchMapping("/bandeja/entrada/redigitalizacion/{documentoId}")
     public ResponseGenericRecord getBandejaDevueltos(@PathVariable Integer documentoId) {
-        return this.digitalizacion2Service.autorizarRedigitalizacion(documentoId);
+        return this.digitalizacionService.autorizarRedigitalizacion(documentoId);
     }
 
     @GetMapping(value = "/documentos/carpeta/{carpetaId}/tipoEntrada/{tipoEntrada}/sello", produces = MediaType.APPLICATION_JSON_VALUE)

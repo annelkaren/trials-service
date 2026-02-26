@@ -78,8 +78,10 @@ public class AsistenciaAudienciaService {
         documento.setTipoDocumento(TipoDocumento.DOCUMENTO_IDENTIFICACION);
         documentoRepository.save(documento);
 
-        digitalizacionService.setAudienciaId(asistenciaAudienciaRecord.idAudiencia());
-        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        digitalizacionService.guardarDocumentoAsistencia(
+                multipartFile,
+                documento.getId(),
+                asistenciaAudienciaRecord.idAudiencia());
 
         Documento documentoRuta = documentoRepository.findById(documento.getId())
                 .orElseThrow(() -> new IllegalArgumentException(DOCUMENTO_NOT_FOUND));
@@ -109,7 +111,7 @@ public class AsistenciaAudienciaService {
         }
 
         Integer carpetaId = asistenciaAudiencia.getAudiencia().getCarpeta().getId();
-        return digitalizacionService.getDocumentoAsistenciaByRuta(carpetaId, audienciaId, urlDocumento);
+        return digitalizacionService.getDocumentoAsistencia(carpetaId, audienciaId, urlDocumento);
     }
 
 }
