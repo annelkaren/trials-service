@@ -16,6 +16,7 @@ public interface NotificacionesSalasRepository extends JpaRepository<Notificacio
             SELECT new mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord(
                 ns.id,
                 ns.expediente,
+                ns.tipoSala,
                 ns.nombreDestinatario,
                 ns.correoDestinatario,
                 ns.fechaTermino,

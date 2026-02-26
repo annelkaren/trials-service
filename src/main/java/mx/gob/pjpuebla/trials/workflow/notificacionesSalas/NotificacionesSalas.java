@@ -35,6 +35,9 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name="s_expediente")
     private String expediente;
 
+    @Column(name = "s_tipo_sala")
+    private String tipoSala;
+
     @Column(name = "s_nombre_destinatario")
     private String nombreDestinatario;
 

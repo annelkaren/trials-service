@@ -221,6 +221,41 @@ public class DigitalizacionService {
                 nombreUnicoArchivo);
     }
 
+    public DigitalizacionRecord guardarArchivoNotificacionSala(MultipartFile file, Integer notificacionSalaId) {
+        this.basePath = this.rootFolder + "/digitalizacion/notificacionesSalas/";
+        validarArchivoGenerico(file);
+
+        String relativeDirectory = LocalDate.now() + "/" + notificacionSalaId;
+        Path rutaArchivo = crearDirectorios(Paths.get(basePath, relativeDirectory));
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String nombreUnicoArchivo = "NOTIFICACION_SALA_" + UUID.randomUUID()
+                + (extension == null || extension.isBlank() ? "" : "." + extension);
+        String relativePath = relativeDirectory + "/" + nombreUnicoArchivo;
+
+        try {
+            Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
+            log.info("Archivo de notificacion de sala cargado en el servidor con nombre: {}", nombreUnicoArchivo);
+        } catch (IOException e) {
+            log.error("Error al guardar el archivo de notificacion de sala: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al guardar el archivo en el servidor", e);
+        }
+
+        return new DigitalizacionRecord(notificacionSalaId, relativePath,
+                nombreUnicoArchivo);
+    }
+
+    public byte[] getArchivoNotificacionSala(String rutaArchivo) throws IOException {
+        this.basePath = this.rootFolder + "/digitalizacion/notificacionesSalas/";
+        validateNotNull(rutaArchivo, "La ruta del archivo no puede ser nula");
+
+        Path fullPath = Paths.get(basePath, rutaArchivo);
+        if (Files.exists(fullPath)) {
+            return Files.readAllBytes(fullPath);
+        }
+        throw new IOException("El archivo " + rutaArchivo + " no existe en el directorio");
+    }
+
     public byte[] getDocumento(Integer documentoId) throws IOException {
         this.basePath = this.rootFolder + "/digitalizacion/";
         Documento documento = documentoRepository.findById(documentoId).orElse(null);
@@ -315,6 +350,15 @@ public class DigitalizacionService {
 
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen no puede superar los 50 MB.");
+        }
+    }
+
+    private void validarArchivoGenerico(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede estar vacio.");
+        }
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede superar los 50 MB.");
         }
     }
 

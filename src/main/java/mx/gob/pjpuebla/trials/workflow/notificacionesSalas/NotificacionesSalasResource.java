@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
@@ -51,17 +53,28 @@ public class NotificacionesSalasResource {
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<NotificacionesSalasRecord> createNotificacion(
             @RequestParam("numeroExpediente") String numeroExpediente,
+            @RequestParam("tipoSala") String tipoSala,
             @RequestParam("nombreDestinatario") String nombreDestinatario,
             @RequestParam("correoElectronico") String correoElectronico,
             @RequestParam(value = "fechaTermino", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaTermino,
-            @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
+            @RequestParam("archivo") MultipartFile archivo) {
         NotificacionesSalasRecord response = notificacionesSalasServices.createNotificacion(
                 numeroExpediente,
+                tipoSala,
                 nombreDestinatario,
                 correoElectronico,
                 fechaTermino,
                 archivo);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping(value = "/{idNotificacionSala}/archivo")
+    public ResponseEntity<byte[]> downloadArchivo(@PathVariable Integer idNotificacionSala) throws java.io.IOException {
+        byte[] file = notificacionesSalasServices.downloadArchivo(idNotificacionSala);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("adjunto", idNotificacionSala + "_notificacion_sala");
+        return ResponseEntity.ok().headers(headers).body(file);
     }
     
 
