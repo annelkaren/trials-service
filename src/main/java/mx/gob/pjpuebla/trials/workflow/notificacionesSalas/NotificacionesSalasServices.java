@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
-import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioNotificacionesSalas;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
@@ -60,7 +60,7 @@ public class NotificacionesSalasServices {
             .setCorreoDestinatario(correoElectronico.trim())
             .setFechaTermino(fechaTermino != null ? fechaTermino.atStartOfDay() : null)
             .setFechaEnvio(LocalDateTime.now())
-            .setEstado(EstadoEnvioNotificacionesSalas.ENVIADO);
+            .setEstado(Estado.ACTIVE);
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
@@ -97,6 +97,17 @@ public class NotificacionesSalasServices {
         return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo(), notificacion.getTipoSala());
     }
 
+    /**
+     * Realiza validaciones de los campos obligatorios para la notificacion de sala.
+     * 
+     * @param numeroExpediente el numero de expediente de la notificacion de sala.
+     * @param tipoSala el tipo de sala (ENTREGADO, SALA, etc.).
+     * @param nombreDestinatario el nombre del destinatario de la notificacion de sala.
+     * @param correoElectronico el correo electronico del destinatario de la notificacion de sala.
+     * @param archivo el archivo adjunto a la notificacion de sala.
+     * 
+     * @throws ResponseStatusException si alguno de los campos obligatorios no se cumplen.
+     */
     private void validaciones(String numeroExpediente, String tipoSala, String nombreDestinatario, String correoElectronico, MultipartFile archivo) {
         if (numeroExpediente == null || numeroExpediente.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");

@@ -46,12 +46,6 @@ spring:
     correoDefensoria: dircifame@htsjpuebla.gob.mx
     password: hyiarkzwfyxciomh
 
-sendpulse:
-  base-url: "https://api.sendpulse.com"
-  client-id: 3974f2bcbfb52b20ff01a46232ce6f88
-  client-secret: 2100459790a92eda671fb4833c7bbb30
-
-
   security:
     oauth2:
       resourceserver:
@@ -117,3 +111,9 @@ ftp:
       username: secgj
       password: 6<2Z9qy+yc.8
       passive-move: true
+
+sendpulse:
+  base-url: https://api.sendpulse.com
+  client-id: 3974f2bcbfb52b20ff01a46232ce6f88
+  client-secret: 2100459790a92eda671fb4833c7bbb30
+
