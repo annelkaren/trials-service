@@ -52,7 +52,8 @@ public interface TipoJuicioRepository extends JpaRepository<TipoJuicio, Integer>
             tj.id,
             tj.nombre,
             new mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaRecord(tj.tipoSistema.id, tj.tipoSistema.nombre),
-            new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(tj.materia.id, INITCAP(LOWER(tj.materia.nombre)))
+            new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(tj.materia.id, INITCAP(LOWER(tj.materia.nombre))),
+            tj.tipoSistema.id
             )
             FROM TipoJuicio tj
             WHERE tj.estado = Estado.ACTIVE
