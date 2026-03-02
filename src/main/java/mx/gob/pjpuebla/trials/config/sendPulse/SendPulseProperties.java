@@ -7,5 +7,6 @@ public record SendPulseProperties(
         String baseUrl,
         String clientId,
         String clientSecret,
-        String provider
+        String provider,
+        String datesTimeZone
 ) {}

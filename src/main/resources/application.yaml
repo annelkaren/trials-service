@@ -117,4 +117,5 @@ sendpulse:
   client-id: 3974f2bcbfb52b20ff01a46232ce6f88
   client-secret: 2100459790a92eda671fb4833c7bbb30
   provider: sendPulse
+  dates-timezone: UTC
 

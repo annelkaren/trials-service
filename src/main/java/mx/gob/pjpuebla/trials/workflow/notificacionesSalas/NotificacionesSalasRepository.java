@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 public interface NotificacionesSalasRepository extends JpaRepository<NotificacionesSalas, Integer> {
 
+    //TODO: obtener fecha lectura y fecha entrega de log de correo.
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord(
                 ns.id,
@@ -23,8 +24,8 @@ public interface NotificacionesSalasRepository extends JpaRepository<Notificacio
                 ns.rutaArchivo,
                 ns.rutaArchivo,
                 ns.fechaEnvio,
-                ns.fechaLectura,
-                ns.fechaEntrega
+                null,
+                null
             )
             FROM NotificacionesSalas ns
             """)

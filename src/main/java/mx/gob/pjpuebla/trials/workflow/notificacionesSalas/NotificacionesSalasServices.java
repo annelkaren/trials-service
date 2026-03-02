@@ -1,7 +1,10 @@
 package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
@@ -9,10 +12,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.sendPulse.EmailGatewayService;
 import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
@@ -22,42 +29,32 @@ import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.Notificacione
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class NotificacionesSalasServices {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-
+    private final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
+    private final Configuration freemarkerConfig;
+
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String key, String expediente,
             String destino, String correo, LocalDateTime fechaEnvioFrom, LocalDateTime fechaEnvioTo,
             LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo) {
 
-        return notificacionesSalasRepository.getPageNotificaciones(pageable)
-                .map(item -> new NotificacionesSalasRecord(
-                        item.idNotificacionSala(),
-                        item.numeroExpediente(),
-                        item.tipoSala(),
-                        item.nombreDestinatario(),
-                        item.correoElectronico(),
-                        item.fechaTermino(),
-                        item.rutaArchivo(),
-                        item.rutaArchivo(),
-                        item.fechaEnvio(),
-                        item.fechaLectura(),
-                        item.fechaEntrega()));
+        return notificacionesSalasRepository.getPageNotificaciones(pageable);
     }
 
     @Transactional
-    public NotificacionesSalasRecord createNotificacion(String numeroExpediente, String tipoSala,
+    public NotificacionesSalasRecord createNotificacion(String toca, String tipoSala,
             String nombreDestinatario,
             String correoElectronico, LocalDate fechaTermino, MultipartFile archivo) {
 
-        validaciones(numeroExpediente, tipoSala, nombreDestinatario, correoElectronico, archivo);
+        validaciones(toca, tipoSala, nombreDestinatario, correoElectronico, archivo);
 
         NotificacionesSalas notificacion = new NotificacionesSalas()
-                .setExpediente(numeroExpediente.trim())
+                .setToca(toca.trim())
                 .setTipoSala(tipoSala.trim())
                 .setNombreDestinatario(nombreDestinatario.trim())
                 .setCorreoDestinatario(correoElectronico.trim())
@@ -66,15 +63,43 @@ public class NotificacionesSalasServices {
                 .setEstado(Estado.ACTIVE);
 
         // Enviar correo:
+        // Definimos variables para archivo:
+        byte[] attachmentBytes = null;
+        String attachmentName = null;
+
+        if (archivo != null && !archivo.isEmpty()) {
+            attachmentName = sanitizeFilename(archivo.getOriginalFilename());
+            try {
+                attachmentBytes = archivo.getBytes();
+            } catch (IOException e) {
+                throw new IllegalStateException("No se pudo leer el archivo adjunto", e);
+            }
+        }
+        
+         Map<String, Object> parameters = new HashMap<>();
+         parameters.put("nombreParticipante", nombreDestinatario);
+         parameters.put("toca", toca);
+         parameters.put("nombreSala", "SALA DE PRUEBA"); 
+        
+        String html = "";
+        try {
+              Template template = freemarkerConfig.getTemplate("Notificaciones.ftl");
+        html = FreeMarkerTemplateUtils.processTemplateIntoString(template, parameters);
+
+        } catch (Exception e) {
+            log.error(e.getStackTrace().toString());
+        }
+      
+       
         EmailLog log = emailGatewayService.sendAndLog(
                 correoElectronico,
                 nombreDestinatario,
-                "prueba envio de correos SEND PULSE",
-                "<h1>Esto es una prueba del correo ENVIADO DESDE LA API DE JAVA</h1>");
+                "Notificación",
+                html,
+                attachmentName, 
+                attachmentBytes);
 
         notificacion.setEmailLog(log);
-
-
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
@@ -89,7 +114,7 @@ public class NotificacionesSalasServices {
 
         return new NotificacionesSalasRecord(
                 notificacion.getId(),
-                notificacion.getExpediente(),
+                notificacion.getToca(),
                 notificacion.getTipoSala(),
                 notificacion.getNombreDestinatario(),
                 notificacion.getCorreoDestinatario(),
@@ -97,8 +122,10 @@ public class NotificacionesSalasServices {
                 notificacion.getRutaArchivo(),
                 notificacion.getRutaArchivo(),
                 notificacion.getFechaEnvio(),
-                notificacion.getFechaLectura(),
-                notificacion.getFechaEntrega());
+                null,null);
+                //TODO: obtener fecha lectura y fecha entrega desde el log de correos.
+                //notificacion.getFechaLectura(),
+                //notificacion.getFechaEntrega());
     }
 
     public byte[] downloadArchivo(Integer idNotificacionSala) throws java.io.IOException {
@@ -128,6 +155,7 @@ public class NotificacionesSalasServices {
      */
     private void validaciones(String numeroExpediente, String tipoSala, String nombreDestinatario,
             String correoElectronico, MultipartFile archivo) {
+         
         if (numeroExpediente == null || numeroExpediente.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");
         }
@@ -146,6 +174,13 @@ public class NotificacionesSalasServices {
         if (archivo == null || archivo.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo es obligatorio.");
         }
+    }
+
+    private String sanitizeFilename(String name) {
+        if (name == null || name.isBlank())
+            return "adjunto";
+        // Evita rutas raras tipo C:\... o ../../
+        return name.replaceAll("[\\\\/]+", "_");
     }
 
 }

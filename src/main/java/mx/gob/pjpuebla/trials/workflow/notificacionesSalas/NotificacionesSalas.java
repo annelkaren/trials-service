@@ -36,8 +36,8 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name = "PN_ID", insertable = false, updatable = false)
     private Integer id;
 
-    @Column(name="s_expediente")
-    private String expediente;
+    @Column(name="s_toca")
+    private String toca;
 
     @Column(name = "s_tipo_sala")
     private String tipoSala;
@@ -60,12 +60,6 @@ public class NotificacionesSalas implements Serializable, Auditable {
 
     @Column(name = "t_fecha_envio")
     private LocalDateTime fechaEnvio;
-
-    @Column(name = "t_fecha_lectura")
-    private LocalDateTime fechaLectura;
-
-    @Column(name = "t_fecha_entrega")
-    private LocalDateTime fechaEntrega;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "FN_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
