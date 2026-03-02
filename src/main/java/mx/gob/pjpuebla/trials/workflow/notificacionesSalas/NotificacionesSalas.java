@@ -68,7 +68,7 @@ public class NotificacionesSalas implements Serializable, Auditable {
     private LocalDateTime fechaEntrega;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "N_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
+    @JoinColumn(name = "FN_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
     private EmailLog emailLog;
 
     @Accessors(chain = false)

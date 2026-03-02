@@ -2,8 +2,12 @@ package mx.gob.pjpuebla.trials.config.sendPulse;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import reactor.core.publisher.Mono;
 
 @Component
 public class SendPulseClient {
@@ -23,24 +27,34 @@ public class SendPulseClient {
     // Enviar email
     // ---------------------------
 
-    public String sendEmail(SendPulseEmailRequest request) {
+public String sendEmail(SendPulseEmailRequest request) {
+    String token = tokenService.getValidAccessToken();
 
-        String token = tokenService.getValidAccessToken();
-
+    try {
         SendPulseEmailResponse response = webClient.post()
                 .uri("/smtp/emails")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .bodyValue(request)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, r ->
+                        r.bodyToMono(String.class).flatMap(body ->
+                                Mono.error(new IllegalStateException(
+                                        "SendPulse error " + r.statusCode() + " body=" + body
+                                ))
+                        )
+                )
                 .bodyToMono(SendPulseEmailResponse.class)
                 .block();
 
         if (response == null || !response.result()) {
-            throw new IllegalStateException("SendPulse no confirmó el envío");
+            throw new IllegalStateException("SendPulse no confirmó el envío (response null o result=false)");
         }
-
         return response.id();
+
+    } catch (WebClientResponseException e) {
+        throw new IllegalStateException("SendPulse 400 body=" + e.getResponseBodyAsString(), e);
     }
+}
 
     // ---------------------------
     // Consultar status

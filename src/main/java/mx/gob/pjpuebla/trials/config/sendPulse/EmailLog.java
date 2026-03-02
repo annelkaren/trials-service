@@ -4,27 +4,22 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.util.Audit;
-import mx.gob.pjpuebla.trials.util.AuditListener;
-import mx.gob.pjpuebla.trials.util.Auditable;
+
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
 
 @Entity
-@EntityListeners(AuditListener.class)
 @Data
 @Table(name = "tbl_email_log")
-public class EmailLog implements Serializable, Auditable {
-
+public class EmailLog implements Serializable {
     @Id
     @SequenceGenerator(name = "idEmailLog", sequenceName = "SEQ_EMAIL_LOG_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEmailLog")
@@ -46,7 +41,8 @@ public class EmailLog implements Serializable, Auditable {
     @Column(name = "S_SUBJECT")
     private String subject;
 
-    @Column(name = "N_ESTADO")
+    @Column(name = "S_ESTADO")
+    @Enumerated(EnumType.STRING)
     private EstadoEnvioCorreo estado;
 
     @Column(name = "N_SMTP_ANSWER_CODE")
@@ -57,6 +53,12 @@ public class EmailLog implements Serializable, Auditable {
 
     @Column(name = "S_SMTP_ANSWER_DATA")
     private String smtpAnswerData;
+
+    @Column(name = "N_INTENTOS_VERIFICACION")
+    private Integer intentosVerificacion = 0;
+
+    @Column(name = "T_PROXIMA_VERIFICACION")
+    private LocalDateTime proximaVerificacion;
 
     @Column(name = "T_FECHA_ENVIO")
     private LocalDateTime fechaEnvio;
@@ -69,9 +71,5 @@ public class EmailLog implements Serializable, Auditable {
 
     @Column(name = "T_ULTIMA_VERIFICACION")
     private LocalDateTime ultimaVerificacion;
-
-    @Accessors(chain = false)
-    @Embedded
-    private Audit audit;
 
 }

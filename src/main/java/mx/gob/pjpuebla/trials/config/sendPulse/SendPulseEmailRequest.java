@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.config.sendPulse;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record SendPulseEmailRequest(
         Email email
 ) {
@@ -11,7 +13,8 @@ public record SendPulseEmailRequest(
             String text,
             String subject,
             Address from,
-            List<Address> to
+            List<Address> to,
+            @JsonProperty("auto_plain_text") Boolean autoPlainText
     ) {}
 
     public record Address(

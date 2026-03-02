@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record SendPulseProperties(
         String baseUrl,
         String clientId,
-        String clientSecret
+        String clientSecret,
+        String provider
 ) {}

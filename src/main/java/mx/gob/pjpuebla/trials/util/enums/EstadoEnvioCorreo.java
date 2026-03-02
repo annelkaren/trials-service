@@ -4,10 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum EstadoEnvioCorreo {
-    PENDIENTE("Pendiente"),
+    PENDIENTE_ENVIO("Pendiente de envio"),
     ENVIADO("Enviado"),
     RECIBIDO("Recibido"),
-    LEIDO("Leido");
+    LEIDO("Leido"),
+    NO_ENTREGADO("No entregado"),
+    ERROR("Error");
 
     private final String etiqueta;
 

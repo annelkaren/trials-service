@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.config.sendPulse.EmailGatewayService;
+import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -26,6 +28,7 @@ public class NotificacionesSalasServices {
 
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final DigitalizacionService digitalizacionService;
+    private final EmailGatewayService emailGatewayService;
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String key, String expediente,
             String destino, String correo, LocalDateTime fechaEnvioFrom, LocalDateTime fechaEnvioTo,
@@ -50,28 +53,39 @@ public class NotificacionesSalasServices {
     public NotificacionesSalasRecord createNotificacion(String numeroExpediente, String tipoSala,
             String nombreDestinatario,
             String correoElectronico, LocalDate fechaTermino, MultipartFile archivo) {
-        
+
         validaciones(numeroExpediente, tipoSala, nombreDestinatario, correoElectronico, archivo);
-            
+
         NotificacionesSalas notificacion = new NotificacionesSalas()
-            .setExpediente(numeroExpediente.trim())
-            .setTipoSala(tipoSala.trim())
-            .setNombreDestinatario(nombreDestinatario.trim())
-            .setCorreoDestinatario(correoElectronico.trim())
-            .setFechaTermino(fechaTermino != null ? fechaTermino.atStartOfDay() : null)
-            .setFechaEnvio(LocalDateTime.now())
-            .setEstado(Estado.ACTIVE);
+                .setExpediente(numeroExpediente.trim())
+                .setTipoSala(tipoSala.trim())
+                .setNombreDestinatario(nombreDestinatario.trim())
+                .setCorreoDestinatario(correoElectronico.trim())
+                .setFechaTermino(fechaTermino != null ? fechaTermino.atStartOfDay() : null)
+                .setFechaEnvio(LocalDateTime.now())
+                .setEstado(Estado.ACTIVE);
+
+        // Enviar correo:
+        EmailLog log = emailGatewayService.sendAndLog(
+                correoElectronico,
+                nombreDestinatario,
+                "prueba envio de correos SEND PULSE",
+                "<h1>Esto es una prueba del correo ENVIADO DESDE LA API DE JAVA</h1>");
+
+        notificacion.setEmailLog(log);
+
+
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
         DigitalizacionRecord digitalizacionRecord = digitalizacionService
-            .guardarArchivoNotificacionSala(archivo, notificacion.getId(), tipoSala);
+                .guardarArchivoNotificacionSala(archivo, notificacion.getId(), tipoSala);
 
         notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
+
         notificacion = notificacionesSalasRepository.save(notificacion);
 
-        //Aqui intentamos enviar el correo con SEND PULS:
-        
+        // Aqui intentamos enviar el correo con SEND PULS:
 
         return new NotificacionesSalasRecord(
                 notificacion.getId(),
@@ -94,21 +108,26 @@ public class NotificacionesSalasServices {
         if (notificacion.getRutaArchivo() == null || notificacion.getRutaArchivo().isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
         }
-        return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo(), notificacion.getTipoSala());
+        return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo(),
+                notificacion.getTipoSala());
     }
 
     /**
      * Realiza validaciones de los campos obligatorios para la notificacion de sala.
      * 
-     * @param numeroExpediente el numero de expediente de la notificacion de sala.
-     * @param tipoSala el tipo de sala (ENTREGADO, SALA, etc.).
-     * @param nombreDestinatario el nombre del destinatario de la notificacion de sala.
-     * @param correoElectronico el correo electronico del destinatario de la notificacion de sala.
-     * @param archivo el archivo adjunto a la notificacion de sala.
+     * @param numeroExpediente   el numero de expediente de la notificacion de sala.
+     * @param tipoSala           el tipo de sala (ENTREGADO, SALA, etc.).
+     * @param nombreDestinatario el nombre del destinatario de la notificacion de
+     *                           sala.
+     * @param correoElectronico  el correo electronico del destinatario de la
+     *                           notificacion de sala.
+     * @param archivo            el archivo adjunto a la notificacion de sala.
      * 
-     * @throws ResponseStatusException si alguno de los campos obligatorios no se cumplen.
+     * @throws ResponseStatusException si alguno de los campos obligatorios no se
+     *                                 cumplen.
      */
-    private void validaciones(String numeroExpediente, String tipoSala, String nombreDestinatario, String correoElectronico, MultipartFile archivo) {
+    private void validaciones(String numeroExpediente, String tipoSala, String nombreDestinatario,
+            String correoElectronico, MultipartFile archivo) {
         if (numeroExpediente == null || numeroExpediente.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");
         }
