@@ -22,7 +22,7 @@ import mx.gob.pjpuebla.trials.core.materiapericial.MateriaPericialRepository;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebas;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebasRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.AudienciaPruebaRequestRecord;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
@@ -51,7 +51,7 @@ class AudienciaPruebasServiceTest {
     private DocumentoRepository documentoRepository;
 
     @Mock
-    private AudienciaService audienciaService;
+    private AudienciaRepository audienciaRepository;
 
     @InjectMocks
     private AudienciaPruebasService audienciaPruebasService;
@@ -123,7 +123,8 @@ class AudienciaPruebasServiceTest {
             "Descripción del documento",
             "Objeto del documento",
             "http://example.com/documento.pdf",
-            1001 // idCarpeta
+            1001, // idCarpeta
+            1 // Assuming 1 as a default value for the missing 10th Integer argument
     );
 
         MultipartFile file = mock(MultipartFile.class);
@@ -132,7 +133,9 @@ class AudienciaPruebasServiceTest {
         Audiencia mockAudiencia = new Audiencia();
         Carpeta mockCarpeta = new Carpeta();
         mockCarpeta.setExpediente("000001/2025");
-        when(audienciaService.obtenerUltimaAudienciaDesahogada()).thenReturn(mockAudiencia);
+        mockAudiencia.setId(requestRecord.audienciaId());
+        mockAudiencia.setCarpeta(mockCarpeta);
+        when(audienciaRepository.findById(requestRecord.audienciaId())).thenReturn(Optional.of(mockAudiencia));
 
         TipoPruebas mockTipoPruebas = new TipoPruebas();
         when(tipoPruebaRepository.findById(1)).thenReturn(Optional.of(mockTipoPruebas));
@@ -145,7 +148,8 @@ class AudienciaPruebasServiceTest {
 
         DigitalizacionRecord mockDigitalizacionRecord = new DigitalizacionRecord(1, "/opt/pjp/files/digitalizacion/", "archivo.pdf");
 
-        when(digitalizacionService.guardarArchivo(file, mockDocumento.getId())).thenReturn(mockDigitalizacionRecord);
+        when(digitalizacionService.guardarDocumentoPruebaAudiencia(file, mockDocumento.getId(), requestRecord.audienciaId()))
+                .thenReturn(mockDigitalizacionRecord);
 
         AudienciaPruebas mockAudienciaPruebas = new AudienciaPruebas();
         when(audienciaPruebaRepository.save(any(AudienciaPruebas.class))).thenReturn(mockAudienciaPruebas);
@@ -153,11 +157,12 @@ class AudienciaPruebasServiceTest {
         AudienciaPruebas result = audienciaPruebasService.createAudienciaPrueba(requestRecord, file);
 
         assertNotNull(result);
-        verify(audienciaService).obtenerUltimaAudienciaDesahogada();
+        verify(audienciaRepository).findById(requestRecord.audienciaId());
         verify(tipoPruebaRepository).findById(1);
         verify(materiaPericialRepository).findById(2);
         verify(documentoRepository).save(any(Documento.class));
-        verify(digitalizacionService).guardarArchivo(file, mockDocumento.getId());
+        verify(digitalizacionService).guardarDocumentoPruebaAudiencia(file, mockDocumento.getId(),
+                requestRecord.audienciaId());
         verify(audienciaPruebaRepository).save(any(AudienciaPruebas.class));
     }
 

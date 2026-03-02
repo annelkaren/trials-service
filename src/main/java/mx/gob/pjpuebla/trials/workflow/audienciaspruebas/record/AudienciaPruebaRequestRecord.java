@@ -9,5 +9,6 @@ public record AudienciaPruebaRequestRecord(
     String descripcionDocumento,
     String objeto,
     String urlDocumento,
-    Integer idCarpeta
+    Integer idCarpeta,
+    Integer audienciaId
 ){ }

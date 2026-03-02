@@ -20,7 +20,9 @@ public record AudienciasGeneralesResponseRecord(
         String tipoJuicio,
         List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento,
         String horaInicioAudiencia,
-        String horaFinAudiencia
+        String horaFinAudiencia,
+        String tipoSistema,
+        String materia
 ) implements Serializable {
 
     private static final DateTimeFormatter FORMATTER =
@@ -39,7 +41,9 @@ public record AudienciasGeneralesResponseRecord(
             String tipoJuicio,
             List<AsistenciaPersonaDocumento> asistenciaPersonaDocumento,
             LocalDateTime horaInicioAudiencia,
-            LocalDateTime horaFinAudiencia
+            LocalDateTime horaFinAudiencia,
+            String tipoSistema,
+            String materia
     ) {
         this(
                 id,
@@ -54,7 +58,9 @@ public record AudienciasGeneralesResponseRecord(
                 tipoJuicio,
                 asistenciaPersonaDocumento,
                 horaInicioAudiencia != null ? horaInicioAudiencia.format(FORMATTER) : null,
-                horaFinAudiencia != null ? horaFinAudiencia.format(FORMATTER) : null
+                horaFinAudiencia != null ? horaFinAudiencia.format(FORMATTER) : null,
+                tipoSistema, 
+                materia
         );
     }
 }

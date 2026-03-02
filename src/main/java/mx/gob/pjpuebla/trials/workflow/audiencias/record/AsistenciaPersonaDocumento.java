@@ -10,6 +10,7 @@ public record AsistenciaPersonaDocumento(
         String rol,
         String tipoParte,
         Asistencia asistencia,
-        String documentoIdentificacion
+        String documentoIdentificacion,
+        String rutaFile
 ) {
 }

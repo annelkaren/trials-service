@@ -61,7 +61,7 @@ class DocumentoResourceTest {
     private SelloCaratulaService caratulaGenerator;
 
     @MockBean
-    private DigitalizacionService digitalizacion2Service;
+    private DigitalizacionService digitalizacionService;
 
     @MockBean
     private OficioService oficioService;
@@ -750,3 +750,4 @@ void movimientoPersonalJuzgado_success() throws Exception {
     }
 
 }
+

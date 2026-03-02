@@ -62,6 +62,8 @@ public class DocumentoSetUp {
         return new DocumentoSaveRecord(
                 PersonasDocumentosSetUp.createPersonaDocumentoItemRecord(),
                 PersonasDocumentosSetUp.createPersonaDocumentoItemRecord(),
+                "",
+                "",
                 anexos,
                 tipoJuicio,
                 docData);
@@ -81,7 +83,7 @@ public class DocumentoSetUp {
     }
 
     public static Documento create_data(TipoJuicio tipoJuicio) {
-        DocumentoData data = new DocumentoData().setDomicilio("Example Domicilio");
+        DocumentoData data = new DocumentoData();
         Carpeta carpeta = new Carpeta()
                 .setId(1)
                 .setVersion(1)

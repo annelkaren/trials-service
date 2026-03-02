@@ -112,12 +112,15 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
              tipoJuicio.nombre,
              null,
              audiencia.inicio,
-             audiencia.fin
-
+             audiencia.fin,
+             tipoSistema.nombre,
+             materia.nombre
              )
              FROM Audiencia audiencia
              JOIN audiencia.carpeta carpeta
              JOIN carpeta.tipoJuicio tipoJuicio
+             JOIN tipoJuicio.materia materia
+             JOIN tipoJuicio.tipoSistema tipoSistema
              JOIN audiencia.tipoAudiencia tipoAudiencia
              JOIN audiencia.sala sala
              JOIN sala.juzgado juzgadoSala
@@ -187,7 +190,8 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
                     END,
                     tp.nombre,
                     aa.asistencia,
-                    di.name
+                    di.name,
+                    aa.urlDocumento
                 )
                 FROM PersonaDocumento pd
                 JOIN pd.carpeta c

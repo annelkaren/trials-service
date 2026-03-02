@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.workflow.audienciaspruebas;
 import mx.gob.pjpuebla.trials.util.enums.DesistimientoAdmision;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.DetallesPruebasRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,7 @@ import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebas;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebasRepository;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.audiencias.Audiencia;
-import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaService;
+import mx.gob.pjpuebla.trials.workflow.audiencias.AudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audienciaspruebas.record.AudienciaPruebaRequestRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -27,9 +26,6 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,16 +38,13 @@ public class AudienciaPruebasService {
     private final AudienciaPruebasRepository audienciaPruebaRepository;
     private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
-    private final AudienciaService audienciaService;
-
-    @Value("${app.root-folder}")
-    private String rootFolder; // Ruta raíz de la digitalización
+    private final AudienciaRepository audienciaRepository;
 
 
     @Transactional
     public AudienciaPruebas createAudienciaPrueba(AudienciaPruebaRequestRecord audienciaPruebaRequest, MultipartFile file) {
-        // Asignación de Audiencia temporal hasta que se defina a que audiencia corresponde
-        Audiencia audiencia = audienciaService.obtenerUltimaAudienciaDesahogada();
+        Audiencia audiencia = audienciaRepository.findById(audienciaPruebaRequest.audienciaId())
+            .orElseThrow(() -> new EntityNotFoundException("Audiencia no encontrada para ID: " + audienciaPruebaRequest.audienciaId()));
 
         TipoPruebas tipoPrueba = tipoPruebaRepository.findById(audienciaPruebaRequest.tipoPruebaId())
                 .orElseThrow(() -> new EntityNotFoundException("TipoPrueba no encontrado para ID: " + audienciaPruebaRequest.tipoPruebaId()));
@@ -79,8 +72,11 @@ public class AudienciaPruebasService {
             documento.setTipoDocumento(TipoDocumento.PRUEBA_AUDIENCIA);
             documentoRepository.save(documento);
 
-            DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivo(file, documento.getId());
-            audienciaPrueba.setUrlDocumento(digitalizacionRecord.rutaArchivo());
+            DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarDocumentoPruebaAudiencia(
+                    file,
+                    documento.getId(),
+                    audienciaPruebaRequest.audienciaId());
+            audienciaPrueba.setUrlDocumento(digitalizacionRecord.nombreArchivo());
         }
 
         audienciaPrueba = audienciaPruebaRepository.save(audienciaPrueba);
@@ -94,13 +90,10 @@ public class AudienciaPruebasService {
     public byte[] getAudienciaPurebasDocumento(Long audienciaId) throws IOException {
         AudienciaPruebas audienciaPruebas = audienciaPruebaRepository.findById(audienciaId).orElse(null);
         assert audienciaPruebas != null;
-        Path rutaArchivo =   Paths.get(audienciaPruebas.getUrlDocumento());
-
-        if (Files.exists(rutaArchivo)) {
-            return Files.readAllBytes(rutaArchivo);
-        } else {
-            throw new IOException("El archivo relacionado con la audiencia " + audienciaPruebas.getId() + " no existe en el directorio");
-        }
+        return digitalizacionService.getDocumentoPruebaAudiencia(
+                audienciaPruebas.getAudiencia().getCarpeta().getId(),
+                audienciaPruebas.getAudiencia().getId(),
+                audienciaPruebas.getUrlDocumento());
     }
     public void pachDesistimientoAdmision(String desAdm, Integer id) {
         AudienciaPruebas audienciaPruebas = audienciaPruebaRepository.findById(id.longValue()).orElseThrow(() -> new RuntimeException("Audiencia no encontrada"));

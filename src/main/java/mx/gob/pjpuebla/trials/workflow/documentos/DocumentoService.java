@@ -1,5 +1,9 @@
 package mx.gob.pjpuebla.trials.workflow.documentos;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +72,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumento;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoItemRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRecord;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
 import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogas;
 import mx.gob.pjpuebla.trials.workflow.solicitudesProrrogas.SolicitudesProrrogasService;
@@ -82,6 +87,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -129,6 +138,7 @@ public class DocumentoService {
         private final ConceptoRepository conceptoRepository;
         private final EmailService emailService;
         private final SelloGenerator selloGenerator;
+        private final SelloCaratulaService selloCaratulaService;
         private final DocumentoDetalleRepository documentoDetalleRepository;
         private final AudienciaRepository audienciaRepository;
         private final CarpetaDetalleRepository carpetaDetalleRepository;
@@ -442,7 +452,15 @@ public class DocumentoService {
                                 generateNumExpediente(juzgadoDemanda, TipoCarpeta.DEMANDA), persona);
 
                 // Llama al metodo crear documento para la creación de un documento dinamico.
-                Documento documento = crearDocumento(carpeta, documentoRecord.general(), persona);
+                DocumentoData datosGenerales = documentoRecord.general();
+                String ultimoDomicilioFamiliar = null;
+                String domicilioAcreedor = null;
+                if (esMateriaFamiliar(tipoJuicio)) {
+                        ultimoDomicilioFamiliar = documentoRecord.ultimoDomicilioFamiliar();
+                        domicilioAcreedor = documentoRecord.domicilioAcreedor();
+                }
+
+                Documento documento = crearDocumento(carpeta, datosGenerales, persona);
 
                 // Llama metodo para crear anexos.
                 addAnexos(documentoRecord.anexos(), documento);
@@ -455,7 +473,18 @@ public class DocumentoService {
                 createPersonaDocumento(documentoRecord.demandado(), carpeta);
 
                 // Crea una carpeta detalle.
-                carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
+                CarpetaDetalle carpetaDetalle = new CarpetaDetalle().setCarpeta(carpeta);
+                if (esMateriaFamiliar(tipoJuicio)) {
+                        carpetaDetalle
+                                        .setUltimoDomicilioFamiliar(ultimoDomicilioFamiliar)
+                                        .setDomicilioAcreedor(domicilioAcreedor)
+                                        .setDomicilioFamiliar(ultimoDomicilioFamiliar)
+                                        .setDomicilioDemandado(
+                                                        documentoRecord.demandado() != null
+                                                                        ? documentoRecord.demandado().domicilio()
+                                                                        : null);
+                }
+                carpetaDetalleRepository.save(carpetaDetalle);
 
                 // Crea Movimiento.
                 movimientoService.createMovimento(carpeta, null, persona, null, EstadoCarpeta.CAPTURA.name());
@@ -790,7 +819,12 @@ public class DocumentoService {
                                 demandado = persona;
                         }
                 }
-                return new DocumentoResponseRecord(actor, demandado, anexos, documento.getData(),
+                DocumentoData datosGenerales = documento.getData() != null ? documento.getData() : new DocumentoData();
+                CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
+                String ultimoDomicilioFamiliar = carpetaDetalle != null ? carpetaDetalle.getUltimoDomicilioFamiliar() : null;
+                String domicilioAcreedor = carpetaDetalle != null ? carpetaDetalle.getDomicilioAcreedor() : null;
+                return new DocumentoResponseRecord(actor, demandado, ultimoDomicilioFamiliar, domicilioAcreedor,
+                                anexos, datosGenerales,
                                 documento.getCarpeta().getTipoJuicio().getNombre(),
                                 documento.getCarpeta().getTipoJuicio().getId());
         }
@@ -878,6 +912,186 @@ public class DocumentoService {
                 return (currentUser.getOficialia() != null) ? currentUser.getOficialia().getId() : null;
         }
 
+        @Transactional(readOnly = true)
+        public DocumentoImpresionCarpetaRecord getDocumentosImpresion(String expediente, Integer year) {
+                Persona persona = personaService.getAuditor();
+                String expedienteCompleto = expediente + "/" + year;
+                Carpeta carpeta = findCarpetaByExpedienteAndPersona(expedienteCompleto, persona);
+
+                List<Carpeta> carpetasBusqueda = getCarpetasForImpresion(carpeta);
+
+                List<DocumentoImpresionItemRecord> documentos = carpetasBusqueda.stream()
+                                .flatMap(carpetaItem -> documentoRepository.findByCarpetaId(carpetaItem.getId())
+                                                .stream())
+                                .filter(this::shouldIncludeDocumentoImpresion)
+                                .sorted(Comparator.comparing(doc -> doc.getAudit().getFechaAlta()))
+                                .map(doc -> new DocumentoImpresionItemRecord(
+                                                doc.getId(),
+                                                doc.getFolio() != null ? doc.getFolio() : doc.getCarpeta().getFolio(),
+                                                doc.getCarpeta().getExpediente(),
+                                                resolveTipoEntrada(doc),
+                                                doc.getCarpeta().getTipoCarpeta() == TipoCarpeta.PIEZA,
+                                                doc.getCarpeta().getTipoPieza() != null
+                                                                ? doc.getCarpeta().getTipoPieza().getTipo()
+                                                                : null,
+                                                doc.getAudit().getFechaAlta(),
+                                                canPrintSello(doc),
+                                                canPrintCaratula(doc)))
+                                .toList();
+
+                return new DocumentoImpresionCarpetaRecord(carpeta.getId(), carpeta.getExpediente(), documentos);
+        }
+
+        private List<Carpeta> getCarpetasForImpresion(Carpeta carpetaPrincipal) {
+                List<Carpeta> carpetas = new ArrayList<>();
+                carpetas.add(carpetaPrincipal);
+
+                List<Carpeta> piezas = carpetaRepository.findByCarpetaPadre(carpetaPrincipal).stream()
+                                .filter(carpeta -> carpeta.getTipoCarpeta() == TipoCarpeta.PIEZA)
+                                .toList();
+                carpetas.addAll(piezas);
+
+                return carpetas;
+        }
+
+        private boolean shouldIncludeDocumentoImpresion(Documento documento) {
+                if (documento.getTipoDocumento() == TipoDocumento.PROMOCION) {
+                        return true;
+                }
+
+                if (documento.getTipoDocumento() != null) {
+                        return false;
+                }
+
+                TipoCarpeta tipoCarpeta = documento.getCarpeta().getTipoCarpeta();
+                return tipoCarpeta == TipoCarpeta.DEMANDA || tipoCarpeta == TipoCarpeta.PIEZA;
+        }
+
+        public byte[] printSellosMasivos(List<Integer> documentoIds) {
+                validateDocumentoIds(documentoIds);
+                return mergePdf(documentoIds, true);
+        }
+
+        public byte[] printCaratulasMasivas(List<Integer> documentoIds) {
+                validateDocumentoIds(documentoIds);
+                return mergePdf(documentoIds, false);
+        }
+
+        private Carpeta findCarpetaByExpedienteAndPersona(String expedienteCompleto, Persona persona) {
+                if (persona.getJuzgado() != null) {
+                        return carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, persona.getJuzgado())
+                                        .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, expedienteCompleto));
+                }
+
+                if (persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null) {
+                        for (Juzgado juzgado : persona.getOficialia().getJuzgados()) {
+                                Optional<Carpeta> carpeta = carpetaRepository.findByExpedienteAndJuzgadoId(
+                                                expedienteCompleto,
+                                                juzgado.getId());
+                                if (carpeta.isPresent()) {
+                                        return carpeta.get();
+                                }
+                        }
+                }
+
+                throw new NotFoundException(CARPETA_NOT_FOUND, expedienteCompleto);
+        }
+
+        private String resolveTipoEntrada(Documento documento) {
+                if (documento.getTipoDocumento() != null) {
+                        return documento.getTipoDocumento().name();
+                }
+                return documento.getCarpeta().getTipoCarpeta().name();
+        }
+
+        private boolean canPrintSello(Documento documento) {
+                TipoDocumento tipoDocumento = documento.getTipoDocumento();
+                if (tipoDocumento == null) {
+                        return true;
+                }
+
+                return tipoDocumento != TipoDocumento.ACUERDO
+                                && tipoDocumento != TipoDocumento.SENTENCIA
+                                && tipoDocumento != TipoDocumento.SENTENCIA_PUBLICA;
+        }
+
+        private boolean canPrintCaratula(Documento documento) {
+                TipoDocumento tipoDocumento = documento.getTipoDocumento();
+                if (tipoDocumento == null) {
+                        return true;
+                }
+
+                return tipoDocumento != TipoDocumento.ACUERDO
+                                && tipoDocumento != TipoDocumento.SENTENCIA
+                                && tipoDocumento != TipoDocumento.SENTENCIA_PUBLICA;
+        }
+
+        private void validateDocumentoIds(List<Integer> documentoIds) {
+                if (documentoIds == null || documentoIds.isEmpty()) {
+                        throw new ConstraintViolationException("Debe enviar al menos un documento para imprimir.",
+                                        "documentoIds");
+                }
+        }
+
+        private byte[] mergePdf(List<Integer> documentoIds, boolean isSello) {
+                List<byte[]> pdfs = documentoIds.stream()
+                                .map(documentoId -> {
+                                        Documento documento = documentoRepository.findById(documentoId)
+                                                        .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND,
+                                                                        DOC_ID + documentoId));
+                                        if (isSello && !canPrintSello(documento)) {
+                                                throw new ConstraintViolationException(
+                                                                "Uno o mas documentos no permiten impresion de sello.",
+                                                                "documentoId: " + documentoId);
+                                        }
+                                        if (!isSello && !canPrintCaratula(documento)) {
+                                                throw new ConstraintViolationException(
+                                                                "Uno o mas documentos no permiten impresion de caratula.",
+                                                                "documentoId: " + documentoId);
+                                        }
+
+                                        try {
+                                                return isSello
+                                                                ? selloGenerator.exportToPdf(documentoId)
+                                                                : selloCaratulaService.exportToPdf(documentoId);
+                                        } catch (Exception ex) {
+                                                throw new RuntimeException(
+                                                                "No fue posible generar el PDF del documento: "
+                                                                                + documentoId,
+                                                                ex);
+                                        }
+                                })
+                                .toList();
+
+                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                        Document outputDocument = new Document();
+                        PdfCopy pdfCopy = new PdfCopy(outputDocument, outputStream);
+                        outputDocument.open();
+
+                        for (byte[] pdf : pdfs) {
+                                appendPdf(pdfCopy, new ByteArrayInputStream(pdf));
+                        }
+
+                        outputDocument.close();
+                        pdfCopy.close();
+                        return outputStream.toByteArray();
+                } catch (Exception ex) {
+                        throw new RuntimeException("No fue posible unir los PDFs para impresion masiva.", ex);
+                }
+        }
+
+        private void appendPdf(PdfCopy pdfCopy, InputStream inputStream) throws IOException, DocumentException {
+                PdfReader reader = new PdfReader(inputStream);
+                int totalPages = reader.getNumberOfPages();
+
+                for (int page = 1; page <= totalPages; page++) {
+                        pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+                }
+
+                pdfCopy.freeReader(reader);
+                reader.close();
+        }
+
         @Transactional
         public DocumentoPromocionResponseRecord createPromocion(DocumentoPromocionRecord documentoPromocionRecord,
                         MultipartFile multipartFile) {
@@ -910,7 +1124,7 @@ public class DocumentoService {
                 documento = documentoRepository.save(documento);
                 if (persona.getOficialia() == null
                                 && !documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
-                        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                        digitalizacionService.guardarDocumento(multipartFile, documento.getId());
                 }
                 // promoción desde el portal del litigante
                 if (documentoPromocionRecord.tipoPromocion().equals(TipoPromocion.CORREO_ELECTRONICO)) {
@@ -2235,7 +2449,7 @@ public class DocumentoService {
                 addAnexos(documentoRecord.anexos(), documento);
                 carpetaDetalleRepository.save(new CarpetaDetalle().setCarpeta(carpeta));
 
-                digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                digitalizacionService.guardarDocumento(multipartFile, documento.getId());
 
                 return new DocumentoRecord(documento.getId(), carpeta.getFolio(),
                                 documento.getCarpeta().getTipoCarpeta());
@@ -2294,7 +2508,7 @@ public class DocumentoService {
                                 .setTipoDocumento(TipoDocumento.EXHORTO_SALIDA);
                 documento = documentoRepository.save(documento);
                 if (multipartFile != null) {
-                        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+                        digitalizacionService.guardarDocumento(multipartFile, documento.getId());
                 }
                 movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.CREADO.name());
                 return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(),
@@ -2332,7 +2546,7 @@ public class DocumentoService {
                                 .setAcuerdoRespuesta(docSentencia);
                 docSentenciaPublica = documentoRepository.save(docSentenciaPublica);
 
-                digitalizacionService.guardarArchivo(multipartFile, docSentenciaPublica.getId());
+                digitalizacionService.guardarDocumento(multipartFile, docSentenciaPublica.getId());
         }
 
         public AmparoGetRecord getAmparoById(Integer id) {
@@ -2505,6 +2719,13 @@ public class DocumentoService {
                 }
         }
 
+        private boolean esMateriaFamiliar(TipoJuicio tipoJuicio) {
+                return tipoJuicio != null
+                                && tipoJuicio.getMateria() != null
+                                && tipoJuicio.getMateria().getNombre() != null
+                                && tipoJuicio.getMateria().getNombre().toUpperCase().contains("FAMILIAR");
+        }
+
         private TipoJuicio getTipoJuicioById(Integer tipoJuicioId) {
 
                 return tipoJuicioRepository.findById(tipoJuicioId)
@@ -2650,3 +2871,4 @@ public class DocumentoService {
         }
 
 }
+

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,8 +78,10 @@ public class AsistenciaAudienciaService {
         documento.setTipoDocumento(TipoDocumento.DOCUMENTO_IDENTIFICACION);
         documentoRepository.save(documento);
 
-        digitalizacionService.setAudienciaId(asistenciaAudienciaRecord.idAudiencia());
-        digitalizacionService.guardarArchivo(multipartFile, documento.getId());
+        digitalizacionService.guardarDocumentoAsistencia(
+                multipartFile,
+                documento.getId(),
+                asistenciaAudienciaRecord.idAudiencia());
 
         Documento documentoRuta = documentoRepository.findById(documento.getId())
                 .orElseThrow(() -> new IllegalArgumentException(DOCUMENTO_NOT_FOUND));
@@ -92,6 +95,23 @@ public class AsistenciaAudienciaService {
 
         return asistenciaAudienciaRepository.save(asistenciaAudiencia);
 
+    }
+
+    public byte[] getDocumentoAsistencia(Integer personaDocumentoId, Integer audienciaId) throws IOException {
+        AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
+                .findByPersonaDocumentoIdAndAudienciaId(personaDocumentoId, audienciaId);
+
+        if (asistenciaAudiencia == null) {
+            throw new IllegalArgumentException("Asistencia audiencia no encontrada");
+        }
+
+        String urlDocumento = asistenciaAudiencia.getUrlDocumento();
+        if (urlDocumento == null || urlDocumento.isBlank()) {
+            throw new IllegalArgumentException("Documento de identificación no encontrado");
+        }
+
+        Integer carpetaId = asistenciaAudiencia.getAudiencia().getCarpeta().getId();
+        return digitalizacionService.getDocumentoAsistencia(carpetaId, audienciaId, urlDocumento);
     }
 
 }
