@@ -36,7 +36,7 @@ public class TipoJuicioService {
 
         Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(example.setEstado(Estado.ACTIVE), exampleMatcher), pageable);
         List<TipoJuicioRecord> list = page.getContent().stream()
-                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre())))
+                .map(m -> new TipoJuicioRecord(m.getId(), m.getNombre(), new TipoSistemaRecord(m.getTipoSistema().getId(), m.getTipoSistema().getNombre()), new MateriaRecord(m.getMateria().getId(), m.getMateria().getNombre()),m.getTipoSistema() != null ? m.getTipoSistema().getId() : null))
                 .toList();
 
         return new PageImpl<>(list, pageable, page.getTotalElements());
@@ -55,7 +55,7 @@ public class TipoJuicioService {
     public TipoJuicioRecord findById(Integer id) {
         TipoJuicio tipoJuicio = tipoJuicioRepository.findByIdAndEstado(id, Estado.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Tipo de Juicio no encontrado", "tipoJuicioId"));
-        return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(), new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()), new MateriaRecord(tipoJuicio.getMateria().getId(), tipoJuicio.getMateria().getNombre()));
+        return new TipoJuicioRecord(tipoJuicio.getId(), tipoJuicio.getNombre(), new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()), new MateriaRecord(tipoJuicio.getMateria().getId(), tipoJuicio.getMateria().getNombre()), tipoJuicio.getTipoSistema() != null ? tipoJuicio.getTipoSistema().getId() : null);
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +79,8 @@ public class TipoJuicioService {
                         new TipoSistemaRecord(tipoJuicio.getTipoSistema().getId(), tipoJuicio.getTipoSistema().getNombre()),
                         new MateriaRecord(
                                 tipoJuicio.getMateria().getId(),
-                                StringUtils.capitalize(tipoJuicio.getMateria().getNombre().toLowerCase())));
+                                StringUtils.capitalize(tipoJuicio.getMateria().getNombre().toLowerCase()))
+                                ,tipoJuicio.getTipoSistema() != null ? tipoJuicio.getTipoSistema().getId() : null);
                 list.add(tipoJuicioRecord);
             }
         }
@@ -105,7 +106,7 @@ public class TipoJuicioService {
     public List<TipoJuicioMateriaRecord> findTipoJuiciosByMateria(Integer materiaId) {
         List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
         return tipoJuicios.stream()
-                .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId))
+                .map(tj -> new TipoJuicioMateriaRecord(tj.getId(), tj.getNombre(), materiaId, tj.getTipoSistema() != null ? tj.getTipoSistema().getId() : null))
                 .toList();
     }
 

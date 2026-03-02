@@ -98,7 +98,7 @@ public class JuzgadoService {
         List<TipoJuicioRecord> tipoJuicios = Optional.ofNullable(juzgado.getTipoJuicios()).orElse(List.of()).stream()
                 .map(tj -> new TipoJuicioRecord(
                         tj.getId(),
-                        tj.getNombre(), null, null))
+                        tj.getNombre(), null, null, tj.getTipoSistema() != null ? tj.getTipoSistema().getId() : null))
                 .toList();
         List<JuzgadoContadorConfig> contadoresJuzgados = contadorJuzgadoRepository
                 .findByJuzgadoIdAndEstado(juzgado.getId(), Estado.ACTIVE)
@@ -373,9 +373,17 @@ public class JuzgadoService {
         if (!TipoCarpeta.DEMANDA.equals(tipoCarpeta) || tipoJuicio == null || tipoJuicio.getMateria() == null) {
             return false;
         }
-        String materia = Optional.ofNullable(tipoJuicio.getMateria().getNombre()).orElse("").toLowerCase();
-        String nombreTipoJuicio = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
-        return materia.contains("mercantil") && nombreTipoJuicio.contains("oral");
+        String materiaNombre = Optional.ofNullable(tipoJuicio.getMateria().getNombre()).orElse("").toLowerCase();
+        // String nombreTipoJuicio = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
+        // return materia.contains("mercantil") && nombreTipoJuicio.contains("oral");
+        boolean esMateriaMercantil = materiaNombre.contains("mercantil");
+
+        boolean esSistemaOral = false;
+        if (tipoJuicio.getTipoSistema() != null && tipoJuicio.getTipoSistema().getId() != null) {
+            esSistemaOral = tipoJuicio.getTipoSistema().getId() == 101;
+        }
+
+        return esMateriaMercantil && esSistemaOral;
     }
 
     private void syncContadoresJuzgados(Juzgado juzgado) {
@@ -445,8 +453,16 @@ public class JuzgadoService {
             return false;
         }
         String materiaNombre = Optional.ofNullable(materia.getNombre()).orElse("").toLowerCase();
-        String tipoJuicioNombre = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
-        return materiaNombre.contains("mercantil") && tipoJuicioNombre.contains("oral");
+        // String tipoJuicioNombre = Optional.ofNullable(tipoJuicio.getNombre()).orElse("").toLowerCase();
+        // return materiaNombre.contains("mercantil") && tipoJuicioNombre.contains("oral");
+        boolean esMateriaMercantil = materiaNombre.contains("mercantil");
+
+        boolean esSistemaOral = false;
+        if (tipoJuicio.getTipoSistema() != null && tipoJuicio.getTipoSistema().getId() != null) {
+            esSistemaOral = tipoJuicio.getTipoSistema().getId() == 101;
+        }
+
+        return esMateriaMercantil && esSistemaOral;
     }
 
     public void actualizarCarga(Juzgado juzgado, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {

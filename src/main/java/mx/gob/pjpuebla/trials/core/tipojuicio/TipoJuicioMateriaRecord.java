@@ -5,6 +5,7 @@ import java.io.Serializable;
 public record TipoJuicioMateriaRecord (
         Integer id,
         String nombre,
-        Integer materiaId)
+        Integer materiaId,
+        Integer tipoSistemaId)
         implements Serializable {
 }
