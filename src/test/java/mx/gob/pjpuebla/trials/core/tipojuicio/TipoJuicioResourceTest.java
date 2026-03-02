@@ -153,8 +153,8 @@ class TipoJuicioResourceTest {
         void getTipoJuiciosByMateria_success() throws Exception {
         Integer materiaId = 1;
         List<TipoJuicioMateriaRecord> tipoJuicios = Arrays.asList(
-                new TipoJuicioMateriaRecord(1, "Laboral", materiaId),
-                new TipoJuicioMateriaRecord(2, "Familiar", materiaId)
+                new TipoJuicioMateriaRecord(1, "Laboral", materiaId, 101),
+                new TipoJuicioMateriaRecord(2, "Familiar", materiaId, 101)
         );
 
         given(mockTipoJuicioService.findTipoJuiciosByMateria(materiaId)).willReturn(tipoJuicios);

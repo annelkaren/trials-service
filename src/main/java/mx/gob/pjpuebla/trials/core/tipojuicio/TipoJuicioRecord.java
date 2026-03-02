@@ -11,6 +11,7 @@ public record TipoJuicioRecord(
         Integer id,
         String nombre,
         TipoSistemaRecord tipoSistemaRecord,
-        MateriaRecord materiaRecord
+        MateriaRecord materiaRecord,
+        Integer tipoSistemaId
 ) implements Serializable {
 }
