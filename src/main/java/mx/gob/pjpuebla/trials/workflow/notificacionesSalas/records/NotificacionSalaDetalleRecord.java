@@ -10,6 +10,7 @@ public record NotificacionSalaDetalleRecord(
         String tipoSala,
         LocalDateTime fechaEnvio,
         LocalDateTime fechaTermino,
+        String contenidoCorreo,
         String rutaArchivo,
         String nombreArchivo,
         Integer totalDestinatarios,

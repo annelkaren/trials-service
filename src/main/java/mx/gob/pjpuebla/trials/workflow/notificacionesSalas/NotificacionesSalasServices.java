@@ -1,16 +1,19 @@
 package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -38,6 +41,8 @@ public class NotificacionesSalasServices {
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
+    @Value("${app.public-api-base-url}")
+    private String publicApiBaseUrl;
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String q, String numeroExpediente,
             String nombreDestinatario, String correoElectronico, LocalDateTime fechaEnvioFrom,
@@ -51,15 +56,16 @@ public class NotificacionesSalasServices {
     @Transactional
     public NotificacionSalaCreateResponseRecord createNotificacion(NotificacionSalaCreateRecord request,
             MultipartFile archivo) {
+
         validaciones(request, archivo);
 
-        String numeroExpediente = request.numeroExpediente().trim();
+        String toca = request.toca().trim();
         String tipoSala = request.tipoSala().trim();
         String nombreSala = request.nombreSala().trim();
         String contenidoCorreo = request.contenidoCorreo().trim();
 
         NotificacionesSalas notificacion = new NotificacionesSalas()
-                .setToca(numeroExpediente)
+                .setToca(toca)
                 .setTipoSala(tipoSala)
                 .setNombreSala(nombreSala)
                 .setFechaTermino(request.fechaTermino() != null ? request.fechaTermino().atStartOfDay() : null)
@@ -69,11 +75,13 @@ public class NotificacionesSalasServices {
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo,
-                notificacion.getId(), tipoSala);
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo, nombreSala,
+                notificacion.getId());
 
-        notificacion.setRutaArchivo(digitalizacionRecord.rutaArchivo());
+        notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
         notificacion = notificacionesSalasRepository.save(notificacion);
+        String publicDownloadUrl = buildPublicDownloadUrl(digitalizacionRecord.nombreArchivo());
+        String htmlFinalCorreo = appendDownloadLink(contenidoCorreo, publicDownloadUrl);
 
         int exitosos = 0;
         int fallidos = 0;
@@ -87,9 +95,8 @@ public class NotificacionesSalasServices {
 
             try {
                 EmailLog emailLog = enviarCorreoNotificacion(
-                        archivo,
                         destinatarioRequest.nombreDestinatario().trim(),
-                        contenidoCorreo,
+                        htmlFinalCorreo,
                         destinatarioRequest.correoElectronico().trim());
                 destinatario.setEmailLog(emailLog);
                 exitosos++;
@@ -147,6 +154,7 @@ public class NotificacionesSalasServices {
                 notificacion.getTipoSala(),
                 notificacion.getFechaEnvio(),
                 notificacion.getFechaTermino(),
+                notificacion.getContenidoCorreo(),
                 notificacion.getRutaArchivo(),
                 extractFileName(notificacion.getRutaArchivo()),
                 totalDestinatarios,
@@ -155,36 +163,48 @@ public class NotificacionesSalasServices {
                 destinatarios);
     }
 
-    private EmailLog enviarCorreoNotificacion(MultipartFile archivo, String nombreDestinatario,
-            String contenidoCorreoHtml, String correoElectronico) {
-
-        byte[] attachmentBytes;
-        String attachmentName = sanitizeFilename(archivo.getOriginalFilename());
-        String html = contenidoCorreoHtml;
-
-        try {
-            attachmentBytes = archivo.getBytes();
-        } catch (IOException e) {
-            throw new IllegalStateException("No se pudo leer el archivo adjunto", e);
-        }
+    private EmailLog enviarCorreoNotificacion(String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
 
         return emailGatewayService.sendAndLog(
                 correoElectronico,
                 nombreDestinatario,
                 "Notificacion de sala",
-                html,
-                attachmentName,
-                attachmentBytes);
+                contenidoCorreoHtml,
+                null,
+                null);
     }
 
     public byte[] downloadArchivo(Integer idNotificacionSala) throws java.io.IOException {
+        
         NotificacionesSalas notificacion = notificacionesSalasRepository.findById(idNotificacionSala)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
 
         if (notificacion.getRutaArchivo() == null || notificacion.getRutaArchivo().isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
         }
-        return digitalizacionService.getArchivoNotificacionSala(notificacion.getRutaArchivo());
+
+        String rutaArchivo =  "notificacionesSalas/" + notificacion.getNombreSala().replace(" ", "") + "/" + notificacion.getRutaArchivo();
+
+        return digitalizacionService.getArchivoNotificacionSala(rutaArchivo);
+    }
+
+    public byte[] downloadArchivoPublico(String nombreArchivo) {
+        validarNombreArchivo(nombreArchivo);
+        
+        NotificacionesSalas notificacion = notificacionesSalasRepository.findByRutaArchivo(nombreArchivo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado repositorio."));
+        
+        String rutaArchivo =  "notificacionesSalas/" + notificacion.getNombreSala().replace(" ", "") + "/" + notificacion.getRutaArchivo();
+
+        if (rutaArchivo == null || rutaArchivo.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado.");
+        }
+
+        try {
+            return digitalizacionService.getArchivoNotificacionSala(rutaArchivo);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado.");
+        }
     }
 
     private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {
@@ -192,7 +212,7 @@ public class NotificacionesSalasServices {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La informacion de la notificacion es obligatoria.");
         }
 
-        if (request.numeroExpediente() == null || request.numeroExpediente().isBlank()) {
+        if (request.toca() == null || request.toca().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");
         }
         if (request.nombreSala() == null || request.nombreSala().isBlank()) {
@@ -252,6 +272,36 @@ public class NotificacionesSalasServices {
         String normalized = rutaArchivo.replace("\\", "/");
         int idx = normalized.lastIndexOf('/');
         return idx >= 0 ? normalized.substring(idx + 1) : normalized;
+    }
+
+    private String buildPublicDownloadUrl(String nombreArchivo) {
+        String encodedNombreArchivo = UriUtils.encodePathSegment(nombreArchivo, StandardCharsets.UTF_8);
+        String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() : "";
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + "/api/workflow/notificacionesSalas/download/" + encodedNombreArchivo;
+    }
+
+    private String appendDownloadLink(String contenidoCorreoHtml, String downloadUrl) {
+        StringBuilder html = new StringBuilder(contenidoCorreoHtml == null ? "" : contenidoCorreoHtml);
+        html.append("<hr/>")
+                .append("<p><strong>Descargar documento:</strong> ")
+                .append("<a href=\"")
+                .append(downloadUrl)
+                .append("\">")
+                .append(downloadUrl)
+                .append("</a></p>");
+        return html.toString();
+    }
+
+    private void validarNombreArchivo(String nombreArchivo) {
+        if (nombreArchivo == null || nombreArchivo.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de archivo invalido.");
+        }
+        if (nombreArchivo.contains("/") || nombreArchivo.contains("\\") || nombreArchivo.contains("..")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de archivo invalido.");
+        }
     }
 
     private String trimToNull(String value) {

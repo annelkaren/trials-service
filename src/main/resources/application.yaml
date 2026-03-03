@@ -90,6 +90,7 @@ keycloak:
 app:
   root-folder: /opt/pjp/files
   portal-notificaciones: http://187.190.62.102/acuerdos/login
+  public-api-base-url: http://localhost:8888/rest
   correo-pruebas: secgj@pjpuebla.gob.mx
 
 inegi:

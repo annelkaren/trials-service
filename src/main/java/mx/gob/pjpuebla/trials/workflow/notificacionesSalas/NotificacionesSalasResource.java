@@ -70,4 +70,13 @@ public class NotificacionesSalasResource {
         headers.setContentDispositionFormData("adjunto", idNotificacionSala + "_notificacion_sala");
         return ResponseEntity.ok().headers(headers).body(file);
     }
+
+    @GetMapping(value = "/download/{nombreArchivo}")
+    public ResponseEntity<byte[]> downloadArchivoPublico(@PathVariable String nombreArchivo) {
+        byte[] file = notificacionesSalasServices.downloadArchivoPublico(nombreArchivo);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("adjunto", nombreArchivo);
+        return ResponseEntity.ok().headers(headers).body(file);
+    }
 }

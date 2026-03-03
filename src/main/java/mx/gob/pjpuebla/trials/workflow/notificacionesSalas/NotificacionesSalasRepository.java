@@ -5,7 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
 
@@ -39,4 +42,11 @@ public interface NotificacionesSalasRepository extends JpaRepository<Notificacio
             FROM NotificacionesSalas ns
             """)
     Page<NotificacionesSalasRecord> findPageNotificaciones(Pageable pageable);
+
+    @Query("""
+            SELECT ns
+            FROM NotificacionesSalas ns
+            WHERE ns.rutaArchivo = :nombreArchivo
+            """)
+    Optional<NotificacionesSalas> findByRutaArchivo(@Param("nombreArchivo") String nombreArchivo);
 }

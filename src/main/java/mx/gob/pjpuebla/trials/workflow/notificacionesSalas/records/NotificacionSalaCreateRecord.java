@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record NotificacionSalaCreateRecord(
-        String numeroExpediente,
+        String toca,
         String nombreSala,
         String tipoSala,
         LocalDate fechaTermino,
