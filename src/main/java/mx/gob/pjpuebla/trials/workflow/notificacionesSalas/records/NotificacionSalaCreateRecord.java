@@ -8,5 +8,6 @@ public record NotificacionSalaCreateRecord(
         String nombreSala,
         String tipoSala,
         LocalDate fechaTermino,
+        String contenidoCorreo,
         List<NotificacionSalaDestinatarioCreateRecord> destinatarios) {
 }

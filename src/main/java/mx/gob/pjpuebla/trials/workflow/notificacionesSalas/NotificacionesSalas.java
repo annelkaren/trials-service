@@ -51,6 +51,9 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name = "s_ruta_archivo")
     private String rutaArchivo;
 
+    @Column(name = "s_contenido_correo")
+    private String contenidoCorreo;
+
     @Column(name = "n_estado")
     @Enumerated
     private Estado estado;

@@ -2,9 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -13,12 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.config.sendPulse.EmailGatewayService;
@@ -43,7 +38,6 @@ public class NotificacionesSalasServices {
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
-    private final Configuration freemarkerConfig;
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String q, String numeroExpediente,
             String nombreDestinatario, String correoElectronico, LocalDateTime fechaEnvioFrom,
@@ -62,12 +56,14 @@ public class NotificacionesSalasServices {
         String numeroExpediente = request.numeroExpediente().trim();
         String tipoSala = request.tipoSala().trim();
         String nombreSala = request.nombreSala().trim();
+        String contenidoCorreo = request.contenidoCorreo().trim();
 
         NotificacionesSalas notificacion = new NotificacionesSalas()
                 .setToca(numeroExpediente)
                 .setTipoSala(tipoSala)
                 .setNombreSala(nombreSala)
                 .setFechaTermino(request.fechaTermino() != null ? request.fechaTermino().atStartOfDay() : null)
+                .setContenidoCorreo(contenidoCorreo)
                 .setFechaEnvio(LocalDateTime.now())
                 .setEstado(Estado.ACTIVE);
 
@@ -93,8 +89,7 @@ public class NotificacionesSalasServices {
                 EmailLog emailLog = enviarCorreoNotificacion(
                         archivo,
                         destinatarioRequest.nombreDestinatario().trim(),
-                        numeroExpediente,
-                        nombreSala,
+                        contenidoCorreo,
                         destinatarioRequest.correoElectronico().trim());
                 destinatario.setEmailLog(emailLog);
                 exitosos++;
@@ -160,26 +155,17 @@ public class NotificacionesSalasServices {
                 destinatarios);
     }
 
-    private EmailLog enviarCorreoNotificacion(MultipartFile archivo, String nombreDestinatario, String toca,
-            String nombreSala, String correoElectronico) {
+    private EmailLog enviarCorreoNotificacion(MultipartFile archivo, String nombreDestinatario,
+            String contenidoCorreoHtml, String correoElectronico) {
 
         byte[] attachmentBytes;
         String attachmentName = sanitizeFilename(archivo.getOriginalFilename());
-        String html;
+        String html = contenidoCorreoHtml;
 
         try {
             attachmentBytes = archivo.getBytes();
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("nombreParticipante", nombreDestinatario);
-            parameters.put("toca", toca);
-            parameters.put("nombreSala", nombreSala);
-
-            Template template = freemarkerConfig.getTemplate("Notificaciones.ftl");
-            html = FreeMarkerTemplateUtils.processTemplateIntoString(template, parameters);
         } catch (IOException e) {
             throw new IllegalStateException("No se pudo leer el archivo adjunto", e);
-        } catch (Exception ex) {
-            throw new IllegalStateException("No se pudo generar el correo de notificacion", ex);
         }
 
         return emailGatewayService.sendAndLog(
@@ -214,6 +200,9 @@ public class NotificacionesSalasServices {
         }
         if (request.tipoSala() == null || request.tipoSala().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de sala es obligatorio.");
+        }
+        if (request.contenidoCorreo() == null || request.contenidoCorreo().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El contenido del correo es obligatorio.");
         }
         if (request.destinatarios() == null || request.destinatarios().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe registrar al menos un destinatario.");
