@@ -235,10 +235,10 @@ public class DigitalizacionService {
         return new DigitalizacionRecord(notificacionSalaId, relativePath, nombreUnicoArchivo);
     }
 
-    public byte[] getArchivoNotificacionSala(String rutaArchivo, String tipoSala) throws IOException {
+    public byte[] getArchivoNotificacionSala(String rutaArchivo) throws IOException {
         validateNotNull(rutaArchivo, "La ruta del archivo no puede ser nula");
-       
-        Path fullPath = Paths.get(getBasePath(), NOTIFICACIONES_SALA_DIR, tipoSala, rutaArchivo);
+
+        Path fullPath = Paths.get(getBasePath(), rutaArchivo);
         if (Files.exists(fullPath)) {
             return Files.readAllBytes(fullPath);
         }

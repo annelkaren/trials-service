@@ -5,13 +5,11 @@ import java.time.LocalDateTime;
 public record NotificacionesSalasRecord(
     Integer idNotificacionSala,
     String numeroExpediente,
+    String nombreSala,
     String tipoSala,
-    String nombreDestinatario,
-    String correoElectronico,
-    LocalDateTime fechaTermino,
-    String rutaArchivo,
-    String nombreArchivo,
     LocalDateTime fechaEnvio,
-    LocalDateTime fechaLectura,
-    LocalDateTime fechaEntrega
+    LocalDateTime fechaTermino,
+    String nombreArchivo,
+    Long totalDestinatarios,
+    String resumenDestinatarios
 ) {}

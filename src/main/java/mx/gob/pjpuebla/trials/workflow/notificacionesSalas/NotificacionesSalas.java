@@ -1,6 +1,8 @@
 package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.CascadeType;
@@ -12,13 +14,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
@@ -42,11 +42,8 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name = "s_tipo_sala")
     private String tipoSala;
 
-    @Column(name = "s_nombre_destinatario")
-    private String nombreDestinatario;
-
-    @Column(name = "s_correo_destinatario")
-    private String correoDestinatario;
+    @Column(name = "s_nombre_sala")
+    private String nombreSala;
 
     @Column(name = "t_fecha_termino")
     private LocalDateTime fechaTermino;
@@ -61,9 +58,8 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name = "t_fecha_envio")
     private LocalDateTime fechaEnvio;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "FN_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
-    private EmailLog emailLog;
+    @OneToMany(mappedBy = "notificacionSala", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NotificacionSalaDestinatario> destinatarios = new ArrayList<>();
 
     @Accessors(chain = false)
     @Embedded

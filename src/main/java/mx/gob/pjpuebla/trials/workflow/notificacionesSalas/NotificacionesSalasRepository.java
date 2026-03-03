@@ -5,30 +5,38 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
-
 import org.springframework.data.jpa.repository.Query;
+
+import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
 
 @Repository
 public interface NotificacionesSalasRepository extends JpaRepository<NotificacionesSalas, Integer> {
-
-    //TODO: obtener fecha lectura y fecha entrega de log de correo.
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord(
                 ns.id,
-                ns.expediente,
+                ns.toca,
+                ns.nombreSala,
                 ns.tipoSala,
-                ns.nombreDestinatario,
-                ns.correoDestinatario,
+                ns.fechaEnvio,
                 ns.fechaTermino,
                 ns.rutaArchivo,
-                ns.rutaArchivo,
-                ns.fechaEnvio,
-                null,
-                null
+                (SELECT COUNT(ndc)
+                 FROM NotificacionSalaDestinatario ndc
+                 WHERE ndc.notificacionSala.id = ns.id),
+                COALESCE(
+                    (
+                        SELECT ndp.nombreDestinatario
+                        FROM NotificacionSalaDestinatario ndp
+                        WHERE ndp.id = (
+                            SELECT MIN(ndi.id)
+                            FROM NotificacionSalaDestinatario ndi
+                            WHERE ndi.notificacionSala.id = ns.id
+                        )
+                    ),
+                    '-'
+                )
             )
             FROM NotificacionesSalas ns
             """)
-    Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable);
-
+    Page<NotificacionesSalasRecord> findPageNotificaciones(Pageable pageable);
 }
