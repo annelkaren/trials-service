@@ -422,7 +422,7 @@ public class SelloGenerator {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         List<PersonaDocumentoRecord> personasDocumentosRecord = personaDocumentoRepository
                 .findPersonaAndTipoParteByCarpetaId(id, parte, rol);
-
+        
         PersonaDocumentoRecord personaDocumentoRecord = personasDocumentosRecord.get(0);
 
         if (personaDocumentoRecord == null) {

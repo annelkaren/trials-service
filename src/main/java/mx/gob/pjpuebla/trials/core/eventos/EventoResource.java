@@ -4,10 +4,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.eventos.records.EventoEditRecord;
 import mx.gob.pjpuebla.trials.core.eventos.records.EventoPeriodosRecord;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,13 +22,13 @@ public class EventoResource {
     }
 
     @GetMapping("/generales")
-    public Page<EventoRecord> getEventosGenerales(@PageableDefault Pageable pageable) {
-        return this.eventoService.getEventosGenerales(pageable);
+    public List<EventoRecord> getEventosGenerales() {
+        return this.eventoService.getEventosGenerales();
     }
 
     @GetMapping("/oficialiacomun")
-    public Page<EventoRecord> getEventosOficialiaComun(Pageable pageable) {
-        return this.eventoService.getEventosOficialiaComun(pageable);
+    public List<EventoRecord> getEventosOficialiaComun() {
+        return this.eventoService.getEventosOficialiaComun();
     }
 
     @DeleteMapping("/{id}")

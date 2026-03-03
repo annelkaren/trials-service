@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +47,7 @@ class SalaResourceTest {
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockSalaService.getAll(any(Sala.class), any(Pageable.class)))
+        given(mockSalaService.getAll(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
 
         mockMvc.perform(

@@ -126,14 +126,22 @@ class SalaServiceTest {
 
     @Test
     void getAll_return_page() {
-        List<Sala> listPage = Collections.singletonList(sala);
+        List<SalaRecord> listPage = Collections.singletonList(new SalaRecord(
+                sala.getId(),
+                sala.getNombre(),
+                sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + sala.getJuez().getApellidoMaterno(),
+                sala.getJuzgado().getNombre(),
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(
+                        sala.getBloque().getId(),
+                        sala.getBloque().getHoraInicial(),
+                        sala.getBloque().getHoraFinal()),
+                sala.getEstado()));
 
         given(personaService.getAuditor()).willReturn(juez);
-
-        given(mockSalaRepository.findAll(any(Example.class), any(PageRequest.class)))
+        given(mockSalaRepository.findAllByKeyAndJuzgadoId(any(), any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
 
-        Page<SalaRecord> page = salaService.getAll(sala, PageRequest.of(1, listPage.size()));
+        Page<SalaRecord> page = salaService.getAll("", PageRequest.of(1, listPage.size()));
         assertThat(page.getContent())
                 .hasSize(1)
                 .first().hasFieldOrPropertyWithValue("id", sala.getId())
