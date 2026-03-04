@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.emailLogs;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,10 +23,16 @@ public interface EmailLogsRepository extends JpaRepository<EmailLogs, Integer> {
                 FROM EmailLogs e
                 WHERE e.estado IN :estados
                   AND (e.proximaVerificacion IS NULL OR e.proximaVerificacion <= :now)
-                ORDER BY COALESCE(e.proximaVerificacion, e.ultimaVerificacion, e.fechaEnvio) ASC, e.id ASC
+                  AND (
+                        e.estado <> mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.LEIDO
+                        OR e.trackingLinkDetalle IS NULL
+                        OR FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.link[0]') = false
+                  )
+                ORDER BY COALESCE(e.ultimaVerificacion, e.fechaEnvio, :now) ASC, e.id ASC
             """)
     List<EmailLogs> findBatchToVerify(
             @Param("estados") List<EstadoEnvioCorreo> estados,
-            @Param("now") LocalDateTime now);
+            @Param("now") LocalDateTime now,
+            Pageable pageable);
 
 }

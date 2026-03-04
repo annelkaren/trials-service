@@ -1,5 +1,7 @@
 package mx.gob.pjpuebla.trials.workflow.emailLogs;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -13,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.Type;
 
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
 
@@ -51,8 +54,14 @@ public class EmailLogs implements Serializable {
     @Column(name = "S_SMTP_ANSWER_SUBCODE")
     private String smtpAnswerSubcode;
 
+    @Column(name = "S_SMTP_ANSWER_CODE_EXPLAIN")
+    private String smtpAnswerCodeExplain;
+
     @Column(name = "S_SMTP_ANSWER_DATA")
     private String smtpAnswerData;
+
+    @Column(name = "S_ERROR_ENVIO_DETALLE")
+    private String errorEnvioDetalle;
 
     @Column(name = "N_INTENTOS_VERIFICACION")
     private Integer intentosVerificacion = 0;
@@ -69,7 +78,14 @@ public class EmailLogs implements Serializable {
     @Column(name = "T_FECHA_LECTURA")
     private LocalDateTime fechaLectura;
 
+    @Column(name = "T_FECHA_DESCARGA_VINCULO")
+    private LocalDateTime fechaDescargaVinculo;
+
     @Column(name = "T_ULTIMA_VERIFICACION")
     private LocalDateTime ultimaVerificacion;
+
+    @Type(JsonBinaryType.class)
+    @Column(name = "J_TRACKING_LINK_DETALLE", columnDefinition = "jsonb")
+    private JsonNode trackingLinkDetalle;
 
 }

@@ -15,6 +15,9 @@ public record SendPulseEmailInfoResponse(
         @JsonProperty("smtp_answer_subcode")
         String smtpAnswerSubcode,
 
+        @JsonProperty("smtp_answer_code_explain")
+        String smtpAnswerCodeExplain,
+
         @JsonProperty("smtp_answer_data")
         String smtpAnswerData,
 
@@ -45,6 +48,8 @@ public record SendPulseEmailInfoResponse(
             String os,
             String ip,
             String country,
+            @JsonProperty("screen_resolution")
+            String screenResolution,
             String url
     ) {}
 }

@@ -8,5 +8,7 @@ public record SendPulseProperties(
         String clientId,
         String clientSecret,
         String provider,
-        String datesTimeZone
+        String datesTimeZone,
+        String fromEmail,
+        String fromName
 ) {}

@@ -7,12 +7,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailInfoResponse;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailRequest;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailResponse;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class SendPulseClient {
 
     private final WebClient webClient;
@@ -32,6 +34,7 @@ public class SendPulseClient {
 
 public String sendEmail(SendPulseEmailRequest request) {
     String token = tokenService.getValidAccessToken();
+    log.info("SendPulse token=" + token);
 
     try {
         SendPulseEmailResponse response = webClient.post()
@@ -55,7 +58,7 @@ public String sendEmail(SendPulseEmailRequest request) {
         return response.id();
 
     } catch (WebClientResponseException e) {
-        throw new IllegalStateException("SendPulse 400 body=" + e.getResponseBodyAsString(), e);
+        throw new IllegalStateException("SendPulse error " + e.getStatusCode() + " body=" + e.getResponseBodyAsString(), e);
     }
 }
 
@@ -72,6 +75,13 @@ public String sendEmail(SendPulseEmailRequest request) {
                 .uri("/smtp/emails/{id}", messageId)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, r ->
+                        r.bodyToMono(String.class).flatMap(body ->
+                                Mono.error(new IllegalStateException(
+                                        "SendPulse error " + r.statusCode() + " body=" + body
+                                ))
+                        )
+                )
                 .bodyToMono(SendPulseEmailInfoResponse.class)
                 .block();
     }

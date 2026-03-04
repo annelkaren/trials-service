@@ -119,4 +119,6 @@ sendpulse:
   client-secret: 2100459790a92eda671fb4833c7bbb30
   provider: sendPulse
   dates-timezone: UTC
+  from-email: no-reply@pjpuebla.gob.mx
+  from-name: TRIALS
 

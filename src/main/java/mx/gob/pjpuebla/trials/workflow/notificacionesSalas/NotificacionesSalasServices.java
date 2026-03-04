@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.apis.sendPulse.EmailGatewayService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
@@ -49,7 +50,7 @@ public class NotificacionesSalasServices {
             LocalDateTime fechaEnvioTo, LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo,
             String tipoSala) {
 
-        // TODO: Rehabilitar filtrado dinámico una vez estabilizada la consulta JPQL/SQL.
+
         return notificacionesSalasRepository.findPageNotificaciones(pageable);
     }
 
@@ -144,7 +145,12 @@ public class NotificacionesSalasServices {
                 .collect(Collectors.toList());
 
         int totalDestinatarios = destinatarios.size();
-        int destinatariosExitosos = (int) destinatarios.stream().filter(d -> d.estadoEnvioCorreo() != null).count();
+        int destinatariosExitosos = (int) destinatarios.stream()
+                .filter(d -> d.estadoEnvioCorreo() != null)
+                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.NO_ENVIADO)
+                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.NO_ENTREGADO)
+                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.ERROR)
+                .count();
         int destinatariosFallidos = totalDestinatarios - destinatariosExitosos;
 
         return new NotificacionSalaDetalleRecord(
