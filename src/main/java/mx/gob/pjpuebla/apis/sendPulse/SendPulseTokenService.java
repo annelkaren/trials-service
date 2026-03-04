@@ -1,9 +1,13 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseProperties;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseTokenRequest;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseTokenResponse;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;

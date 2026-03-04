@@ -17,11 +17,11 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
 
 @Entity
 @Data
@@ -49,7 +49,7 @@ public class NotificacionSalaDestinatario implements Serializable, Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FN_EMAIL_LOG_ID", referencedColumnName = "PN_ID")
-    private EmailLog emailLog;
+    private EmailLogs emailLog;
 
     @Column(name = "N_ESTADO")
     @Enumerated

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse.records;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

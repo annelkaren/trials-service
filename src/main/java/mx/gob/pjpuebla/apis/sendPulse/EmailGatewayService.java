@@ -1,6 +1,11 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse;
 
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailRequest;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseProperties;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogsRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +21,10 @@ import java.util.Map;
 public class EmailGatewayService {
 
     private final SendPulseClient sendPulseClient;
-    private final EmailLogRepository emailLogRepository;
+    private final EmailLogsRepository emailLogRepository;
     private final SendPulseProperties sendPulseProperties;
 
-    public EmailGatewayService(SendPulseClient sendPulseClient, EmailLogRepository emailLogRepository,
+    public EmailGatewayService(SendPulseClient sendPulseClient, EmailLogsRepository emailLogRepository,
             SendPulseProperties sendPulseProperties) {
         this.sendPulseClient = sendPulseClient;
         this.emailLogRepository = emailLogRepository;
@@ -27,7 +32,7 @@ public class EmailGatewayService {
     }
 
     @Transactional
-    public EmailLog sendAndLog(String toEmail, String toName, String subject, String html, String attachmentName, byte[] attachmentBytes) {
+    public EmailLogs sendAndLog(String toEmail, String toName, String subject, String html, String attachmentName, byte[] attachmentBytes) {
 
         String htmlB64 = Base64.getEncoder().encodeToString(html.getBytes(StandardCharsets.UTF_8));
 
@@ -47,7 +52,7 @@ public class EmailGatewayService {
 
         String providerMessageId = sendPulseClient.sendEmail(new SendPulseEmailRequest(email));
 
-        EmailLog log = new EmailLog();
+        EmailLogs log = new EmailLogs();
         log.setIntentosVerificacion(0);
         log.setUltimaVerificacion(null);
         log.setProximaVerificacion(LocalDateTime.now().plusMinutes(1));

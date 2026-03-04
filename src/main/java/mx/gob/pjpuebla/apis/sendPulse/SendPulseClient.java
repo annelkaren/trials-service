@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailInfoResponse;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailRequest;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailResponse;
 import reactor.core.publisher.Mono;
 
 @Component

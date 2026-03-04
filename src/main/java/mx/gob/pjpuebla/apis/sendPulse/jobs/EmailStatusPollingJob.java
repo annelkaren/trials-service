@@ -1,6 +1,11 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse.jobs;
 
+import mx.gob.pjpuebla.apis.sendPulse.SendPulseClient;
+import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailInfoResponse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogsRepository;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +22,10 @@ public class EmailStatusPollingJob {
 
     private static final int MAX_INTENTOS = 10;
 
-    private final EmailLogRepository emailLogRepository;
+    private final EmailLogsRepository emailLogRepository;
     private final SendPulseClient sendPulseClient;
 
-    public EmailStatusPollingJob(EmailLogRepository emailLogRepository, SendPulseClient sendPulseClient) {
+    public EmailStatusPollingJob(EmailLogsRepository emailLogRepository, SendPulseClient sendPulseClient) {
         this.emailLogRepository = emailLogRepository;
         this.sendPulseClient = sendPulseClient;
     }
@@ -34,7 +39,7 @@ public class EmailStatusPollingJob {
 
         LocalDateTime now = LocalDateTime.now();
 
-        List<EmailLog> batch = emailLogRepository.findBatchToVerify(
+        List<EmailLogs> batch = emailLogRepository.findBatchToVerify(
                 List.of(
                         EstadoEnvioCorreo.ENVIADO,          // ya mandado, esperando resultado
                         EstadoEnvioCorreo.RECIBIDO,        // si quieres seguir hasta leído
@@ -43,7 +48,7 @@ public class EmailStatusPollingJob {
                 now
         );
 
-        for (EmailLog log : batch) {
+        for (EmailLogs log : batch) {
 
             // Si no hay messageId, no podemos consultar
             if (log.getProviderMessageId() == null || log.getProviderMessageId().isBlank()) {
@@ -123,12 +128,12 @@ public class EmailStatusPollingJob {
         /**
          * IMPORTANTÍSIMO:
          * No ves emailLogRepository.save(...) aquí a propósito.
-         * Con @Transactional, los EmailLog que te regresó el repository están "managed" por el EntityManager.
+         * Con @Transactional, los EmailLogs que te regresó el repository están "managed" por el EntityManager.
          * Al final del método, Hibernate hace flush/commit y guarda los cambios automáticamente.
          */
     }
 
-    private void marcarFinalPorMaxIntentos(EmailLog log, LocalDateTime now) {
+    private void marcarFinalPorMaxIntentos(EmailLogs log, LocalDateTime now) {
         log.setUltimaVerificacion(now);
         log.setProximaVerificacion(null);
         if (log.getEstado() != EstadoEnvioCorreo.NO_ENTREGADO) {

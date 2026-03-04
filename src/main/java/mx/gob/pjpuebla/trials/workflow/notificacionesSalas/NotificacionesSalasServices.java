@@ -19,11 +19,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.trials.config.sendPulse.EmailGatewayService;
-import mx.gob.pjpuebla.trials.config.sendPulse.EmailLog;
+import mx.gob.pjpuebla.apis.sendPulse.EmailGatewayService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioCreateRecord;
@@ -94,7 +94,7 @@ public class NotificacionesSalasServices {
             destinatario.setEstado(Estado.ACTIVE);
 
             try {
-                EmailLog emailLog = enviarCorreoNotificacion(
+                EmailLogs emailLog = enviarCorreoNotificacion(
                         destinatarioRequest.nombreDestinatario().trim(),
                         htmlFinalCorreo,
                         destinatarioRequest.correoElectronico().trim());
@@ -163,7 +163,7 @@ public class NotificacionesSalasServices {
                 destinatarios);
     }
 
-    private EmailLog enviarCorreoNotificacion(String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
+    private EmailLogs enviarCorreoNotificacion(String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
 
         return emailGatewayService.sendAndLog(
                 correoElectronico,

@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse.records;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

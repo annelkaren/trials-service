@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.apis.sendPulse.records;
 
 public record SendPulseTokenRequest(
         String grant_type,

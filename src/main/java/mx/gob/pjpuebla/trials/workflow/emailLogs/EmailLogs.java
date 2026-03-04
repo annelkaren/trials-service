@@ -1,4 +1,4 @@
-package mx.gob.pjpuebla.trials.config.sendPulse;
+package mx.gob.pjpuebla.trials.workflow.emailLogs;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -18,8 +18,8 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
 
 @Entity
 @Data
-@Table(name = "tbl_email_log")
-public class EmailLog implements Serializable {
+@Table(name = "tbl_email_logs")
+public class EmailLogs implements Serializable {
     @Id
     @SequenceGenerator(name = "idEmailLog", sequenceName = "SEQ_EMAIL_LOG_ID", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "idEmailLog")
