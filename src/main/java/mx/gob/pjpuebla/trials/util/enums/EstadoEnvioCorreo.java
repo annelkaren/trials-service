@@ -8,6 +8,7 @@ public enum EstadoEnvioCorreo {
     ENVIADO("Enviado"),
     RECIBIDO("Recibido"),
     LEIDO("Leido"),
+    NO_LEIDO("No leido"),
     NO_ENVIADO("No enviado"),
     NO_ENTREGADO("No entregado"),
     ERROR("Error");
