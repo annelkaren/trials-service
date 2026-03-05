@@ -112,7 +112,7 @@ public class EmailStatusPollingJob {
      *   <li>si está LEIDO: solo si aún no hay click (para permitir capturar click posterior)</li>
      * </ul>
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void ejecutarSondeo() {
 

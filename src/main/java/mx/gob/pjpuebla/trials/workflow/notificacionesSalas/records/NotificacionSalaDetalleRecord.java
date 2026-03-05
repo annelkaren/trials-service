@@ -5,7 +5,7 @@ import java.util.List;
 
 public record NotificacionSalaDetalleRecord(
         Integer idNotificacionSala,
-        String numeroExpediente,
+        String numeroToca,
         String nombreSala,
         String tipoSala,
         LocalDateTime fechaEnvio,
@@ -13,8 +13,5 @@ public record NotificacionSalaDetalleRecord(
         String contenidoCorreo,
         String rutaArchivo,
         String nombreArchivo,
-        Integer totalDestinatarios,
-        Integer destinatariosExitosos,
-        Integer destinatariosFallidos,
         List<NotificacionSalaDestinatarioRecord> destinatarios) {
 }

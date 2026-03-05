@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import net.sf.jasperreports.engine.JRException;
 
 @RequiredArgsConstructor
 @RestController
@@ -78,5 +80,17 @@ public class NotificacionesSalasResource {
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("adjunto", nombreArchivo);
         return ResponseEntity.ok().headers(headers).body(file);
+    }
+
+    @GetMapping(value = "/destinatarios/{notificacionSalaDestinatarioId}/acuse", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getAcuseNotificacion(@PathVariable Integer notificacionSalaDestinatarioId)
+            throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        
+        headers.setContentDispositionFormData("acuse", notificacionSalaDestinatarioId + "_acuse_notificacion.pdf");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(notificacionesSalasServices.getAcuseNotificacion(notificacionSalaDestinatarioId));
     }
 }

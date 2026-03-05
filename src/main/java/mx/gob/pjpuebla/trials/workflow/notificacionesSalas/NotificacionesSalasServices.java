@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.apis.sendPulse.EmailGatewayService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
+import mx.gob.pjpuebla.trials.workflow.acuseNotificacion.AcuseNotificacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
@@ -31,17 +30,19 @@ import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionS
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDetalleRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
+import net.sf.jasperreports.engine.JRException;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class NotificacionesSalasServices {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+  
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
+    private final AcuseNotificacionService acuseNotificacionService;
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
 
@@ -127,31 +128,12 @@ public class NotificacionesSalasServices {
 
     @Transactional(readOnly = true)
     public NotificacionSalaDetalleRecord getDetalle(Integer idNotificacionSala) {
+
         NotificacionesSalas notificacion = notificacionesSalasRepository.findById(idNotificacionSala)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
 
         List<NotificacionSalaDestinatarioRecord> destinatarios = notificacionSalaDestinatarioRepository
-                .findByNotificacionSalaId(idNotificacionSala)
-                .stream()
-                .map(destinatario -> new NotificacionSalaDestinatarioRecord(
-                        destinatario.getId(),
-                        destinatario.getNombreDestinatario(),
-                        destinatario.getCorreoElectronico(),
-                        destinatario.getTipoParte(),
-                        destinatario.getEstado(),
-                        destinatario.getEmailLog() != null ? destinatario.getEmailLog().getEstado() : null,
-                        destinatario.getEmailLog() != null ? destinatario.getEmailLog().getFechaEntrega() : null,
-                        destinatario.getEmailLog() != null ? destinatario.getEmailLog().getFechaLectura() : null))
-                .collect(Collectors.toList());
-
-        int totalDestinatarios = destinatarios.size();
-        int destinatariosExitosos = (int) destinatarios.stream()
-                .filter(d -> d.estadoEnvioCorreo() != null)
-                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.NO_ENVIADO)
-                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.NO_ENTREGADO)
-                .filter(d -> d.estadoEnvioCorreo() != EstadoEnvioCorreo.ERROR)
-                .count();
-        int destinatariosFallidos = totalDestinatarios - destinatariosExitosos;
+            .findSalaDestinatarioRecord(idNotificacionSala);
 
         return new NotificacionSalaDetalleRecord(
                 notificacion.getId(),
@@ -163,9 +145,6 @@ public class NotificacionesSalasServices {
                 notificacion.getContenidoCorreo(),
                 notificacion.getRutaArchivo(),
                 extractFileName(notificacion.getRutaArchivo()),
-                totalDestinatarios,
-                destinatariosExitosos,
-                destinatariosFallidos,
                 destinatarios);
     }
 
@@ -213,6 +192,10 @@ public class NotificacionesSalasServices {
         }
     }
 
+    public byte[] getAcuseNotificacion(Integer notificacionSalaDestinatarioId) throws JRException, IOException  {
+        return acuseNotificacionService.getAcuseNotificacionService(notificacionSalaDestinatarioId);
+    }
+
     private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La informacion de la notificacion es obligatoria.");
@@ -249,10 +232,7 @@ public class NotificacionesSalasServices {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El correo del destinatario " + index + " es obligatorio.");
             }
-            if (!EMAIL_PATTERN.matcher(destinatario.correoElectronico().trim()).matches()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "El formato del correo del destinatario " + index + " es invalido.");
-            }
+          
             if (destinatario.tipoParte() == null || destinatario.tipoParte().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El tipo de parte del destinatario " + index + " es obligatorio.");
@@ -308,13 +288,5 @@ public class NotificacionesSalasServices {
         if (nombreArchivo.contains("/") || nombreArchivo.contains("\\") || nombreArchivo.contains("..")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de archivo invalido.");
         }
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

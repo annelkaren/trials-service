@@ -13,5 +13,6 @@ public record NotificacionSalaDestinatarioRecord(
         Estado estado,
         EstadoEnvioCorreo estadoEnvioCorreo,
         LocalDateTime fechaEntrega,
-        LocalDateTime fechaLectura) {
+        LocalDateTime fechaLectura,
+        LocalDateTime fechaVisualizacion) {
 }
