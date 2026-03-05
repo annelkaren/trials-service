@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -96,7 +95,10 @@ public class NotificacionesSalasServices {
             destinatario.setEstado(Estado.ACTIVE);
 
             try {
+                String asunto = "Notificación TOCA " + notificacion.getToca() + ", " + notificacion.getTipoSala();
+
                 EmailLogs emailLog = enviarCorreoNotificacion(
+                        asunto,
                         destinatarioRequest.nombreDestinatario().trim(),
                         htmlFinalCorreo,
                         destinatarioRequest.correoElectronico().trim());
@@ -148,12 +150,12 @@ public class NotificacionesSalasServices {
                 destinatarios);
     }
 
-    private EmailLogs enviarCorreoNotificacion(String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
-
+    private EmailLogs enviarCorreoNotificacion(String asunto, String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
+        
         return emailGatewayService.sendAndLog(
                 correoElectronico,
                 nombreDestinatario,
-                "Notificacion de sala",
+                asunto,
                 contenidoCorreoHtml,
                 null,
                 null);
