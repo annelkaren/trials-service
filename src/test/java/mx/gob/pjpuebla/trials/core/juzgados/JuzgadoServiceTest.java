@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -25,8 +26,10 @@ import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.contadoresJuzgados.ContadorJuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,9 +74,15 @@ class JuzgadoServiceTest {
     @Mock
     MateriaRepository materiaRepository;
     @Mock
+    PersonaDocumentoRepository personaDocumentoRepository;
+    @Mock
+    TipoPartesRepository tipoPartesRepository;
+    @Mock
     JuzgadoFoliosRepository juzgadoFoliosRepository;
     @Mock
     PersonaService personaService;
+    @Mock
+    ContadorJuzgadoRepository contadorJuzgadoRepository;
 
     private Juzgado juzgado;
     private JuzgadoFolios juzgadoFolios;
@@ -94,6 +103,9 @@ class JuzgadoServiceTest {
         juzgadoFolios = createJuzgadoFolios();
         juzgadoFolios.setJuzgado(juzgado);
         juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
+        Mockito.lenient()
+                .when(contadorJuzgadoRepository.findByJuzgadoIdAndEstado(anyInt(), any(Estado.class)))
+                .thenReturn(List.of());
     }
 
     @Test

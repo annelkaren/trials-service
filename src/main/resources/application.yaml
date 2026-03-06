@@ -46,7 +46,6 @@ spring:
     correoDefensoria: dircifame@htsjpuebla.gob.mx
     password: hyiarkzwfyxciomh
 
-
   security:
     oauth2:
       resourceserver:
@@ -91,6 +90,7 @@ keycloak:
 app:
   root-folder: /opt/pjp/files
   portal-notificaciones: http://187.190.62.102/acuerdos/login
+  public-api-base-url: http://localhost:8888/rest
   correo-pruebas: secgj@pjpuebla.gob.mx
 
 inegi:
@@ -112,3 +112,13 @@ ftp:
       username: secgj
       password: 6<2Z9qy+yc.8
       passive-move: true
+
+sendpulse:
+  base-url: https://api.sendpulse.com
+  client-id: 3974f2bcbfb52b20ff01a46232ce6f88
+  client-secret: 2100459790a92eda671fb4833c7bbb30
+  provider: sendPulse
+  dates-timezone: UTC
+  from-email: no-reply@pjpuebla.gob.mx
+  from-name: TRIALS
+

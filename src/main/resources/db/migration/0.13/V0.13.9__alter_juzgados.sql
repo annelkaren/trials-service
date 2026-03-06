@@ -1,0 +1,6 @@
+ALTER TABLE trials.tbl_juzgados 
+    ADD COLUMN IF NOT EXISTS FN_JUZGADO_PADRE INTEGER,
+    ADD COLUMN IF NOT EXISTS S_SHORT_NAME VARCHAR(50),
+    ADD CONSTRAINT fk_juzgados_juzgado_padre 
+        FOREIGN KEY (FN_JUZGADO_PADRE) 
+        REFERENCES trials.tbl_juzgados (PN_ID);
