@@ -97,7 +97,7 @@ public class NotificacionesSalasServices {
             destinatario.setEstado(Estado.ACTIVE);
 
             try {
-                String asunto = "Notificacion TOCA " + notificacion.getToca() + ", " + notificacion.getSala().getNombre();
+                String asunto = "NOTIFICACIÓN TOCA " + notificacion.getToca() + ", " + notificacion.getSala().getNombre().toUpperCase() + " DEL TRIBUNAL SUPERIOR DE JUSTICIA, PODER JUDICIAL DEL ESTADO DE PUEBLA.";
 
                 EmailLogs emailLog = enviarCorreoNotificacion(
                         asunto,

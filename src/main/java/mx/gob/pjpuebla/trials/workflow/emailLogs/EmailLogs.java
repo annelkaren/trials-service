@@ -66,9 +66,6 @@ public class EmailLogs implements Serializable {
     @Column(name = "N_INTENTOS_VERIFICACION")
     private Integer intentosVerificacion = 0;
 
-    @Column(name = "T_PROXIMA_VERIFICACION")
-    private LocalDateTime proximaVerificacion;
-
     @Column(name = "T_FECHA_ENVIO")
     private LocalDateTime fechaEnvio;
 

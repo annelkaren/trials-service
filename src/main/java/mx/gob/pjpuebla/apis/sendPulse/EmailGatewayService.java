@@ -42,7 +42,6 @@ public class EmailGatewayService {
         EmailLogs emailLog = new EmailLogs()
             .setIntentosVerificacion(0)
             .setUltimaVerificacion(null)
-            .setProximaVerificacion(now.plusMinutes(1))
             .setProvider(sendPulseProperties.provider())
             .setToEmail(toEmail)
             .setToName(toName)
@@ -76,7 +75,6 @@ public class EmailGatewayService {
         } catch (RuntimeException ex) {
             log.info("Ocurrio un error terrible", ex.getMessage());
             emailLog.setEstado(EstadoEnvioCorreo.NO_ENVIADO);
-            emailLog.setProximaVerificacion(null);
             emailLog.setErrorEnvioDetalle(truncateError(ex.getMessage()));
             emailLogRepository.save(emailLog);
             throw ex;

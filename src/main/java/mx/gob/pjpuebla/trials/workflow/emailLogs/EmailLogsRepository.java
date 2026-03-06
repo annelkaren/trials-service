@@ -22,17 +22,13 @@ public interface EmailLogsRepository extends JpaRepository<EmailLogs, Integer> {
                 SELECT e
                 FROM EmailLogs e
                 WHERE e.estado IN :estados
-                  AND e.estado NOT IN (
-                        mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.NO_LEIDO,
-                        mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.NO_ENVIADO,
-                        mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.NO_ENTREGADO,
-                        mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.ERROR
-                  )
-                  AND (e.proximaVerificacion IS NULL OR e.proximaVerificacion <= :now)
                   AND (
                         e.estado <> mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.LEIDO
                         OR e.trackingLinkDetalle IS NULL
-                        OR FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.link[0]') = false
+                        OR (
+                              FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.link[0]') = false
+                              AND FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.click ? (@ > 0)') = false
+                        )
                   )
                 ORDER BY COALESCE(e.ultimaVerificacion, e.fechaEnvio, :now) ASC, e.id ASC
             """)
