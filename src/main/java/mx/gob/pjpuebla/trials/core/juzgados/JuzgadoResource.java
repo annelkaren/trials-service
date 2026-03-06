@@ -79,6 +79,11 @@ public class JuzgadoResource {
         return this.juzgadoService.findbyEstadoActiveAndInactive();
     }
 
+    @GetMapping("/active")
+    public List<JuzgadoRecordItem> findAllByEstadoActive() {
+        return this.juzgadoService.findAllByEstadoActive();
+    }
+
     @PatchMapping("/{id}/status/{status}")
     public JuzgadoRecordItem updateStatus(@PathVariable Integer id, @PathVariable Integer status) {
         return this.juzgadoService.updateStatus(id, status);

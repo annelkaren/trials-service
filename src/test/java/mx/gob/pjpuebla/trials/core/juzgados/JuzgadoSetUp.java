@@ -62,6 +62,7 @@ public class JuzgadoSetUp {
                 juzgado.getId(),
                 juzgado.getVersion(),
                 juzgado.getNombre(),
+                juzgado.getShortName(),
                 Estado.ACTIVE,
                 materiaId,
                 sedeId,
@@ -75,7 +76,9 @@ public class JuzgadoSetUp {
                 Arrays.asList(
                         new JuzgadoContadorConfig(1, "Tipo Juicio Uno", 0, 0),
                         new JuzgadoContadorConfig(2, "Tipo Juicio Dos", 0, 0)
-                )
+                ),
+                juzgado.getJuzgadoPadre() != null ? juzgado.getJuzgadoPadre().getId() : null,
+                juzgado.getJuzgadoPadre() != null ? juzgado.getJuzgadoPadre().getNombre() : null
         );
     }
 

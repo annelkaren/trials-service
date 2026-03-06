@@ -106,5 +106,14 @@ public class Juzgado implements Serializable, Auditable {
 
     @Transient
     private List<JuzgadoContadorConfig> contadoresJuzgados;
+
+    @Column(name = "S_SHORT_NAME")
+    @Size(max = 50)
+    private String shortName;
+
+    @JoinColumn(name = "FN_JUZGADO_PADRE", referencedColumnName= "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Juzgado juzgadoPadre;
+
 }
 
