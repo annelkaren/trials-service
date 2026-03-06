@@ -19,10 +19,14 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.util.Audit;
 import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @EntityListeners(AuditListener.class)
@@ -39,11 +43,9 @@ public class NotificacionesSalas implements Serializable, Auditable {
     @Column(name="s_toca")
     private String toca;
 
-    @Column(name = "s_tipo_sala")
-    private String tipoSala;
-
-    @Column(name = "s_nombre_sala")
-    private String nombreSala;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FN_SALA", referencedColumnName = "PN_ID")
+    private Juzgado sala;
 
     @Column(name = "t_fecha_termino")
     private LocalDateTime fechaTermino;

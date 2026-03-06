@@ -214,11 +214,11 @@ public class DigitalizacionService {
         return load(StorageRequest.actaMinima(audienciaId));
     }
 
-    public DigitalizacionRecord guardarArchivoNotificacionSala(MultipartFile file, String nombreSala, Integer notificacionSalaId) {
+    public DigitalizacionRecord guardarArchivoNotificacionSala(MultipartFile file, Integer salaId, Integer notificacionSalaId) {
 
         validarArchivo(file);
     
-        String relativeDirectory = Paths.get(NOTIFICACIONES_SALA_DIR, nombreSala.replace(" ", "")).toString(); //notificacionesSalas/<nombreSala>
+        String relativeDirectory = Paths.get(NOTIFICACIONES_SALA_DIR, "sala_" + salaId).toString();
 
         Path destinationDir = crearDirectorios(Paths.get(getBasePath(), relativeDirectory));
 

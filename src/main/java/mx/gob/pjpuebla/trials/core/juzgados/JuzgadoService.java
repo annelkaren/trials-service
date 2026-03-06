@@ -594,6 +594,16 @@ public class JuzgadoService {
         return juzgadoRepository.findAllByInstancia(instanciaJuzgado);
     }
 
+    public List<JuzgadoRecordItem> findSalasActivas() {
+        Persona personaLogueada = personaService.getAuditor();
+        if (personaLogueada.getJuzgado() == null || personaLogueada.getJuzgado().getId() == null) {
+            return List.of();
+        }
+        return juzgadoRepository.findChildrenByJuzgadoPadreIdAndEstado(
+                personaLogueada.getJuzgado().getId(),
+                Estado.ACTIVE);
+    }
+
     public JuzgadoRecordItem getJuzgadoActual() {
         Persona persona = personaService.getAuditor();
 

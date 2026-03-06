@@ -94,6 +94,11 @@ public class JuzgadoResource {
         return this.juzgadoService.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
     }
 
+    @GetMapping("/salas/active")
+    public List<JuzgadoRecordItem> getSalasActivas() {
+        return this.juzgadoService.findSalasActivas();
+    }
+
     @GetMapping("/actual")
     public List<JuzgadoRecordItem> getJuzgadoActual() {
         return Collections.singletonList(this.juzgadoService.getJuzgadoActual());

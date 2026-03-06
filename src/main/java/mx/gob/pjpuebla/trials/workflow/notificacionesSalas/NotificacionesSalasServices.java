@@ -18,7 +18,10 @@ import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.apis.sendPulse.EmailGatewayService;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.workflow.acuseNotificacion.AcuseNotificacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
@@ -42,13 +45,14 @@ public class NotificacionesSalasServices {
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
     private final AcuseNotificacionService acuseNotificacionService;
+    private final JuzgadoService juzgadoService;
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String q, String numeroExpediente,
             String nombreDestinatario, String correoElectronico, LocalDateTime fechaEnvioFrom,
             LocalDateTime fechaEnvioTo, LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo,
-            String tipoSala) {
+            Integer salaId) {
 
 
         return notificacionesSalasRepository.findPageNotificaciones(pageable);
@@ -61,14 +65,12 @@ public class NotificacionesSalasServices {
         validaciones(request, archivo);
 
         String toca = request.toca().trim();
-        String tipoSala = request.tipoSala().trim();
-        String nombreSala = request.nombreSala().trim();
+        Juzgado sala = validateAndGetSala(request.salaId());
         String contenidoCorreo = request.contenidoCorreo().trim();
 
         NotificacionesSalas notificacion = new NotificacionesSalas()
                 .setToca(toca)
-                .setTipoSala(tipoSala)
-                .setNombreSala(nombreSala)
+                .setSala(sala)
                 .setFechaTermino(request.fechaTermino() != null ? request.fechaTermino().atStartOfDay() : null)
                 .setContenidoCorreo(contenidoCorreo)
                 .setFechaEnvio(LocalDateTime.now())
@@ -76,7 +78,7 @@ public class NotificacionesSalasServices {
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo, nombreSala,
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo, sala.getId(),
                 notificacion.getId());
 
         notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
@@ -95,7 +97,7 @@ public class NotificacionesSalasServices {
             destinatario.setEstado(Estado.ACTIVE);
 
             try {
-                String asunto = "Notificación TOCA " + notificacion.getToca() + ", " + notificacion.getTipoSala();
+                String asunto = "Notificacion TOCA " + notificacion.getToca() + ", " + notificacion.getSala().getNombre();
 
                 EmailLogs emailLog = enviarCorreoNotificacion(
                         asunto,
@@ -118,8 +120,8 @@ public class NotificacionesSalasServices {
         return new NotificacionSalaCreateResponseRecord(
                 notificacion.getId(),
                 notificacion.getToca(),
-                notificacion.getNombreSala(),
-                notificacion.getTipoSala(),
+                notificacion.getSala().getId(),
+                notificacion.getSala().getNombre(),
                 notificacion.getFechaEnvio(),
                 notificacion.getFechaTermino(),
                 digitalizacionRecord.nombreArchivo(),
@@ -140,8 +142,8 @@ public class NotificacionesSalasServices {
         return new NotificacionSalaDetalleRecord(
                 notificacion.getId(),
                 notificacion.getToca(),
-                notificacion.getNombreSala(),
-                notificacion.getTipoSala(),
+                notificacion.getSala().getId(),
+                notificacion.getSala().getNombre(),
                 notificacion.getFechaEnvio(),
                 notificacion.getFechaTermino(),
                 notificacion.getContenidoCorreo(),
@@ -170,7 +172,7 @@ public class NotificacionesSalasServices {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
         }
 
-        String rutaArchivo =  "notificacionesSalas/" + notificacion.getNombreSala().replace(" ", "") + "/" + notificacion.getRutaArchivo();
+        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/" + notificacion.getRutaArchivo();
 
         return digitalizacionService.getArchivoNotificacionSala(rutaArchivo);
     }
@@ -181,7 +183,7 @@ public class NotificacionesSalasServices {
         NotificacionesSalas notificacion = notificacionesSalasRepository.findByRutaArchivo(nombreArchivo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado repositorio."));
         
-        String rutaArchivo =  "notificacionesSalas/" + notificacion.getNombreSala().replace(" ", "") + "/" + notificacion.getRutaArchivo();
+        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/" + notificacion.getRutaArchivo();
 
         if (rutaArchivo == null || rutaArchivo.isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado.");
@@ -206,11 +208,8 @@ public class NotificacionesSalasServices {
         if (request.toca() == null || request.toca().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El numero de expediente es obligatorio.");
         }
-        if (request.nombreSala() == null || request.nombreSala().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de sala es obligatorio.");
-        }
-        if (request.tipoSala() == null || request.tipoSala().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de sala es obligatorio.");
+        if (request.salaId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La sala es obligatoria.");
         }
         if (request.contenidoCorreo() == null || request.contenidoCorreo().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El contenido del correo es obligatorio.");
@@ -290,5 +289,14 @@ public class NotificacionesSalasServices {
         if (nombreArchivo.contains("/") || nombreArchivo.contains("\\") || nombreArchivo.contains("..")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de archivo invalido.");
         }
+    }
+
+    private Juzgado validateAndGetSala(Integer salaId) {
+        Juzgado sala = juzgadoService.requiredJuzgadoById(salaId);
+        if (sala.getEstado() != Estado.ACTIVE || sala.getInstanciaJuzgado() != InstanciaJuzgado.SEGUNDA_INSTANCIA) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La sala debe estar activa y ser de segunda instancia.");
+        }
+        return sala;
     }
 }

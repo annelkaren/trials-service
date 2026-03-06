@@ -6,8 +6,8 @@ import java.util.List;
 public record NotificacionSalaDetalleRecord(
         Integer idNotificacionSala,
         String numeroToca,
+        Integer salaId,
         String nombreSala,
-        String tipoSala,
         LocalDateTime fechaEnvio,
         LocalDateTime fechaTermino,
         String contenidoCorreo,

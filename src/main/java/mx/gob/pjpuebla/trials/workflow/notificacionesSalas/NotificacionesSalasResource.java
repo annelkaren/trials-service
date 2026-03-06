@@ -39,7 +39,7 @@ public class NotificacionesSalasResource {
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "q", required = false) String q,
             @RequestParam(value = "numeroExpediente", required = false) String numeroExpediente,
-            @RequestParam(value = "tipoSala", required = false) String tipoSala,
+            @RequestParam(value = "salaId", required = false) Integer salaId,
             @RequestParam(value = "nombreDestinatario", required = false) String nombreDestinatario,
             @RequestParam(value = "correoElectronico", required = false) String correoElectronico,
             @RequestParam(value = "fechaEnvioFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaEnvioFrom,
@@ -47,7 +47,7 @@ public class NotificacionesSalasResource {
             @RequestParam(value = "fechaTerminoFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTerminoFrom,
             @RequestParam(value = "fechaTerminoTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTerminoTo) {
         return notificacionesSalasServices.getPageNotificaciones(pageable, q, numeroExpediente, nombreDestinatario,
-                correoElectronico, fechaEnvioFrom, fechaEnvioTo, fechaTerminoFrom, fechaTerminoTo, tipoSala);
+                correoElectronico, fechaEnvioFrom, fechaEnvioTo, fechaTerminoFrom, fechaTerminoTo, salaId);
     }
 
     @GetMapping("/{idNotificacionSala}")

@@ -80,7 +80,7 @@ public class AcuseNotificacionService {
         parameters.put("fechaGeneracionDocumento", FechaTextoUtil.obtenerFechaEnTexto());
         parameters.put("nombreDestinatario", notificacionSalaDestinatario.getNombreDestinatario());
         parameters.put("tipoParte", notificacionSalaDestinatario.getTipoParte());
-        parameters.put("nombreSala", notificacionSala.getNombreSala());
+        parameters.put("nombreSala", notificacionSala.getSala().getNombre());
         parameters.put("nombreNotificador", nombreNotificador);
         parameters.put("sexo", sexo);
         parameters.put("logo", "jasper/logo_negro.png");

@@ -5,8 +5,7 @@ import java.util.List;
 
 public record NotificacionSalaCreateRecord(
         String toca,
-        String nombreSala,
-        String tipoSala,
+        Integer salaId,
         LocalDate fechaTermino,
         String contenidoCorreo,
         List<NotificacionSalaDestinatarioCreateRecord> destinatarios) {
