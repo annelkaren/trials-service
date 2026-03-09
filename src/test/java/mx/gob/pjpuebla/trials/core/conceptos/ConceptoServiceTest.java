@@ -22,6 +22,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +65,7 @@ class ConceptoServiceTest {
         given(carpetaRepository.findById(anyInt()))
                 .willReturn(Optional.of(carpeta));
 
-        given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(1, List.of("Adjuntar", "Distribución", "RESGUARDO")))
+        given(mockConceptoRepository.findAllByTipoJuicio_IdOrNombreIn(eq(1), anyList()))
                 .willReturn(conceptosList);
 
         List<ConceptoRecordResponse> response = conceptoService.getAll(1);
@@ -144,17 +145,58 @@ class ConceptoServiceTest {
     void createConcepto_success() {
         TipoJuicio tipoJuicio = new TipoJuicio();
         concepto.setTipoJuicio(tipoJuicio.setId(1).setNombre("Tipo Juicio"));
+        ConceptoBulkRequest request = new ConceptoBulkRequest(
+                null, concepto.getNombre(), concepto.getDias(), concepto.getEstado(), List.of(new TipoJuicioIdRequest(1))
+        );
 
-        given(tipoJuicioRepository.findById(tipoJuicio.getId())).willReturn(Optional.of(tipoJuicio));
+        given(tipoJuicioRepository.findAllById(any())).willReturn(List.of(tipoJuicio));
+        given(mockConceptoRepository.findByNombreAndTipoJuicio(concepto.getNombre(), tipoJuicio)).willReturn(Optional.empty());
         given(mockConceptoRepository.save(any(Concepto.class))).willReturn(concepto);
 
-        ConceptoRecord result = conceptoService.createConcepto(concepto);
+        List<ConceptoRecord> result = conceptoService.createConcepto(request);
 
-        assertThat(result.id()).isEqualTo(concepto.getId());
-        assertThat(result.concepto()).isEqualTo(concepto.getNombre());
-        assertThat(result.dias()).isEqualTo(concepto.getDias());
-        assertThat(result.nombreTipoJuicio()).isEqualTo(tipoJuicio.getNombre());
-        assertThat(result.estado()).isEqualTo(concepto.getEstado());
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).id()).isEqualTo(concepto.getId());
+        assertThat(result.get(0).concepto()).isEqualTo(concepto.getNombre());
+        assertThat(result.get(0).dias()).isEqualTo(concepto.getDias());
+        assertThat(result.get(0).nombreTipoJuicio()).isEqualTo(tipoJuicio.getNombre());
+        assertThat(result.get(0).estado()).isEqualTo(concepto.getEstado());
+    }
+
+    @Test
+    void createConcepto_multipleTipoJuicio_success() {
+        TipoJuicio tipoJuicio1 = new TipoJuicio().setId(1).setNombre("Tipo Juicio 1");
+        TipoJuicio tipoJuicio2 = new TipoJuicio().setId(2).setNombre("Tipo Juicio 2");
+        ConceptoBulkRequest request = new ConceptoBulkRequest(
+                null, concepto.getNombre(), concepto.getDias(), concepto.getEstado(),
+                List.of(new TipoJuicioIdRequest(1), new TipoJuicioIdRequest(2))
+        );
+
+        given(tipoJuicioRepository.findAllById(any())).willReturn(List.of(tipoJuicio1, tipoJuicio2));
+        given(mockConceptoRepository.findByNombreAndTipoJuicio(concepto.getNombre(), tipoJuicio1)).willReturn(Optional.empty());
+        given(mockConceptoRepository.findByNombreAndTipoJuicio(concepto.getNombre(), tipoJuicio2)).willReturn(Optional.empty());
+        given(mockConceptoRepository.save(any(Concepto.class))).willReturn(concepto);
+
+        List<ConceptoRecord> result = conceptoService.createConcepto(request);
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void createConcepto_duplicateByTipoJuicio_throwsConflict() {
+        TipoJuicio tipoJuicio = new TipoJuicio().setId(1).setNombre("Tipo Juicio");
+        ConceptoBulkRequest request = new ConceptoBulkRequest(
+                null, concepto.getNombre(), concepto.getDias(), concepto.getEstado(), List.of(new TipoJuicioIdRequest(1))
+        );
+
+        given(tipoJuicioRepository.findAllById(any())).willReturn(List.of(tipoJuicio));
+        given(mockConceptoRepository.findByNombreAndTipoJuicio(concepto.getNombre(), tipoJuicio)).willReturn(Optional.of(concepto));
+
+        ConstraintViolationException exception = assertThrows(
+                ConstraintViolationException.class,
+                () -> conceptoService.createConcepto(request)
+        );
+        assertThat(exception.getMessage()).contains("Ya existe un concepto");
     }
 
     @Test
@@ -168,22 +210,36 @@ class ConceptoServiceTest {
 
         TipoJuicio tipoJuicioUpdated = new TipoJuicio();
         tipoJuicioUpdated.setId(2).setNombre("Civil (Tradicional)").setMateria(materia);
-
-        Concepto updatedConcepto = createConcepto();
-        updatedConcepto.setTipoJuicio(tipoJuicioUpdated);
-        updatedConcepto.setNombre("Concepto actualizado").setDias(10).setEstado(Estado.INACTIVE);
+        ConceptoBulkRequest updatedConcepto = new ConceptoBulkRequest(
+                concepto.getId(), "Concepto actualizado", 10, Estado.INACTIVE, List.of(new TipoJuicioIdRequest(2))
+        );
 
         given(mockConceptoRepository.findById(concepto.getId())).willReturn(Optional.of(concepto));
         given(tipoJuicioRepository.findById(tipoJuicioUpdated.getId())).willReturn(Optional.of(tipoJuicioUpdated));
+        given(mockConceptoRepository.findByNombreAndTipoJuicio(updatedConcepto.nombre(), tipoJuicioUpdated)).willReturn(Optional.of(concepto));
         given(mockConceptoRepository.save(any(Concepto.class))).willReturn(concepto);
 
         ConceptoRecord result = conceptoService.updateConcepto(updatedConcepto);
 
-        assertThat(result.id()).isEqualTo(updatedConcepto.getId());
-        assertThat(result.concepto()).isEqualTo(updatedConcepto.getNombre());
-        assertThat(result.dias()).isEqualTo(updatedConcepto.getDias());
+        assertThat(result.id()).isEqualTo(updatedConcepto.id());
+        assertThat(result.concepto()).isEqualTo(updatedConcepto.nombre());
+        assertThat(result.dias()).isEqualTo(updatedConcepto.dias());
         assertThat(result.nombreTipoJuicio()).isEqualTo(tipoJuicioUpdated.getNombre());
-        assertThat(result.estado()).isEqualTo(updatedConcepto.getEstado());
+        assertThat(result.estado()).isEqualTo(updatedConcepto.estado());
+    }
+
+    @Test
+    void updateConcepto_withMultipleTipos_throwsBadRequest() {
+        ConceptoBulkRequest request = new ConceptoBulkRequest(
+                1, "Concepto", 1, Estado.ACTIVE, List.of(new TipoJuicioIdRequest(1), new TipoJuicioIdRequest(2))
+        );
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> conceptoService.updateConcepto(request)
+        );
+
+        assertThat(exception.getStatusCode().value()).isEqualTo(400);
     }
 
     @Test

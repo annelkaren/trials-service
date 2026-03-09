@@ -125,11 +125,11 @@ class ConceptoResourceTest {
     void create_success() throws Exception {
         ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Nuevo concepto", 1, "Tipo Juicio", Estado.ACTIVE);
 
-        given(mockConceptoService.createConcepto(any(Concepto.class))).willReturn(conceptoRecord);
+        given(mockConceptoService.createConcepto(any(ConceptoBulkRequest.class))).willReturn(List.of(conceptoRecord));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/core/conceptos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"Nuevo concepto\",\"dias\":1,\"estado\":\"ACTIVE\",\"tipoJuicio\":{\"id\":1,\"nombre\":\"Tipo Juicio\"}}")
+                        .content("{\"nombre\":\"Nuevo concepto\",\"dias\":1,\"estado\":\"ACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -149,11 +149,11 @@ class ConceptoResourceTest {
     void update_success() throws Exception {
         ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Concepto actualizado", 10, "Tipo Juicio", Estado.INACTIVE);
 
-        given(mockConceptoService.updateConcepto(any(Concepto.class))).willReturn(conceptoRecord);
+        given(mockConceptoService.updateConcepto(any(ConceptoBulkRequest.class))).willReturn(conceptoRecord);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/core/conceptos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":1,\"nombre\":\"Concepto actualizado\",\"dias\":10,\"estado\":\"INACTIVE\",\"tipoJuicio\":{\"id\":1,\"nombre\":\"Tipo Juicio\"}}")
+                        .content("{\"id\":1,\"nombre\":\"Concepto actualizado\",\"dias\":10,\"estado\":\"INACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

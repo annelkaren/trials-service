@@ -129,6 +129,7 @@ public class SelloGenerator {
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
+        
         expedientesSet.add(documento.getCarpeta().getExpediente());
 
         //TODO: se coloca momentaneamente la primera persona principal y demandada en el sello.

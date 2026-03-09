@@ -48,7 +48,7 @@ public class ConceptoResource {
     }
 
     @PostMapping
-    public ConceptoRecord create(@RequestBody Concepto concepto) {
+    public List<ConceptoRecord> create(@RequestBody ConceptoBulkRequest concepto) {
         return conceptoService.createConcepto(concepto);
     }
 
@@ -58,7 +58,7 @@ public class ConceptoResource {
     }
 
     @PutMapping
-    public ConceptoRecord update(@RequestBody Concepto concepto) {
+    public ConceptoRecord update(@RequestBody ConceptoBulkRequest concepto) {
         return conceptoService.updateConcepto(concepto);
     }
 }
