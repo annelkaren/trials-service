@@ -133,7 +133,7 @@ public class PromocionSinExpedienteService {
                 }
 
                 // Paso 3 buscamos el expediente en la base de datos del SECGJ PHP:
-                String expediente = Utils.normalizarExpediente(promocion.getExpediente().split("/")[0]);
+                String expediente = promocion.getExpediente().split("/")[0];
                 Integer year = Integer.parseInt(promocion.getExpediente().split("/")[1]);
                 Juzgado juzgado = promocion.getJuzgado();
 
