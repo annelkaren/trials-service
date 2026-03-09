@@ -160,6 +160,31 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         """)
         List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado);
 
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        WHERE f.instanciaJuzgado = :instanciaJuzgado
+                        AND f.estado = :estado
+                        """)
+        List<JuzgadoRecordItem> findAllByInstanciaAndEstado(
+                        @Param("instanciaJuzgado") InstanciaJuzgado instanciaJuzgado,
+                        @Param("estado") Estado estado);
+
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        WHERE f.juzgadoPadre.id = :juzgadoPadreId
+                        AND f.estado = :estado
+                        ORDER BY lower(f.nombre)
+                        """)
+        List<JuzgadoRecordItem> findChildrenByJuzgadoPadreIdAndEstado(
+                        @Param("juzgadoPadreId") Integer juzgadoPadreId,
+                        @Param("estado") Estado estado);
+
         @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj " +
                         "JOIN oj.juzgado.tipoJuicios tj " + 
                         "WHERE oj.oficialiaId = :oficialiaId " +

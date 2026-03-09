@@ -116,6 +116,7 @@ public class JuzgadoService {
                 juzgado.getId(),
                 juzgado.getVersion(),
                 juzgado.getNombre(),
+                juzgado.getShortName(),
                 juzgado.getEstado(),
                 (juzgado.getMateria() != null) ? juzgado.getMateria().getId() : null,
                 juzgado.getSede().getId(),
@@ -123,7 +124,9 @@ public class JuzgadoService {
                 juzgado.getContadorAsignaciones(),
                 juzgado.getInstanciaJuzgado().ordinal(),
                 tipoJuicios,
-                contadoresJuzgados);
+                contadoresJuzgados,
+                juzgado.getJuzgadoPadre() != null ? juzgado.getJuzgadoPadre().getId() : null,
+                juzgado.getJuzgadoPadre() != null ? juzgado.getJuzgadoPadre().getNombre() : null);
     }
 
     public Juzgado findJuzgadoById(Integer id) {
@@ -140,6 +143,7 @@ public class JuzgadoService {
         if (juzgadoRepository.findByNombreIgnoreCase(juzgado.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
+        juzgado.setJuzgadoPadre(resolveJuzgadoPadre(juzgado, false));
         if (juzgado.getInstanciaJuzgado() != InstanciaJuzgado.NO_APLICA) { //NO ES ARCHIVO JUDICIAL
             Materia materia = materiaRepository.findById(juzgado.getMateria().getId())
                     .orElseThrow(() -> new NotFoundException("Materia no encontrada", "materiaId"));
@@ -195,6 +199,7 @@ public class JuzgadoService {
         if (test.isPresent() && !Objects.equals(test.get().getId(), juzgado.getId())) {
             throw new ConflictException("No pueden existir 2 juzgados con el mismo nombre");
         }
+        juzgado.setJuzgadoPadre(resolveJuzgadoPadre(juzgado, true));
         try {
             if (juzgado.getInstanciaJuzgado() == InstanciaJuzgado.NO_APLICA) {
                 juzgado.setMateria(null);
@@ -589,6 +594,16 @@ public class JuzgadoService {
         return juzgadoRepository.findAllByInstancia(instanciaJuzgado);
     }
 
+    public List<JuzgadoRecordItem> findSalasActivas() {
+        Persona personaLogueada = personaService.getAuditor();
+        if (personaLogueada.getJuzgado() == null || personaLogueada.getJuzgado().getId() == null) {
+            return List.of();
+        }
+        return juzgadoRepository.findChildrenByJuzgadoPadreIdAndEstado(
+                personaLogueada.getJuzgado().getId(),
+                Estado.ACTIVE);
+    }
+
     public JuzgadoRecordItem getJuzgadoActual() {
         Persona persona = personaService.getAuditor();
 
@@ -604,5 +619,27 @@ public class JuzgadoService {
 
     public Optional<Juzgado> findByClaveJuzgado(String clave) {
         return juzgadoRepository.findByClaveJuzgado(clave);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JuzgadoRecordItem> findAllByEstadoActive() {
+        List<JuzgadoRecordItem> juzgados = juzgadoRepository.findAllByEstadoIn(List.of(Estado.ACTIVE));
+        return juzgados.stream()
+                .sorted(Comparator.comparing(JuzgadoRecordItem::nombre, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private Juzgado resolveJuzgadoPadre(Juzgado juzgado, boolean validateSelfReference) {
+        if (juzgado.getJuzgadoPadre() == null || juzgado.getJuzgadoPadre().getId() == null) {
+            return null;
+        }
+
+        Integer juzgadoPadreId = juzgado.getJuzgadoPadre().getId();
+        if (validateSelfReference && Objects.equals(juzgadoPadreId, juzgado.getId())) {
+            throw new ConflictException("Un juzgado no puede ser su propio juzgado padre");
+        }
+
+        return juzgadoRepository.findByIdAndEstadoIn(juzgadoPadreId, List.of(Estado.ACTIVE))
+                .orElseThrow(() -> new NotFoundException("Juzgado padre no encontrado o inactivo", "juzgadoPadreId"));
     }
 }
