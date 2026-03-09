@@ -11,9 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -50,10 +47,8 @@ class EventoResourceTest {
 
     @Test
     void getEventosGenerales_success() throws Exception {
-        Page<EventoRecord> eventoPage = new PageImpl<>(List.of(EventoSetUp.eventoRecord()));
-
-        given(mockEventoService.getEventosGenerales(PageRequest.of(0, 10)))
-                .willReturn(eventoPage);
+        given(mockEventoService.getEventosGenerales())
+                .willReturn(List.of(EventoSetUp.eventoRecord()));
 
         mockMvc.perform(get("/api/core/evento/generales")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -62,10 +57,8 @@ class EventoResourceTest {
 
     @Test
     void getEventosOficialiaComun_success() throws Exception {
-        Page<EventoRecord> eventoPage = new PageImpl<>(List.of(EventoSetUp.eventoRecord()));
-
-        given(mockEventoService.getEventosOficialiaComun(PageRequest.of(0, 10)))
-                .willReturn(eventoPage);
+        given(mockEventoService.getEventosOficialiaComun())
+                .willReturn(List.of(EventoSetUp.eventoRecord()));
 
         mockMvc.perform(get("/api/core/evento/oficialiacomun")
                         .contentType(MediaType.APPLICATION_JSON))

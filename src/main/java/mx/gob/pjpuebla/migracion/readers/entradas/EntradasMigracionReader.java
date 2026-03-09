@@ -98,10 +98,7 @@ public class EntradasMigracionReader {
 
     public Optional<EntradasMigracion> buscarEntradasPorFiltrosProm(String expediente, Integer amo,
             String juzgadoCodigo) {
-        return entradasMigracionRepository.findTopByExpedienteNormalizado(
-                expediente,
-                amo,
-                juzgadoCodigo, "A");
+        return entradasMigracionRepository.findTopByExpedienteAndAmoAndJuzgadoAndStatusOrderByIdDesc(expediente, amo, juzgadoCodigo, "A");
 
     }
 

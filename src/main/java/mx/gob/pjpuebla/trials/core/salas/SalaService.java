@@ -64,36 +64,10 @@ public class SalaService {
     private static final Integer TIEMPO_ESPERA_AUDIENCIA = 3;
 
     @Transactional(readOnly = true)
-    public Page<SalaRecord> getAll(Sala example, Pageable pageable) {
-
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-
-        Page<Sala> page = salaRepository.findAll(Example.of(example, exampleMatcher), pageable);
+    public Page<SalaRecord> getAll(String key, Pageable pageable) {
         Persona persona = personaService.getAuditor();
-        Juzgado juzgadoPersona = persona != null ? persona.getJuzgado() : null;
-
-        List<SalaRecord> list = page.getContent().stream()
-                .filter(sala -> juzgadoPersona == null
-                        || juzgadoPersona.getId() == null
-                        || (sala.getJuzgado() != null
-                                && Objects.equals(sala.getJuzgado().getId(), juzgadoPersona.getId())))
-                .map(sala -> new SalaRecord(
-                        sala.getId(),
-                        sala.getNombre(),
-                        getNameJuez(sala),
-                        sala.getJuzgado().getNombre(),
-                        new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(sala.getBloque().getId(),
-                                sala.getBloque().getHoraInicial(), sala.getBloque().getHoraFinal()),
-                        sala.getEstado()))
-
-                .toList();
-
-        long totalElements = (juzgadoPersona != null && juzgadoPersona.getId() != null)
-                ? list.size()
-                : page.getTotalElements();
-
-        return new PageImpl<>(list, pageable, totalElements);
+        Integer juzgadoId = (persona != null && persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
+        return salaRepository.findAllByKeyAndJuzgadoId(key, juzgadoId, pageable);
 
     }
 

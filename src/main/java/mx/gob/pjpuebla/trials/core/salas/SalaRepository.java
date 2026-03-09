@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +21,46 @@ import mx.gob.pjpuebla.trials.core.personas.Persona;
 
 @Repository
 public interface SalaRepository extends JpaRepository<Sala, Integer> {
+
+    @Query(value = """
+            SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecord(
+                s.id,
+                s.nombre,
+                CASE
+                    WHEN juez.id IS NULL THEN 'Por asignar'
+                    ELSE TRIM(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, ''))))
+                END,
+                j.nombre,
+                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(b.id, b.horaInicial, b.horaFinal),
+                s.estado
+            )
+            FROM Sala s
+            LEFT JOIN s.juez juez
+            LEFT JOIN s.juzgado j
+            LEFT JOIN s.bloque b
+            WHERE (:juzgadoId IS NULL OR j.id = :juzgadoId)
+              AND (
+                    :key IS NULL OR :key = ''
+                    OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :key, '%'))
+                )
+            """, countQuery = """
+            SELECT COUNT(s.id)
+            FROM Sala s
+            LEFT JOIN s.juez juez
+            LEFT JOIN s.juzgado j
+            WHERE (:juzgadoId IS NULL OR j.id = :juzgadoId)
+              AND (
+                    :key IS NULL OR :key = ''
+                    OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :key, '%'))
+                )
+            """)
+    Page<SalaRecord> findAllByKeyAndJuzgadoId(@Param("key") String key,
+            @Param("juzgadoId") Integer juzgadoId,
+            Pageable pageable);
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.salas.SalaRecordResponse(s.id, s.nombre, s.estado, s.version,

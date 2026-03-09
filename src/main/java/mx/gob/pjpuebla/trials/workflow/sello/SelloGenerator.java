@@ -34,6 +34,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class SelloGenerator {
 
@@ -77,6 +79,14 @@ public class SelloGenerator {
 
     public byte[] exportToPdf(Integer id) throws JRException, IOException {
         Documento documento = documentoRepository.findById(id).orElseThrow();
+        log.info(
+                "Sello exportToPdf documentoId={} tipoDocumento={} carpetaId={} carpetaExpediente='{}' carpetaFolio='{}' tipoCarpeta={}",
+                documento.getId(),
+                documento.getTipoDocumento(),
+                documento.getCarpeta() != null ? documento.getCarpeta().getId() : null,
+                documento.getCarpeta() != null ? documento.getCarpeta().getExpediente() : null,
+                documento.getCarpeta() != null ? documento.getCarpeta().getFolio() : null,
+                documento.getCarpeta() != null ? documento.getCarpeta().getTipoCarpeta() : null);
         if (documento.getCarpeta().getSelloEstatus() == SelloEstatus.NO_VALIDO) {
             documento.getCarpeta().setSelloEstatus(SelloEstatus.VALIDO);
             documentoRepository.save(documento);
@@ -129,6 +139,7 @@ public class SelloGenerator {
     private JasperPrint getReport(Documento documento, List<Anexo> anexos) throws IOException, JRException {
         String date = getDate(documento.getAudit().getFechaAlta());
         String verificationCode = generateVerificationCode(documento, anexos, date);
+        
         expedientesSet.add(documento.getCarpeta().getExpediente());
 
         //TODO: se coloca momentaneamente la primera persona principal y demandada en el sello.
@@ -419,9 +430,25 @@ public class SelloGenerator {
     }
 
     public PersonaDocumentoRecord getInfoPersona(Integer id, String parte) {
-        List<Rol> rol = List.of(Rol.PRINCIPAL);
         List<PersonaDocumentoRecord> personasDocumentosRecord = personaDocumentoRepository
-                .findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+                .findPersonaAndTipoParteByCarpetaId(id, parte, List.of(Rol.PRINCIPAL));
+
+        if (personasDocumentosRecord == null || personasDocumentosRecord.isEmpty()) {
+            personasDocumentosRecord = personaDocumentoRepository
+                    .findPersonaAndTipoParteByCarpetaId(id, parte, List.of(Rol.SECUNDARIO));
+            if (personasDocumentosRecord != null && !personasDocumentosRecord.isEmpty()) {
+                log.info("Sello getInfoPersona usando rol SECUNDARIO carpetaId={} parte={}", id, parte);
+            }
+        }
+
+        if (personasDocumentosRecord == null || personasDocumentosRecord.isEmpty()) {
+            log.warn(
+                    "Sello getInfoPersona sin resultados carpetaId={} parte={} rolBuscado={}",
+                    id,
+                    parte,
+                    "[PRINCIPAL, SECUNDARIO]");
+            return new PersonaDocumentoRecord("", "", "", "", "", "", "", "", "", parte, null, id);
+        }
 
         PersonaDocumentoRecord personaDocumentoRecord = personasDocumentosRecord.get(0);
 

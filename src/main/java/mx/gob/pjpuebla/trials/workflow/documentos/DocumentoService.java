@@ -1224,6 +1224,11 @@ public class DocumentoService {
                 Carpeta carpetaParent = carpetaRepository.findById(apelacionRecord.carpetaId())
                                 .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
                                                 "carpetaId: " + apelacionRecord.carpetaId()));
+                log.info(
+                                "Apelacion create inicio carpetaAntecedenteId={} expedienteAntecedente='{}' folioAntecedente='{}'",
+                                carpetaParent.getId(),
+                                carpetaParent.getExpediente(),
+                                carpetaParent.getFolio());
 
                 // Busca el tipoJuicio por id, si no lo encuentra lanza una excepción.
                 TipoJuicio tipoJuicio = getTipoJuicioById(carpetaParent.getTipoJuicio().getId());
@@ -1242,6 +1247,12 @@ public class DocumentoService {
                 carpeta.setPersona(auditor);
                 carpeta.setFechaAsignacion(LocalDateTime.now());
                 carpeta = carpetaRepository.save(carpeta);
+                log.info(
+                                "Apelacion create carpetaNuevaId={} expedienteNuevo='{}' folioNuevo='{}' juzgadoId={}",
+                                carpeta.getId(),
+                                carpeta.getExpediente(),
+                                carpeta.getFolio(),
+                                carpeta.getJuzgado() != null ? carpeta.getJuzgado().getId() : null);
 
                 documento.setCarpeta(carpeta);
                 DocumentoData data = new DocumentoData();
@@ -1260,6 +1271,12 @@ public class DocumentoService {
                 documento.setFolio(folio.toString());
 
                 documento = documentoRepository.save(documento);
+                log.info(
+                                "Apelacion create documentoNuevoId={} tipoDocumento={} carpetaNuevaId={} carpetaAntecedenteIdData={}",
+                                documento.getId(),
+                                documento.getTipoDocumento(),
+                                documento.getCarpeta() != null ? documento.getCarpeta().getId() : null,
+                                documento.getData() != null ? documento.getData().getApelacionAntecedenteCarpeta() : null);
 
                 for (Anexo anexo : apelacionRecord.anexos()) {
                         Anexo entity = new Anexo();
@@ -1282,6 +1299,12 @@ public class DocumentoService {
                         entity.setCarpeta(carpeta);
                         personaDocumentoRepository.save(entity);
                 }
+                log.info(
+                                "Apelacion create personasRecibidas={} anexosRecibidos={}",
+                                apelacionRecord.apelacionPersonaRecords() != null
+                                                ? apelacionRecord.apelacionPersonaRecords().size()
+                                                : 0,
+                                apelacionRecord.anexos() != null ? apelacionRecord.anexos().size() : 0);
 
                 juzgadoService.actualizarCarga(carpeta.getJuzgado(), carpeta.getTipoCarpeta(), juzgadosRelacionados);
                 movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.CAPTURA.name());

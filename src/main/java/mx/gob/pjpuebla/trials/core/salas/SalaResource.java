@@ -28,9 +28,11 @@ public class SalaResource {
     @GetMapping
     public Page<SalaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre) {
 
-        return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
+        String searchKey = (key != null) ? key : nombre;
+        return this.salaService.getAll(searchKey, pageable);
     }
 
     @GetMapping("/allByJuzgado")
