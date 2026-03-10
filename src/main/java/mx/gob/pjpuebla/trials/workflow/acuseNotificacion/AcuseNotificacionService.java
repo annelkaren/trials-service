@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.acuseNotificacion;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -21,7 +20,6 @@ import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Sexo;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
-import mx.gob.pjpuebla.trials.workflow.notificaciones.Notificacion;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.NotificacionSalaDestinatario;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.NotificacionSalaDestinatarioRepository;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.NotificacionesSalas;
@@ -43,7 +41,7 @@ public class AcuseNotificacionService {
     private final JuzgadoRepository juzgadoRepository;
     
 
-    @Value("classpath:jasper/AcuseNotificacion.jasper")
+    @Value("classpath:jasper/acuseNotificacion.jasper")
     private Resource acuseNotificacion;
 
     public byte[] getAcuseNotificacionService(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
