@@ -120,5 +120,5 @@ sendpulse:
   provider: sendPulse
   dates-timezone: UTC
   from-email: no-reply@pjpuebla.gob.mx
-  from-name: TRIALS
+  from-name: Sistema Electrónico de Control y Gestión Judicial
 

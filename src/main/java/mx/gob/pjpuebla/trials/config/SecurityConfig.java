@@ -89,7 +89,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer(t -> t.jwt(withDefaults()).authenticationEntryPoint(delegatedAuthenticationEntryPoint))
-                .addFilterAfter(createPolicyEnforcerFilter(), BearerTokenAuthenticationFilter.class)
+                //.addFilterAfter(createPolicyEnforcerFilter(), BearerTokenAuthenticationFilter.class)
                 .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())

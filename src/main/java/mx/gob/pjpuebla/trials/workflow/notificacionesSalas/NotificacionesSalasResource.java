@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -64,12 +65,13 @@ public class NotificacionesSalasResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping(value = "/{idNotificacionSala}/archivo")
+    @GetMapping(value = "/{idNotificacionSala}/archivo", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadArchivo(@PathVariable Integer idNotificacionSala) throws java.io.IOException {
         byte[] file = notificacionesSalasServices.downloadArchivo(idNotificacionSala);
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("adjunto", idNotificacionSala + "_notificacion_sala");
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.inline().filename(idNotificacionSala + "_notificacion_sala.pdf").build());
         return ResponseEntity.ok().headers(headers).body(file);
     }
 
@@ -78,7 +80,7 @@ public class NotificacionesSalasResource {
         byte[] file = notificacionesSalasServices.downloadArchivoPublico(nombreArchivo);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("adjunto", nombreArchivo);
+        headers.setContentDisposition(ContentDisposition.inline().filename(nombreArchivo).build());
         return ResponseEntity.ok().headers(headers).body(file);
     }
 

@@ -34,7 +34,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 @RequiredArgsConstructor
 public class AcuseNotificacionService {
     
-    private static final DateTimeFormatter formateador = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy 'a las ' HH:mm", new Locale("es", "MX"));
+    private static final DateTimeFormatter formateador = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy 'a las ' HH:mm:ss", new Locale("es", "MX"));
 
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final PersonaService personaService;
@@ -67,12 +67,12 @@ public class AcuseNotificacionService {
         NotificacionesSalas notificacionSala = notificacionSalaDestinatario.getNotificacionSala();
         EmailLogs emailLogs = notificacionSalaDestinatario.getEmailLog();
         String nombreNotificador = persona.getNombre() + " " + persona.getApellidoPaterno() + " "
-                + persona.getApellidoMaterno();
+                + persona.getApellidoMaterno() != null && !persona.getApellidoMaterno().isEmpty() ? " " + persona.getApellidoMaterno() : "";
         String sexo = persona.getSexo() == Sexo.FEMENINO ? "F" : "M";
         String fechaVisualizacion = emailLogs.getFechaDescargaVinculo() != null ? emailLogs.getFechaDescargaVinculo().format(formateador).toString() : "No visualizado";
 
         Juzgado juzgado = juzgadoRepository.findById(notificacionSala.getSala().getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
-        String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getNombre() : juzgado.getJuzgadoPadre().getNombre();
+        String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getShortName() : juzgado.getJuzgadoPadre().getShortName();
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("asunto", emailLogs.getSubject());
@@ -85,7 +85,7 @@ public class AcuseNotificacionService {
         parameters.put("nombreDestinatario", notificacionSalaDestinatario.getNombreDestinatario());
         parameters.put("tipoParte", notificacionSalaDestinatario.getTipoParte());
         parameters.put("nombreSala", nombreSala);
-        parameters.put("nombreNotificador", nombreNotificador);
+        parameters.put("nombreNotificador", nombreNotificador.toUpperCase());
         parameters.put("sexo", sexo);
         parameters.put("logo", "jasper/logo_negro.png");
 
