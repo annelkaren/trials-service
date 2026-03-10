@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
+import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
@@ -38,6 +40,7 @@ public class AcuseNotificacionService {
 
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final PersonaService personaService;
+    private final JuzgadoRepository juzgadoRepository;
     
 
     @Value("classpath:jasper/AcuseNotificacion.jasper")
@@ -70,17 +73,20 @@ public class AcuseNotificacionService {
         String sexo = persona.getSexo() == Sexo.FEMENINO ? "F" : "M";
         String fechaVisualizacion = emailLogs.getFechaDescargaVinculo() != null ? emailLogs.getFechaDescargaVinculo().format(formateador).toString() : "No visualizado";
 
+        Juzgado juzgado = juzgadoRepository.findById(notificacionSala.getSala().getId()).orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
+        String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getNombre() : juzgado.getJuzgadoPadre().getNombre();
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("asunto", emailLogs.getSubject());
         parameters.put("para", emailLogs.getToEmail());
         parameters.put("fechaEnvio", notificacionSala.getFechaEnvio().format(formateador).toString());
         parameters.put("fechaLectura", emailLogs.getFechaLectura().format(formateador).toString());
         parameters.put("fechaVisualizacion", fechaVisualizacion);
-        parameters.put("casaDeJusticia", persona.getJuzgado().getNombre());
+        parameters.put("casaDeJusticia", persona.getJuzgado().getSede().getNombre());
         parameters.put("fechaGeneracionDocumento", FechaTextoUtil.obtenerFechaEnTexto());
         parameters.put("nombreDestinatario", notificacionSalaDestinatario.getNombreDestinatario());
         parameters.put("tipoParte", notificacionSalaDestinatario.getTipoParte());
-        parameters.put("nombreSala", notificacionSala.getSala().getNombre());
+        parameters.put("nombreSala", nombreSala);
         parameters.put("nombreNotificador", nombreNotificador);
         parameters.put("sexo", sexo);
         parameters.put("logo", "jasper/logo_negro.png");

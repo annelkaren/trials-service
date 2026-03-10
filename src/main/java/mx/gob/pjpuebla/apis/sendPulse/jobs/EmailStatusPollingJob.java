@@ -198,7 +198,7 @@ public class EmailStatusPollingJob {
             return false;
         }
 
-        return tieneLinkEnTracking(tracking) || tieneClickEnTracking(tracking);
+        return tieneLinkEnTracking(tracking);
     }
 
     private boolean marcarNoLeidoSiExpira(EmailLogs log, LocalDateTime ahoraMx) {
@@ -361,22 +361,46 @@ public class EmailStatusPollingJob {
 
     private boolean tieneLinkEnTracking(JsonNode tracking) {
         JsonNode linkNode = tracking.path("link");
-        return linkNode.isArray() && !linkNode.isEmpty();
-    }
-
-    private boolean tieneClickEnTracking(JsonNode tracking) {
-        JsonNode clickNode = tracking.path("click");
-        if (clickNode.isNumber()) {
-            return clickNode.asInt() > 0;
+        if (!linkNode.isArray() || linkNode.isEmpty()) {
+            return false;
         }
-        if (clickNode.isTextual()) {
-            try {
-                return Integer.parseInt(clickNode.asText()) > 0;
-            } catch (NumberFormatException ignored) {
-                return false;
+
+        for (JsonNode linkItem : linkNode) {
+            if (linkItem == null || linkItem.isNull() || !linkItem.isObject()) {
+                continue;
+            }
+
+            if (tieneTextoNoVacio(linkItem, "action_date")
+                    || tieneTextoNoVacio(linkItem, "url")
+                    || tieneTextoNoVacio(linkItem, "ip")
+                    || tieneTextoNoVacio(linkItem, "browser")
+                    || tieneTextoNoVacio(linkItem, "os")
+                    || tieneTextoNoVacio(linkItem, "screen_resolution")
+                    || tieneTextoNoVacio(linkItem, "country")) {
+                return true;
             }
         }
+
         return false;
+    }
+
+    private boolean tieneTextoNoVacio(JsonNode node, String fieldName) {
+        JsonNode field = node.path(fieldName);
+        if (!field.isTextual()) {
+            return false;
+        }
+        String value = field.asText();
+        if (value == null) {
+            return false;
+        }
+        if (value.isBlank()) {
+            return false;
+        }
+        if ("null".equalsIgnoreCase(value.trim())) {
+            return false;
+        }
+
+        return true;
     }
 
     private String recortarError(String error) {
