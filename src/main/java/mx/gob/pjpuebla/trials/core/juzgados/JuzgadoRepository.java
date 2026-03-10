@@ -177,7 +177,7 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
                         FROM Juzgado f
                         LEFT JOIN f.materia m
-                        WHERE f.juzgadoPadre.id = :juzgadoPadreId
+                        WHERE f.juzgadoPadre.id = :juzgadoPadreId or f.id = :juzgadoPadreId
                         AND f.estado = :estado
                         ORDER BY lower(f.nombre)
                         """)

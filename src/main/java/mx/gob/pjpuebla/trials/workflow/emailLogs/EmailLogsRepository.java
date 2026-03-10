@@ -26,8 +26,7 @@ public interface EmailLogsRepository extends JpaRepository<EmailLogs, Integer> {
                         e.estado <> mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo.LEIDO
                         OR e.trackingLinkDetalle IS NULL
                         OR (
-                              FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.link[0]') = false
-                              AND FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.click ? (@ > 0)') = false
+                              FUNCTION('jsonb_path_exists', e.trackingLinkDetalle, '$.link[*] ? (@.action_date != null || @.url != null || @.ip != null)') = false
                         )
                   )
                 ORDER BY COALESCE(e.ultimaVerificacion, e.fechaEnvio, :now) ASC, e.id ASC
