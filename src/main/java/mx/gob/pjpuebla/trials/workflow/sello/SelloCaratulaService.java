@@ -42,6 +42,7 @@ public class SelloCaratulaService {
         // demandado encontrado y si hay mas de uno se coloca la leyenda "y otros."
         boolean isPieza = documento.getCarpeta().getTipoPieza() == null;
         String actor, demandado;
+
         if (isPieza) {
             actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
             demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
@@ -52,7 +53,7 @@ public class SelloCaratulaService {
         }
 
         String procedencia = getExhortoPromocion(documento);
-
+        String juicio =  isPieza ? documento.getCarpeta().getTipoJuicio().getNombre() : documento.getCarpeta().getCarpetaPadre().getTipoJuicio().getNombre();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
@@ -66,6 +67,7 @@ public class SelloCaratulaService {
         parameters.put("isExhorto", isExhorto); // es un Exhorto
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
+        parameters.put("juicio", juicio);
 
         if (documento.getCarpeta().getTipoPieza() != null) {
             parameters.put("tipoPieza", documento.getCarpeta().getTipoPieza().getTipo());
@@ -83,11 +85,12 @@ public class SelloCaratulaService {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte,
                 rol);
-        PersonaDocumentoRecord persona = personas.get(0);
 
-        if (persona == null) {
+         if (personas.isEmpty() || personas == null) {
             return "";
         }
+
+        PersonaDocumentoRecord persona = personas.get(0);
 
         String nombre = persona.nombre() != null ? persona.nombre() : "";
         String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
