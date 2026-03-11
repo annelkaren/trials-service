@@ -100,7 +100,7 @@
 	</columnHeader>
 	<detail>
 		<band height="401" splitType="Stretch">
-			<textField isStretchWithOverflow="true">
+			<textField>
 				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="510" height="290" uuid="b3899300-09dd-4637-80e6-1b82a1202930">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -109,7 +109,7 @@
 					<paragraph lineSpacing="1_1_2" lineSpacingSize="1.0"/>
 				</textElement>
 				<textFieldExpression><![CDATA[String.format(
-"En %s a las <b>%s</b>, %s en los Órganos del Sistema Acusatorio Adversarial que Conforman la %s, hago constar que a través del \"<b>Sistema Electronico De Control y Gestión Judicial</b>\" consta y se tiene certeza de que fue recibido el correo electrónico enviado a la dirección %s, señalado para notificar al <b>%s %s</b>, surtiendo así los efectos de la notificación, al dar a conocer al interesado por correo electrónico el auto emitido, constando fecha, hora y correo que visualiza el mensaje en comento; se anexa impresión de pantalla en que consta lo mencionado. Lo anterior con fundamento en los artículos 14 y 16 de la Constitución Política de los Estados Unidos Mexicanos, 82, 83, 84 y 85 del Código Nacional de Procedimientos Penales y 30 QUATER fracción II de la Ley Orgánica del Poder Judicial del Estado de Puebla. ",
+"En %s a las <b>%s</b>, %s en los Órganos del Sistema Acusatorio Adversarial que Conforman la %s, hago constar que a través del \"<b>Sistema Electronico De Control y Gestión Judicial</b>\" consta y se tiene certeza de que fue recibido el correo electrónico enviado a la dirección %s, señalado para notificar al <b>%s %s</b>, surtiendo así los efectos de la notificación, al dar a conocer al interesado por correo electrónico el auto emitido, constando fecha, hora y correo que visualiza el mensaje en comento; se anexa impresión de pantalla en que consta lo mencionado. Lo anterior con fundamento en los artículos 14 y 16 de la Constitución Política de los Estados Unidos Mexicanos, 82, 83, 84 y 85 del Código Nacional de Procedimientos Penales y 30 QUATER fracción II de la Ley Orgánica del Poder Judicial del Estado de Puebla. Conste. Doy FE. - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
 $P{casaDeJusticia},
 $P{fechaGeneracionDocumento},
 ("F".equals($P{sexo}) ? "la suscrita Notificadora" : "el suscrito Notificador"),
@@ -119,15 +119,6 @@ $P{tipoParte},
 $P{nombreDestinatario}
 )]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement positionType="Float" x="0" y="316" width="510" height="38" uuid="6d139da8-53b9-40f9-9f7a-1e266bc6bd51">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement markup="html">
-					<font size="12"/>
-				</textElement>
-				<text><![CDATA[<b>Conste.Doy FE. ______________________________________________________________</b>]]></text>
-			</staticText>
 			<staticText>
 				<reportElement x="0" y="-17" width="70" height="30" uuid="872dd3b1-9112-4fa4-8c73-b36558c1a1b0"/>
 				<textElement verticalAlignment="Middle"/>
