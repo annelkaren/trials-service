@@ -75,15 +75,6 @@ public class NotificacionesSalasResource {
         return ResponseEntity.ok().headers(headers).body(file);
     }
 
-    @GetMapping(value = "/download/{nombreArchivo}")
-    public ResponseEntity<byte[]> downloadArchivoPublico(@PathVariable String nombreArchivo) {
-        byte[] file = notificacionesSalasServices.downloadArchivoPublico(nombreArchivo);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(ContentDisposition.inline().filename(nombreArchivo).build());
-        return ResponseEntity.ok().headers(headers).body(file);
-    }
-
     @GetMapping(value = "/destinatarios/{notificacionSalaDestinatarioId}/acuse", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> getAcuseNotificacion(@PathVariable Integer notificacionSalaDestinatarioId)
             throws JRException, IOException {

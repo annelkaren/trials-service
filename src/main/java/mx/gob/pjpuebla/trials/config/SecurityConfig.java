@@ -74,8 +74,7 @@ public class SecurityConfig {
     public SecurityFilterChain publicDownloadsFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher(
-                        "/api/workflow/notificacionesSalas/download/**",
-                        "/api/workflow/notificaciones-sala/download/**")
+                        "/public/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
