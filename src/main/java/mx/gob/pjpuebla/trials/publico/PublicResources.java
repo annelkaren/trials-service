@@ -18,7 +18,7 @@ import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.NotificacionesSalasSe
 @RequestMapping("/public/")
 public class PublicResources {
     
-    private NotificacionesSalasServices notificacionesSalasServices;
+    private final NotificacionesSalasServices notificacionesSalasServices;
 
     @GetMapping(value = "notificaciones/download/{nombreArchivo}")
     public ResponseEntity<byte[]> downloadArchivoPublico(@PathVariable String nombreArchivo) {
