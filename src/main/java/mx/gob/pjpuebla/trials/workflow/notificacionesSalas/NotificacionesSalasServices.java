@@ -263,11 +263,12 @@ public class NotificacionesSalasServices {
 
     private String buildPublicDownloadUrl(String nombreArchivo) {
         String encodedNombreArchivo = UriUtils.encodePathSegment(nombreArchivo, StandardCharsets.UTF_8);
-        String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() : "";
+        String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() + "/notificaciones/download/" : "";
+        
         if (baseUrl.endsWith("/")) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
-        return baseUrl + "/api/workflow/notificacionesSalas/download/" + encodedNombreArchivo;
+        return baseUrl + "/notificaciones/download/" + encodedNombreArchivo;
     }
 
     private String appendDownloadLink(String contenidoCorreoHtml, String downloadUrl) {
