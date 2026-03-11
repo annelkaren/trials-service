@@ -258,12 +258,12 @@ public class JuzgadoService {
         TipoPartes demandadoParte = tipoPartesRepository.findByNombreAndTipoJuicioId("Demandado", tipoJuicio.getId())
                 .orElseThrow(() -> new NotFoundException("Tipo Parte no encontrado", demandado.tipoParte().toString()));
 
-        List<PersonaDocumento> registrosActor = personaDocumentoRepository
+        List<PersonaDocumento> registrosActorDirecto = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
                         actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(),
                         actorParte.getId());
 
-        List<PersonaDocumento> registrosDemandado = personaDocumentoRepository
+        List<PersonaDocumento> registrosDemandadoDirecto = personaDocumentoRepository
                 .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
                         demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(),
                         demandado.pseudonimo(), demandadoParte.getId());
@@ -283,26 +283,69 @@ public class JuzgadoService {
         }
         */
 
-        if (registrosActor.isEmpty() || registrosDemandado.isEmpty()) {
-            return null;
+        // if (!registrosActor.isEmpty() || !registrosDemandado.isEmpty()) {
+        //     return null;
+        // }
+
+        // for (PersonaDocumento tmp : registrosActor) {
+        //     carpetas.add(tmp.getCarpeta());
+        // }
+
+        // for (PersonaDocumento tmp : registrosDemandado) {
+        //     Carpeta carpeta;
+
+        //     if (!carpetas.contains(tmp.getCarpeta()))
+        //         continue;
+
+        //     carpeta = tmp.getCarpeta();
+
+        //     if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE)
+        //             .contains(carpeta.getJuzgado()))
+        //         return carpeta.getJuzgado();
+        // }
+        // return null;
+        if (!registrosActorDirecto.isEmpty() && !registrosDemandadoDirecto.isEmpty()) {
+            List<Carpeta> carpetasDirectas = new ArrayList<>();
+            for (PersonaDocumento tmp : registrosActorDirecto) {
+                carpetasDirectas.add(tmp.getCarpeta());
+            }
+
+            for (PersonaDocumento tmp : registrosDemandadoDirecto) {
+                if (carpetasDirectas.contains(tmp.getCarpeta())) {
+                    Carpeta carpeta = tmp.getCarpeta();
+                    if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(carpeta.getJuzgado())) {
+                        return carpeta.getJuzgado(); 
+                    }
+                }
+            }
         }
 
-        for (PersonaDocumento tmp : registrosActor) {
-            carpetas.add(tmp.getCarpeta());
+        List<PersonaDocumento> registrosActorComoDemandado = personaDocumentoRepository
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        actor.nombre(), actor.apellidoPaterno(), actor.apellidoMaterno(), actor.pseudonimo(),
+                        demandadoParte.getId()); 
+
+        List<PersonaDocumento> registrosDemandadoComoActor = personaDocumentoRepository
+                .findByNombreIgnoreCaseAndApellidoPaternoIgnoreCaseAndApellidoMaternoIgnoreCaseAndPseudonimoIgnoreCaseAndTipoPartesId(
+                        demandado.nombre(), demandado.apellidoPaterno(), demandado.apellidoMaterno(),
+                        demandado.pseudonimo(), actorParte.getId()); 
+
+        if (!registrosActorComoDemandado.isEmpty() && !registrosDemandadoComoActor.isEmpty()) {
+            List<Carpeta> carpetasInvertidas = new ArrayList<>();
+            for (PersonaDocumento tmp : registrosActorComoDemandado) {
+                carpetasInvertidas.add(tmp.getCarpeta());
+            }
+
+            for (PersonaDocumento tmp : registrosDemandadoComoActor) {
+                if (carpetasInvertidas.contains(tmp.getCarpeta())) {
+                    Carpeta carpeta = tmp.getCarpeta();
+                    if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE).contains(carpeta.getJuzgado())) {
+                        return carpeta.getJuzgado(); 
+                    }
+                }
+            }
         }
 
-        for (PersonaDocumento tmp : registrosDemandado) {
-            Carpeta carpeta;
-
-            if (!carpetas.contains(tmp.getCarpeta()))
-                continue;
-
-            carpeta = tmp.getCarpeta();
-
-            if (juzgadoRepository.findByMateriaAndEstado(tipoJuicio.getMateria(), Estado.ACTIVE)
-                    .contains(carpeta.getJuzgado()))
-                return carpeta.getJuzgado();
-        }
         return null;
     }
 
