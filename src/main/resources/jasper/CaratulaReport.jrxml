@@ -32,9 +32,6 @@
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<title>
-		<band height="60" splitType="Stretch"/>
-	</title>
 	<pageHeader>
 		<band height="108" splitType="Stretch">
 			<image hAlign="Center" vAlign="Middle">
@@ -57,46 +54,46 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="200" splitType="Stretch">
+		<band height="240" splitType="Stretch">
 			<staticText>
-				<reportElement x="80" y="27" width="190" height="50" uuid="2c83e7db-1699-45dc-8cf5-a46be5bc8107"/>
+				<reportElement x="80" y="22" width="190" height="50" uuid="2c83e7db-1699-45dc-8cf5-a46be5bc8107"/>
 				<textElement verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="32" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Expediente]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="290" y="27" width="230" height="50" uuid="1a57cf42-bdef-454b-a2bf-c03b81e0ca53"/>
+				<reportElement x="290" y="19" width="230" height="50" uuid="1a57cf42-bdef-454b-a2bf-c03b81e0ca53"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="32" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{expediente}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="80" y="90" width="190" height="50" uuid="77fe2ecb-fce2-4317-b0f7-c1ac7816c22a"/>
+				<reportElement x="80" y="101" width="190" height="50" uuid="77fe2ecb-fce2-4317-b0f7-c1ac7816c22a"/>
 				<textElement verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="32" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Año]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="290" y="90" width="230" height="50" uuid="2df48d37-a44f-4568-b1a8-10ace0de94e9"/>
+				<reportElement x="290" y="101" width="230" height="50" uuid="2df48d37-a44f-4568-b1a8-10ace0de94e9"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="32" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{year}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="80" y="150" width="190" height="50" uuid="480a2f8f-46d1-4267-a7ad-439e5ced8ec9"/>
+				<reportElement x="80" y="190" width="120" height="50" uuid="480a2f8f-46d1-4267-a7ad-439e5ced8ec9"/>
 				<textElement verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="24" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Juicio]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="290" y="150" width="230" height="50" uuid="8334e75e-6ac3-4b2f-8c37-0933062a526e"/>
+				<reportElement x="227" y="190" width="322" height="50" uuid="8334e75e-6ac3-4b2f-8c37-0933062a526e"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="29" isBold="true"/>
+					<font size="24" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{juicio}]]></textFieldExpression>
 			</textField>
@@ -106,7 +103,7 @@
 			<staticText>
 				<reportElement x="227" y="103" width="100" height="25" uuid="cb72d4bf-cdef-44f8-a301-804f4da8109a">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isExhorto}]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{isExhorto} && $P{demandado} != null && !$P{demandado}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="16" isBold="false"/>
@@ -115,7 +112,7 @@
 			</staticText>
 			<textField>
 				<reportElement x="20" y="73" width="529" height="30" uuid="36e02a36-d526-423b-af4d-1520326c6abb">
-					<printWhenExpression><![CDATA[!$P{isExhorto}]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{isExhorto} && $P{demandado} != null && !$P{demandado}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="19" isBold="true"/>
@@ -125,7 +122,7 @@
 			<staticText>
 				<reportElement x="230" y="40" width="100" height="25" uuid="780a2a66-984a-4778-8d89-6920c56b0bad">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[!$P{isExhorto}]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{isExhorto} && $P{actor} != null && !$P{actor}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="16" isBold="false"/>
@@ -134,7 +131,7 @@
 			</staticText>
 			<textField>
 				<reportElement x="20" y="10" width="529" height="30" uuid="620d20f3-898b-4a17-9159-974d5bc56d40">
-					<printWhenExpression><![CDATA[!$P{isExhorto}]]></printWhenExpression>
+					<printWhenExpression><![CDATA[!$P{isExhorto} && $P{actor} != null && !$P{actor}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="19" isBold="true"/>
@@ -149,7 +146,7 @@
 				<textFieldExpression><![CDATA[$P{tipoPieza}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="61">
+		<band height="47">
 			<printWhenExpression><![CDATA[$P{isExhorto}]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" evaluationTime="Report">
 				<reportElement stretchType="ContainerHeight" x="60" y="8" width="440" height="39" uuid="1cf3f1c7-fd43-49b5-b274-ee37968989ff">
@@ -161,9 +158,9 @@
 				<textFieldExpression><![CDATA[$P{procedencia}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="180">
+		<band height="170">
 			<componentElement>
-				<reportElement x="173" y="10" width="214" height="163" uuid="15f4ba98-eefe-4597-8f61-f08a1bd94c14"/>
+				<reportElement x="173" y="7" width="214" height="163" uuid="15f4ba98-eefe-4597-8f61-f08a1bd94c14"/>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" errorCorrectionLevel="M">
 					<jr:codeExpression><![CDATA[$P{documentoFolio}]]></jr:codeExpression>
 				</jr:QRCode>
