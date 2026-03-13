@@ -9,7 +9,8 @@ import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailInfoResponse;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogsRepository;
-import org.springframework.data.domain.PageRequest;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogsService;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,6 @@ import java.util.Objects;
 @Component
 public class EmailStatusPollingJob {
 
-    private static final int TAMANIO_LOTE = 200;
     private static final int MAX_ERROR_DETALLE = 1000;
     private static final Duration VENTANA_NO_LEIDO = Duration.ofDays(2);
 
@@ -39,17 +39,19 @@ public class EmailStatusPollingJob {
     private static final DateTimeFormatter FMT_SENDPULSE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final EmailLogsRepository emailLogsRepo;
+    private final EmailLogsService emailLogsService;
     private final SendPulseClient sendPulseClient;
     private final ObjectMapper objectMapper;
 
     public EmailStatusPollingJob(
             EmailLogsRepository emailLogsRepo,
             SendPulseClient sendPulseClient,
-            ObjectMapper objectMapper
-    ) {
+            ObjectMapper objectMapper,
+            EmailLogsService emailLogsService) {
         this.emailLogsRepo = emailLogsRepo;
         this.sendPulseClient = sendPulseClient;
         this.objectMapper = objectMapper;
+        this.emailLogsService = emailLogsService;
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -57,15 +59,10 @@ public class EmailStatusPollingJob {
     public void ejecutarSondeo() {
         LocalDateTime ahoraMx = ZonedDateTime.now(ZONA_MEXICO).toLocalDateTime();
 
-        List<EmailLogs> lote = emailLogsRepo.findBatchToVerify(
-                List.of(EstadoEnvioCorreo.PENDIENTE_ENVIO, EstadoEnvioCorreo.ENVIADO, EstadoEnvioCorreo.LEIDO),
-                ahoraMx,
-                PageRequest.of(0, TAMANIO_LOTE)
-        );
+        List<EmailLogs> lote = emailLogsService.getEmailsToVerify();
 
-        if (lote.isEmpty()) {
+        if (lote.isEmpty())
             return;
-        }
 
         Map<String, List<EmailLogs>> porProviderId = new HashMap<>();
 
@@ -92,8 +89,8 @@ public class EmailStatusPollingJob {
         }
 
         try {
-            Map<String, SendPulseEmailInfoResponse> infoPorId =
-                    sendPulseClient.getEmailInfoBulk(new ArrayList<>(porProviderId.keySet()));
+            Map<String, SendPulseEmailInfoResponse> infoPorId = sendPulseClient
+                    .getEmailInfoBulk(new ArrayList<>(porProviderId.keySet()));
 
             for (Map.Entry<String, List<EmailLogs>> entry : porProviderId.entrySet()) {
                 String providerId = entry.getKey();
@@ -107,7 +104,8 @@ public class EmailStatusPollingJob {
                     registrarIntentoVerificacion(log, ahoraMx);
 
                     if (info == null) {
-                        log.setErrorEnvioDetalle(recortarError("No se obtuvo info de SendPulse para providerMessageId=" + providerId));
+                        log.setErrorEnvioDetalle(
+                                recortarError("No se obtuvo info de SendPulse para providerMessageId=" + providerId));
                         continue;
                     }
 
@@ -147,7 +145,8 @@ public class EmailStatusPollingJob {
             registrarIntentoVerificacion(log, ahoraMx);
 
             if (info == null) {
-                log.setErrorEnvioDetalle(recortarError("No se obtuvo info de SendPulse para providerMessageId=" + providerId));
+                log.setErrorEnvioDetalle(
+                        recortarError("No se obtuvo info de SendPulse para providerMessageId=" + providerId));
             } else {
                 aplicarInfoDeSendPulse(log, info, ahoraMx);
             }

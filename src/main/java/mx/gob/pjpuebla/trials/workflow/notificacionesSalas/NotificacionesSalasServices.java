@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.workflow.acuseNotificacion.AcuseNotificacionService;
@@ -46,6 +48,7 @@ public class NotificacionesSalasServices {
     private final AcuseNotificacionService acuseNotificacionService;
     private final JuzgadoService juzgadoService;
     private final mx.gob.pjpuebla.apis.sendPulse.jobs.EmailStatusPollingJob emailStatusPollingJob;
+    private final PersonaService personaService;
 
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
@@ -114,9 +117,10 @@ public class NotificacionesSalasServices {
                         + notificacion.getSala().getNombre().toUpperCase()
                         + " DEL TRIBUNAL SUPERIOR DE JUSTICIA, PODER JUDICIAL DEL ESTADO DE PUEBLA.";
 
-                // Asignamos el reply to para send pulse, de momento coloco el mio:
-                String replyToName = "Alexis Benítez";
-                String replyToEmail = "alexis.benitez@pjpuebla.gob.mx";
+                Persona personaLogueada = personaService.getAuditor();
+                String replyToName = personaLogueada.getNombre() + " " + personaLogueada.getApellidoPaterno() + " "
+                        + personaLogueada.getApellidoMaterno() != null ? personaLogueada.getApellidoMaterno() : "";
+                String replyToEmail = personaLogueada.getCorreoElectronico();
 
                 EmailLogs emailLog = enviarCorreoNotificacion(
                         asunto,
