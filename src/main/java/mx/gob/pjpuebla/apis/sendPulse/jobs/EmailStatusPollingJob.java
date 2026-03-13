@@ -124,6 +124,41 @@ public class EmailStatusPollingJob {
         }
     }
 
+    public void verificarYActualizarUnico(EmailLogs log) {
+        LocalDateTime ahoraMx = ZonedDateTime.now(ZONA_MEXICO).toLocalDateTime();
+
+        // 1. Validate state
+        if (estaLeidoFinalizado(log)) {
+            return;
+        }
+
+        String providerId = log.getProviderMessageId();
+        if (providerId == null || providerId.isBlank()) {
+            registrarIntentoVerificacion(log, ahoraMx);
+            log.setErrorEnvioDetalle(recortarError("No se puede consultar SendPulse: providerMessageId vacio."));
+            emailLogsRepo.save(log);
+            return;
+        }
+
+        // 2. Query SendPulse
+        try {
+            SendPulseEmailInfoResponse info = sendPulseClient.getEmailInfo(providerId);
+
+            registrarIntentoVerificacion(log, ahoraMx);
+
+            if (info == null) {
+                log.setErrorEnvioDetalle(recortarError("No se obtuvo info de SendPulse para providerMessageId=" + providerId));
+            } else {
+                aplicarInfoDeSendPulse(log, info, ahoraMx);
+            }
+        } catch (Exception ex) {
+            registrarIntentoVerificacion(log, ahoraMx);
+            log.setErrorEnvioDetalle(recortarError("Error verificando estatus: " + ex.getMessage()));
+        }
+
+        emailLogsRepo.save(log);
+    }
+
     private void aplicarInfoDeSendPulse(EmailLogs log, SendPulseEmailInfoResponse info, LocalDateTime ahoraMx) {
         log.setSmtpAnswerCode(info.smtpAnswerCode());
         log.setSmtpAnswerSubcode(info.smtpAnswerSubcode());

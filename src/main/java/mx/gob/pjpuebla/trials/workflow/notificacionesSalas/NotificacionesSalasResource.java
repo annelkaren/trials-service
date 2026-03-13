@@ -86,4 +86,10 @@ public class NotificacionesSalasResource {
                 .headers(headers)
                 .body(notificacionesSalasServices.getAcuseNotificacion(notificacionSalaDestinatarioId));
     }
+
+    @PostMapping("/destinatarios/{notificacionSalaDestinatarioId}/verify-status")
+    public ResponseEntity<Void> verifyStatus(@PathVariable Integer notificacionSalaDestinatarioId) {
+        notificacionesSalasServices.verificarEstatusCorreo(notificacionSalaDestinatarioId);
+        return ResponseEntity.ok().build();
+    }
 }

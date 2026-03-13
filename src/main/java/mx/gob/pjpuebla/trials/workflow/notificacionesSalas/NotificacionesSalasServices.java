@@ -46,8 +46,21 @@ public class NotificacionesSalasServices {
     private final EmailGatewayService emailGatewayService;
     private final AcuseNotificacionService acuseNotificacionService;
     private final JuzgadoService juzgadoService;
+    private final mx.gob.pjpuebla.apis.sendPulse.jobs.EmailStatusPollingJob emailStatusPollingJob;
+
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
+
+    public void verificarEstatusCorreo(Integer destinatarioId) {
+        NotificacionSalaDestinatario destinatario = notificacionSalaDestinatarioRepository.findById(destinatarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado."));
+
+        if (destinatario.getEmailLog() != null) {
+            emailStatusPollingJob.verificarYActualizarUnico(destinatario.getEmailLog());
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El destinatario no tiene un registro de correo asociado.");
+        }
+    }
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String q, String numeroExpediente,
             String nombreDestinatario, String correoElectronico, LocalDateTime fechaEnvioFrom,
