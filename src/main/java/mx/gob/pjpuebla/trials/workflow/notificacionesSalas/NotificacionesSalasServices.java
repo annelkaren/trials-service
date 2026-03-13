@@ -291,7 +291,7 @@ public class NotificacionesSalasServices {
 
     private String buildPublicDownloadUrl(String nombreArchivo) {
         String encodedNombreArchivo = UriUtils.encodePathSegment(nombreArchivo, StandardCharsets.UTF_8);
-        String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() + "/notificaciones/download/" : "";
+        String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() : "";
 
         if (baseUrl.endsWith("/")) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
