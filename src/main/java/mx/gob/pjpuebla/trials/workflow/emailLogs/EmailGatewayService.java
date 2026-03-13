@@ -1,10 +1,9 @@
-package mx.gob.pjpuebla.apis.sendPulse;
+package mx.gob.pjpuebla.trials.workflow.emailLogs;
 
+import mx.gob.pjpuebla.apis.sendPulse.SendPulseClient;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailRequest;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseProperties;
 import mx.gob.pjpuebla.trials.util.enums.EstadoEnvioCorreo;
-import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
-import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogsRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,38 +34,41 @@ public class EmailGatewayService {
     }
 
     @Transactional
-    public EmailLogs sendAndLog(String toEmail, String toName, String subject, String html, String attachmentName, byte[] attachmentBytes) {
+    public EmailLogs sendAndLog(String toEmail, String toName, String subject, String html, String attachmentName,
+            byte[] attachmentBytes, String replyToName, String replyToEmail) {
 
         LocalDateTime now = LocalDateTime.now();
 
         EmailLogs emailLog = new EmailLogs()
-            .setIntentosVerificacion(0)
-            .setUltimaVerificacion(null)
-            .setProvider(sendPulseProperties.provider())
-            .setToEmail(toEmail)
-            .setToName(toName)
-            .setSubject(subject)
-            .setEstado(EstadoEnvioCorreo.PENDIENTE_ENVIO)
-            .setFechaEnvio(now);
+                .setIntentosVerificacion(0)
+                .setUltimaVerificacion(null)
+                .setProvider(sendPulseProperties.provider())
+                .setToEmail(toEmail)
+                .setToName(toName)
+                .setSubject(subject)
+                .setEstado(EstadoEnvioCorreo.PENDIENTE_ENVIO)
+                .setFechaEnvio(now);
 
         String htmlB64 = Base64.getEncoder().encodeToString(html.getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> attachments = toAttachmentsBinary(attachmentName, attachmentBytes);
 
-        SendPulseEmailRequest.Address from = new SendPulseEmailRequest.Address(sendPulseProperties.fromEmail(), sendPulseProperties.fromName());
+        SendPulseEmailRequest.Address from = new SendPulseEmailRequest.Address(sendPulseProperties.fromEmail(),
+                sendPulseProperties.fromName());
         SendPulseEmailRequest.Address to = new SendPulseEmailRequest.Address(toEmail, toName);
+        SendPulseEmailRequest.ReplyTo replyTo = new SendPulseEmailRequest.ReplyTo(replyToName, replyToEmail);
         SendPulseEmailRequest.Email email = new SendPulseEmailRequest.Email(
                 htmlB64,
                 null,
                 subject,
                 from,
                 List.of(to),
-                true, 
+                replyTo,
+                true,
                 attachments);
 
         try {
             String providerMessageId = sendPulseClient.sendEmail(new SendPulseEmailRequest(email));
-            log.info("El id generado es: " + providerMessageId);
 
             emailLog.setProviderMessageId(providerMessageId);
             emailLog.setEstado(EstadoEnvioCorreo.ENVIADO);
@@ -79,6 +81,11 @@ public class EmailGatewayService {
             emailLogRepository.save(emailLog);
             throw ex;
         }
+    }
+
+    @Transactional
+    public void verificarEstatus(String providerMessageId) {
+
     }
 
     public LocalDateTime parseSendPulseToLocal(String value) {

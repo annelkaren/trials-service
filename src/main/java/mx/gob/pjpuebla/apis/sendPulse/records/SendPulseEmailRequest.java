@@ -9,28 +9,31 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SendPulseEmailRequest(
-        Email email
-) {
+                Email email) {
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL) 
-    public record Email(
-            String html,
-            String text,
-            String subject,
-            Address from,
-            List<Address> to,
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public record Email(
+                        String html,
+                        String text,
+                        String subject,
+                        Address from,
+                        List<Address> to,
+                        ReplyTo replyTo,
 
-            @JsonProperty("auto_plain_text")
-            Boolean autoPlainText,
+                        @JsonProperty("auto_plain_text") Boolean autoPlainText,
 
-            @JsonProperty("attachments_binary")
-            Map<String, String> attachmentsBinary
-    ) {}
+                        @JsonProperty("attachments_binary") Map<String, String> attachmentsBinary) {
+        }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Address(
-            String email,
-            String name
-    ) {}
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public record Address(
+                        String email,
+                        String name) {
+        }
+
+        public record ReplyTo(
+                        String name,
+                        String email) {
+        }
 }
