@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioRecord;
 
 @Repository
@@ -16,7 +17,6 @@ public interface NotificacionSalaDestinatarioRepository extends JpaRepository<No
     Optional<NotificacionSalaDestinatario> findFirstByNotificacionSalaIdOrderByIdAsc(Integer notificacionSalaId);
 
     Integer countByNotificacionSalaId(Integer notificacionSalaId);
-
 
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioRecord(
@@ -35,5 +35,7 @@ public interface NotificacionSalaDestinatarioRepository extends JpaRepository<No
             WHERE notificacionDestinatario.notificacionSala.id = :notificacionSalaId
             """)
     List<NotificacionSalaDestinatarioRecord> findSalaDestinatarioRecord(Integer notificacionSalaId);
+
+    Optional<NotificacionSalaDestinatario> findByEmailLog(EmailLogs emailLog);
 
 }

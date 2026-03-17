@@ -28,6 +28,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailGatewayService;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailVerificacionService;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioCreateRecord;
@@ -47,8 +48,8 @@ public class NotificacionesSalasServices {
     private final EmailGatewayService emailGatewayService;
     private final AcuseNotificacionService acuseNotificacionService;
     private final JuzgadoService juzgadoService;
-    private final mx.gob.pjpuebla.apis.sendPulse.jobs.EmailStatusPollingJob emailStatusPollingJob;
     private final PersonaService personaService;
+    private final EmailVerificacionService emailVerificacionService;
 
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
@@ -58,7 +59,7 @@ public class NotificacionesSalasServices {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado."));
 
         if (destinatario.getEmailLog() != null) {
-            emailStatusPollingJob.verificarYActualizarUnico(destinatario.getEmailLog());
+            emailVerificacionService.verificarYActualizarUnico(destinatario.getEmailLog());
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El destinatario no tiene un registro de correo asociado.");
