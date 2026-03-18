@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.workflow.acuseNotificacion.AcuseNotificacionService;
@@ -26,6 +28,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailGatewayService;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailVerificacionService;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioCreateRecord;
@@ -45,7 +48,8 @@ public class NotificacionesSalasServices {
     private final EmailGatewayService emailGatewayService;
     private final AcuseNotificacionService acuseNotificacionService;
     private final JuzgadoService juzgadoService;
-    private final mx.gob.pjpuebla.apis.sendPulse.jobs.EmailStatusPollingJob emailStatusPollingJob;
+    private final PersonaService personaService;
+    private final EmailVerificacionService emailVerificacionService;
 
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
@@ -55,7 +59,7 @@ public class NotificacionesSalasServices {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado."));
 
         if (destinatario.getEmailLog() != null) {
-            emailStatusPollingJob.verificarYActualizarUnico(destinatario.getEmailLog());
+            emailVerificacionService.verificarYActualizarUnico(destinatario.getEmailLog());
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El destinatario no tiene un registro de correo asociado.");
@@ -114,9 +118,10 @@ public class NotificacionesSalasServices {
                         + notificacion.getSala().getNombre().toUpperCase()
                         + " DEL TRIBUNAL SUPERIOR DE JUSTICIA, PODER JUDICIAL DEL ESTADO DE PUEBLA.";
 
-                // Asignamos el reply to para send pulse, de momento coloco el mio:
-                String replyToName = "Alexis Benítez";
-                String replyToEmail = "alexis.benitez@pjpuebla.gob.mx";
+                Persona personaLogueada = personaService.getAuditor();
+                String replyToName = personaLogueada.getNombre() + " " + personaLogueada.getApellidoPaterno() + " "
+                        + personaLogueada.getApellidoMaterno() != null ? personaLogueada.getApellidoMaterno() : "";
+                String replyToEmail = personaLogueada.getCorreoElectronico();
 
                 EmailLogs emailLog = enviarCorreoNotificacion(
                         asunto,
@@ -225,6 +230,10 @@ public class NotificacionesSalasServices {
 
     public byte[] getAcuseNotificacion(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
         return acuseNotificacionService.getAcuseNotificacionService(notificacionSalaDestinatarioId);
+    }
+
+    public byte[] getAcuseNotificacionNoEntregada(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
+        return acuseNotificacionService.getAcuseNotificacionNoEntregadaService(notificacionSalaDestinatarioId);
     }
 
     private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {

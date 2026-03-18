@@ -19,7 +19,7 @@ public record SendPulseEmailRequest(
                         String subject,
                         Address from,
                         List<Address> to,
-                        ReplyTo replyTo,
+                        @JsonProperty("reply_to") ReplyTo replyTo,
 
                         @JsonProperty("auto_plain_text") Boolean autoPlainText,
 

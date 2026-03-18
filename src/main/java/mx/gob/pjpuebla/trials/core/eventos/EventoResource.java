@@ -40,4 +40,9 @@ public class EventoResource {
     public EventoRecord editarEventoPeriodo(@RequestBody EventoEditRecord record) {
         return this.eventoService.editarEventoPeriodo(record);
     }
+
+    @GetMapping("/diainhabil")
+    public Boolean validarDiaInhabil(@RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fecha) {
+        return this.eventoService.validarDiaInhabil(fecha);
+    }
 }

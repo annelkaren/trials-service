@@ -87,6 +87,18 @@ public class NotificacionesSalasResource {
                 .body(notificacionesSalasServices.getAcuseNotificacion(notificacionSalaDestinatarioId));
     }
 
+    @GetMapping(value = "/destinatarios/{notificacionSalaDestinatarioId}/acuse-no-entregada", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getAcuseNotificacionNoEntregada(@PathVariable Integer notificacionSalaDestinatarioId)
+            throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        
+        headers.setContentDispositionFormData("acuse", notificacionSalaDestinatarioId + "_acuse_no_entregada.pdf");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(notificacionesSalasServices.getAcuseNotificacionNoEntregada(notificacionSalaDestinatarioId));
+    }
+
     @PostMapping("/destinatarios/{notificacionSalaDestinatarioId}/verify-status")
     public ResponseEntity<Void> verifyStatus(@PathVariable Integer notificacionSalaDestinatarioId) {
         notificacionesSalasServices.verificarEstatusCorreo(notificacionSalaDestinatarioId);
