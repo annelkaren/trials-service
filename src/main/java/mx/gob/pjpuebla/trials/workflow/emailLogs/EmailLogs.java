@@ -85,4 +85,27 @@ public class EmailLogs implements Serializable {
     @Column(name = "J_TRACKING_LINK_DETALLE", columnDefinition = "jsonb")
     private JsonNode trackingLinkDetalle;
 
+    public void registrarIntentoVerificacion(LocalDateTime fechaActual) {
+        int intentos = (this.getIntentosVerificacion() == null) ? 0 : this.getIntentosVerificacion();
+        this.setIntentosVerificacion(intentos + 1);
+        this.setUltimaVerificacion(fechaActual);
+    }
+
+    public void marcarComoNoEntregado() {
+        this.estado = EstadoEnvioCorreo.NO_ENTREGADO;
+    }
+
+    public void marcarComoEnviadoSiAplica() {
+        if (this.estado == EstadoEnvioCorreo.PENDIENTE_ENVIO) {
+            this.estado = EstadoEnvioCorreo.ENVIADO;
+        }
+    }
+
+    public void marcarComoLeido(LocalDateTime fechaLectura) {
+        this.estado = EstadoEnvioCorreo.LEIDO;
+        if (this.fechaLectura == null) {
+            this.fechaLectura = fechaLectura;
+        }
+    }
+
 }

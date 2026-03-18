@@ -29,6 +29,10 @@
     {
       "path": "/actuator/*",
       "enforcement-mode": "DISABLED"
+    },
+     {
+      "path": "/public/*",
+      "enforcement-mode": "DISABLED"
     }
   ]
 }

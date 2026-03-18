@@ -17,15 +17,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.gob.pjpuebla.apis.sendPulse.EmailGatewayService;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.workflow.acuseNotificacion.AcuseNotificacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailGatewayService;
 import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailLogs;
+import mx.gob.pjpuebla.trials.workflow.emailLogs.EmailVerificacionService;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaCreateResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioCreateRecord;
@@ -39,21 +42,34 @@ import net.sf.jasperreports.engine.JRException;
 @Slf4j
 public class NotificacionesSalasServices {
 
-  
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
     private final DigitalizacionService digitalizacionService;
     private final EmailGatewayService emailGatewayService;
     private final AcuseNotificacionService acuseNotificacionService;
     private final JuzgadoService juzgadoService;
+    private final PersonaService personaService;
+    private final EmailVerificacionService emailVerificacionService;
+
     @Value("${app.public-api-base-url}")
     private String publicApiBaseUrl;
+
+    public void verificarEstatusCorreo(Integer destinatarioId) {
+        NotificacionSalaDestinatario destinatario = notificacionSalaDestinatarioRepository.findById(destinatarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado."));
+
+        if (destinatario.getEmailLog() != null) {
+            emailVerificacionService.verificarYActualizarUnico(destinatario.getEmailLog());
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El destinatario no tiene un registro de correo asociado.");
+        }
+    }
 
     public Page<NotificacionesSalasRecord> getPageNotificaciones(Pageable pageable, String q, String numeroExpediente,
             String nombreDestinatario, String correoElectronico, LocalDateTime fechaEnvioFrom,
             LocalDateTime fechaEnvioTo, LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo,
             Integer salaId) {
-
 
         return notificacionesSalasRepository.findPageNotificaciones(pageable);
     }
@@ -78,7 +94,8 @@ public class NotificacionesSalasServices {
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo, sala.getId(),
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo,
+                sala.getId(),
                 notificacion.getId());
 
         notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
@@ -97,13 +114,22 @@ public class NotificacionesSalasServices {
             destinatario.setEstado(Estado.ACTIVE);
 
             try {
-                String asunto = "NOTIFICACIÓN TOCA " + notificacion.getToca() + ", " + notificacion.getSala().getNombre().toUpperCase() + " DEL TRIBUNAL SUPERIOR DE JUSTICIA, PODER JUDICIAL DEL ESTADO DE PUEBLA.";
+                String asunto = "NOTIFICACIÓN TOCA " + notificacion.getToca() + ", "
+                        + notificacion.getSala().getNombre().toUpperCase()
+                        + " DEL TRIBUNAL SUPERIOR DE JUSTICIA, PODER JUDICIAL DEL ESTADO DE PUEBLA.";
+
+                Persona personaLogueada = personaService.getAuditor();
+                String replyToName = personaLogueada.getNombre() + " " + personaLogueada.getApellidoPaterno() + " "
+                        + personaLogueada.getApellidoMaterno() != null ? personaLogueada.getApellidoMaterno() : "";
+                String replyToEmail = personaLogueada.getCorreoElectronico();
 
                 EmailLogs emailLog = enviarCorreoNotificacion(
                         asunto,
                         destinatarioRequest.nombreDestinatario().trim(),
                         htmlFinalCorreo,
-                        destinatarioRequest.correoElectronico().trim());
+                        destinatarioRequest.correoElectronico().trim(),
+                        replyToName,
+                        replyToEmail);
                 destinatario.setEmailLog(emailLog);
                 exitosos++;
             } catch (Exception ex) {
@@ -137,7 +163,7 @@ public class NotificacionesSalasServices {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
 
         List<NotificacionSalaDestinatarioRecord> destinatarios = notificacionSalaDestinatarioRepository
-            .findSalaDestinatarioRecord(idNotificacionSala);
+                .findSalaDestinatarioRecord(idNotificacionSala);
 
         return new NotificacionSalaDetalleRecord(
                 notificacion.getId(),
@@ -152,19 +178,22 @@ public class NotificacionesSalasServices {
                 destinatarios);
     }
 
-    private EmailLogs enviarCorreoNotificacion(String asunto, String nombreDestinatario, String contenidoCorreoHtml, String correoElectronico) {
-        
+    private EmailLogs enviarCorreoNotificacion(String asunto, String nombreDestinatario, String contenidoCorreoHtml,
+            String correoElectronico, String replyToName, String replyToEmail) {
+
         return emailGatewayService.sendAndLog(
                 correoElectronico,
                 nombreDestinatario,
                 asunto,
                 contenidoCorreoHtml,
                 null,
-                null);
+                null,
+                replyToName,
+                replyToEmail);
     }
 
     public byte[] downloadArchivo(Integer idNotificacionSala) throws java.io.IOException {
-        
+
         NotificacionesSalas notificacion = notificacionesSalasRepository.findById(idNotificacionSala)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notificacion no encontrada."));
 
@@ -172,18 +201,21 @@ public class NotificacionesSalasServices {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La notificacion no tiene archivo.");
         }
 
-        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/" + notificacion.getRutaArchivo();
+        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/"
+                + notificacion.getRutaArchivo();
 
         return digitalizacionService.getArchivoNotificacionSala(rutaArchivo);
     }
 
     public byte[] downloadArchivoPublico(String nombreArchivo) {
         validarNombreArchivo(nombreArchivo);
-        
+
         NotificacionesSalas notificacion = notificacionesSalasRepository.findByRutaArchivo(nombreArchivo)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado repositorio."));
-        
-        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/" + notificacion.getRutaArchivo();
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado repositorio."));
+
+        String rutaArchivo = "notificacionesSalas/sala_" + notificacion.getSala().getId() + "/"
+                + notificacion.getRutaArchivo();
 
         if (rutaArchivo == null || rutaArchivo.isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Archivo no encontrado.");
@@ -196,13 +228,18 @@ public class NotificacionesSalasServices {
         }
     }
 
-    public byte[] getAcuseNotificacion(Integer notificacionSalaDestinatarioId) throws JRException, IOException  {
+    public byte[] getAcuseNotificacion(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
         return acuseNotificacionService.getAcuseNotificacionService(notificacionSalaDestinatarioId);
+    }
+
+    public byte[] getAcuseNotificacionNoEntregada(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
+        return acuseNotificacionService.getAcuseNotificacionNoEntregadaService(notificacionSalaDestinatarioId);
     }
 
     private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La informacion de la notificacion es obligatoria.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La informacion de la notificacion es obligatoria.");
         }
 
         if (request.toca() == null || request.toca().isBlank()) {
@@ -233,7 +270,7 @@ public class NotificacionesSalasServices {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El correo del destinatario " + index + " es obligatorio.");
             }
-          
+
             if (destinatario.tipoParte() == null || destinatario.tipoParte().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "El tipo de parte del destinatario " + index + " es obligatorio.");
@@ -264,10 +301,11 @@ public class NotificacionesSalasServices {
     private String buildPublicDownloadUrl(String nombreArchivo) {
         String encodedNombreArchivo = UriUtils.encodePathSegment(nombreArchivo, StandardCharsets.UTF_8);
         String baseUrl = publicApiBaseUrl != null ? publicApiBaseUrl.trim() : "";
+
         if (baseUrl.endsWith("/")) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
-        return baseUrl + "/api/workflow/notificacionesSalas/download/" + encodedNombreArchivo;
+        return baseUrl + "/notificaciones/download/" + encodedNombreArchivo;
     }
 
     private String appendDownloadLink(String contenidoCorreoHtml, String downloadUrl) {
