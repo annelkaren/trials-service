@@ -58,6 +58,14 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         """)
         void reiniciarContadorAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
 
+        @Modifying(flushAutomatically = true)
+        @Query("""
+                UPDATE Juzgado j
+                SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda
+                WHERE j.id IN :ids
+                """)
+        void reiniciarContadorAsignacionesPorIds(@Param("ids") List<Integer> ids);
+
         @Query("""
                         SELECT COALESCE(SUM(j.contadorAsignaciones), 0)
                         FROM Juzgado j
