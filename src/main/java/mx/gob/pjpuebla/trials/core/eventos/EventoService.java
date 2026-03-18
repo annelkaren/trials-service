@@ -64,6 +64,11 @@ public class EventoService {
         return FinSemana.esInhabil(fecha) || eventoRepository.existsEventoEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
     }
 
+    public Boolean validarDiaInhabil(LocalDate fecha) {
+        Persona persona = personaService.getAuditor();
+        return esDiaInHabil(fecha, persona.getJuzgado(), persona.getOficialia());
+    }
+
     public LocalDate siguienteDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia){
         Optional<Evento> evento = eventoRepository.findEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
 

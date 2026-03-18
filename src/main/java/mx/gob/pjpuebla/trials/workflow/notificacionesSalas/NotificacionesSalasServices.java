@@ -232,6 +232,10 @@ public class NotificacionesSalasServices {
         return acuseNotificacionService.getAcuseNotificacionService(notificacionSalaDestinatarioId);
     }
 
+    public byte[] getAcuseNotificacionNoEntregada(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
+        return acuseNotificacionService.getAcuseNotificacionNoEntregadaService(notificacionSalaDestinatarioId);
+    }
+
     private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
