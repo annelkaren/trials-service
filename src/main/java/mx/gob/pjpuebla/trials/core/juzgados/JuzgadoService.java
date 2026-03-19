@@ -535,27 +535,57 @@ public class JuzgadoService {
         actualizarCarga(juzgado, tipoCarpeta, juzgadosRelacionados);
     }
 
+    // public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
+
+    //     InstanciaJuzgado instanciaJuzgado;
+    //     if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
+    //         instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
+
+    //     } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
+    //         instanciaJuzgado = InstanciaJuzgado.EXHORTO;
+    //     } else {
+    //         instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
+    //     }
+
+    //     List<Integer> idsJuzgadosRelacionados = juzgadosRelacionados.stream().map(juzgado -> juzgado.getId()).toList();
+
+    //     int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
+    //     int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
+    //     int totalJuzgadosMenosAsignaciones = juzgadoRepository
+    //             .findJuzgadosMenosAsignaciones(materia, instanciaJuzgado, idsJuzgadosRelacionados).size();
+
+    //     if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
+    //         juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
+    //     }
+    // }
     public void revisarCargaJuzgados(Materia materia, TipoCarpeta tipoCarpeta, List<Juzgado> juzgadosRelacionados) {
 
         InstanciaJuzgado instanciaJuzgado;
         if (TipoCarpeta.APELACION.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.SEGUNDA_INSTANCIA;
-
         } else if (TipoCarpeta.EXHORTO.equals(tipoCarpeta)) {
             instanciaJuzgado = InstanciaJuzgado.EXHORTO;
         } else {
             instanciaJuzgado = InstanciaJuzgado.PRIMERA_INSTANCIA;
         }
 
-        List<Integer> idsJuzgadosRelacionados = juzgadosRelacionados.stream().map(juzgado -> juzgado.getId()).toList();
+        List<Integer> idsJuzgadosRelacionados = juzgadosRelacionados.stream()
+                .map(Juzgado::getId)
+                .toList();
 
-        int totalAsignaciones = juzgadoRepository.sumContadorAsignacionesByMateria(materia, instanciaJuzgado);
-        int totalMaxAsignaciones = juzgadoRepository.sumMaxAsignacionesRondaByMateria(materia, instanciaJuzgado);
+        int totalAsignaciones = juzgadosRelacionados.stream()
+                .mapToInt(Juzgado::getContadorAsignaciones)
+                .sum();
+                
+        int totalMaxAsignaciones = juzgadosRelacionados.stream()
+                .mapToInt(Juzgado::getMaxAsignacionesRonda) 
+                .sum();
+
         int totalJuzgadosMenosAsignaciones = juzgadoRepository
                 .findJuzgadosMenosAsignaciones(materia, instanciaJuzgado, idsJuzgadosRelacionados).size();
 
-        if (totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
-            juzgadoRepository.reiniciarContadorAsignaciones(materia, instanciaJuzgado);
+        if (totalMaxAsignaciones > 0 && totalAsignaciones >= totalMaxAsignaciones && totalJuzgadosMenosAsignaciones == 0) {
+            juzgadoRepository.reiniciarContadorAsignacionesPorIds(idsJuzgadosRelacionados);
         }
     }
 
