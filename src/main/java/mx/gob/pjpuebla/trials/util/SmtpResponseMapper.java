@@ -62,7 +62,6 @@ public class SmtpResponseMapper {
         }
     }
 
-    // 🔥 Fallback inteligente
     private EmailError fallback(String code, String subcode) {
 
         if (code != null && code.startsWith("2")) {

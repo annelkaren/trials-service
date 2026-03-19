@@ -14,6 +14,11 @@
         "message": "El buzón está lleno",
         "retryable": true
     },
+    "5.2.3": {
+        "type": "MAILBOX_FULL",
+        "message": "El buzón está lleno",
+        "retryable": true
+    },
     "5.11.1": {
         "type": "UNSUBSCRIBED",
         "message": "El destinatario se ha desuscrito a la entrega de correos.",

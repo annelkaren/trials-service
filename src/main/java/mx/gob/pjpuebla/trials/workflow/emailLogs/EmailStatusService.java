@@ -25,18 +25,19 @@ import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.NotificacionesSalasRe
 public class EmailStatusService {
 
     private final EmailLogsRepository emailLogsRepository;
-    private final NotificacionService notificacionService;
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
 
     private static final ZoneId ZONA_MEXICO = ZoneId.of("America/Mexico_City");
-    private static final Duration VENTANA_NO_LEIDO = Duration.ofDays(2);
 
     // Se considerara como NO leido a un correo el cual vensa su fecha de termino.
-    // TODO: Preguntar si la fecha termino aun no se cambiaria el estatus o un dia
-    // despues, se contemplara un dia despues.
+
     public boolean marcarNoLeido(EmailLogs emailLog) {
         LocalDateTime ahoraMx = ZonedDateTime.now(ZONA_MEXICO).toLocalDateTime();
+
+        if (emailLog.getEstado().equals(EstadoEnvioCorreo.NO_ENTREGADO)) {
+            return false;
+        }
 
         // Evaluamos tiempo de termino de la notificación:
         NotificacionSalaDestinatario nsd = notificacionSalaDestinatarioRepository.findByEmailLog(emailLog)

@@ -20,40 +20,40 @@ public class EmailVerificacionService {
     private final SendPulseClient sendPulseClient;
     private final EmailStatusUpdater updater;
 
-public void verificarYActualizarUnico(EmailLogs log) {
-    LocalDateTime ahoraMx = ZonedDateTime.now(ZoneId.of("America/Mexico_City")).toLocalDateTime();
+    public void verificarYActualizarUnico(EmailLogs log) {
+        LocalDateTime ahoraMx = ZonedDateTime.now(ZoneId.of("America/Mexico_City")).toLocalDateTime();
 
-    if (emailStatusService.estaLeidoFinalizado(log)) {
-        return;
-    }
-
-    String providerId = log.getProviderMessageId();
-
-    if (providerId == null || providerId.isBlank()) {
-        log.registrarIntentoVerificacion(ahoraMx);
-        log.setErrorEnvioDetalle("No se puede consultar SendPulse: providerMessageId vacío.");
-        emailLogsRepo.save(log);
-        return;
-    }
-
-    try {
-        SendPulseEmailInfoResponse info = sendPulseClient.getEmailInfo(providerId);
-
-        log.registrarIntentoVerificacion(ahoraMx);
-
-        if (info == null) {
-            log.setErrorEnvioDetalle("No se obtuvo info de SendPulse");
-        } else {
-            updater.aplicarInfo(log, info, ahoraMx);
+        if (emailStatusService.estaLeidoFinalizado(log)) {
+            return;
         }
 
-        emailStatusService.marcarNoLeido(log);
+        String providerId = log.getProviderMessageId();
 
-    } catch (Exception ex) {
-        log.registrarIntentoVerificacion(ahoraMx);
-        log.setErrorEnvioDetalle("Error verificando estatus: " + ex.getMessage());
+        if (providerId == null || providerId.isBlank()) {
+            log.registrarIntentoVerificacion(ahoraMx);
+            log.setErrorEnvioDetalle("No se puede consultar SendPulse: providerMessageId vacío.");
+            emailLogsRepo.save(log);
+            return;
+        }
+
+        try {
+            SendPulseEmailInfoResponse info = sendPulseClient.getEmailInfo(providerId);
+
+            log.registrarIntentoVerificacion(ahoraMx);
+
+            if (info == null) {
+                log.setErrorEnvioDetalle("No se obtuvo info de SendPulse");
+            } else {
+                updater.aplicarInfo(log, info, ahoraMx);
+            }
+
+            emailStatusService.marcarNoLeido(log);
+
+        } catch (Exception ex) {
+            log.registrarIntentoVerificacion(ahoraMx);
+            log.setErrorEnvioDetalle("Error verificando estatus: " + ex.getMessage());
+        }
+
+        emailLogsRepo.save(log);
     }
-
-    emailLogsRepo.save(log);
-}
 }
