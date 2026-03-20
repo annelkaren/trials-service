@@ -2082,6 +2082,14 @@ public class DocumentoService {
                 }
         }
 
+        public byte[] getDigitalizacionByMovimientoId(Integer movimientoId) throws IOException {
+                Movimiento movimiento = movimientoRepository.findById(movimientoId)
+                                .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
+                                                movimientoId.toString()));
+                Documento doc = getDocumentoForRenderOficialMayor(movimiento);
+                return digitalizacionService.getDocumento(doc.getId());
+        }
+
         public Page<OficioResponseRecord> getAllOficios(String key, Pageable pageable) {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaService.getAuditor();

@@ -100,6 +100,7 @@ public class PromocionSinExpedienteService {
                 return promocionSinExpedienteRepository.findById(id).orElse(null);
         }
 
+        @Transactional
         public DocumentoPromocionResponseRecord asociarExpediente(Integer idPromocion) {
                 Persona persona = personaService.getAuditor();
 
@@ -127,8 +128,7 @@ public class PromocionSinExpedienteService {
                         promocion.setCarpeta(carpetaExistente);
                         Migrado migrado = carpetaExistente.getMigrado();
                         return registraPromocion(promocion.getTipoPromocion(), carpetaExistente, promocion.getFolio(),
-                                        persona,
-                                        List.of(promocion.getAnexos().split(", ")), promocion, migrado);
+                                        persona, parseAnexos(promocion.getAnexos()), promocion, migrado);
 
                 }
 
@@ -158,14 +158,7 @@ public class PromocionSinExpedienteService {
 
                                 // Ahora una vez que el expediente principal esta agregado creamos el registro
                                 // de la promoción asociada al expediente principal:
-                                String anexosNormalizados = UtilsMigracion.normalizeSpaces(promocion.getAnexos());
-
-                                List<String> anexos = Pattern.compile("\\s*,\\s*")
-                                                .splitAsStream(anexosNormalizados)
-                                                .map(String::trim)
-                                                .filter(s -> !s.isEmpty())
-                                                .distinct()
-                                                .toList();
+                                List<String> anexos = parseAnexos(promocion.getAnexos());
 
                                 return registraPromocion(promocion.getTipoPromocion(), expedienteMigrado.carpeta(),
                                                 promocion.getFolio(), persona, anexos, promocion, Migrado.SI);
@@ -195,7 +188,7 @@ public class PromocionSinExpedienteService {
                         Carpeta carpeta = new Carpeta()
                                         .setJuzgado(juzgado)
                                         .setTipoJuicio(tipoJuicioTradicional)
-                                        .setExpediente(promocion.getExpediente() + "/" + year)
+                                        .setExpediente(promocion.getExpediente())
                                         .setFolio(promocion.getFolio())
                                         .setTipoCarpeta(TipoCarpeta.DEMANDA)
                                         .setEstatus(EstadoCarpeta.ASIGNADO)
@@ -216,21 +209,13 @@ public class PromocionSinExpedienteService {
 
                         // Ahora una vez que el expediente principal esta agregado creamos el registro
                         // de la promoción asociada al expediente principal:
-                        String anexosNormalizados = UtilsMigracion.normalizeSpaces(promocion.getAnexos());
-
-                        List<String> anexos = Pattern.compile("\\s*,\\s*")
-                                        .splitAsStream(anexosNormalizados)
-                                        .map(String::trim)
-                                        .filter(s -> !s.isEmpty())
-                                        .distinct()
-                                        .toList();
+                        List<String> anexos = parseAnexos(promocion.getAnexos());
 
                         return registraPromocion(promocion.getTipoPromocion(), carpeta, promocion.getFolio(), persona,
                                         anexos, promocion, Migrado.NO);
                 }
         }
 
-        @Transactional
         private DocumentoPromocionResponseRecord registraPromocion(TipoPromocion tipoPromocion, Carpeta carpeta,
                         String folio, Persona persona, List<String> anexos, PromocionSinExpediente promocion, Migrado migrado) {
                 DocumentoData docData = new DocumentoData().setTipoPromocion(tipoPromocion);
@@ -262,5 +247,18 @@ public class PromocionSinExpedienteService {
 
                 return new DocumentoPromocionResponseRecord(documento.getId(), documento.getFolio(),
                                 documento.getTipoDocumento());
+        }
+
+        private List<String> parseAnexos(String anexos) {
+                if (anexos == null || anexos.trim().isEmpty()) {
+                        return java.util.Collections.emptyList();
+                }
+                String anexosNormalizados = UtilsMigracion.normalizeSpaces(anexos);
+                return Pattern.compile("\\s*,\\s*")
+                                .splitAsStream(anexosNormalizados)
+                                .map(String::trim)
+                                .filter(s -> !s.isEmpty())
+                                .distinct()
+                                .toList();
         }
 }
