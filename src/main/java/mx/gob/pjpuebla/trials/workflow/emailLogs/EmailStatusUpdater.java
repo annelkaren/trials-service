@@ -4,13 +4,15 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.apis.sendPulse.SendPulseParser;
 import mx.gob.pjpuebla.apis.sendPulse.records.SendPulseEmailInfoResponse;
 
 @Service
+@RequiredArgsConstructor
 public class EmailStatusUpdater {
 
-    private SendPulseParser parser;
+    private final SendPulseParser parser;
 
     public void aplicarInfo(EmailLogs emailLogs, SendPulseEmailInfoResponse info, LocalDateTime ahoraMx) {
 
@@ -36,7 +38,7 @@ public class EmailStatusUpdater {
             }
         }
 
-         if (info.tracking() != null) {
+        if (info.tracking() != null) {
             emailLogs.setTrackingLinkDetalle(parser.construirTrackingConLinkNormalizado(info.tracking()));
         }
 

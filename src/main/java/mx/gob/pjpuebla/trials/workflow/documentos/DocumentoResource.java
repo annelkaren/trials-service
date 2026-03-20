@@ -103,6 +103,14 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(digitalizacionService.getPromocionMigrada(promocionId));
     }
 
+    @GetMapping(value = "/documentos/digitalizacion/movimiento/{movimientoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFileByMovimiento(@PathVariable Integer movimientoId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("documento", movimientoId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(documentoService.getDigitalizacionByMovimientoId(movimientoId));
+    }
+
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> exportCaratulaPdf(@PathVariable Integer id) throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
