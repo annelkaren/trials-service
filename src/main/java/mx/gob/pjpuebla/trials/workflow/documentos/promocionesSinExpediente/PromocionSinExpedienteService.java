@@ -71,7 +71,12 @@ public class PromocionSinExpedienteService {
         public Page<PromocionSinExpedientePageRecord> getAll(
                         PromocionSinExpedienteFiltrosRecord filtros,
                         Pageable pageable) {
-                return promocionSinExpedienteRepository.getAll(pageable);
+
+                Persona persona = personaService.getAuditor();
+                List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
+                                : persona.getOficialia().getJuzgados();
+
+                return promocionSinExpedienteRepository.getAll(pageable, juzgados);
         }
 
         @Transactional
@@ -145,11 +150,12 @@ public class PromocionSinExpedienteService {
                         try {
                                 log.info("Expediente encontrado en el SECGJ PHP, se procederá a migrar el expediente.");
                                 // SI se encuentra el expediente en el SECGJ PHP, lo migramos
-                                
-                                MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase.migrarExpedienteCompleto(
-                                                promocion.getExpediente().split("/")[0],
-                                                year,
-                                                juzgado.getClaveJuzgado());
+
+                                MigracionExpedienteResult expedienteMigrado = migrarExpedienteUseCase
+                                                .migrarExpedienteCompleto(
+                                                                promocion.getExpediente().split("/")[0],
+                                                                year,
+                                                                juzgado.getClaveJuzgado());
 
                                 // Actualizamos estatus de la promoción sin expediente
                                 promocion.setEstado(PromocionSinExpedienteEnum.PROMOCION_REGISTRADA);
@@ -181,8 +187,9 @@ public class PromocionSinExpedienteService {
                                                         String.valueOf(persona.getId())));
 
                         Persona oficialMayor = personaService.getOficialMayor(juzgado);
-                        if(oficialMayor == null){
-                                throw new ConflictException("No existe un oficial mayor en el juzgado, imposible crear la promoción.");
+                        if (oficialMayor == null) {
+                                throw new ConflictException(
+                                                "No existe un oficial mayor en el juzgado, imposible crear la promoción.");
                         }
 
                         Carpeta carpeta = new Carpeta()
@@ -217,7 +224,8 @@ public class PromocionSinExpedienteService {
         }
 
         private DocumentoPromocionResponseRecord registraPromocion(TipoPromocion tipoPromocion, Carpeta carpeta,
-                        String folio, Persona persona, List<String> anexos, PromocionSinExpediente promocion, Migrado migrado) {
+                        String folio, Persona persona, List<String> anexos, PromocionSinExpediente promocion,
+                        Migrado migrado) {
                 DocumentoData docData = new DocumentoData().setTipoPromocion(tipoPromocion);
 
                 Documento documento = new Documento()

@@ -40,8 +40,57 @@ public interface NotificacionesSalasRepository extends JpaRepository<Notificacio
                 )
             )
             FROM NotificacionesSalas ns
+            WHERE 
+                (
+                  COALESCE(:q, '') = '' OR 
+                  LOWER(ns.toca) LIKE LOWER(CONCAT('%', COALESCE(:q,''), '%')) OR 
+                  LOWER(ns.sala.nombre) LIKE LOWER(CONCAT('%', COALESCE(:q,''), '%')) OR 
+                  EXISTS (
+                      SELECT 1 FROM NotificacionSalaDestinatario ndq 
+                      WHERE ndq.notificacionSala.id = ns.id 
+                      AND (LOWER(ndq.nombreDestinatario) LIKE LOWER(CONCAT('%', COALESCE(:q,''), '%')) 
+                           OR LOWER(ndq.correoElectronico) LIKE LOWER(CONCAT('%', COALESCE(:q,''), '%')))
+                  )
+                )
+                AND (
+                  COALESCE(:numeroExpediente, '') = '' OR 
+                  LOWER(ns.toca) LIKE LOWER(CONCAT('%', COALESCE(:numeroExpediente,''), '%'))
+                )
+                AND (
+                  :salaId IS NULL OR ns.sala.id = :salaId
+                )
+                AND (
+                  COALESCE(:nombreDestinatario, '') = '' OR 
+                  EXISTS (
+                      SELECT 1 FROM NotificacionSalaDestinatario ndn 
+                      WHERE ndn.notificacionSala.id = ns.id 
+                      AND LOWER(ndn.nombreDestinatario) LIKE LOWER(CONCAT('%', COALESCE(:nombreDestinatario,''), '%'))
+                  )
+                )
+                AND (
+                  COALESCE(:correoElectronico, '') = '' OR 
+                  EXISTS (
+                      SELECT 1 FROM NotificacionSalaDestinatario ndc 
+                      WHERE ndc.notificacionSala.id = ns.id 
+                      AND LOWER(ndc.correoElectronico) LIKE LOWER(CONCAT('%', COALESCE(:correoElectronico,''), '%'))
+                  )
+                )
+                AND (cast(:fechaEnvioFrom as timestamp) IS NULL OR ns.fechaEnvio >= :fechaEnvioFrom)
+                AND (cast(:fechaEnvioTo as timestamp) IS NULL OR ns.fechaEnvio <= :fechaEnvioTo)
+                AND (cast(:fechaTerminoFrom as timestamp) IS NULL OR ns.fechaTermino >= :fechaTerminoFrom)
+                AND (cast(:fechaTerminoTo as timestamp) IS NULL OR ns.fechaTermino <= :fechaTerminoTo)
             """)
-    Page<NotificacionesSalasRecord> findPageNotificaciones(Pageable pageable);
+    Page<NotificacionesSalasRecord> findPageNotificaciones(
+            Pageable pageable, 
+            @Param("q") String q, 
+            @Param("numeroExpediente") String numeroExpediente, 
+            @Param("nombreDestinatario") String nombreDestinatario, 
+            @Param("correoElectronico") String correoElectronico, 
+            @Param("fechaEnvioFrom") java.time.LocalDateTime fechaEnvioFrom, 
+            @Param("fechaEnvioTo") java.time.LocalDateTime fechaEnvioTo, 
+            @Param("fechaTerminoFrom") java.time.LocalDateTime fechaTerminoFrom, 
+            @Param("fechaTerminoTo") java.time.LocalDateTime fechaTerminoTo, 
+            @Param("salaId") Integer salaId);
 
     @Query("""
             SELECT ns
