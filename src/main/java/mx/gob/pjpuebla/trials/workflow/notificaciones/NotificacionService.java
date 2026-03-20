@@ -331,8 +331,7 @@ public class NotificacionService {
                 String email = persona.getCorreoNotificacion() != null && !persona.getCorreoNotificacion().isBlank()
                         ? persona.getCorreoNotificacion()
                         : persona.getCorreoElectronico();
-                String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " "
-                        + ((persona.getApellidoMaterno() != null) ? persona.getApellidoMaterno() : "");
+                String nombreParticipante = getNombreParticipante(persona);
                 String numCarpeta = documento.getCarpeta().getExpediente();
                 String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
                 String tipoDocumento = documento.getTipoDocumento().name();
@@ -358,14 +357,29 @@ public class NotificacionService {
         };
     }
 
+    private String getNombreParticipante(PersonaDocumento personaDocumento) {
+        String nombre = personaDocumento.getNombre() != null ? personaDocumento.getNombre() : "";
+        String apellidoPaterno = personaDocumento.getApellidoPaterno() != null ? personaDocumento.getApellidoPaterno()
+                : "";
+        String apellidoMaterno = personaDocumento.getApellidoMaterno() != null ? personaDocumento.getApellidoMaterno()
+                : "";
+
+        return nombre + " " + apellidoPaterno + " " + apellidoMaterno;
+    }
+
+    private String getValueOrEmpty(String value) {
+        return value != null && !value.isBlank() ? value : "   ";
+    }
+
     private void createLitigante(PersonaDocumento personaDocumento, String email) {
         Persona persona = new Persona();
+
         persona.setDomicilio(personaDocumento.getFnDomicilio());
-        persona.setNombre(personaDocumento.getNombre());
-        persona.setApellidoPaterno(personaDocumento.getApellidoPaterno());
-        persona.setApellidoMaterno(personaDocumento.getApellidoMaterno());
+        persona.setNombre(getValueOrEmpty(personaDocumento.getNombre()));
+        persona.setApellidoPaterno(getValueOrEmpty(personaDocumento.getApellidoPaterno()));
+        persona.setApellidoMaterno(getValueOrEmpty(personaDocumento.getApellidoMaterno()));
         persona.setCurp(personaDocumento.getCurp());
-        persona.setCorreoElectronico(email);
+        persona.setCorreoElectronico(getValueOrEmpty(email));
         persona.setEstado(Estado.ACTIVE);
         persona.setRolPrincipal("LITIGANTE");
 

@@ -71,7 +71,8 @@ public class NotificacionesSalasServices {
             LocalDateTime fechaEnvioTo, LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo,
             Integer salaId) {
 
-        return notificacionesSalasRepository.findPageNotificaciones(pageable);
+        return notificacionesSalasRepository.findPageNotificaciones(pageable, q, numeroExpediente, nombreDestinatario,
+                correoElectronico, fechaEnvioFrom, fechaEnvioTo, fechaTerminoFrom, fechaTerminoTo, salaId);
     }
 
     @Transactional
