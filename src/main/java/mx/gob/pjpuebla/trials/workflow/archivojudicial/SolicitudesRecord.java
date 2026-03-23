@@ -12,5 +12,6 @@ public record SolicitudesRecord(Long id,
                                 String tipo,
                                 LocalDateTime fechaSolicitud,
                                 Urgente urgente,
-                                String fechaTermino) {
+                                String fechaTermino,
+                                String padre) {
 }

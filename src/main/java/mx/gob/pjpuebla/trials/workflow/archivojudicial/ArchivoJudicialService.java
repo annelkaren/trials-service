@@ -75,7 +75,8 @@ public class ArchivoJudicialService {
                         obtenerEtiquetaTipo(p.getTipo(), p.getTipoId()),
                         p.getFechaSolicitud(),
                         p.getUrgente(),
-                        calcularDiasRestantes(p.getFechaSolicitud())
+                        calcularDiasRestantes(p.getFechaSolicitud()),
+                        p.getTipo()
                 ));
     }
 
@@ -146,6 +147,56 @@ public class ArchivoJudicialService {
             }
         }
         return "Recibido(s) " + counter + " expediente(s) de " + list.size() + " seleccionado(s).";
+    }
+
+    public boolean cancelarExpediente(String tipo, Integer id) {
+        Persona auditor = personaService.getAuditor();
+        try {
+            if (tipo.toUpperCase().contains("CARPETA")) {
+                Carpeta carpeta = carpetaRepository.findById(id).orElse(null);
+                if (carpeta != null) {
+                    carpeta.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO);
+                    carpetaRepository.save(carpeta);
+                    movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO.name());
+                }
+            }
+            if (tipo.toUpperCase().contains("DOCUMENTO")) {
+                Documento documento = documentoRepository.findById(id).orElse(null);
+                if (documento != null) {
+                    documento.setEstatus(EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO);
+                    documentoRepository.save(documento);
+                    movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO.name());
+                }
+            }
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public boolean devolverExpediente(String tipo, Integer id) {
+        Persona auditor = personaService.getAuditor();
+        try {
+            if (tipo.toUpperCase().contains("CARPETA")) {
+                Carpeta carpeta = carpetaRepository.findById(id).orElse(null);
+                if (carpeta != null) {
+                    carpeta.setEstatus(EstadoCarpeta.DEVUELTO);
+                    carpetaRepository.save(carpeta);
+                    movimientoService.createMovimento(carpeta, null, auditor, null, EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO.name());
+                }
+            }
+            if (tipo.toUpperCase().contains("DOCUMENTO")) {
+                Documento documento = documentoRepository.findById(id).orElse(null);
+                if (documento != null) {
+                    documento.setEstatus(EstadoCarpeta.DEVUELTO);
+                    documentoRepository.save(documento);
+                    movimientoService.createMovimento(null, documento, auditor, null, EstadoCarpeta.ARCHIVO_JUDICIAL_RECIBIDO.name());
+                }
+            }
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     private String obtenerEtiquetaTipo(String tipo, Integer tipoId) {

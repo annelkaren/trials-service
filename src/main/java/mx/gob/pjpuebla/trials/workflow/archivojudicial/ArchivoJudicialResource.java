@@ -57,4 +57,14 @@ public class ArchivoJudicialResource {
     public String recibirExpedientes(@RequestBody List<RecibirExpedienteRecord> list) {
         return archivoJudicialService.recibirExpedientes(list);
     }
+
+    @PostMapping("/cancelar/{tipo}/{id}")
+    public boolean cancelarSolicitud(@PathVariable String tipo, @PathVariable Integer id) {
+        return archivoJudicialService.cancelarExpediente(tipo, id);
+    }
+
+    @PostMapping("/devolver/{tipo}/{id}")
+    public boolean devolverExpediente(@PathVariable String tipo, @PathVariable Integer id) {
+        return archivoJudicialService.devolverExpediente(tipo, id);
+    }
 }
