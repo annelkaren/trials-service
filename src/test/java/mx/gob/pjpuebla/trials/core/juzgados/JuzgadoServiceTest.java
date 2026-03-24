@@ -54,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -332,23 +333,31 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
         assertThat(response.getValue()).isEqualTo(2);
     }
-
+        
     @Test
     void actualizar_carga() {
+        
+        Juzgado juzgadoSimulado = new Juzgado();
+        juzgadoSimulado.setId(1);
+        juzgadoSimulado.setContadorAsignaciones(10);
+        juzgadoSimulado.setMaxAsignacionesRonda(10);
+        
+        List<Juzgado> juzgadosSeleccionados = List.of(juzgadoSimulado);
+        List<Integer> idsSimulados = List.of(1);
+
         Mockito.doNothing().when(juzgadoRepository).actualizarContadorAsignaciones(any());
-        given(juzgadoRepository.sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(new ArrayList<>());
-        Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignaciones(any(Materia.class), any(InstanciaJuzgado.class));
+        
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), Mockito.eq(idsSimulados)))
+               .willReturn(new ArrayList<>());
+               
+        Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignacionesPorIds(idsSimulados);
 
         TipoCarpeta tipoCarpeta = TipoCarpeta.DEMANDA;
-        List<Juzgado> juzgadosSeleccionados = new ArrayList<>();
         juzgadoService.actualizarCarga(juzgado, tipoCarpeta, juzgadosSeleccionados);
 
-        verify(juzgadoRepository, times(1)).sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class));
-        verify(juzgadoRepository, times(1)).sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class));
-        verify(juzgadoRepository, times(1)).findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any());
-        verify(juzgadoRepository, times(1)).reiniciarContadorAsignaciones(any(Materia.class), any(InstanciaJuzgado.class));
+        verify(juzgadoRepository, times(1)).actualizarContadorAsignaciones(any());
+        verify(juzgadoRepository, times(1)).findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), Mockito.eq(idsSimulados));
+        verify(juzgadoRepository, times(1)).reiniciarContadorAsignacionesPorIds(idsSimulados);
     }
 
     @Test
