@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos.records;
 import lombok.Data;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioDemandasRecord;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
@@ -10,15 +11,22 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DocumentoData implements Serializable {
 
-    private transient List<TipoJuicioDemandasRecord> tiposJuicios;
+    private List<TipoJuicioDemandasRecord> tiposJuicios;
     private Integer tieneAbogado;
     private String nombreAbogado;
     private String cedulaAbogado;
     private String correoAbogado;
     private String domicilio;
+    private String ultimoDomicilioFamiliar;
+    private String domicilioFamiliar;
     private TipoPromocion tipoPromocion;
     private String exhortoObservaciones;
     private String exhortoProcedencia;
@@ -40,6 +48,7 @@ public class DocumentoData implements Serializable {
     private String pieza;
     private EstadoCarpeta estadoPieza;
     private String domicilioAcreedor;
+    private String domicilioDemandado;
     private String tramite;
     private String destino;
     private LocalDate fechaEntrega;
@@ -55,5 +64,7 @@ public class DocumentoData implements Serializable {
     private String tipoSolAudiencia;
     private Integer carpetaHistorica;
     private Boolean expedienteReasignado;
+    private String oficioRealizadoPor;
+    private Prioridad prioridad;
 }
 

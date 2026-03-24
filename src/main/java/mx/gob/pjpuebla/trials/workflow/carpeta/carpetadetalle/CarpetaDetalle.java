@@ -61,6 +61,9 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "T_FECHA_HECHO")
     private LocalDate fechaHecho;
 
+    @Column(name = "T_FECHA_EJECUTORIA")
+    private LocalDate fechaEjecutoria;
+
     @Column(name = "N_CANTIDAD_PRINCIPAL")
     private Integer cantidadPrincipal;
 
@@ -95,7 +98,7 @@ public class CarpetaDetalle implements Serializable {
     private String localidad;
 
     @Column(name = "T_FECHA_REGISTRO")
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 
     @Column(name = "T_HORA_REGISTRO")
     private LocalTime horaFormal;
@@ -115,6 +118,26 @@ public class CarpetaDetalle implements Serializable {
 
     @Column(name = "T_FECHA_PRESENTACION_IMPUTADO")
     private LocalDate fechaPresentacionImputado;
+
+    @Size(max = 300)
+    @Column(name = "S_ULTIMO_DOMICILIO_FAMILIAR")
+    private String ultimoDomicilioFamiliar;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_ACREEDOR")
+    private String domicilioAcreedor;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_FAMILIAR")
+    private String domicilioFamiliar;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_DEMANDADO")
+    private String domicilioDemandado;
+
+    @Size(max = 300)
+    @Column(name = "S_DOMICILIO_MENOR_EDAD")
+    private String domicilioMenorEdad;
 
     @Column(name = "S_CUJUS")
     private String cujus;

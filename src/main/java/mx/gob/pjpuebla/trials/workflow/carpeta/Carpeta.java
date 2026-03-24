@@ -17,6 +17,8 @@ import mx.gob.pjpuebla.trials.util.AuditListener;
 import mx.gob.pjpuebla.trials.util.Auditable;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.CatalogoDeterminacionJurisdiccional;
+import mx.gob.pjpuebla.trials.workflow.archivojudicial.Paquete;
+
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -39,7 +41,7 @@ public class Carpeta implements Serializable, Auditable {
     @Column(name = "N_VERSION")
     private Integer version;
 
-    @Size(max = 20)
+    @Size(max = 50)
     @Column(name = "S_FOLIO", nullable = false)
     private String folio;
 
@@ -83,6 +85,10 @@ public class Carpeta implements Serializable, Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Persona persona;
 
+    @JoinColumn(name = "FN_PAQUETE", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Paquete paquete;
+
     @Column(name = "T_FECHA_ASIGNACION")
     private LocalDateTime fechaAsignacion;
 
@@ -101,6 +107,13 @@ public class Carpeta implements Serializable, Auditable {
     @Enumerated
     @Column(name = "N_SENTENCIA", nullable = false)
     private TipoSentencia sentencia;
+
+    @Column(name = "S_CU")
+    private String cu;
+
+    @Column(name = "N_MIGRADO", nullable = false)
+    @Enumerated
+    private Migrado migrado = Migrado.NO;
 
     @JoinColumn(name = "FN_CARPETA_PADRE", referencedColumnName= "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)

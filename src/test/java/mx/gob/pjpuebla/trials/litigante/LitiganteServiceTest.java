@@ -1,5 +1,9 @@
 package mx.gob.pjpuebla.trials.litigante;
 
+import mx.gob.pjpuebla.migracion.readers.acuerdos.AcuerdosMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.detalle.DetallesMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.entradas.EntradasMigracionRepository;
+import mx.gob.pjpuebla.migracion.readers.usuario.UsuarioMigracionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -26,138 +30,173 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LitiganteServiceTest extends SetupServiceTest {
 
-    @Mock
-    PersonaDocumentoRepository personaDocumentoRepository;
-    @Mock
-    NotificacionesDetallesRepository notificacionesDetallesRepository;
-    @Mock
-    AsistenciaAudienciaRepository asistenciaAudienciaRepository;
-    @Mock
-    NotificacionRepository notificacionRepository;
-    @Mock
-    DocumentoRepository documentoRepository;
-    @InjectMocks
-    LitiganteService litiganteService;
+        @Mock
+        PersonaDocumentoRepository personaDocumentoRepository;
+        @Mock
+        NotificacionesDetallesRepository notificacionesDetallesRepository;
+        @Mock
+        AsistenciaAudienciaRepository asistenciaAudienciaRepository;
+        @Mock
+        NotificacionRepository notificacionRepository;
+        @Mock
+        DocumentoRepository documentoRepository;
+        @Mock
+        UsuarioMigracionRepository usuarioMigracionRepository;
+        @Mock
+        EntradasMigracionRepository entradasMigracionRepository;
+        @Mock
+        DetallesMigracionRepository detallesMigracionRepository;
+        @Mock
+        AcuerdosMigracionRepository acuerdosMigracionRepository;
+        @Mock
+        DetallesMigracionRepository detalleMigracionRepository;
+        @InjectMocks
+        LitiganteService litiganteService;
 
-    @Test
-    void getExpedientesRelacionados_() {
-        LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
-                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "", "", "Juzgado 5 Mercantil TEST", 0L);
-        given(personaDocumentoRepository.findByUsername(any(), any(), any(PageRequest.class)))
-                .willReturn(new PageImpl<>(Arrays.asList(litiganteExpedientesRecord), PageRequest.of(0, 1), 1));
-        given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
-                .willReturn(Arrays.asList("Julio Arenas", "Jorge Dominguez"));
-        given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Demandado"))
-                .willReturn(Arrays.asList("Romina Cervantes"));
-        given(notificacionesDetallesRepository.countNotificacionesPorLeer(any(), any()))
-                .willReturn(3L);
-        Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("",PageRequest.of(1, 20));
-        assertThat(page.getContent())
-                .hasSize(1)
-                .first()
-                .hasFieldOrPropertyWithValue("numeroExpediente", "000001/2025")
-                .hasFieldOrPropertyWithValue("actorPrincipal", "Julio Arenas, Jorge Dominguez")
-                .hasFieldOrPropertyWithValue("notificacionesPendientes", 3L);
-    }
+        @Test
+        void getExpedientesRelacionados_() {
+                LitiganteExpedientesRecord base = new LitiganteExpedientesRecord(
+                                100,
+                                "000001/2025",
+                                "MERCANTIL",
+                                "Mercantil (Tradicional)",
+                                "", "", "Juzgado 5 Mercantil TEST",
+                                0L,
+                                "");
 
-    @Test
-    void getAcuerdosSentencias() {
-        NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
-                .setId(1)
-                .setNotificacion(new Notificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO)
-                        .setFechaNotificado(LocalDateTime.now()).setId(1).setDocumento(
-                        new Documento().setId(1).setCarpeta(
-                                new Carpeta().setId(1).setExpediente("000001/2025").setJuzgado(
-                                        new Juzgado().setNombre("Juzgado Mercantil")
-                                )
-                        )
-                ));
+               
+                given(personaDocumentoRepository.findByUsernameList(anyString(), anyString()))
+                                .willReturn(List.of(base));
 
-        given(notificacionesDetallesRepository.getAllByUsername(any(), any(), any()))
-                .willReturn(new PageImpl<>(Arrays.asList(notificacionesDetalles), PageRequest.of(0, 1), 1));
+               
+                given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Actor"))
+                                .willReturn(List.of("Julio Arenas", "Jorge Dominguez"));
 
-        Page<AcuerdoSentenciaRecord> result = litiganteService.getAcuerdosSentencias(PageRequest.of(0, 10));
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(1);
+                given(personaDocumentoRepository.findTipoPartePrincipalByCarpetaId(100, "Demandado"))
+                                .willReturn(List.of("Romina Cervantes"));
 
-        AcuerdoSentenciaRecord acuerdoSentenciaResponse= result.getContent().get(0);
-        assertThat(acuerdoSentenciaResponse.numeroExpediente()).isEqualTo("000001/2025");
-        assertThat(acuerdoSentenciaResponse.documentoId()).isEqualTo(1);
-        assertThat(acuerdoSentenciaResponse.fechaNotificacion()).isEqualTo(notificacionesDetalles.getNotificacion().getFechaNotificado());
-    }
+                
+                given(notificacionesDetallesRepository.countNotificacionesPorLeer(eq(100), anyString()))
+                                .willReturn(3L);
 
-    @Test
-    void getExpedientesAudienciasRelacionados() {
-        LitiganteExpedienteAudienciaRecord audienciaRecord = new LitiganteExpedienteAudienciaRecord(
-                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "Juzgado 5 Mercantil TEST", 100,
-                LocalDateTime.parse("2025-01-13T08:00:00"), LocalDateTime.parse("2025-01-13T08:30:00")
-        );
+               
+                given(entradasMigracionRepository.findExpedientesRelacionadosLegacy(anyString(), anyString()))
+                                .willReturn(List.of());
 
-        given(asistenciaAudienciaRepository.getAllAudicenciasByUser(any(), any(PageRequest.class)))
-                .willReturn(List.of(audienciaRecord));
+                Pageable pageable = PageRequest.of(0, 20);
 
-        Page<LitiganteExpedienteListAudienciasRecord> page = litiganteService.getExpedientesAudienciasRelacionados(PageRequest.of(0, 10));
+               
+                Page<LitiganteExpedientesRecord> page = litiganteService.getExpedientesRelacionados("", pageable);
 
-        assertThat(page.getContent())
-                .hasSize(1)
-                .first()
-                .hasFieldOrPropertyWithValue("numeroExpediente", "000001/2025")
-                .hasFieldOrPropertyWithValue("audiencias", List.of(new AudienciasExpedienteRecord(
-                        100, "2025-01-13", "08:00", "2025-01-13", "08:30"
-                )));
-    }
+              
+                assertThat(page.getContent())
+                                .hasSize(1)
+                                .first()
+                                .hasFieldOrPropertyWithValue("numeroExpediente", "000001/2025")
+                                .hasFieldOrPropertyWithValue("actorPrincipal", "Julio Arenas, Jorge Dominguez")
+                                .hasFieldOrPropertyWithValue("notificacionesPendientes", 3L);
+        }
 
+        @Test
+        void getAcuerdosSentencias() {
+                NotificacionesDetalles notificacionesDetalles = new NotificacionesDetalles()
+                                .setId(1)
+                                .setNotificacion(new Notificacion().setEstadoNotificacion(EstadoNotificacion.COMPLETADO)
+                                                .setFechaNotificado(LocalDateTime.now()).setId(1).setDocumento(
+                                                                new Documento().setId(1).setCarpeta(
+                                                                                new Carpeta().setId(1).setExpediente(
+                                                                                                "000001/2025")
+                                                                                                .setJuzgado(
+                                                                                                                new Juzgado().setNombre(
+                                                                                                                                "Juzgado Mercantil")))));
 
-    @Test
-    void getPromocionesLitigante() {
-        Documento documento = new Documento();
-        documento.setFolio("12345");
-        documento.setRuta("ruta/documento");
+                given(notificacionesDetallesRepository.getAllByUsername(any(), any()))
+                                .willReturn(List.of(notificacionesDetalles));
 
-        Carpeta carpeta = new Carpeta();
-        carpeta.setExpediente("000001/2025");
-        carpeta.setJuzgado(JuzgadoSetUp.createJuzgado());
-        documento.setCarpeta(carpeta);
+                Page<AcuerdoSentenciaRecord> result = litiganteService.getAcuerdosSentencias(PageRequest.of(0, 10));
+                assertThat(result).isNotNull();
+                assertThat(result.getContent()).hasSize(1);
 
-        Persona persona = new Persona();
-        persona.setCorreoElectronico("correo@dominio.com");
-        documento.setPersona(persona);
+                AcuerdoSentenciaRecord acuerdoSentenciaResponse = result.getContent().get(0);
+                assertThat(acuerdoSentenciaResponse.numeroExpediente()).isEqualTo("000001/2025");
+                assertThat(acuerdoSentenciaResponse.documentoId()).isEqualTo(1);
+                assertThat(acuerdoSentenciaResponse.fechaNotificacion())
+                                .isEqualTo(notificacionesDetalles.getNotificacion().getFechaNotificado());
+        }
 
-        Audit audit = new Audit();
-        audit.setFechaAlta(LocalDateTime.now());
-        documento.setAudit(audit);
+        @Test
+        void getExpedientesAudienciasRelacionados() {
+                LitiganteExpedienteAudienciaRecord audienciaRecord = new LitiganteExpedienteAudienciaRecord(
+                                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
+                                "Juzgado 5 Mercantil TEST", 100,
+                                LocalDateTime.parse("2025-01-13T08:00:00"), LocalDateTime.parse("2025-01-13T08:30:00"));
 
-        Page<Documento> docPage = new PageImpl<>(Collections.singletonList(documento));
+                given(asistenciaAudienciaRepository.getAllAudicenciasByUser(any(), any(PageRequest.class)))
+                                .willReturn(List.of(audienciaRecord));
 
-        given(documentoRepository.findPromocionesLitigante(any(), any(), any(PageRequest.class))).willReturn(docPage);
+                Page<LitiganteExpedienteListAudienciasRecord> page = litiganteService
+                                .getExpedientesAudienciasRelacionados(PageRequest.of(0, 10));
 
-        Page<PromocionesLitiganteRecord> promociones = litiganteService.getPromocionesLitigante("", PageRequest.of(0, 10));
+                assertThat(page.getContent())
+                                .hasSize(1)
+                                .first()
+                                .hasFieldOrPropertyWithValue("numeroExpediente", "000001/2025")
+                                .hasFieldOrPropertyWithValue("audiencias", List.of(new AudienciasExpedienteRecord(
+                                                100, "2025-01-13", "08:00", "2025-01-13", "08:30")));
+        }
 
-        assertThat(promociones).isNotNull();
-        assertThat(promociones.getContent()).hasSize(1);
+        @Test
+        void getPromocionesLitigante() {
+                Documento documento = new Documento();
+                documento.setFolio("12345");
+                documento.setRuta("ruta/documento");
 
-        PromocionesLitiganteRecord promocionElectronica = promociones.getContent().get(0);
-        assertThat(promocionElectronica.numeroPromocionE()).isEqualTo("12345");
-        assertThat(promocionElectronica.usuarioOrigen()).isEqualTo("correo@dominio.com");
-        assertThat(promocionElectronica.rutaArchivo()).isEqualTo("/opt/pjp/files/2025/JuzgadoTEST/000001/ruta/documento");
-    }
+                Carpeta carpeta = new Carpeta();
+                carpeta.setExpediente("000001/2025");
+                carpeta.setJuzgado(JuzgadoSetUp.createJuzgado());
+                documento.setCarpeta(carpeta);
+
+                Persona persona = new Persona();
+                persona.setCorreoElectronico("correo@dominio.com");
+                documento.setPersona(persona);
+
+                Audit audit = new Audit();
+                audit.setFechaAlta(LocalDateTime.now());
+                documento.setAudit(audit);
+
+                List<Documento> docPage = new ArrayList<>();
+                docPage.add(documento);
+
+                given(documentoRepository.findPromocionesLitigante(any(), any())).willReturn(docPage);
+
+                Page<PromocionesLitiganteRecord> promociones = litiganteService.getPromocionesLitigante("",
+                                PageRequest.of(0, 10));
+
+                assertThat(promociones).isNotNull();
+                assertThat(promociones.getContent()).hasSize(1);
+
+                PromocionesLitiganteRecord promocionElectronica = promociones.getContent().get(0);
+                assertThat(promocionElectronica.numeroPromocionE()).isEqualTo("12345");
+                assertThat(promocionElectronica.usuarioOrigen()).isEqualTo("correo@dominio.com");
+                assertThat(promocionElectronica.rutaArchivo())
+                                .isEqualTo("/opt/pjp/files/2025/JuzgadoTEST/000001/ruta/documento");
+        }
 
 }

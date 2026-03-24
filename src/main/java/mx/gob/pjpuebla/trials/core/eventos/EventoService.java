@@ -64,6 +64,11 @@ public class EventoService {
         return FinSemana.esInhabil(fecha) || eventoRepository.existsEventoEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
     }
 
+    public Boolean validarDiaInhabil(LocalDate fecha) {
+        Persona persona = personaService.getAuditor();
+        return esDiaInHabil(fecha, persona.getJuzgado(), persona.getOficialia());
+    }
+
     public LocalDate siguienteDiaHabil(LocalDate fecha, Juzgado juzgado, Oficialia oficialia){
         Optional<Evento> evento = eventoRepository.findEntreDiaInicioAndDiaFin(fecha, juzgado, oficialia);
 
@@ -133,10 +138,9 @@ public class EventoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<EventoRecord> getEventosGenerales(Pageable pageable) {
-        Page<Evento> eventosPage = eventoRepository.findEventosGenerales(pageable);
-
-        List<EventoRecord> eventoRecords = eventosPage.getContent().stream()
+    public List<EventoRecord> getEventosGenerales() {
+        List<Evento> eventos = eventoRepository.findEventosGenerales();
+        return eventos.stream()
                 .map(evento -> new EventoRecord(
                         evento.getId(),
                         evento.getDiaInicio(),
@@ -146,19 +150,15 @@ public class EventoService {
                         evento.getOficialia() != null ? evento.getOficialia().getNombre() : null
                 ))
                 .toList();
-
-        return new PageImpl<>(eventoRecords, pageable, eventosPage.getTotalElements());
     }
 
     @Transactional(readOnly = true)
-    public Page<EventoRecord> getEventosOficialiaComun(Pageable pageable) {
+    public List<EventoRecord> getEventosOficialiaComun() {
         Persona persona = personaService.getAuditor();
         Oficialia oficialia = persona.getOficialia();
         Juzgado juzgado = persona.getJuzgado();
-
-        Page<Evento> eventosPage = eventoRepository.findByOficialiaOrJuzgado(oficialia, juzgado, pageable);
-
-        List<EventoRecord> eventoRecords = eventosPage.getContent().stream()
+        List<Evento> eventos = eventoRepository.findByOficialiaOrJuzgado(oficialia, juzgado);
+        return eventos.stream()
                 .map(evento -> new EventoRecord(
                         evento.getId(),
                         evento.getDiaInicio(),
@@ -168,8 +168,6 @@ public class EventoService {
                         evento.getOficialia() != null ? evento.getOficialia().getNombre() : null
                 ))
                 .toList();
-
-        return new PageImpl<>(eventoRecords, pageable, eventosPage.getTotalElements());
     }
 
     @Transactional

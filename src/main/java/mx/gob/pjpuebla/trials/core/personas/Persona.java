@@ -49,7 +49,6 @@ public class Persona implements Serializable, Auditable {
     @Column(name = "S_APELLIDO_MATERNO")
     private String apellidoMaterno;
 
-    @NotNull
     @Pattern(regexp = "^[A-Z][AEIOU][A-Z][A-Z]\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z0-9]{2}$")
     @Column(name = "S_CURP")
     private String curp;
@@ -62,10 +61,9 @@ public class Persona implements Serializable, Auditable {
     private LocalDate fechaNacimiento;
 
     @Enumerated
-    @Column(name = "N_SEXO", nullable = false)
+    @Column(name = "N_SEXO")
     private Sexo sexo;
 
-    @NotNull
     @Column(name = "S_OCUPACION")
     private String ocupacion;
 
@@ -76,6 +74,9 @@ public class Persona implements Serializable, Auditable {
 
     @Column(name = "S_TELEFONO")
     private String telefono;
+
+    @Column(name = "S_ROL_PRINCIPAL")
+    private String rolPrincipal;
 
     @Pattern(regexp = "^\\d{10}$")
     @Column(name = "S_CELULAR")

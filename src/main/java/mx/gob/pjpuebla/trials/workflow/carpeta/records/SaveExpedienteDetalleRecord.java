@@ -33,13 +33,13 @@ public record SaveExpedienteDetalleRecord(
         String entidad,
         String municipio,
         String localidad,
-        String fechaRegistro,
+        LocalDate fechaRegistro,
         LocalTime horaFormal,
         LocalTime horaMaterial,
         String lugarDisposicion,
         PresentacionImputado presentacionImputado,
         SolicitudAudiencia solicitudAudiencia,
-        String fechaPresentacionImputado,
+        LocalDate fechaPresentacionImputado,
         String ultimoDomicilioFamiliar,
         String domicilioAcreedor,
         String domicilioFamiliar,
@@ -48,6 +48,7 @@ public record SaveExpedienteDetalleRecord(
         Integer tipoJuicioHijoId,
         EtapaProcesalRecord etapaProcesal,
         List<RubroRecord> rubros,
-        String cujus
+        String cujus,
+        LocalDate fechaEjecutoria
 ) implements Serializable {
 }

@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +47,7 @@ class SalaResourceTest {
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockSalaService.getAll(any(Sala.class), any(Pageable.class)))
+        given(mockSalaService.getAll(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
 
         mockMvc.perform(
@@ -81,7 +82,7 @@ class SalaResourceTest {
     @Test
     void create_success() throws Exception {
         Integer expectedId = 1;
-        given(mockSalaService.create(SalaSetUp.createSala(Estado.ACTIVE)))
+        given(mockSalaService.create(any(SalaRecordSave.class)))
                 .willReturn(expectedId);
 
         mockMvc.perform(
@@ -95,7 +96,7 @@ class SalaResourceTest {
     @Test
     void update_success() throws Exception {
         Integer expectedId = 1;
-        given(mockSalaService.create(SalaSetUp.createSala(Estado.ACTIVE)))
+        given(mockSalaService.update(any(SalaRecordSave.class)))
                 .willReturn(expectedId);
 
         mockMvc.perform(
@@ -108,7 +109,8 @@ class SalaResourceTest {
 
     @Test
     void update_error() throws Exception {
-        given(mockSalaService.update(SalaSetUp.createSala(Estado.ACTIVE)))
+        SalaRecordSave salaRecordSave = new SalaRecordSave(null, null, null, null, null, null);
+        given(mockSalaService.update(salaRecordSave))
                 .willThrow(InvalidVersionException.class);
 
         mockMvc.perform(

@@ -1,17 +1,28 @@
 spring:
   application:
     name: trials
+  # --- SECCIÓN DE BASES DE DATOS ---
   datasource:
-    url: jdbc:postgresql://localhost:5432/trialsdb?currentSchema=trials
-    username: trialsusr
-    password: Chang3Me!
-    driver-class-name: org.postgresql.Driver
+   # ---- CONFIGURACIÓN BASE DE DATOS PRINCIPAL (PostgreSQL) ----
+    primary:
+      jdbcUrl: jdbc:postgresql://localhost:5432/trialsdb?currentSchema=trials
+      username: trialsusr
+      password: Chang3Me!
+      driver-class-name: org.postgresql.Driver
+
+    # ---- CONFIGURACIÓN BASE DE DATOS SECUNDARIA (MySQL) ----
+    secondary:
+      jdbcUrl: jdbc:mysql://172.16.6.181:3306/acuerdos?zeroDateTimeBehavior=convertToNull
+      username: kevin
+      password: password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+
   jpa:
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties.hibernate:
       hbm2ddl.auto: none
-      jdbc.time_zone: UTC
       boot:
         allow_jdbc_metadata_access: false
 
@@ -31,10 +42,9 @@ spring:
       connectiontimeout: 5000
       timeout: 5000
       writetimeout: 5000
-    username: annelkaren@gmail.com
+    username: no-reply@pjpuebla.gob.mx
     correoDefensoria: dircifame@htsjpuebla.gob.mx
-    password: naaj eusw llhl rhti
-
+    password: hyiarkzwfyxciomh
 
   security:
     oauth2:
@@ -55,7 +65,10 @@ springdoc:
 
 logging:
   level:
-    org.keycloak.adapters.authorization.integration.jakarta.ServletPolicyEnforcerFilter: debug
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: DEBUG
+    org.springframework.http.converter.json: DEBUG
+    org.springframework.validation: DEBUG
 
 server:
   port: 8888
@@ -72,12 +85,40 @@ keycloak:
   client-id: trials-service
   client-secret: 2CUuB2WvsBRRdBHUMMYgobGAm0QxhFDj
   client-server-id: 8c9e121a-53b2-45bf-89e0-8d1d03a1dd50
+  get-token-url: http://localhost:8080/realms/trials-realm/protocol/openid-connect/token
 
 app:
   root-folder: /opt/pjp/files
   portal-notificaciones: http://187.190.62.102/acuerdos/login
+  public-api-base-url: http://localhost:8888/rest
+  correo-pruebas: secgj@pjpuebla.gob.mx
 
 inegi:
   url: https://gaia.inegi.org.mx/wscatgeo
   states-path: /mgee
   mun-path: /mgem/
+
+ftp:
+  servers:
+    principal:
+      host: 172.16.6.22
+      port: 21
+      username: secgj
+      password: 6<2Z9qy+yc.8
+      passive-move: true
+    respaldo:
+      host: 172.16.6.206
+      port: 21
+      username: secgj
+      password: 6<2Z9qy+yc.8
+      passive-move: true
+
+sendpulse:
+  base-url: https://api.sendpulse.com
+  client-id: 3974f2bcbfb52b20ff01a46232ce6f88
+  client-secret: 2100459790a92eda671fb4833c7bbb30
+  provider: sendPulse
+  dates-timezone: UTC
+  from-email: no-reply@pjpuebla.gob.mx
+  from-name: Sistema Electrónico de Control y Gestión Judicial
+

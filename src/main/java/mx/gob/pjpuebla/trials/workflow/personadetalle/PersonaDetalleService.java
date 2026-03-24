@@ -313,6 +313,7 @@ public class PersonaDetalleService {
             datosEstadistica.setHablaLenguaExtranjera(personaDetalle.getHablaLenguaExtranjera());
             datosEstadistica.setLenguaExtranjera(personaDetalle.getLenguaExtranjera());
             datosEstadistica.setPerteneceGrupoVulnerable(personaDetalle.getPerteneceGrupoVulnerable());
+            datosEstadistica.setPosicionTrabajo(personaDetalle.getPosicionTrabajo());
             personaDTOGet.setPersonaDetalleId(personaDetalle.getId());
 
             Optional<Domicilio> optionalDomicilio = Optional.ofNullable(personaDetalle.getDomicilio());
@@ -465,7 +466,7 @@ public class PersonaDetalleService {
             personaDetalle.setDatosPrivados(personaDTO.getDatosEstadistica().getDatosPrivados());
             personaDetalle.setCedula(personaDTO.getDatosGenerales().getCedula());
             personaDetalle.setAdscripcion(personaDTO.getDatosGenerales().getAdscripcion());
-
+            personaDetalle.setPosicionTrabajo(personaDTO.getDatosEstadistica().getPosicionTrabajo());
             personaDetalle.setTipoDomicilio(personaDTO.getDatosContacto().getTipoDomicilio());
             
             personaDetalle.setDiscapacidad(personaDTO.getDatosEstadistica().getDiscapacidad());

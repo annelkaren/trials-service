@@ -17,7 +17,6 @@ import org.springframework.core.io.Resource;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +55,12 @@ public class GeneradorQRService {
     public byte[] getContinuityReport(Integer expMin, Integer expMax, Integer year) throws JRException, IOException {
         Persona personaLogueada = personaService.getAuditor();
 
-        // Obtiene los expedientes desde la consulta
-        List<String> expedientes = carpetaRepository.findByExpMinAndExMaxAndYear(
+        // Obtiene los resultado desde la consulta
+        List<Object[]> resultado = carpetaRepository.findByExpMinAndExMaxAndYear(
                 expMin, expMax, year, personaLogueada.getJuzgado().getId());
+
+        List<QrExpedienteProjection> expedientes = resultado.stream()
+                .map(arr -> new QrExpedienteProjection((String) arr[0], (String) arr[1])).toList();
 
         if (expedientes.isEmpty()) {
             throw new NotFoundException("No existen expedientes con los criterios de busqueda.",
@@ -74,7 +76,7 @@ public class GeneradorQRService {
             GeneradorQRDTO generador = new GeneradorQRDTO();
 
             // Obtenemos una sublista de 30 elementos (o menos si es el último bloque)
-            List<String> sublista = expedientes.subList(i, Math.min(i + 30, expedientes.size()));
+            List<QrExpedienteProjection> sublista = expedientes.subList(i, Math.min(i + 30, expedientes.size()));
 
             // Asignamos los códigos al DTO
             asignarCodigosADTO(generador, sublista);
@@ -99,13 +101,21 @@ public class GeneradorQRService {
      * @param codigos   La lista de códigos QR a asignar.
      * @throws RuntimeException Si ocurre un error al acceder a los campos del DTO.
      */
-    private void asignarCodigosADTO(GeneradorQRDTO generador, List<String> codigos) {
+    private void asignarCodigosADTO(GeneradorQRDTO generador, List<QrExpedienteProjection> codigos) {
         try {
             for (int i = 0; i < codigos.size(); i++) {
-                String fieldName = "codigo" + (i + 1);
-                Field field = GeneradorQRDTO.class.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                field.set(generador, codigos.get(i));
+
+                String codigoField = "codigo" + (i + 1);
+                String textoField = "texto" + (i + 1);
+
+                Field codigo = GeneradorQRDTO.class.getDeclaredField(codigoField);
+                Field texto = GeneradorQRDTO.class.getDeclaredField(textoField);
+
+                codigo.setAccessible(true);
+                texto.setAccessible(true);
+
+                codigo.set(generador, codigos.get(i).getQr());
+                texto.set(generador, codigos.get(i).getExpediente());
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Error al asignar códigos al DTO", e);
@@ -139,36 +149,33 @@ public class GeneradorQRService {
                     "Expediente " + expediente);
         }
 
-        // Obtener el código QR de la carpeta
+        // Obtener el código QR y texto de la carpeta
         String codigo = getExpedienteCarpeta(carpeta);
+        String texto = carpeta.getExpediente() + "\n" + carpeta.getJuzgado().getNombre().toLowerCase();
 
-        // Lista para los DTOs con los códigos QR
-        List<GeneradorQRDTO> generadorFinal = new ArrayList<>();
+        // Crear la lista de 30 posiciones con QrExpedienteProjection (null excepto una)
+       List<QrExpedienteProjection> codigos = generarCodigos(codigo, texto, casilla);
 
-        // Crear un arreglo auxiliar para los 30 códigos QR
-        String[] generadorAux = new String[30];
 
-        // Llenamos el arreglo con null, excepto en la casilla seleccionada
-        for (int i = 0; i < 30; i++) {
-            if (i == casilla - 1) { // Casilla empieza en 1, pero el índice de arreglo es 0
-                generadorAux[i] = codigo;
-            } else {
-                generadorAux[i] = null;
-            }
-        }
-
-        // Crear un DTO y asignar los valores usando el método auxiliar
         GeneradorQRDTO dto = new GeneradorQRDTO();
-        asignarCodigosADTO(dto, Arrays.asList(generadorAux));
+        asignarCodigosADTO(dto, codigos);
 
-        // Agregar el DTO a la lista
-        generadorFinal.add(dto);
-
-        // Crear el DataSource para JasperReports
+        List<GeneradorQRDTO> generadorFinal = List.of(dto);
         beanCollectionDataSource = new JRBeanCollectionDataSource(generadorFinal);
 
-        // Exporta el reporte a PDF
         return JasperExportManager.exportReportToPdf(getJasperReport(expedienteQR));
+    }
+
+    private List<QrExpedienteProjection> generarCodigos(String codigo, String texto, int casilla) {
+        List<QrExpedienteProjection> codigos = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            if (i == casilla - 1) {
+                codigos.add(new QrExpedienteProjection(codigo, texto));
+            } else {
+                codigos.add(new QrExpedienteProjection(null, null));
+            }
+        }
+        return codigos;
     }
 
     /**
@@ -182,9 +189,9 @@ public class GeneradorQRService {
         String folio = carpeta.getFolio();
 
         return switch (tipoCarpeta) {
-            case DEMANDA -> "D" + folio;
-            case EXHORTO -> "E" + folio;
-            case AMPARO -> "A" + folio;
+            case DEMANDA -> "D" + '.' + folio;
+            case EXHORTO -> "E" + '.' + folio;
+            case AMPARO -> "A" + '.' + folio;
             default -> folio;
         };
     }

@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.core.salas;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -29,9 +28,11 @@ public class SalaResource {
     @GetMapping
     public Page<SalaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre) {
 
-        return this.salaService.getAll(new Sala().setNombre(nombre), pageable);
+        String searchKey = (key != null) ? key : nombre;
+        return this.salaService.getAll(searchKey, pageable);
     }
 
     @GetMapping("/allByJuzgado")
@@ -45,12 +46,12 @@ public class SalaResource {
     }
 
     @PostMapping
-    public Integer create(@RequestBody @Valid Sala sala) {
+    public Integer create(@RequestBody SalaRecordSave sala) {
         return this.salaService.create(sala);
     }
 
     @PutMapping
-    public Integer update(@RequestBody Sala sala) {
+    public Integer update(@RequestBody SalaRecordSave sala) {
         return this.salaService.update(sala);
     }
 

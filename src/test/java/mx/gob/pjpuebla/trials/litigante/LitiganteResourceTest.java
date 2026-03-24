@@ -3,7 +3,9 @@ package mx.gob.pjpuebla.trials.litigante;
 import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.AcuerdoSentenciaRecord;
 import mx.gob.pjpuebla.trials.litigante.responsepromociones.PromocionesLitiganteRecord;
+import mx.gob.pjpuebla.trials.util.enums.Migrado;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasExpedienteRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.AcusePromocionService;
 import mx.gob.pjpuebla.trials.workflow.sello.AcuerdoService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,12 +41,14 @@ class LitiganteResourceTest {
     private LitiganteService litiganteService;
     @MockBean
     private AcuerdoService acuerdoServicePdf;
+    @MockBean 
+    private AcusePromocionService acusePromocionService;
 
     @Test 
     void getExpedientesRelacionados() throws Exception {
         LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
                 100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "", "", "Juzgado 5 Mercantil TEST", 0L);
+                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
         given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
 
@@ -59,7 +62,7 @@ class LitiganteResourceTest {
     @Test
     void getAcuerdosSentencias() throws Exception {
         List<AcuerdoSentenciaRecord> list = Collections.singletonList(
-                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado"));
+                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado", Migrado.SI));
 
         given(litiganteService.getAcuerdosSentencias(any(Pageable.class))).willReturn(new PageImpl<>(list));
 

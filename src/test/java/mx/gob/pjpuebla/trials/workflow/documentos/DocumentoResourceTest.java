@@ -61,7 +61,7 @@ class DocumentoResourceTest {
     private SelloCaratulaService caratulaGenerator;
 
     @MockBean
-    private DigitalizacionService digitalizacion2Service;
+    private DigitalizacionService digitalizacionService;
 
     @MockBean
     private OficioService oficioService;
@@ -102,27 +102,7 @@ class DocumentoResourceTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void getAll() throws Exception {
-        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1));
-        demanda.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
-        demanda.getCarpeta().setFolio("1");
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, demanda.getCarpeta().getFolio(),
-                demanda.getCarpeta().getExpediente(),
-                "Laboral", TipoCarpeta.DEMANDA.name(), LocalDateTime.now(), SelloEstatus.VALIDO,
-                EstadoCarpeta.CAPTURA,
-                true, "Juzgado 1", "", "");
 
-        given(documentoService.getAll(any(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
-
-        mockMvc.perform(
-                        get("/api/workflow/bandeja/entrada")
-                                .content(ResourceUtilTest.asJsonString(documentoGridRecord))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
     @Test
     void update_status() throws Exception {
@@ -251,10 +231,19 @@ class DocumentoResourceTest {
         String tipoEntrada = "DEMANDA";
         String materiaNombre = "MERCANTIL";
 
-        DocumentoGridRecord documentoGridRecord = new DocumentoGridRecord(1, folio, expediente,
-                materiaNombre, tipoEntrada, LocalDateTime.now(), SelloEstatus.VALIDO, estatus, true, "Juzgado 1", "", "");
+        BandejaHistorialRecord documentoGridRecord = new BandejaHistorialRecord(null, folio, expediente, materiaNombre, tipoEntrada, null, estatus, tipoEntrada, materiaNombre);
 
-        given(documentoService.getAllHistorial(any(String.class), any(Pageable.class)))
+        given(documentoService.getAllHistorial(
+                        any(Pageable.class),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class)
+        ))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoGridRecord)));
 
         mockMvc.perform(
@@ -299,7 +288,9 @@ class DocumentoResourceTest {
                 SelloEstatus.VALIDO,
                 EstadoCarpeta.TURNADO);
 
-        given(documentoService.getAllBandejaSalida(any(String.class), any(PageRequest.class)))
+        given(documentoService.getAllBandejaSalida(anyString(),anyString(), anyString(), anyString(), anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class), 
+         any(PageRequest.class)))
+         
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
         mockMvc.perform(
                         get("/api/workflow/bandeja/salida")
@@ -345,7 +336,6 @@ class DocumentoResourceTest {
         data.put("asunto", asunto);
         data.put("carpetaId", carpetaId);
         String jsonContent = ResourceUtilTest.asJsonString(data);
-        System.out.println(jsonContent);
         given(documentoService.createOficio(institucionId, fechaEmision, asunto, carpetaId))
                 .willReturn(folio);
 
@@ -397,9 +387,9 @@ class DocumentoResourceTest {
         String folio = "1";
         String expediente = "000001/2024";
 
-        DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, 1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente);
+        DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, 1, 1, expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(), folio, expediente, true, "prorroga", EstadoProrroga.AUTORIZADA, "ejemplo", "red", "","");
 
-        given(documentoService.getAllAsignado(anyString(), any(Pageable.class)))
+        given(documentoService.getAllAsignado(anyString(), anyLong(), any(Pageable.class), anyString() ))
                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
 
         mockMvc.perform(
@@ -446,7 +436,8 @@ class DocumentoResourceTest {
                 LocalDate.now(),
                 false,
                 false,
-                'C'
+                'C',
+                "000001/2025"
         );
         given(documentoService.getAllOficios(any(), any()))
                 .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));
@@ -759,3 +750,4 @@ void movimientoPersonalJuzgado_success() throws Exception {
     }
 
 }
+

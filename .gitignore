@@ -18,3 +18,8 @@ Thumbs.db
 /target/
 .qodana/
 .vscode/
+
+Dockerfile.*
+
+# Archivos de configuración local
+application-local.yaml

@@ -8,6 +8,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/materias")
@@ -29,5 +31,13 @@ public class MateriaResource {
         return materiaService.findById(id);
     }
 
+    @GetMapping(value = "/publicas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<MateriaRecord> findMateriasPublicas() {
+        return materiaService.findMateriasPublicas();
+    }
 
+    @GetMapping(value = "/countsentencias", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<SentenciasByMateriaRecord> getCountSentenciasByMaterias() {
+        return materiaService.getCountSentenciasByMaterias();
+    }
 }

@@ -3,26 +3,24 @@ package mx.gob.pjpuebla.trials.workflow.audiencias;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
+import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
-import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudiencia;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
 import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
-import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoData;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.Etiqueta;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaRepository;
 import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -40,16 +38,13 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
 @Slf4j
 @Transactional
@@ -67,15 +62,11 @@ public class AudienciaService {
         private final PersonaService personaService;
         private final TipoAudienciaRepository tipoAudienciaRepository;
         private final CarpetaRepository carpetaRepository;
+        private final CarpetaDetalleRepository carpetaDetalleRepository;
         private final PersonaDocumentoRepository personaDocumentoRepository;
         private final AsistenciaAudienciaRepository asistenciaAudienciaRepository;
-        @Value("${app.root-folder}")
-        private String rootFolder; // Ruta raíz de la digitalización
-        private String basePath; // Ruta base para la digitalización
-        private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L; // Tamaño máximo del archivo en bytes (50 MB)
-        private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
-        private static final String EXTENSION_ARCHIVO = ".pdf";
-
+        private final SalaPersonaRepository salaPersonaRepository;
+        private final DigitalizacionService digitalizacionService;
 
         public Audiencia create(SalaAudienciaRecord salaAudienciaRecord, TipoAudiencia tipoAudiencia, Carpeta carpeta) {
                 Sala sala = salaRepository.findById(salaAudienciaRecord.id())
@@ -117,9 +108,10 @@ public class AudienciaService {
                                                         : "");
                 }
 
-                String calle = Optional.of(documento)
-                                .map(Documento::getData)
-                                .map(DocumentoData::getDomicilio)
+                String calle = Optional.ofNullable(carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId()))
+                                .map(detalle -> detalle.getUltimoDomicilioFamiliar() != null
+                                                ? detalle.getUltimoDomicilioFamiliar()
+                                                : detalle.getDomicilioFamiliar())
                                 .orElse("");
 
                 Etiqueta etiqueta = etiquetaRepository.findByTipoJuicioIdAndNombre(
@@ -138,54 +130,28 @@ public class AudienciaService {
                 key = (key != null) ? key.toLowerCase() : "";
                 Persona persona = personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
+                List<RoleRecord> rolesPrincipales = personaService.getRolesByUser(persona.getUsuario());
 
-                Page<Audiencia> page = audienciaRepository.findByJuzgado(juzgado, key, pageable);
+                boolean esSecretario = rolesPrincipales.stream()
+                                .map(RoleRecord::name) 
+                                .filter(Objects::nonNull)
+                                .map(String::trim)
+                                .map(String::toUpperCase)
+                                .anyMatch(r -> r.equals("SECRETARIO"));
 
-                List<AudienciasGeneralesResponseRecord> list = page.getContent().stream()
-                        .map(item -> {
-                                String nombreCompleto = item.getSala().getJuez().getNombre() + " "
-                                        + item.getSala().getJuez().getApellidoPaterno();
+                List<Integer> salaIdsPermitidas = List.of();
 
-                                if (item.getSala().getJuez().getApellidoMaterno() != null) {
-                                        nombreCompleto += " " + item.getSala().getJuez().getApellidoMaterno();
-                                }
+                if (esSecretario) {
+                        salaIdsPermitidas = salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(
+                                        persona.getId().intValue(),
+                                        Estado.ACTIVE);
 
-                                List<AsistenciaPersonaDocumento> personasDocumento = personaDocumentoRepository.findByCarpetaId(item.getCarpeta().getId())
-                                        .stream()
-                                        .map(pd -> {
-                                                AsistenciaAudiencia asistenciaAudiencia = asistenciaAudienciaRepository
-                                                        .findByPersonaDocumentoIdAndAudienciaId(pd.getId(), item.getId());
+                        if (salaIdsPermitidas.isEmpty()) {
+                                return Page.empty(pageable);
+                        }
+                }
 
-                                                return new AsistenciaPersonaDocumento(
-                                                        pd.getId(),
-                                                        pd.getNombre(),
-                                                        pd.getApellidoPaterno(),
-                                                        pd.getApellidoMaterno(),
-                                                        pd.getRol().name(),
-                                                        pd.getTipoPartes().getNombre(),
-                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getAsistencia() : null,
-                                                        asistenciaAudiencia != null ? asistenciaAudiencia.getDocumentoIdentificacion().getName() : null
-                                                );
-                                        })
-                                        .collect(Collectors.toList());
-
-                                return new AudienciasGeneralesResponseRecord(
-                                        item.getId(),
-                                        StringUtils.capitalize(item.getTipoAudiencia().getNombre()),
-                                        nombreCompleto,
-                                        item.getCarpeta().getExpediente(),
-                                        item.getCarpeta().getId(),
-                                        item.getSala().getNombre(),
-                                        item.getFechaAudiencia(),
-                                        item.getEstatusAudiencia(),
-                                        juzgado.getId(),
-                                        item.getCarpeta().getTipoJuicio().getNombre(),
-                                        personasDocumento
-                                );
-                        })
-                        .toList();
-
-                return new PageImpl<>(list, pageable, page.getTotalElements());
+                return audienciaRepository.findAudienciasGenerales(pageable, juzgado, key, salaIdsPermitidas, esSecretario);
         }
 
         public void deleteAudiencia(Integer id) {
@@ -266,9 +232,15 @@ public class AudienciaService {
                                         .orElseThrow(() -> new IllegalArgumentException(AUDIENCIA_NOT_FOUND));
 
                         if (isInicio) {
+                                if (audiencia.getInicio() != null) {
+                                        throw new ConflictException("La audiencia ya tiene una hora de inicio");
+                                }
                                 audiencia.setInicio(hora);
                                 audienciaRepository.save(audiencia);
                         } else {
+                                if (audiencia.getFin() != null) {
+                                        throw new ConflictException("La audiencia ya tiene una hora de fin");
+                                }
                                 audiencia.setFin(hora);
                                 audienciaRepository.save(audiencia);
                         }
@@ -352,101 +324,50 @@ public class AudienciaService {
         }
 
         public boolean validarDisponibilidad(ValidarDisponibilidadRequestRecord request) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                                .appendPattern("yyyy-MM-dd'T'HH:mm")
+                                .optionalStart()
+                                .appendPattern(":ss")
+                                .optionalEnd()
+                                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                                .toFormatter();
 
                 String fechaHoraStr = request.fecha() + "T" + request.hora();
                 LocalDateTime fechaInicio = LocalDateTime.parse(fechaHoraStr, formatter);
+
                 LocalDateTime fechaFin = fechaInicio.plusMinutes(request.duracion());
+
                 return !audienciaRepository.existeConflicto(
-                        request.salaId(),
-                        fechaInicio,
-                        fechaFin
-                );
+                                request.salaId(),
+                                fechaInicio,
+                                fechaFin);
         }
-
-
         public void guardarArchivo(MultipartFile file, Integer audienciaId) {
-                this.basePath = rootFolder + "/digitalizacion/";
-
-                Audiencia audiencia = audienciaRepository.findById(audienciaId).orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-                validarArchivo(file);
-
-                Path rutaArchivo = crearDirectorio(audiencia);
-                String nombreUnicoArchivo = generarNombreArchivo();
-
-                try {
-                        if (!Files.exists(rutaArchivo)) {
-                                Files.createDirectories(rutaArchivo);
-                        }
-
-                        Files.write(rutaArchivo.resolve(nombreUnicoArchivo), file.getBytes());
-                        log.info("Archivo cargado en el servidor con nombre: {}", nombreUnicoArchivo);
-
-                } catch (IOException e) {
-                        log.error("Error al guardar el archivo: {}", e.getMessage(), e);
-                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Error al guardar el archivo en el servidor", e);
-                }
-
-                audiencia.setRuta(nombreUnicoArchivo);
-                audienciaRepository.save(audiencia);
-
-                new DigitalizacionRecord(audiencia.getId(), rutaArchivo.resolve(nombreUnicoArchivo).toString(), nombreUnicoArchivo);
+                digitalizacionService.guardarActaMinimaAudiencia(file, audienciaId);
         }
 
-        private void validarArchivo(MultipartFile file) {
-                if (file.isEmpty()) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede estar vacío.");
-                }
-
-                if (file.getContentType() == null || !TIPO_ARCHIVOS_PERMITIDOS.contains(file.getContentType())) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo debe ser un PDF.");
-                }
-
-                if (file.getSize() > MAX_FILE_SIZE) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede superar los 50 MB.");
-                }
-        }
         public byte[] getAudienciaDocumento(Integer audienciaId) throws IOException {
-                this.basePath = this.rootFolder + "/digitalizacion/";
-
-                Audiencia audiencia = audienciaRepository.findById(audienciaId).orElse(null);
-            assert audiencia != null;
-            Path rutaArchivo = crearDirectorio(audiencia).resolve(audiencia.getRuta());
-
-                if (Files.exists(rutaArchivo)) {
-                        return Files.readAllBytes(rutaArchivo);
-                } else {
-                        throw new IOException("El archivo relacionado con la audiencia " + audiencia.getId() + " no existe en el directorio");
-                }
-        }
-
-        private String generarNombreArchivo() {
-                return "audiencia_" + UUID.randomUUID() + EXTENSION_ARCHIVO;
-        }
-
-        private Path crearDirectorio(Audiencia audiencia) {
-                this.basePath = this.rootFolder + "/digitalizacion/";
-                String expediente = audiencia.getCarpeta().getExpediente();
-                expediente = expediente.replace("/", "");
-                String year = expediente.substring(expediente.length() - 4);
-                String numero = expediente.substring(0, expediente.length() - 4);
-                numero = String.format("%06d", Integer.parseInt(numero));
-                String juzgado = obtenerJuzgado(audiencia);
-                return Paths.get(basePath,  year, juzgado, numero, "actaminima");
-        }
-
-        private String obtenerJuzgado(Audiencia audiencia) {
-                return audiencia.getCarpeta().getJuzgado().getNombre() != null ? audiencia.getCarpeta().getJuzgado().getNombre() : "Desconocido";
+                return digitalizacionService.getActaMinimaAudiencia(audienciaId);
         }
 
         public Audiencia obtenerUltimaAudienciaDesahogada() {
-        Audiencia audiencia = audienciaRepository.findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia.DESAHOGADA);
-        if (audiencia == null) {
-            throw new EntityNotFoundException("No se encontró una audiencia desahogada.");
+                Audiencia audiencia = audienciaRepository
+                                .findFirstByEstatusAudienciaOrderByFechaAudienciaDesc(EstatusAudiencia.DESAHOGADA);
+                if (audiencia == null) {
+                        throw new EntityNotFoundException("No se encontró una audiencia desahogada.");
+                }
+                return audiencia;
         }
-        return audiencia;
-    }
+
+        public List<AudienciaProgramadaRecord> getAudienciasProgramadas(Integer carpetaId) {
+                return audienciaRepository.findProgramadasByCarpetaId(carpetaId);
+        }
+
+        public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(Integer carpetaId, Integer audienciaId){
+                return audienciaRepository.findParticipantesByAudienciaId(carpetaId, audienciaId);
+        }
+
 }
+
+
+

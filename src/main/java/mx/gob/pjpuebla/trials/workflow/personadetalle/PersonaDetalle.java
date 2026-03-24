@@ -72,6 +72,9 @@ public class PersonaDetalle implements Serializable {
     @Column(name = "N_EDAD")
     private Integer edad;
 
+    @Column(name = "N_POSICION_TRABAJO")
+    private Integer posicionTrabajo;
+
     @Column(name = "S_TIPO_DOMICILIO")
     private String tipoDomicilio;
 

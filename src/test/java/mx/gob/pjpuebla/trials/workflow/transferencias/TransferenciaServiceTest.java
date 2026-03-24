@@ -31,7 +31,6 @@ import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.sedes.SedeSetUp;
 import mx.gob.pjpuebla.trials.util.enums.EstadoTransferencia;
-import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoService;
@@ -99,7 +98,7 @@ class TransferenciaServiceTest {
         given(transferenciaRepository.findById(transferencia.getId())).willReturn(Optional.of(transferencia));
         given(personaRepository.findById(1L)).willReturn(Optional.of(personaEntrega));
         given(personaRepository.findById(2L)).willReturn(Optional.of(personaRecibe));
-        given(documentoRepository.findByPersonaAsignada("", juzgado.getId(), personaEntrega, true, Pageable.unpaged(), null, null, null)).willReturn(page);
+        given(documentoRepository.findByPersonaAsignada("", juzgado.getId(), personaEntrega, true, Pageable.unpaged(), null, null, null, null, null)).willReturn(page);
         given(transferenciaRepository.save(any())).willReturn(result);
         given(roleService.getRolesByUserId(any())).willReturn(List.of(rol));
 

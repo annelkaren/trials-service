@@ -27,4 +27,12 @@ public class DistritoService {
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
+
+    @Transactional(readOnly = true)
+    public List<DistritoRecord> getAllActive() {
+        List<Distrito> list = distritoRepository.findAll();
+        return list.stream()
+                .map(m -> new DistritoRecord(m.getId(), m.getNombre()))
+                .toList();
+    }
 }

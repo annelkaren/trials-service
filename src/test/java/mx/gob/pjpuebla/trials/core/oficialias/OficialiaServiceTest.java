@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -208,7 +207,8 @@ class OficialiaServiceTest {
                                 tipoOficialia.getNombre(),
                                 tipoOficialia.getId(),
                                 juzgados.get(0).getNombre(),
-                                juzgados.get(0).getId());
+                                juzgados.get(0).getId(),
+                                null);
 
                 Oficialia tmp = OficialiaSetUp.createOficialia(tipoOficialia, sede);
                 tmp.setMaterias(List.of(materia));

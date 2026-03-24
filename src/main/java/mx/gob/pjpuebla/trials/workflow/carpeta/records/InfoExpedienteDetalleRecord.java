@@ -34,8 +34,14 @@ public record InfoExpedienteDetalleRecord(
         String presentacionImputado,
         String solicitudAudiencia,
         String fechaPresentacionImputado,
+        String ultimoDomicilioFamiliar,
+        String domicilioAcreedor,
+        String domicilioFamiliar,
+        String domicilioDemandado,
+        String domicilioMenorEdad,
         Integer tipoJuicioHijoId,
         String tipoJuicioHijo,
-        String cujus
+        String cujus,
+        LocalDate fechaEjecutoria
 ) implements Serializable {
 }

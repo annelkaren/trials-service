@@ -36,15 +36,24 @@ public class SelloCaratulaService {
     private JasperPrint getReport(Documento documento) throws IOException, JRException {
 
         String[] expendienteYear = documento.getCarpeta().getExpediente().split("/");
-        String actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
-        String demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
-        String procedencia = getExhortoPromocion(documento);
+        // TODO: Se modifica por el momenrto el flujo de obtención de actores
+        // principales
+        // En atención de EL Ing. Alfonso se muesrra el primer actor principal y
+        // demandado encontrado y si hay mas de uno se coloca la leyenda "y otros."
+        boolean isPieza = documento.getCarpeta().getTipoPieza() == null;
+        String actor, demandado;
 
-        if (documento.getCarpeta().getTipoPieza()!=null){
+        if (isPieza) {
+            actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Actor");
+            demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getId(), "Demandado");
+        } else {
             actor = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Actor");
-            demandado= getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Demandado");
+            demandado = getNombrePersonaByIdAndParte(documento.getCarpeta().getCarpetaPadre().getId(), "Demandado");
+
         }
 
+        String procedencia = getExhortoPromocion(documento);
+        String juicio =  isPieza ? documento.getCarpeta().getTipoJuicio().getNombre() : documento.getCarpeta().getCarpetaPadre().getTipoJuicio().getNombre();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
@@ -58,8 +67,9 @@ public class SelloCaratulaService {
         parameters.put("isExhorto", isExhorto); // es un Exhorto
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
         parameters.put("procedencia", "<b>Procedencia: </b>" + procedencia);
+        parameters.put("juicio", juicio);
 
-        if (documento.getCarpeta().getTipoPieza()!= null){
+        if (documento.getCarpeta().getTipoPieza() != null) {
             parameters.put("tipoPieza", documento.getCarpeta().getTipoPieza().getTipo());
         }
 
@@ -71,20 +81,27 @@ public class SelloCaratulaService {
                 new JREmptyDataSource());
     }
 
-
     public String getNombrePersonaByIdAndParte(Integer id, String parte) {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
-        PersonaDocumentoRecord persona = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, rol);
+        List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte,
+                rol);
 
-        if (persona == null) {
+         if (personas.isEmpty() || personas == null) {
             return "";
         }
+
+        PersonaDocumentoRecord persona = personas.get(0);
 
         String nombre = persona.nombre() != null ? persona.nombre() : "";
         String apellidoPaterno = persona.apellidoPaterno() != null ? persona.apellidoPaterno() : "";
         String apellidoMaterno = persona.apellidoMaterno() != null ? persona.apellidoMaterno() : "";
 
-        return String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+        String nombreFormateado = String.format("%s %s %s", nombre, apellidoPaterno, apellidoMaterno).trim();
+        if (personas.size() > 1) {
+            return String.format("%s y otros.", nombreFormateado);
+        }
+
+        return nombreFormateado;
     }
 
     private String tipoDocumentoFolio(Documento documento) {
@@ -106,7 +123,7 @@ public class SelloCaratulaService {
             };
 
         }
-        result = prefijo + "-" + documento.getCarpeta().getFolio();
+        result = prefijo + "." + documento.getCarpeta().getFolio();
         return result;
     }
 

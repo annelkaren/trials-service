@@ -1,0 +1,35 @@
+CREATE SEQUENCE IF NOT EXISTS TRIALS.SEQ_PROMOCION_PENDIENTE_ID START WITH 1;
+
+create table trials.tbl_promociones_pendientes(
+    PN_ID INT not null primary KEY,
+    N_VERSION INT, 
+    S_FOLIO VARCHAR(50),
+	S_EXPEDIENTE VARCHAR(50),
+	FN_JUZGADO INT,
+	FN_TIPO_JUICIO INT,
+	S_ANEXOS VARCHAR(150),
+	N_ESTATUS INT,
+	S_TIPO_REGISTRO VARCHAR(100),
+	N_TIPO_PROMOCION INT,
+	FN_CARPETA         INT         ,
+	FN_DOCUMENTO         INT       ,
+	T_FECHA_ALTA    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    T_FECHA_EDITA   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    S_USUARIO_ALTA  VARCHAR(50)  DEFAULT CURRENT_USER,
+    S_USUARIO_EDITA VARCHAR(50)  DEFAULT CURRENT_USER,
+    
+
+	foreign key (FN_CARPETA) REFERENCES trials.tbl_carpetas(PN_ID),
+	foreign key (FN_DOCUMENTO) REFERENCES trials.tbl_documentos(PN_ID),
+
+    constraint fk_prom_juzgados 
+    	foreign key (FN_JUZGADO) REFERENCES trials.tbl_juzgados(PN_ID),
+    constraint fk_prom_tipo_juicio
+    	foreign key (FN_TIPO_JUICIO) REFERENCES trials.tbl_tipo_juicio(PN_ID) 
+ );
+    
+  
+CREATE INDEX IDX_PROMOCION_JUZGADOS1 ON TRIALS.tbl_promociones_pendientes (FN_JUZGADO);
+CREATE INDEX IDX_PROMOCION_TIPOJUICIO2 ON TRIALS.tbl_promociones_pendientes (FN_TIPO_JUICIO);
+CREATE INDEX IDX_PROMOCION_CARPETA3 ON TRIALS.tbl_promociones_pendientes (FN_CARPETA);
+CREATE INDEX IDX_PROMOCION_DOCUMENTO4 ON TRIALS.tbl_promociones_pendientes (FN_DOCUMENTO);

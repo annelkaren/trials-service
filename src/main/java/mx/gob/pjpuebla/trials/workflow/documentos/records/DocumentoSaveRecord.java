@@ -9,6 +9,8 @@ public record DocumentoSaveRecord(
 
         PersonaDocumentoItemRecord actor,
         PersonaDocumentoItemRecord demandado,
+        String ultimoDomicilioFamiliar,
+        String domicilioAcreedor,
         List<String> anexos,
         Integer tipoJuicioId,
         DocumentoData general) implements Serializable {

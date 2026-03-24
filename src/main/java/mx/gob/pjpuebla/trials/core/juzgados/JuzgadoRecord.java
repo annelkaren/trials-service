@@ -24,12 +24,16 @@ public record JuzgadoRecord(
         Integer id,
         Integer version,
         String nombre,
+        String shortName,
         Estado estado,
         Integer materiaId,
         Integer sedeId,
         Integer maxAsignacionesRonda,
         Integer contadorAsignaciones,
         Integer instanciaJuzgado,
-        List<TipoJuicioRecord> tipoJuicios
+        List<TipoJuicioRecord> tipoJuicios,
+        List<JuzgadoContadorConfig> contadoresJuzgados,
+        Integer juzgadoPadreId,
+        String juzgadoPadreNombre
 ) implements Serializable {
 }

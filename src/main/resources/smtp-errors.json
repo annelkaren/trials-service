@@ -1,0 +1,42 @@
+{
+    "2.0.0": {
+        "type": "SUCCESS",
+        "message": "Correo enviado correctamente",
+        "retryable": false
+    },
+    "5.1.1": {
+        "type": "INVALID_EMAIL",
+        "message": "El correo electrónico no existe",
+        "retryable": false
+    },
+    "5.2.2": {
+        "type": "MAILBOX_FULL",
+        "message": "El buzón está lleno",
+        "retryable": true
+    },
+    "5.2.3": {
+        "type": "MAILBOX_FULL",
+        "message": "El buzón está lleno",
+        "retryable": true
+    },
+    "5.11.1": {
+        "type": "UNSUBSCRIBED",
+        "message": "El destinatario se ha desuscrito a la entrega de correos.",
+        "retryable": false
+    },
+    "5.7.1": {
+        "type": "BLOCKED",
+        "message": "El correo fue bloqueado por el servidor",
+        "retryable": false
+    },
+    "4.4.1": {
+        "type": "TEMPORARY_FAILURE",
+        "message": "No se pudo conectar con el servidor destino",
+        "retryable": true
+    },
+    "4.7.0": {
+        "type": "TEMPORARY_FAILURE",
+        "message": "El servidor ha limitado temporalmente el envío",
+        "retryable": true
+    }
+}

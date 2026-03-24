@@ -9,10 +9,12 @@ import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaAudienciaRecord;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.salas.SalaSetUp;
+import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudiencia;
 import mx.gob.pjpuebla.trials.core.tipoaudiencia.TipoAudienciaRepository;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
@@ -26,7 +28,10 @@ import mx.gob.pjpuebla.trials.workflow.audiencias.record.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaSetUp;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalle;
+import mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle.CarpetaDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionSetUp;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoSetUp;
@@ -46,7 +51,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -60,7 +64,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -96,6 +102,15 @@ class AudienciaServiceTest {
     @Mock
     private AsistenciaAudienciaRepository asistenciaAudienciaRepository;
 
+    @Mock
+    private SalaPersonaRepository salaPersonaRepository;
+
+    @Mock
+    private CarpetaDetalleRepository carpetaDetalleRepository;
+
+    @Mock
+    private DigitalizacionService digitalizacionService;
+
     @InjectMocks
     private AudienciaService audienciaService;
 
@@ -105,6 +120,7 @@ class AudienciaServiceTest {
     private TipoAudiencia tipoAudiencia;
     private Carpeta carpeta;
     private Documento documento;
+    private CarpetaDetalle carpetaDetalle;
     private Persona persona;
     private TipoJuicio tipoJuicio;
     private Etiqueta tipoJuicioEtiqueta;
@@ -120,8 +136,10 @@ class AudienciaServiceTest {
         tipoJuicio = TipoJuicioSetUp.createTipoJuicioOralFamiliar();
         persona = PersonaSetUp.createPersona();
         documento = DocumentoSetUp.create_data(tipoJuicio);
+        carpetaDetalle = new CarpetaDetalle()
+                .setCarpeta(carpeta)
+                .setUltimoDomicilioFamiliar("Domicilio Familiar Test");
         tipoJuicioEtiqueta = EtiquetaSetUp.createEtiqueta(tipoJuicio.getId());
-        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
     }
 
     @Test
@@ -166,6 +184,7 @@ class AudienciaServiceTest {
 
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(audiencia);
         when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(tipoJuicioEtiqueta);
+        when(carpetaDetalleRepository.findByCarpetaId(carpeta.getId())).thenReturn(carpetaDetalle);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
 
@@ -173,7 +192,7 @@ class AudienciaServiceTest {
         assertThat(entity.nombreJuez()).isEqualTo("Juan Perez ");
         assertThat(entity.nombreSala()).isEqualTo("1");
         assertThat(entity.nombreTipoJuicio()).isEqualTo("Familiar Oralidad (Alimentos)");
-        assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Example Domicilio</b>");
+        assertThat(entity.domicilio()).isEqualTo("Demanda:<b> Domicilio Familiar Test</b>");
     }
 
 
@@ -181,6 +200,7 @@ class AudienciaServiceTest {
     void DomicilioByaudiencias_isEmpty() {
         when(audienciaRepository.getJuzAndSalaAndAudienciaByIdcarpeta(carpeta.getId())).thenReturn(null);
         when(etiquetaRepository.findByTipoJuicioIdAndNombre(tipoJuicio.getId(), "domicilioOralidadFamiliar")).thenReturn(null);
+        when(carpetaDetalleRepository.findByCarpetaId(carpeta.getId())).thenReturn(carpetaDetalle);
 
         ExtraAudienciaSelloRecord entity = audienciaService.getAudienciaAndSalaAndDomicilio(documento);
         assertThat(entity).isNotNull();
@@ -194,13 +214,18 @@ class AudienciaServiceTest {
     void getAllAudienciasGenerales_ReturnPage() {
         Juzgado juzgado = new Juzgado();
         persona.setJuzgado(juzgado);
+        persona.setUsuario("user-1");
         when(personaService.getAuditor()).thenReturn(persona);
+        when(personaService.getRolesByUser(persona.getUsuario()))
+                .thenReturn(List.of(new RoleRecord("1", "SECRETARIO")));
+        when(salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(eq(persona.getId().intValue()), eq(Estado.ACTIVE)))
+                .thenReturn(List.of(1));
 
         Persona juez = new Persona();
         juez.setNombre("Juez 1");
         juez.setApellidoPaterno("");
         juez.setApellidoMaterno("");
-        Sala sala = new Sala().setNombre("Sala 1").setJuez(juez);
+        Sala sala = new Sala().setId(1).setNombre("Sala 1").setJuez(juez);
 
         String nombreCompletoJuez = juez.getNombre() + " " + juez.getApellidoPaterno();
         if (juez.getApellidoMaterno() != null) {
@@ -209,7 +234,8 @@ class AudienciaServiceTest {
 
         Carpeta carpeta = new Carpeta().setExpediente("000001/2024").setTipoJuicio(TipoJuicioSetUp.createTipoJuicio());
         Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(), sala, null, tipoAudiencia, carpeta);
-
+        audiencia.setInicio(LocalDateTime.of(2026, 1, 21, 10, 0));
+        audiencia.setFin(LocalDateTime.of(2026, 1, 21, 11, 0));
         AsistenciaAudiencia asistenciaAudiencia = new AsistenciaAudiencia();
         asistenciaAudiencia.setAsistencia(Asistencia.SI);
         asistenciaAudiencia.setDocumentoIdentificacion(DocumentoIdentificacionSetUp.createDocIdentificacion());
@@ -223,14 +249,26 @@ class AudienciaServiceTest {
         personaDocumento.setRol(Rol.PRINCIPAL);
         personaDocumento.setTipoPartes(TipoPartesSetUp.createTipoPartes());
 
-        when(personaDocumentoRepository.findByCarpetaId(audiencia.getCarpeta().getId()))
-                .thenReturn(Collections.singletonList(personaDocumento));
-        when(asistenciaAudienciaRepository.findByPersonaDocumentoIdAndAudienciaId(eq(1), eq(audiencia.getId())))
-                .thenReturn(asistenciaAudiencia);
-
-        List<Audiencia> audiencias = Collections.singletonList(audiencia);
-        Page<Audiencia> pageAudiencias = new PageImpl<>(audiencias, PageRequest.of(0, 10), audiencias.size());
-        when(audienciaRepository.findByJuzgado(eq(juzgado), anyString(), any(Pageable.class)))
+        AudienciasGeneralesResponseRecord responseRecord = new AudienciasGeneralesResponseRecord(
+                audiencia.getId(),
+                tipoAudiencia.getNombre(),
+                nombreCompletoJuez,
+                carpeta.getExpediente(),
+                carpeta.getId(),
+                sala.getNombre(),
+                audiencia.getFechaAudiencia(),
+                audiencia.getEstatusAudiencia(),
+                null,
+                null,
+                Collections.emptyList(),
+                audiencia.getInicio(),
+                audiencia.getFin(),
+                null,
+                null
+        );
+        Page<AudienciasGeneralesResponseRecord> pageAudiencias =
+                new PageImpl<>(Collections.singletonList(responseRecord), PageRequest.of(0, 10), 1);
+        when(audienciaRepository.findAudienciasGenerales(any(Pageable.class), eq(juzgado), anyString(), anyList(), anyBoolean()))
                 .thenReturn(pageAudiencias);
 
         Page<AudienciasGeneralesResponseRecord> result = audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
@@ -244,6 +282,26 @@ class AudienciaServiceTest {
                 .hasFieldOrPropertyWithValue("numCarpeta", carpeta.getExpediente())
                 .hasFieldOrPropertyWithValue("fechaHora", audiencia.getFechaAudiencia())
                 .hasFieldOrPropertyWithValue("estatus", audiencia.getEstatusAudiencia());
+    }
+
+    @Test
+    void getAllAudienciasGenerales_ReturnEmpty_WhenSecretaryHasNoSalas() {
+        Juzgado juzgado = new Juzgado();
+        persona.setJuzgado(juzgado);
+        persona.setUsuario("user-2");
+
+        when(personaService.getAuditor()).thenReturn(persona);
+        when(personaService.getRolesByUser(persona.getUsuario()))
+                .thenReturn(List.of(new RoleRecord("1", "SECRETARIO")));
+        when(salaPersonaRepository.findSalaIdsByPersonaIdAndEstado(eq(persona.getId().intValue()), eq(Estado.ACTIVE)))
+                .thenReturn(Collections.emptyList());
+
+        Page<AudienciasGeneralesResponseRecord> result =
+                audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).isEmpty();
+        verify(audienciaRepository, never())
+                .findAudienciasGenerales(any(Pageable.class), any(Juzgado.class), anyString(), anyList(), anyBoolean());
     }
 
     @Test
@@ -423,29 +481,17 @@ class AudienciaServiceTest {
     }
     @Test
     void testGuardarArchivo(){
-        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
-        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
-        audiencia.setId(1);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
-
-        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
-        audienciaService.guardarArchivo(fileMock, audiencia.getId());
-
-        verify(audienciaRepository).findById(audiencia.getId());
-        verify(audienciaRepository).save(any(Audiencia.class));
+        audienciaService.guardarArchivo(fileMock, 1);
+        verify(digitalizacionService).guardarActaMinimaAudiencia(fileMock, 1);
     }
 
     @Test
     void testGetActaMinima() throws IOException {
-        Audiencia audiencia = AudienciaSetUp.generarAudiencia(LocalDateTime.now(),sala,bloque,tipoAudiencia,carpeta);
-        audiencia.getCarpeta().setJuzgado(JuzgadoSetUp.createJuzgado());
-        audiencia.setId(1);
-        MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(50, "file", "application/pdf");
-        given(audienciaRepository.findById(any())).willReturn(Optional.of(audiencia));
-        audienciaService.guardarArchivo(fileMock, audiencia.getId());
-
-        byte[] resultado = audienciaService.getAudienciaDocumento(audiencia.getId());
+        given(digitalizacionService.getActaMinimaAudiencia(1)).willReturn(new byte[] { 1, 2, 3 });
+        byte[] resultado = audienciaService.getAudienciaDocumento(1);
         assertNotNull(resultado);
+        verify(digitalizacionService).getActaMinimaAudiencia(1);
     }
 
     @Test

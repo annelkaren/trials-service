@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import mx.gob.pjpuebla.trials.core.distritos.Distrito;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.util.*;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.Tipo;
@@ -71,6 +72,10 @@ public class Sede implements Serializable, Auditable {
     @JoinColumn(name = "FN_DISTRITO", referencedColumnName = "PN_ID", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Distrito distrito;
+
+    @JoinColumn(name = "FN_PERSONA", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona persona;
 
     @Accessors(chain = false)
     @Embedded

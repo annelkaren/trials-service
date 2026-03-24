@@ -5,10 +5,12 @@ import jakarta.persistence.PreUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
+@Component
 public class AuditListener {
 
     private final AuditorAware<Jwt> auditorAware;

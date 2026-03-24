@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.juzgados;
 
 import mx.gob.pjpuebla.trials.core.materias.Materia;
+import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,14 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         WHERE j.materia = :materia AND j.instanciaJuzgado = :instanciaJuzgado
                         """)
         void reiniciarContadorAsignaciones(Materia materia, InstanciaJuzgado instanciaJuzgado);
+
+        @Modifying(flushAutomatically = true)
+        @Query("""
+                UPDATE Juzgado j
+                SET j.contadorAsignaciones = j.contadorAsignaciones - j.maxAsignacionesRonda
+                WHERE j.id IN :ids
+                """)
+        void reiniciarContadorAsignacionesPorIds(@Param("ids") List<Integer> ids);
 
         @Query("""
                         SELECT COALESCE(SUM(j.contadorAsignaciones), 0)
@@ -148,6 +157,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         Optional<Juzgado> findByNombreIgnoreCase(String nombre);
 
+        Optional<Juzgado> findByNombreContainingIgnoreCase(String nombre);
+
         @Query("""
                         SELECT
                         new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id,  f.nombre, f.estado, m.nombre)
@@ -156,6 +167,31 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                         WHERE f.instanciaJuzgado=:instanciaJuzgado
                         """)
         List<JuzgadoRecordItem> findAllByInstancia(InstanciaJuzgado instanciaJuzgado);
+
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        WHERE f.instanciaJuzgado = :instanciaJuzgado
+                        AND f.estado = :estado
+                        """)
+        List<JuzgadoRecordItem> findAllByInstanciaAndEstado(
+                        @Param("instanciaJuzgado") InstanciaJuzgado instanciaJuzgado,
+                        @Param("estado") Estado estado);
+
+        @Query("""
+                        SELECT
+                        new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem(f.id, f.nombre, f.estado, m.nombre)
+                        FROM Juzgado f
+                        LEFT JOIN f.materia m
+                        WHERE f.juzgadoPadre.id = :juzgadoPadreId or f.id = :juzgadoPadreId
+                        AND f.estado = :estado
+                        ORDER BY lower(f.nombre)
+                        """)
+        List<JuzgadoRecordItem> findChildrenByJuzgadoPadreIdAndEstado(
+                        @Param("juzgadoPadreId") Integer juzgadoPadreId,
+                        @Param("estado") Estado estado);
 
         @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj " +
                         "JOIN oj.juzgado.tipoJuicios tj " + 
@@ -176,7 +212,22 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         @Query("SELECT oj.juzgado FROM OficialiaJuzgado oj " +
                         "WHERE oj.oficialiaId = :oficialiaId " +
-                        "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.NO_APLICA")
+                        "AND oj.juzgado.instanciaJuzgado = mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado.EXHORTO")
         List<Juzgado> findJuzgadoExhortoByOficialiaId(@Param("oficialiaId") Integer oficialiaId);
 
+
+        Optional<Juzgado> findByClaveJuzgado(String clave);
+
+        @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord(
+                s.id, s.nombre, d.calle,d.interior, d.exterior, d.colonia, d.codigoPostal, d.municipio,d.estadoRepublica,
+                d.referencia, d.localidad
+            )
+            FROM Juzgado juz
+            JOIN juz.sede s
+            JOIN s.domicilio d
+            JOIN juz.materia m
+            WHERE m.nombre IN (:materias) AND juz.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+            """)
+        List<SedeDomiciliosRecord> getAllUbications(@Param("materias") List<String> materias);
 }

@@ -36,7 +36,8 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                         d.localidad,
                         d.colonia,
                         d.codigoPostal,
-                        d.referencia
+                        d.referencia,
+                        d.ciudad
                     )
                 )
                 FROM Institucion i
@@ -116,5 +117,32 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
             """)
     Page<InstitucionRecord> findAllInstituciones(@Param("nombre") String nombre, 
     Pageable pageable, List<Estado> estados);
+
+    @Query("""
+            SELECT
+                new mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord(
+                    i.id,
+                    i.nombre,
+                    CONCAT(
+                        d.calle, ' ',
+                        d.colonia, ' ',
+                        d.exterior,
+                        CASE WHEN d.interior IS NOT NULL THEN CONCAT(' Int. ', d.interior) ELSE '' END,
+                        ' ',
+                        d.estadoRepublica, ' ',
+                        d.municipio, ' ',
+                        d.localidad, ' ',
+                        d.codigoPostal,
+                        CASE WHEN d.referencia IS NOT NULL THEN CONCAT(' Ref: ', d.referencia) ELSE '' END
+                    ),
+                    i.telefono,
+                    i.tipoInstitucion
+                )
+            FROM Institucion i
+            JOIN i.domicilio d
+            WHERE i.estado = Estado.ACTIVE
+            ORDER BY i.nombre
+            """)
+    List<InstitucionRecord> getInstitucionesList();
 
 }

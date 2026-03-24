@@ -4,21 +4,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import mx.gob.pjpuebla.trials.error.ErrorRecord;
 import mx.gob.pjpuebla.trials.util.enums.DevolucionMotivo;
-
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoBandejaRecepcionRecord;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRepository;
-
-
 import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
 
@@ -107,6 +102,4 @@ public class MovimientoResource {
     public List<TurnadoMovimientoRecord> turnadoList(@PathVariable("carpetaId") Integer carpetaId){
         return movimientoService.getTurnadoMovimientos(carpetaId);
     }
-
-
 }

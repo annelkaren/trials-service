@@ -13,6 +13,12 @@ public record PromocionesLitiganteRecord(
         LocalDate fechaSubida,
         LocalTime horaSubida,
         String rutaArchivo,
-        String juzgado
+        String juzgado,
+        Boolean isLegacy, 
+        Integer idDetalle
 ) implements Serializable {
+
+        public PromocionesLitiganteRecord(Integer id, String numeroExpediente, String numeroPromocionE, String usuarioOrigen, String nombreArchivo, LocalDate fechaSubida, LocalTime horaSubida, String rutaArchivo, String juzgado) {
+                this(id, numeroExpediente, numeroPromocionE, usuarioOrigen, nombreArchivo, fechaSubida, horaSubida, rutaArchivo, juzgado, false, null);
+        }
 }

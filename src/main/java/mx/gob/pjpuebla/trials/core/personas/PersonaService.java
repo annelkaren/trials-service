@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioService;
 import mx.gob.pjpuebla.trials.core.escolaridades.EscolaridadRepository;
 import mx.gob.pjpuebla.trials.core.estadocivil.EstadoCivilRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRecordItem;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
@@ -16,30 +17,46 @@ import mx.gob.pjpuebla.trials.core.roles.RoleService;
 import mx.gob.pjpuebla.trials.core.salas.Sala;
 import mx.gob.pjpuebla.trials.core.salas.SalaRepository;
 import mx.gob.pjpuebla.trials.core.usuarios.UsuarioService;
+import mx.gob.pjpuebla.trials.error.ApiResponse;
+import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
+import mx.gob.pjpuebla.trials.util.enums.Sexo;
 import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import mx.gob.pjpuebla.trials.config.KeycloakSecurityUtil;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@Transactional
+@Transactional(transactionManager = "primaryTransactionManager")
 public class PersonaService {
 
     private final AuditorAware<Jwt> auditorAware;
@@ -54,8 +71,21 @@ public class PersonaService {
     private final RoleService roleService;
     private final SalaRepository salaRepository;
     private static final String PERSON_NOT_FOUND = "Persona no encontrada";
+    private final KeycloakSecurityUtil keycloakSecurityUtil;
 
-    @Transactional(readOnly = true)
+    @Value("${keycloak.realm}")
+    private String realm;
+
+    @Value("${keycloak.client-id}")
+    private String clientId;
+
+    @Value("${keycloak.get-token-url}")
+    private String serverUrlKc;
+
+    @Value("${keycloak.client-secret}")
+    private String clientSecret;
+
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Page<PersonaRecordResponse> getAll(Persona example, Pageable pageable) {
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
@@ -89,7 +119,7 @@ public class PersonaService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public PersonaRecord findById(Long id) {
         String tipoCentroTrabajo = "";
         Integer centroTrabajoId = null;
@@ -107,12 +137,20 @@ public class PersonaService {
         return persona.withRoles(roles);
     }
 
-    public PersonaRecordResponse create(Persona persona, List<RoleRecord> roles) {
+    public Optional<Persona> findPersonaById(Long personaId) {
+        return personaRepository.findById(personaId);
+
+    }
+
+    public PersonaRecordResponse create(PersonaDTO dto) {
+        Persona persona = dto.getPersona();
+        List<RoleRecord> roles = dto.getRoles();
         if (!isValidAge(persona.getFechaNacimiento())) {
             throw new ConflictException("El usuario debe ser mayor de edad");
         }
         List<String> rolesToSave = getNames(roles);
         validateAdminRole(rolesToSave, persona);
+        persona.setRolPrincipal(setRolPrincipal(roles, dto.getRolPrincipal()));
         persona.setUsuario(usuarioService.create(persona));
         persona.setIsExternalUser(ExternalUser.NO);
         roleService.addRoles(persona.getUsuario(), rolesToSave);
@@ -133,9 +171,19 @@ public class PersonaService {
     private void fillPersonaData(Persona persona) {
         persona.setEscolaridad(escolaridadRepository.findById(persona.getEscolaridad().getId())
                 .orElseThrow(() -> new NotFoundException("Escolaridad no encontrada", "escolaridadId")));
-        persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
-                .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
-        persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+
+        if (persona.getEstadoCivil().getId() != null) {
+            persona.setEstadoCivil(estadoCivilRepository.findById(persona.getEstadoCivil().getId())
+                    .orElseThrow(() -> new NotFoundException("Estado Civil no encontrado", "estadoCivilId")));
+        } else {
+            persona.setEstadoCivil(null);
+        }
+
+        if (persona.getDomicilio().getCalle() != null && !persona.getDomicilio().getCalle().isEmpty()) {
+            persona.setDomicilio(domicilioService.save(persona.getDomicilio()));
+        } else {
+            persona.setDomicilio(null);
+        }
 
         if (persona.getJuzgado() != null && persona.getJuzgado().getId() != null) {
             persona.setJuzgado(juzgadoRepository.findById(persona.getJuzgado().getId())
@@ -152,7 +200,9 @@ public class PersonaService {
         }
     }
 
-    public PersonaRecordResponse update(Persona persona, List<RoleRecord> roles) {
+    public PersonaRecordResponse update(PersonaDTO dto) {
+        Persona persona = dto.getPersona();
+        List<RoleRecord> roles = dto.getRoles();
         try {
             if (!isValidAge(persona.getFechaNacimiento())) {
                 throw new ConflictException("El usuario debe ser mayor de edad");
@@ -161,6 +211,7 @@ public class PersonaService {
             List<String> rolesToSave = getNames(roles);
             validateAdminRole(rolesToSave, persona);
             fillPersonaData(persona);
+            persona.setRolPrincipal(setRolPrincipal(roles, dto.getRolPrincipal()));
             persona = personaRepository.save(persona);
             roleService.updateRoles(persona.getUsuario(), rolesToSave);
             return new PersonaRecordResponse(persona.getId(), persona.getNombre(), persona.getCorreoElectronico(),
@@ -170,7 +221,7 @@ public class PersonaService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public PersonaRecord findByCurp(String curp) {
         PersonaRecord persona = personaRepository.findByCurp(curp)
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "curp"));
@@ -184,12 +235,13 @@ public class PersonaService {
         return roles;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<JuezRecord> findAllJueces(Integer juzgadoId) {
         List<Sala> salas;
         List<JuezRecord> jueces = new ArrayList<>();
         List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
         List<String> ids = usuarioService.findAllByRoles(roles);
+
         for (String id : ids) {
             Optional<Persona> juez = personaRepository.findByUsuarioAndJuzgadoIdAndEstadoIn(id, juzgadoId,
                     List.of(Estado.ACTIVE));
@@ -206,7 +258,39 @@ public class PersonaService {
         return jueces;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
+    public List<JuezRecord> findAllJuecesFromSala(Integer juzgadoId) {
+        List<String> roles = Arrays.asList("JUEZ", "SECRETARIO");
+        List<String> ids = usuarioService.findAllByRolesRealm(roles);
+        return personaRepository.findByUsuarioInAndJuzgadoIdAndEstadoIn(ids, juzgadoId, List.of(Estado.ACTIVE));
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
+    public Map<String, Integer> findAllJuecesPenales() {
+        List<Persona> jueces = new ArrayList<>();
+        Map<String, Integer> map = new HashMap<>();
+        int countMujeres = 0;
+        int countHombres = 0;
+        List<String> roles = List.of("JUEZ");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        for (String id : ids) {
+            Optional<Persona> juez = personaRepository.findByUsuarioUUID(List.of("PENAL"), id);
+            juez.ifPresent(jueces::add);
+        }
+        for (Persona persona : jueces) {
+            if (persona.getSexo().equals(Sexo.FEMENINO))
+                countMujeres += 1;
+            if (persona.getSexo().equals(Sexo.MASCULINO))
+                countHombres += 1;
+
+        }
+        map.put("total", jueces.size());
+        map.put("hombres", countHombres);
+        map.put("mujeres", countMujeres);
+        return map;
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<JuezRecord> findByOficialiaOfPersonaLogueada(Integer materiaId) {
         Persona persona = getAuditor();
 
@@ -215,30 +299,32 @@ public class PersonaService {
 
         return persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null
                 ? persona.getOficialia().getJuzgados().stream()
-                .filter(juzgado -> juzgado.getMateria() != null
-                        && materia.getNombre().equals(juzgado.getMateria().getNombre()))
-                .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
-                .toList()
+                        .filter(juzgado -> juzgado.getMateria() != null
+                                && materia.getNombre().equals(juzgado.getMateria().getNombre()))
+                        .flatMap(juzgado -> findAllJueces(juzgado.getId()).stream())
+                        .toList()
                 : Collections.emptyList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<EncargadoCarritoRecord> findAllEncargadosCarrito() {
-        List<EncargadoCarritoRecord> encargadoCarritoList = new ArrayList<>();
         List<String> ids = usuarioService.findAllByRoles(List.of("ENCARGADO_CARRITO"));
-        for (String id : ids) {
-            Optional<Persona> persona = personaRepository.findByUsuario(id);
-            if (persona.isPresent()) {
-                String name = persona.get().getNombre() + " " + persona.get().getApellidoPaterno();
-                name += ((persona.get().getApellidoMaterno() != null) ? " " + persona.get().getApellidoMaterno() : "");
-                EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(persona.get().getId(), name);
-                encargadoCarritoList.add(encargadoCarritoRecord);
-            }
-        }
-        return encargadoCarritoList;
+
+        return ids.stream()
+                .map(personaRepository::findByUsuario)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(p -> {
+                    String name = p.getNombre() + " " + p.getApellidoPaterno();
+                    if (p.getApellidoMaterno() != null) {
+                        name += " " + p.getApellidoMaterno();
+                    }
+                    return new EncargadoCarritoRecord(p.getId(), name);
+                })
+                .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<CentroTrabajoRecord> findAllCentroTrabajo(String nombre) {
         Persona currentUser = getAuditor();
 
@@ -266,7 +352,7 @@ public class PersonaService {
         return centrosTrabajo;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, String searchQuery, Pageable pageable) {
         Persona usuario = getAuditor();
         boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
@@ -294,14 +380,14 @@ public class PersonaService {
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public Persona getAuditor() {
         Jwt jwt = auditorAware.getCurrentAuditor().orElseThrow();
         return personaRepository.findByUsuario(jwt.getSubject())
                 .orElseThrow(() -> new NotFoundException(PERSON_NOT_FOUND, "usuario: " + jwt.getSubject()));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<PersonaRecordResponse> getPersonalTurnado() {
         Persona persona = getAuditor();
         List<Persona> list = new ArrayList<>();
@@ -332,6 +418,12 @@ public class PersonaService {
                 roleService.getRolesByUserId(p.getUsuario()).get(0).name())).toList();
     }
 
+    public List<PersonaRecordResponse> getSecretarios(Integer juzgadoId) {
+        List<String> ids = usuarioService.findAllByRolesRealm(List.of("SECRETARIO"));
+        return personaRepository.getSecretariosOfJuzgado(ids, juzgadoId, List.of(Estado.ACTIVE));
+
+    }
+
     private void validateAdminRole(List<String> rolesToSave, Persona persona) {
         boolean hasAdminRole = rolesToSave.stream().anyMatch(r -> r.equalsIgnoreCase("ADMINISTRADOR_SISTEMA"));
         if (hasAdminRole && ((persona.getJuzgado() != null && persona.getJuzgado().getId() != null)
@@ -349,6 +441,23 @@ public class PersonaService {
         }
     }
 
+    private String setRolPrincipal(List<RoleRecord> roles, String rolPrincipal) {
+
+        if (roles.isEmpty()) {
+            return "-";
+        }
+
+        if (roles.size() == 1) {
+            return roles.get(0).name();
+        }
+
+        return roles.stream()
+                .filter(rol -> rol.id().equals(rolPrincipal))
+                .findFirst()
+                .map(RoleRecord::name)
+                .orElse("-");
+    }
+
     public boolean verifyIfUserExistsAndIsLitigante(String username) {
         String usuario = usuarioService.findByUsernameAndRol(username, "LITIGANTE");
         Optional<Persona> persona = personaRepository.findByUsuario(usuario);
@@ -360,7 +469,7 @@ public class PersonaService {
     }
 
     public List<PersonaRecordResponse> findAllMensajeros() {
-        List<String> roles =  List.of("MENSAJERO");
+        List<String> roles = List.of("MENSAJERO");
         List<String> ids = usuarioService.findAllByRoles(roles);
         List<PersonaRecordResponse> mensajeros = new ArrayList<>();
         for (String id : ids) {
@@ -389,11 +498,132 @@ public class PersonaService {
                     TipoCentroTrabajo.JUZGADO));
         }
         if (persona.getOficialia() != null) {
-            centrosTrabajo.add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
-                    TipoCentroTrabajo.OFICIALIA_COMUN));
+            centrosTrabajo
+                    .add(new CentroTrabajoRecord(persona.getOficialia().getId(), persona.getOficialia().getNombre(),
+                            TipoCentroTrabajo.OFICIALIA_COMUN));
         }
 
-        
         return centrosTrabajo;
+    }
+
+    public boolean findByEmail(String email) {
+        Persona persona = this.personaRepository.findByCorreoElectronico(email);
+        return persona != null;
+    }
+
+    public void createLitigante(Persona persona, List<RoleRecord> roles) {
+        if (!findByEmail(persona.getCorreoElectronico())) {
+            List<String> rolesToSave = getNames(roles);
+            persona.setUsuario(usuarioService.create(persona));
+            persona.setIsExternalUser(ExternalUser.YES);
+            roleService.addRoles(persona.getUsuario(), rolesToSave);
+
+            personaRepository.save(persona);
+        }
+    }
+
+    public List<RoleRecord> getRolesByUser(String userId) {
+        return roleService.getRolesByUserId(userId);
+    }
+
+    public ApiResponse<Void> changePassword(CambioPasswordRecord request) {
+        String current = request.currentPassword();
+        String nueva = request.newPassword();
+        String confirmar = request.confirmPassword();
+        Persona userLogueado = getAuditor();
+
+        if (!nueva.equals(confirmar)) {
+            return ApiResponseFactory.error("Las contraseñas nuevas no coinciden.",
+                    ApiResponseFactory.VALIDATION_ERROR);
+        }
+
+        if (!validarCredencialesActuales(userLogueado, current)) {
+            return ApiResponseFactory.error("La contraseña actual es incorrecta.", ApiResponseFactory.UNAUTHORIZED,
+                    401);
+        }
+
+        try {
+            cambiarPasswordInKeyCloak(userLogueado, nueva);
+            return ApiResponseFactory.success("Contraseña actualizada correctamente.");
+        } catch (Exception e) {
+            return ApiResponseFactory.error("Error al actualizar la contraseña", ApiResponseFactory.INTERNAL_ERROR,
+                    500);
+        }
+
+    }
+
+    public boolean cambiarPasswordInKeyCloak(Persona user, String password) {
+
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+
+        UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setType(CredentialRepresentation.PASSWORD);
+        cred.setValue(password);
+        cred.setTemporary(false);
+
+        userRepresentation.resetPassword(cred);
+        return true;
+    }
+
+    public boolean validarCredencialesActuales(Persona user, String currentPassword) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+            UserResource userRepresentation = keycloak.realm(realm).users().get(user.getUsuario());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+            map.add("client_id", clientId);
+            map.add("client_secret", clientSecret);
+            map.add("grant_type", "password");
+            map.add("username", userRepresentation.getUserSessions().get(0).getUsername());
+            map.add("password", currentPassword);
+
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    serverUrlKc,
+                    HttpMethod.POST,
+                    entity,
+                    String.class);
+
+            return response.getStatusCode().is2xxSuccessful();
+
+        } catch (HttpClientErrorException e) {
+            log.warn("Credenciales inválidas: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return false;
+
+        } catch (Exception e) {
+            log.error("Error al validar credenciales actuales", e);
+            return false;
+        }
+    }
+
+    public String getNamePersona(String usuario) {
+        Optional<Persona> persona = personaRepository.findByUsuario(usuario);
+
+        if (persona.isPresent()) {
+            Persona p = persona.get();
+            return (p.getNombre() + ' ' + p.getApellidoPaterno() + ' '
+                    + (p.getApellidoMaterno() != null ? p.getApellidoMaterno() : "")).toUpperCase();
+        }
+        return "";
+    }
+
+    public Persona getOficialMayor(Juzgado juzgado) {
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+        String idOficialMayor = keycloak.realm(realm)
+                .roles()
+                .get("OFICIAL_MAYOR_JUZGADO")
+                .getUserMembers()
+                .get(0)
+                .getId();
+
+        return personaRepository
+                .findByUsuarioAndJuzgado(idOficialMayor, juzgado)
+                .orElse(null);
     }
 }

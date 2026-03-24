@@ -24,6 +24,6 @@ public class ConceptoSetUp {
     }
 
     public static ConceptoRecordResponse createConceptoRecordResponse () {
-        return new ConceptoRecordResponse(1, "Adjuntar", 1,  Estado.ACTIVE);
+        return new ConceptoRecordResponse(1, "Adjuntar", 1,  Estado.ACTIVE, "rol");
     }
 }

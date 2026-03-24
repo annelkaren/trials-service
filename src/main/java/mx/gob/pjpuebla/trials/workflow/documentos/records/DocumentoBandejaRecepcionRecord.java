@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record DocumentoBandejaRecepcionRecord(
+        Integer movimientoId,
         Integer carpetaId,
         Integer documentoId,
         String folio,
@@ -16,6 +17,8 @@ public record DocumentoBandejaRecepcionRecord(
         LocalDateTime fechaHoraEnvio,
         Boolean isInterno,
         Prioridad prioridad,
-        Integer horas
+        Integer horas,
+        Integer conceptoId,
+        String tipoPromocion
 ) implements Serializable {
 }

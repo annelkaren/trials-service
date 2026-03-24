@@ -45,7 +45,7 @@ public class SelloCaratulaServiceTest {
         when(personaMock.apellidoMaterno()).thenReturn("Smith");
         when(personaMock.tipoPersona()).thenReturn("FISICA");
 
-        when(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, Arrays.asList(Rol.PRINCIPAL))).thenReturn(personaMock);
+        when(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, Arrays.asList(Rol.PRINCIPAL))).thenReturn(Arrays.asList(personaMock));
 
         String resultado = selloCaratulaService.getNombrePersonaByIdAndParte(id, parte);
 
@@ -65,7 +65,7 @@ public class SelloCaratulaServiceTest {
         when(personaMock.tipoPersona()).thenReturn("MORAL");
 
         when(personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte, Arrays.asList(Rol.PRINCIPAL)))
-                .thenReturn(personaMock);
+                .thenReturn(Arrays.asList(personaMock));
 
         String resultado = selloCaratulaService.getNombrePersonaByIdAndParte(id, parte);
 

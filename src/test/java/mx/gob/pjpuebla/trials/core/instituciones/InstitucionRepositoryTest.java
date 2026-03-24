@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.core.instituciones;
 
-import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
-import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
 import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;

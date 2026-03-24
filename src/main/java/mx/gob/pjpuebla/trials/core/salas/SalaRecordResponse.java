@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record SalaRecordResponse(
@@ -16,6 +17,7 @@ public record SalaRecordResponse(
         Integer version,
         JuezRecord juez,
         JuzgadoRecordItem juzgado,
-        BloqueRecord bloque
+        BloqueRecord bloque,
+        List<SecretariosSalasRecord> secretarios
 ) implements Serializable {
 }

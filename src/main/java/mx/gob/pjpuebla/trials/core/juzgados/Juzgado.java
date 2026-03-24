@@ -61,7 +61,7 @@ public class Juzgado implements Serializable, Auditable {
     @Column(name = "N_CONTADOR_ASIGNACIONES")
     private Integer contadorAsignaciones;
 
-    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID", nullable = false)
+    @JoinColumn(name = "FN_MATERIA", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Materia materia;
 
@@ -89,8 +89,6 @@ public class Juzgado implements Serializable, Auditable {
             "fn_tipojuicio"
     }))
     @OrderBy("id")
-    @NotNull
-    @Size(min = 1, max = 50)
     private List<TipoJuicio> tipoJuicios;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "juzgado", fetch = FetchType.LAZY)
@@ -99,5 +97,23 @@ public class Juzgado implements Serializable, Auditable {
     @Size(max = 50)
     @Column(name = "S_NOMENCLATURA")
     private String nomenclatura;
+
+    @Column(name= "S_CLAVE_JUZGADO")
+    private String claveJuzgado;
+
+    @Column(name = "S_TABLA_UBI")
+    private String tablaUbicacion;
+
+    @Transient
+    private List<JuzgadoContadorConfig> contadoresJuzgados;
+
+    @Column(name = "S_SHORT_NAME")
+    @Size(max = 50)
+    private String shortName;
+
+    @JoinColumn(name = "FN_JUZGADO_PADRE", referencedColumnName= "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Juzgado juzgadoPadre;
+
 }
 

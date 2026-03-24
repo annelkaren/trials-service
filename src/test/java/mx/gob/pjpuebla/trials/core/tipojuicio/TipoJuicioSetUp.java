@@ -92,7 +92,7 @@ public class TipoJuicioSetUp {
 
 
     public static TipoJuicioRecord createTipoJuicioRecord() {
-        return new TipoJuicioRecord(1, "Laboral", createTipoSistemaRecord(), createMateriaRecord());
+        return new TipoJuicioRecord(1, "Laboral", createTipoSistemaRecord(), createMateriaRecord(), null);
     }
 
     public static TipoSistemaRecord createTipoSistemaRecord() {

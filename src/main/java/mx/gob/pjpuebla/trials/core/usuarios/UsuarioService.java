@@ -14,6 +14,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,18 +30,39 @@ public class UsuarioService {
     private final KeycloakSecurityUtil keycloakSecurityUtil;
     private final EmailService emailService;
 
+    @Value("${app.correo-pruebas}")
+    private String correoPrueba;
+
     public String create(Persona persona) {
         UserRepresentation userRepresentation = mapUser(persona);
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
+
         try (Response response = keycloak.realm(keycloakSecurityUtil.realm).users().create(userRepresentation)) {
+
             if (response.getStatus() == HttpStatus.CREATED.value()) {
-                sendMail(userRepresentation.getEmail(),
-                        userRepresentation.getCredentials().get(0).getValue(),
-                        userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
-                return response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+                String userId = response.getLocation()
+                        .getPath()
+                        .replaceAll(".*/([^/]+)$", "$1");
+
+                // Controlamos cualquier excepción que pueda derivar del envio de correo para no
+                // interrumplir flujo de creación de usuario:
+                try {
+                    sendMail(userRepresentation.getEmail(),
+                            userRepresentation.getCredentials().get(0).getValue(),
+                            userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
+
+                } catch (Exception ex) {
+                    log.error("No se pudo enviar correo de bienvenida al usuario {}",
+                            userRepresentation.getEmail(), ex);
+                }
+
+                return userId;
+
             } else {
-                throw new UserAlreadyExistException("El correo electrónico proporcionado ya se encuentra registrado", persona.getCorreoElectronico());
+                throw new UserAlreadyExistException("El correo electrónico proporcionado ya se encuentra registrado",
+                        persona.getCorreoElectronico());
             }
+
         }
     }
 
@@ -50,8 +72,10 @@ public class UsuarioService {
         List<UserRepresentation> users = keycloak.realm(keycloakSecurityUtil.realm).users().list();
 
         for (UserRepresentation user : users) {
-            List<RoleRepresentation> roles = keycloak.realm(keycloakSecurityUtil.realm).users().get(user.getId()).roles().realmLevel().listAll();
-            if (roles.stream().anyMatch(role -> roleNames.stream().anyMatch(roleName -> role.getName().equalsIgnoreCase(roleName)))) {
+            List<RoleRepresentation> roles = keycloak.realm(keycloakSecurityUtil.realm).users().get(user.getId())
+                    .roles().realmLevel().listAll();
+            if (roles.stream().anyMatch(
+                    role -> roleNames.stream().anyMatch(roleName -> role.getName().equalsIgnoreCase(roleName)))) {
                 jueces.add(user.getId());
             }
         }
@@ -59,13 +83,42 @@ public class UsuarioService {
         return jueces;
     }
 
+    public List<String> findAllByRolesRealm(List<String> roleNames) {
+        if (roleNames == null || roleNames.isEmpty())
+            return List.of();
+
+        Keycloak keycloak = keycloakSecurityUtil.getKeycloakInstance();
+
+        // Evita duplicados si un usuario tiene 2 roles de los que buscas
+        Set<String> userIds = new LinkedHashSet<>();
+
+        var realm = keycloak.realm(keycloakSecurityUtil.realm);
+
+        for (String roleName : roleNames) {
+            if (roleName == null || roleName.isBlank())
+                continue;
+
+            List<UserRepresentation> members = realm.roles()
+                    .get(roleName)
+                    .getUserMembers();
+
+            for (UserRepresentation u : members) {
+                userIds.add(u.getId());
+            }
+        }
+
+        return new ArrayList<>(userIds);
+    }
+
     public String findByUsernameAndRol(String username, String rol) {
         Keycloak keycloak = this.keycloakSecurityUtil.getKeycloakInstance();
-        List<UserRepresentation> users = keycloak.realm(keycloakSecurityUtil.realm).users().searchByUsername(username, true);
+        List<UserRepresentation> users = keycloak.realm(keycloakSecurityUtil.realm).users().searchByUsername(username,
+                true);
         UserRepresentation user;
         if (!users.isEmpty()) {
-            user = users.get(0);//No es posible tener más de un usuario con el mismo username
-            List<RoleRepresentation> roles = keycloak.realm(keycloakSecurityUtil.realm).users().get(user.getId()).roles().realmLevel().listAll();
+            user = users.get(0);// No es posible tener más de un usuario con el mismo username
+            List<RoleRepresentation> roles = keycloak.realm(keycloakSecurityUtil.realm).users().get(user.getId())
+                    .roles().realmLevel().listAll();
             if (roles.stream().anyMatch(roleName -> roleName.getName().equalsIgnoreCase(rol))) {
                 return user.getId();
             } else {
@@ -103,11 +156,10 @@ public class UsuarioService {
         emailService.sendMail(
                 List.of(email),
                 Collections.emptyList(),
-                Collections.emptyList(),
+                correoPrueba != null ? List.of(correoPrueba) : Collections.emptyList(),
                 "¡Bienvenido(a) a nuestro portal!",
                 "welcome.ftl",
-                sendEmail
-        );
+                sendEmail);
 
     }
 }

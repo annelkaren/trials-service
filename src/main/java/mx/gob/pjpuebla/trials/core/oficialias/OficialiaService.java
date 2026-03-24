@@ -16,6 +16,10 @@ import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.*;
@@ -26,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,7 +60,25 @@ public class OficialiaService {
                 o.getTipoOficialia().getNombre(),
                 o.getTipoOficialia().getId(),
                 listarJuzgados(o.getJuzgados()),
-                null)).toList(), pageable, oficialias.getTotalElements());
+                null,
+                o.getTiposDocumentos() != null && !o.getTiposDocumentos().isBlank()
+                        ? Arrays.stream(o.getTiposDocumentos().split(","))
+                                .map(String::trim)
+                                .map(clave -> {
+                                    if (clave.equals("PROMOCION")) {
+                                        TipoDocumento tipoDocumento = TipoDocumento.valueOf(clave);
+                                        return new CarpetaCatalogoRecord(clave,
+                                                tipoDocumento.getEtiqueta());
+                                    } else {
+                                        TipoCarpeta tipoCarpeta = TipoCarpeta.valueOf(clave);
+                                        return new CarpetaCatalogoRecord(clave,
+                                                tipoCarpeta.getEtiqueta());
+                                    }
+
+                                })
+                                .collect(Collectors.toList())
+                        : null))
+                .toList(), pageable, oficialias.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +88,7 @@ public class OficialiaService {
     }
 
     public OficialiaRecordResponse create(Oficialia oficialia) {
-        
+
         if (oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
         }
@@ -109,6 +132,7 @@ public class OficialiaService {
 
     public OficialiaRecordResponse update(Oficialia oficialia) {
         Optional<Oficialia> test = oficialiaRepository.findByNombreIgnoreCase(oficialia.getNombre());
+
         if (test.isPresent() && !Objects.equals(test.get().getId(), oficialia.getId())) {
             throw new ConflictException("No pueden existir 2 oficialias con el mismo nombre");
         }
@@ -153,6 +177,8 @@ public class OficialiaService {
                 List<Materia> materias = materiaRepository.findAllById(mIds);
                 existingOficialia.setMaterias(materias);
             }
+
+            existingOficialia.setTiposDocumentos(oficialia.getTiposDocumentos());
 
             oficialiaRepository.save(existingOficialia);
 

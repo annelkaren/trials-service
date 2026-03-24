@@ -1,6 +1,9 @@
 package mx.gob.pjpuebla.trials.core.oficialias;
 
+import java.util.List;
+
 import mx.gob.pjpuebla.trials.util.enums.Estado;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
 
 public record OficialiaMateriaRecord(
         Integer id,
@@ -12,5 +15,6 @@ public record OficialiaMateriaRecord(
         String  tipoOficialiaNombre,
         Integer tipoId,
         String  juzgadoNombre,
-        Integer juzgadoId
+        Integer juzgadoId,
+        List<CarpetaCatalogoRecord> tipoDocumentos
 ) {}

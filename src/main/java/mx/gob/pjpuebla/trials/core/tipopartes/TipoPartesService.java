@@ -81,7 +81,7 @@ public class TipoPartesService {
             .map(tipoParte -> new TipoPartesRecord(
                     tipoParte.getId(),
                     tipoParte.getNombre(),
-                    tipoParte.getTipoJuicio() != null ? tipoParte.getTipoJuicio().getNombre() : null 
+                    tipoParte.getTipoJuicio() != null ? tipoParte.getTipoJuicio().getNombre() : null
             ))
             .toList();
     }

@@ -60,8 +60,10 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
     @Test
     void findPersonaAndTipoParteByCarpetaId() {
         List<Rol> rol = List.of(Rol.PRINCIPAL);
-        PersonaDocumentoRecord entity = personaDocumentoRepository
+        List<PersonaDocumentoRecord> entities = personaDocumentoRepository
                 .findPersonaAndTipoParteByCarpetaId(1, "Actor", rol);
+        assertThat(entities).isNotEmpty();
+        PersonaDocumentoRecord entity = entities.get(0);
         assertThat(entity).isNotNull();
         assertThat(entity.tipoParte()).isEqualTo("Actor");
         assertThat(entity.tipoPersona()).isEqualToIgnoringCase("Fisica");

@@ -17,6 +17,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistema;
 import mx.gob.pjpuebla.trials.core.tiposistema.TipoSistemaSetUp;
+import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
@@ -25,8 +26,10 @@ import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.workflow.contadoresJuzgados.ContadorJuzgadoRepository;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFoliosRepository;
+import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -71,9 +75,15 @@ class JuzgadoServiceTest {
     @Mock
     MateriaRepository materiaRepository;
     @Mock
+    PersonaDocumentoRepository personaDocumentoRepository;
+    @Mock
+    TipoPartesRepository tipoPartesRepository;
+    @Mock
     JuzgadoFoliosRepository juzgadoFoliosRepository;
     @Mock
     PersonaService personaService;
+    @Mock
+    ContadorJuzgadoRepository contadorJuzgadoRepository;
 
     private Juzgado juzgado;
     private JuzgadoFolios juzgadoFolios;
@@ -94,6 +104,9 @@ class JuzgadoServiceTest {
         juzgadoFolios = createJuzgadoFolios();
         juzgadoFolios.setJuzgado(juzgado);
         juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
+        Mockito.lenient()
+                .when(contadorJuzgadoRepository.findByJuzgadoIdAndEstado(anyInt(), any(Estado.class)))
+                .thenReturn(List.of());
     }
 
     @Test
@@ -251,7 +264,10 @@ class JuzgadoServiceTest {
     void update_return_sede_notFound_exception() {
         given(materiaRepository.findById(juzgado.getMateria().getId()))
                 .willReturn(Optional.ofNullable(juzgado.getMateria()));
-
+        given(juzgadoRepository.findById(juzgado.getId()))
+                .willReturn(Optional.of(juzgado));
+        given(sedeRepository.findById(juzgado.getSede().getId()))
+                .willReturn(Optional.empty());
         NotFoundException assertThrows = assertThrows(
                 NotFoundException.class,
                 () -> juzgadoService.update(juzgado)
@@ -317,23 +333,31 @@ class JuzgadoServiceTest {
                 .hasFieldOrPropertyWithValue("year", juzgadoFolios.getYear());
         assertThat(response.getValue()).isEqualTo(2);
     }
-
+        
     @Test
     void actualizar_carga() {
+        
+        Juzgado juzgadoSimulado = new Juzgado();
+        juzgadoSimulado.setId(1);
+        juzgadoSimulado.setContadorAsignaciones(10);
+        juzgadoSimulado.setMaxAsignacionesRonda(10);
+        
+        List<Juzgado> juzgadosSeleccionados = List.of(juzgadoSimulado);
+        List<Integer> idsSimulados = List.of(1);
+
         Mockito.doNothing().when(juzgadoRepository).actualizarContadorAsignaciones(any());
-        given(juzgadoRepository.sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        given(juzgadoRepository.sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class))).willReturn(10);
-        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(new ArrayList<>());
-        Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignaciones(any(Materia.class), any(InstanciaJuzgado.class));
+        
+        given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), Mockito.eq(idsSimulados)))
+               .willReturn(new ArrayList<>());
+               
+        Mockito.doNothing().when(juzgadoRepository).reiniciarContadorAsignacionesPorIds(idsSimulados);
 
         TipoCarpeta tipoCarpeta = TipoCarpeta.DEMANDA;
-        List<Juzgado> juzgadosSeleccionados = new ArrayList<>();
         juzgadoService.actualizarCarga(juzgado, tipoCarpeta, juzgadosSeleccionados);
 
-        verify(juzgadoRepository, times(1)).sumContadorAsignacionesByMateria(any(Materia.class), any(InstanciaJuzgado.class));
-        verify(juzgadoRepository, times(1)).sumMaxAsignacionesRondaByMateria(any(Materia.class), any(InstanciaJuzgado.class));
-        verify(juzgadoRepository, times(1)).findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any());
-        verify(juzgadoRepository, times(1)).reiniciarContadorAsignaciones(any(Materia.class), any(InstanciaJuzgado.class));
+        verify(juzgadoRepository, times(1)).actualizarContadorAsignaciones(any());
+        verify(juzgadoRepository, times(1)).findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), Mockito.eq(idsSimulados));
+        verify(juzgadoRepository, times(1)).reiniciarContadorAsignacionesPorIds(idsSimulados);
     }
 
     @Test
@@ -387,7 +411,7 @@ class JuzgadoServiceTest {
         assertThat(resultJuzgadoApelacion).isEqualTo(juzgadoSegundaInstancia);
 
         List<Juzgado> juzgadoExhorto = Collections.singletonList(juzgado);
-        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.NO_APLICA);
+        Juzgado juzgadoNoAplica = juzgado.setInstanciaJuzgado(InstanciaJuzgado.EXHORTO);
         given(juzgadoRepository.findJuzgadosMenosAsignaciones(any(Materia.class), any(InstanciaJuzgado.class), any())).willReturn(juzgadoExhorto);
         TipoCarpeta tipoExhorto = TipoCarpeta.EXHORTO;
         Juzgado resultJuzgadoExhorto = juzgadoService.getJuzgado(tipoJuicio, tipoExhorto, juzgadoExhorto);

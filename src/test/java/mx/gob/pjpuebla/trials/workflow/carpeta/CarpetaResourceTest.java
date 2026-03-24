@@ -137,8 +137,8 @@ class CarpetaResourceTest {
                                                 1,
                                                 anexos,
                                                 "Observacion 1",
-                                                "recomendacion 1"));
-                List<DocumentoRecord> responseRecord = List.of( 
+                                                "recomendacion 1", 1));
+                List<DocumentoRecord> responseRecord = List.of(
                 new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
 
                 when(mockCarpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord))
@@ -262,9 +262,15 @@ class CarpetaResourceTest {
                                 "",
                                 "",
                                 "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
                                 0,
                                 "",
-                                "");
+                                "",
+                                LocalDate.now());
 
                 given(mockCarpetaService.getInfoExpedienteDetalle(any()))
                                 .willReturn(infoExpedienteRecord);
@@ -306,13 +312,13 @@ class CarpetaResourceTest {
                                 "",
                                 "",
                                 "",
-                                "",
+                                LocalDate.now(),
                                 LocalTime.now(),
                                 LocalTime.now(),
                                 "",
                                 PresentacionImputado.PRESENTACION_VOLUNTARIA,
                                 SolicitudAudiencia.SOLICITUD_AUDIENCIA_PRIVADA,
-                                "",
+                                LocalDate.now(),
                                 "",
                                 "",
                                 "",
@@ -321,7 +327,8 @@ class CarpetaResourceTest {
                                 1,
                                 etapaProcesalRecord,
                                 rubroList,
-                                "");
+                                "",
+                                LocalDate.now());
 
                 mockMvc.perform(post("/api/workflow/carpeta/expediente/detalle/1")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -332,7 +339,7 @@ class CarpetaResourceTest {
         @Test
         void testPostAdjuntarPieza() throws Exception {
 
-                PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+                PiezaRecord request = new PiezaRecord(null, "AD", null, Collections.singletonList(1));
                 TipoPieza tipoPieza = new TipoPieza().setId(1).setClave("AD").setTipo("Amparo");
                 Carpeta pieza = CarpetaSetUp.create().setTipoPieza(tipoPieza);
 
@@ -348,7 +355,7 @@ class CarpetaResourceTest {
 
         @Test
         void testPutAdjuntarPieza() throws Exception {
-                PiezaRecord request = new PiezaRecord(null, "AD", Collections.singletonList(1));
+                PiezaRecord request = new PiezaRecord(null, "AD", null, Collections.singletonList(1));
                 PiezaRecordResponse pieza = new PiezaRecordResponse(1, "000001/2024/AM01", "AD",
                                 EstadoCarpeta.ASIGNADO);
 
@@ -421,10 +428,14 @@ class CarpetaResourceTest {
                                 "Actor",
                                 "Demandado",
                                 Boolean.TRUE,
-                                ""));
+                                "",
+                                EstadoMigracion.MIGRADO_COMPLETADO,
+                                Migrado.SI));
                 Page<LibroGobiernoRecord> libroGobiernoPage = new PageImpl<>(libroGobiernoRecords);
 
-                when(mockCarpetaService.libroDeGobierno(anyString(), any(Pageable.class)))
+                when(mockCarpetaService.libroDeGobierno(any(Pageable.class), anyString(), anyString(),
+                                any(LocalDate.class), any(LocalDate.class), anyString(), anyString(),
+                                anyString(), anyString()))
                                 .thenReturn(libroGobiernoPage);
 
                 mockMvc.perform(get("/api/workflow/carpeta/librogobierno")
@@ -457,9 +468,9 @@ class CarpetaResourceTest {
                                 .andExpect(status().isOk());
         }
 
-        @Test
-        void testActualizarEstado_Success() throws Exception {
-                List<Integer> ids = Arrays.asList(1, 2, 3);
+    @Test
+    void testActualizarEstado_Success() throws Exception {
+        List<Integer> ids = Arrays.asList(1, 2, 3);
 
                 doNothing().when(mockCarpetaService).actualizarEstado(ids);
 
@@ -500,12 +511,20 @@ class CarpetaResourceTest {
         void testDevolverCarpetas_Success() throws Exception {
                 List<Integer> ids = List.of(1, 2, 3);
 
-                doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids);
+        String json = """
+                {
+                  "ids": [1, 2, 3],
+                  "urgente": true,
+                  "fechaTermino": "2026-01-25"
+                }
+                """;
 
-                mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("[1, 2, 3]"))
-                                .andExpect(status().isOk());
-        }
+        doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids, true, LocalDate.now());
+
+        mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+    }
 
 }

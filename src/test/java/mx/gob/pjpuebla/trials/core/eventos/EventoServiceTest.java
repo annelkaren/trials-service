@@ -15,9 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -144,13 +141,12 @@ class EventoServiceTest {
     @Test
     void getEventosGeneralesTest() {
         Evento eventoMock = EventoSetUp.createEvento();
-        Page<Evento> pageMock = new PageImpl<>(List.of(eventoMock), PageRequest.of(0, 10), 1);
-        given(eventoRepository.findEventosGenerales(PageRequest.of(0, 10))).willReturn(pageMock);
+        given(eventoRepository.findEventosGenerales()).willReturn(List.of(eventoMock));
 
-        Page<EventoRecord> eventoRecords = eventoService.getEventosGenerales(PageRequest.of(0, 10));
+        List<EventoRecord> eventoRecords = eventoService.getEventosGenerales();
 
         assertThat(eventoRecords).isNotNull();
-        assertThat(eventoRecords.getContent()).hasSize(1);
+        assertThat(eventoRecords).hasSize(1);
     }
 
     @Test
@@ -163,13 +159,12 @@ class EventoServiceTest {
         given(personaService.getAuditor()).willReturn(personaMock);
 
         Evento eventoMock = EventoSetUp.createEvento();
-        Page<Evento> pageMock = new PageImpl<>(List.of(eventoMock), PageRequest.of(0, 10), 1);
-        given(eventoRepository.findByOficialiaOrJuzgado(oficialiaMock, juzgadoMock, PageRequest.of(0, 10))).willReturn(pageMock);
+        given(eventoRepository.findByOficialiaOrJuzgado(oficialiaMock, juzgadoMock)).willReturn(List.of(eventoMock));
 
-        Page<EventoRecord> eventoRecords = eventoService.getEventosOficialiaComun(PageRequest.of(0, 10));
+        List<EventoRecord> eventoRecords = eventoService.getEventosOficialiaComun();
 
         assertThat(eventoRecords).isNotNull();
-        assertThat(eventoRecords.getContent()).hasSize(1);
+        assertThat(eventoRecords).hasSize(1);
     }
 
     @Test

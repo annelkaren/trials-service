@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.movimientos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoSetUp;
+import mx.gob.pjpuebla.trials.core.oficialias.OficialiaRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.personas.PersonaSetUp;
@@ -29,9 +30,7 @@ import static org.mockito.Mockito.verify;
 
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+
 
 import java.util.*;
 import java.time.LocalDateTime;
@@ -47,6 +46,8 @@ class MovimientosServiceTest {
     DocumentoRepository documentoRepository;
     @Mock
     CarpetaRepository carpetaRepository;
+    @Mock
+    OficialiaRepository oficialiaRepository;
 
     @InjectMocks
     MovimientoService movimientoService;
@@ -99,29 +100,15 @@ class MovimientosServiceTest {
         assertThat(result.getFechaAsignacion()).isEqualTo(mov.getFechaAsignacion());
     }
 
-    @Test
-    void getAllBandejaRecepcion(){
-        Documento demanda = DocumentoSetUp.create(new TipoJuicio().setId(1)).setFolio("1");
-        Movimiento movimiento = new Movimiento().setDocumento(demanda).setMotivo("RECEPCION");
-        List<EstadoCarpeta> list = Arrays.asList(EstadoCarpeta.TURNADO, EstadoCarpeta.RECEPCION);
-        List<String> motivos = Arrays.asList(EstadoCarpeta.TURNADO.name(), EstadoCarpeta.RECEPCION.name());
-        Persona persona = PersonaSetUp.createPersona();
-        given(movimientoRepository.getAllBandejaRecepcion(
-                PageRequest.of(0, 1),
-                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3))
-                .willReturn(new PageImpl<>(Arrays.asList(movimiento), PageRequest.of(0, 1), 1));
-
-
-        Page<Movimiento> result = movimientoService.getAllBandejaRecepcion(PageRequest.of(0, 1),
-                1, list, "", motivos, persona, TipoCarpeta.DEMANDA, null, 3);
-        assertThat(result.getSize()).isPositive();
-    }
 
     @Test
     void testCreateMotivoWithoutPromocion() {
         MotivoRecord motivoRecord = new MotivoRecord("Pase económico", 3, true);
         Persona currentUser = new Persona();
         Carpeta carpeta = new Carpeta();
+        
+        currentUser.setJuzgado(JuzgadoSetUp.createJuzgado());
+
         carpeta.setTipoCarpeta(TipoCarpeta.DEMANDA);
         Documento documento = new Documento();  
         documento.setCarpeta(carpeta);  

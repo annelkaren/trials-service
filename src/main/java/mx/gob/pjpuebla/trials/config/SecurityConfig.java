@@ -58,7 +58,8 @@ public class SecurityConfig {
                 "http://localhost:4000",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:4000",
-                "https://*.pjptrials.link"
+                "https://*.pjptrials.link",
+                "https://*.pjpuebla.gob.mx"
         ));
         configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));
         configuration.setAllowedMethods(List.of(CorsConfiguration.ALL));

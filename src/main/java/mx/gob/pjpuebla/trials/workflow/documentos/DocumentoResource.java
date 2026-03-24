@@ -13,6 +13,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoUpdateRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.ApelacionRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaCatalogoRecord;
+import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
@@ -21,6 +23,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,9 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 
 @RequiredArgsConstructor
@@ -44,10 +47,8 @@ public class DocumentoResource {
     private final SelloGenerator selloGenerator;
     private final SelloCaratulaService caratulaGenerator;
     private final DocumentoService documentoService;
-    private final DigitalizacionService digitalizacion2Service;
+    private final DigitalizacionService digitalizacionService;
     private final OficioService oficioService;
-
-    private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
@@ -83,7 +84,7 @@ public class DocumentoResource {
     public DigitalizacionRecord digitizationDocument(
             @RequestParam("file") MultipartFile file,
             @PathVariable("documentoId") Integer documentoId) {
-        return digitalizacion2Service.guardarArchivo(file, documentoId);
+        return digitalizacionService.guardarDocumento(file, documentoId);
     }
 
     @GetMapping(value = "/documentos/digitalizacion/{documentoId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,7 +92,23 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", documentoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(digitalizacion2Service.getDocumento(documentoId));
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumento(documentoId));
+    }
+
+    @GetMapping(value = "/documentos/digitalizacion/legacy/{promocionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFilePromocionLegacy(@PathVariable Integer promocionId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", promocionId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getPromocionMigrada(promocionId));
+    }
+
+    @GetMapping(value = "/documentos/digitalizacion/movimiento/{movimientoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFileByMovimiento(@PathVariable Integer movimientoId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("documento", movimientoId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(documentoService.getDigitalizacionByMovimientoId(movimientoId));
     }
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,16 +119,62 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(caratulaGenerator.exportToPdf(id));
     }
 
+    @GetMapping(value = "/documentos/impresion", produces = MediaType.APPLICATION_JSON_VALUE)
+    public DocumentoImpresionCarpetaRecord getDocumentosImpresion(
+            @RequestParam String expediente,
+            @RequestParam Integer year) {
+        return documentoService.getDocumentosImpresion(expediente, year);
+    }
+
+    @PostMapping(value = "/documentos/impresion/sellos", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> printSellosMasivos(
+            @RequestBody DocumentoImpresionMasivaRequestRecord request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sellos", "sellos_masivos.pdf");
+        return ResponseEntity.ok().headers(headers).body(documentoService.printSellosMasivos(request.documentoIds()));
+    }
+
+    @PostMapping(value = "/documentos/impresion/caratulas", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> printCaratulasMasivas(
+            @RequestBody DocumentoImpresionMasivaRequestRecord request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("caratulas", "caratulas_masivas.pdf");
+        return ResponseEntity.ok().headers(headers)
+                .body(documentoService.printCaratulasMasivas(request.documentoIds()));
+    }
+
     @GetMapping("/bandeja/entrada")
-    public Page<DocumentoGridRecord> getAll(Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return this.documentoService.getAll(key, pageable);
+    public Page<BandejaEntradaRecord> getBandejaEntrada(
+            Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+
+        return documentoService.getBandejaEntrada(key, folio, expediente, materia, tipoEntrada, organoJurisdiccional,
+                pageable);
     }
 
     @GetMapping("/bandeja/salida")
-    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return this.documentoService.getAllBandejaSalida(key, pageable);
+    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+
+        return this.documentoService.getAllBandejaSalida(key, folio, expediente, materia, tipoEntrada,
+                organoJurisdiccional, fechaFrom, fechaTo, pageable);
     }
 
     @PatchMapping("/bandeja/{id}/status/{status}")
@@ -120,10 +183,17 @@ public class DocumentoResource {
     }
 
     @GetMapping(value = "/bandeja/historial", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<DocumentoGridRecord> getAllHistorial(
+    public Page<BandejaHistorialRecord> getAllHistorial(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return documentoService.getAllHistorial(key, pageable);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+        return documentoService.getAllHistorial(pageable, key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaFrom, fechaTo);
     }
 
     @PostMapping(value = "/documento/promocion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -131,8 +201,10 @@ public class DocumentoResource {
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart("documentoPromocionRecord") String documentoPromocionRecordJson)
             throws JsonProcessingException {
+
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,
                 DocumentoPromocionRecord.class);
+                
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 
@@ -154,8 +226,16 @@ public class DocumentoResource {
     @GetMapping("/bandeja/recepcion")
     public Page<DocumentoBandejaRecepcionRecord> getAllBandejaRecepcion(
             @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
+            @RequestParam(value = "origen", required = false) String origen,
+            @RequestParam(value = "motivoTurnado", required = false) String motivoTurnado,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo,
             @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllBandejaRecepcion(key, pageable);
+        return this.documentoService.getAllBandejaRecepcion(key, folio, expediente, tipoEntrada, origen, motivoTurnado,
+                fechaFrom, fechaTo, pageable);
     }
 
     @PostMapping("/bandeja/recepcion/movimiento")
@@ -167,8 +247,10 @@ public class DocumentoResource {
     @GetMapping("/bandeja/asignados")
     public Page<DocumentoAsignadoResponseRecord> getAllBandejaAsignados(
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllAsignado(key, pageable);
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "personaId", required = false) Long personaId,
+            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
+        return this.documentoService.getAllAsignado(key, personaId, pageable, tipoEntrada);
     }
 
     @PostMapping("/bandeja/asignados/movimiento")
@@ -209,9 +291,9 @@ public class DocumentoResource {
         return this.documentoService.getIndicadoresAsignados();
     }
 
-    @GetMapping("/bandeja/recepcion/anexos/{id}")
-    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer id) {
-        return documentoService.getDataDocumentoRecepcion(id);
+    @GetMapping("/bandeja/recepcion/anexos/{movimientoId}")
+    public DocumentoRecepcionRecord getDataDocumentoRecepcion(@PathVariable Integer movimientoId) {
+        return documentoService.getDataDocumentoRecepcion(movimientoId);
     }
 
     @GetMapping(value = "/documentos/oficio/{oficioId}", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -230,10 +312,15 @@ public class DocumentoResource {
 
     @PostMapping(value = "/documentos/amparo")
     public AmparoRecordResponse crearAmparo(@RequestBody AmparoRecord amparoRecord) {
-
         return documentoService.createAmparo(amparoRecord);
 
     }
+
+    @PostMapping(value = "/documentos/registro/expediente/sinAntecedente")
+    public CarpetaResponseRecord registrarExpedienteSinAntecedentes(@RequestBody ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+        return documentoService.createExpedienteSinAntecedentes(expedienteSinAntecedentesRecord);
+    }
+    
 
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(
@@ -308,6 +395,23 @@ public class DocumentoResource {
         this.documentoService.devolverABandejas(devolucion);
         return ResponseEntity.ok("Devolución completa");
     }
-    
 
+    @GetMapping("/filtroBandeja")
+    public List<CarpetaCatalogoRecord> filtroTiposEntradas(@RequestParam String bandeja) {
+        return documentoService.getTipoEntradas(bandeja);
+    }
+
+    @PatchMapping("/bandeja/entrada/redigitalizacion/{documentoId}")
+    public ResponseGenericRecord getBandejaDevueltos(@PathVariable Integer documentoId) {
+        return this.digitalizacionService.autorizarRedigitalizacion(documentoId);
+    }
+
+    @GetMapping(value = "/documentos/carpeta/{carpetaId}/tipoEntrada/{tipoEntrada}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer carpetaId, @PathVariable String tipoEntrada) throws JRException, IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", carpetaId + "_sello.pdf");
+        return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloFromCarpetaId(carpetaId, tipoEntrada));
+    }
+    
 }

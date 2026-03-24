@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/core/distritos")
@@ -21,5 +23,10 @@ public class DistritoResource {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<DistritoRecord> getAll(@PageableDefault(size = 25) Pageable pageable) {
         return distritoService.getAllActive(pageable);
+    }
+
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<DistritoRecord> getAll() {
+        return distritoService.getAllActive();
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.documentos.DigitalizacionService;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
@@ -19,16 +20,22 @@ import java.io.IOException;
 @Service
 public class DocumentoDetalleService {
     private final DocumentoDetalleRepository documentoDetalleRepository;
-    private final DigitalizacionService digitalizacion2Service;
+    private final DigitalizacionService digitalizacionService;
     private final DocumentoRepository documentoRepository;
 
     @Value("${app.root-folder}")
     private String rootFolder;
 
     public DigitalizacionRecord digitalizacionAcuse(DocumentoDetalleRecord documento) {
-        Documento doc = documentoRepository.findById(documento.documentoId()).orElse(null);
-        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId()).orElse(null);
-        DigitalizacionRecord digitalizacion = digitalizacion2Service.guardarArchivo(documento.file(), documento.documentoId());
+        
+        Documento doc = documentoRepository.findById(documento.documentoId())
+            .orElseThrow(() -> new NotFoundException("El id del documento no ha sido encontrado", "ID: " + documento.documentoId()));
+            
+
+        DocumentoDetalle docDetalle = documentoDetalleRepository.findByDocumentoId(documento.documentoId())
+            .orElseThrow(() -> new NotFoundException("El detalle del documento no ha sido encontrado", "ID: " + doc.getId()));
+        
+        DigitalizacionRecord digitalizacion = digitalizacionService.guardarDocumento(documento.file(), documento.documentoId());
 
 
 
@@ -48,7 +55,7 @@ public class DocumentoDetalleService {
     }
 
     public byte[] getAcuse(Integer documentoId) throws IOException {
-        byte[] archivo = digitalizacion2Service.getDocumento(documentoId);
+        byte[] archivo = digitalizacionService.getDocumento(documentoId);
 
         if(archivo != null){
             return archivo;

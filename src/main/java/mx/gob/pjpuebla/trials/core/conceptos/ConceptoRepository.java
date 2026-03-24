@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.core.conceptos;
 
+import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface ConceptoRepository extends JpaRepository<Concepto, Integer> {
     Optional<Concepto> findByNombre(String nombre);
+
+    Optional<Concepto> findByNombreAndTipoJuicio(String nombre, TipoJuicio tipoJuicio);
 
     List<Concepto> findAllByTipoJuicio_IdOrNombreIn(Integer tipoJuicioId, List<String> nombres);
 

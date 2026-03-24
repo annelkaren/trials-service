@@ -52,7 +52,11 @@ public class Domicilio implements Serializable, Auditable {
     @NotBlank
     @Size(min = 3, max = 250)
     @Column(name = "S_MUNICIPIO", nullable = false)
-    private String municipio;
+        private String municipio;
+
+    @Size(max = 10)
+    @Column(name = "S_MUNICIPIO_ID")
+    private String municipioId;
 
     @NotBlank
     @Size(min = 3, max = 250)
@@ -80,6 +84,7 @@ public class Domicilio implements Serializable, Auditable {
     @Embedded
     private Audit audit;
 
+    //TODO: CONSIDERAR QUE NO SIEMPRE ES UNACALLE.
     public String getLineaDomicilio() {
         StringBuilder sb = new StringBuilder();
         if (calle != null) {

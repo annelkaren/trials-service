@@ -1,5 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.documentos.records;
 
+import mx.gob.pjpuebla.trials.util.enums.Prioridad;
 import mx.gob.pjpuebla.trials.util.enums.TipoPromocion;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ public record DocumentoPromocionRecord(
         Integer carpetaId,
         TipoPromocion tipoPromocion,
         List<String> anexos,
-        String contenido
+        String contenido,
+        Prioridad prioridad
 ) implements Serializable {
 }

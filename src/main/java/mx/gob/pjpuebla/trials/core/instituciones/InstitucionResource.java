@@ -108,6 +108,12 @@ public class InstitucionResource {
         return this.institucionService.getAllByEstadoAutocomplete(new Institucion().setNombre(nombre), pageable);
     }
 
+
+    @GetMapping("/all")
+    public List<InstitucionRecord> getAllInstitucionesList() {
+        return this.institucionService.getAllInstitucionesList();
+    }
+    
     /**
      * Obtiene todas las instituciones de tipo "Tribunal Federal".
      *
@@ -116,5 +122,10 @@ public class InstitucionResource {
     @GetMapping("/tribunales")
     public List<InstitucionRecord> getByTipoInstitucion() {
         return this.institucionService.findByTipoInstitucion("Tribunal Federal");
+    }
+
+    @GetMapping("/tribunales/{tipo}")
+    public List<InstitucionRecord> getAllTribunalesByTipo(@PathVariable String tipo) {
+        return this.institucionService.findByTipoInstitucion(tipo);
     }
 }

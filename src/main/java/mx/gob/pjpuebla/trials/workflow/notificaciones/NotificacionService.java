@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
 import mx.gob.pjpuebla.trials.core.domicilios.DomicilioRepository;
+import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
+import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.EmailService;
-import mx.gob.pjpuebla.trials.util.enums.EstadoNotificacion;
-import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
-import mx.gob.pjpuebla.trials.util.enums.TipoNotificacion;
+import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.documentos.Documento;
 import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalle;
@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -68,6 +69,7 @@ public class NotificacionService {
         estado = (estado != null) ? estado.toLowerCase() : "";
 
         TipoNotificacion tipoNotificacion = TipoNotificacion.ESTRADO;
+
         if (!tipo.isEmpty()) {
             try {
                 tipoNotificacion = TipoNotificacion.valueOf(tipo.toUpperCase());
@@ -76,6 +78,7 @@ public class NotificacionService {
             }
         }
         EstadoNotificacion estadoNotificacion = EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+
         if (!estado.isEmpty()) {
             try {
                 estadoNotificacion = EstadoNotificacion.valueOf(estado.toUpperCase());
@@ -83,8 +86,13 @@ public class NotificacionService {
                 return Page.empty(pageable);
             }
         }
+
+        Persona personaAuth = personaService.getAuditor();
+        List<Juzgado> juzgados = personaAuth.getJuzgado() != null ? List.of(personaAuth.getJuzgado())
+                : personaAuth.getOficialia().getJuzgados();
+
         Page<Notificacion> page = notificacionRepository.getNotificacionByTipo(tipoNotificacion, estadoNotificacion,
-                pageable);
+                pageable, juzgados);
 
         List<NotificacionRecord> list = page.getContent().stream()
                 .map(notificacion -> {
@@ -238,7 +246,7 @@ public class NotificacionService {
         notificacionRepository.save(notificacion);
     }
 
-    public void createListaEstrado(List<Integer> notificacionIds, Date fechaVencimiento) {
+    public void createListaEstrado(List<Integer> notificacionIds, LocalDate fechaVencimiento) {
 
         if (notificacionIds == null || notificacionIds.isEmpty()) {
             throw new IllegalArgumentException("Debe proporcionar al menos un ID de notificación.");
@@ -302,9 +310,9 @@ public class NotificacionService {
         // Crear los detalles de notificaciones Y NOTIFICACIONES
         List<NotificacionesDetalles> detalles = new ArrayList<>();
         for (PersonaDocumento persona : personas) {
-            EstadoNotificacion estadoNotificacion = persona.getTipoNotificacion()
-                    .equals(TipoNotificacion.CORREO_ELECTRONICO) ? EstadoNotificacion.POR_LEER
-                            : EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+
+            TipoNotificacion notificacionSeleccionada = persona.getTipoNotificacion();
+            EstadoNotificacion estadoNotificacion = determinarEstadoNotificacion(notificacionSeleccionada);
 
             Notificacion notif = new Notificacion()
                     .setNotas(notificacion.notas())
@@ -323,12 +331,12 @@ public class NotificacionService {
                 String email = persona.getCorreoNotificacion() != null && !persona.getCorreoNotificacion().isBlank()
                         ? persona.getCorreoNotificacion()
                         : persona.getCorreoElectronico();
-                String nombreParticipante = persona.getNombre() + " " + persona.getApellidoPaterno() + " "
-                        + persona.getApellidoPaterno();
+                String nombreParticipante = getNombreParticipante(persona);
                 String numCarpeta = documento.getCarpeta().getExpediente();
                 String nombreJuzgado = documento.getCarpeta().getJuzgado().getNombre();
                 String tipoDocumento = documento.getTipoDocumento().name();
 
+                createLitigante(persona, email);
                 sendNotificacion(email, nombreParticipante, numCarpeta, nombreJuzgado, tipoDocumento);
             }
         }
@@ -339,6 +347,43 @@ public class NotificacionService {
         // Respuesta con más información
         return new NotificacionResponseRecord(200,
                 String.format("Notificación creada con éxito. Detalles creados: %d", detalles.size()));
+    }
+
+    private EstadoNotificacion determinarEstadoNotificacion(TipoNotificacion tipo) {
+        return switch (tipo) {
+            case CORREO_ELECTRONICO -> EstadoNotificacion.POR_LEER;
+            case DOMICILIO -> EstadoNotificacion.POR_NOTIFICAR;
+            default -> EstadoNotificacion.PENDIENTE_DE_ASIGNAR;
+        };
+    }
+
+    private String getNombreParticipante(PersonaDocumento personaDocumento) {
+        String nombre = personaDocumento.getNombre() != null ? personaDocumento.getNombre() : "";
+        String apellidoPaterno = personaDocumento.getApellidoPaterno() != null ? personaDocumento.getApellidoPaterno()
+                : "";
+        String apellidoMaterno = personaDocumento.getApellidoMaterno() != null ? personaDocumento.getApellidoMaterno()
+                : "";
+
+        return nombre + " " + apellidoPaterno + " " + apellidoMaterno;
+    }
+
+    private String getValueOrEmpty(String value) {
+        return value != null && !value.isBlank() ? value : "   ";
+    }
+
+    private void createLitigante(PersonaDocumento personaDocumento, String email) {
+        Persona persona = new Persona();
+
+        persona.setDomicilio(personaDocumento.getFnDomicilio());
+        persona.setNombre(getValueOrEmpty(personaDocumento.getNombre()));
+        persona.setApellidoPaterno(getValueOrEmpty(personaDocumento.getApellidoPaterno()));
+        persona.setApellidoMaterno(getValueOrEmpty(personaDocumento.getApellidoMaterno()));
+        persona.setCurp(personaDocumento.getCurp());
+        persona.setCorreoElectronico(getValueOrEmpty(email));
+        persona.setEstado(Estado.ACTIVE);
+        persona.setRolPrincipal("LITIGANTE");
+
+        personaService.createLitigante(persona, Collections.singletonList(new RoleRecord("LITIGANTE", "LITIGANTE")));
     }
 
     private Boolean sendNotificacion(String email, String nombreParticipante, String numCarpeta, String nombreJuzgado,
@@ -386,11 +431,6 @@ public class NotificacionService {
 
         Page<NotificacionesDetalles> notificacionesDetallesPage = notificacionesDetallesRepository
                 .findByNotificacionDocumentoId(idNotificacion, pageable);
-        /*
-        if (notificacionesDetallesPage.isEmpty()) {
-            throw new NotFoundException("Notificacion Detalle no encontrado", "id");
-        }
-         */
 
         return notificacionesDetallesPage.map(detalle -> new AcuerdoNotificacionesRecord(
                 detalle.getNotificacion().getId(),
