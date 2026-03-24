@@ -178,7 +178,6 @@ class AudienciaResourceTest {
     void getFile_success() throws Exception {
         byte[] pdfContent = "Contenido de prueba del archivo PDF".getBytes();
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(audienciaService, "rootFolder", "/opt/pjp/files");
         given(audienciaService.getAudienciaDocumento(1)).willReturn(pdfContent);
 
         mockMvc.perform(get("/api/workflow/audiencias/tabGeneral/1"))
