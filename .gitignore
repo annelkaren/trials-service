@@ -20,3 +20,6 @@ Thumbs.db
 .vscode/
 
 Dockerfile.*
+
+# Archivos de configuración local
+application-local.yaml
