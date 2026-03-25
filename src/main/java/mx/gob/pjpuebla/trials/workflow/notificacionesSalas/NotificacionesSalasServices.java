@@ -71,8 +71,10 @@ public class NotificacionesSalasServices {
             LocalDateTime fechaEnvioTo, LocalDateTime fechaTerminoFrom, LocalDateTime fechaTerminoTo,
             Integer salaId) {
 
+        String usuario = personaService.getAuditor().getUsuario();
+
         return notificacionesSalasRepository.findPageNotificaciones(pageable, q, numeroExpediente, nombreDestinatario,
-                correoElectronico, fechaEnvioFrom, fechaEnvioTo, fechaTerminoFrom, fechaTerminoTo, salaId);
+                correoElectronico, fechaEnvioFrom, fechaEnvioTo, fechaTerminoFrom, fechaTerminoTo, salaId, usuario);
     }
 
     @Transactional
@@ -233,7 +235,8 @@ public class NotificacionesSalasServices {
         return acuseNotificacionService.getAcuseNotificacionService(notificacionSalaDestinatarioId);
     }
 
-    public byte[] getAcuseNotificacionNoEntregada(Integer notificacionSalaDestinatarioId) throws JRException, IOException {
+    public byte[] getAcuseNotificacionNoEntregada(Integer notificacionSalaDestinatarioId)
+            throws JRException, IOException {
         return acuseNotificacionService.getAcuseNotificacionNoEntregadaService(notificacionSalaDestinatarioId);
     }
 
