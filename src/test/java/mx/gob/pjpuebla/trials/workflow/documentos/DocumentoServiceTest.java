@@ -1273,13 +1273,13 @@ class DocumentoServiceTest {
 
                 given(personaService.getAuditor()).willReturn(persona);
 
-                given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class),
-                                any(Pageable.class), any(List.class)))
+                given(documentoRepository.findAllByTipoDocumento(any(), any(), any(), any(), any(), 
+                                any(), any(), any(), any(), any(), any(), any()))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 
-                Page<OficioResponseRecord> page = documentoService.getAllOficios("",
-                                PageRequest.of(1, listPage.size()));
+                Page<OficioResponseRecord> page = documentoService.getAllOficios(
+                                PageRequest.of(1, listPage.size()), "", null, null, null, null, null, null, null, null);
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
@@ -1320,13 +1320,13 @@ class DocumentoServiceTest {
 
                 List<OficioResponseRecord> listPage = Collections.singletonList(oficioResponseRecord);
 
-                given(documentoRepository.findAllByTipoDocumento(any(String.class), any(TipoDocumento.class),
-                                any(Pageable.class), any(List.class)))
+                given(documentoRepository.findAllByTipoDocumento(any(), any(), any(), any(), any(), 
+                                any(), any(), any(), any(), any(), any(), any()))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 
-                Page<OficioResponseRecord> page = documentoService.getAllOficios("",
-                                PageRequest.of(1, listPage.size()));
+                Page<OficioResponseRecord> page = documentoService.getAllOficios(
+                                PageRequest.of(1, listPage.size()), "", null, null, null, null, null, null, null, null);
                 assertThat(page.getContent())
                                 .hasSize(1)
                                 .first()
@@ -2053,5 +2053,3 @@ class DocumentoServiceTest {
                 assertThat(numExpediente).containsPattern("[0-9]{6}/202[0-9]/EJE/PUEBLA");
         }
 }
-
-

@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -141,17 +142,38 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
             LEFT JOIN doc.carpeta c
             WHERE doc.tipoDocumento = :tipoDocumento
-            AND CASE WHEN c IS NOT NULL THEN c.juzgado IN :juzgados ELSE true END
+            AND (c.juzgado IN :juzgados OR c.juzgado IS NULL)
             AND (
-                lower(doc.folio) LIKE %:key% OR
-                lower(ins.nombre) LIKE %:key% OR
-                lower(dd.asunto) LIKE %:key% OR
-                lower(COALESCE(c.expediente, 'N/A')) LIKE %:key%
+                COALESCE(:key, '') = '' OR (
+                    lower(doc.folio) LIKE CONCAT('%', lower(:key), '%') OR
+                    lower(ins.nombre) LIKE CONCAT('%', lower(:key), '%') OR
+                    lower(dd.asunto) LIKE CONCAT('%', lower(:key), '%') OR
+                    lower(COALESCE(c.expediente, 'N/A')) LIKE CONCAT('%', lower(:key), '%')
+                )
             )
+            AND (COALESCE(:folio, '') = '' OR lower(doc.folio) LIKE CONCAT('%', lower(:folio), '%'))
+            AND (COALESCE(:expediente, '') = '' OR lower(COALESCE(c.expediente, 'N/A')) LIKE CONCAT('%', lower(:expediente), '%'))
+            AND (COALESCE(:asunto, '') = '' OR lower(dd.asunto) LIKE CONCAT('%', lower(:asunto), '%'))
+            AND (COALESCE(:dependencia, '') = '' OR lower(ins.nombre) LIKE CONCAT('%', lower(:dependencia), '%'))
+            AND dd.fechaEmision >= COALESCE(:emisionFrom, dd.fechaEmision)
+            AND dd.fechaEmision <= COALESCE(:emisionTo, dd.fechaEmision)
+            AND (dd.fechaEntrega >= COALESCE(:entregaFrom, dd.fechaEntrega) OR dd.fechaEntrega IS NULL)
+            AND (dd.fechaEntrega <= COALESCE(:entregaTo, dd.fechaEntrega) OR dd.fechaEntrega IS NULL)
             GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta, c.expediente
             """)
-    Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable,
-            List<Juzgado> juzgados);
+    Page<OficioResponseRecord> findAllByTipoDocumento(
+            @Param("key") String key,
+            @Param("folio") String folio,
+            @Param("expediente") String expediente,
+            @Param("asunto") String asunto,
+            @Param("dependencia") String dependencia,
+            @Param("emisionFrom") LocalDate emisionFrom,
+            @Param("emisionTo") LocalDate emisionTo,
+            @Param("entregaFrom") LocalDate entregaFrom,
+            @Param("entregaTo") LocalDate entregaTo,
+            @Param("tipoDocumento") TipoDocumento tipoDocumento,
+            Pageable pageable,
+            @Param("juzgados") List<Juzgado> juzgados);
 
     @Transactional
     @Modifying

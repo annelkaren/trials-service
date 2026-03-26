@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -267,9 +268,18 @@ public class DocumentoResource {
 
     @GetMapping("/bandeja/oficios")
     public Page<OficioResponseRecord> getAllOficios(
+            @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
-            @PageableDefault(size = 20) Pageable pageable) {
-        return this.documentoService.getAllOficios(key, pageable);
+            @RequestParam(value = "folio", required = false) String folio,
+            @RequestParam(value = "expediente", required = false) String expediente,
+            @RequestParam(value = "asunto", required = false) String asunto,
+            @RequestParam(value = "dependencia", required = false) String dependencia,
+            @RequestParam(value = "fechaEmisionFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEmisionFrom,
+            @RequestParam(value = "fechaEmisionTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEmisionTo,
+            @RequestParam(value = "fechaEntregaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntregaFrom,
+            @RequestParam(value = "fechaEntregaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntregaTo) {
+        return this.documentoService.getAllOficios(pageable, key, folio, expediente, asunto, dependencia,
+                fechaEmisionFrom, fechaEmisionTo, fechaEntregaFrom, fechaEntregaTo);
     }
 
     @PostMapping("/oficio")
