@@ -47,7 +47,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
       @Param("expediente") String expediente,
       @Param("materia") String materia,
       @Param("tipoEntrada") String tipoEntrada,
-      @Param("organoJurisdiccional") String organoJurisdiccional);
+      @Param("organoJurisdiccional") String organoJurisdiccional,
+      @Param("fechaFrom") LocalDateTime fechaFrom,
+      @Param("fechaTo") LocalDateTime fechaTo);
 
   @Query(value = BandejasQueries.QUERY_BANDEJA_SALIDA)
   Page<DocumentoSalidaResponseRecord> getBandejaSalidaPage(

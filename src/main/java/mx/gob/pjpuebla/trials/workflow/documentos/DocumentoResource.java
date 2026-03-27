@@ -155,11 +155,11 @@ public class DocumentoResource {
             @RequestParam(value = "materia", required = false) String materia,
             @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada,
             @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
-            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
-            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaTo) {
 
         return documentoService.getBandejaEntrada(key, folio, expediente, materia, tipoEntrada, organoJurisdiccional,
-                pageable);
+                fechaFrom, fechaTo, pageable);
     }
 
     @GetMapping("/bandeja/salida")

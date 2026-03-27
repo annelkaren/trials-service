@@ -345,11 +345,11 @@ class DocumentoServiceTest {
                                 isNull(),
                                 isNull(),
                                 isNull(),
-                                isNull())).willReturn(documentoGPage);
+                                isNull(), null, null)).willReturn(documentoGPage);
 
                 // Act
                 Page<BandejaEntradaRecord> result = documentoService.getBandejaEntrada(null, null, null, null, null,
-                                null, pageable);
+                                null, null, null, pageable);
 
                 // Assert
                 assertThat(result).isNotNull();

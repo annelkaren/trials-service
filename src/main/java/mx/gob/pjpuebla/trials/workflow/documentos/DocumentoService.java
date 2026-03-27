@@ -33,6 +33,7 @@ import mx.gob.pjpuebla.trials.core.tipopartes.TipoPartesRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.DateRangeMapper;
 import mx.gob.pjpuebla.trials.util.EmailService;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
@@ -176,9 +177,17 @@ public class DocumentoService {
 
         @Transactional(readOnly = true)
         public Page<BandejaEntradaRecord> getBandejaEntrada(String key, String folio, String expediente,
-                        String materia, String tipoEntrada, String organoJurisdiccional, Pageable pageable) {
+                        String materia, String tipoEntrada, String organoJurisdiccional, LocalDate fechaFrom,
+                        LocalDate fechaTo, Pageable pageable) {
 
                 Pageable pageableWithSort = mapSortBandejaEntrada(pageable);
+                DateRangeMapper.DateTimeRange dateRange = DateRangeMapper.fromDates(fechaFrom, fechaTo);
+                LocalDateTime fechaFromQuery = dateRange.from() != null
+                                ? dateRange.from()
+                                : LocalDate.of(1900, 1, 1).atStartOfDay();
+                LocalDateTime fechaToQuery = dateRange.toExclusive() != null
+                                ? dateRange.toExclusive()
+                                : LocalDate.of(3000, 1, 1).atStartOfDay();
 
                 // Normalización columnas
                 folio = norm(folio);
@@ -211,7 +220,9 @@ public class DocumentoService {
                                 expediente,
                                 materia,
                                 tipoEntrada,
-                                organoJurisdiccional);
+                                organoJurisdiccional,
+                                fechaFromQuery,
+                                fechaToQuery);
         }
 
         public Pageable mapSortBandejaEntrada(Pageable pageable) {
