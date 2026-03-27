@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import net.sf.jasperreports.engine.JRException;
 
 @RequiredArgsConstructor
@@ -59,9 +60,9 @@ public class NotificacionesSalasResource {
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<NotificacionSalaCreateResponseRecord> createNotificacion(
             @RequestPart("notificacionSalaJson") NotificacionSalaCreateRecord request,
-            @RequestPart("archivo") MultipartFile archivo) {
+            @RequestPart("archivos") List<MultipartFile> archivos) {
 
-        NotificacionSalaCreateResponseRecord response = notificacionesSalasServices.createNotificacion(request, archivo);
+        NotificacionSalaCreateResponseRecord response = notificacionesSalasServices.createNotificacion(request, archivos);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

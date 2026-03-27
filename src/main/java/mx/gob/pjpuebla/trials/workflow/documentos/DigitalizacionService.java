@@ -233,6 +233,25 @@ public class DigitalizacionService {
         return new DigitalizacionRecord(notificacionSalaId, relativePath, nombreUnicoArchivo);
     }
 
+    public DigitalizacionRecord guardarArchivoNotificacionSala(byte[] fileBytes, Integer salaId, Integer notificacionSalaId,
+            String nombreBaseArchivo) {
+        if (fileBytes == null || fileBytes.length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo no puede estar vacio.");
+        }
+
+        String relativeDirectory = Paths.get(NOTIFICACIONES_SALA_DIR, "sala_" + salaId).toString();
+        Path destinationDir = crearDirectorios(Paths.get(getBasePath(), relativeDirectory));
+
+        String extension = FilenameUtils.getExtension(nombreBaseArchivo);
+        String nombreUnicoArchivo = "NOTIFICACION_SALA_" + UUID.randomUUID()
+                + (extension == null || extension.isBlank() ? EXTENSION_ARCHIVO : "." + extension);
+
+        String relativePath = Paths.get(relativeDirectory, nombreUnicoArchivo).toString();
+        writeFile(destinationDir.resolve(nombreUnicoArchivo), fileBytes, "Error al guardar el archivo en el servidor");
+
+        return new DigitalizacionRecord(notificacionSalaId, relativePath, nombreUnicoArchivo);
+    }
+
     public byte[] getArchivoNotificacionSala(String rutaArchivo) throws IOException {
         validateNotNull(rutaArchivo, "La ruta del archivo no puede ser nula");
 
@@ -431,6 +450,16 @@ public class DigitalizacionService {
     private void writeFile(Path rutaArchivo, MultipartFile file, String errorMessage) {
         try {
             Files.write(rutaArchivo, file.getBytes());
+            log.info("Archivo cargado en el servidor con nombre: {}", rutaArchivo.getFileName());
+        } catch (IOException e) {
+            log.error("Error al guardar el archivo: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage, e);
+        }
+    }
+
+    private void writeFile(Path rutaArchivo, byte[] fileBytes, String errorMessage) {
+        try {
+            Files.write(rutaArchivo, fileBytes);
             log.info("Archivo cargado en el servidor con nombre: {}", rutaArchivo.getFileName());
         } catch (IOException e) {
             log.error("Error al guardar el archivo: {}", e.getMessage(), e);
