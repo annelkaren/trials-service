@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +58,16 @@ class AudienciaResourceTest {
     void getAllAudienciasGenerales() throws Exception {
         AudienciasGeneralesResponseRecord audienciaRecord = AudienciaSetUp.createAudienciasGeneralesResponseRecord();
 
-        given(audienciaService.getAllAudienciasGenerales(anyString(), any(Pageable.class)))
+        given(audienciaService.getAllAudienciasGenerales(
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(LocalDate.class),
+                nullable(LocalDate.class),
+                any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(audienciaRecord)));
 
         mockMvc.perform(

@@ -128,17 +128,53 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
              WHERE juzgadoSala = :juzgado
               AND audiencia.estado = 0
              AND (
-                 :key IS NULL
+                 COALESCE(:key, '') = ''
                  OR lower(carpeta.expediente) LIKE %:key%
                  OR lower(tipoAudiencia.nombre) LIKE %:key%
                  OR lower(sala.nombre) LIKE %:key%
+                 OR lower(CASE
+                    WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                    ELSE 'Por asignar'
+                 END) LIKE %:key%
              )
+             AND (
+                 COALESCE(:tipoAudiencia, '') = ''
+                 OR lower(tipoAudiencia.nombre) LIKE CONCAT('%', :tipoAudiencia, '%')
+             )
+             AND (
+                 COALESCE(:juez, '') = ''
+                 OR lower(CASE
+                    WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                    ELSE 'Por asignar'
+                 END) LIKE CONCAT('%', :juez, '%')
+             )
+             AND (
+                 COALESCE(:numCarpeta, '') = ''
+                 OR lower(carpeta.expediente) LIKE CONCAT('%', :numCarpeta, '%')
+             )
+             AND (
+                 COALESCE(:lugar, '') = ''
+                 OR lower(sala.nombre) LIKE CONCAT('%', :lugar, '%')
+             )
+             AND (
+                 :estatus IS NULL
+                 OR audiencia.estatusAudiencia = :estatus
+             )
+             AND audiencia.fechaAudiencia >= :fechaFrom
+             AND audiencia.fechaAudiencia < :fechaTo
             AND ( (:esSecretario = false OR sala.id IN :salaIdsPermitidas) )
         """)
     Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(
             Pageable pageable,
             @Param("juzgado") Juzgado juzgado,
             @Param("key") String key,
+            @Param("tipoAudiencia") String tipoAudiencia,
+            @Param("juez") String juez,
+            @Param("numCarpeta") String numCarpeta,
+            @Param("lugar") String lugar,
+            @Param("estatus") EstatusAudiencia estatus,
+            @Param("fechaFrom") LocalDateTime fechaFrom,
+            @Param("fechaTo") LocalDateTime fechaTo,
             @Param("salaIdsPermitidas") List<Integer> salaIdsPermitidas,
             @Param("esSecretario") boolean esSecretario);
 
