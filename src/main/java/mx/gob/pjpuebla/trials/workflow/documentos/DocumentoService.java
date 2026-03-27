@@ -820,8 +820,10 @@ public class DocumentoService {
                         }
                 }
                 DocumentoData datosGenerales = documento.getData() != null ? documento.getData() : new DocumentoData();
-                CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId());
-                String ultimoDomicilioFamiliar = carpetaDetalle != null ? carpetaDetalle.getUltimoDomicilioFamiliar() : null;
+                CarpetaDetalle carpetaDetalle = carpetaDetalleRepository
+                                .findByCarpetaId(documento.getCarpeta().getId());
+                String ultimoDomicilioFamiliar = carpetaDetalle != null ? carpetaDetalle.getUltimoDomicilioFamiliar()
+                                : null;
                 String domicilioAcreedor = carpetaDetalle != null ? carpetaDetalle.getDomicilioAcreedor() : null;
                 return new DocumentoResponseRecord(actor, demandado, ultimoDomicilioFamiliar, domicilioAcreedor,
                                 anexos, datosGenerales,
@@ -980,7 +982,8 @@ public class DocumentoService {
         private Carpeta findCarpetaByExpedienteAndPersona(String expedienteCompleto, Persona persona) {
                 if (persona.getJuzgado() != null) {
                         return carpetaRepository.findByExpedienteAndJuzgado(expedienteCompleto, persona.getJuzgado())
-                                        .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND, expedienteCompleto));
+                                        .orElseThrow(() -> new NotFoundException(CARPETA_NOT_FOUND,
+                                                        expedienteCompleto));
                 }
 
                 if (persona.getOficialia() != null && persona.getOficialia().getJuzgados() != null) {
@@ -1276,7 +1279,8 @@ public class DocumentoService {
                                 documento.getId(),
                                 documento.getTipoDocumento(),
                                 documento.getCarpeta() != null ? documento.getCarpeta().getId() : null,
-                                documento.getData() != null ? documento.getData().getApelacionAntecedenteCarpeta() : null);
+                                documento.getData() != null ? documento.getData().getApelacionAntecedenteCarpeta()
+                                                : null);
 
                 for (Anexo anexo : apelacionRecord.anexos()) {
                         Anexo entity = new Anexo();
@@ -2090,14 +2094,27 @@ public class DocumentoService {
                 return digitalizacionService.getDocumento(doc.getId());
         }
 
-        public Page<OficioResponseRecord> getAllOficios(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
+        public Page<OficioResponseRecord> getAllOficios(
+                        Pageable pageable, String key, String folio, String expediente,
+                        String asunto, String dependencia,
+                        LocalDate fechaEmisionFrom, LocalDate fechaEmisionTo,
+                        LocalDate fechaEntregaFrom, LocalDate fechaEntregaTo) {
+
+                key = normalizeKey(key);
+                folio = norm(folio);
+                expediente = norm(expediente);
+                asunto = norm(asunto);
+                dependencia = norm(dependencia);
+
                 Persona persona = personaService.getAuditor();
                 List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
                                 : persona.getOficialia().getJuzgados();
 
-                Page<OficioResponseRecord> page = documentoRepository.findAllByTipoDocumento(key, TipoDocumento.OFICIO,
-                                pageable, juzgados);
+                Page<OficioResponseRecord> page = documentoRepository.findAllByTipoDocumento(
+                                key, folio, expediente, asunto, dependencia,
+                                fechaEmisionFrom, fechaEmisionTo,
+                                fechaEntregaFrom, fechaEntregaTo,
+                                TipoDocumento.OFICIO, pageable, juzgados);
 
                 List<OficioResponseRecord> list = page.getContent().stream()
                                 .map(item -> new OficioResponseRecord(
@@ -2781,7 +2798,7 @@ public class DocumentoService {
 
                         Juzgado juzgadoDemanda = juzgadoService.getJuzgado(tipoJuicio, TipoCarpeta.DEMANDA,
                                         juzgadosRelacionados);
-                                        
+
                         if (!juzgadosRelacionados.contains(juzgadoDemanda)) {
                                 throw new NotFoundException("El juzgado asignado no está relacionado con la oficialía",
                                                 "juzgadoPorJuicio");
@@ -2859,10 +2876,9 @@ public class DocumentoService {
                 return documentoRepository.save(documento);
         }
 
-
-
         @Transactional
-        public CarpetaResponseRecord createExpedienteSinAntecedentes(ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+        public CarpetaResponseRecord createExpedienteSinAntecedentes(
+                        ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
                 TipoJuicio tipoJuicio = getTipoJuicioById(expedienteSinAntecedentesRecord.tipoJuicioId());
                 Persona persona = personaService.getAuditor();
 
@@ -2871,7 +2887,8 @@ public class DocumentoService {
                                 .setJuzgado(persona.getJuzgado())
                                 .setFolio(getFolio("D"))
                                 .setTipoCarpeta(TipoCarpeta.DEMANDA)
-                                .setExpediente(expedienteSinAntecedentesRecord.expediente() + "/" + expedienteSinAntecedentesRecord.year())
+                                .setExpediente(expedienteSinAntecedentesRecord.expediente() + "/"
+                                                + expedienteSinAntecedentesRecord.year())
                                 .setEstatus(EstadoCarpeta.ASIGNADO)
                                 .setSelloEstatus(SelloEstatus.VALIDO)
                                 .setFechaAsignacion(LocalDateTime.now())
@@ -2882,24 +2899,22 @@ public class DocumentoService {
                 carpeta = carpetaRepository.save(carpeta);
 
                 Documento documento = new Documento()
-                        .setCarpeta(carpeta)
-                        .setMigrado(Migrado.NO)
-                        .setFechaAsignacion(LocalDateTime.now())
-                        .setPersona(persona);
+                                .setCarpeta(carpeta)
+                                .setMigrado(Migrado.NO)
+                                .setFechaAsignacion(LocalDateTime.now())
+                                .setPersona(persona);
 
                 documentoRepository.save(documento);
 
                 return new CarpetaResponseRecord(
-                        carpeta.getId(),
-                        "No registrado",
-                        "No registrado",
-                        tipoJuicio.getNombre(),
-                        null,
-                        null,
-                        Estado.ACTIVE,
-                        EstadoCarpeta.ASIGNADO.getEtiqueta()
-                );
+                                carpeta.getId(),
+                                "No registrado",
+                                "No registrado",
+                                tipoJuicio.getNombre(),
+                                null,
+                                null,
+                                Estado.ACTIVE,
+                                EstadoCarpeta.ASIGNADO.getEtiqueta());
         }
 
 }
-

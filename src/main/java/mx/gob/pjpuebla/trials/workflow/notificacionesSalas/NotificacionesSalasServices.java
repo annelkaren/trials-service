@@ -1,9 +1,12 @@
 package mx.gob.pjpuebla.trials.workflow.notificacionesSalas;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -35,12 +38,19 @@ import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionS
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDestinatarioRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionSalaDetalleRecord;
 import mx.gob.pjpuebla.trials.workflow.notificacionesSalas.records.NotificacionesSalasRecord;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
 import net.sf.jasperreports.engine.JRException;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class NotificacionesSalasServices {
+    private static final long MAX_FILE_SIZE = 50L * 1024L * 1024L;
+    private static final Set<String> TIPO_ARCHIVOS_PERMITIDOS = Set.of("application/pdf");
+
 
     private final NotificacionesSalasRepository notificacionesSalasRepository;
     private final NotificacionSalaDestinatarioRepository notificacionSalaDestinatarioRepository;
@@ -79,9 +89,9 @@ public class NotificacionesSalasServices {
 
     @Transactional
     public NotificacionSalaCreateResponseRecord createNotificacion(NotificacionSalaCreateRecord request,
-            MultipartFile archivo) {
+            List<MultipartFile> archivos) {
 
-        validaciones(request, archivo);
+        validaciones(request, archivos);
 
         String toca = request.toca().trim();
         Juzgado sala = validateAndGetSala(request.salaId());
@@ -97,9 +107,11 @@ public class NotificacionesSalasServices {
 
         notificacion = notificacionesSalasRepository.save(notificacion);
 
-        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(archivo,
+        byte[] mergedPdf = mergePdfFilesEnOrden(archivos);
+        DigitalizacionRecord digitalizacionRecord = digitalizacionService.guardarArchivoNotificacionSala(mergedPdf,
                 sala.getId(),
-                notificacion.getId());
+                notificacion.getId(),
+                "notificacion_sala_unida.pdf");
 
         notificacion.setRutaArchivo(digitalizacionRecord.nombreArchivo());
         notificacion = notificacionesSalasRepository.save(notificacion);
@@ -240,7 +252,7 @@ public class NotificacionesSalasServices {
         return acuseNotificacionService.getAcuseNotificacionNoEntregadaService(notificacionSalaDestinatarioId);
     }
 
-    private void validaciones(NotificacionSalaCreateRecord request, MultipartFile archivo) {
+    private void validaciones(NotificacionSalaCreateRecord request, List<MultipartFile> archivos) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "La informacion de la notificacion es obligatoria.");
@@ -257,6 +269,28 @@ public class NotificacionesSalasServices {
         }
         if (request.destinatarios() == null || request.destinatarios().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe registrar al menos un destinatario.");
+        }
+
+        if (archivos == null || archivos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe adjuntar al menos un archivo.");
+        }
+
+        for (int i = 0; i < archivos.size(); i++) {
+            MultipartFile archivo = archivos.get(i);
+            int index = i + 1;
+
+            if (archivo == null || archivo.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El archivo " + index + " no puede estar vacio.");
+            }
+            if (archivo.getContentType() == null || !TIPO_ARCHIVOS_PERMITIDOS.contains(archivo.getContentType())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El archivo " + index + " debe ser un PDF.");
+            }
+            if (archivo.getSize() > MAX_FILE_SIZE) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "El archivo " + index + " no puede superar los 50 MB.");
+            }
         }
 
         for (int i = 0; i < request.destinatarios().size(); i++) {
@@ -280,10 +314,57 @@ public class NotificacionesSalasServices {
                         "El tipo de parte del destinatario " + index + " es obligatorio.");
             }
         }
+    }
 
-        if (archivo == null || archivo.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo es obligatorio.");
+    private byte[] mergePdfFilesEnOrden(List<MultipartFile> archivos) {
+        Document outputDocument = new Document();
+        PdfCopy pdfCopy = null;
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            pdfCopy = new PdfCopy(outputDocument, outputStream);
+            outputDocument.open();
+
+            for (int i = 0; i < archivos.size(); i++) {
+                MultipartFile archivo = archivos.get(i);
+                int index = i + 1;
+                String nombreArchivo = archivo.getOriginalFilename() == null || archivo.getOriginalFilename().isBlank()
+                        ? "archivo_" + index + ".pdf"
+                        : archivo.getOriginalFilename();
+
+                try (InputStream inputStream = archivo.getInputStream()) {
+                    appendPdf(pdfCopy, inputStream);
+                } catch (IOException | DocumentException e) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "El archivo " + index + " (" + nombreArchivo + ") no es un PDF valido.",
+                            e);
+                }
+            }
+
+            outputDocument.close();
+            pdfCopy.close();
+            return outputStream.toByteArray();
+        } catch (IOException | DocumentException e) {
+            log.error("Error al unir los PDFs de notificacion de sala.", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No fue posible unir los archivos PDF.");
+        } finally {
+            if (outputDocument.isOpen()) {
+                outputDocument.close();
+            }
+            if (pdfCopy != null) {
+                pdfCopy.close();
+            }
         }
+    }
+
+    private void appendPdf(PdfCopy pdfCopy, InputStream inputStream) throws IOException, DocumentException {
+        PdfReader reader = new PdfReader(inputStream);
+        int totalPages = reader.getNumberOfPages();
+        for (int page = 1; page <= totalPages; page++) {
+            pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+        }
+        pdfCopy.freeReader(reader);
+        reader.close();
     }
 
     private String sanitizeFilename(String name) {
