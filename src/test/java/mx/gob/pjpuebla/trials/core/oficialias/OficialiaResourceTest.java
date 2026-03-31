@@ -48,129 +48,132 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class OficialiaResourceTest {
 
-    @MockBean
-    private OficialiaService mockOficialiaService;
-    @MockBean
-    private JuzgadoRepository juzgadoRepository;
-    @MockBean
-    private MateriaRepository materiaRepository;
+        @MockBean
+        private OficialiaService mockOficialiaService;
+        @MockBean
+        private JuzgadoRepository juzgadoRepository;
+        @MockBean
+        private MateriaRepository materiaRepository;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    private Oficialia oficialia;
-    private OficialiaRecord validOficialiaRecord;
-    private OficialiaRecordResponse oficialiaRecordResponse;
-    private OficialiaMateriaRecord oficialiaMateriaRecordResponse;
+        private Oficialia oficialia;
+        private OficialiaRecord validOficialiaRecord;
+        private OficialiaRecordResponse oficialiaRecordResponse;
+        private OficialiaMateriaRecord oficialiaMateriaRecordResponse;
 
+        @BeforeEach
+        void setUp() {
+                Juzgado juzgado = JuzgadoSetUp.createJuzgado();
+                TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
+                Distrito distrito = DistritoSetUp.createDistrito();
+                Domicilio domicilio = DomicilioSetUp.createDomicilio();
+                Materia materia = MateriaSetUp.createMateria();
+                Sede sede = SedeSetUp.createSede();
+                sede.setDistrito(distrito);
+                sede.setDomicilio(domicilio);
+                oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
+                oficialia.setJuzgados(Collections.singletonList(juzgado)); // Usa una lista que contiene el juzgado
+                validOficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia,
+                                new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()),
+                                new SedeRecordResponse(sede.getId(), sede.getNombre(), sede.getEstado()));
+                oficialiaMateriaRecordResponse = OficialiaSetUp.CreateOficialiaMateriaRecord(oficialia, materia, sede,
+                                tipoOficialia, juzgado);
+                oficialiaRecordResponse = OficialiaSetUp.createOficialiaRecordResponse(oficialia);
+        }
 
+        @Test
+        void getAllByNameAndActive_success() throws Exception {
+                given(mockOficialiaService.getAllByOficialiaMateria(any(), any(), any(), any(), any(),
+                                any(Pageable.class)))
+                                .willReturn(new PageImpl<OficialiaMateriaRecord>(
+                                                Collections.singletonList(oficialiaMateriaRecordResponse)));
 
-    @BeforeEach
-    void setUp() {
-        Juzgado juzgado = JuzgadoSetUp.createJuzgado();
-        TipoOficialia tipoOficialia = TipoOficialiaSetUp.createtipoOficialia();
-        Distrito distrito = DistritoSetUp.createDistrito();
-        Domicilio domicilio = DomicilioSetUp.createDomicilio();
-        Materia materia = MateriaSetUp.createMateria();
-        Sede sede = SedeSetUp.createSede();
-        sede.setDistrito(distrito);
-        sede.setDomicilio(domicilio);
-        oficialia = OficialiaSetUp.createOficialia(tipoOficialia, sede);
-        oficialia.setJuzgados(Collections.singletonList(juzgado));  // Usa una lista que contiene el juzgado
-        validOficialiaRecord = OficialiaSetUp.createOficialiaRecord(oficialia, new TipoOficialiaRecord(tipoOficialia.getId(), tipoOficialia.getNombre()), new SedeRecordResponse(sede.getId(),sede.getNombre(),sede.getEstado()));
-        oficialiaMateriaRecordResponse = OficialiaSetUp.CreateOficialiaMateriaRecord(oficialia, materia, sede, tipoOficialia, juzgado);
-        oficialiaRecordResponse =  OficialiaSetUp.createOficialiaRecordResponse(oficialia);
-    }
+                mockMvc.perform(
+                                get("/api/core/oficialias")
+                                                .param("oficialiaName", "O")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAllByNameAndActive_success() throws Exception {
-        given(mockOficialiaService.getAllByOficialiaMateria(any(),any(Pageable.class)))
-                .willReturn(new PageImpl<OficialiaMateriaRecord>(Collections.singletonList(oficialiaMateriaRecordResponse)));
+        @Test
+        void getById_success() throws Exception {
+                given(mockOficialiaService.findById(anyInt()))
+                                .willReturn(validOficialiaRecord);
 
-        mockMvc.perform(
-                get("/api/core/oficialias")
-                        .param("oficialiaName", "O")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/oficialias/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_success() throws Exception {
-        given(mockOficialiaService.findById(anyInt()))
-                .willReturn(validOficialiaRecord);
+        @Test
+        void getById_not_found() throws Exception {
+                given(mockOficialiaService.findById(anyInt()))
+                                .willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                get("/api/core/oficialias/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/oficialias/0")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockOficialiaService.findById(anyInt()))
-                .willThrow(NotFoundException.class);
+        @Test
+        void getById_invalid() throws Exception {
+                given(mockOficialiaService.findById(anyInt()))
+                                .willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                get("/api/core/oficialias/0")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNotFound());
-    }
+                mockMvc.perform(
+                                get("/api/core/oficialias/X")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockOficialiaService.findById(anyInt()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+        @Test
+        void create_success() throws Exception {
+                given(mockOficialiaService.create(oficialia))
+                                .willReturn(oficialiaRecordResponse);
 
-        mockMvc.perform(
-                get("/api/core/oficialias/X")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                post("/api/core/oficialias")
+                                                .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void create_success() throws Exception {
-        given(mockOficialiaService.create(oficialia))
-                .willReturn(oficialiaRecordResponse);
+        @Test
+        void update_success() throws Exception {
+                given(mockOficialiaService.create(oficialia))
+                                .willReturn(oficialiaRecordResponse);
 
-        mockMvc.perform(
-                post("/api/core/oficialias")
-                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/core/oficialias")
+                                                .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_success() throws Exception {
-        given(mockOficialiaService.create(oficialia))
-                .willReturn(oficialiaRecordResponse);
+        @Test
+        void update_error() throws Exception {
+                given(mockOficialiaService.update(oficialia))
+                                .willThrow(InvalidVersionException.class);
 
-        mockMvc.perform(
-                put("/api/core/oficialias")
-                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/core/oficialias")
+                                                .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_error() throws Exception {
-        given(mockOficialiaService.update(oficialia))
-                .willThrow(InvalidVersionException.class);
-
-        mockMvc.perform(
-                put("/api/core/oficialias")
-                        .content(ResourceUtilTest.asJsonString(oficialiaRecordResponse))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
-
-    @Test
-    void delete_success() throws Exception {
-        mockMvc.perform(
-                delete("/api/core/oficialias/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+        @Test
+        void delete_success() throws Exception {
+                mockMvc.perform(
+                                delete("/api/core/oficialias/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 }

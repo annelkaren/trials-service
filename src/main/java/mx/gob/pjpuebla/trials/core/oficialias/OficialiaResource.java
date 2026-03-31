@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord;
 import mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecordResponse;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +22,12 @@ public class OficialiaResource {
     @GetMapping
     public Page<OficialiaMateriaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(required = false) String searchQuery) {
-        return this.oficialiaService.getAllByOficialiaMateria(searchQuery, pageable);
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "direccion", required = false) String direccion,
+            @RequestParam(value = "telefono", required = false) String telefono,
+            @RequestParam(value = "estatus", required = false) Estado estatus) {
+        return this.oficialiaService.getAllByOficialiaMateria(nombre, materia, direccion, telefono, estatus, pageable);
     }
 
     @GetMapping("/{id}")

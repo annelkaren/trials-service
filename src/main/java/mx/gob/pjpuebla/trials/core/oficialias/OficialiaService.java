@@ -45,8 +45,18 @@ public class OficialiaService {
     private final JuzgadoRepository juzgadoRepository;
 
     @Transactional(readOnly = true)
-    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(String searchQuery, Pageable pageable) {
-        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(searchQuery, pageable);
+    public Page<OficialiaMateriaRecord> getAllByOficialiaMateria(String nombre, String materia, String direccion,
+            String telefono, Estado estatus, Pageable pageable) {
+
+        nombre = nombre != null ? nombre.toLowerCase() : "";
+        materia = materia != null ? materia.toLowerCase() : "";
+        direccion = direccion != null ? direccion.toLowerCase() : "";
+        telefono = telefono != null ? telefono.toLowerCase() : "";
+
+        List<Estado> estados = estatus == null ? List.of(Estado.ACTIVE, Estado.INACTIVE) : List.of(estatus);
+
+        Page<Oficialia> oficialias = oficialiaRepository.findAllActive(nombre, materia, direccion, telefono, estados,
+                pageable);
 
         return new PageImpl<>(oficialias.stream().map(o -> new OficialiaMateriaRecord(
                 o.getId(),
