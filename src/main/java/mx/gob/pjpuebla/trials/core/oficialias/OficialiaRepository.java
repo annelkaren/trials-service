@@ -64,17 +64,27 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
             "WHERE j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE")
     List<OficialiaJuzgadoRecord> findAllOficialiasWithActiveJuzgados();
 
-    @Query("""
-            SELECT o FROM Oficialia o
+    @Query(value = """
+            SELECT DISTINCT o FROM Oficialia o
             LEFT JOIN o.materias m
             LEFT JOIN o.juzgados j
             LEFT JOIN o.tipoOficialia t
             LEFT JOIN o.sede s
             LEFT JOIN s.domicilio d
             WHERE LOWER(o.nombre) LIKE CONCAT('%', :nombre, '%')
-            AND LOWER(m.nombre) LIKE CONCAT('%', :materia, '%')
-            AND LOWER(d.calle) LIKE CONCAT('%', :direccion, '%')
-            AND LOWER(s.telefono) LIKE CONCAT('%', :telefono, '%')
+            AND COALESCE(LOWER(m.nombre), '') LIKE CONCAT('%', :materia, '%')
+            AND COALESCE(LOWER(d.calle), '') LIKE CONCAT('%', :direccion, '%')
+            AND COALESCE(LOWER(s.telefono), '') LIKE CONCAT('%', :telefono, '%')
+            AND o.estado IN :estados
+            """, countQuery = """
+            SELECT count(DISTINCT o) FROM Oficialia o
+            LEFT JOIN o.materias m
+            LEFT JOIN o.sede s
+            LEFT JOIN s.domicilio d
+            WHERE LOWER(o.nombre) LIKE CONCAT('%', :nombre, '%')
+            AND COALESCE(LOWER(m.nombre), '') LIKE CONCAT('%', :materia, '%')
+            AND COALESCE(LOWER(d.calle), '') LIKE CONCAT('%', :direccion, '%')
+            AND COALESCE(LOWER(s.telefono), '') LIKE CONCAT('%', :telefono, '%')
             AND o.estado IN :estados
             """)
     Page<Oficialia> findAllActive(
