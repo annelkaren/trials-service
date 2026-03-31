@@ -56,8 +56,13 @@ public class SedeService {
      * resultados de la consulta.
      */
     @Transactional(readOnly = true)
-    public Page<SedeDomicilioRecordResponse> getAll(Sede example, Pageable pageable) {
-        return sedeRepository.findAllSedeDomicilioWithPagination(example.getNombre(), pageable);
+    public Page<SedeDomicilioRecordResponse> getAll(String key, String nombre, String direccion, String telefono, Estado estatus, Pageable pageable) {
+        List<Estado> estados = estatus == null ? List.of(Estado.ACTIVE, Estado.INACTIVE) : List.of(estatus); 
+        nombre = nombre != null ? nombre : "";
+        direccion = direccion != null ? direccion : "";
+        telefono = telefono != null ? telefono : "";
+        
+        return sedeRepository.findAllSedeDomicilioWithPagination(nombre, direccion, telefono, estados, pageable);
     }
 
     /**

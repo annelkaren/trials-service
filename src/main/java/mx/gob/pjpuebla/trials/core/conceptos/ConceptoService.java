@@ -44,7 +44,7 @@ public class ConceptoService {
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId" + carpetaId));
 
         return conceptoRepository
-                .findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "DistribuciÃ³n", "RESGUARDO"))
+                .findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución", "RESGUARDO"))
                 .stream()
                 .map(concepto -> new ConceptoRecordResponse(
                         concepto.getId(),
@@ -142,9 +142,9 @@ public class ConceptoService {
         Integer tipoJuicioId = tipoJuicioIds.iterator().next();
 
         Concepto existingConcepto = conceptoRepository.findById(updatedConcepto.id())
-                .orElseThrow(() -> new EntityNotFoundException("El concepto con ID " + updatedConcepto.id() + " no se encontrÃ³."));
+                .orElseThrow(() -> new EntityNotFoundException("El concepto con ID " + updatedConcepto.id() + " no se encontró."));
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(tipoJuicioId)
-                .orElseThrow(() -> new EntityNotFoundException("El tipo de juicio con ID " + tipoJuicioId + " no se encontrÃ³."));
+                .orElseThrow(() -> new EntityNotFoundException("El tipo de juicio con ID " + tipoJuicioId + " no se encontró."));
 
         existingConcepto.setNombre(updatedConcepto.nombre());
         existingConcepto.setDias(updatedConcepto.dias());

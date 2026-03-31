@@ -345,9 +345,10 @@ class DocumentoServiceTest {
                                 isNull(),
                                 isNull(),
                                 isNull(),
-                                isNull(), null, null)).willReturn(documentoGPage);
-
-                // Act
+                                isNull(),
+                                any(LocalDateTime.class),
+                                any(LocalDateTime.class))).willReturn(documentoGPage);
+                                
                 Page<BandejaEntradaRecord> result = documentoService.getBandejaEntrada(null, null, null, null, null,
                                 null, null, null, pageable);
 

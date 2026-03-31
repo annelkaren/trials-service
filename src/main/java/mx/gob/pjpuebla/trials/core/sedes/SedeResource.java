@@ -8,6 +8,7 @@ import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecord;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,9 +40,14 @@ public class SedeResource {
      */
     @GetMapping
     public Page<SedeDomicilioRecordResponse> getAll(
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "nombre", required = false) String nombre) {
-        return this.sedeService.getAll(new Sede().setNombre(nombre), pageable);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "direccion", required = false) String direccion,
+            @RequestParam(value = "telefono", required = false) String telefono,
+            @RequestParam(value = "estatus", required = false) Estado estatus,
+            @PageableDefault(size = 20) Pageable pageable
+        ) {
+        return this.sedeService.getAll(key, nombre, direccion, telefono, estatus, pageable);
     }
 
     /**
