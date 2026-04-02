@@ -22,6 +22,8 @@ import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaSetUp;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,8 +87,7 @@ class OficialiaResourceTest {
 
         @Test
         void getAllByNameAndActive_success() throws Exception {
-                given(mockOficialiaService.getAllByOficialiaMateria(any(), any(), any(), any(), any(),
-                                any(Pageable.class)))
+                given(mockOficialiaService.getAllByOficialiaMateria(null, null, null, null, null, null, null))
                                 .willReturn(new PageImpl<OficialiaMateriaRecord>(
                                                 Collections.singletonList(oficialiaMateriaRecordResponse)));
 

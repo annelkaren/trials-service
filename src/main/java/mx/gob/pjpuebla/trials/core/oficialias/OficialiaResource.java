@@ -22,12 +22,14 @@ public class OficialiaResource {
     @GetMapping
     public Page<OficialiaMateriaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "materia", required = false) String materia,
-            @RequestParam(value = "direccion", required = false) String direccion,
-            @RequestParam(value = "telefono", required = false) String telefono,
+            @RequestParam(value = "tipo", required = false) String tipo,
+            @RequestParam(value = "juzgado", required = false) String juzgado,
             @RequestParam(value = "estatus", required = false) Estado estatus) {
-        return this.oficialiaService.getAllByOficialiaMateria(nombre, materia, direccion, telefono, estatus, pageable);
+        return this.oficialiaService.getAllByOficialiaMateria(key, nombre, materia, tipo, juzgado, estatus,
+                pageable);
     }
 
     @GetMapping("/{id}")
