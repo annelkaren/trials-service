@@ -94,12 +94,21 @@ class PersonaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findAllByCentroTrabajo(){
+    void findByCentroTrabajoAndSearch(){
         persona.setJuzgado(new Juzgado().setId(51));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
 
-        Mockito.when(roleService.hasRole(Mockito.any(), Mockito.eq("ADMINISTRADOR_SISTEMA"))).thenReturn(true);
-        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(null, null,persona.getJuzgado().getId(), true,PageRequest.of(0, 20));
+        Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
+                null,
+                null,
+                null,
+                null,
+                Arrays.asList(Estado.ACTIVE),
+                null,
+                null,
+                persona.getJuzgado().getId(),
+                true,
+                PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty();
     }

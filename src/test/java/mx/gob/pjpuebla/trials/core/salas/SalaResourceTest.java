@@ -32,105 +32,109 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class SalaResourceTest {
 
-    @MockBean
-    private SalaService mockSalaService;
+        @MockBean
+        private SalaService mockSalaService;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    private SalaRecord salaRecord;
+        private SalaRecord salaRecord;
 
-    @BeforeEach
-    void setUp() {
-        salaRecord = SalaSetUp.salaRecord();
-    }
+        @BeforeEach
+        void setUp() {
+                salaRecord = SalaSetUp.salaRecord();
+        }
 
-    @Test
-    void getAllByNameAndActive_success() throws Exception {
-        given(mockSalaService.getAll(anyString(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
+        @Test
+        void getAllByNameAndActive_success() throws Exception {
+                given(mockSalaService.getAll(anyString(), anyString(), anyString(), anyString(),
+                                any(Pageable.class)))
+                                .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
 
-        mockMvc.perform(
-                        get("/api/core/salas")
-                                .param("nombre", "1")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/salas")
+                                                .param("nombre", "1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockSalaService.findById(anyInt()))
-                .willThrow(NotFoundException.class);
+        @Test
+        void getById_not_found() throws Exception {
+                given(mockSalaService.findById(anyInt()))
+                                .willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                        get("/api/core/salas/0")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
+                mockMvc.perform(
+                                get("/api/core/salas/0")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockSalaService.findById(anyInt()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+        @Test
+        void getById_invalid() throws Exception {
+                given(mockSalaService.findById(anyInt()))
+                                .willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                        get("/api/core/salas/Y")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                get("/api/core/salas/Y")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void create_success() throws Exception {
-        Integer expectedId = 1;
-        given(mockSalaService.create(any(SalaRecordSave.class)))
-                .willReturn(expectedId);
+        @Test
+        void create_success() throws Exception {
+                Integer expectedId = 1;
+                given(mockSalaService.create(any(SalaRecordSave.class)))
+                                .willReturn(expectedId);
 
-        mockMvc.perform(
-                        post("/api/core/salas")
-                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                post("/api/core/salas")
+                                                .content(ResourceUtilTest
+                                                                .asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_success() throws Exception {
-        Integer expectedId = 1;
-        given(mockSalaService.update(any(SalaRecordSave.class)))
-                .willReturn(expectedId);
+        @Test
+        void update_success() throws Exception {
+                Integer expectedId = 1;
+                given(mockSalaService.update(any(SalaRecordSave.class)))
+                                .willReturn(expectedId);
 
-        mockMvc.perform(
-                        put("/api/core/salas")
-                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/core/salas")
+                                                .content(ResourceUtilTest
+                                                                .asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_error() throws Exception {
-        SalaRecordSave salaRecordSave = new SalaRecordSave(null, null, null, null, null, null);
-        given(mockSalaService.update(salaRecordSave))
-                .willThrow(InvalidVersionException.class);
+        @Test
+        void update_error() throws Exception {
+                SalaRecordSave salaRecordSave = new SalaRecordSave(null, null, null, null, null, null);
+                given(mockSalaService.update(salaRecordSave))
+                                .willThrow(InvalidVersionException.class);
 
-        mockMvc.perform(
-                        put("/api/core/salas")
-                                .content(ResourceUtilTest.asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                mockMvc.perform(
+                                put("/api/core/salas")
+                                                .content(ResourceUtilTest
+                                                                .asJsonString(SalaSetUp.createSala(Estado.ACTIVE)))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
 
-    }
+        }
 
-    @Test
-    void getAllbyJuzgado_success() throws Exception {
-        given(mockSalaService.getSalasByJuzgado(any(String.class), anyInt()))
-                .willReturn(Collections.singletonList(salaRecord));
+        @Test
+        void getAllbyJuzgado_success() throws Exception {
+                given(mockSalaService.getSalasByJuzgado(any(String.class), anyInt()))
+                                .willReturn(Collections.singletonList(salaRecord));
 
-        mockMvc.perform(
-                        get("/api/core/salas/juzgado/1")
-                                .param("nombre", "A")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/salas/juzgado/1")
+                                                .param("nombre", "A")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 }

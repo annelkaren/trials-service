@@ -64,10 +64,18 @@ public class SalaService {
     private static final Integer TIEMPO_ESPERA_AUDIENCIA = 3;
 
     @Transactional(readOnly = true)
-    public Page<SalaRecord> getAll(String key, Pageable pageable) {
+    public Page<SalaRecord> getAll(String key, String nombre, String juez, String juzgado,
+            Pageable pageable) {
         Persona persona = personaService.getAuditor();
         Integer juzgadoId = (persona != null && persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
-        return salaRepository.findAllByKeyAndJuzgadoId(key, juzgadoId, pageable);
+
+        // Filtros:
+        key = (key != null) ? key : "";
+        nombre = (nombre != null) ? nombre : "";
+        juez = (juez != null) ? juez : "";
+        juzgado = (juzgado != null) ? juzgado : "";
+
+        return salaRepository.findAllByKeyAndJuzgadoId(key, nombre, juez, juzgado, juzgadoId, pageable);
 
     }
 

@@ -32,9 +32,11 @@ public class ConceptoResource {
     @GetMapping(value = "/registros", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ConceptoRecord> getallConceptos(
             @PageableDefault(size = 25) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key
-    ) {
-        return conceptoService.getAllConceptos(pageable, key);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "dias", required = false) Integer dias,
+            @RequestParam(value = "nombreTipoJuicio", required = false) String nombreTipoJuicio) {
+        return conceptoService.getAllConceptos(pageable, key, nombre, dias, nombreTipoJuicio);
     }
 
     @PatchMapping("/{id}/status/{status}")

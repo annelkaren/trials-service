@@ -61,341 +61,352 @@ import static org.mockito.Mockito.lenient;
 @ExtendWith(MockitoExtension.class)
 class SalaServiceTest {
 
-    @Mock
-    SalaRepository mockSalaRepository;
-    @Mock
-    PersonaRepository personaRepository;
-    @Mock
-    BloqueRepository bloqueRepository;
-    @Mock
-    MateriaRepository materiaRepository;
-    @Mock
-    DistritoRepository distritoRepository;
-    @Mock
-    DomicilioRepository domicilioRepository;
-    @Mock
-    SedeRepository sedeRepository;
-    @Mock
-    JuzgadoRepository juzgadoRepository;
-    @Mock
-    AudienciaRepository audienciaRepository;
-    @Mock
-    EventoRepository eventoRepository;
-    @Mock
-    EventoService eventoService;
-    @Mock
-    PersonaService personaService;
-    @Mock
-    SalaPersonaRepository salaPersonaRepository;
-    @InjectMocks
-    SalaService salaService;
+        @Mock
+        SalaRepository mockSalaRepository;
+        @Mock
+        PersonaRepository personaRepository;
+        @Mock
+        BloqueRepository bloqueRepository;
+        @Mock
+        MateriaRepository materiaRepository;
+        @Mock
+        DistritoRepository distritoRepository;
+        @Mock
+        DomicilioRepository domicilioRepository;
+        @Mock
+        SedeRepository sedeRepository;
+        @Mock
+        JuzgadoRepository juzgadoRepository;
+        @Mock
+        AudienciaRepository audienciaRepository;
+        @Mock
+        EventoRepository eventoRepository;
+        @Mock
+        EventoService eventoService;
+        @Mock
+        PersonaService personaService;
+        @Mock
+        SalaPersonaRepository salaPersonaRepository;
+        @InjectMocks
+        SalaService salaService;
 
-    private Sala sala;
-    private SalaRecordResponse salaRecordResponse;
-    private Persona juez;
-    private Bloque bloque;
-    private Materia materia;
-    private Distrito distrito;
-    private Domicilio domicilio;
-    private Juzgado juzgado;
+        private Sala sala;
+        private SalaRecordResponse salaRecordResponse;
+        private Persona juez;
+        private Bloque bloque;
+        private Materia materia;
+        private Distrito distrito;
+        private Domicilio domicilio;
+        private Juzgado juzgado;
 
-    @BeforeEach
-    public void setUp() {
-        juez = PersonaSetUp.createPersona();
-        bloque = BloqueSetUp.createBloque();
-        materia = MateriaSetUp.createMateria();
-        distrito = DistritoSetUp.createDistrito();
-        domicilio = DomicilioSetUp.createDomicilio();
+        @BeforeEach
+        public void setUp() {
+                juez = PersonaSetUp.createPersona();
+                bloque = BloqueSetUp.createBloque();
+                materia = MateriaSetUp.createMateria();
+                distrito = DistritoSetUp.createDistrito();
+                domicilio = DomicilioSetUp.createDomicilio();
 
-        Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
-        sede.setDomicilio(domicilio);
-        sede.setDistrito(distrito);
+                Sede sede = SedeSetUp.createSede(Estado.ACTIVE);
+                sede.setDomicilio(domicilio);
+                sede.setDistrito(distrito);
 
-        juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+                juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
 
-        Sala salaLocal = SalaSetUp.createSala(Estado.ACTIVE);
-        salaLocal.setBloque(bloque);
-        salaLocal.setJuzgado(juzgado);
-        salaLocal.setJuez(juez);
+                Sala salaLocal = SalaSetUp.createSala(Estado.ACTIVE);
+                salaLocal.setBloque(bloque);
+                salaLocal.setJuzgado(juzgado);
+                salaLocal.setJuez(juez);
 
-        juez.setJuzgado(juzgado);
+                juez.setJuzgado(juzgado);
 
-        sala = salaLocal;
-        salaRecordResponse = SalaSetUp.salaRecordResponse();
-    }
+                sala = salaLocal;
+                salaRecordResponse = SalaSetUp.salaRecordResponse();
+        }
 
-    @Test
-    void getAll_return_page() {
-        List<SalaRecord> listPage = Collections.singletonList(new SalaRecord(
-                sala.getId(),
-                sala.getNombre(),
-                sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + sala.getJuez().getApellidoMaterno(),
-                sala.getJuzgado().getNombre(),
-                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(
-                        sala.getBloque().getId(),
-                        sala.getBloque().getHoraInicial(),
-                        sala.getBloque().getHoraFinal()),
-                sala.getEstado()));
+        @Test
+        void getAll_return_page() {
+                List<SalaRecord> listPage = Collections.singletonList(new SalaRecord(
+                                sala.getId(),
+                                sala.getNombre(),
+                                sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " "
+                                                + sala.getJuez().getApellidoMaterno(),
+                                sala.getJuzgado().getNombre(),
+                                new mx.gob.pjpuebla.trials.core.bloques.BloqueRecord(
+                                                sala.getBloque().getId(),
+                                                sala.getBloque().getHoraInicial(),
+                                                sala.getBloque().getHoraFinal()),
+                                sala.getEstado()));
 
-        given(personaService.getAuditor()).willReturn(juez);
-        given(mockSalaRepository.findAllByKeyAndJuzgadoId(any(), any(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()), listPage.size()));
+                given(personaService.getAuditor()).willReturn(juez);
+                given(mockSalaRepository.findAllByKeyAndJuzgadoId("", "", "", "", null,
+                                PageRequest.of(0, listPage.size())))
 
-        Page<SalaRecord> page = salaService.getAll("", PageRequest.of(1, listPage.size()));
-        assertThat(page.getContent())
-                .hasSize(1)
-                .first().hasFieldOrPropertyWithValue("id", sala.getId())
-                .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
-    }
+                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                                                listPage.size()));
 
-    @Test
-    void getById_return_salaRecord() {
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
-                .willReturn(Optional.of(salaRecordResponse));
-        given(salaPersonaRepository.getSecretariosFromSala(sala.getId()))
-                .willReturn(Collections.emptyList());
+                Page<SalaRecord> page = salaService.getAll("", "", "", "",
+                                PageRequest.of(1, listPage.size()));
+                assertThat(page.getContent())
+                                .hasSize(1)
+                                .first().hasFieldOrPropertyWithValue("id", sala.getId())
+                                .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
+        }
 
-        SalaRecordResponse result = salaService.findById(sala.getId());
-        assertThat(result).isOfAnyClassIn(SalaRecordResponse.class)
-                .hasFieldOrPropertyWithValue("id", sala.getId())
-                .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
-    }
+        @Test
+        void getById_return_salaRecord() {
+                List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+                given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
+                                .willReturn(Optional.of(salaRecordResponse));
+                given(salaPersonaRepository.getSecretariosFromSala(sala.getId()))
+                                .willReturn(Collections.emptyList());
 
-    @Test
-    void getById_return_not_found() {
-        Integer id = sala.getId();
-        List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
-                .willReturn(Optional.empty());
+                SalaRecordResponse result = salaService.findById(sala.getId());
+                assertThat(result).isOfAnyClassIn(SalaRecordResponse.class)
+                                .hasFieldOrPropertyWithValue("id", sala.getId())
+                                .hasFieldOrPropertyWithValue("nombre", sala.getNombre());
+        }
 
-        NotFoundException assertThrows = assertThrows(
-                NotFoundException.class,
-                () -> {
-                    salaService.findById(id);
-                });
+        @Test
+        void getById_return_not_found() {
+                Integer id = sala.getId();
+                List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
+                given(mockSalaRepository.findByIdAndEstadoIn(sala.getId(), estados))
+                                .willReturn(Optional.empty());
 
-        assertThat(assertThrows.getMessage()).contains("Sala no encontrada");
-    }
+                NotFoundException assertThrows = assertThrows(
+                                NotFoundException.class,
+                                () -> {
+                                        salaService.findById(id);
+                                });
 
-   
-    @Test
-    void create() {
-    SalaRecordSave salaRecordSave = new SalaRecordSave(
-                sala.getId(),
-                sala.getBloque().getId(),
-                sala.getEstado(),
-                sala.getJuez().getId().intValue(),
-                sala.getJuzgado().getId(),
-                null);
-        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
-                .willReturn(Optional.empty());
-        given(personaRepository.findById(sala.getJuez().getId()))
-                .willReturn(Optional.of(juez));
-        given(bloqueRepository.findById(sala.getBloque().getId()))
-                .willReturn(Optional.of(bloque));
-        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
-                .willReturn(Optional.of(juzgado));
-        given(mockSalaRepository.countByJuzgadoId(sala.getJuzgado().getId()))
-                .willReturn(0L);
-        given(mockSalaRepository.save(any(Sala.class)))
-                .willReturn(sala);
+                assertThat(assertThrows.getMessage()).contains("Sala no encontrada");
+        }
 
-        Integer response = salaService.create(salaRecordSave);
+        @Test
+        void create() {
+                SalaRecordSave salaRecordSave = new SalaRecordSave(
+                                sala.getId(),
+                                sala.getBloque().getId(),
+                                sala.getEstado(),
+                                sala.getJuez().getId().intValue(),
+                                sala.getJuzgado().getId(),
+                                null);
+                given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                                .willReturn(Optional.empty());
+                given(personaRepository.findById(sala.getJuez().getId()))
+                                .willReturn(Optional.of(juez));
+                given(bloqueRepository.findById(sala.getBloque().getId()))
+                                .willReturn(Optional.of(bloque));
+                given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                                .willReturn(Optional.of(juzgado));
+                given(mockSalaRepository.countByJuzgadoId(sala.getJuzgado().getId()))
+                                .willReturn(0L);
+                given(mockSalaRepository.save(any(Sala.class)))
+                                .willReturn(sala);
 
-        assertThat(response).isEqualTo(sala.getId());
-    }
+                Integer response = salaService.create(salaRecordSave);
 
-    @Test
-    void update() {
-           SalaRecordSave salaRecordSave = new SalaRecordSave(
-                sala.getId(),
-                sala.getBloque().getId(),
-                sala.getEstado(),
-                sala.getJuez().getId().intValue(),
-                sala.getJuzgado().getId(),
-                null);
+                assertThat(response).isEqualTo(sala.getId());
+        }
 
-        given(mockSalaRepository.findById(sala.getId()))
-                .willReturn(Optional.of(sala));
-        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
-                .willReturn(Optional.empty());
-        given(personaRepository.findById(sala.getJuez().getId()))
-                .willReturn(Optional.of(juez));
-        given(bloqueRepository.findById(sala.getBloque().getId()))
-                .willReturn(Optional.of(bloque));
-        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
-                .willReturn(Optional.of(juzgado));
+        @Test
+        void update() {
+                SalaRecordSave salaRecordSave = new SalaRecordSave(
+                                sala.getId(),
+                                sala.getBloque().getId(),
+                                sala.getEstado(),
+                                sala.getJuez().getId().intValue(),
+                                sala.getJuzgado().getId(),
+                                null);
 
-        given(mockSalaRepository.getReferenceById(sala.getId()))
-                .willReturn(sala);
-        given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
-                .willReturn(Collections.emptyList());
-        given(salaPersonaRepository.saveAll(any()))
-                .willReturn(Collections.emptyList());
-        given(mockSalaRepository.save(any(Sala.class)))
-                .willReturn(sala);
+                given(mockSalaRepository.findById(sala.getId()))
+                                .willReturn(Optional.of(sala));
+                given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                                .willReturn(Optional.empty());
+                given(personaRepository.findById(sala.getJuez().getId()))
+                                .willReturn(Optional.of(juez));
+                given(bloqueRepository.findById(sala.getBloque().getId()))
+                                .willReturn(Optional.of(bloque));
+                given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                                .willReturn(Optional.of(juzgado));
 
-        Integer response = salaService.update(salaRecordSave);
+                given(mockSalaRepository.getReferenceById(sala.getId()))
+                                .willReturn(sala);
+                given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
+                                .willReturn(Collections.emptyList());
+                given(salaPersonaRepository.saveAll(any()))
+                                .willReturn(Collections.emptyList());
+                given(mockSalaRepository.save(any(Sala.class)))
+                                .willReturn(sala);
 
-        assertThat(response).isEqualTo(sala.getId());
-    }
+                Integer response = salaService.update(salaRecordSave);
 
-    @Test
-    void update_return_optimistic_exception() {
-           SalaRecordSave salaRecordSave = new SalaRecordSave(
-                sala.getId(),
-                sala.getBloque().getId(),
-                sala.getEstado(),
-                sala.getJuez().getId().intValue(),
-                sala.getJuzgado().getId(),
-                null);
-        given(mockSalaRepository.findById(sala.getId()))
-                .willReturn(Optional.of(sala));
-        given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
-                .willReturn(Optional.empty());
-        given(personaRepository.findById(sala.getJuez().getId()))
-                .willReturn(Optional.of(juez));
-        given(bloqueRepository.findById(sala.getBloque().getId()))
-                .willReturn(Optional.of(bloque));
-        given(juzgadoRepository.findById(sala.getJuzgado().getId()))
-                .willReturn(Optional.of(juzgado));
-    
-        given(mockSalaRepository.getReferenceById(sala.getId()))
-                .willReturn(sala);
-        given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
-                .willReturn(Collections.emptyList());
-        given(salaPersonaRepository.saveAll(any()))
-                .willReturn(Collections.emptyList());
-        given(mockSalaRepository.save(any(Sala.class)))
-                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
-        
-        InvalidVersionException assertThrows = assertThrows(
-                InvalidVersionException.class,
-                () -> {
-                    salaService.update(salaRecordSave);
-                });
+                assertThat(response).isEqualTo(sala.getId());
+        }
 
-        assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
-    }
+        @Test
+        void update_return_optimistic_exception() {
+                SalaRecordSave salaRecordSave = new SalaRecordSave(
+                                sala.getId(),
+                                sala.getBloque().getId(),
+                                sala.getEstado(),
+                                sala.getJuez().getId().intValue(),
+                                sala.getJuzgado().getId(),
+                                null);
+                given(mockSalaRepository.findById(sala.getId()))
+                                .willReturn(Optional.of(sala));
+                given(mockSalaRepository.findByJuezId(sala.getJuez().getId().intValue()))
+                                .willReturn(Optional.empty());
+                given(personaRepository.findById(sala.getJuez().getId()))
+                                .willReturn(Optional.of(juez));
+                given(bloqueRepository.findById(sala.getBloque().getId()))
+                                .willReturn(Optional.of(bloque));
+                given(juzgadoRepository.findById(sala.getJuzgado().getId()))
+                                .willReturn(Optional.of(juzgado));
 
-    @Test
-    void testAsignarSalaAudiencia(){
-        BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        TipoAudiencia tipoAudiencia = new TipoAudiencia();
-        tipoAudiencia.setNombre("INICIAL");
+                given(mockSalaRepository.getReferenceById(sala.getId()))
+                                .willReturn(sala);
+                given(salaPersonaRepository.findAllBySalaIdWithPersona(sala.getId()))
+                                .willReturn(Collections.emptyList());
+                given(salaPersonaRepository.saveAll(any()))
+                                .willReturn(Collections.emptyList());
+                given(mockSalaRepository.save(any(Sala.class)))
+                                .willThrow(org.springframework.dao.OptimisticLockingFailureException.class);
 
-        cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+                InvalidVersionException assertThrows = assertThrows(
+                                InvalidVersionException.class,
+                                () -> {
+                                        salaService.update(salaRecordSave);
+                                });
 
-        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
-        sala.setBloque(bloque);
+                assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
+        }
 
-        List<Sala> salas = Arrays.asList(sala);
-        List<Bloque> bloques = Arrays.asList(bloque);
+        @Test
+        void testAsignarSalaAudiencia() {
+                BloqueCitaItem cita = new BloqueCitaItem();
+                LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 00));
+                TipoAudiencia tipoAudiencia = new TipoAudiencia();
+                tipoAudiencia.setNombre("INICIAL");
 
-        given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
-        given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
-        given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
-        lenient().when(eventoService.siguienteDiaHabil(any(), any(), any())).thenReturn(fechaAudiencia.toLocalDate());
+                cita.setNumCitas(1);
+                cita.setHoraCitas(LocalTime.of(8, 30, 00));
 
+                bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+                sala.setBloque(bloque);
 
-        SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
+                List<Sala> salas = Arrays.asList(sala);
+                List<Bloque> bloques = Arrays.asList(bloque);
 
-        assertThat(salaAudienciaRecord)
-            .isNotNull()
-            .hasFieldOrPropertyWithValue("id", sala.getId())
-            .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
-            .hasFieldOrPropertyWithValue("juezId", juez.getId())
-            .hasFieldOrPropertyWithValue("juez", juez.getNombre())
-            .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
-            .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
-    }
+                given(eventoService.esDiaInHabil(any(), any(), any()))
+                                .willReturn(FinSemana.esInhabil(fechaAudiencia.toLocalDate()));
+                given(bloqueRepository.findBloquesSalasJuzgado(any())).willReturn(bloques);
+                given(mockSalaRepository.findSalaDisponible(any(), any(), any())).willReturn(salas);
+                lenient().when(eventoService.siguienteDiaHabil(any(), any(), any()))
+                                .thenReturn(fechaAudiencia.toLocalDate());
 
-    @Test
-    void testSalaDisponible(){
-        BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        TipoAudiencia tipoAudiencia = new TipoAudiencia();
-        tipoAudiencia.setNombre("INICIAL");
+                SalaAudienciaRecord salaAudienciaRecord = salaService.asignarSala(juzgado, tipoAudiencia);
 
-        cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+                assertThat(salaAudienciaRecord)
+                                .isNotNull()
+                                .hasFieldOrPropertyWithValue("id", sala.getId())
+                                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
+                                .hasFieldOrPropertyWithValue("juezId", juez.getId())
+                                .hasFieldOrPropertyWithValue("juez", juez.getNombre())
+                                .hasFieldOrPropertyWithValue("bloqueId", bloque.getId())
+                                .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
+        }
 
-        bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
-        sala.setBloque(bloque);
+        @Test
+        void testSalaDisponible() {
+                BloqueCitaItem cita = new BloqueCitaItem();
+                LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 00));
+                TipoAudiencia tipoAudiencia = new TipoAudiencia();
+                tipoAudiencia.setNombre("INICIAL");
 
-        List<Sala> salas = Arrays.asList(sala);
+                cita.setNumCitas(1);
+                cita.setHoraCitas(LocalTime.of(8, 30, 00));
 
-        given(mockSalaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)).willReturn(salas);
+                bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+                sala.setBloque(bloque);
 
-        Sala salaDisponible = salaService.findSalaDisponible(fechaAudiencia, bloque, juzgado);
-    
-        assertThat(salaDisponible)
-            .isNotNull()
-            .hasFieldOrPropertyWithValue("bloque", sala.getBloque());
-        
-        List<BloqueCitaItem> citas = salaDisponible.getBloque().getData().getCitas();
+                List<Sala> salas = Arrays.asList(sala);
 
-        assertThat(citas).hasSize(1)
-        .anyMatch(c -> c.getHoraCitas() == cita.getHoraCitas());
-    }
+                given(mockSalaRepository.findSalaDisponible(fechaAudiencia, bloque, juzgado)).willReturn(salas);
 
-    @Test
-    void testHorarioDisponible(){
-        LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-        given(mockSalaRepository.checkHoraDisponible(fechaAudiencia, sala)).willReturn(Optional.of(sala));
+                Sala salaDisponible = salaService.findSalaDisponible(fechaAudiencia, bloque, juzgado);
 
-        assertThat(salaService.checkHoraDisponible(fechaAudiencia, sala)).isTrue();
-    }
+                assertThat(salaDisponible)
+                                .isNotNull()
+                                .hasFieldOrPropertyWithValue("bloque", sala.getBloque());
 
-   @Test
-   void testAsignarAudiencia(){
-       BloqueCitaItem cita = new BloqueCitaItem();
-       LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
-       TipoAudiencia tipoAudiencia = new TipoAudiencia();
-       tipoAudiencia.setNombre("INICIAL");
+                List<BloqueCitaItem> citas = salaDisponible.getBloque().getData().getCitas();
 
-       cita.setNumCitas(1);
-       cita.setHoraCitas(LocalTime.of(8,30,00));
+                assertThat(citas).hasSize(1)
+                                .anyMatch(c -> c.getHoraCitas() == cita.getHoraCitas());
+        }
 
-       bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
-       sala.setBloque(bloque);
+        @Test
+        void testHorarioDisponible() {
+                LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 00));
+                given(mockSalaRepository.checkHoraDisponible(fechaAudiencia, sala)).willReturn(Optional.of(sala));
 
-       given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(Boolean.TRUE);
-       given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));
-       lenient().when(eventoService.siguienteDiaHabil(any(), any(), any())).thenReturn(fechaAudiencia.toLocalDate());
+                assertThat(salaService.checkHoraDisponible(fechaAudiencia, sala)).isTrue();
+        }
 
-       SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
+        @Test
+        void testAsignarAudiencia() {
+                BloqueCitaItem cita = new BloqueCitaItem();
+                LocalDateTime fechaAudiencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 00));
+                TipoAudiencia tipoAudiencia = new TipoAudiencia();
+                tipoAudiencia.setNombre("INICIAL");
 
-       assertThat(salaAudiencia).isNotNull()
-       .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
-   }
+                cita.setNumCitas(1);
+                cita.setHoraCitas(LocalTime.of(8, 30, 00));
 
-    @Test
-    void testGetAllbyJuzgado() {
-        Audiencia audiencia = new Audiencia();
-        audiencia.setId(1);
-        Juzgado juzgado = new Juzgado();
-        juzgado.setNombre("Juzgado 1");
-        audiencia.setCarpeta(new Carpeta());
-        audiencia.getCarpeta().setJuzgado(juzgado);
+                bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
+                sala.setBloque(bloque);
 
-        given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
-        given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "")).willReturn(Collections.singletonList(sala));
+                given(eventoService.esDiaInHabil(any(), any(), any())).willReturn(Boolean.TRUE);
+                given(mockSalaRepository.checkHoraDisponible(any(), any())).willReturn(Optional.of(sala));
+                lenient().when(eventoService.siguienteDiaHabil(any(), any(), any()))
+                                .thenReturn(fechaAudiencia.toLocalDate());
 
-        List<SalaRecord> result = salaService.getSalasByJuzgado("", 1);
+                SalaAudienciaRecord salaAudiencia = salaService.asignarAudiencia(sala, tipoAudiencia);
 
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0))
-                .hasFieldOrPropertyWithValue("id", sala.getId())
-                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
-                .hasFieldOrPropertyWithValue("juez", sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno() + " " + (sala.getJuez().getApellidoMaterno() != null ? sala.getJuez().getApellidoMaterno() : ""))
-                .hasFieldOrPropertyWithValue("juzgado", sala.getJuzgado().getNombre())
-                .hasFieldOrPropertyWithValue("estado", sala.getEstado());
-    }
+                assertThat(salaAudiencia).isNotNull()
+                                .hasFieldOrPropertyWithValue("fechaAudiencia", fechaAudiencia);
+        }
 
+        @Test
+        void testGetAllbyJuzgado() {
+                Audiencia audiencia = new Audiencia();
+                audiencia.setId(1);
+                Juzgado juzgado = new Juzgado();
+                juzgado.setNombre("Juzgado 1");
+                audiencia.setCarpeta(new Carpeta());
+                audiencia.getCarpeta().setJuzgado(juzgado);
+
+                given(audienciaRepository.findById(1)).willReturn(Optional.of(audiencia));
+                given(mockSalaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, ""))
+                                .willReturn(Collections.singletonList(sala));
+
+                List<SalaRecord> result = salaService.getSalasByJuzgado("", 1);
+
+                assertThat(result).isNotNull();
+                assertThat(result).hasSize(1);
+                assertThat(result.get(0))
+                                .hasFieldOrPropertyWithValue("id", sala.getId())
+                                .hasFieldOrPropertyWithValue("nombre", sala.getNombre())
+                                .hasFieldOrPropertyWithValue("juez",
+                                                sala.getJuez().getNombre() + " " + sala.getJuez().getApellidoPaterno()
+                                                                + " "
+                                                                + (sala.getJuez().getApellidoMaterno() != null
+                                                                                ? sala.getJuez().getApellidoMaterno()
+                                                                                : ""))
+                                .hasFieldOrPropertyWithValue("juzgado", sala.getJuzgado().getNombre())
+                                .hasFieldOrPropertyWithValue("estado", sala.getEstado());
+        }
 
 }

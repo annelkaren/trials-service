@@ -22,6 +22,12 @@ public interface ConceptoRepository extends JpaRepository<Concepto, Integer> {
     @Query(value = "SELECT c FROM Concepto c "
             + "LEFT JOIN FETCH c.tipoJuicio tj "
             + "WHERE c.estado IN :estados "
-            + "AND (lower(c.nombre) LIKE %:key% OR LOWER(tj.nombre) LIKE %:key%)")
-    Page<Concepto> findAllConceptos(String key, List<Estado> estados, Pageable pageable);
+            + "AND (:key = '' OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :key, '%')) "
+            + "     OR CAST(c.dias AS string) LIKE CONCAT('%', :key, '%') "
+            + "     OR LOWER(tj.nombre) LIKE LOWER(CONCAT('%', :key, '%'))) "
+            + "AND (:nombre = '' OR LOWER(c.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) "
+            + "AND (:dias IS NULL OR c.dias = :dias) "
+            + "AND (:nombreTipoJuicio = '' OR LOWER(tj.nombre) LIKE LOWER(CONCAT('%', :nombreTipoJuicio, '%')))")
+    Page<Concepto> findAllConceptos(String key, List<Estado> estados, Pageable pageable, String nombre, Integer dias,
+            String nombreTipoJuicio);
 }

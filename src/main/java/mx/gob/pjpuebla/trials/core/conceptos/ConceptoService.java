@@ -44,7 +44,8 @@ public class ConceptoService {
                 .orElseThrow(() -> new NotFoundException("Carpeta no encontrada", "CarpetaId" + carpetaId));
 
         return conceptoRepository
-                .findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(), List.of("Adjuntar", "Distribución", "RESGUARDO"))
+                .findAllByTipoJuicio_IdOrNombreIn(carpeta.getTipoJuicio().getId(),
+                        List.of("Adjuntar", "Distribución", "RESGUARDO"))
                 .stream()
                 .map(concepto -> new ConceptoRecordResponse(
                         concepto.getId(),
@@ -59,26 +60,34 @@ public class ConceptoService {
     public ConceptoRecordResponse findById(Integer id) {
         Concepto concepto = conceptoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(CONCEPTO_NOT_FOUND, "conceptoId"));
-        return new ConceptoRecordResponse(concepto.getId(), concepto.getNombre(), concepto.getDias(), concepto.getEstado(), concepto.getRoles());
+        return new ConceptoRecordResponse(concepto.getId(), concepto.getNombre(), concepto.getDias(),
+                concepto.getEstado(), concepto.getRoles());
     }
 
-    public Page<ConceptoRecord> getAllConceptos(Pageable pageable, String key) {
+    public Page<ConceptoRecord> getAllConceptos(Pageable pageable, String key, String nombre, Integer dias,
+            String nombreTipoJuicio) {
         key = (key != null) ? key.toLowerCase() : "";
+        nombre = (nombre != null) ? nombre.toLowerCase() : "";
+        nombreTipoJuicio = (nombreTipoJuicio != null) ? nombreTipoJuicio.toLowerCase() : "";
+        dias = (dias != null) ? dias : null;
+
         List<Estado> status = SearchLikeEnum.searchByEstadoEnum(key);
+
         if (status.isEmpty()) {
             status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
         } else {
             key = "";
         }
-        Page<Concepto> page = conceptoRepository.findAllConceptos(key, status, pageable);
+        Page<Concepto> page = conceptoRepository.findAllConceptos(key, status, pageable, nombre, dias,
+                nombreTipoJuicio);
+
         List<ConceptoRecord> list = page.stream()
                 .map(c -> new ConceptoRecord(
                         c.getId(),
                         c.getNombre(),
                         c.getDias(),
                         c.getTipoJuicio() != null ? c.getTipoJuicio().getNombre() : "",
-                        c.getEstado()
-                ))
+                        c.getEstado()))
                 .toList();
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
@@ -142,9 +151,11 @@ public class ConceptoService {
         Integer tipoJuicioId = tipoJuicioIds.iterator().next();
 
         Concepto existingConcepto = conceptoRepository.findById(updatedConcepto.id())
-                .orElseThrow(() -> new EntityNotFoundException("El concepto con ID " + updatedConcepto.id() + " no se encontró."));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "El concepto con ID " + updatedConcepto.id() + " no se encontró."));
         TipoJuicio tipoJuicio = tipoJuicioRepository.findById(tipoJuicioId)
-                .orElseThrow(() -> new EntityNotFoundException("El tipo de juicio con ID " + tipoJuicioId + " no se encontró."));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "El tipo de juicio con ID " + tipoJuicioId + " no se encontró."));
 
         existingConcepto.setNombre(updatedConcepto.nombre());
         existingConcepto.setDias(updatedConcepto.dias());
@@ -164,8 +175,7 @@ public class ConceptoService {
                 savedConcepto.getNombre(),
                 savedConcepto.getDias(),
                 savedConcepto.getTipoJuicio() != null ? savedConcepto.getTipoJuicio().getNombre() : "",
-                savedConcepto.getEstado()
-        );
+                savedConcepto.getEstado());
     }
 
     public ConceptoRecordJuicio findByConceptoById(Integer id) {
