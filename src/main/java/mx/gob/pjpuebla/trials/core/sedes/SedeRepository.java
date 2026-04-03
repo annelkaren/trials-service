@@ -86,12 +86,21 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
                 )
                 FROM Sede s
                 LEFT JOIN s.domicilio d
-                WHERE s.nombre LIKE CONCAT('%', :nombre, '%')
+                WHERE (:key = ''
+                    OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.calle, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.exterior, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.colonia, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.estadoRepublica, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.codigoPostal, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(s.telefono, '')) LIKE LOWER(CONCAT('%', :key, '%')))
+                  AND s.nombre LIKE CONCAT('%', :nombre, '%')
                   AND (d.calle IS NULL OR d.calle LIKE CONCAT('%', :direccion, '%'))
                   AND (s.telefono IS NULL OR s.telefono LIKE CONCAT('%', :telefono, '%'))
                   AND s.estado IN :estados
             """)
     Page<SedeDomicilioRecordResponse> findAllSedeDomicilioWithPagination(
+            @Param("key") String key,
             @Param("nombre") String nombre,
             @Param("direccion") String direccion,
             @Param("telefono") String telefono,

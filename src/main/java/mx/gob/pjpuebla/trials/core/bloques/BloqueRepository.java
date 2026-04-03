@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalTime;
@@ -16,6 +17,15 @@ import java.util.Optional;
 public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
 
     Page<Bloque> findByHoraInicial(LocalTime horaInicial, Pageable pageable);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.core.bloques.BloqueRecordResponse(b.id, b.horaInicial, b.horaFinal, b.estado)
+            FROM Bloque b
+            WHERE :key = ''
+                OR CAST(b.horaInicial AS string) LIKE CONCAT('%', :key, '%')
+                OR CAST(b.horaFinal AS string) LIKE CONCAT('%', :key, '%')
+            """)
+    Page<BloqueRecordResponse> findAllByKey(@Param("key") String key, Pageable pageable);
 
     @Query("""
             SELECT

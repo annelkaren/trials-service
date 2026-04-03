@@ -63,13 +63,10 @@ public class JuzgadoService {
     @Transactional(readOnly = true)
     public Page<JuzgadoRecordItem> getAll(String key, Pageable pageable) {
         String finalKey = (key != null) ? StringUtils.stripAccents(key).toLowerCase() : "";
+        List<Estado> estados = List.of(Estado.ACTIVE, Estado.INACTIVE);
 
-        Page<Juzgado> page = juzgadoRepository
-                .findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
+        Page<Juzgado> page = juzgadoRepository.findAll(finalKey, estados, pageable);
         List<JuzgadoRecordItem> list = page.getContent().stream()
-                .filter(juzgado -> finalKey.isEmpty() || StringUtils.stripAccents(juzgado.getNombre())
-                        .toLowerCase()
-                        .contains(finalKey))
                 .map(juzgado -> new JuzgadoRecordItem(
                         juzgado.getId(),
                         juzgado.getNombre(),

@@ -19,9 +19,13 @@ import java.util.Optional;
 public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
 
         @Query(value = "SELECT j FROM Juzgado j "
-                        + "JOIN FETCH j.materia m "
+                        + "LEFT JOIN FETCH j.materia m "
                         + "WHERE j.estado IN :estados "
-                        + "AND (lower(j.nombre) LIKE %:key% OR lower(m.nombre) LIKE %:key%)")
+                        + "AND (:key = '' OR lower(j.nombre) LIKE %:key% OR (m IS NOT NULL AND lower(m.nombre) LIKE %:key%))",
+                        countQuery = "SELECT COUNT(j) FROM Juzgado j "
+                        + "LEFT JOIN j.materia m "
+                        + "WHERE j.estado IN :estados "
+                        + "AND (:key = '' OR lower(j.nombre) LIKE %:key% OR (m IS NOT NULL AND lower(m.nombre) LIKE %:key%))")
         Page<Juzgado> findAll(String key, List<Estado> estados, Pageable pageable);
 
         Optional<Juzgado> findByIdAndEstadoIn(Integer id, List<Estado> estados);

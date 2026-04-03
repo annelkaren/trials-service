@@ -70,7 +70,11 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
                         LEFT JOIN o.juzgados j
                         LEFT JOIN o.tipoOficialia t
                         LEFT JOIN o.sede s
-                        WHERE :key = :key
+                        WHERE (:key = ''
+                            OR LOWER(COALESCE(o.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(m.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(t.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%')))
                         AND (COALESCE(:nombre, '') = '' OR LOWER(o.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
                         AND (COALESCE(:materia, '') = '' OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :materia, '%')))
                         AND (COALESCE(:tipo, '') = '' OR LOWER(t.nombre) LIKE LOWER(CONCAT('%', :tipo, '%')))
@@ -82,7 +86,11 @@ public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
                         LEFT JOIN o.sede s
                         LEFT JOIN o.juzgados j
                         LEFT JOIN o.tipoOficialia t
-                        WHERE :key = :key
+                        WHERE (:key = ''
+                            OR LOWER(COALESCE(o.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(m.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(t.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                            OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%')))
                         AND (COALESCE(:nombre, '') = '' OR LOWER(o.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
                         AND (COALESCE(:materia, '') = '' OR LOWER(m.nombre) LIKE LOWER(CONCAT('%', :materia, '%')))
                         AND (COALESCE(:tipo, '') = '' OR LOWER(t.nombre) LIKE LOWER(CONCAT('%', :tipo, '%')))

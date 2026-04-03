@@ -115,7 +115,15 @@ public interface InstitucionRepository extends JpaRepository<Institucion, Intege
                 )
             FROM Institucion i
             JOIN i.domicilio d
-            WHERE :key = :key
+            WHERE (:key = ''
+                OR LOWER(COALESCE(i.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.calle, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.colonia, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.exterior, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.municipio, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.estadoRepublica, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(d.codigoPostal, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                OR LOWER(COALESCE(i.telefono, '')) LIKE LOWER(CONCAT('%', :key, '%')))
             AND (COALESCE(:nombre, '') = '' OR LOWER(i.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
             AND (COALESCE(:direccion, '') = '' OR LOWER(d.calle) LIKE LOWER(CONCAT('%', :direccion, '%')))
             AND (COALESCE(:telefono, '') = '' OR LOWER(i.telefono) LIKE LOWER(CONCAT('%', :telefono, '%')))
