@@ -29,132 +29,138 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class ConceptoResourceTest {
 
-    @MockBean
-    private ConceptoService mockConceptoService;
+        @MockBean
+        private ConceptoService mockConceptoService;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    private ConceptoRecordResponse conceptoRecordResponse;
+        private ConceptoRecordResponse conceptoRecordResponse;
 
-    @BeforeEach
-    void setUp() {
-        conceptoRecordResponse = ConceptoSetUp.createConceptoRecordResponse();
-    }
+        @BeforeEach
+        void setUp() {
+                conceptoRecordResponse = ConceptoSetUp.createConceptoRecordResponse();
+        }
 
-    @Test
-    void getAll_success() throws Exception {
-        List<ConceptoRecordResponse> conceptosList = List.of(conceptoRecordResponse);
+        @Test
+        void getAll_success() throws Exception {
+                List<ConceptoRecordResponse> conceptosList = List.of(conceptoRecordResponse);
 
-        given(mockConceptoService.getAll(1))
-                .willReturn(conceptosList);
+                given(mockConceptoService.getAll(1))
+                                .willReturn(conceptosList);
 
-        mockMvc.perform(
-                get("/api/core/conceptos/carpetaId/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/conceptos/carpetaId/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_success() throws Exception {
-        given(mockConceptoService.findById(anyInt()))
-                .willReturn(conceptoRecordResponse);
+        @Test
+        void getById_success() throws Exception {
+                given(mockConceptoService.findById(anyInt()))
+                                .willReturn(conceptoRecordResponse);
 
-        mockMvc.perform(
-                get("/api/core/conceptos/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/conceptos/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockConceptoService.findById(anyInt()))
-                .willThrow(NotFoundException.class);
+        @Test
+        void getById_not_found() throws Exception {
+                given(mockConceptoService.findById(anyInt()))
+                                .willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                get("/api/core/conceptos/0")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNotFound());
-    }
+                mockMvc.perform(
+                                get("/api/core/conceptos/0")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockConceptoService.findById(anyInt()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+        @Test
+        void getById_invalid() throws Exception {
+                given(mockConceptoService.findById(anyInt()))
+                                .willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                get("/api/core/conceptos/X")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                get("/api/core/conceptos/X")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void getAllConceptos_success() throws Exception {
+        @Test
+        void getAllConceptos_success() throws Exception {
 
-        ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Distribución", 3, "Familiar (Tradicional)", Estado.ACTIVE);
-        List<ConceptoRecord> conceptosList = List.of(conceptoRecord);
+                ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Distribución", 3, "Familiar (Tradicional)",
+                                Estado.ACTIVE);
+                List<ConceptoRecord> conceptosList = List.of(conceptoRecord);
 
-        given(mockConceptoService.getAllConceptos(any(Pageable.class), anyString()))
-                .willReturn(new PageImpl<>(conceptosList));
+                given(mockConceptoService.getAllConceptos(any(Pageable.class), anyString(), anyString(), any(Integer.class),
+                                anyString()))
+                                .willReturn(new PageImpl<>(conceptosList));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/core/conceptos/registros")
-                        .param("nombre", "nombre")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(MockMvcRequestBuilders.get("/api/core/conceptos/registros")
+                                .param("nombre", "nombre")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void updateStatus_success() throws Exception {
-        ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Adjuntar", 1, "Tipo Juicio", Estado.ACTIVE);
+        @Test
+        void updateStatus_success() throws Exception {
+                ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Adjuntar", 1, "Tipo Juicio", Estado.ACTIVE);
 
-        given(mockConceptoService.updateStatus(anyInt(), anyInt())).willReturn(conceptoRecord);
+                given(mockConceptoService.updateStatus(anyInt(), anyInt())).willReturn(conceptoRecord);
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/core/conceptos/1/status/0")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(MockMvcRequestBuilders.patch("/api/core/conceptos/1/status/0")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void delete_success() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/core/conceptos/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+        @Test
+        void delete_success() throws Exception {
+                mockMvc.perform(MockMvcRequestBuilders.delete("/api/core/conceptos/1")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void create_success() throws Exception {
-        ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Nuevo concepto", 1, "Tipo Juicio", Estado.ACTIVE);
+        @Test
+        void create_success() throws Exception {
+                ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Nuevo concepto", 1, "Tipo Juicio",
+                                Estado.ACTIVE);
 
-        given(mockConceptoService.createConcepto(any(ConceptoBulkRequest.class))).willReturn(List.of(conceptoRecord));
+                given(mockConceptoService.createConcepto(any(ConceptoBulkRequest.class)))
+                                .willReturn(List.of(conceptoRecord));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/core/conceptos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"Nuevo concepto\",\"dias\":1,\"estado\":\"ACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(MockMvcRequestBuilders.post("/api/core/conceptos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"nombre\":\"Nuevo concepto\",\"dias\":1,\"estado\":\"ACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void findByIdConceptoJuicio_success() throws Exception {
-        ConceptoRecordJuicio conceptoRecordJuicio = new ConceptoRecordJuicio(1, "Adjuntar", "Tipo Juicio", 1, Estado.ACTIVE, 1, 1);
+        @Test
+        void findByIdConceptoJuicio_success() throws Exception {
+                ConceptoRecordJuicio conceptoRecordJuicio = new ConceptoRecordJuicio(1, "Adjuntar", "Tipo Juicio", 1,
+                                Estado.ACTIVE, 1, 1);
 
-        given(mockConceptoService.findByConceptoById(anyInt())).willReturn(conceptoRecordJuicio);
+                given(mockConceptoService.findByConceptoById(anyInt())).willReturn(conceptoRecordJuicio);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/core/conceptos/conceptoJuicio/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(MockMvcRequestBuilders.get("/api/core/conceptos/conceptoJuicio/1")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_success() throws Exception {
-        ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Concepto actualizado", 10, "Tipo Juicio", Estado.INACTIVE);
+        @Test
+        void update_success() throws Exception {
+                ConceptoRecord conceptoRecord = new ConceptoRecord(1, "Concepto actualizado", 10, "Tipo Juicio",
+                                Estado.INACTIVE);
 
-        given(mockConceptoService.updateConcepto(any(ConceptoBulkRequest.class))).willReturn(conceptoRecord);
+                given(mockConceptoService.updateConcepto(any(ConceptoBulkRequest.class))).willReturn(conceptoRecord);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/api/core/conceptos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":1,\"nombre\":\"Concepto actualizado\",\"dias\":10,\"estado\":\"INACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(MockMvcRequestBuilders.put("/api/core/conceptos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"id\":1,\"nombre\":\"Concepto actualizado\",\"dias\":10,\"estado\":\"INACTIVE\",\"tipoJuicios\":[{\"id\":1}]}")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 }

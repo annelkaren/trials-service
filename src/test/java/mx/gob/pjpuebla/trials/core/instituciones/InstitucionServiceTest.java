@@ -77,7 +77,8 @@ class InstitucionServiceTest {
                                 "institución prueba",
                                 domicilio,
                                 "1234567894",
-                                null);
+                                null,
+                                Estado.ACTIVE);
 
                 Page<InstitucionRecord> pageMock = new PageImpl<>(
                                 List.of(record),
@@ -87,12 +88,22 @@ class InstitucionServiceTest {
                 Pageable pageable = PageRequest.of(0, 10);
 
                 given(mockInstitucionRepository.findAllInstituciones(
+                                anyString(), // key
                                 anyString(), // nombre
-                                any(Pageable.class), // pageable
-                                anyList() // estados
+                                anyString(), // direccion
+                                anyString(), // telefono
+                                any(List.class), // estados
+                                any(Pageable.class) // pageable
+
                 )).willReturn(pageMock); // tu page de prueba
 
-                Page<InstitucionRecord> page = mockInstitucionService.getAll(institucion, pageable);
+                Page<InstitucionRecord> page = mockInstitucionService.getAll(
+                                "",
+                                "",
+                                "",
+                                "",
+                                Estado.ACTIVE,
+                                pageable);
 
                 assertThat(page.getContent())
                                 .hasSize(1)
@@ -224,7 +235,8 @@ class InstitucionServiceTest {
                                 "institución prueba",
                                 domicilio,
                                 "1234567894",
-                                "Pública");
+                                "Pública",
+                                Estado.ACTIVE);
 
                 Page<InstitucionRecord> mockedPage = new PageImpl<>(
                                 List.of(record),
@@ -234,10 +246,8 @@ class InstitucionServiceTest {
                 Pageable pageable = PageRequest.of(0, 10);
 
                 // Act
-                given(mockInstitucionRepository.findAllInstituciones(
-                                anyString(),
-                                any(Pageable.class),
-                                anyList())).willReturn(mockedPage);
+                given(mockInstitucionRepository.findAllInstituciones(null, null, null, null, null, pageable))
+                                .willReturn(mockedPage);
 
                 Page<InstitucionRecord> result = mockInstitucionService.getAllByEstadoAutocomplete(institucion,
                                 pageable);

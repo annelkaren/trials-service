@@ -5,12 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalTime;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,9 +20,9 @@ public class BloqueResource {
     @GetMapping
     public Page<BloqueRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "horaInicial", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaInicial) {
+            @RequestParam(value = "key", required = false) String key) {
 
-        return this.bloqueService.getAll(new Bloque().setHoraInicial(horaInicial), pageable);
+        return this.bloqueService.getAll(key, pageable);
     }
 
     @GetMapping("/{id}")

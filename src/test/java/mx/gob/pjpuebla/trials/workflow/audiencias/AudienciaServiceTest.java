@@ -69,6 +69,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -268,10 +269,23 @@ class AudienciaServiceTest {
         );
         Page<AudienciasGeneralesResponseRecord> pageAudiencias =
                 new PageImpl<>(Collections.singletonList(responseRecord), PageRequest.of(0, 10), 1);
-        when(audienciaRepository.findAudienciasGenerales(any(Pageable.class), eq(juzgado), anyString(), anyList(), anyBoolean()))
+        when(audienciaRepository.findAudienciasGenerales(
+                any(Pageable.class),
+                eq(juzgado),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(String.class),
+                nullable(EstatusAudiencia.class),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                anyList(),
+                anyBoolean()))
                 .thenReturn(pageAudiencias);
 
-        Page<AudienciasGeneralesResponseRecord> result = audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
+        Page<AudienciasGeneralesResponseRecord> result = audienciaService.getAllAudienciasGenerales(
+                "", null, null, null, null, null, null, null, PageRequest.of(0, 10));
         assertThat(result.getContent()).hasSize(1)
                 .hasSize(1)
                 .first()
@@ -297,11 +311,24 @@ class AudienciaServiceTest {
                 .thenReturn(Collections.emptyList());
 
         Page<AudienciasGeneralesResponseRecord> result =
-                audienciaService.getAllAudienciasGenerales("", PageRequest.of(0, 10));
+                audienciaService.getAllAudienciasGenerales("", null, null, null, null, null, null, null,
+                        PageRequest.of(0, 10));
 
         assertThat(result.getContent()).isEmpty();
         verify(audienciaRepository, never())
-                .findAudienciasGenerales(any(Pageable.class), any(Juzgado.class), anyString(), anyList(), anyBoolean());
+                .findAudienciasGenerales(
+                        any(Pageable.class),
+                        any(Juzgado.class),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        anyString(),
+                        any(),
+                        any(LocalDateTime.class),
+                        any(LocalDateTime.class),
+                        anyList(),
+                        anyBoolean());
     }
 
     @Test

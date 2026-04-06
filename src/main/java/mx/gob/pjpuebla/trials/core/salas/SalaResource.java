@@ -29,14 +29,15 @@ public class SalaResource {
     public Page<SalaRecord> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
-            @RequestParam(value = "nombre", required = false) String nombre) {
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "juez", required = false) String juez,
+            @RequestParam(value = "juzgado", required = false) String juzgado) {
 
-        String searchKey = (key != null) ? key : nombre;
-        return this.salaService.getAll(searchKey, pageable);
+        return this.salaService.getAll(key, nombre, juez, juzgado, pageable);
     }
 
     @GetMapping("/allByJuzgado")
-    public List<SalaRecord> getAllByJuzgado(){
+    public List<SalaRecord> getAllByJuzgado() {
         return salaService.getAllByJuzgado();
     }
 
@@ -61,7 +62,5 @@ public class SalaResource {
             @PathVariable Integer idAudiencia) {
         return this.salaService.getSalasByJuzgado(nombre, idAudiencia);
     }
-
-
 
 }

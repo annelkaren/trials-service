@@ -13,20 +13,25 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+
 /**
  * Repositorio para la entidad {@link Sede}.
- * Proporciona métodos para interactuar con la base de datos relacionados con las sedes y sus domicilios asociados.
+ * Proporciona métodos para interactuar con la base de datos relacionados con
+ * las sedes y sus domicilios asociados.
  */
 @Repository
 public interface SedeRepository extends JpaRepository<Sede, Integer> {
 
     /**
-     * Recupera una sede por su ID y su estado, devolviendo un {@link SedeRecord} con los datos completos.
+     * Recupera una sede por su ID y su estado, devolviendo un {@link SedeRecord}
+     * con los datos completos.
      * Si no se encuentra la sede, devuelve un {@link Optional#empty()}.
      *
-     * @param id El ID de la sede a buscar.
-     * @param estados Una lista de estados para filtrar las sedes activas o inactivas.
-     * @return Un {@link Optional} con el {@link SedeRecord} de la sede encontrada, o {@link Optional#empty()} si no se encuentra.
+     * @param id      El ID de la sede a buscar.
+     * @param estados Una lista de estados para filtrar las sedes activas o
+     *                inactivas.
+     * @return Un {@link Optional} con el {@link SedeRecord} de la sede encontrada,
+     *         o {@link Optional#empty()} si no se encuentra.
      */
     @Query("""
             SELECT
@@ -43,10 +48,12 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
     Optional<SedeRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
     /**
-     * Recupera todas las sedes junto con sus domicilios asociados, permitiendo la paginación de los resultados.
+     * Recupera todas las sedes junto con sus domicilios asociados, permitiendo la
+     * paginación de los resultados.
      *
      * @param pageable Objeto que contiene la información de paginación.
-     * @return Un {@link Page} de {@link SedeDomiciliosRecord} con los resultados de la consulta.
+     * @return Un {@link Page} de {@link SedeDomiciliosRecord} con los resultados de
+     *         la consulta.
      */
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomiciliosRecord(
@@ -62,33 +69,42 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
      * Busca una sede por su nombre.
      * 
      * @param nombre El nombre de la sede.
-     * @return Un {@link Optional} de la sede encontrada, o {@link Optional#empty()} si no se encuentra.
+     * @return Un {@link Optional} de la sede encontrada, o {@link Optional#empty()}
+     *         si no se encuentra.
      */
     Optional<Sede> findByNombre(String nombre);
 
-    /**
-     * Recupera todas las sedes con sus domicilios asociados, permitiendo la paginación y filtrado por nombre.
-     * Si el nombre es nulo o vacío, no se aplica filtro por nombre.
-     *
-     * @param nombre El nombre de la sede a buscar (opcional).
-     * @param pageable Objeto que contiene la información de paginación.
-     * @return Un {@link Page} de {@link SedeDomicilioRecordResponse} con los resultados de la consulta.
-     */
     @Query("""
-            SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse(
-                s.id, s.nombre, s.estado,
-                new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
-                    d.id, d.calle, d.exterior, d.interior,
-                    d.estadoRepublica, d.municipio, d.localidad,
-                    d.colonia, d.codigoPostal, d.referencia, d.ciudad
-                ),
-                s.telefono
-            )
-            FROM Sede s
-            LEFT JOIN s.domicilio d
-            WHERE (COALESCE(:nombre, '') = '' OR LOWER(s.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+                SELECT new mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse(
+                    s.id, s.nombre, s.estado,
+                    new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(
+                        d.id, d.calle, d.exterior, d.interior,
+                        d.estadoRepublica, d.municipio, d.localidad,
+                        d.colonia, d.codigoPostal, d.referencia, d.ciudad
+                    ),
+                    s.telefono
+                )
+                FROM Sede s
+                LEFT JOIN s.domicilio d
+                WHERE (:key = ''
+                    OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.calle, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.exterior, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.colonia, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.estadoRepublica, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(d.codigoPostal, '')) LIKE LOWER(CONCAT('%', :key, '%'))
+                    OR LOWER(COALESCE(s.telefono, '')) LIKE LOWER(CONCAT('%', :key, '%')))
+                  AND s.nombre LIKE CONCAT('%', :nombre, '%')
+                  AND (d.calle IS NULL OR d.calle LIKE CONCAT('%', :direccion, '%'))
+                  AND (s.telefono IS NULL OR s.telefono LIKE CONCAT('%', :telefono, '%'))
+                  AND s.estado IN :estados
             """)
-    Page<SedeDomicilioRecordResponse> findAllSedeDomicilioWithPagination(@Param("nombre") String nombre,
+    Page<SedeDomicilioRecordResponse> findAllSedeDomicilioWithPagination(
+            @Param("key") String key,
+            @Param("nombre") String nombre,
+            @Param("direccion") String direccion,
+            @Param("telefono") String telefono,
+            @Param("estados") List<Estado> estados,
             Pageable pageable);
 
 }

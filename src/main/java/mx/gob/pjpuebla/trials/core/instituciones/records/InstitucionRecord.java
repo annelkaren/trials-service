@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.instituciones.records;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import mx.gob.pjpuebla.trials.core.domicilios.Domicilio;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.io.Serializable;
 
@@ -12,12 +13,13 @@ public record InstitucionRecord(
                 String nombre,
                 String domicilio,
                 String telefono,
-                String tipoInstitucion) implements Serializable {
+                String tipoInstitucion,
+                Estado estado) implements Serializable {
 
         // Constructor personalizado para que reciba Domicilio y calcule la dirección
         public InstitucionRecord(Integer id, String nombre, Domicilio domicilio, String telefono,
-                        String tipoInstitucion) {
+                        String tipoInstitucion, Estado estado) {
                 this(id, nombre, domicilio != null ? domicilio.getDireccionInstitucion() : null, telefono,
-                                tipoInstitucion);
+                                tipoInstitucion, estado);
         }
 }

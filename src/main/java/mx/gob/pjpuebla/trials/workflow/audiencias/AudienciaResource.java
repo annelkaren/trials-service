@@ -35,8 +35,16 @@ public class AudienciaResource {
     @GetMapping("/bandeja/audienciasgenerales")
     public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(
             @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "tipoAudiencia", required = false) String tipoAudiencia,
+            @RequestParam(value = "juez", required = false) String juez,
+            @RequestParam(value = "numCarpeta", required = false) String numCarpeta,
+            @RequestParam(value = "lugar", required = false) String lugar,
+            @RequestParam(value = "estatus", required = false) String estatus,
+            @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFrom,
+            @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaTo,
             @PageableDefault(size = 20) Pageable pageable) {
-        return this.audienciaService.getAllAudienciasGenerales(key, pageable);
+        return this.audienciaService.getAllAudienciasGenerales(
+                key, tipoAudiencia, juez, numCarpeta, lugar, estatus, fechaFrom, fechaTo, pageable);
     }
 
     @GetMapping("/participantes/audiencia/{audienciaId}/carpeta/{carpetaId}")

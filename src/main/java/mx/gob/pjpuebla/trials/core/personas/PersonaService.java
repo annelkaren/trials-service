@@ -353,18 +353,39 @@ public class PersonaService {
     }
 
     @Transactional(transactionManager = "primaryTransactionManager")
-    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String nombre, String searchQuery, Pageable pageable) {
+    public Page<PersonaRecordResponse> findAllByCentroTrabajo(String key, String nombre, String email, String celular,
+            Estado estatus, String centroTrabajo, Pageable pageable) {
         Persona usuario = getAuditor();
         boolean adminSistema = roleService.hasRole(usuario.getUsuario(), "ADMINISTRADOR_SISTEMA");
+
+        // FILTROS:
+        key = key != null ? key.toLowerCase() : "";
+        nombre = nombre != null ? nombre.toLowerCase() : "";
+        email = email != null ? email.toLowerCase() : "";
+        celular = celular != null ? celular.toLowerCase() : "";
+        centroTrabajo = centroTrabajo != null ? centroTrabajo.toLowerCase() : "";
+
+        // Si es admin sistema, se pueden ver todos los estados, si no, solo ACTIVE
+        List<Estado> estados = new ArrayList<>();
+        if (adminSistema) {
+            estados = estatus == null ? List.of(Estado.ACTIVE, Estado.INACTIVE) : List.of(estatus);
+        } else {
+            estados = List.of(Estado.ACTIVE);
+        }
+
         Page<Persona> page = personaRepository.findByCentroTrabajoAndSearch(
-                searchQuery,
+                key,
+                nombre,
+                email,
+                celular,
+                estados,
+                centroTrabajo,
                 usuario.getOficialia() != null ? usuario.getOficialia().getId() : null,
                 usuario.getJuzgado() != null ? usuario.getJuzgado().getId() : null,
                 adminSistema,
                 pageable);
 
         List<PersonaRecordResponse> list = page.stream()
-                .filter(p -> p.getNombre().contains(nombre == null ? "" : nombre))
                 .map(p -> new PersonaRecordResponse(
                         p.getId(),
                         p.getNombre() + " " + p.getApellidoPaterno()

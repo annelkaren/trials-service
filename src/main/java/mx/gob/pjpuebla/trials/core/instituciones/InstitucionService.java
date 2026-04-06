@@ -30,14 +30,17 @@ public class InstitucionService {
     private final DomicilioRepository domicilioRepository;
 
     @Transactional(readOnly = true)
-    public Page<InstitucionRecord> getAll(Institucion example, Pageable pageable) {
-        // Definir el filtro de nombre si es necesario
-        String nombreFiltro = example.getNombre() != null ? StringUtils.stripAccents(example.getNombre()).toLowerCase() : "";
-    
-        // Llamar al repositorio con la consulta que ya hemos definido, pasando el filtro y el pageable
-        return institucionRepository.findAllInstituciones(nombreFiltro, pageable, List.of(Estado.ACTIVE, Estado.INACTIVE));
-    }
+    public Page<InstitucionRecord> getAll(String key, String nombre, String direccion, String telefono, Estado estatus,
+            Pageable pageable) {
 
+        List<Estado> estados = estatus == null ? List.of(Estado.ACTIVE, Estado.INACTIVE) : List.of(estatus);
+        nombre = nombre != null ? nombre : "";
+        direccion = direccion != null ? direccion : "";
+        telefono = telefono != null ? telefono : "";
+        key = key != null ? key : "";
+
+        return institucionRepository.findAllInstituciones(key, nombre, direccion, telefono, estados, pageable);
+    }
 
     @Transactional(readOnly = true)
     public InstitucionRecordResponse findById(Integer id) {
@@ -48,7 +51,7 @@ public class InstitucionService {
     }
 
     public Integer create(Institucion institucion) {
-        if(institucionRepository.findByNombre(institucion.getNombre()).isPresent()){
+        if (institucionRepository.findByNombre(institucion.getNombre()).isPresent()) {
             throw new ConflictException("No pueden existir 2 instituciones con el mismo nombre");
         }
 
@@ -75,15 +78,16 @@ public class InstitucionService {
 
     @Transactional(readOnly = true)
     public Page<InstitucionRecord> getAllByEstadoAutocomplete(Institucion example, Pageable pageable) {
-        // Llamamos directamente a la consulta del repositorio con el filtro de nombre y estado
         return institucionRepository.findAllInstituciones(
+                "",
                 example.getNombre(),
-                pageable,
-                List.of(Estado.ACTIVE) // Filtramos solo las instituciones activas
-        );
+                "",
+                "",
+                List.of(Estado.ACTIVE),
+                pageable);
     }
 
-    public List<InstitucionRecord> findByTipoInstitucion(String tipo){
+    public List<InstitucionRecord> findByTipoInstitucion(String tipo) {
         return institucionRepository.findByTipoInstitucion(tipo);
     }
 

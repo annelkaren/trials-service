@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,7 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,109 +32,109 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class BloqueResourceTest {
 
-    @MockBean
-    private BloqueService mockBloqueService;
+	@MockBean
+	private BloqueService mockBloqueService;
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    private BloqueRecordResponse bloqueRecordResponse;
+	private BloqueRecordResponse bloqueRecordResponse;
 
-    @BeforeEach
-    void setUp() {
-        bloqueRecordResponse = BloqueSetUp.createBloqueRecordResponse();
-    }
+	@BeforeEach
+	void setUp() {
+		bloqueRecordResponse = BloqueSetUp.createBloqueRecordResponse();
+	}
 
-    @Test
-    void getAll_success() throws Exception {
-        given(mockBloqueService.getAll(any(Bloque.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse)));
+	@Test
+	void getAll_success() throws Exception {
+		given(mockBloqueService.getAll(anyString(), any(Pageable.class)))
+				.willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse)));
 
-        mockMvc.perform(
-                get("/api/core/bloques")
-                        .param("nombre", "B")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+		mockMvc.perform(
+				get("/api/core/bloques")
+						.param("nombre", "B")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void getById_success() throws Exception {
-        given(mockBloqueService.findById(anyInt()))
-                .willReturn(bloqueRecordResponse);
+	@Test
+	void getById_success() throws Exception {
+		given(mockBloqueService.findById(anyInt()))
+				.willReturn(bloqueRecordResponse);
 
-        mockMvc.perform(
-                get("/api/core/bloques/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+		mockMvc.perform(
+				get("/api/core/bloques/1")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockBloqueService.findById(anyInt()))
-                .willThrow(NotFoundException.class);
+	@Test
+	void getById_not_found() throws Exception {
+		given(mockBloqueService.findById(anyInt()))
+				.willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                get("/api/core/bloques/0")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNotFound());
-    }
+		mockMvc.perform(
+				get("/api/core/bloques/0")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockBloqueService.findById(anyInt()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+	@Test
+	void getById_invalid() throws Exception {
+		given(mockBloqueService.findById(anyInt()))
+				.willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                get("/api/core/bloques/X")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+		mockMvc.perform(
+				get("/api/core/bloques/X")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
 
-    @Test
-    void create_success() throws Exception {
-        given(mockBloqueService.create(BloqueSetUp.createBloque()))
-                .willReturn(bloqueRecordResponse);
+	@Test
+	void create_success() throws Exception {
+		given(mockBloqueService.create(any(Bloque.class)))
+				.willReturn(bloqueRecordResponse);
 
-        mockMvc.perform(
-                post("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+		mockMvc.perform(
+				post("/api/core/bloques")
+						.content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void update_success() throws Exception {
-        given(mockBloqueService.create(BloqueSetUp.createBloque()))
-                .willReturn(bloqueRecordResponse);
+	@Test
+	void update_success() throws Exception {
+		given(mockBloqueService.update(any(Bloque.class)))
+				.willReturn(bloqueRecordResponse);
 
-        mockMvc.perform(
-                put("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+		mockMvc.perform(
+				put("/api/core/bloques")
+						.content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void update_error() throws Exception {
-        given(mockBloqueService.update(BloqueSetUp.createBloque()))
-                .willThrow(InvalidVersionException.class);
+	@Test
+	void update_error() throws Exception {
+		given(mockBloqueService.update(any(Bloque.class)))
+				.willThrow(InvalidVersionException.class);
 
-        mockMvc.perform(
-                put("/api/core/bloques")
-                        .content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+		mockMvc.perform(
+				put("/api/core/bloques")
+						.content(ResourceUtilTest.asJsonString(BloqueSetUp.createBloque()))
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
 
-    @Test
-    void delete_success() throws Exception {
-        mockMvc.perform(
-                delete("/api/core/bloques/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+	@Test
+	void delete_success() throws Exception {
+		mockMvc.perform(
+				delete("/api/core/bloques/1")
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
 
 }

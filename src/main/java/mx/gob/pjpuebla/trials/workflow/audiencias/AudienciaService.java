@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.core.roles.RoleRecord;
 import mx.gob.pjpuebla.trials.core.salaPersona.SalaPersonaRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
+import mx.gob.pjpuebla.trials.util.DateRangeMapper;
 import mx.gob.pjpuebla.trials.util.Messages;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.workflow.asistenciaaudiencia.AsistenciaAudienciaRepository;
@@ -21,6 +22,9 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -41,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -126,8 +131,28 @@ public class AudienciaService {
                                 label);
         }
 
-        public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(String key, Pageable pageable) {
-                key = (key != null) ? key.toLowerCase() : "";
+        public Page<AudienciasGeneralesResponseRecord> getAllAudienciasGenerales(
+                        String key, String tipoAudiencia, String juez, String numCarpeta, String lugar,
+                        String estatus, LocalDate fechaFrom, LocalDate fechaTo, Pageable pageable) {
+                key = normalizeKey(key);
+                tipoAudiencia = normalizeKey(tipoAudiencia);
+                juez = normalizeKey(juez);
+                numCarpeta = normalizeKey(numCarpeta);
+                lugar = normalizeKey(lugar);
+
+                EstatusAudiencia estatusAudiencia = null;
+                if (estatus != null && !estatus.isBlank()) {
+                        estatusAudiencia = EstatusAudiencia.valueOf(estatus.trim().toUpperCase());
+                }
+
+                DateRangeMapper.DateTimeRange dateRange = DateRangeMapper.fromDates(fechaFrom, fechaTo);
+                LocalDateTime fechaFromQuery = dateRange.from() != null
+                                ? dateRange.from()
+                                : LocalDate.of(1900, 1, 1).atStartOfDay();
+                LocalDateTime fechaToQuery = dateRange.toExclusive() != null
+                                ? dateRange.toExclusive()
+                                : LocalDate.of(3000, 1, 1).atStartOfDay();
+
                 Persona persona = personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
                 List<RoleRecord> rolesPrincipales = personaService.getRolesByUser(persona.getUsuario());
@@ -151,7 +176,63 @@ public class AudienciaService {
                         }
                 }
 
-                return audienciaRepository.findAudienciasGenerales(pageable, juzgado, key, salaIdsPermitidas, esSecretario);
+                Pageable pageableWithSort = mapSortAudienciasGenerales(pageable);
+
+                return audienciaRepository.findAudienciasGenerales(
+                                pageableWithSort,
+                                juzgado,
+                                key,
+                                tipoAudiencia,
+                                juez,
+                                numCarpeta,
+                                lugar,
+                                estatusAudiencia,
+                                fechaFromQuery,
+                                fechaToQuery,
+                                salaIdsPermitidas,
+                                esSecretario);
+        }
+
+        private String normalizeKey(String value) {
+                return value == null ? null : value.trim().toLowerCase();
+        }
+
+        private Pageable mapSortAudienciasGenerales(Pageable pageable) {
+                if (pageable == null || pageable.isUnpaged()) {
+                        return Pageable.unpaged();
+                }
+
+                Sort incoming = pageable.getSort();
+                Sort mapped = Sort.unsorted();
+
+                for (Sort.Order order : incoming) {
+                        String property = order.getProperty();
+                        boolean ascending = order.isAscending();
+
+                        Sort sort = switch (property) {
+                                case "tipoAudiencia" -> JpaSort.unsafe("LOWER(tipoAudiencia.nombre)");
+                                case "juez" -> JpaSort.unsafe(
+                                                "LOWER(CASE WHEN juez IS NOT NULL THEN CONCAT(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, '')) ELSE 'por asignar' END)");
+                                case "numCarpeta" -> JpaSort.unsafe("LOWER(carpeta.expediente)");
+                                case "lugar" -> JpaSort.unsafe("LOWER(sala.nombre)");
+                                case "fechaHora" -> JpaSort.unsafe("audiencia.fechaAudiencia");
+                                case "estatus" -> JpaSort.unsafe("audiencia.estatusAudiencia");
+                                default -> null;
+                        };
+
+                        if (sort != null) {
+                                mapped = mapped.and(ascending ? sort.ascending() : sort.descending());
+                        }
+                }
+
+                if (mapped.isUnsorted()) {
+                        mapped = JpaSort.unsafe("audiencia.fechaAudiencia").descending()
+                                        .and(JpaSort.unsafe("audiencia.id").descending());
+                } else {
+                        mapped = mapped.and(JpaSort.unsafe("audiencia.id").descending());
+                }
+
+                return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
         }
 
         public void deleteAudiencia(Integer id) {

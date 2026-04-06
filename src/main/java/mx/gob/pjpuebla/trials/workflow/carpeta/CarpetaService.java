@@ -27,6 +27,7 @@ import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioRepository;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.Audit;
+import mx.gob.pjpuebla.trials.util.DateRangeMapper;
 import mx.gob.pjpuebla.trials.util.enums.*;
 import mx.gob.pjpuebla.trials.util.enums.carpeta.*;
 import mx.gob.pjpuebla.trials.workflow.anexos.Anexo;
@@ -1138,13 +1139,7 @@ public class CarpetaService {
                 demandadoFilter = norm(demandadoFilter);
                 cujus = norm(cujus);
 
-                // operamos fechas:
-                LocalDateTime from = (fechaFrom != null) ? fechaFrom.atStartOfDay() : null;
-
-                LocalDateTime to = null;
-                if (fechaFrom != null && fechaTo == null) {
-                        to = fechaFrom.plusDays(1).atStartOfDay(); 
-                }
+                DateRangeMapper.DateTimeRange dateRange = DateRangeMapper.fromDates(fechaFrom, fechaTo);
 
                 Persona persona = personaService.getAuditor();
 
@@ -1162,8 +1157,8 @@ public class CarpetaService {
                                 juzgados,
                                 key,
                                 expediente,
-                                from,
-                                to,
+                                dateRange.from(),
+                                dateRange.toExclusive(),
                                 tipoJuicio,
                                 actorFilter,
                                 demandadoFilter,

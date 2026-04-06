@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,7 +64,7 @@ class SedeResourceTest {
 
     @Test
     void getAllByNameAndActive_success() throws Exception {
-        given(mockSedeService.getAll(any(Sede.class), any(Pageable.class)))
+        given(mockSedeService.getAll(anyString(), anyString(), anyString(), anyString(), any(Estado.class) , any(Pageable.class)))
                 .willReturn(new PageImpl<>(Collections.singletonList(sedeDomicilioRecordResponse)));
 
         mockMvc.perform(

@@ -9,7 +9,6 @@ import mx.gob.pjpuebla.trials.error.NotFoundException;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,21 +22,9 @@ public class BloqueService {
     private final BloqueRepository bloqueRepository;
 
     @Transactional(readOnly = true)
-    public Page<BloqueRecordResponse> getAll(Bloque example, Pageable pageable) {
-
-        if (example.getHoraInicial() != null) {
-
-            return bloqueRepository.findByHoraInicial(example.getHoraInicial(), pageable)
-                    .map(bloque -> new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()));
-        } else {
-
-            Page<Bloque> page = bloqueRepository.findAll(pageable);
-            List<BloqueRecordResponse> list = page.getContent().stream()
-                    .map(bloque -> new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado()))
-                    .toList();
-
-            return new PageImpl<>(list, pageable, page.getTotalElements());
-        }
+    public Page<BloqueRecordResponse> getAll(String key, Pageable pageable) {
+        key = key != null ? key : "";
+        return bloqueRepository.findAllByKey(key, pageable);
     }
 
     @Transactional(readOnly = true)

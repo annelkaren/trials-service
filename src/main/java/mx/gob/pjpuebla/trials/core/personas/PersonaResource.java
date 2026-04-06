@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.error.ApiResponse;
 import mx.gob.pjpuebla.trials.error.UnauthorizedException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
-
-
 
 @RequiredArgsConstructor
 @RestController
@@ -40,9 +40,14 @@ public class PersonaResource {
     @GetMapping
     public Page<PersonaRecordResponse> getAll(
             @PageableDefault(size = 25) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "searchQuery", required = false) String searchQuery) {
-        return this.personaService.findAllByCentroTrabajo(nombre, searchQuery, pageable);
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "celular", required = false) String celular,
+            @RequestParam(value = "estatus", required = false) Estado estatus,
+            @RequestParam(value = "centroTrabajo", required = false) String centroTrabajo) {
+        return this.personaService.findAllByCentroTrabajo(key, nombre, email, celular, estatus, centroTrabajo,
+                pageable);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -97,10 +102,10 @@ public class PersonaResource {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginAsLitigante (
-            @RequestBody PersonaLoginRecord personaLoginRecord
-    ) {
-        if (personaService.verifyIfUserExistsAndIsLitigante(personaLoginRecord.username())) { //inicia proceso de crear sesion
+    public ResponseEntity<String> loginAsLitigante(
+            @RequestBody PersonaLoginRecord personaLoginRecord) {
+        if (personaService.verifyIfUserExistsAndIsLitigante(personaLoginRecord.username())) { // inicia proceso de crear
+                                                                                              // sesion
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -119,14 +124,16 @@ public class PersonaResource {
                         entity,
                         String.class);
             } catch (HttpClientErrorException ex) {
-                throw new UnauthorizedException("Credenciales inválidas. Por favor, inténtelo de nuevo.", "invalid_grant");
+                throw new UnauthorizedException("Credenciales inválidas. Por favor, inténtelo de nuevo.",
+                        "invalid_grant");
             }
         }
-        throw new UnauthorizedException("No tiene permiso para acceder a este portal", "".concat(personaLoginRecord.username()));
+        throw new UnauthorizedException("No tiene permiso para acceder a este portal",
+                "".concat(personaLoginRecord.username()));
     }
 
     @GetMapping("/mensajeros")
-    public List<PersonaRecordResponse> findAllMensajeros(){
+    public List<PersonaRecordResponse> findAllMensajeros() {
         return personaService.findAllMensajeros();
     }
 
@@ -141,7 +148,7 @@ public class PersonaResource {
     }
 
     @PutMapping("/changePassword")
-   public ResponseEntity<ApiResponse<Void>> cambiarContraseña(@RequestBody CambioPasswordRecord request) {
+    public ResponseEntity<ApiResponse<Void>> cambiarContraseña(@RequestBody CambioPasswordRecord request) {
         ApiResponse<Void> response = personaService.changePassword(request);
         return ResponseEntity.status(response.getStatus()).body(response);
     }

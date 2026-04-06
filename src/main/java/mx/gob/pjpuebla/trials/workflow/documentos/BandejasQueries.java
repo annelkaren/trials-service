@@ -91,6 +91,15 @@ public final class BandejasQueries {
                 OR (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
               )
             )
+            AND m.id = (
+              SELECT MAX(m2b.id)
+              FROM Movimiento m2b
+              WHERE (
+                   (m.carpeta.id IS NOT NULL AND m2b.carpeta.id = m.carpeta.id)
+                OR (m.documento.id IS NOT NULL AND m2b.documento.id = m.documento.id)
+              )
+              AND m2b.fechaAsignacion = m.fechaAsignacion
+            )
 
             AND m.estado IN ('CAPTURA','EDICION','DEVUELTO_A_OFICIALIA')
             AND (o.id = :oficialiaId OR j.id = :juzgadoId)
@@ -232,6 +241,9 @@ public final class BandejasQueries {
                 END
               ) LIKE CONCAT('%', UPPER(COALESCE(:tipoEntrada,'')), '%')
             )
+
+            AND COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta, m.fechaAsignacion) >= :fechaFrom
+            AND COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta, m.fechaAsignacion) < :fechaTo
             """;
 
     public static final String QUERY_BANDEJA_SALIDA = """
