@@ -65,7 +65,9 @@ public class SalaService {
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(String key, String nombre, String juez, String juzgado,
-            Pageable pageable) {
+            Estado estatus, Pageable pageable) {
+
+        List<Estado> estados = (estatus != null) ? List.of(estatus) : Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
         Persona persona = personaService.getAuditor();
         Integer juzgadoId = (persona != null && persona.getJuzgado() != null) ? persona.getJuzgado().getId() : null;
 
@@ -75,7 +77,7 @@ public class SalaService {
         juez = (juez != null) ? juez : "";
         juzgado = (juzgado != null) ? juzgado : "";
 
-        return salaRepository.findAllByKeyAndJuzgadoId(key, nombre, juez, juzgado, juzgadoId, pageable);
+        return salaRepository.findAllByKeyAndJuzgadoId(key, nombre, juez, juzgado, estados, juzgadoId, pageable);
 
     }
 

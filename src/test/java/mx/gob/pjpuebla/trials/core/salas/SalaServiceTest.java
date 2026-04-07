@@ -139,13 +139,13 @@ class SalaServiceTest {
                                 sala.getEstado()));
 
                 given(personaService.getAuditor()).willReturn(juez);
-                given(mockSalaRepository.findAllByKeyAndJuzgadoId("", "", "", "", null,
+                given(mockSalaRepository.findAllByKeyAndJuzgadoId("", "", "", "", null, null,
                                 PageRequest.of(0, listPage.size())))
 
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 
-                Page<SalaRecord> page = salaService.getAll("", "", "", "",
+                Page<SalaRecord> page = salaService.getAll("", "", "", "", null,
                                 PageRequest.of(1, listPage.size()));
                 assertThat(page.getContent())
                                 .hasSize(1)

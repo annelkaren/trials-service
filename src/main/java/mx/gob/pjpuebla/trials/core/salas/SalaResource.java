@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.util.List;
 
@@ -31,9 +32,10 @@ public class SalaResource {
             @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "juez", required = false) String juez,
-            @RequestParam(value = "juzgado", required = false) String juzgado) {
+            @RequestParam(value = "juzgado", required = false) String juzgado,
+            @RequestParam(value = "estatus", required = false) Estado estatus) {
 
-        return this.salaService.getAll(key, nombre, juez, juzgado, pageable);
+        return this.salaService.getAll(key, nombre, juez, juzgado, estatus, pageable);
     }
 
     @GetMapping("/allByJuzgado")

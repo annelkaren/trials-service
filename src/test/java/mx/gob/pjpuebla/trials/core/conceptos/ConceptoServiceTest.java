@@ -111,7 +111,7 @@ class ConceptoServiceTest {
                 given(mockConceptoRepository.findAllConceptos(anyString(), anyList(), any(PageRequest.class),
                                 anyString(), anyInt(), anyString())).willReturn(conceptoPage);
                 Page<ConceptoRecord> result = conceptoService.getAllConceptos(PageRequest.of(0, 25), "Adjuntar",
-                                "Adjuntar", 1, "Tipo Juicio");
+                                "Adjuntar", 1, "Tipo Juicio", Estado.ACTIVE);
 
                 assertThat(result.getContent())
                                 .hasSize(1)

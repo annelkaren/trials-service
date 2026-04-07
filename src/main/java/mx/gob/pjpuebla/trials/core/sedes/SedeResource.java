@@ -21,7 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
  * Controlador REST para gestionar las sedes.
  * Proporciona operaciones para obtener, crear, actualizar y eliminar sedes.
  *
- * <p>Este controlador requiere autenticación a través de Keycloak.</p>
+ * <p>
+ * Este controlador requiere autenticación a través de Keycloak.
+ * </p>
  */
 @RequiredArgsConstructor
 @RestController
@@ -35,7 +37,7 @@ public class SedeResource {
      * Obtiene una lista paginada de sedes, con la opción de filtrar por nombre.
      *
      * @param pageable configuración de paginación (tamaño por defecto de 20)
-     * @param nombre (opcional) nombre de la sede a filtrar
+     * @param nombre   (opcional) nombre de la sede a filtrar
      * @return una página de {@link SedeDomicilioRecordResponse}
      */
     @GetMapping
@@ -45,8 +47,7 @@ public class SedeResource {
             @RequestParam(value = "direccion", required = false) String direccion,
             @RequestParam(value = "telefono", required = false) String telefono,
             @RequestParam(value = "estatus", required = false) Estado estatus,
-            @PageableDefault(size = 20) Pageable pageable
-        ) {
+            @PageableDefault(size = 20) Pageable pageable) {
         return this.sedeService.getAll(key, nombre, direccion, telefono, estatus, pageable);
     }
 
@@ -67,9 +68,9 @@ public class SedeResource {
      * @param sede objeto {@link Sede} que contiene la información de la nueva sede
      * @return un {@link SedeRecordResponse} con la información de la sede creada
      */
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public SedeRecordResponse create(@RequestPart(value = "sede") String sede,
-                                     @RequestPart(value = "photo", required = false) MultipartFile photo)
+            @RequestPart(value = "photo", required = false) MultipartFile photo)
             throws JsonProcessingException {
         Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
         return this.sedeService.create(sedeMapper, photo);
@@ -79,11 +80,12 @@ public class SedeResource {
      * Actualiza una sede existente.
      *
      * @param sede objeto {@link Sede} con la información actualizada
-     * @return un {@link SedeRecordResponse} con la información de la sede actualizada
+     * @return un {@link SedeRecordResponse} con la información de la sede
+     *         actualizada
      */
-    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public SedeRecordResponse update(@RequestPart(value = "sede") String sede,
-                                     @RequestPart(value = "photo", required = false) MultipartFile photo)
+            @RequestPart(value = "photo", required = false) MultipartFile photo)
             throws JsonProcessingException {
         Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
         return this.sedeService.update(sedeMapper, photo);

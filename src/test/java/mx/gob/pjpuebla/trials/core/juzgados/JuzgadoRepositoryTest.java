@@ -51,7 +51,7 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     void findAll() {
         String key = "mer";
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Page<Juzgado> page = juzgadoRepository.findAll(key, estados, PageRequest.of(0, 20));
+        Page<Juzgado> page = juzgadoRepository.findAll(key, "", "", estados, PageRequest.of(0, 20));
         assertThat(page.get()).hasSize(1);
     }
 
@@ -64,7 +64,7 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findTipoJuiciosByJuzgadoId(){
+    void findTipoJuiciosByJuzgadoId() {
         List<JuzgadoTipoJuiciosRecord> list = juzgadoRepository.findTipoJuiciosByJuzgadoId(51);
         assertThat(list).isNotNull().isNotEmpty();
     }
@@ -91,10 +91,11 @@ class JuzgadoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findByInstancia(){
-        List<JuzgadoRecordItem> juzgadoRecordItemList = juzgadoRepository.findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
+    void findByInstancia() {
+        List<JuzgadoRecordItem> juzgadoRecordItemList = juzgadoRepository
+                .findAllByInstancia(InstanciaJuzgado.SEGUNDA_INSTANCIA);
 
-        assertThat(juzgadoRecordItemList).isNotNull().anyMatch(j->j.nombre().contains("Sala"));
+        assertThat(juzgadoRecordItemList).isNotNull().anyMatch(j -> j.nombre().contains("Sala"));
     }
 
     @Test

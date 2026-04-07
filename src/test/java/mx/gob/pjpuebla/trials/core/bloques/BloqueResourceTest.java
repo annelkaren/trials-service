@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ class BloqueResourceTest {
 
 	@Test
 	void getAll_success() throws Exception {
-		given(mockBloqueService.getAll(anyString(), any(Pageable.class)))
+		given(mockBloqueService.getAll(anyString(), any(Estado.class), any(Pageable.class)))
 				.willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse)));
 
 		mockMvc.perform(
