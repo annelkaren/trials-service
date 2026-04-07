@@ -94,7 +94,7 @@ public interface SedeRepository extends JpaRepository<Sede, Integer> {
                     OR LOWER(COALESCE(d.estadoRepublica, '')) LIKE LOWER(CONCAT('%', :key, '%'))
                     OR LOWER(COALESCE(d.codigoPostal, '')) LIKE LOWER(CONCAT('%', :key, '%'))
                     OR LOWER(COALESCE(s.telefono, '')) LIKE LOWER(CONCAT('%', :key, '%')))
-                  AND s.nombre LIKE CONCAT('%', :nombre, '%')
+                  AND (s.nombre IS NULL OR s.nombre LIKE CONCAT('%', :nombre, '%'))
                   AND (d.calle IS NULL OR d.calle LIKE CONCAT('%', :direccion, '%'))
                   AND (s.telefono IS NULL OR s.telefono LIKE CONCAT('%', :telefono, '%'))
                   AND s.estado IN :estados

@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="acuseNotificacion" pageWidth="595" pageHeight="842" orientation="Landscape" columnWidth="515" leftMargin="40" rightMargin="40" topMargin="30" bottomMargin="30" uuid="4471f19a-8dff-4ecb-b79f-b8092c36516c">
-	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="acuseNotificacion" pageWidth="595" pageHeight="842" columnWidth="425" leftMargin="85" rightMargin="85" topMargin="70" bottomMargin="70" uuid="4471f19a-8dff-4ecb-b79f-b8092c36516c">
+	<property name="com.jaspersoft.studio.unit." value="cm"/>
 	<parameter name="asunto" class="java.lang.String"/>
 	<parameter name="para" class="java.lang.String"/>
 	<parameter name="fechaEnvio" class="java.lang.String"/>
@@ -23,6 +15,7 @@
 	<parameter name="sexo" class="java.lang.String"/>
 	<parameter name="fechaVisualizacion" class="java.lang.String"/>
 	<parameter name="logo" class="java.lang.String"/>
+	<parameter name="nombreSalaShortName" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -31,17 +24,17 @@
 	</background>
 	<title>
 		<band height="76" splitType="Stretch">
-			<image>
-				<reportElement x="0" y="0" width="510" height="76" uuid="2d23830b-30c0-469b-92e1-b78e56da6d25"/>
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="0" y="0" width="425" height="76" uuid="2d23830b-30c0-469b-92e1-b78e56da6d25"/>
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
 		</band>
 	</title>
 	<columnHeader>
-		<band height="213" splitType="Stretch">
+		<band height="226" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="9" width="510" height="50" forecolor="#FFFFFF" backcolor="#030303" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<reportElement mode="Opaque" x="0" y="10" width="425" height="50" forecolor="#FFFFFF" backcolor="#3E4068" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
+					<property name="com.jaspersoft.studio.unit.width" value="cm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font isBold="true"/>
@@ -69,39 +62,52 @@
 				<text><![CDATA[Leido]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="70" y="76" width="440" height="30" uuid="f2a16a2a-bccf-4ac2-a426-52c97eee80c6">
+				<reportElement x="70" y="76" width="355" height="30" uuid="f2a16a2a-bccf-4ac2-a426-52c97eee80c6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$P{asunto}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="70" y="106" width="440" height="30" uuid="65feaef0-2e7b-4639-9098-bb59a577105b">
+				<reportElement x="70" y="106" width="355" height="30" uuid="65feaef0-2e7b-4639-9098-bb59a577105b">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$P{para}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="70" y="136" width="440" height="30" uuid="8266b13d-fc8d-4e18-8078-58b2074d8193">
+				<reportElement x="70" y="166" width="355" height="30" uuid="4da0091b-1f00-43a7-95b7-12215eed9f19">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{fechaVisualizacion}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="70" y="136" width="355" height="30" uuid="8266b13d-fc8d-4e18-8078-58b2074d8193">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$P{fechaEnvio}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="70" y="166" width="440" height="30" uuid="2c4490e6-f96e-48c4-824f-873581852e2e">
+				<reportElement x="70" y="196" width="355" height="30" uuid="2c4490e6-f96e-48c4-824f-873581852e2e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$P{fechaLectura}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="0" y="196" width="70" height="30" uuid="872dd3b1-9112-4fa4-8c73-b36558c1a1b0"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Archivo descargado:]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="401" splitType="Stretch">
+		<band height="316" splitType="Stretch">
+			<printWhenExpression><![CDATA[("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala}))]]></printWhenExpression>
 			<textField>
-				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="510" height="290" uuid="b3899300-09dd-4637-80e6-1b82a1202930">
+				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="425" height="290" uuid="b3899300-09dd-4637-80e6-1b82a1202930">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Justified" markup="html">
@@ -109,36 +115,53 @@
 					<paragraph lineSpacing="1_1_2" lineSpacingSize="1.0"/>
 				</textElement>
 				<textFieldExpression><![CDATA[String.format(
-"En %s a las <b>%s</b>, %s en los Órganos del Sistema Acusatorio Adversarial que Conforman la %s, hago constar que a través del \"<b>Sistema Electronico De Control y Gestión Judicial</b>\" consta y se tiene certeza de que fue recibido el correo electrónico enviado a la dirección %s, señalado para notificar al <b>%s %s</b>, surtiendo así los efectos de la notificación, al dar a conocer al interesado por correo electrónico el auto emitido, constando fecha, hora y correo que visualiza el mensaje en comento; se anexan los datos en que consta lo mencionado. Lo anterior con fundamento en los artículos 14 y 16 de la Constitución Política de los Estados Unidos Mexicanos, 82, 83, 84 y 85 del Código Nacional de Procedimientos Penales y 30 QUATER fracción II de la Ley Orgánica del Poder Judicial del Estado de Puebla. Conste. Doy FE. - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+"En %s, a las <b>%s</b>, %s  a la %s, del Tribunal Superior de Justicia del Poder Judicial del Estado de Puebla, hago constar que a través del \"<b>Sistema Electronico De Control y Gestión Judicial</b>\" se tiene certeza de que fue recibido el correo electrónico enviado a la dirección %s, señalado para notificar al <b>%s %s</b>, surtiendo así los efectos de la notificación, al dar a conocer al interesado por correo electrónico el auto emitido, constando fecha, hora y correo que visualiza el mensaje en comento. Lo anterior con fundamento en los artículos 14 y 16 de la Constitución Política de los Estados Unidos Mexicanos y 30 QUATER fracción II de la Ley Orgánica del Poder Judicial del Estado de Puebla. <b>Conste. Doy Fe.</b> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
 $P{casaDeJusticia},
 $P{fechaGeneracionDocumento},
-("F".equals($P{sexo}) ? "la suscrita Notificadora" : "el suscrito Notificador"),
+("F".equals($P{sexo}) ? "la suscrita diligenciaria adscrita" : "el suscrito diligenciario adscrito"),
 $P{nombreSala},
 $P{para},
 $P{tipoParte},
 $P{nombreDestinatario}
 )]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="0" y="-17" width="70" height="30" uuid="872dd3b1-9112-4fa4-8c73-b36558c1a1b0"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[Archivo descargado:]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="70" y="-17" width="440" height="30" uuid="4da0091b-1f00-43a7-95b7-12215eed9f19">
+		</band>
+		<band height="316">
+			<printWhenExpression><![CDATA[!("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala}))]]></printWhenExpression>
+			<textField>
+				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="425" height="290" uuid="6c388faf-48af-4640-9dc1-2a87d556773c">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{fechaVisualizacion}]]></textFieldExpression>
+				<textElement textAlignment="Justified" markup="html">
+					<font size="12"/>
+					<paragraph lineSpacing="1_1_2" lineSpacingSize="1.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.format(
+"En %s, a las <b>%s</b>, %s en los Órganos del Sistema Acusatorio Adversarial que Conforman la %s en Materia Penal del Tribunal Superior de Justicia del Poder Judicial del Estado de Puebla, hago constar que a través del \"<b>Sistema Electronico De Control y Gestión Judicial</b>\" se tiene certeza de que fue recibido el correo electrónico enviado a la dirección %s, señalado para notificar al <b>%s %s</b>, surtiendo así los efectos de la notificación, al dar a conocer al interesado por correo electrónico el auto emitido, constando fecha, hora y correo que visualiza el mensaje en comento. Lo anterior con fundamento en los artículos 14 y 16 de la Constitución Política de los Estados Unidos Mexicanos, 82, 83, 84 y 85 del Código Nacional de Procedimientos Penales y 30 QUATER fracción II de la Ley Orgánica del Poder Judicial del Estado de Puebla. <b>Conste. Doy Fe.</b> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
+$P{casaDeJusticia},
+$P{fechaGeneracionDocumento},
+("F".equals($P{sexo}) ? "la suscrita Notificadora" : "el suscrito Notificador"),
+$P{nombreSalaShortName},
+$P{para},
+$P{tipoParte},
+$P{nombreDestinatario}
+)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="61" splitType="Stretch">
+		<band height="60" splitType="Stretch">
 			<textField>
-				<reportElement x="63" y="11" width="399" height="50" uuid="c3ad147c-9377-44a5-9b84-a746bf08cc06"/>
+				<reportElement x="31" y="10" width="362" height="50" uuid="c3ad147c-9377-44a5-9b84-a746bf08cc06"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle" markup="html"/>
-				<textFieldExpression><![CDATA["<b>" + $P{nombreNotificador} + "<br/>" + ("F".equals($P{sexo}) ? "NOTIFICADORA" : "NOTIFICADOR") + "</b>"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>" +
+$P{nombreNotificador} + "<br/>" +
+(
+  "Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala})
+  ? ("F".equals($P{sexo}) ? "DILIGENCIARIA" : "DILIGENCIARIO")
+  : ("F".equals($P{sexo}) ? "NOTIFICADORA" : "NOTIFICADOR")
+)
++ "</b>"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

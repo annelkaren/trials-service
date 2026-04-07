@@ -82,7 +82,10 @@ public class AcuseNotificacionService {
 
                 Juzgado juzgado = juzgadoRepository.findById(notificacionSala.getSala().getId())
                                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
-                String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getShortName()
+                String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getNombre()
+                                : juzgado.getJuzgadoPadre().getNombre();
+
+                String nombreSalaShortName = juzgado.getJuzgadoPadre() == null ? juzgado.getShortName()
                                 : juzgado.getJuzgadoPadre().getShortName();
 
                 Map<String, Object> parameters = new HashMap<>();
@@ -96,9 +99,10 @@ public class AcuseNotificacionService {
                 parameters.put("nombreDestinatario", notificacionSalaDestinatario.getNombreDestinatario());
                 parameters.put("tipoParte", notificacionSalaDestinatario.getTipoParte());
                 parameters.put("nombreSala", nombreSala);
+                parameters.put("nombreSalaShortName", nombreSalaShortName);
                 parameters.put("nombreNotificador", getNombrePersona(persona));
                 parameters.put("sexo", sexo);
-                parameters.put("logo", "jasper/logo_negro.png");
+                parameters.put("logo", "jasper/logo_nuevo.png");
 
                 return parameters;
         }

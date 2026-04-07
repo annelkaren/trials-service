@@ -157,6 +157,14 @@ public class DocumentoService {
         private static final String CARPETA_NOT_FOUND = "Carpeta no encontrada";
         private static final String CONCEPTO_NOT_FOUND = "Concepto no encontrado";
 
+        // Expresiones JPQL para ordenamiento de BandejaEntrada
+        private static final String SORT_FOLIO = "LOWER(COALESCE(c.folio, d.folio, cd.folio, ''))";
+        private static final String SORT_EXPEDIENTE = "LOWER(COALESCE(c.expediente, cd.expediente, ''))";
+        private static final String SORT_MATERIA = "LOWER(COALESCE(mjc.nombre, mjcd.nombre, ''))";
+        private static final String SORT_ORGANO_JURISDICCIONAL = "LOWER(COALESCE(jc.nombre, jcd.nombre, ''))";
+        private static final String SORT_FECHA_REGISTRO = "COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta)";
+        private static final String SORT_TIPO_ENTRADA = "LOWER(" + BandejasQueries.TIPO_ENTRADA_EXPR + ")";
+
         private Persona personaAsignada = null;
 
         // funciones para validar busqueda por QR:
@@ -241,52 +249,12 @@ public class DocumentoService {
                         String prop = order.getProperty();
 
                         Sort mapped = switch (prop) {
-                                case "folio" -> JpaSort.unsafe("LOWER(COALESCE(c.folio, d.folio, cd.folio, ''))");
-                                case "expediente" -> JpaSort.unsafe("LOWER(COALESCE(c.expediente, cd.expediente, ''))");
-                                case "materia" -> JpaSort.unsafe("LOWER(COALESCE(mjc.nombre, mjcd.nombre, ''))");
-                                case "organoJurisdiccional" ->
-                                        JpaSort.unsafe("LOWER(COALESCE(jc.nombre, jcd.nombre, ''))");
-                                case "fechaRegistro", "fechaHora" ->
-                                        JpaSort.unsafe("COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta)");
-
-                                case "tipoEntrada" -> JpaSort.unsafe(
-                                                "LOWER(" +
-                                                                " (CASE " +
-                                                                "   WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION' "
-                                                                +
-                                                                "   WHEN c IS NOT NULL THEN " +
-                                                                "     (CASE c.tipoCarpeta " +
-                                                                "       WHEN 0 THEN 'DEMANDA' " +
-                                                                "       WHEN 1 THEN 'EXHORTO' " +
-                                                                "       WHEN 2 THEN 'APELACION' " +
-                                                                "       WHEN 3 THEN 'DESPACHO' " +
-                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' " +
-                                                                "       WHEN 5 THEN 'AMPARO' " +
-                                                                "       WHEN 6 THEN 'CARTA_ROGATORIA' " +
-                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' "
-                                                                +
-                                                                "       WHEN 8 THEN 'OFICIO' " +
-                                                                "       WHEN 9 THEN 'PIEZA' " +
-                                                                "       ELSE '' " +
-                                                                "     END) " +
-                                                                "   ELSE " +
-                                                                "     (CASE cd.tipoCarpeta " +
-                                                                "       WHEN 0 THEN 'DEMANDA' " +
-                                                                "       WHEN 1 THEN 'EXHORTO' " +
-                                                                "       WHEN 2 THEN 'APELACION' " +
-                                                                "       WHEN 3 THEN 'DESPACHO' " +
-                                                                "       WHEN 4 THEN 'APELACION_MUNICIPAL' " +
-                                                                "       WHEN 5 THEN 'AMPARO' " +
-                                                                "       WHEN 6 THEN 'CARTA_ROGATORIA' " +
-                                                                "       WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL' "
-                                                                +
-                                                                "       WHEN 8 THEN 'OFICIO' " +
-                                                                "       WHEN 9 THEN 'PIEZA' " +
-                                                                "       ELSE '' " +
-                                                                "     END) " +
-                                                                " END) " +
-                                                                ")");
-
+                                case "folio" -> JpaSort.unsafe(SORT_FOLIO);
+                                case "expediente" -> JpaSort.unsafe(SORT_EXPEDIENTE);
+                                case "materia" -> JpaSort.unsafe(SORT_MATERIA);
+                                case "organoJurisdiccional" -> JpaSort.unsafe(SORT_ORGANO_JURISDICCIONAL);
+                                case "fechaRegistro", "fechaHora" -> JpaSort.unsafe(SORT_FECHA_REGISTRO);
+                                case "tipoEntrada" -> JpaSort.unsafe(SORT_TIPO_ENTRADA);
                                 default -> null;
                         };
 
