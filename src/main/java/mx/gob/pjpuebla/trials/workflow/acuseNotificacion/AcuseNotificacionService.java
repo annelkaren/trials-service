@@ -110,7 +110,7 @@ public class AcuseNotificacionService {
                 parameters.put("nombreNotificador", getNombrePersona(persona));
                 parameters.put("sexo", sexo);
                 parameters.put("nombreSalaDestino", nombreSalaDestino);
-                parameters.put("logo", "jasper/logo_negro.png");
+                parameters.put("logo", "jasper/logo_nuevo.png");
 
                 return parameters;
         }
