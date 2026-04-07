@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +21,10 @@ public class BloqueResource {
     @GetMapping
     public Page<BloqueRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "estatus", required = false) Estado estatus) {
 
-        return this.bloqueService.getAll(key, pageable);
+        return this.bloqueService.getAll(key, estatus, pageable);
     }
 
     @GetMapping("/{id}")

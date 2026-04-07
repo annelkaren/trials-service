@@ -25,7 +25,7 @@
 	</background>
 	<title>
 		<band height="76" splitType="Stretch">
-			<image>
+			<image hAlign="Center" vAlign="Middle">
 				<reportElement x="0" y="0" width="425" height="76" uuid="2d23830b-30c0-469b-92e1-b78e56da6d25"/>
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
@@ -34,7 +34,7 @@
 	<columnHeader>
 		<band height="226" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="10" width="425" height="50" forecolor="#FFFFFF" backcolor="#030303" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
+				<reportElement mode="Opaque" x="0" y="10" width="425" height="50" forecolor="#FFFFFF" backcolor="#3E4068" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
 					<property name="com.jaspersoft.studio.unit.width" value="cm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -81,7 +81,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{fechaVisualizacion}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fechaLectura}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="70" y="136" width="355" height="30" uuid="8266b13d-fc8d-4e18-8078-58b2074d8193">
@@ -95,7 +95,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$P{fechaLectura}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fechaVisualizacion}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="196" width="70" height="30" uuid="872dd3b1-9112-4fa4-8c73-b36558c1a1b0"/>

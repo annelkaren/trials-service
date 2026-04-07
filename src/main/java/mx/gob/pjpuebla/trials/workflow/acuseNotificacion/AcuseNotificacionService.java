@@ -180,7 +180,7 @@ public class AcuseNotificacionService {
                 parameters.put("nombreNotificador", getNombrePersona(persona));
                 parameters.put("sexo", sexo);
                 parameters.put("razonNoEntrega", razonNoEntrega);
-                parameters.put("logo", "jasper/logo_negro.png");
+                parameters.put("logo", "jasper/logo_nuevo.png");
                 parameters.put("fechaIntentoEnvioTexto", fechaIntentoEnvioTexto);
                 parameters.put("razonNoEntregaTecnica", emailLogs.getSmtpAnswerData());
 

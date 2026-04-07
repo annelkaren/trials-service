@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.core.conceptos;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 
 import java.util.List;
 
@@ -35,8 +36,9 @@ public class ConceptoResource {
             @RequestParam(value = "key", required = false) String key,
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "dias", required = false) Integer dias,
-            @RequestParam(value = "nombreTipoJuicio", required = false) String nombreTipoJuicio) {
-        return conceptoService.getAllConceptos(pageable, key, nombre, dias, nombreTipoJuicio);
+            @RequestParam(value = "nombreTipoJuicio", required = false) String nombreTipoJuicio,
+            @RequestParam(value = "estatus", required = false) Estado estatus) {
+        return conceptoService.getAllConceptos(pageable, key, nombre, dias, nombreTipoJuicio, estatus);
     }
 
     @PatchMapping("/{id}/status/{status}")

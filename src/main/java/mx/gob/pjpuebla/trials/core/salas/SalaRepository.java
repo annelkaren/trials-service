@@ -46,6 +46,7 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 AND (:nombre IS NULL OR :nombre = '' OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :nombre, '%')))
                 AND (:juez IS NULL OR :juez = '' OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :juez, '%')))
                 AND (:juzgado IS NULL OR :juzgado = '' OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :juzgado, '%')))
+                AND s.estado IN :estados
             """, countQuery = """
             SELECT COUNT(s.id)
             FROM Sala s
@@ -61,11 +62,13 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                       AND (:nombre IS NULL OR :nombre = '' OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :nombre, '%')))
                 AND (:juez IS NULL OR :juez = '' OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :juez, '%')))
                 AND (:juzgado IS NULL OR :juzgado = '' OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :juzgado, '%')))
+                AND s.estado IN :estados
             """)
     Page<SalaRecord> findAllByKeyAndJuzgadoId(@Param("key") String key,
             @Param("nombre") String nombre,
             @Param("juez") String juez,
             @Param("juzgado") String juzgado,
+            @Param("estados") List<Estado> estados,
             @Param("juzgadoId") Integer juzgadoId,
             Pageable pageable);
 

@@ -48,10 +48,10 @@ class BloqueServiceTest {
 
 	@Test
 	void getAll_return_page() {
-		given(mockBloqueRepository.findAllByKey(anyString(), any(Pageable.class)))
+		given(mockBloqueRepository.findAllByKey(anyString(), any(List.class), any(Pageable.class)))
 				.willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse), PageRequest.of(0, 1), 1));
 
-		Page<BloqueRecordResponse> page = bloqueService.getAll(null, PageRequest.of(0, 1));
+		Page<BloqueRecordResponse> page = bloqueService.getAll(null, Estado.ACTIVE, PageRequest.of(0, 1));
 
 		assertThat(page.getContent())
 				.hasSize(1)
@@ -84,8 +84,7 @@ class BloqueServiceTest {
 
 		NotFoundException assertThrows = assertThrows(
 				NotFoundException.class,
-				() -> bloqueService.findById(id)
-		);
+				() -> bloqueService.findById(id));
 
 		assertThat(assertThrows.getMessage()).contains("Bloque no encontrado");
 	}
@@ -123,8 +122,7 @@ class BloqueServiceTest {
 
 		InvalidVersionException assertThrows = assertThrows(
 				InvalidVersionException.class,
-				() -> bloqueService.update(bloque)
-		);
+				() -> bloqueService.update(bloque));
 
 		assertThat(assertThrows.getMessage()).contains("Version modificada por otro usuario");
 	}

@@ -22,9 +22,11 @@ public class BloqueService {
     private final BloqueRepository bloqueRepository;
 
     @Transactional(readOnly = true)
-    public Page<BloqueRecordResponse> getAll(String key, Pageable pageable) {
+    public Page<BloqueRecordResponse> getAll(String key, Estado estado, Pageable pageable) {
         key = key != null ? key : "";
-        return bloqueRepository.findAllByKey(key, pageable);
+        List<Estado> estados = (estado != null) ? List.of(estado) : Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
+
+        return bloqueRepository.findAllByKey(key, estados, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -36,13 +38,15 @@ public class BloqueService {
 
     public BloqueRecordResponse create(Bloque bloque) {
         bloque = bloqueRepository.save(bloque);
-        return new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado());
+        return new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(),
+                bloque.getEstado());
     }
 
     public BloqueRecordResponse update(Bloque bloque) {
         try {
             bloqueRepository.save(bloque);
-            return new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(), bloque.getEstado());
+            return new BloqueRecordResponse(bloque.getId(), bloque.getHoraInicial(), bloque.getHoraFinal(),
+                    bloque.getEstado());
         } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
             throw new InvalidVersionException(Bloque.class.getSimpleName());
         }
@@ -52,20 +56,20 @@ public class BloqueService {
         bloqueRepository.deleteById(id);
     }
 
-    public List<LocalTime> getCitas(Bloque bloque){
+    public List<LocalTime> getCitas(Bloque bloque) {
         List<LocalTime> citas = new ArrayList<>();
         LocalTime cita = bloque.getHoraInicial();
 
         citas.add(cita);
 
-        while(cita.isBefore(bloque.getHoraFinal())){
+        while (cita.isBefore(bloque.getHoraFinal())) {
             cita = cita.plusMinutes(30);
 
             citas.add(cita);
         }
 
         return citas;
-        
+
     }
 
 }

@@ -95,8 +95,9 @@ class ConceptoResourceTest {
                                 Estado.ACTIVE);
                 List<ConceptoRecord> conceptosList = List.of(conceptoRecord);
 
-                given(mockConceptoService.getAllConceptos(any(Pageable.class), anyString(), anyString(), any(Integer.class),
-                                anyString()))
+                given(mockConceptoService.getAllConceptos(any(Pageable.class), anyString(), anyString(),
+                                any(Integer.class),
+                                anyString(), any(Estado.class)))
                                 .willReturn(new PageImpl<>(conceptosList));
 
                 mockMvc.perform(MockMvcRequestBuilders.get("/api/core/conceptos/registros")

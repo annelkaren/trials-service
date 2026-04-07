@@ -7,6 +7,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 
 import org.springframework.data.domain.Page;
@@ -16,7 +17,6 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
-
 
 @RequiredArgsConstructor
 @RestController
@@ -30,8 +30,11 @@ public class JuzgadoResource {
     @GetMapping
     public Page<JuzgadoRecordItem> getAll(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
-        return this.juzgadoService.getAll(key, pageable);
+            @RequestParam(value = "key", required = false) String key,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "materia", required = false) String materia,
+            @RequestParam(value = "estatus", required = false) Estado estatus) {
+        return this.juzgadoService.getAll(key, nombre, materia, estatus, pageable);
     }
 
     @GetMapping("/oficialias/{id}")

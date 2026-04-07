@@ -40,182 +40,183 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class JuzgadoResourceTest {
 
-    @MockBean
-    private JuzgadoService mockJuzgadoService;
-    @MockBean
-    private JuzgadoUpdateValidator mockJuzgadoUpdateValidator;
+        @MockBean
+        private JuzgadoService mockJuzgadoService;
+        @MockBean
+        private JuzgadoUpdateValidator mockJuzgadoUpdateValidator;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    private Juzgado juzgado;
-    private JuzgadoRecord juzgadoRecord;
-    private JuzgadoRecordItem juzgadoRecordItem;
+        private Juzgado juzgado;
+        private JuzgadoRecord juzgadoRecord;
+        private JuzgadoRecordItem juzgadoRecordItem;
 
-    @BeforeEach
-    void setUp() {
-        Materia materia = MateriaSetUp.createMateria();
-        Distrito distrito = DistritoSetUp.createDistrito();
-        Domicilio domicilio = DomicilioSetUp.createDomicilio();
-        Sede sede = SedeSetUp.createSede();
-        sede.setDistrito(distrito);
-        sede.setDomicilio(domicilio);
-        juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
-        juzgadoRecord = JuzgadoSetUp.createJuzgadoRecord(juzgado, materia.getId(), sede.getId());
-        juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
-    }
+        @BeforeEach
+        void setUp() {
+                Materia materia = MateriaSetUp.createMateria();
+                Distrito distrito = DistritoSetUp.createDistrito();
+                Domicilio domicilio = DomicilioSetUp.createDomicilio();
+                Sede sede = SedeSetUp.createSede();
+                sede.setDistrito(distrito);
+                sede.setDomicilio(domicilio);
+                juzgado = JuzgadoSetUp.createJuzgado(materia, sede);
+                juzgadoRecord = JuzgadoSetUp.createJuzgadoRecord(juzgado, materia.getId(), sede.getId());
+                juzgadoRecordItem = JuzgadoSetUp.createJuzgadoRecordResponse(juzgado, materia.getNombre());
+        }
 
-    @Test
-    void getAllByNameAndActive_success() throws Exception {
-        given(mockJuzgadoService.getAll(any(), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
+        @Test
+        void getAllByNameAndActive_success() throws Exception {
+                given(mockJuzgadoService.getAll(any(), any(), any(), any(), any(Pageable.class)))
+                                .willReturn(new PageImpl<>(Collections.singletonList(juzgadoRecordItem)));
 
-        mockMvc.perform(
-                get("/api/core/juzgados")
-                        .param("nombre", "J")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados")
+                                                .param("nombre", "J")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_success() throws Exception {
-        given(mockJuzgadoService.findById(anyInt()))
-                .willReturn(juzgadoRecord);
+        @Test
+        void getById_success() throws Exception {
+                given(mockJuzgadoService.findById(anyInt()))
+                                .willReturn(juzgadoRecord);
 
-        mockMvc.perform(
-                        get("/api/core/juzgados/1")
-                                .accept(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isOk())
-                .andExpect(jsonPath("nombre").value(juzgadoRecord.nombre()));
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("nombre").value(juzgadoRecord.nombre()));
+        }
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockJuzgadoService.findById(anyInt()))
-                .willThrow(NotFoundException.class);
+        @Test
+        void getById_not_found() throws Exception {
+                given(mockJuzgadoService.findById(anyInt()))
+                                .willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                get("/api/core/juzgados/0")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNotFound());
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados/0")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockJuzgadoService.findById(anyInt()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+        @Test
+        void getById_invalid() throws Exception {
+                given(mockJuzgadoService.findById(anyInt()))
+                                .willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                get("/api/core/juzgados/X")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados/X")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void create_success() throws Exception {
-        given(mockJuzgadoService.create(juzgado))
-                .willReturn(juzgadoRecordItem);
+        @Test
+        void create_success() throws Exception {
+                given(mockJuzgadoService.create(juzgado))
+                                .willReturn(juzgadoRecordItem);
 
-        mockMvc.perform(
-                post("/api/core/juzgados")
-                        .content(ResourceUtilTest.asJsonString(juzgado))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                post("/api/core/juzgados")
+                                                .content(ResourceUtilTest.asJsonString(juzgado))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void create_error() throws Exception {
-        given(mockJuzgadoService.create(juzgado))
-                .willReturn(juzgadoRecordItem);
-        juzgado.setNombre("12");
-        mockMvc.perform(
-                        post("/api/core/juzgados")
-                                .content(ResourceUtilTest.asJsonString(juzgado))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON)
-                ).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("[0].field").value("nombre"))
-                .andExpect(jsonPath("[0].message").value("size must be between 3 and 250"));
-    }
+        @Test
+        void create_error() throws Exception {
+                given(mockJuzgadoService.create(juzgado))
+                                .willReturn(juzgadoRecordItem);
+                juzgado.setNombre("12");
+                mockMvc.perform(
+                                post("/api/core/juzgados")
+                                                .content(ResourceUtilTest.asJsonString(juzgado))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("[0].field").value("nombre"))
+                                .andExpect(jsonPath("[0].message").value("size must be between 3 and 250"));
+        }
 
-    @Test
-    void update_success() throws Exception {
-        given(mockJuzgadoUpdateValidator.supports(any()))
-                .willReturn(true);
-        given(mockJuzgadoService.create(juzgado))
-                .willReturn(juzgadoRecordItem);
+        @Test
+        void update_success() throws Exception {
+                given(mockJuzgadoUpdateValidator.supports(any()))
+                                .willReturn(true);
+                given(mockJuzgadoService.create(juzgado))
+                                .willReturn(juzgadoRecordItem);
 
-        mockMvc.perform(
-                put("/api/core/juzgados")
-                        .content(ResourceUtilTest.asJsonString(juzgado))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/core/juzgados")
+                                                .content(ResourceUtilTest.asJsonString(juzgado))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_error() throws Exception {
-        given(mockJuzgadoUpdateValidator.supports(any()))
-                .willReturn(true);
-        given(mockJuzgadoService.update(any(Juzgado.class)))
-                .willThrow(InvalidVersionException.class);
+        @Test
+        void update_error() throws Exception {
+                given(mockJuzgadoUpdateValidator.supports(any()))
+                                .willReturn(true);
+                given(mockJuzgadoService.update(any(Juzgado.class)))
+                                .willThrow(InvalidVersionException.class);
 
-        mockMvc.perform(
-                put("/api/core/juzgados")
-                        .content(ResourceUtilTest.asJsonString(juzgado))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                put("/api/core/juzgados")
+                                                .content(ResourceUtilTest.asJsonString(juzgado))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void delete_success() throws Exception {
-        mockMvc.perform(
-                delete("/api/core/juzgados/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+        @Test
+        void delete_success() throws Exception {
+                mockMvc.perform(
+                                delete("/api/core/juzgados/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAllByEstadoAuto_success() throws Exception {
-        given(mockJuzgadoService.findAllByEstadoAutocomplete(any()))
-                .willReturn(Collections.singletonList(juzgadoRecordItem));
+        @Test
+        void getAllByEstadoAuto_success() throws Exception {
+                given(mockJuzgadoService.findAllByEstadoAutocomplete(any()))
+                                .willReturn(Collections.singletonList(juzgadoRecordItem));
 
-        mockMvc.perform(
-                get("/api/core/juzgados/autocomplete")
-                        .param("key", "J")
-                        .param("aplicaFiltroOficio", "1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados/autocomplete")
+                                                .param("key", "J")
+                                                .param("aplicaFiltroOficio", "1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_status() throws Exception {
+        @Test
+        void update_status() throws Exception {
 
-        given(mockJuzgadoService.updateStatus(juzgado.getId(), 1))
-                .willReturn(juzgadoRecordItem);
+                given(mockJuzgadoService.updateStatus(juzgado.getId(), 1))
+                                .willReturn(juzgadoRecordItem);
 
-        mockMvc.perform(
-                        patch("/api/core/juzgados/1/status/1")
-                                .content(ResourceUtilTest.asJsonString(juzgadoRecordItem))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                patch("/api/core/juzgados/1/status/1")
+                                                .content(ResourceUtilTest.asJsonString(juzgadoRecordItem))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void get_salas() throws Exception {
-        List<JuzgadoRecordItem> salas = Collections.singletonList(
-                new JuzgadoRecordItem(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(), juzgado.getSede().getNombre()));
-        given(mockJuzgadoService.findAllByInstancia(any()))
-                .willReturn(salas);
+        @Test
+        void get_salas() throws Exception {
+                List<JuzgadoRecordItem> salas = Collections.singletonList(
+                                new JuzgadoRecordItem(juzgado.getId(), juzgado.getNombre(), juzgado.getEstado(),
+                                                juzgado.getSede().getNombre()));
+                given(mockJuzgadoService.findAllByInstancia(any()))
+                                .willReturn(salas);
 
-        mockMvc.perform(
-                        get("/api/core/juzgados/salas")
-                                .content(ResourceUtilTest.asJsonString(salas))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/juzgados/salas")
+                                                .content(ResourceUtilTest.asJsonString(salas))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 }

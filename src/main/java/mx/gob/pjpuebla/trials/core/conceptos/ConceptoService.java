@@ -65,20 +65,16 @@ public class ConceptoService {
     }
 
     public Page<ConceptoRecord> getAllConceptos(Pageable pageable, String key, String nombre, Integer dias,
-            String nombreTipoJuicio) {
+            String nombreTipoJuicio, Estado estatus) {
+
         key = (key != null) ? key.toLowerCase() : "";
         nombre = (nombre != null) ? nombre.toLowerCase() : "";
         nombreTipoJuicio = (nombreTipoJuicio != null) ? nombreTipoJuicio.toLowerCase() : "";
         dias = (dias != null) ? dias : null;
 
-        List<Estado> status = SearchLikeEnum.searchByEstadoEnum(key);
+        List<Estado> estados = estatus != null ? List.of(estatus) : Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
 
-        if (status.isEmpty()) {
-            status = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
-        } else {
-            key = "";
-        }
-        Page<Concepto> page = conceptoRepository.findAllConceptos(key, status, pageable, nombre, dias,
+        Page<Concepto> page = conceptoRepository.findAllConceptos(key, estados, pageable, nombre, dias,
                 nombreTipoJuicio);
 
         List<ConceptoRecord> list = page.stream()

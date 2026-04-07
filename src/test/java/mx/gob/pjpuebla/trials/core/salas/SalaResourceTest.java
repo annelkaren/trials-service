@@ -48,7 +48,7 @@ class SalaResourceTest {
         @Test
         void getAllByNameAndActive_success() throws Exception {
                 given(mockSalaService.getAll(anyString(), anyString(), anyString(), anyString(),
-                                any(Pageable.class)))
+                                any(Estado.class), any(Pageable.class)))
                                 .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
 
                 mockMvc.perform(
