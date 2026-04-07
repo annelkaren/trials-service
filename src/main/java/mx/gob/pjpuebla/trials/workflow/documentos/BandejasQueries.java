@@ -5,6 +5,26 @@ import lombok.Data;
 @Data
 public final class BandejasQueries {
 
+    /**
+     * Expresión JPQL que resuelve el tipo de entrada como string legible.
+     * Usa aliases: d (Documento), c (Carpeta directa del movimiento), cd (Carpeta del documento).
+     * Agregar nuevos tipos aquí los propaga automáticamente a SELECT, filtros y ordenamiento.
+     */
+    static final String TIPO_ENTRADA_EXPR =
+        "CASE" +
+        " WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'" +
+        " WHEN c IS NOT NULL THEN CASE c.tipoCarpeta" +
+        " WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION'" +
+        " WHEN 3 THEN 'DESPACHO' WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO'" +
+        " WHEN 6 THEN 'CARTA_ROGATORIA' WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'" +
+        " WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' ELSE '' END" +
+        " ELSE CASE cd.tipoCarpeta" +
+        " WHEN 0 THEN 'DEMANDA' WHEN 1 THEN 'EXHORTO' WHEN 2 THEN 'APELACION'" +
+        " WHEN 3 THEN 'DESPACHO' WHEN 4 THEN 'APELACION_MUNICIPAL' WHEN 5 THEN 'AMPARO'" +
+        " WHEN 6 THEN 'CARTA_ROGATORIA' WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'" +
+        " WHEN 8 THEN 'OFICIO' WHEN 9 THEN 'PIEZA' ELSE '' END" +
+        " END";
+
     public static final String QUERY_BANDEJA_ENTRADA = """
             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.BandejaEntradaRecord(
               m.id,
@@ -13,37 +33,8 @@ public final class BandejasQueries {
               COALESCE(c.expediente, cd.expediente, ''),
               COALESCE(mjc.nombre, mjcd.nombre, ''),
 
-              CASE
-                WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
-                WHEN c IS NOT NULL THEN
-                  CASE c.tipoCarpeta
-                    WHEN 0 THEN 'DEMANDA'
-                    WHEN 1 THEN 'EXHORTO'
-                    WHEN 2 THEN 'APELACION'
-                    WHEN 3 THEN 'DESPACHO'
-                    WHEN 4 THEN 'APELACION_MUNICIPAL'
-                    WHEN 5 THEN 'AMPARO'
-                    WHEN 6 THEN 'CARTA_ROGATORIA'
-                    WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                    WHEN 8 THEN 'OFICIO'
-                    WHEN 9 THEN 'PIEZA'
-                  ELSE ''
-                  END
-                ELSE
-                  CASE cd.tipoCarpeta
-                    WHEN 0 THEN 'DEMANDA'
-                    WHEN 1 THEN 'EXHORTO'
-                    WHEN 2 THEN 'APELACION'
-                    WHEN 3 THEN 'DESPACHO'
-                    WHEN 4 THEN 'APELACION_MUNICIPAL'
-                    WHEN 5 THEN 'AMPARO'
-                    WHEN 6 THEN 'CARTA_ROGATORIA'
-                    WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                    WHEN 8 THEN 'OFICIO'
-                    WHEN 9 THEN 'PIEZA'
-                  ELSE ''
-                  END
-              END,
+              """ + TIPO_ENTRADA_EXPR + """
+              ,
 
               COALESCE(jc.nombre, jcd.nombre, ''),
               COALESCE(d.audit.fechaAlta, d2.audit.fechaAlta),
@@ -112,38 +103,7 @@ public final class BandejasQueries {
                   OR LOWER(COALESCE(c.expediente, cd.expediente, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
                   OR LOWER(COALESCE(mjc.nombre, mjcd.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
                   OR LOWER(COALESCE(jc.nombre, jcd.nombre, j.nombre, o.nombre, '')) LIKE CONCAT('%', COALESCE(:key,''), '%')
-                  OR LOWER(
-                    CASE
-                      WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
-                      WHEN c IS NOT NULL THEN
-                        CASE c.tipoCarpeta
-                          WHEN 0 THEN 'DEMANDA'
-                          WHEN 1 THEN 'EXHORTO'
-                          WHEN 2 THEN 'APELACION'
-                          WHEN 3 THEN 'DESPACHO'
-                          WHEN 4 THEN 'APELACION_MUNICIPAL'
-                          WHEN 5 THEN 'AMPARO'
-                          WHEN 6 THEN 'CARTA_ROGATORIA'
-                          WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                          WHEN 8 THEN 'OFICIO'
-                          WHEN 9 THEN 'PIEZA'
-                          ELSE ''
-                        END
-                      ELSE
-                        CASE cd.tipoCarpeta
-                          WHEN 0 THEN 'DEMANDA'
-                          WHEN 1 THEN 'EXHORTO'
-                          WHEN 2 THEN 'APELACION'
-                          WHEN 3 THEN 'DESPACHO'
-                          WHEN 4 THEN 'APELACION_MUNICIPAL'
-                          WHEN 5 THEN 'AMPARO'
-                          WHEN 6 THEN 'CARTA_ROGATORIA'
-                          WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                          WHEN 8 THEN 'OFICIO'
-                          WHEN 9 THEN 'PIEZA'
-                          ELSE ''
-                        END
-                    END
+                  OR LOWER(""" + TIPO_ENTRADA_EXPR + """
                   ) LIKE CONCAT('%', COALESCE(:key,''), '%')
                 )
               )
@@ -207,38 +167,7 @@ public final class BandejasQueries {
 
             AND (
               COALESCE(:tipoEntrada, '') = '' OR
-              UPPER(
-                CASE
-                  WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN 'PROMOCION'
-                  WHEN c IS NOT NULL THEN
-                    CASE c.tipoCarpeta
-                      WHEN 0 THEN 'DEMANDA'
-                      WHEN 1 THEN 'EXHORTO'
-                      WHEN 2 THEN 'APELACION'
-                      WHEN 3 THEN 'DESPACHO'
-                      WHEN 4 THEN 'APELACION_MUNICIPAL'
-                      WHEN 5 THEN 'AMPARO'
-                      WHEN 6 THEN 'CARTA_ROGATORIA'
-                      WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                      WHEN 8 THEN 'OFICIO'
-                      WHEN 9 THEN 'PIEZA'
-                      ELSE ''
-                    END
-                  ELSE
-                    CASE cd.tipoCarpeta
-                      WHEN 0 THEN 'DEMANDA'
-                      WHEN 1 THEN 'EXHORTO'
-                      WHEN 2 THEN 'APELACION'
-                      WHEN 3 THEN 'DESPACHO'
-                      WHEN 4 THEN 'APELACION_MUNICIPAL'
-                      WHEN 5 THEN 'AMPARO'
-                      WHEN 6 THEN 'CARTA_ROGATORIA'
-                      WHEN 7 THEN 'COOPERACION_JUDICIAL_E_INTERNACIONAL'
-                      WHEN 8 THEN 'OFICIO'
-                      WHEN 9 THEN 'PIEZA'
-                      ELSE ''
-                    END
-                END
+              UPPER(""" + TIPO_ENTRADA_EXPR + """
               ) LIKE CONCAT('%', UPPER(COALESCE(:tipoEntrada,'')), '%')
             )
 

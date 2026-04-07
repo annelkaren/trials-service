@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoRepository;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
@@ -32,6 +33,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 @Service
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AcuseNotificacionService {
 
         private static final DateTimeFormatter formateador = DateTimeFormatter
@@ -82,8 +84,16 @@ public class AcuseNotificacionService {
 
                 Juzgado juzgado = juzgadoRepository.findById(notificacionSala.getSala().getId())
                                 .orElseThrow(() -> new NotFoundException("Juzgado no encontrado", "juzgadoId"));
-                String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getShortName()
+
+                String nombreSala = juzgado.getJuzgadoPadre() == null ? juzgado.getNombre()
+                                : juzgado.getJuzgadoPadre().getNombre();
+
+                String nombreSalaShortName = juzgado.getJuzgadoPadre() == null ? juzgado.getShortName()
                                 : juzgado.getJuzgadoPadre().getShortName();
+
+                String nombreSalaDestino = notificacionSala.getSala().getNombre();
+
+                log.info("Nombre sala destino: {}", nombreSalaDestino);
 
                 Map<String, Object> parameters = new HashMap<>();
                 parameters.put("asunto", emailLogs.getSubject());
@@ -96,8 +106,10 @@ public class AcuseNotificacionService {
                 parameters.put("nombreDestinatario", notificacionSalaDestinatario.getNombreDestinatario());
                 parameters.put("tipoParte", notificacionSalaDestinatario.getTipoParte());
                 parameters.put("nombreSala", nombreSala);
+                parameters.put("nombreSalaShortName", nombreSalaShortName);
                 parameters.put("nombreNotificador", getNombrePersona(persona));
                 parameters.put("sexo", sexo);
+                parameters.put("nombreSalaDestino", nombreSalaDestino);
                 parameters.put("logo", "jasper/logo_negro.png");
 
                 return parameters;
