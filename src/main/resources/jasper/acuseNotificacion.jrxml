@@ -16,6 +16,7 @@
 	<parameter name="fechaVisualizacion" class="java.lang.String"/>
 	<parameter name="logo" class="java.lang.String"/>
 	<parameter name="nombreSalaShortName" class="java.lang.String"/>
+	<parameter name="nombreSalaDestino" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -24,7 +25,7 @@
 	</background>
 	<title>
 		<band height="76" splitType="Stretch">
-			<image hAlign="Center" vAlign="Middle">
+			<image>
 				<reportElement x="0" y="0" width="425" height="76" uuid="2d23830b-30c0-469b-92e1-b78e56da6d25"/>
 				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
 			</image>
@@ -33,7 +34,7 @@
 	<columnHeader>
 		<band height="226" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="10" width="425" height="50" forecolor="#FFFFFF" backcolor="#3E4068" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
+				<reportElement mode="Opaque" x="0" y="10" width="425" height="50" forecolor="#FFFFFF" backcolor="#030303" uuid="d5bd474b-2e14-4c2c-9192-47efbc65f1f7">
 					<property name="com.jaspersoft.studio.unit.width" value="cm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -105,13 +106,13 @@
 	</columnHeader>
 	<detail>
 		<band height="316" splitType="Stretch">
-			<printWhenExpression><![CDATA[("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala}))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSalaDestino}))]]></printWhenExpression>
 			<textField>
 				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="425" height="290" uuid="b3899300-09dd-4637-80e6-1b82a1202930">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Justified" markup="html">
-					<font size="12"/>
+					<font size="11"/>
 					<paragraph lineSpacing="1_1_2" lineSpacingSize="1.0"/>
 				</textElement>
 				<textFieldExpression><![CDATA[String.format(
@@ -127,13 +128,13 @@ $P{nombreDestinatario}
 			</textField>
 		</band>
 		<band height="316">
-			<printWhenExpression><![CDATA[!("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala}))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!("Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSalaDestino}))]]></printWhenExpression>
 			<textField>
 				<reportElement stretchType="ElementGroupHeight" x="0" y="26" width="425" height="290" uuid="6c388faf-48af-4640-9dc1-2a87d556773c">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Justified" markup="html">
-					<font size="12"/>
+					<font size="11"/>
 					<paragraph lineSpacing="1_1_2" lineSpacingSize="1.0"/>
 				</textElement>
 				<textFieldExpression><![CDATA[String.format(
@@ -157,7 +158,7 @@ $P{nombreDestinatario}
 				<textFieldExpression><![CDATA["<b>" +
 $P{nombreNotificador} + "<br/>" +
 (
-  "Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSala})
+  "Cuarta Sala Colegiada en Materia Penal".equals($P{nombreSalaDestino})
   ? ("F".equals($P{sexo}) ? "DILIGENCIARIA" : "DILIGENCIARIO")
   : ("F".equals($P{sexo}) ? "NOTIFICADORA" : "NOTIFICADOR")
 )
