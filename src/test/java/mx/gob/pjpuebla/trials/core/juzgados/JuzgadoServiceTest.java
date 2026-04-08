@@ -111,7 +111,7 @@ class JuzgadoServiceTest {
         @Test
         void getAll_return_page() {
                 List<Juzgado> listPage = Collections.singletonList(juzgado);
-                given(juzgadoRepository.findAll(any(PageRequest.class)))
+                given(juzgadoRepository.findAll(anyString(), anyString(), anyString(), any(), any(PageRequest.class)))
                                 .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
                                                 listPage.size()));
 

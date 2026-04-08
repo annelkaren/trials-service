@@ -3,7 +3,6 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -246,7 +245,7 @@ class InstitucionServiceTest {
                 Pageable pageable = PageRequest.of(0, 10);
 
                 // Act
-                given(mockInstitucionRepository.findAllInstituciones(null, null, null, null, null, pageable))
+                given(mockInstitucionRepository.findAllInstituciones(anyString(), anyString(), anyString(), anyString(), any(), any()))
                                 .willReturn(mockedPage);
 
                 Page<InstitucionRecord> result = mockInstitucionService.getAllByEstadoAutocomplete(institucion,

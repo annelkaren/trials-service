@@ -58,7 +58,7 @@ class ConceptoRepositoryTest extends AuditConfigTest {
                 List<Estado> estados = List.of(Estado.ACTIVE, Estado.INACTIVE);
                 String key = "adjuntar";
                 Pageable pageable = PageRequest.of(0, 10);
-                Page<Concepto> result = conceptoRepository.findAllConceptos(key, estados, pageable, key, null, key);
+                Page<Concepto> result = conceptoRepository.findAllConceptos(key, estados, pageable, "", null, "");
                 assertThat(result).isNotEmpty();
                 assertThat(result.getContent()).allMatch(concepto -> concepto.getEstado().equals(Estado.ACTIVE)
                                 || concepto.getEstado().equals(Estado.INACTIVE));

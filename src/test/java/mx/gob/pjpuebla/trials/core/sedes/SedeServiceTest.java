@@ -99,12 +99,12 @@ class SedeServiceTest {
                                 anyString(),
                                 anyString(),
                                 anyString(),
-                                any(List.class),
+                                any(),
                                 any(Pageable.class))).willReturn(mockedPage);
 
                 // Act
-                Page<SedeDomicilioRecordResponse> result = sedeService.getAll(anyString(), anyString(), anyString(),
-                                anyString(), any(Estado.class), pageable);
+                Page<SedeDomicilioRecordResponse> result = sedeService.getAll("", "", "",
+                                "", Estado.ACTIVE, pageable);
 
                 // Assert
                 assertThat(result).isNotNull();

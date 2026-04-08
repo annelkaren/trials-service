@@ -48,12 +48,12 @@ class BloqueServiceTest {
 
 	@Test
 	void getAll_return_page() {
-		given(mockBloqueRepository.findAllByKey(anyString(), any(List.class), any(LocalTime.class),
-				any(LocalTime.class),
+		given(mockBloqueRepository.findAllByKey(anyString(), any(List.class), any(),
+				any(),
 				any(Pageable.class)))
 				.willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse), PageRequest.of(0, 1), 1));
 
-		Page<BloqueRecordResponse> page = bloqueService.getAll(null, Estado.ACTIVE, null, null, PageRequest.of(0, 1));
+		Page<BloqueRecordResponse> page = bloqueService.getAll("", Estado.ACTIVE, null, null, PageRequest.of(0, 1));
 
 		assertThat(page.getContent())
 				.hasSize(1)

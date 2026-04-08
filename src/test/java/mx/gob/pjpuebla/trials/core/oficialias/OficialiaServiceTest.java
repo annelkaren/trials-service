@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -218,11 +219,11 @@ class OficialiaServiceTest {
                 List<OficialiaMateriaRecord> listPage = Collections.singletonList(oficialiaMateriaRecordResponse);
                 List<Oficialia> list = Collections.singletonList(tmp);
 
-                given(oficialiaRepository.findAllActive(null, null, null, null, null, null, null))
+                given(oficialiaRepository.findAllActive(anyString(), anyString(), anyString(), anyString(), anyString(), any(), any()))
                                 .willReturn(new PageImpl<>(list, PageRequest.of(0, list.size()), list.size()));
 
                 Page<OficialiaMateriaRecord> page = oficialiaService.getAllByOficialiaMateria(null, null, null, null,
-                                null, null, null);
+                                null, null, PageRequest.of(0, list.size()));
 
                 assertThat(page.getContent())
                                 .hasSize(1)
