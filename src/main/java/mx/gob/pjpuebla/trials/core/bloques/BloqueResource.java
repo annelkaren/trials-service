@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
+import java.time.LocalTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -22,9 +23,11 @@ public class BloqueResource {
     public Page<BloqueRecordResponse> getAll(
             @PageableDefault(size = 20) Pageable pageable,
             @RequestParam(value = "key", required = false) String key,
-            @RequestParam(value = "estatus", required = false) Estado estatus) {
+            @RequestParam(value = "estatus", required = false) Estado estatus,
+            @RequestParam(value = "horaInicio", required = false) LocalTime horaInicio,
+            @RequestParam(value = "horaFin", required = false) LocalTime horaFin) {
 
-        return this.bloqueService.getAll(key, estatus, pageable);
+        return this.bloqueService.getAll(key, estatus, horaInicio, horaFin, pageable);
     }
 
     @GetMapping("/{id}")

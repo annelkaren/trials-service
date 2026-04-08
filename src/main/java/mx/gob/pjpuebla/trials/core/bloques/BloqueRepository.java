@@ -21,13 +21,15 @@ public interface BloqueRepository extends JpaRepository<Bloque, Integer> {
     @Query("""
             SELECT new mx.gob.pjpuebla.trials.core.bloques.BloqueRecordResponse(b.id, b.horaInicial, b.horaFinal, b.estado)
             FROM Bloque b
-            WHERE b.estado IN :estados AND (
-            :key = ''
-            OR CAST(b.horaInicial AS string) LIKE CONCAT('%', :key, '%')
-            OR CAST(b.horaFinal AS string) LIKE CONCAT('%', :key, '%')
-            )
+            WHERE b.estado IN :estados
+              AND (:key = ''
+                   OR CAST(b.horaInicial AS string) LIKE CONCAT('%', :key, '%')
+                   OR CAST(b.horaFinal AS string) LIKE CONCAT('%', :key, '%'))
+              AND b.horaInicial >= COALESCE(:horaInicio, b.horaInicial)
+              AND b.horaFinal <= COALESCE(:horaFin, b.horaFinal)
             """)
-    Page<BloqueRecordResponse> findAllByKey(@Param("key") String key, List<Estado> estados, Pageable pageable);
+    Page<BloqueRecordResponse> findAllByKey(@Param("key") String key, List<Estado> estados,
+            @Param("horaInicio") LocalTime horaInicio, @Param("horaFin") LocalTime horaFin, Pageable pageable);
 
     @Query("""
             SELECT
