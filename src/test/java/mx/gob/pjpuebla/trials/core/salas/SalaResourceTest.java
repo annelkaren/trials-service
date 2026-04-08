@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalTime;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +49,7 @@ class SalaResourceTest {
         @Test
         void getAllByNameAndActive_success() throws Exception {
                 given(mockSalaService.getAll(anyString(), anyString(), anyString(), anyString(),
-                                any(Estado.class), any(Pageable.class)))
+                                any(Estado.class), any(LocalTime.class), any(LocalTime.class), any(Pageable.class)))
                                 .willReturn(new PageImpl<>(Collections.singletonList(salaRecord)));
 
                 mockMvc.perform(

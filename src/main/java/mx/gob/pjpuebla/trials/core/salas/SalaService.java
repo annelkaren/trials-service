@@ -34,6 +34,7 @@ import mx.gob.pjpuebla.trials.workflow.personasdocumentos.PersonaDocumentoReposi
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public class SalaService {
 
     @Transactional(readOnly = true)
     public Page<SalaRecord> getAll(String key, String nombre, String juez, String juzgado,
-            Estado estatus, Pageable pageable) {
+            Estado estatus, LocalTime horaInicio, LocalTime horaFin, Pageable pageable) {
 
         List<Estado> estados = (estatus != null) ? List.of(estatus) : Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
         Persona persona = personaService.getAuditor();
@@ -77,7 +78,8 @@ public class SalaService {
         juez = (juez != null) ? juez : "";
         juzgado = (juzgado != null) ? juzgado : "";
 
-        return salaRepository.findAllByKeyAndJuzgadoId(key, nombre, juez, juzgado, estados, juzgadoId, pageable);
+        return salaRepository.findAllByKeyAndJuzgadoId(key, nombre, juez, juzgado, estados, horaInicio, horaFin,
+                juzgadoId, pageable);
 
     }
 

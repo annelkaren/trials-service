@@ -1,6 +1,7 @@
 package mx.gob.pjpuebla.trials.core.salas;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,12 +47,15 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                 AND (:nombre IS NULL OR :nombre = '' OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :nombre, '%')))
                 AND (:juez IS NULL OR :juez = '' OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :juez, '%')))
                 AND (:juzgado IS NULL OR :juzgado = '' OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :juzgado, '%')))
+                AND b.horaInicial >= COALESCE(:horaInicio, b.horaInicial)
+                AND b.horaFinal <= COALESCE(:horaFin, b.horaFinal)
                 AND s.estado IN :estados
             """, countQuery = """
             SELECT COUNT(s.id)
             FROM Sala s
             LEFT JOIN s.juez juez
             LEFT JOIN s.juzgado j
+            LEFT JOIN s.bloque b
             WHERE (:juzgadoId IS NULL OR j.id = :juzgadoId)
               AND (
                     :key IS NULL OR :key = ''
@@ -62,6 +66,8 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
                       AND (:nombre IS NULL OR :nombre = '' OR LOWER(COALESCE(s.nombre, '')) LIKE LOWER(CONCAT('%', :nombre, '%')))
                 AND (:juez IS NULL OR :juez = '' OR LOWER(CONCAT(CONCAT(CONCAT(COALESCE(juez.nombre, ''), ' '), COALESCE(juez.apellidoPaterno, '')), CONCAT(' ', COALESCE(juez.apellidoMaterno, '')))) LIKE LOWER(CONCAT('%', :juez, '%')))
                 AND (:juzgado IS NULL OR :juzgado = '' OR LOWER(COALESCE(j.nombre, '')) LIKE LOWER(CONCAT('%', :juzgado, '%')))
+                AND b.horaInicial >= COALESCE(:horaInicio, b.horaInicial)
+                AND b.horaFinal <= COALESCE(:horaFin, b.horaFinal)
                 AND s.estado IN :estados
             """)
     Page<SalaRecord> findAllByKeyAndJuzgadoId(@Param("key") String key,
@@ -69,6 +75,8 @@ public interface SalaRepository extends JpaRepository<Sala, Integer> {
             @Param("juez") String juez,
             @Param("juzgado") String juzgado,
             @Param("estados") List<Estado> estados,
+            @Param("horaInicio") LocalTime horaInicio,
+            @Param("horaFin") LocalTime horaFin,
             @Param("juzgadoId") Integer juzgadoId,
             Pageable pageable);
 

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalTime;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +49,8 @@ class BloqueResourceTest {
 
 	@Test
 	void getAll_success() throws Exception {
-		given(mockBloqueService.getAll(anyString(), any(Estado.class), any(Pageable.class)))
+		given(mockBloqueService.getAll(anyString(), any(Estado.class), any(LocalTime.class), any(LocalTime.class),
+				any(Pageable.class)))
 				.willReturn(new PageImpl<>(Collections.singletonList(bloqueRecordResponse)));
 
 		mockMvc.perform(

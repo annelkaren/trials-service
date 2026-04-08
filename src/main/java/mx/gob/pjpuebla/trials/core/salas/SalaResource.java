@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -33,9 +34,11 @@ public class SalaResource {
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "juez", required = false) String juez,
             @RequestParam(value = "juzgado", required = false) String juzgado,
-            @RequestParam(value = "estatus", required = false) Estado estatus) {
+            @RequestParam(value = "estatus", required = false) Estado estatus,
+            @RequestParam(value = "horaInicio", required = false) LocalTime horaInicio,
+            @RequestParam(value = "horaFin", required = false) LocalTime horaFin) {
 
-        return this.salaService.getAll(key, nombre, juez, juzgado, estatus, pageable);
+        return this.salaService.getAll(key, nombre, juez, juzgado, estatus, horaInicio, horaFin, pageable);
     }
 
     @GetMapping("/allByJuzgado")

@@ -138,14 +138,15 @@ class SalaServiceTest {
                                                 sala.getBloque().getHoraFinal()),
                                 sala.getEstado()));
 
+                List<Estado> estados = Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
                 given(personaService.getAuditor()).willReturn(juez);
-                given(mockSalaRepository.findAllByKeyAndJuzgadoId("", "", "", "", null, null,
-                                PageRequest.of(0, listPage.size())))
+                given(mockSalaRepository.findAllByKeyAndJuzgadoId("", "", "", "", estados, null, null, juzgado.getId(),
+                                PageRequest.of(1, listPage.size())))
 
-                                .willReturn(new PageImpl<>(listPage, PageRequest.of(0, listPage.size()),
+                                .willReturn(new PageImpl<>(listPage, PageRequest.of(1, listPage.size()),
                                                 listPage.size()));
 
-                Page<SalaRecord> page = salaService.getAll("", "", "", "", null,
+                Page<SalaRecord> page = salaService.getAll("", "", "", "", null, null, null,
                                 PageRequest.of(1, listPage.size()));
                 assertThat(page.getContent())
                                 .hasSize(1)

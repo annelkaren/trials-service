@@ -22,11 +22,12 @@ public class BloqueService {
     private final BloqueRepository bloqueRepository;
 
     @Transactional(readOnly = true)
-    public Page<BloqueRecordResponse> getAll(String key, Estado estado, Pageable pageable) {
+    public Page<BloqueRecordResponse> getAll(String key, Estado estado, LocalTime horaInicio, LocalTime horaFin,
+            Pageable pageable) {
         key = key != null ? key : "";
         List<Estado> estados = (estado != null) ? List.of(estado) : Arrays.asList(Estado.ACTIVE, Estado.INACTIVE);
 
-        return bloqueRepository.findAllByKey(key, estados, pageable);
+        return bloqueRepository.findAllByKey(key, estados, horaInicio, horaFin, pageable);
     }
 
     @Transactional(readOnly = true)
