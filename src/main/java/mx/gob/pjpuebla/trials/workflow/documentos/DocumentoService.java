@@ -2075,7 +2075,7 @@ public class DocumentoService {
 
         public Page<OficioResponseRecord> getAllOficios(
                         Pageable pageable, String key, String folio, String expediente,
-                        String asunto, String dependencia,
+                        String asunto, String dependencia, EstadoCarpeta estado,
                         LocalDate fechaEmisionFrom, LocalDate fechaEmisionTo,
                         LocalDate fechaEntregaFrom, LocalDate fechaEntregaTo) {
 
@@ -2085,6 +2085,10 @@ public class DocumentoService {
                 asunto = norm(asunto);
                 dependencia = norm(dependencia);
 
+                List<EstadoCarpeta> estados = estado != null ? List.of(estado)
+                                : List.of(EstadoCarpeta.CREADO, EstadoCarpeta.CON_ACUSE, EstadoCarpeta.CANCELADO,
+                                                EstadoCarpeta.PUBLICADO);
+
                 Persona persona = personaService.getAuditor();
                 List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
                                 : persona.getOficialia().getJuzgados();
@@ -2093,6 +2097,7 @@ public class DocumentoService {
                                 key, folio, expediente, asunto, dependencia,
                                 fechaEmisionFrom, fechaEmisionTo,
                                 fechaEntregaFrom, fechaEntregaTo,
+                                estados,
                                 TipoDocumento.OFICIO, pageable, juzgados);
 
                 List<OficioResponseRecord> list = page.getContent().stream()

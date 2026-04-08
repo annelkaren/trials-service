@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
@@ -36,8 +37,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-
 
 @RequiredArgsConstructor
 @RestController
@@ -109,7 +108,8 @@ public class DocumentoResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("documento", movimientoId + "_documento.pdf");
-        return ResponseEntity.ok().headers(headers).body(documentoService.getDigitalizacionByMovimientoId(movimientoId));
+        return ResponseEntity.ok().headers(headers)
+                .body(documentoService.getDigitalizacionByMovimientoId(movimientoId));
     }
 
     @GetMapping(value = "/documentos/{id}/caratula", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -194,7 +194,8 @@ public class DocumentoResource {
             @RequestParam(value = "organoJurisdiccional", required = false) String organoJurisdiccional,
             @RequestParam(value = "fechaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFrom,
             @RequestParam(value = "fechaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaTo) {
-        return documentoService.getAllHistorial(pageable, key, folio, expediente, materia, tipoEntrada, organoJurisdiccional, fechaFrom, fechaTo);
+        return documentoService.getAllHistorial(pageable, key, folio, expediente, materia, tipoEntrada,
+                organoJurisdiccional, fechaFrom, fechaTo);
     }
 
     @PostMapping(value = "/documento/promocion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -205,7 +206,7 @@ public class DocumentoResource {
 
         DocumentoPromocionRecord documentoPromocionRecord = new ObjectMapper().readValue(documentoPromocionRecordJson,
                 DocumentoPromocionRecord.class);
-                
+
         return this.documentoService.createPromocion(documentoPromocionRecord, file);
     }
 
@@ -274,11 +275,12 @@ public class DocumentoResource {
             @RequestParam(value = "expediente", required = false) String expediente,
             @RequestParam(value = "asunto", required = false) String asunto,
             @RequestParam(value = "dependencia", required = false) String dependencia,
+            @RequestParam(value = "estatus", required = false) EstadoCarpeta estatus,
             @RequestParam(value = "fechaEmisionFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEmisionFrom,
             @RequestParam(value = "fechaEmisionTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEmisionTo,
             @RequestParam(value = "fechaEntregaFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntregaFrom,
             @RequestParam(value = "fechaEntregaTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaEntregaTo) {
-        return this.documentoService.getAllOficios(pageable, key, folio, expediente, asunto, dependencia,
+        return this.documentoService.getAllOficios(pageable, key, folio, expediente, asunto, dependencia, estatus,
                 fechaEmisionFrom, fechaEmisionTo, fechaEntregaFrom, fechaEntregaTo);
     }
 
@@ -327,10 +329,10 @@ public class DocumentoResource {
     }
 
     @PostMapping(value = "/documentos/registro/expediente/sinAntecedente")
-    public CarpetaResponseRecord registrarExpedienteSinAntecedentes(@RequestBody ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
+    public CarpetaResponseRecord registrarExpedienteSinAntecedentes(
+            @RequestBody ExpedienteSinAntecedentesRecord expedienteSinAntecedentesRecord) {
         return documentoService.createExpedienteSinAntecedentes(expedienteSinAntecedentesRecord);
     }
-    
 
     @PostMapping(value = "/registro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public DocumentoRecord createDemandaAntigua(
@@ -417,11 +419,12 @@ public class DocumentoResource {
     }
 
     @GetMapping(value = "/documentos/carpeta/{carpetaId}/tipoEntrada/{tipoEntrada}/sello", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer carpetaId, @PathVariable String tipoEntrada) throws JRException, IOException {
+    public ResponseEntity<byte[]> exportPdf(@PathVariable Integer carpetaId, @PathVariable String tipoEntrada)
+            throws JRException, IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("sello", carpetaId + "_sello.pdf");
         return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloFromCarpetaId(carpetaId, tipoEntrada));
     }
-    
+
 }
