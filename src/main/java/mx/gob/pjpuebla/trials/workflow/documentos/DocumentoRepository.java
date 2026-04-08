@@ -142,6 +142,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             LEFT JOIN DocumentoContenido dc ON dc.documento = doc
             LEFT JOIN doc.carpeta c
             WHERE doc.tipoDocumento = :tipoDocumento
+            AND doc.estatus IN :estados
             AND (c.juzgado IN :juzgados OR c.juzgado IS NULL)
             AND (
                 COALESCE(:key, '') = '' OR (
@@ -171,6 +172,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer>, 
             @Param("emisionTo") LocalDate emisionTo,
             @Param("entregaFrom") LocalDate entregaFrom,
             @Param("entregaTo") LocalDate entregaTo,
+            @Param("estados") List<EstadoCarpeta> estados,
             @Param("tipoDocumento") TipoDocumento tipoDocumento,
             Pageable pageable,
             @Param("juzgados") List<Juzgado> juzgados);

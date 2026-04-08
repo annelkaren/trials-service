@@ -436,7 +436,7 @@ class DocumentoResourceTest {
                                 'C',
                                 "000001/2025");
                 given(documentoService.getAllOficios(any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                                any()))
+                                any(), any()))
                                 .willReturn(new PageImpl<>(Collections.singletonList(oficioResponseRecord)));
 
                 mockMvc.perform(
