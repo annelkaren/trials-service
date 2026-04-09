@@ -56,14 +56,14 @@
 	<detail>
 		<band height="240" splitType="Stretch">
 			<staticText>
-				<reportElement x="80" y="22" width="190" height="50" uuid="2c83e7db-1699-45dc-8cf5-a46be5bc8107"/>
+				<reportElement x="80" y="22" width="247" height="50" uuid="2c83e7db-1699-45dc-8cf5-a46be5bc8107"/>
 				<textElement verticalAlignment="Middle">
 					<font size="32" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Expediente]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="290" y="19" width="230" height="50" uuid="1a57cf42-bdef-454b-a2bf-c03b81e0ca53"/>
+				<reportElement x="330" y="19" width="190" height="50" uuid="1a57cf42-bdef-454b-a2bf-c03b81e0ca53"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="32" isBold="true"/>
 				</textElement>
