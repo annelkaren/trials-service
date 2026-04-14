@@ -113,7 +113,8 @@ public class AudienciaService {
                                                         : "");
                 }
 
-                String calle = Optional.ofNullable(carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId()))
+                String calle = Optional
+                                .ofNullable(carpetaDetalleRepository.findByCarpetaId(documento.getCarpeta().getId()))
                                 .map(detalle -> detalle.getUltimoDomicilioFamiliar() != null
                                                 ? detalle.getUltimoDomicilioFamiliar()
                                                 : detalle.getDomicilioFamiliar())
@@ -158,7 +159,7 @@ public class AudienciaService {
                 List<RoleRecord> rolesPrincipales = personaService.getRolesByUser(persona.getUsuario());
 
                 boolean esSecretario = rolesPrincipales.stream()
-                                .map(RoleRecord::name) 
+                                .map(RoleRecord::name)
                                 .filter(Objects::nonNull)
                                 .map(String::trim)
                                 .map(String::toUpperCase)
@@ -288,8 +289,8 @@ public class AudienciaService {
                 Audiencia audienciaNew = new Audiencia()
                                 .setFechaAudiencia(fechaHora)
                                 .setSala(sala)
-                                .setInicio(fechaHora)
-                                .setFin(fechaHora.plusMinutes(audiencia.duracion()))
+                                // .setInicio(fechaHora)
+                                // .setFin(fechaHora.plusMinutes(audiencia.duracion()))
                                 .setEstatusAudiencia(EstatusAudiencia.PROGRAMADA)
                                 .setTipoAudiencia(tipoAudiencia)
                                 .setCarpeta(carpeta)
@@ -313,15 +314,11 @@ public class AudienciaService {
                                         .orElseThrow(() -> new IllegalArgumentException(AUDIENCIA_NOT_FOUND));
 
                         if (isInicio) {
-                                if (audiencia.getInicio() != null) {
-                                        throw new ConflictException("La audiencia ya tiene una hora de inicio");
-                                }
+
                                 audiencia.setInicio(hora);
                                 audienciaRepository.save(audiencia);
                         } else {
-                                if (audiencia.getFin() != null) {
-                                        throw new ConflictException("La audiencia ya tiene una hora de fin");
-                                }
+
                                 audiencia.setFin(hora);
                                 audienciaRepository.save(audiencia);
                         }
@@ -423,6 +420,7 @@ public class AudienciaService {
                                 fechaInicio,
                                 fechaFin);
         }
+
         public void guardarArchivo(MultipartFile file, Integer audienciaId) {
                 digitalizacionService.guardarActaMinimaAudiencia(file, audienciaId);
         }
@@ -444,11 +442,8 @@ public class AudienciaService {
                 return audienciaRepository.findProgramadasByCarpetaId(carpetaId);
         }
 
-        public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(Integer carpetaId, Integer audienciaId){
+        public List<AsistenciaPersonaDocumento> getParticipantesAudiencia(Integer carpetaId, Integer audienciaId) {
                 return audienciaRepository.findParticipantesByAudienciaId(carpetaId, audienciaId);
         }
 
 }
-
-
-

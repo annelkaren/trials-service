@@ -96,74 +96,74 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
 
     // TODO evaluar si incluir asistenciaPersonaDocumento
     @Query("""
-             SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
-             audiencia.id,
-             tipoAudiencia.nombre,
-             CASE
-                 WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
-                 ELSE 'Por asignar'
-             END,
-             carpeta.expediente,
-             carpeta.id,
-             sala.nombre,
-             audiencia.fechaAudiencia,
-             audiencia.estatusAudiencia,
-             juzgadoSala.id,
-             tipoJuicio.nombre,
-             null,
-             audiencia.inicio,
-             audiencia.fin,
-             tipoSistema.nombre,
-             materia.nombre
-             )
-             FROM Audiencia audiencia
-             JOIN audiencia.carpeta carpeta
-             JOIN carpeta.tipoJuicio tipoJuicio
-             JOIN tipoJuicio.materia materia
-             JOIN tipoJuicio.tipoSistema tipoSistema
-             JOIN audiencia.tipoAudiencia tipoAudiencia
-             JOIN audiencia.sala sala
-             JOIN sala.juzgado juzgadoSala
-             LEFT JOIN sala.juez juez
-             WHERE juzgadoSala = :juzgado
-              AND audiencia.estado = 0
-             AND (
-                 COALESCE(:key, '') = ''
-                 OR lower(carpeta.expediente) LIKE %:key%
-                 OR lower(tipoAudiencia.nombre) LIKE %:key%
-                 OR lower(sala.nombre) LIKE %:key%
-                 OR lower(CASE
-                    WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
-                    ELSE 'Por asignar'
-                 END) LIKE %:key%
-             )
-             AND (
-                 COALESCE(:tipoAudiencia, '') = ''
-                 OR lower(tipoAudiencia.nombre) LIKE CONCAT('%', :tipoAudiencia, '%')
-             )
-             AND (
-                 COALESCE(:juez, '') = ''
-                 OR lower(CASE
-                    WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
-                    ELSE 'Por asignar'
-                 END) LIKE CONCAT('%', :juez, '%')
-             )
-             AND (
-                 COALESCE(:numCarpeta, '') = ''
-                 OR lower(carpeta.expediente) LIKE CONCAT('%', :numCarpeta, '%')
-             )
-             AND (
-                 COALESCE(:lugar, '') = ''
-                 OR lower(sala.nombre) LIKE CONCAT('%', :lugar, '%')
-             )
-             AND (
-                 :estatus IS NULL
-                 OR audiencia.estatusAudiencia = :estatus
-             )
-             AND audiencia.fechaAudiencia >= :fechaFrom
-             AND audiencia.fechaAudiencia < :fechaTo
-            AND ( (:esSecretario = false OR sala.id IN :salaIdsPermitidas) )
-        """)
+                 SELECT new mx.gob.pjpuebla.trials.workflow.audiencias.record.AudienciasGeneralesResponseRecord(
+                 audiencia.id,
+                 tipoAudiencia.nombre,
+                 CASE
+                     WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                     ELSE 'Por asignar'
+                 END,
+                 carpeta.expediente,
+                 carpeta.id,
+                 sala.nombre,
+                 audiencia.fechaAudiencia,
+                 audiencia.estatusAudiencia,
+                 juzgadoSala.id,
+                 tipoJuicio.nombre,
+                 null,
+                 audiencia.inicio,
+                 audiencia.fin,
+                 tipoSistema.nombre,
+                 materia.nombre
+                 )
+                 FROM Audiencia audiencia
+                 JOIN audiencia.carpeta carpeta
+                 JOIN carpeta.tipoJuicio tipoJuicio
+                 JOIN tipoJuicio.materia materia
+                 JOIN tipoJuicio.tipoSistema tipoSistema
+                 JOIN audiencia.tipoAudiencia tipoAudiencia
+                 JOIN audiencia.sala sala
+                 JOIN sala.juzgado juzgadoSala
+                 LEFT JOIN sala.juez juez
+                 WHERE juzgadoSala = :juzgado
+                  AND audiencia.estado = 0
+                 AND (
+                     COALESCE(:key, '') = ''
+                     OR lower(carpeta.expediente) LIKE %:key%
+                     OR lower(tipoAudiencia.nombre) LIKE %:key%
+                     OR lower(sala.nombre) LIKE %:key%
+                     OR lower(CASE
+                        WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                        ELSE 'Por asignar'
+                     END) LIKE %:key%
+                 )
+                 AND (
+                     COALESCE(:tipoAudiencia, '') = ''
+                     OR lower(tipoAudiencia.nombre) LIKE CONCAT('%', :tipoAudiencia, '%')
+                 )
+                 AND (
+                     COALESCE(:juez, '') = ''
+                     OR lower(CASE
+                        WHEN juez IS NOT NULL THEN concat(juez.nombre, ' ', juez.apellidoPaterno, ' ', COALESCE(juez.apellidoMaterno, ''))
+                        ELSE 'Por asignar'
+                     END) LIKE CONCAT('%', :juez, '%')
+                 )
+                 AND (
+                     COALESCE(:numCarpeta, '') = ''
+                     OR lower(carpeta.expediente) LIKE CONCAT('%', :numCarpeta, '%')
+                 )
+                 AND (
+                     COALESCE(:lugar, '') = ''
+                     OR lower(sala.nombre) LIKE CONCAT('%', :lugar, '%')
+                 )
+                 AND (
+                     :estatus IS NULL
+                     OR audiencia.estatusAudiencia = :estatus
+                 )
+                 AND audiencia.fechaAudiencia >= :fechaFrom
+                 AND audiencia.fechaAudiencia < :fechaTo
+                AND ( (:esSecretario = false OR sala.id IN :salaIdsPermitidas) )
+            """)
     Page<AudienciasGeneralesResponseRecord> findAudienciasGenerales(
             Pageable pageable,
             @Param("juzgado") Juzgado juzgado,
@@ -185,14 +185,16 @@ public interface AudienciaRepository extends JpaRepository<Audiencia, Integer> {
             a.tipoAudiencia.nombre)
             FROM Audiencia a
             JOIN a.sala s
-            WHERE s.id = :salaId AND CAST(a.fechaAudiencia AS date) >= :fechaAudiencia
+            WHERE s.id = :salaId AND CAST(a.fechaAudiencia AS date) >= :fechaAudiencia AND a.estado != mx.gob.pjpuebla.trials.util.enums.Estado.DELETED
             """)
     List<AudienciaAgendaRecord> findBySalaIdAndFechaAudiencia(Integer salaId, Date fechaAudiencia);
 
     @Query("""
                 SELECT COUNT(a) > 0
                 FROM Audiencia a
-                WHERE a.sala.id = :salaId
+                WHERE
+                 a.estado != mx.gob.pjpuebla.trials.util.enums.Estado.DELETED
+                 AND a.sala.id = :salaId
                   AND (
                     (:inicio BETWEEN a.inicio AND a.fin)
                     OR (:fin BETWEEN a.inicio AND a.fin)
