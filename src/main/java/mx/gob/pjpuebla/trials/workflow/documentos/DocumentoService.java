@@ -2091,7 +2091,7 @@ public class DocumentoService {
 
                 Persona persona = personaService.getAuditor();
                 List<Juzgado> juzgados = persona.getJuzgado() != null ? List.of(persona.getJuzgado())
-                                : persona.getOficialia().getJuzgados();
+                                : List.of();
 
                 Page<OficioResponseRecord> page = documentoRepository.findAllByTipoDocumento(
                                 key, folio, expediente, asunto, dependencia,
