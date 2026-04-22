@@ -10,8 +10,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoJuzgadoRecord
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Arrays;
 import java.util.List;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOMICILIOS.sql",
@@ -64,10 +64,10 @@ import java.util.List;
 class DocumentoRepositoryTest extends AuditConfigTest {
 
     @Autowired
-    private  DocumentoRepository documentoRepository;
+    private DocumentoRepository documentoRepository;
 
     @Test
-    void findDistritoJuzgadoByDocumentoId(){
+    void findDistritoJuzgadoByDocumentoId() {
         DocumentoJuzgadoRecord entity = documentoRepository.findDistritoJuzgadoByDocumentoId(1);
         assertThat(entity).isNotNull();
         assertThat(entity.nombreDistrito()).isEqualTo("ACATLÁN");
@@ -87,56 +87,64 @@ class DocumentoRepositoryTest extends AuditConfigTest {
     void testFindTipoPartesAcuerdo_actor() {
         Integer carpetaId = 1;
         String tipoParte = "actor";
-    
-        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
-    
+
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId,
+                tipoParte);
+
         assertThat(acuerdoNotificados).isNotEmpty();
-        // Verificamos que el nombre contiene el actor (pero sin buscar el término "actor" en el nombre completo)
-        // Si tu consulta filtra bien, deberías comprobar que los resultados son consistentes con el tipo de parte
-        // Ejemplo de que los registros sean los esperados para "actor" (aunque no contiene la palabra "actor")
+        // Verificamos que el nombre contiene el actor (pero sin buscar el término
+        // "actor" en el nombre completo)
+        // Si tu consulta filtra bien, deberías comprobar que los resultados son
+        // consistentes con el tipo de parte
+        // Ejemplo de que los registros sean los esperados para "actor" (aunque no
+        // contiene la palabra "actor")
         assertThat(acuerdoNotificados.get(0).nombre()).isNotEmpty();
         assertThat(acuerdoNotificados.get(0).nombre()).doesNotContain("demandado");
     }
-    
+
     @Test
     void testFindTipoPartesAcuerdo_demandado() {
         Integer carpetaId = 1;
         String tipoParte = "demandado";
-    
-        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
-    
+
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId,
+                tipoParte);
+
         assertThat(acuerdoNotificados).isNotEmpty();
         // Verificamos que solo los demandados estén presentes
         assertThat(acuerdoNotificados.get(0).nombre()).isNotEmpty();
         assertThat(acuerdoNotificados.get(0).nombre()).doesNotContain("actor");
     }
-    
+
     @Test
     void testFindTipoPartesAcuerdo_otros() {
         Integer carpetaId = 1;
         String tipoParte = "otros";
-    
-        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId, tipoParte);
-    
+
+        List<AcuerdoNotificadosRecord> acuerdoNotificados = documentoRepository.findTipoPartesAcuerdo(carpetaId,
+                tipoParte);
+
         assertThat(acuerdoNotificados).isNotNull();
         assertThat(acuerdoNotificados).hasSize(0);
     }
 
-
-@Test
-void testActualizacionAcuerdoRespuesta() {
-    Integer carpetaId = 1;
-    Integer documentoId = 5;
-    // Ejecutar la actualización
-    documentoRepository.actualizacionAcuerdoRespuesta(carpetaId, documentoId);
-
-    // Verificar que los documentos en la carpeta tienen `acuerdoRespuesta` como null
-    List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, documentoId, "ACUERDO");
-    assertThat(documentos.isEmpty());
-}
     @Test
-    void testfindDocumentosByCarpeta(){
-        Integer carpetaId=1;
+    void testActualizacionAcuerdoRespuesta() {
+        Integer carpetaId = 1;
+        Integer documentoId = 5;
+        // Ejecutar la actualización
+        documentoRepository.actualizacionAcuerdoRespuesta(carpetaId, documentoId);
+
+        // Verificar que los documentos en la carpeta tienen `acuerdoRespuesta` como
+        // null
+        List<AcuerdoPromocionesRecord> documentos = documentoRepository.obtenerPromociones(carpetaId, documentoId,
+                "ACUERDO");
+        assertThat(documentos.isEmpty());
+    }
+
+    @Test
+    void testfindDocumentosByCarpeta() {
+        Integer carpetaId = 1;
 
         List<DocumentoDetalleCarpeta> documentos = documentoRepository.findDocumentosByCarpeta(carpetaId);
 
@@ -145,27 +153,28 @@ void testActualizacionAcuerdoRespuesta() {
     }
 
     @Test
-    void testFindDocumentosByAcuerdoId(){
-        Integer acuerdoId=5;
+    void testFindDocumentosByAcuerdoId() {
+        Integer acuerdoId = 5;
 
         List<Documento> promociones = documentoRepository.findByAcuerdoRespuestaId(acuerdoId);
 
         assertThat(promociones).isNotEmpty();
     }
-    
+
     @Test
-void testFindByCarpetaIdAndTipoDocumentoIn() {
-    Integer carpetaId = 1;
-    List<TipoDocumento> tiposDocumento = Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA);
+    void testFindByCarpetaIdAndTipoDocumentoIn() {
+        Integer carpetaId = 1;
+        List<TipoDocumento> tiposDocumento = Arrays.asList(TipoDocumento.ACUERDO, TipoDocumento.SENTENCIA);
 
-    Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(carpetaId, tiposDocumento, PageRequest.of(0, 10));
+        Page<Documento> documentos = documentoRepository.findByCarpetaIdAndTipoDocumentoIn(carpetaId, tiposDocumento,
+                PageRequest.of(0, 10));
 
-    assertNotNull(documentos);
-    assertEquals(1, documentos.getTotalElements());
+        assertNotNull(documentos);
+        assertEquals(1, documentos.getTotalElements());
 
-    Documento documento1 = documentos.getContent().get(0);
-    assertEquals(TipoDocumento.ACUERDO, documento1.getTipoDocumento());
-}
+        Documento documento1 = documentos.getContent().get(0);
+        assertEquals(TipoDocumento.ACUERDO, documento1.getTipoDocumento());
+    }
 
     @Test
     void testFindPromocionesLitigante() {
@@ -180,7 +189,8 @@ void testFindByCarpetaIdAndTipoDocumentoIn() {
         String numeroAcuerdo = "3";
         String correo = "juanperez@gmail.com";
 
-        boolean exists = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(expediente, numeroAcuerdo, correo);
+        boolean exists = documentoRepository.existsByExpedienteAndAcuerdoAndAsociateCorreo(expediente, numeroAcuerdo,
+                correo);
         assertThat(exists).isFalse();
     }
 }

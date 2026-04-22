@@ -7,15 +7,15 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenido;
 import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoContenidoRepository;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOMICILIOS.sql",
@@ -55,13 +55,13 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentoscontenido.DocumentoC
         "/scripts/DELETE_DISTRITOS.sql",
         "/scripts/DELETE_DOMICILIOS.sql",
 }, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-class DocumentoContenidoRepositoryTest  extends AuditConfigTest {
-    
+class DocumentoContenidoRepositoryTest extends AuditConfigTest {
+
     @Autowired
     private DocumentoContenidoRepository documentoContenidoRepository;
 
     @Test
-    void findByDocumento_Id(){
+    void findByDocumento_Id() {
         Optional<DocumentoContenido> contenido = documentoContenidoRepository.findByDocumentoId(1);
 
         assertThat(contenido).isNotNull();

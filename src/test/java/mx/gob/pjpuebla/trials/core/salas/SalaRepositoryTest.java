@@ -13,8 +13,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Arrays;
@@ -96,14 +96,14 @@ class SalaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void testFindSalaDisponible(){
+    void testFindSalaDisponible() {
         BloqueCitaItem cita = new BloqueCitaItem();
         Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElse(null);
         Sala sala = salaRepository.findByJuzgado(juzgado).stream().findFirst().orElse(null);
         Bloque bloque = sala.getBloque();
 
         cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+        cita.setHoraCitas(LocalTime.of(8, 30, 00));
 
         bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         bloque = bloqueRepository.save(BloqueSetUp.createBloque());
@@ -117,15 +117,15 @@ class SalaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void testHorarioDisponible(){
+    void testHorarioDisponible() {
         BloqueCitaItem cita = new BloqueCitaItem();
-        LocalDateTime fechaAudiciencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8,30,00));
+        LocalDateTime fechaAudiciencia = LocalDateTime.of(LocalDate.now().plusDays(3), LocalTime.of(8, 30, 00));
         Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElse(null);
         Sala sala = salaRepository.findByJuzgado(juzgado).stream().findFirst().orElse(null);
         Bloque bloque = sala.getBloque();
 
         cita.setNumCitas(1);
-        cita.setHoraCitas(LocalTime.of(8,30,00));
+        cita.setHoraCitas(LocalTime.of(8, 30, 00));
 
         bloque.setData(new BloqueData().setCitas(Arrays.asList(cita)));
         bloque = bloqueRepository.save(BloqueSetUp.createBloque());
@@ -133,7 +133,6 @@ class SalaRepositoryTest extends AuditConfigTest {
         sala.setBloque(bloque);
 
         sala = salaRepository.save(sala);
-
 
         Optional<Sala> salas = salaRepository.checkHoraDisponible(fechaAudiciencia, sala);
 
@@ -147,6 +146,5 @@ class SalaRepositoryTest extends AuditConfigTest {
         List<Sala> result = salaRepository.findByJuzgadoAndNombreContainingIgnoreCase(juzgado, "");
         assertThat(result).isNotNull();
     }
-
 
 }

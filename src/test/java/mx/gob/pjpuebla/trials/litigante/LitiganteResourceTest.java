@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,98 +35,101 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class LitiganteResourceTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-    @MockBean
-    private LitiganteService litiganteService;
-    @MockBean
-    private AcuerdoService acuerdoServicePdf;
-    @MockBean 
-    private AcusePromocionService acusePromocionService;
+        @Autowired
+        private MockMvc mockMvc;
+        @MockitoBean
+        private LitiganteService litiganteService;
+        @MockitoBean
+        private AcuerdoService acuerdoServicePdf;
+        @MockitoBean
+        private AcusePromocionService acusePromocionService;
 
-    @Test 
-    void getExpedientesRelacionados() throws Exception {
-        LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
-                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
-        given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
+        @Test
+        void getExpedientesRelacionados() throws Exception {
+                LitiganteExpedientesRecord litiganteExpedientesRecord = new LitiganteExpedientesRecord(
+                                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
+                                "", "", "Juzgado 5 Mercantil TEST", 0L, "");
+                given(litiganteService.getExpedientesRelacionados(any(String.class), any(Pageable.class)))
+                                .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedientesRecord)));
 
-        mockMvc.perform(
-                get("/api/litigante/expedientes")
-                        .param("key", "")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/litigante/expedientes")
+                                                .param("key", "")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAcuerdosSentencias() throws Exception {
-        List<AcuerdoSentenciaRecord> list = Collections.singletonList(
-                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1, "Completado", Migrado.SI));
+        @Test
+        void getAcuerdosSentencias() throws Exception {
+                List<AcuerdoSentenciaRecord> list = Collections.singletonList(
+                                new AcuerdoSentenciaRecord(1, "000001/2025", LocalDateTime.now(), "Juzgado 1", 1,
+                                                "Completado", Migrado.SI));
 
-        given(litiganteService.getAcuerdosSentencias(any(Pageable.class))).willReturn(new PageImpl<>(list));
+                given(litiganteService.getAcuerdosSentencias(any(Pageable.class))).willReturn(new PageImpl<>(list));
 
-        mockMvc.perform(get("/api/litigante/acuerdoSentencia")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(get("/api/litigante/acuerdoSentencia")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void exportAcuerdoPdf() throws Exception {
-        Integer documentoId = 123;
-        byte[] mockPdf = new byte[]{1, 2, 3};
+        @Test
+        void exportAcuerdoPdf() throws Exception {
+                Integer documentoId = 123;
+                byte[] mockPdf = new byte[] { 1, 2, 3 };
 
-        given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
+                given(acuerdoServicePdf.getAcuerdoPdf(documentoId)).willReturn(mockPdf);
 
-        mockMvc.perform(get("/api/litigante/documento/" + documentoId)
-                        .accept(APPLICATION_PDF))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(get("/api/litigante/documento/" + documentoId)
+                                .accept(APPLICATION_PDF))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getPromocionesLitigante() throws Exception {
-        PromocionesLitiganteRecord promocionRecord = new PromocionesLitiganteRecord(0, "", "", "", "", null, null,"","");
-        Page<PromocionesLitiganteRecord> promocionesPage = new PageImpl<>(Collections.singletonList(promocionRecord));
+        @Test
+        void getPromocionesLitigante() throws Exception {
+                PromocionesLitiganteRecord promocionRecord = new PromocionesLitiganteRecord(0, "", "", "", "", null,
+                                null, "", "");
+                Page<PromocionesLitiganteRecord> promocionesPage = new PageImpl<>(
+                                Collections.singletonList(promocionRecord));
 
-        given(litiganteService.getPromocionesLitigante(any(), any(Pageable.class))).willReturn(promocionesPage);
-        mockMvc.perform(get("/api/litigante/promociones")
-                        .param("key", "")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
+                given(litiganteService.getPromocionesLitigante(any(), any(Pageable.class))).willReturn(promocionesPage);
+                mockMvc.perform(get("/api/litigante/promociones")
+                                .param("key", "")
+                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAudienciasByExpedienteRelacionados() throws Exception {
-        LitiganteExpedienteListAudienciasRecord litiganteExpedienteListAudienciasRecord = new LitiganteExpedienteListAudienciasRecord(
-                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
-                "Juzgado 5 Mercantil TEST",
-                Collections.singletonList(new AudienciasExpedienteRecord(100, "2025-01-13", "08:00:00", "2025-01-13", "08:30:00"))
-        );
+        @Test
+        void getAudienciasByExpedienteRelacionados() throws Exception {
+                LitiganteExpedienteListAudienciasRecord litiganteExpedienteListAudienciasRecord = new LitiganteExpedienteListAudienciasRecord(
+                                100, "000001/2025", "MERCANTIL", "Mercantil (Tradicional)",
+                                "Juzgado 5 Mercantil TEST",
+                                Collections.singletonList(new AudienciasExpedienteRecord(100, "2025-01-13", "08:00:00",
+                                                "2025-01-13", "08:30:00")));
 
-        given(litiganteService.getExpedientesAudienciasRelacionados(any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(litiganteExpedienteListAudienciasRecord)));
+                given(litiganteService.getExpedientesAudienciasRelacionados(any(Pageable.class)))
+                                .willReturn(new PageImpl<>(
+                                                Collections.singletonList(litiganteExpedienteListAudienciasRecord)));
 
-        mockMvc.perform(
-                get("/api/litigante/audiencias")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/litigante/audiencias")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
         void getExpedienteDetails() throws Exception {
                 DocumentoResponseRecord documentoResponse = new DocumentoResponseRecord(
-                        "001",
-                        LocalDate.of(2025, 1, 1),
-                        "",
-                        "/archivos/documento-prueba.pdf"
-                );
+                                "001",
+                                LocalDate.of(2025, 1, 1),
+                                "",
+                                "/archivos/documento-prueba.pdf");
 
-                given(litiganteService.getExpedienteDetails(any(Integer.class), any(Pageable.class))).willReturn(new PageImpl<>(Collections.singletonList(documentoResponse)));
+                given(litiganteService.getExpedienteDetails(any(Integer.class), any(Pageable.class)))
+                                .willReturn(new PageImpl<>(Collections.singletonList(documentoResponse)));
 
                 mockMvc.perform(
-                        get("/api/litigante/acuerdos")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk());
+                                get("/api/litigante/acuerdos")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
         }
 
 }

@@ -86,14 +86,14 @@ class DigitalizacionServiceTest {
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
 
-
         documento.setCarpeta(null);
         documento.setTipoDocumento(TipoDocumento.OFICIO);
         documento.setData(docData);
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
-        given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
+        given(persona.getOficialia()).willReturn(
+                OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
 
         DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
         createdDirectory = Paths.get(result.rutaArchivo()).getParent();
@@ -117,7 +117,8 @@ class DigitalizacionServiceTest {
 
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
-        given(persona.getOficialia()).willReturn(OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
+        given(persona.getOficialia()).willReturn(
+                OficialiaSetUp.createOficialia(TipoOficialiaSetUp.createtipoOficialia(), SedeSetUp.createSede()));
 
         DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
         createdDirectory = Paths.get(result.rutaArchivo()).getParent();
@@ -140,7 +141,6 @@ class DigitalizacionServiceTest {
         given(documentoRepository.findById(anyInt())).willReturn(Optional.of(documento));
         given(personaService.getAuditor()).willReturn(persona);
 
-
         DigitalizacionRecord result = digitalizacionService.guardarDocumento(fileMock, documento.getId());
         createdDirectory = Paths.get(result.rutaArchivo()).getParent();
 
@@ -158,7 +158,7 @@ class DigitalizacionServiceTest {
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
         MultipartFile fileMock = DigitalizacionSetUp.generarArchivo(1, "file", "application/pdf");
         Persona persona = PersonaSetUp.createPersona();
-        
+
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.EXHORTO);
         documento.getCarpeta().setExpediente("E000006/2024");
 
@@ -197,7 +197,8 @@ class DigitalizacionServiceTest {
         documento.setTipoDocumento(null);
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
-        assertThrows(IllegalArgumentException.class, () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
+        assertThrows(IllegalArgumentException.class,
+                () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
     }
 
     /**
@@ -212,7 +213,8 @@ class DigitalizacionServiceTest {
         documento.setCarpeta(null);
         given(documentoRepository.findById(any())).willReturn(Optional.of(documento));
 
-        assertThrows(IllegalArgumentException.class, () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
+        assertThrows(IllegalArgumentException.class,
+                () -> digitalizacionService.guardarDocumento(fileMock, documento.getId()));
     }
 
     /**
@@ -221,7 +223,7 @@ class DigitalizacionServiceTest {
     @Test
     void cargarArchivoPdf() throws IOException {
         Persona persona = PersonaSetUp.createPersona();
-        
+
         Documento documento = DocumentoSetUp.create(TipoJuicioSetUp.createTipoJuicio());
         documento.getCarpeta().setTipoCarpeta(TipoCarpeta.DEMANDA);
         documento.setTipoDocumento(TipoDocumento.PROMOCION);
@@ -371,7 +373,7 @@ class DigitalizacionServiceTest {
             while (parentDir != null && !parentDir.endsWith("2024")) {
                 try {
                     if (Files.isDirectory(parentDir) && Files.list(parentDir).findAny().isEmpty()) {
-                       
+
                         Files.delete(parentDir);
                     }
                     parentDir = parentDir.getParent(); // Continuar hacia arriba
@@ -384,7 +386,8 @@ class DigitalizacionServiceTest {
     }
 
     /**
-     * Prueba la creación de directorio para documentos de tipo "DOCUMENTO_IDENTIFICACION".
+     * Prueba la creación de directorio para documentos de tipo
+     * "DOCUMENTO_IDENTIFICACION".
      */
     @Test
     void testCreateDirectorio_Documento_Identificacion() {

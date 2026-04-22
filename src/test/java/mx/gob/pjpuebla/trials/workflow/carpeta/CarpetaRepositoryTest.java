@@ -13,8 +13,8 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpet
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOMICILIOS.sql",
@@ -77,12 +77,12 @@ class CarpetaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findByBandejaRecepcionByDocumentoIdSuccess() {
-        Integer documentoId =  2;
+        Integer documentoId = 2;
 
         BandejaRecepcionRecord result = carpetaRepository.findByDocumentoId(documentoId);
 
-        assertThat(result).isNotNull(); 
-        assertThat(result.documentoId()).isEqualTo(documentoId); 
+        assertThat(result).isNotNull();
+        assertThat(result.documentoId()).isEqualTo(documentoId);
     }
 
     @Test
@@ -90,18 +90,18 @@ class CarpetaRepositoryTest extends AuditConfigTest {
         Integer documentoId = 17;
         BandejaRecepcionRecord result = carpetaRepository.findByDocumentoId(documentoId);
 
-        assertThat(result).isNull(); 
+        assertThat(result).isNull();
     }
 
     @Test
-    void findAnexoByDocumentoIdSuccess(){
+    void findAnexoByDocumentoIdSuccess() {
         Integer documentoId = 1;
         List<AnexoBandejaRecepcionRecord> result = carpetaRepository.findAnexosByDocumentoId(documentoId);
         assertThat(result).isNotNull();
     }
 
     @Test
-    void findAnexoByDocumentoIdFail(){
+    void findAnexoByDocumentoIdFail() {
         Integer documentoId = 2;
         List<AnexoBandejaRecepcionRecord> result = carpetaRepository.findAnexosByDocumentoId(documentoId);
         assertThat(result).isNullOrEmpty();
@@ -117,7 +117,7 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void getNumeroPiezaTest(){
+    void getNumeroPiezaTest() {
         Integer carpetaId = 1;
         String clavePieza = "AD";
 
@@ -134,13 +134,13 @@ class CarpetaRepositoryTest extends AuditConfigTest {
 
     @Test
     void findTipoJuicioIdByCarpetaIdFail() {
-        Integer carpetaId = 999; 
+        Integer carpetaId = 999;
         Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
         assertThat(tipoJuicioId).isNull();
     }
 
     @Test
-    void findPiezasByDocumentoId(){
+    void findPiezasByDocumentoId() {
         Integer documentoId = 2;
 
         List<PiezaRecordResponse> piezas = carpetaRepository.findPiezasByDocumentoId(documentoId);
@@ -149,13 +149,13 @@ class CarpetaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findPiezasByCarpetaId(){
+    void findPiezasByCarpetaId() {
         Integer carpetaPadreId = 2;
 
         List<DocumentoDetalleCarpeta> piezas = carpetaRepository.findPiezasByCarpetaPadreId(null, carpetaPadreId);
 
         assertThat(piezas).isNotNull()
-                .allMatch((p)->p.tipoCarpeta()== TipoCarpeta.PIEZA);
+                .allMatch((p) -> p.tipoCarpeta() == TipoCarpeta.PIEZA);
     }
 
     @Test

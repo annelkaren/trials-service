@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class ReligionesResourceTest {
 
-    @MockBean
+    @MockitoBean
     private ReligionesService religionesService;
 
     @Autowired
@@ -42,10 +42,9 @@ class ReligionesResourceTest {
                 .willReturn(Collections.singletonList(religionesRecord));
 
         mockMvc.perform(
-                        get("/api/core/religiones/autocomplete")
-                                .param("key", "Católica")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
+                get("/api/core/religiones/autocomplete")
+                        .param("key", "Católica")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }

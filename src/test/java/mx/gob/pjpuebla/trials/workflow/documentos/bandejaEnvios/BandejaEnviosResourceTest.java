@@ -10,9 +10,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
@@ -38,12 +38,11 @@ public class BandejaEnviosResourceTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private BandejaEnviosService bandejaEnviosService;
 
-    @MockBean
+    @MockitoBean
     private DigitalizacionService digitalizacionService;
-
 
     @Test
     public void testObtenerBandejaEnvios() throws Exception {
@@ -61,12 +60,12 @@ public class BandejaEnviosResourceTest {
     public void testActualizarEstatusOficio() throws Exception {
         BandejaEnvioRecordResponse response = new BandejaEnvioRecordResponse(1, "OK");
         BandejaEnviosCambioEstatus data = new BandejaEnviosCambioEstatus(List.of(1), EstadoEnvio.ENVIADO, null);
-        
+
         when(bandejaEnviosService.actualizarEstatusOficio(data)).thenReturn(response);
 
         mockMvc.perform(post("/api/workflow/bandejaEnvios/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(data)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(data)))
                 .andExpect(status().isOk());
     }
 }

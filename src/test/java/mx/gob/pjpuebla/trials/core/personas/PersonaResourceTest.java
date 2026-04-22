@@ -12,9 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -37,201 +37,201 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class PersonaResourceTest {
 
-    @MockBean
-    private PersonaService mockPersonaService;
-    @MockBean
-    private RestTemplate restTemplate;
-    @Autowired
-    private MockMvc mockMvc;
+        @MockitoBean
+        private PersonaService mockPersonaService;
+        @MockitoBean
+        private RestTemplate restTemplate;
+        @Autowired
+        private MockMvc mockMvc;
 
-    private PersonaRecord validPersonaRecord;
-    private PersonaRecordResponse personaRecordResponse;
+        private PersonaRecord validPersonaRecord;
+        private PersonaRecordResponse personaRecordResponse;
 
-    @BeforeEach
-    void setUp() {
-        personaRecordResponse = PersonaSetUp.createPersonaRecordResponse();
-        validPersonaRecord = PersonaSetUp.createPersonaRecord();
-    }
+        @BeforeEach
+        void setUp() {
+                personaRecordResponse = PersonaSetUp.createPersonaRecordResponse();
+                validPersonaRecord = PersonaSetUp.createPersonaRecord();
+        }
 
-    @Test
-    void getAll_success() throws Exception {
-        given(mockPersonaService.getAll(any(Persona.class), any(Pageable.class)))
-                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
+        @Test
+        void getAll_success() throws Exception {
+                given(mockPersonaService.getAll(any(Persona.class), any(Pageable.class)))
+                                .willReturn(new PageImpl<>(Collections.singletonList(personaRecordResponse)));
 
-        mockMvc.perform(
-                get("/api/core/personas")
-                        .param("nombre", "J")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas")
+                                                .param("nombre", "J")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_success() throws Exception {
-        given(mockPersonaService.findById(anyLong()))
-                .willReturn(validPersonaRecord);
+        @Test
+        void getById_success() throws Exception {
+                given(mockPersonaService.findById(anyLong()))
+                                .willReturn(validPersonaRecord);
 
-        mockMvc.perform(
-                get("/api/core/personas/1")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/1")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getById_not_found() throws Exception {
-        given(mockPersonaService.findById(anyLong()))
-                .willThrow(NotFoundException.class);
+        @Test
+        void getById_not_found() throws Exception {
+                given(mockPersonaService.findById(anyLong()))
+                                .willThrow(NotFoundException.class);
 
-        mockMvc.perform(
-                get("/api/core/personas/0")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isNotFound());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/0")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isNotFound());
+        }
 
-    @Test
-    void getById_invalid() throws Exception {
-        given(mockPersonaService.findById(anyLong()))
-                .willThrow(MethodArgumentTypeMismatchException.class);
+        @Test
+        void getById_invalid() throws Exception {
+                given(mockPersonaService.findById(anyLong()))
+                                .willThrow(MethodArgumentTypeMismatchException.class);
 
-        mockMvc.perform(
-                get("/api/core/personas/A")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/A")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void create_success() throws Exception {
-        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.create(new PersonaDTO()))
-                .willReturn(personaRecordResponse);
+        @Test
+        void create_success() throws Exception {
+                RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+                given(mockPersonaService.create(new PersonaDTO()))
+                                .willReturn(personaRecordResponse);
 
-        mockMvc.perform(
-                post("/api/core/personas")
-                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                post("/api/core/personas")
+                                                .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_success() throws Exception {
-        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(new PersonaDTO()))
-                .willReturn(personaRecordResponse);
+        @Test
+        void update_success() throws Exception {
+                RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+                given(mockPersonaService.update(new PersonaDTO()))
+                                .willReturn(personaRecordResponse);
 
-        mockMvc.perform(
-                put("/api/core/personas")
-                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                put("/api/core/personas")
+                                                .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void update_error() throws Exception {
-        RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
-        given(mockPersonaService.update(new PersonaDTO()))
-                .willThrow(InvalidVersionException.class);
+        @Test
+        void update_error() throws Exception {
+                RoleRecord roleRecord = new RoleRecord("JUEZ", "JUEZ");
+                given(mockPersonaService.update(new PersonaDTO()))
+                                .willThrow(InvalidVersionException.class);
 
-        mockMvc.perform(
-                put("/api/core/personas")
-                        .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
-    }
+                mockMvc.perform(
+                                put("/api/core/personas")
+                                                .content(ResourceUtilTest.asJsonString(PersonaSetUp.createPersona()))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    void getByCurp_success() throws Exception {
-        String curp = "XXXX111111XXXXXX11";
-        given(mockPersonaService.findByCurp(curp))
-                .willReturn(validPersonaRecord);
+        @Test
+        void getByCurp_success() throws Exception {
+                String curp = "XXXX111111XXXXXX11";
+                given(mockPersonaService.findByCurp(curp))
+                                .willReturn(validPersonaRecord);
 
-        mockMvc.perform(
-                get("/api/core/personas/curp/" + curp)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/curp/" + curp)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAll_jueces() throws Exception {
-        JuezRecord juezRecord = new JuezRecord(1L, "Juan Perez");
-        given(mockPersonaService.findAllJueces(any(Integer.class)))
-                .willReturn(List.of(juezRecord));
+        @Test
+        void getAll_jueces() throws Exception {
+                JuezRecord juezRecord = new JuezRecord(1L, "Juan Perez");
+                given(mockPersonaService.findAllJueces(any(Integer.class)))
+                                .willReturn(List.of(juezRecord));
 
-        mockMvc.perform(
-                get("/api/core/personas/jueces/" + anyInt())
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/jueces/" + anyInt())
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAll_CentrosTrabajo() throws Exception {
-        given(mockPersonaService.findAllCentroTrabajo(any(String.class)))
-                .willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
+        @Test
+        void getAll_CentrosTrabajo() throws Exception {
+                given(mockPersonaService.findAllCentroTrabajo(any(String.class)))
+                                .willReturn(List.of(new CentroTrabajoRecord(1, "TEST", TipoCentroTrabajo.JUZGADO)));
 
-        mockMvc.perform(
-                get("/api/core/personas/centrostrabajo")
-                        .param("page", "0")
-                        .param("size", "10")
-                        .param("nombre", "")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/centrostrabajo")
+                                                .param("page", "0")
+                                                .param("size", "10")
+                                                .param("nombre", "")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getAll_encargados_carrito() throws Exception {
-        EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(1L, "Juan Perez");
-        given(mockPersonaService.findAllEncargadosCarrito())
-                .willReturn(List.of(encargadoCarritoRecord));
+        @Test
+        void getAll_encargados_carrito() throws Exception {
+                EncargadoCarritoRecord encargadoCarritoRecord = new EncargadoCarritoRecord(1L, "Juan Perez");
+                given(mockPersonaService.findAllEncargadosCarrito())
+                                .willReturn(List.of(encargadoCarritoRecord));
 
-        mockMvc.perform(
-                get("/api/core/personas/encargadocarrito")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/encargadocarrito")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void getPersonalTurnado_success() throws Exception {
-        given(mockPersonaService.getPersonalTurnado())
-                .willReturn(Collections.singletonList(personaRecordResponse));
+        @Test
+        void getPersonalTurnado_success() throws Exception {
+                given(mockPersonaService.getPersonalTurnado())
+                                .willReturn(Collections.singletonList(personaRecordResponse));
 
-        mockMvc.perform(
-                get("/api/core/personas/turnado")
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                get("/api/core/personas/turnado")
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void verifyIfUserExistsAndIsLitigante_success() throws Exception {
-        PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("", HttpStatus.OK);
-        given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(true);
+        @Test
+        void verifyIfUserExistsAndIsLitigante_success() throws Exception {
+                PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
+                ResponseEntity<String> responseEntity = new ResponseEntity<>("", HttpStatus.OK);
+                given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(true);
 
-        when(restTemplate.exchange(
-                Mockito.anyString(),
-                Mockito.any(),
-                Mockito.any(),
-                Mockito.<ParameterizedTypeReference<String>> any()))
-                .thenReturn(responseEntity);
+                when(restTemplate.exchange(
+                                Mockito.anyString(),
+                                Mockito.any(),
+                                Mockito.any(),
+                                Mockito.<ParameterizedTypeReference<String>>any()))
+                                .thenReturn(responseEntity);
 
-        mockMvc.perform(
-                post("/api/core/personas/login")
-                        .content(ResourceUtilTest.asJsonString(loginRecord))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isOk());
-    }
+                mockMvc.perform(
+                                post("/api/core/personas/login")
+                                                .content(ResourceUtilTest.asJsonString(loginRecord))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
-    @Test
-    void verifyIfUserExistsAndIsLitigante_error_isNotALitigante() throws Exception {
-        PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
-        given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(false);
+        @Test
+        void verifyIfUserExistsAndIsLitigante_error_isNotALitigante() throws Exception {
+                PersonaLoginRecord loginRecord = new PersonaLoginRecord("test", "Welcome123");
+                given(mockPersonaService.verifyIfUserExistsAndIsLitigante(any())).willReturn(false);
 
-        mockMvc.perform(
-                post("/api/core/personas/login")
-                        .content(ResourceUtilTest.asJsonString(loginRecord))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isUnauthorized());
-    }
+                mockMvc.perform(
+                                post("/api/core/personas/login")
+                                                .content(ResourceUtilTest.asJsonString(loginRecord))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isUnauthorized());
+        }
 }

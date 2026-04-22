@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
@@ -87,14 +87,15 @@ class PersonaRepositoryTest extends AuditConfigTest {
         persona.setJuzgado(new Juzgado().setId(51));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
         Optional<Persona> entity = personaRepository
-                .findByUsuarioAndJuzgadoIdAndEstadoIn(persona.getUsuario(), persona.getJuzgado().getId(), List.of(Estado.ACTIVE));
+                .findByUsuarioAndJuzgadoIdAndEstadoIn(persona.getUsuario(), persona.getJuzgado().getId(),
+                        List.of(Estado.ACTIVE));
         assertThat(entity).isPresent();
         assertThat(entity.get().getNombre()).isEqualTo(persona.getNombre());
         assertThat(entity.get().getUsuario()).isEqualTo(persona.getUsuario());
     }
 
     @Test
-    void findByCentroTrabajoAndSearch(){
+    void findByCentroTrabajoAndSearch() {
         persona.setJuzgado(new Juzgado().setId(51));
         persona.setUsuario("6b13785f-d213-4585-a76b-437ffe57c9c7");
 

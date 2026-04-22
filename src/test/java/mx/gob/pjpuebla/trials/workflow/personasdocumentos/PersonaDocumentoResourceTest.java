@@ -7,13 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 public class PersonaDocumentoResourceTest {
 
-    @MockBean
+    @MockitoBean
     PersonaDocumentoService personaDocumentoService;
 
     @Autowired
@@ -38,13 +37,13 @@ public class PersonaDocumentoResourceTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void getTipoPartesPrincipales() throws Exception{
+    void getTipoPartesPrincipales() throws Exception {
         List<PersonaDocumentoNameRecord> personas = List.of(new PersonaDocumentoNameRecord(1, "Juan Pérez"));
 
         given(personaDocumentoService.getTipoPartesPrincipales(anyInt(), anyString())).willReturn(personas);
 
         mockMvc.perform(get("/api/workflow/personasdocumentos/51/actor")
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
@@ -54,9 +53,9 @@ public class PersonaDocumentoResourceTest {
         given(personaDocumentoService.getCorreoByPersonaDocumentoId(1)).willReturn(correo);
 
         mockMvc.perform(get("/api/workflow/personasdocumentos/correo/1")
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(correo)); 
+                .andExpect(content().string(correo));
     }
 
     @Test
@@ -74,7 +73,7 @@ public class PersonaDocumentoResourceTest {
         given(personaDocumentoService.getDomicilioByPersonaDocumentoId(1)).willReturn(mockDomicilio);
 
         mockMvc.perform(get("/api/workflow/personasdocumentos/domicilio/1")
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(mockDomicilio)));
     }
