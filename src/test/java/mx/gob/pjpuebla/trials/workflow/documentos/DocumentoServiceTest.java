@@ -70,6 +70,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaService;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -145,6 +146,8 @@ class DocumentoServiceTest {
         private TipoSistemaRepository tipoSistemaRepository;
         @Mock
         private JuzgadoService juzgadoService;
+        @Mock
+        private SecuenciaService secuenciaService;
         @Mock
         private CarpetaRepository carpetaRepository;
         @Mock
@@ -619,8 +622,8 @@ class DocumentoServiceTest {
                 given(personaService.getAuditor()).willReturn(auditor);
                 given(carpetaRepository.findById(any())).willReturn(Optional.of((carpeta)));
                 given(documentoRepository.save(any())).willReturn(promocion);
-                given(documentoRepository.getNextValPromocion()).willReturn(1L);
-                given(documentoRepository.getNextValPromocion()).willReturn(1L);
+                given(secuenciaService.getNextValPromocion()).willReturn(1L);
+                given(secuenciaService.getNextValPromocion()).willReturn(1L);
 
                 List<String> anexos = List.of("Anexo1", "Anexo2");
                 DocumentoPromocionRecord documentoPromocionRecord = new DocumentoPromocionRecord(1,
@@ -657,8 +660,8 @@ class DocumentoServiceTest {
                 given(personaService.getAuditor()).willReturn(auditor);
                 given(carpetaRepository.findById(any())).willReturn(Optional.of((carpeta)));
                 given(documentoRepository.save(any())).willReturn(promocion);
-                given(documentoRepository.getNextValPromocion()).willReturn(1L);
-                given(documentoRepository.getNextValPromocion()).willReturn(1L);
+                given(secuenciaService.getNextValPromocion()).willReturn(1L);
+                given(secuenciaService.getNextValPromocion()).willReturn(1L);
                 given(conceptoRepository.findByNombre(any())).willReturn(Optional.of(concepto));
 
                 List<String> anexos = List.of("Anexo1", "Anexo2");
@@ -1831,7 +1834,7 @@ class DocumentoServiceTest {
                 given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(exhortoSalida.getCarpeta()));
                 given(personaService.getAuditor()).willReturn(persona);
                 given(documentoRepository.save(any())).willReturn(exhortoSalida);
-                given(documentoRepository.getNextValExhortoSalida()).willReturn(123L);
+                given(secuenciaService.getNextValExhortoSalida()).willReturn(123L);
 
                 DocumentoPromocionResponseRecord response = documentoService
                                 .createExhortoSalida(documentoExhortoSalidaRecord, multipartFile);

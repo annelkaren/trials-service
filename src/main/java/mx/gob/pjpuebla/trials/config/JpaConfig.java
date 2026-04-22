@@ -1,6 +1,5 @@
 package mx.gob.pjpuebla.trials.config;
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
@@ -10,12 +9,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Optional;
 
 @Configuration
-@EnableJpaAuditing(auditorAwareRef = "auditorAware") 
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class JpaConfig {
 
     @Bean
@@ -32,8 +31,9 @@ public class JpaConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
+    // Nuevo estándar uso de WebClient para peticiones web
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder){
-        return restTemplateBuilder.build();
+    public WebClient webClient(WebClient.Builder builder) {
+        return builder.build();
     }
 }

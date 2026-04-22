@@ -39,7 +39,8 @@ class AcuerdoRubrosRepositoryTest extends AuditConfigTest {
     void testFindByMateria() {
         Materia materia = MateriaSetUp.createMateria();
         materia.setId(100);
-        Page<AcuerdoRubros> rubros = acuerdoRubrosRepository.findByMateriaAndNombreContainingIgnoreCase(materia, "CONTROL DE DETENCION", PageRequest.of(0, 10));
+        Page<AcuerdoRubros> rubros = acuerdoRubrosRepository.findByMateriaAndNombreContainingIgnoreCase(materia,
+                "CONTROL DE DETENCION", PageRequest.of(0, 10));
         assertThat(rubros.getContent()).isNotEmpty();
     }
 
@@ -50,7 +51,8 @@ class AcuerdoRubrosRepositoryTest extends AuditConfigTest {
         materia.setNombre("FAMILAR");
         TipoSistema tipoSistema = TipoSistemaSetUp.createTipoSistema();
         tipoSistema.setId(100);
-        Page<AcuerdoRubros> rubros = acuerdoRubrosRepository.findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(materia, tipoSistema, "ACEPTACION DE CARGO", PageRequest.of(0, 10));
+        Page<AcuerdoRubros> rubros = acuerdoRubrosRepository.findByMateriaAndTipoSistemaAndNombreContainingIgnoreCase(
+                materia, tipoSistema, "ACEPTACION DE CARGO", PageRequest.of(0, 10));
         assertThat(rubros.getContent()).isNotEmpty();
     }
 }
