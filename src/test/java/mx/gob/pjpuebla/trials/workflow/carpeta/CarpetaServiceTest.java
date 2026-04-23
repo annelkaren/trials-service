@@ -60,6 +60,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDet
 import mx.gob.pjpuebla.trials.workflow.documentos.documentosdetalle.DocumentoDetalleRepository;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaService;
 import mx.gob.pjpuebla.trials.workflow.migracion.Migraciones;
 import mx.gob.pjpuebla.trials.workflow.migracion.MigracionesRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
@@ -156,6 +157,8 @@ class CarpetaServiceTest {
         private EntradasMigracionRepository entradasMigracionRepository;
         @Mock
         private MigracionesRepository migracionesRepository;
+        @Mock
+        private SecuenciaService secuenciaService;
 
         private Carpeta validCarpeta;
         private PersonaDocumentoRecord actor;

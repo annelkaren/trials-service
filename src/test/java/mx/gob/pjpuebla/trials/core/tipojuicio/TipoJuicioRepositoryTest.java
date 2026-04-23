@@ -57,6 +57,7 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
     @Test
     void findByAllAndEstadoActive() {
         TipoJuicio validTipoJuicio = createTipoJuicio(null, null);
+        validTipoJuicio.setId(null);
         tipoJuicioRepository.save(validTipoJuicio);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())

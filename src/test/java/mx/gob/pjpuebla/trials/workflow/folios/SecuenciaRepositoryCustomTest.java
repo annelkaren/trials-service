@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -16,6 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Import(SecuenciaService.class)
 class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Autowired

@@ -8,12 +8,13 @@ import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebasRepository;
 import mx.gob.pjpuebla.trials.core.tipoprueba.TipoPruebasService;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class TipoPruebasRepositoryTest {
 
     @Mock

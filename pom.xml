@@ -251,10 +251,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.1</version>
 				<configuration>
-					<!-- Specify the IntelliJ coverage agent -->
-					<argLine>
-						-javaagent:${project.build.directory}/dependency/intellij-coverage-agent.jar=${project.basedir}/.qodana/code-coverage/output.ic,true,true,true,false
-					</argLine>
+					<!-- Disabled for Maven test runs because the coverage agent breaks Spring Boot 4 JPA bootstrap. -->
 				</configuration>
 			</plugin>
 			<plugin>
