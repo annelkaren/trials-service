@@ -41,10 +41,11 @@ public class OficioService {
             @Override
             public void onEndPage(PdfWriter writer, Document document) {
                 try {
-                    Image image = Image.getInstanceFromClasspath("jasper/header.jpg");
+                    Image image = Image.getInstanceFromClasspath("jasper/logo_nuevo.png");
                     image.setAlignment(Element.ALIGN_RIGHT);
-                    image.setAbsolutePosition(document.leftMargin(), writer.getPageSize().getTop(document.topMargin()) + 10);
-                    image.scaleAbsolute(280f, 76f);
+                    image.setAbsolutePosition(document.leftMargin(),
+                            writer.getPageSize().getTop(document.topMargin()) + 10);
+                    image.scaleAbsolute(260f, 76f);
                     document.add(image);
 
                     PdfContentByte canvas = writer.getDirectContentUnder();
@@ -71,7 +72,8 @@ public class OficioService {
 
         BitMatrix bitMatrix;
         try {
-            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()), BarcodeFormat.QR_CODE, 68, 68);
+            bitMatrix = new MultiFormatWriter().encode(String.valueOf(documentoContenido.getId()),
+                    BarcodeFormat.QR_CODE, 68, 68);
             ByteArrayOutputStream qrbaos = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", qrbaos);
             Image qrcode = Image.getInstance(qrbaos.toByteArray());

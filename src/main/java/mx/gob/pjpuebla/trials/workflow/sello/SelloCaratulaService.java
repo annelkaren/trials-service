@@ -53,7 +53,8 @@ public class SelloCaratulaService {
         }
 
         String procedencia = getExhortoPromocion(documento);
-        String juicio =  isPieza ? documento.getCarpeta().getTipoJuicio().getNombre() : documento.getCarpeta().getCarpetaPadre().getTipoJuicio().getNombre();
+        String juicio = isPieza ? documento.getCarpeta().getTipoJuicio().getNombre()
+                : documento.getCarpeta().getCarpetaPadre().getTipoJuicio().getNombre();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("juzgado", documento.getCarpeta().getJuzgado().getNombre());
         parameters.put("expediente", expendienteYear[0]);
@@ -62,7 +63,7 @@ public class SelloCaratulaService {
         parameters.put("actor", actor);
         parameters.put("demandado", demandado);
         parameters.put("codigoQR", expendienteYear[0]);
-        parameters.put("logotipoHeder", "jasper/header.jpg");
+        parameters.put("logotipoHeder", "jasper/logo_nuevo.png");
         parameters.put("numeroExpediente", documento.getCarpeta().getExpediente());
         parameters.put("isExhorto", isExhorto); // es un Exhorto
         parameters.put("isApelacion", Objects.equals(documento.getTipoDocumento(), TipoDocumento.APELACION));
@@ -86,7 +87,7 @@ public class SelloCaratulaService {
         List<PersonaDocumentoRecord> personas = personaDocumentoRepository.findPersonaAndTipoParteByCarpetaId(id, parte,
                 rol);
 
-         if (personas.isEmpty() || personas == null) {
+        if (personas.isEmpty() || personas == null) {
             return "";
         }
 
