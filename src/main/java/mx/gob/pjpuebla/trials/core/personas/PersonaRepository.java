@@ -22,7 +22,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id, o.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia, dom.ciudad),
-                p.usuario, null
+                p.usuario, p.rolPrincipal, null
             )
             FROM Persona p
             LEFT JOIN p.escolaridad e
@@ -40,7 +40,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
                 p.celular, p.sexo, p.ocupacion, p.estado, ec.id, e.id, j.id, o.id,
                 new mx.gob.pjpuebla.trials.core.domicilios.DomicilioRecord(dom.id, dom.calle, dom.exterior,
                 dom.interior, dom.estadoRepublica, dom.municipio, dom.localidad, dom.colonia, dom.codigoPostal, dom.referencia, dom.ciudad),
-                p.usuario, null
+                p.usuario, p.rolPrincipal, null
             )
             FROM Persona p
             LEFT JOIN p.escolaridad e

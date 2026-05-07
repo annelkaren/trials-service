@@ -32,6 +32,7 @@ public record PersonaRecord(
         Integer oficialiaId,
         DomicilioRecord domicilio,
         String usuario,
+        String rolPrincipal,
         List<RoleRecord> permisos
 ) implements Serializable {
 
@@ -40,6 +41,6 @@ public record PersonaRecord(
         return new PersonaRecord(id(), version(), nombre(), apellidoPaterno(),
                 apellidoMaterno(), curp(), rfc(), fechaNacimiento(), correoElectronico(),
                 telefono(), celular(), sexo(), ocupacion(), estado(), estadoCivilId(),
-                escolaridadId(), juzgadoId(), oficialiaId(), domicilio(), usuario(), permisos);
+                escolaridadId(), juzgadoId(), oficialiaId(), domicilio(), usuario(), rolPrincipal(), permisos);
     }
 }

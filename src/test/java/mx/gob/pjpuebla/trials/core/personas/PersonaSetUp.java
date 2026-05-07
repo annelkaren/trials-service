@@ -36,14 +36,14 @@ public class PersonaSetUp {
         return new PersonaRecord(1L, 0, "Juan", "Perez",
                 "Gonzalitos", "XXXX111111XXXXXX11", "", LocalDate.of(1992, 1, 1),
                 "juanperez@mail.com", "", "", Sexo.FEMENINO, "", Estado.ACTIVE,
-                1, 1, 1, null,null, "", null);
+                1, 1, 1, null, null, "", "", null);
     }
 
     public static PersonaRecord createPersonaRecord(List<RoleRecord> roles) {
         return new PersonaRecord(1L, 0, "Juan", "Perez",
                 "Gonzalitos", "XXXX111111XXXXXX11", "", LocalDate.of(1992, 1, 1),
                 "juanperez@mail.com", "", "", Sexo.FEMENINO, "", Estado.ACTIVE,
-                1, 1, 1, null,null, "", roles);
+                1, 1, 1, null, null, "", "", roles);
     }
 
     public static PersonaRecordResponse createPersonaRecordResponse() {
