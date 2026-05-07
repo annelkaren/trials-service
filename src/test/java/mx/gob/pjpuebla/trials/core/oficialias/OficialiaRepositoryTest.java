@@ -42,9 +42,9 @@ class OficialiaRepositoryTest extends AuditConfigTest {
     @Test
     void findByIdAndEstadoActive() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<OficialiaRecord> entity = oficialiaRepository.findByIdAndEstadoIn(51, estados);
+        Optional<Oficialia> entity = oficialiaRepository.findByIdAndEstadoIn(51, estados);
         assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
+        assertThat(entity.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }
 
     @Test

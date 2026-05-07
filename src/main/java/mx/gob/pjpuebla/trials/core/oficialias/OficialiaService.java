@@ -94,8 +94,29 @@ public class OficialiaService {
 
     @Transactional(readOnly = true)
     public OficialiaRecord findById(Integer id) {
-        return oficialiaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
+        Oficialia o = oficialiaRepository.findByIdAndEstadoIn(id, Arrays.asList(Estado.INACTIVE, Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Oficialia no encontrada", "oficialiaId: " + id));
+
+        List<mx.gob.pjpuebla.trials.core.materias.MateriaRecord> materias = o.getMaterias() != null ? 
+            o.getMaterias().stream().map(m -> new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(m.getId(), m.getNombre())).collect(Collectors.toList()) : null;
+
+        return new OficialiaRecord(
+            o.getId(), o.getVersion(), o.getNombre(), o.getResponsable(), o.getEstado(),
+            new mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord(o.getTipoOficialia().getId(), o.getTipoOficialia().getNombre()),
+            new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse(o.getSede().getId(), o.getSede().getNombre(), o.getSede().getEstado()),
+            o.getTiposDocumentos() != null && !o.getTiposDocumentos().isBlank()
+                ? Arrays.stream(o.getTiposDocumentos().split(","))
+                    .map(String::trim)
+                    .map(clave -> {
+                        if (clave.equals("PROMOCION")) {
+                            return new CarpetaCatalogoRecord(clave, TipoDocumento.valueOf(clave).getEtiqueta());
+                        } else {
+                            return new CarpetaCatalogoRecord(clave, TipoCarpeta.valueOf(clave).getEtiqueta());
+                        }
+                    }).collect(Collectors.toList())
+                : null,
+            materias
+        );
     }
 
     public OficialiaRecordResponse create(Oficialia oficialia) {

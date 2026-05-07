@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.core.instituciones;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,8 +18,10 @@ import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecord;
 import mx.gob.pjpuebla.trials.core.instituciones.records.InstitucionRecordResponse;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
 import mx.gob.pjpuebla.trials.error.ConflictException;
+import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
+import mx.gob.pjpuebla.trials.util.Messages;
 
 @Slf4j
 @Transactional
@@ -73,7 +76,12 @@ public class InstitucionService {
     }
 
     public void delete(Integer id) {
-        institucionRepository.deleteById(id);
+        try {
+            institucionRepository.deleteById(id);
+            institucionRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw new ConstraintViolationException(buildDeleteConstraintMessage(ex), "institucionId" + id);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +101,18 @@ public class InstitucionService {
 
     public List<InstitucionRecord> getAllInstitucionesList() {
         return institucionRepository.getInstitucionesList();
+    }
+
+    private String buildDeleteConstraintMessage(DataIntegrityViolationException ex) {
+        String rootMessage = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : ex.getMessage();
+
+        if (rootMessage != null && rootMessage.contains("fk_sedes_domicilios")) {
+            return "No se puede eliminar la institución porque su domicilio está asociado a una sede. Desactive el registro en su lugar.";
+        }
+
+        return Messages.CONSTRAINT_ERROR;
     }
 
 }

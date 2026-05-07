@@ -98,7 +98,7 @@ class OficialiaServiceTest {
         void getById_return_oficialia() {
                 List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
                 given(oficialiaRepository.findByIdAndEstadoIn(oficialia.getId(), estados))
-                                .willReturn(Optional.ofNullable(oficialiaRecord));
+                                .willReturn(Optional.ofNullable(oficialia));
 
                 OficialiaRecord mr = oficialiaService.findById(oficialia.getId());
                 assertThat(mr).isOfAnyClassIn(OficialiaRecord.class)

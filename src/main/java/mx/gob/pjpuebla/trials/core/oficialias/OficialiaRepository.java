@@ -16,17 +16,13 @@ import java.util.Optional;
 public interface OficialiaRepository extends JpaRepository<Oficialia, Integer> {
 
         @Query("""
-                        SELECT
-                        new mx.gob.pjpuebla.trials.core.oficialias.records.OficialiaRecord(o.id, o.version, o.nombre, o.responsable, o.estado,
-                            new mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord(t.id, t.nombre),
-                            new mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse(s.id, s.nombre, s.estado),
-                            o.tiposDocumentos
-                        )
+                        SELECT o
                         FROM Oficialia o
-                        LEFT JOIN o.tipoOficialia t
-                        LEFT JOIN o.sede s
+                        LEFT JOIN FETCH o.tipoOficialia t
+                        LEFT JOIN FETCH o.sede s
+                        LEFT JOIN FETCH o.materias m
                         WHERE o.id =:id AND o.estado IN :estados""")
-        Optional<OficialiaRecord> findByIdAndEstadoIn(Integer id, List<Estado> estados);
+        Optional<Oficialia> findByIdAndEstadoIn(Integer id, List<Estado> estados);
 
         @Query("""
                         SELECT o FROM Oficialia o

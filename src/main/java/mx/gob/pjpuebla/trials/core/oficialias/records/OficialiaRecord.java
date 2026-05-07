@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeRecordResponse;
 import mx.gob.pjpuebla.trials.core.tipooficialias.TipoOficialiaRecord;
+import mx.gob.pjpuebla.trials.core.materias.MateriaRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
@@ -23,7 +24,8 @@ public record OficialiaRecord(
                 Estado estado,
                 TipoOficialiaRecord tipo,
                 SedeRecordResponse sede,
-                List<CarpetaCatalogoRecord> tipoDocumentos) implements Serializable {
+                List<CarpetaCatalogoRecord> tipoDocumentos,
+                List<MateriaRecord> materias) implements Serializable {
 
         public OficialiaRecord(Integer id, Integer version, String nombre, String responsable, Estado estado,
                         TipoOficialiaRecord tipo, SedeRecordResponse sede, String tipoDocumentos) {
@@ -52,6 +54,7 @@ public record OficialiaRecord(
                                                                         }
                                                                 })
                                                                 .collect(Collectors.toList())
-                                                : null);
+                                                : null,
+                                null);
         }
 }
