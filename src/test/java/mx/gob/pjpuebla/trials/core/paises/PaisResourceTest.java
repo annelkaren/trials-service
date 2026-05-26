@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class PaisResourceTest {
 
-    @MockBean
+    @MockitoBean
     private PaisService paisService;
 
     @Autowired
@@ -41,13 +41,12 @@ class PaisResourceTest {
 
         List<PaisRecord> paisRecords = Arrays.asList(
                 new PaisRecord(pais1.getKey(), pais1.getNombreComun(), pais1.getId().toString(), pais1.getId()),
-                new PaisRecord(pais2.getKey(), pais2.getNombreComun(),pais1.getId().toString(), pais2.getId())
-        );
+                new PaisRecord(pais2.getKey(), pais2.getNombreComun(), pais1.getId().toString(), pais2.getId()));
 
         when(paisService.getAll()).thenReturn(paisRecords);
 
         mockMvc.perform(get("/api/core/paises")
-                        .contentType("application/json"))
+                .contentType("application/json"))
                 .andExpect(status().isOk());
 
     }

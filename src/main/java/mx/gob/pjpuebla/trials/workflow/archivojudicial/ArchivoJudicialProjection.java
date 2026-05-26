@@ -1,6 +1,6 @@
 package mx.gob.pjpuebla.trials.workflow.archivojudicial;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface ArchivoJudicialProjection {
 
@@ -14,7 +14,7 @@ public interface ArchivoJudicialProjection {
 
     String getExpediente();
 
-    LocalDate getFechaAlta();
+    LocalDateTime getFechaAlta();
 
     String getAnexos();
 

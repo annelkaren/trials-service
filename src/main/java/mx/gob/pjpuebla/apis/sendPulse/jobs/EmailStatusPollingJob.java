@@ -23,13 +23,14 @@ import java.util.Map;
 public class EmailStatusPollingJob {
 
     private static final ZoneId ZONA_MEXICO = ZoneId.of("America/Mexico_City");
-    
+
     private final EmailLogsService emailLogsService;
     private final EmailStatusService emailStatusService;
     private final EmailStatusUpdater updater;
     private final SendPulseClient sendPulseClient;
 
-    public EmailStatusPollingJob(SendPulseClient sendPulseClient, EmailLogsService emailLogsService, EmailStatusService emailStatusService, EmailStatusUpdater updater) {
+    public EmailStatusPollingJob(SendPulseClient sendPulseClient, EmailLogsService emailLogsService,
+            EmailStatusService emailStatusService, EmailStatusUpdater updater) {
         this.sendPulseClient = sendPulseClient;
         this.emailLogsService = emailLogsService;
         this.emailStatusService = emailStatusService;
@@ -39,6 +40,7 @@ public class EmailStatusPollingJob {
     @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void ejecutarSondeo() {
+        System.out.println("JOB EJECUTANDOSE: " + LocalDateTime.now());
         LocalDateTime ahoraMx = ZonedDateTime.now(ZONA_MEXICO).toLocalDateTime();
         List<EmailLogs> lote = emailLogsService.getEmailsToVerify();
 

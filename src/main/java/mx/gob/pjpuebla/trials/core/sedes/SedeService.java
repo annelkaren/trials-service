@@ -124,11 +124,23 @@ public class SedeService {
      */
     public SedeRecordResponse update(Sede sede, MultipartFile image) {
         try {
-            sede.setPhoto(null);
+            if (image == null) {
+                // Parte 'photo' ausente → preservar foto existente
+                sede.setPhoto(sedeRepository.findById(sede.getId())
+                        .map(Sede::getPhoto)
+                        .orElse(null));
+            } else if (image.isEmpty()) {
+                // Blob vacío → usuario eliminó la foto
+                digitalizacionService.deletePhoto(sede.getId());
+                sede.setPhoto(null);
+            } else {
+                // Archivo nuevo → se reemplaza después del save
+                sede.setPhoto(null);
+            }
             sede.setDistrito(distritoRepository.findById(sede.getDistrito().getId()).orElse(null));
             sede.setDomicilio(domicilioService.save(sede.getDomicilio()));
             sedeRepository.save(sede);
-            if (image != null) {
+            if (image != null && !image.isEmpty()) {
                 DigitalizacionRecord record = digitalizacionService.savePhoto(image, sede.getId());
                 sede.setPhoto(record.nombreArchivo());
                 sedeRepository.save(sede);

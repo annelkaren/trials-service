@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class CarpetaResourceTest {
 
-        @MockBean
+        @MockitoBean
         private CarpetaService mockCarpetaService;
 
         @Autowired
@@ -139,7 +139,7 @@ class CarpetaResourceTest {
                                                 "Observacion 1",
                                                 "recomendacion 1", 1));
                 List<DocumentoRecord> responseRecord = List.of(
-                new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
+                                new DocumentoRecord(1, "000001/2", TipoCarpeta.DEMANDA));
 
                 when(mockCarpetaService.actualizarInformacionAnexos(docRecepcionMovimientosRecord))
                                 .thenReturn(responseRecord);
@@ -468,9 +468,9 @@ class CarpetaResourceTest {
                                 .andExpect(status().isOk());
         }
 
-    @Test
-    void testActualizarEstado_Success() throws Exception {
-        List<Integer> ids = Arrays.asList(1, 2, 3);
+        @Test
+        void testActualizarEstado_Success() throws Exception {
+                List<Integer> ids = Arrays.asList(1, 2, 3);
 
                 doNothing().when(mockCarpetaService).actualizarEstado(ids);
 
@@ -511,20 +511,20 @@ class CarpetaResourceTest {
         void testDevolverCarpetas_Success() throws Exception {
                 List<Integer> ids = List.of(1, 2, 3);
 
-        String json = """
-                {
-                  "ids": [1, 2, 3],
-                  "urgente": true,
-                  "fechaTermino": "2026-01-25"
-                }
-                """;
+                String json = """
+                                {
+                                  "ids": [1, 2, 3],
+                                  "urgente": true,
+                                  "fechaTermino": "2026-01-25"
+                                }
+                                """;
 
-        doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids, true, LocalDate.now());
+                doNothing().when(mockCarpetaService).devolverArchivoJudicial(ids, true, LocalDate.now());
 
-        mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
-    }
+                mockMvc.perform(post("/api/workflow/carpeta/devolver/archivo-judicial")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                                .andExpect(status().isOk());
+        }
 
 }

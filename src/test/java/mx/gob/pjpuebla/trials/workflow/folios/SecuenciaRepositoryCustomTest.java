@@ -2,13 +2,14 @@ package mx.gob.pjpuebla.trials.workflow.folios;
 
 import jakarta.persistence.EntityManager;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -16,24 +17,26 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"
 })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Import(SecuenciaService.class)
 class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
-    private DocumentoRepository documentoRepository;
+    private SecuenciaService secuenciaService;
 
     @BeforeEach
     void setupSequences() {
         entityManager.createNativeQuery("CREATE SEQUENCE IF NOT EXISTS SEQ_DEMANDA_FOLIO START WITH 1").executeUpdate();
         entityManager.createNativeQuery("CREATE SEQUENCE IF NOT EXISTS SEQ_EXHORTO_FOLIO START WITH 1").executeUpdate();
-        entityManager.createNativeQuery("CREATE SEQUENCE IF NOT EXISTS SEQ_PROMOCION_FOLIO START WITH 1").executeUpdate();
+        entityManager.createNativeQuery("CREATE SEQUENCE IF NOT EXISTS SEQ_PROMOCION_FOLIO START WITH 1")
+                .executeUpdate();
     }
 
     @Test
     void getIdByDemandaSecuence_success() {
-        Long result = documentoRepository.getNextValDemanda();
+        Long result = secuenciaService.getNextValDemanda();
         assertThat(result)
                 .isNotNull()
                 .isPositive();
@@ -41,7 +44,7 @@ class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getIdByExhortoSecuence_success() {
-        Long result = documentoRepository.getNextValExhorto();
+        Long result = secuenciaService.getNextValExhorto();
         assertThat(result)
                 .isNotNull()
                 .isPositive();
@@ -49,7 +52,7 @@ class SecuenciaRepositoryCustomTest extends AuditConfigTest {
 
     @Test
     void getIdByPromocionSecuence_success() {
-        Long result = documentoRepository.getNextValPromocion();
+        Long result = secuenciaService.getNextValPromocion();
         assertThat(result)
                 .isNotNull()
                 .isPositive();

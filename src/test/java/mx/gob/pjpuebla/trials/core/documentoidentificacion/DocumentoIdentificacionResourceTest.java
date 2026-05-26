@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class DocumentoIdentificacionResourceTest {
 
-    @MockBean
+    @MockitoBean
     private DocumentoIdentificacionService mockDocumentoIdentificacionService;
 
     @Autowired
@@ -30,14 +30,17 @@ class DocumentoIdentificacionResourceTest {
     private IdentificacionDocRecord identificacionDocRecord;
 
     @BeforeEach
-    void setUp(){identificacionDocRecord = DocumentoIdentificacionSetUp.createIdentificacionDoc() ;}
+    void setUp() {
+        identificacionDocRecord = DocumentoIdentificacionSetUp.createIdentificacionDoc();
+    }
 
     @Test
     void getEtapaProcesal_success() throws Exception {
-        given(mockDocumentoIdentificacionService.getAll()).willReturn(Collections.singletonList(identificacionDocRecord));
+        given(mockDocumentoIdentificacionService.getAll())
+                .willReturn(Collections.singletonList(identificacionDocRecord));
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/api/core/documentoidentificacion"))
+                MockMvcRequestBuilders.get("/api/core/documentoidentificacion"))
                 .andExpect(status().isOk());
     }
 }

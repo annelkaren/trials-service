@@ -21,9 +21,9 @@ import mx.gob.pjpuebla.trials.workflow.personadetalle.DTO.PersonaDTOGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,11 +34,11 @@ class PersonaDetalleResourceTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private PersonaDetalleService personaDetalleService;
 
     @Autowired
-    private ObjectMapper objectMapper; 
+    private ObjectMapper objectMapper;
 
     private PersonaDTO mockPersonaDTO;
     private PersonaDetalleRecord mockPersonaDetalleRecord;
@@ -51,7 +51,6 @@ class PersonaDetalleResourceTest {
         mockPersonaDTOGet = createMockPersonaDTOGet();
     }
 
-
     @Test
     void testCreatePersonaDetalle_returnsCreatedPersonaDetalle() throws Exception {
         when(personaDetalleService.createPersonaDetalle(any(PersonaDTO.class)))
@@ -62,7 +61,7 @@ class PersonaDetalleResourceTest {
                 .content(objectMapper.writeValueAsString(mockPersonaDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").exists()) 
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.id").value(mockPersonaDetalleRecord.id()));
 
         verify(personaDetalleService, times(1)).createPersonaDetalle(any(PersonaDTO.class));
@@ -91,35 +90,34 @@ class PersonaDetalleResourceTest {
     }
 
     private PersonaDTOGet createMockPersonaDTOGet() {
-    PersonaDTOGet personaDTOGet = new PersonaDTOGet();
-    PersonaDTOGet.DatosGenerales datosGenerales = new PersonaDTOGet.DatosGenerales();
-    datosGenerales.setTipo(200);
-    datosGenerales.setNombre("Susana");
-    datosGenerales.setApellidoPaterno("Reyes");
-    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-    try {
-        java.util.Date fechaNacimientoUtil = sdf.parse("09-02-1999");
-        Date fechaNacimientoSql = new Date(fechaNacimientoUtil.getTime());
-        datosGenerales.setFechaNacimiento(fechaNacimientoSql);
-    } catch (ParseException e) {
-        e.printStackTrace();
+        PersonaDTOGet personaDTOGet = new PersonaDTOGet();
+        PersonaDTOGet.DatosGenerales datosGenerales = new PersonaDTOGet.DatosGenerales();
+        datosGenerales.setTipo(200);
+        datosGenerales.setNombre("Susana");
+        datosGenerales.setApellidoPaterno("Reyes");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        try {
+            java.util.Date fechaNacimientoUtil = sdf.parse("09-02-1999");
+            Date fechaNacimientoSql = new Date(fechaNacimientoUtil.getTime());
+            datosGenerales.setFechaNacimiento(fechaNacimientoSql);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        datosGenerales.setIdCarpeta(1);
+
+        PersonaDTOGet.DatosContacto datosContacto = new PersonaDTOGet.DatosContacto();
+        datosContacto.setCorreoElectronico("susana@gmail.com");
+
+        PersonaDTOGet.DatosEstadistica datosEstadistica = new PersonaDTOGet.DatosEstadistica();
+        Escolaridad escolaridad = new Escolaridad();
+        escolaridad.setId(1);
+        datosEstadistica.setEscolaridad(escolaridad);
+        personaDTOGet.setDatosGenerales(datosGenerales);
+        personaDTOGet.setDatosContacto(datosContacto);
+        personaDTOGet.setDatosEstadistica(datosEstadistica);
+
+        return personaDTOGet;
     }
-    datosGenerales.setIdCarpeta(1);
-
-    PersonaDTOGet.DatosContacto datosContacto = new PersonaDTOGet.DatosContacto();
-    datosContacto.setCorreoElectronico("susana@gmail.com");
-
-    PersonaDTOGet.DatosEstadistica datosEstadistica = new PersonaDTOGet.DatosEstadistica();
-    Escolaridad escolaridad = new Escolaridad();
-    escolaridad.setId(1); 
-    datosEstadistica.setEscolaridad(escolaridad);
-    personaDTOGet.setDatosGenerales(datosGenerales);
-    personaDTOGet.setDatosContacto(datosContacto);
-    personaDTOGet.setDatosEstadistica(datosEstadistica);
-
-    return personaDTOGet;
-}
-
 
     @Test
     void testGetParticipanteById_returnsOkAndPersonaDTO() throws Exception {
@@ -147,8 +145,7 @@ class PersonaDetalleResourceTest {
                 .andExpect(jsonPath("$.datosContacto.correoElectronico").value("susana@gmail.com"));
 
         verify(personaDetalleService).getParticipante(1);
-        }
-
+    }
 
     @Test
     void testActualizarPersona_returnsOk() throws Exception {

@@ -14,7 +14,6 @@ import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import jakarta.transaction.Transactional;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
-import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaRepositoryCustom;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,7 +30,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface DocumentoRepository extends JpaRepository<Documento, Integer>, SecuenciaRepositoryCustom {
+public interface DocumentoRepository extends JpaRepository<Documento, Integer> {
 
     @Query(value = "SELECT doc FROM Documento doc "
             + "JOIN FETCH doc.carpeta c "

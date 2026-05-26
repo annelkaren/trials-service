@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class EtapaProcesalResourceTest {
 
-    @MockBean
+    @MockitoBean
     private EtapaProcesalService mocketapaProcesalService;
 
     @Autowired
@@ -33,7 +33,9 @@ class EtapaProcesalResourceTest {
     private ListEtapaProcesalRecord etapaProcesalRecord;
 
     @BeforeEach
-    void setUp(){etapaProcesalRecord = EtapaProcesalSetUp.createListEtapaProcesalRecord();}
+    void setUp() {
+        etapaProcesalRecord = EtapaProcesalSetUp.createListEtapaProcesalRecord();
+    }
 
     @Test
     void getEtapaProcesal_success() throws Exception {
@@ -41,11 +43,10 @@ class EtapaProcesalResourceTest {
                 .willReturn(Collections.singletonList(etapaProcesalRecord));
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/api/core/etapaprocesal")
-                                .param("IdTipoJuicio", "150")
-                                .param("IdProcedimiento", "0")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
+                MockMvcRequestBuilders.get("/api/core/etapaprocesal")
+                        .param("IdTipoJuicio", "150")
+                        .param("IdProcedimiento", "0")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

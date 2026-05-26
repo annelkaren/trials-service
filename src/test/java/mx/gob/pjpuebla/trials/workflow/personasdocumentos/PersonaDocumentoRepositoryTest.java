@@ -7,15 +7,15 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.RelacionExpedientesRecord
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOMICILIOS.sql",
@@ -84,8 +84,9 @@ class PersonaDocumentoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void  getExpedienteRelacionados(){
-        List<RelacionExpedientesRecord> entity = personaDocumentoRepository.getAllExpedienteRelacionadosByPersonaId("MARIA", "", "RAMOS", 150 );
+    void getExpedienteRelacionados() {
+        List<RelacionExpedientesRecord> entity = personaDocumentoRepository
+                .getAllExpedienteRelacionadosByPersonaId("MARIA", "", "RAMOS", 150);
         assertThat(entity).isNotEmpty();
     }
 

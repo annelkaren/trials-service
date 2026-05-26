@@ -1,7 +1,5 @@
 package mx.gob.pjpuebla.trials.core.sedes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.sedes.records.SedeDomicilioRecordResponse;
@@ -69,11 +67,9 @@ public class SedeResource {
      * @return un {@link SedeRecordResponse} con la información de la sede creada
      */
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public SedeRecordResponse create(@RequestPart(value = "sede") String sede,
-            @RequestPart(value = "photo", required = false) MultipartFile photo)
-            throws JsonProcessingException {
-        Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
-        return this.sedeService.create(sedeMapper, photo);
+    public SedeRecordResponse create(@RequestPart(value = "sede") Sede sede,
+            @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        return this.sedeService.create(sede, photo);
     }
 
     /**
@@ -84,11 +80,9 @@ public class SedeResource {
      *         actualizada
      */
     @PutMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public SedeRecordResponse update(@RequestPart(value = "sede") String sede,
-            @RequestPart(value = "photo", required = false) MultipartFile photo)
-            throws JsonProcessingException {
-        Sede sedeMapper = new ObjectMapper().readValue(sede, Sede.class);
-        return this.sedeService.update(sedeMapper, photo);
+    public SedeRecordResponse update(@RequestPart(value = "sede") Sede sede,
+            @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        return this.sedeService.update(sede, photo);
     }
 
     /**

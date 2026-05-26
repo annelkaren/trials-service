@@ -6,8 +6,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ import java.util.Optional;
 import static mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicioSetUp.createTipoJuicio;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_MATERIAS.sql",
@@ -57,12 +57,15 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
     @Test
     void findByAllAndEstadoActive() {
         TipoJuicio validTipoJuicio = createTipoJuicio(null, null);
+        validTipoJuicio.setId(null);
         tipoJuicioRepository.save(validTipoJuicio);
         ExampleMatcher exampleMatcher = ExampleMatcher.matching()
                 .withMatcher("nombre", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
                 .withMatcher("estado", ExampleMatcher.GenericPropertyMatchers.ignoreCase());
 
-        Page<TipoJuicio> page = tipoJuicioRepository.findAll(Example.of(new TipoJuicio().setNombre("Laboral").setEstado(Estado.ACTIVE), exampleMatcher), PageRequest.of(0, 20));
+        Page<TipoJuicio> page = tipoJuicioRepository.findAll(
+                Example.of(new TipoJuicio().setNombre("Laboral").setEstado(Estado.ACTIVE), exampleMatcher),
+                PageRequest.of(0, 20));
         assertThat(page.getSize()).isPositive();
     }
 
@@ -79,38 +82,39 @@ class TipoJuicioRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void findByCentroTrabajo(){
+    void findByCentroTrabajo() {
         Integer oficialiaId = 51;
 
         Page<TipoJuicio> page = tipoJuicioRepository.findByCentroTrabajo(oficialiaId, null, PageRequest.of(0, 20));
 
         assertThat(page).isNotEmpty()
-                .anyMatch(tj->tj.getNombre().equals("Laboral (Tradicional)"))
-                .allMatch(tj->tj.getTipoJuicioPadreOral()==null && tj.getTipoJuicioPadreTrad()==null);
+                .anyMatch(tj -> tj.getNombre().equals("Laboral (Tradicional)"))
+                .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
     }
 
     @Test
     void findByMateriaId_shouldReturnTipoJuiciosWithNullPadres() {
-    Integer materiaId = 150; 
-    List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
+        Integer materiaId = 150;
+        List<TipoJuicio> tipoJuicios = tipoJuicioRepository.findByMateriaId(materiaId);
 
-    assertThat(tipoJuicios)
-            .isNotEmpty()
-            .allMatch(tj -> tj.getMateria().getId().equals(materiaId))
-            .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
+        assertThat(tipoJuicios)
+                .isNotEmpty()
+                .allMatch(tj -> tj.getMateria().getId().equals(materiaId))
+                .allMatch(tj -> tj.getTipoJuicioPadreOral() == null && tj.getTipoJuicioPadreTrad() == null);
     }
 
     @Test
-    void findByTipoJuicioPadre(){
+    void findByTipoJuicioPadre() {
         Optional<TipoJuicio> tipoJuicioPadre = tipoJuicioRepository.findByNombreIgnoreCase("Familiar Oralidad");
 
-        List<TipoJuicioDemandasRecord> tipoJuicioHijos = tipoJuicioRepository.findByTipoJuicioPadre(tipoJuicioPadre.get().getId());
+        List<TipoJuicioDemandasRecord> tipoJuicioHijos = tipoJuicioRepository
+                .findByTipoJuicioPadre(tipoJuicioPadre.get().getId());
 
         assertThat(tipoJuicioHijos).isNotEmpty();
     }
 
     @Test
-    void getByMateriaAndTipoSistema(){
+    void getByMateriaAndTipoSistema() {
         Optional<TipoJuicio> entity = tipoJuicioRepository.getMateriaAndTipoSistemaById(100);
         assertThat(entity).isNotEmpty();
     }

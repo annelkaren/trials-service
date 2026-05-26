@@ -456,4 +456,14 @@ public class SalaService {
                 .toList();
     }
 
+    @Transactional
+    public SalaRecordResponse updateStatus(Integer id, Integer status) {
+        Estado estado = Estado.values()[status];
+        Sala sala = salaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Sala no encontrada", "salaId: " + id));
+        sala.setEstado(estado);
+        salaRepository.save(sala);
+        return findById(id);
+    }
+
 }

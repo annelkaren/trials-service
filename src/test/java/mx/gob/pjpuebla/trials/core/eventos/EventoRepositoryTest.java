@@ -8,8 +8,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
@@ -44,7 +44,7 @@ class EventoRepositoryTest extends AuditConfigTest {
     JuzgadoRepository juzgadoRepository;
 
     @Test
-    void findById(){
+    void findById() {
         Integer id = 51;
         Optional<Evento> evento = eventoRepository.findById(id);
 
@@ -52,8 +52,8 @@ class EventoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void checkDiaInhabilTest(){
-        LocalDate diaFeriado = LocalDate.of(2024,10,1);
+    void checkDiaInhabilTest() {
+        LocalDate diaFeriado = LocalDate.of(2024, 10, 1);
 
         Boolean diaInhabil = eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaFeriado, null, null);
 
@@ -61,8 +61,8 @@ class EventoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void checkDiaInhabilJuzgadoTest(){
-        LocalDate diaFeriado = LocalDate.of(2024,12,12);
+    void checkDiaInhabilJuzgadoTest() {
+        LocalDate diaFeriado = LocalDate.of(2024, 12, 12);
         Juzgado juzgado = juzgadoRepository.findAll().stream().findFirst().orElseThrow();
 
         Boolean diaInhabil = eventoRepository.existsEventoEntreDiaInicioAndDiaFin(diaFeriado, juzgado, null);
@@ -71,8 +71,8 @@ class EventoRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void eventoDiaInhabilTest(){
-        LocalDate diaFeriado = LocalDate.of(2024,10,1);
+    void eventoDiaInhabilTest() {
+        LocalDate diaFeriado = LocalDate.of(2024, 10, 1);
 
         Optional<Evento> eventoInhabil = eventoRepository.findEntreDiaInicioAndDiaFin(diaFeriado, null, null);
 

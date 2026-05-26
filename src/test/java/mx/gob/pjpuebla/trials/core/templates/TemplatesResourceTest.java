@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,10 +31,10 @@ class TemplatesResourceTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private TemplatesService templatesService;
 
-    @MockBean
+    @MockitoBean
     private PlaceholdersService placeholdersService;
 
     @Test
@@ -56,8 +56,8 @@ class TemplatesResourceTest {
 
     @Test
     void getTemplatesAndPlaceholders() throws Exception {
-        TempletesPlaceholderRecord record1 = new TempletesPlaceholderRecord( "Template 1","<P>HOLA 1</P>", false);
-        TempletesPlaceholderRecord record2 = new TempletesPlaceholderRecord("Template 2","<P>HOLA 2</P>", false);
+        TempletesPlaceholderRecord record1 = new TempletesPlaceholderRecord("Template 1", "<P>HOLA 1</P>", false);
+        TempletesPlaceholderRecord record2 = new TempletesPlaceholderRecord("Template 2", "<P>HOLA 2</P>", false);
 
         when(templatesService.getTempletesAndPlaceholder()).thenReturn(List.of(record1, record2));
 
@@ -74,8 +74,8 @@ class TemplatesResourceTest {
         when(templatesService.create(Mockito.any(Templates.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/core/templates/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(template)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(template)))
                 .andExpect(status().isOk());
 
         verify(templatesService, times(1)).create(Mockito.any(Templates.class));
@@ -90,8 +90,8 @@ class TemplatesResourceTest {
         when(templatesService.update(Mockito.any(Templates.class))).thenReturn(response);
 
         mockMvc.perform(put("/api/core/templates")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(template)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(template)))
                 .andExpect(status().isOk());
         verify(templatesService, times(1)).update(Mockito.any(Templates.class));
     }

@@ -2,14 +2,11 @@ package mx.gob.pjpuebla.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.hibernate5.SpringBeanContainer;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,26 +33,28 @@ public class PrimaryDbConfig {
     @Primary
     @Bean(name = "primaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean primaryEntityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("primaryDataSource") DataSource dataSource,
-            ConfigurableListableBeanFactory beanFactory) {
+            @Qualifier("primaryDataSource") DataSource dataSource) {
+
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setPackagesToScan("mx.gob.pjpuebla.trials");
+        factory.setPersistenceUnitName("primary");
+
+        var vendorAdapter = new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter();
+        factory.setJpaVendorAdapter(vendorAdapter);
 
         var props = new HashMap<String, Object>();
-        props.put("hibernate.resource.beans.container", new SpringBeanContainer(beanFactory));
         props.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
-        return builder
-                .dataSource(dataSource)
-                .packages("mx.gob.pjpuebla.trials")
-                .persistenceUnit("primary")
-                .properties(props)
-                .build();
+        factory.setJpaPropertyMap(props);
+
+        return factory;
     }
 
     @Primary
     @Bean(name = "primaryTransactionManager")
     public PlatformTransactionManager primaryTransactionManager(
-            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory  emf) {
+            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
     }
 }

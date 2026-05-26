@@ -1,7 +1,6 @@
 package mx.gob.pjpuebla.trials.core.cuestionarios;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -28,12 +27,12 @@ public class Cuestionario implements Serializable {
     @Column(name = "S_PREGUNTAS")
     private String preguntas;
 
-    @Max(Integer.MAX_VALUE)
     @Column(name = "N_LISTA")
+    @Enumerated
     private ListCuestionario lista;
 
-    @Max(Integer.MAX_VALUE)
     @Column(name = "N_TIPO")
+    @Enumerated
     private TipoPregunta tipo;
-    
+
 }

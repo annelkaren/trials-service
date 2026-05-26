@@ -5,8 +5,8 @@ import mx.gob.pjpuebla.trials.litigante.LitiganteExpedienteAudienciaRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -14,8 +14,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_TIPO_AUDIENCIA.sql",
@@ -73,8 +72,9 @@ class AsistenciaAudienciaRepositoryTest extends AuditConfigTest {
     }
 
     @Test
-    void  testgetAllAudicenciasByUser(){
-        List<LitiganteExpedienteAudienciaRecord> litiganteExpedienteAudienciaRecord = asistenciaAudienciaRepository.getAllAudicenciasByUser("example@example.com", Pageable.ofSize(2));
+    void testgetAllAudicenciasByUser() {
+        List<LitiganteExpedienteAudienciaRecord> litiganteExpedienteAudienciaRecord = asistenciaAudienciaRepository
+                .getAllAudicenciasByUser("example@example.com", Pageable.ofSize(2));
         assertThat(litiganteExpedienteAudienciaRecord).isNotNull();
     }
 

@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import mx.gob.pjpuebla.trials.core.utils.resource.ResourceUtilTest;
@@ -25,46 +25,43 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.DigitalizacionRecord;
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 class DocumentoDetalleResourcesTest {
-    
-    @MockBean
-    private DocumentoDetalleService documentoDetalleService;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @MockitoBean
+        private DocumentoDetalleService documentoDetalleService;
 
-    @Test
-    void digitalizarAcuse() throws Exception {
-        DocumentoDetalleRecord docDetalle = DocumentoDetalleSetUp.createDocumentoDetalleRecord();
-        DigitalizacionRecord digitalizacion = new DigitalizacionRecord(1, "/opt/files/ejemplo.pdf", "ejemplo.pdf");
+        @Autowired
+        private MockMvc mockMvc;
 
-        given(documentoDetalleService.digitalizacionAcuse(docDetalle))
-            .willReturn(digitalizacion);
+        @Test
+        void digitalizarAcuse() throws Exception {
+                DocumentoDetalleRecord docDetalle = DocumentoDetalleSetUp.createDocumentoDetalleRecord();
+                DigitalizacionRecord digitalizacion = new DigitalizacionRecord(1, "/opt/files/ejemplo.pdf",
+                                "ejemplo.pdf");
 
-        mockMvc.perform(
-            post("/api/workflow/documentoDetalle/digitalizar/acuse")
-                .content(ResourceUtilTest.asJsonString(docDetalle))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+                given(documentoDetalleService.digitalizacionAcuse(docDetalle))
+                                .willReturn(digitalizacion);
 
-    }
+                mockMvc.perform(
+                                post("/api/workflow/documentoDetalle/digitalizar/acuse")
+                                                .content(ResourceUtilTest.asJsonString(docDetalle))
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
 
-    @Test
-    void getFile() throws Exception  {
-        byte[] file = new byte[1];
+        }
 
-        given(documentoDetalleService.getAcuse(anyInt()))
-            .willReturn(file);
-        
-        mockMvc.perform(
-            get("/api/workflow/documentoDetalle/digitalizar/acuse/1")
-            .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
+        @Test
+        void getFile() throws Exception {
+                byte[] file = new byte[1];
+
+                given(documentoDetalleService.getAcuse(anyInt()))
+                                .willReturn(file);
+
+                mockMvc.perform(
+                                get("/api/workflow/documentoDetalle/digitalizar/acuse/1")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
+        }
 
 }
-
-
-
-

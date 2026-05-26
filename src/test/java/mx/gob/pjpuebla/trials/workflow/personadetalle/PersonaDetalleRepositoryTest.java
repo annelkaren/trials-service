@@ -1,20 +1,19 @@
 package mx.gob.pjpuebla.trials.workflow.personadetalle;
 
-
 import mx.gob.pjpuebla.trials.core.paises.Pais;
 import mx.gob.pjpuebla.trials.core.utils.audit.AuditConfigTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {"spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop"})
+@DataJpaTest(properties = { "spring.jpa.properties.hibernate.hbm2ddl.auto: create-drop" })
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Sql(value = {
         "/scripts/INSERT_DOCUMENTOS_IDENTIFICACION.sql",
@@ -64,14 +63,13 @@ class PersonaDetalleRepositoryTest extends AuditConfigTest {
     @Autowired
     private PersonaDetalleRepository personaDetalleRepository;
 
-
     @Test
-    void findDistritoJuzgadoByDocumentoId(){
+    void findDistritoJuzgadoByDocumentoId() {
         Optional<PersonaDetalle> entity = personaDetalleRepository.findByPersonaDocumentoId(1);
         assertThat(entity).isNotNull();
         Pais pais = entity.get().getPaisNacimiento();
         String name = pais.getNombreComun();
         assertThat(name).isEqualTo("México");
         assertThat(entity.get().getRfc()).isEqualTo("ABC1234567890");
-    }     
+    }
 }

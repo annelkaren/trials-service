@@ -21,7 +21,7 @@ import mx.gob.pjpuebla.trials.core.tipopieza.TipoPiezaRepository;
 import mx.gob.pjpuebla.trials.error.ConstraintViolationException;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
-import mx.gob.pjpuebla.trials.workflow.documentos.DocumentoRepository;
+import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaService;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.util.enums.Migrado;
@@ -36,8 +36,8 @@ public class CarpetaMigracionService {
     private final CarpetaRepository carpetaRepository;
     private final JuzgadoMigracionService juzgadoMigracionService;
     private final TipoPiezaRepository tipoPiezaRepository;
-    private final DocumentoRepository documentoRepository;
     private final TipoPiezaMapper tipoPiezaMapper;
+    private final SecuenciaService secuenciaService;
 
     @Transactional(readOnly = true)
     public void assertExpedienteDisponible(String expedienteCompleto, Juzgado juzgado) {
@@ -91,7 +91,7 @@ public class CarpetaMigracionService {
             String expediente = carpeta.getExpediente() + "/" + tipoPiezaString;
 
             Carpeta piezaNew = new Carpeta()
-                    .setFolio(documentoRepository.getNextValPieza().toString())
+                    .setFolio(secuenciaService.getNextValPieza().toString())
                     .setExpediente(expediente)
                     .setCarpetaPadre(carpeta)
                     .setFechaAsignacion(pieza.fecha().atStartOfDay())

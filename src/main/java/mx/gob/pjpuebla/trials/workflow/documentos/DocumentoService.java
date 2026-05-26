@@ -64,6 +64,7 @@ import mx.gob.pjpuebla.trials.workflow.documentos.records.*;
 import mx.gob.pjpuebla.trials.workflow.etiquetas.EtiquetaService;
 import mx.gob.pjpuebla.trials.workflow.folios.DocumentoFoliosService;
 import mx.gob.pjpuebla.trials.workflow.folios.JuzgadoFolios;
+import mx.gob.pjpuebla.trials.workflow.folios.SecuenciaService;
 import mx.gob.pjpuebla.trials.workflow.movimientos.Movimiento;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoRepository;
 import mx.gob.pjpuebla.trials.workflow.movimientos.MovimientoService;
@@ -150,6 +151,7 @@ public class DocumentoService {
         private final EventoService eventosService;
         private final SolicitudesProrrogasService solicitudesProrrogasService;
         private final ConfiguracionesRepository configuracionesRepository;
+        private final SecuenciaService secuenciaService;
 
         private static final String DOC_NOT_FOUND = "Documento no encontrado";
         private static final String DOC_ID = "documentoId: ";
@@ -824,14 +826,14 @@ public class DocumentoService {
 
                 return switch (tipo) {
                         case "E" -> // Case para exhorto
-                                documentoRepository.getNextValExhorto() + identificadorFolio;
+                                secuenciaService.getNextValExhorto() + identificadorFolio;
                         case "D" -> // Case para demanda
-                                documentoRepository.getNextValDemanda() + identificadorFolio;
+                                secuenciaService.getNextValDemanda() + identificadorFolio;
                         case "P" -> // Case para promocion
-                                documentoRepository.getNextValPromocion() + identificadorFolio;
+                                secuenciaService.getNextValPromocion() + identificadorFolio;
                         case "ES" -> // Case para exhorto salida
-                                documentoRepository.getNextValExhortoSalida() + identificadorFolio;
-                        case "AP" -> documentoRepository.getNextValApelacion() + identificadorFolio;
+                                secuenciaService.getNextValExhortoSalida() + identificadorFolio;
+                        case "AP" -> secuenciaService.getNextValApelacion() + identificadorFolio;
                         default -> throw new IllegalArgumentException("Tipo de documento no válido: " + tipo);
                 };
         }

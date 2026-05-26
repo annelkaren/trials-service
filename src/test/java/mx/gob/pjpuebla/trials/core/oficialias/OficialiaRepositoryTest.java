@@ -6,8 +6,8 @@ import mx.gob.pjpuebla.trials.util.enums.Estado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Arrays;
@@ -42,16 +42,17 @@ class OficialiaRepositoryTest extends AuditConfigTest {
     @Test
     void findByIdAndEstadoActive() {
         List<Estado> estados = Arrays.asList(Estado.INACTIVE, Estado.ACTIVE);
-        Optional<OficialiaRecord> entity = oficialiaRepository.findByIdAndEstadoIn(51, estados);
+        Optional<Oficialia> entity = oficialiaRepository.findByIdAndEstadoIn(51, estados);
         assertThat(entity).isPresent();
-        assertThat(entity.get().estado()).isEqualTo(Estado.ACTIVE);
+        assertThat(entity.get().getEstado()).isEqualTo(Estado.ACTIVE);
     }
 
     @Test
     void findOficialiasComunes() {
         List<Oficialia> oficialiasComunes = oficialiaRepository.findOficialiaComun();
 
-        assertThat(oficialiasComunes).isNotEmpty().anyMatch(ofi -> ofi.getTipoOficialia().getNombre().contains("Común"));
+        assertThat(oficialiasComunes).isNotEmpty()
+                .anyMatch(ofi -> ofi.getTipoOficialia().getNombre().contains("Común"));
     }
 
     @Test
