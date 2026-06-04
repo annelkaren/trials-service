@@ -142,6 +142,9 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "S_CUJUS")
     private String cujus;
 
+    @Column(name = "N_PONENCIA")
+    private Integer ponenciaId;
+
     @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoJuicio tipoJuicio;

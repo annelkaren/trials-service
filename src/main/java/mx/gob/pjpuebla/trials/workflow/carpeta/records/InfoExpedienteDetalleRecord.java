@@ -42,6 +42,8 @@ public record InfoExpedienteDetalleRecord(
         Integer tipoJuicioHijoId,
         String tipoJuicioHijo,
         String cujus,
-        LocalDate fechaEjecutoria
+        LocalDate fechaEjecutoria,
+        Integer ponencia,
+        String tipoCarpeta
 ) implements Serializable {
 }

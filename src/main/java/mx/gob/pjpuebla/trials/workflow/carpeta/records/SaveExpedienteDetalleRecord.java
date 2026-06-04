@@ -49,6 +49,7 @@ public record SaveExpedienteDetalleRecord(
         EtapaProcesalRecord etapaProcesal,
         List<RubroRecord> rubros,
         String cujus,
-        LocalDate fechaEjecutoria
+        LocalDate fechaEjecutoria,
+        Integer ponencia
 ) implements Serializable {
 }

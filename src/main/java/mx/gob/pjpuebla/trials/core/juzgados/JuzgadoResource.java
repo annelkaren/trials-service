@@ -106,4 +106,10 @@ public class JuzgadoResource {
     public List<JuzgadoRecordItem> getJuzgadoActual() {
         return Collections.singletonList(this.juzgadoService.getJuzgadoActual());
     }
+
+    @GetMapping("/ponencias/{materiaId}")
+    public List<JuzgadoRecordItem> getPonenciasDisponibles(@PathVariable Integer materiaId) {
+        return this.juzgadoService.getPonenciasDisponibles(materiaId);
+    }
+
 }

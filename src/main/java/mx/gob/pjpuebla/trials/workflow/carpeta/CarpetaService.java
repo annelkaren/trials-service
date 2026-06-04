@@ -907,7 +907,9 @@ public class CarpetaService {
                                 carpetaDetalle.getTipoJuicio() != null ? carpetaDetalle.getTipoJuicio().getNombre()
                                                 : null,
                                 carpetaDetalle.getCujus(),
-                                carpetaDetalle.getFechaEjecutoria());
+                                carpetaDetalle.getFechaEjecutoria(),
+                                carpetaDetalle.getPonenciaId(),
+                                carpeta.getTipoCarpeta().name());
         }
 
         public void saveExpedienteDetalle(
@@ -978,6 +980,7 @@ public class CarpetaService {
                 }
 
                 carpetaDetalle
+                                .setPonenciaId(detalle.ponencia())
                                 .setAsunto(detalle.asunto())
                                 .setObservaciones(detalle.observaciones())
                                 .setPromovente(detalle.promovente())

@@ -270,7 +270,9 @@ class CarpetaResourceTest {
                                 0,
                                 "",
                                 "",
-                                LocalDate.now());
+                                LocalDate.now(),
+                                1,
+                                "");
 
                 given(mockCarpetaService.getInfoExpedienteDetalle(any()))
                                 .willReturn(infoExpedienteRecord);
@@ -328,7 +330,8 @@ class CarpetaResourceTest {
                                 etapaProcesalRecord,
                                 rubroList,
                                 "",
-                                LocalDate.now());
+                                LocalDate.now(),
+                                0);
 
                 mockMvc.perform(post("/api/workflow/carpeta/expediente/detalle/1")
                                 .contentType(MediaType.APPLICATION_JSON)

@@ -704,4 +704,9 @@ public class JuzgadoService {
         return juzgadoRepository.findByIdAndEstadoIn(juzgadoPadreId, List.of(Estado.ACTIVE))
                 .orElseThrow(() -> new NotFoundException("Juzgado padre no encontrado o inactivo", "juzgadoPadreId"));
     }
+
+    @Transactional(readOnly = true)
+    public List<JuzgadoRecordItem> getPonenciasDisponibles(Integer materiaId) {
+        return juzgadoRepository.getPonenciasDisponibles(materiaId);
+    }
 }
