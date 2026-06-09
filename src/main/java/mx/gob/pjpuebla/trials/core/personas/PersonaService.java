@@ -291,6 +291,19 @@ public class PersonaService {
     }
 
     @Transactional(transactionManager = "primaryTransactionManager")
+    public List<Persona> getAllJuecesPenales() {
+        List<Persona> jueces = new ArrayList<>();
+        List<String> roles = List.of("JUEZ");
+        List<String> ids = usuarioService.findAllByRoles(roles);
+        for (String id : ids) {
+            System.out.println("----> " + id);
+            Optional<Persona> juez = personaRepository.findByUsuarioUUID(List.of("PENAL"), id);
+            juez.ifPresent(jueces::add);
+        }
+        return jueces;
+    }
+
+    @Transactional(transactionManager = "primaryTransactionManager")
     public List<JuezRecord> findByOficialiaOfPersonaLogueada(Integer materiaId) {
         Persona persona = getAuditor();
 

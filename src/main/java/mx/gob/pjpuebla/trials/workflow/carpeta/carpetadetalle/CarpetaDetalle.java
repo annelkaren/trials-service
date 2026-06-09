@@ -3,6 +3,7 @@ package mx.gob.pjpuebla.trials.workflow.carpeta.carpetadetalle;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.tipojuicio.TipoJuicio;
 import mx.gob.pjpuebla.trials.util.enums.PresentacionImputado;
 import mx.gob.pjpuebla.trials.util.enums.SolicitudAudiencia;
@@ -123,6 +124,10 @@ public class CarpetaDetalle implements Serializable {
     @Column(name = "S_ULTIMO_DOMICILIO_FAMILIAR")
     private String ultimoDomicilioFamiliar;
 
+    @Size(max = 100)
+    @Column(name = "S_FASE")
+    private String fase;
+
     @Size(max = 300)
     @Column(name = "S_DOMICILIO_ACREEDOR")
     private String domicilioAcreedor;
@@ -148,4 +153,8 @@ public class CarpetaDetalle implements Serializable {
     @JoinColumn(name = "FN_TIPO_JUICIO", referencedColumnName = "PN_ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private TipoJuicio tipoJuicio;
+
+    @JoinColumn(name = "FN_JUEZ", referencedColumnName = "PN_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Persona juez;
 }

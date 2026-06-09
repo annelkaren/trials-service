@@ -1,0 +1,1 @@
+ALTER TABLE trials.tbl_carpeta_detalle ADD COLUMN S_FASE VARCHAR(100);

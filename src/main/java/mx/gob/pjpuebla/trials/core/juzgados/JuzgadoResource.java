@@ -7,6 +7,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.util.enums.Estado;
 import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 
@@ -110,6 +111,11 @@ public class JuzgadoResource {
     @GetMapping("/ponencias/{materiaId}")
     public List<JuzgadoRecordItem> getPonenciasDisponibles(@PathVariable Integer materiaId) {
         return this.juzgadoService.getPonenciasDisponibles(materiaId);
+    }
+
+    @GetMapping("/jueces")
+    public List<JuezRecord> getJuecesPenales() {
+        return this.juzgadoService.getJuecesPenales();
     }
 
 }

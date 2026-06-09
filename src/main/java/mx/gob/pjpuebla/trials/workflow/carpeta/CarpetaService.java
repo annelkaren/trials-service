@@ -578,8 +578,16 @@ public class CarpetaService {
                 }
 
                 // obtenemos juzgado y nombre del juez :
-
-                String nombreJuez = getJuezExpediente(carpeta);
+                String nombreJuez = null;
+                if (carpeta.getJuzgado().getMateria().getNombre().equalsIgnoreCase("PENAL")) {
+                        CarpetaDetalle detalle = carpetaDetalleRepository.findByCarpetaId(carpeta.getId());
+                        if (detalle != null && detalle.getJuez() != null) {
+                                Persona juez = detalle.getJuez();
+                                nombreJuez = juez.getNombre() + " " + juez.getApellidoPaterno() + " " + juez.getApellidoMaterno();
+                        }
+                } else {
+                        nombreJuez = getJuezExpediente(carpeta);
+                }
 
                 return new InfoExpedienteRecord(
                                 carpeta.getExpediente(),
@@ -606,6 +614,10 @@ public class CarpetaService {
         private String getJuezExpediente(Carpeta carpeta) {
                 TipoSistema tipoSistema = carpeta.getTipoJuicio().getTipoSistema();
                 Materia materia = carpeta.getJuzgado().getMateria();
+
+                if (materia.getNombre().equalsIgnoreCase("PENAL")) {//obtiene juez de carpeta detalle
+                        return null;
+                }
 
                 if (!tipoSistema.getNombre().equals("Oral") && !materia.getNombre().equals("FAMILIAR")) {
                         Juzgado juzgado = carpeta.getJuzgado();
@@ -866,7 +878,7 @@ public class CarpetaService {
                                                 : null,
                                 nombre + rol + ubicacion,
                                 carpetaDetalle.getAsunto(),
-                                null,
+                                carpetaDetalle.getFase(),
                                 carpetaDetalle.getObservaciones(),
                                 carpeta.getSentencia() != null ? carpeta.getSentencia().name() : null,
                                 carpetaDetalle.getPromovente(),
@@ -895,9 +907,7 @@ public class CarpetaService {
                                 carpetaDetalle.getSolicitudAudiencia() != null
                                                 ? carpetaDetalle.getSolicitudAudiencia().name()
                                                 : null,
-                                carpetaDetalle.getFechaPresentacionImputado() != null
-                                                ? carpetaDetalle.getFechaPresentacionImputado().format(pattern)
-                                                : null,
+                                carpetaDetalle.getFechaPresentacionImputado(),
                                 carpetaDetalle.getUltimoDomicilioFamiliar(),
                                 carpetaDetalle.getDomicilioAcreedor(),
                                 carpetaDetalle.getDomicilioFamiliar(),
@@ -909,7 +919,8 @@ public class CarpetaService {
                                 carpetaDetalle.getCujus(),
                                 carpetaDetalle.getFechaEjecutoria(),
                                 carpetaDetalle.getPonenciaId(),
-                                carpeta.getTipoCarpeta().name());
+                                carpeta.getTipoCarpeta().name(),
+                                (carpetaDetalle.getJuez() != null) ? carpetaDetalle.getJuez().getId() : null);
         }
 
         public void saveExpedienteDetalle(
@@ -921,11 +932,12 @@ public class CarpetaService {
                                 .orElseThrow(() -> new NotFoundException(DOC_NOT_FOUND, docId.toString()));
                 CarpetaDetalle carpetaDetalle = carpetaDetalleRepository.findByCarpetaId(docId);
 
-                // TODO editar fase para PENAL
-                // TODO editar juez en caso penal
-
                 carpeta.setDeterminacionJurisdiccional(detalle.determinacion() != null ? detalle.determinacion()
                                 : CatalogoDeterminacionJurisdiccional.PRESENTACION);
+
+                if (carpeta.getJuzgado().getMateria().getNombre().equalsIgnoreCase("PENAL")) {
+                        carpetaDetalle.setJuez(personaRepository.findById(Long.valueOf(detalle.juez())).orElse(null));
+                }
 
                 // edita tipo juicio
                 // Si tipoJuicioHijoId está presente, se busca y asigna el tipo de juicio, sino
@@ -980,6 +992,7 @@ public class CarpetaService {
                 }
 
                 carpetaDetalle
+                                .setFase(detalle.fase())
                                 .setPonenciaId(detalle.ponencia())
                                 .setAsunto(detalle.asunto())
                                 .setObservaciones(detalle.observaciones())

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.materias.MateriaRepository;
 import mx.gob.pjpuebla.trials.core.oficialias.OficialiaJuzgadoRecord;
+import mx.gob.pjpuebla.trials.core.personas.JuezRecord;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.core.sedes.Sede;
@@ -124,6 +125,7 @@ public class JuzgadoService {
                 juzgado.getMaxAsignacionesRonda(),
                 juzgado.getContadorAsignaciones(),
                 juzgado.getInstanciaJuzgado().ordinal(),
+                juzgado.getNomenclatura(),
                 tipoJuicios,
                 contadoresJuzgados,
                 juzgado.getJuzgadoPadre() != null ? juzgado.getJuzgadoPadre().getId() : null,
@@ -708,5 +710,25 @@ public class JuzgadoService {
     @Transactional(readOnly = true)
     public List<JuzgadoRecordItem> getPonenciasDisponibles(Integer materiaId) {
         return juzgadoRepository.getPonenciasDisponibles(materiaId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<JuezRecord> getJuecesPenales() {
+        List<JuezRecord> jueces = new ArrayList<>();
+        JuzgadoRecordItem juzgado = getJuzgadoActual();
+        System.out.println("----------------------> ");
+        System.out.println(juzgado.nombre());
+        System.out.println(juzgado.materia());
+        //Si es de penal, retornar lista de jueces
+        if (juzgado.materia().equalsIgnoreCase("PENAL")) {
+            System.out.println("Si es penal");
+            List<Persona> list = personaService.getAllJuecesPenales();
+            for (Persona persona : list) {
+                System.out.println(persona.getId());
+                JuezRecord juez = new JuezRecord(persona.getId(), persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno());
+                jueces.add(juez);
+            }
+        }
+        return jueces;
     }
 }

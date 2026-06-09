@@ -69,6 +69,7 @@ public class JuzgadoSetUp {
                 0,
                 0,
                 InstanciaJuzgado.PRIMERA_INSTANCIA.ordinal(),
+                "",
                 Arrays.asList(
                         new TipoJuicioRecord(1, "Tipo Juicio Uno", null, null, null),
                         new TipoJuicioRecord(2, "Tipo Juicio Dos", null, null,null)

@@ -144,6 +144,18 @@ public class AudienciaResource {
     public List<AudienciaProgramadaRecord> getAudienciasProgramadas(@PathVariable Integer carpetaId) {
         return audienciaService.getAudienciasProgramadas(carpetaId);
     }
-    
-    
+
+    @PostMapping("/audiencias/{audienciaId}/guardarActaMinima")
+    public void guardarActaMinima(MultipartFile file, @PathVariable Integer audienciaId) {
+        this.audienciaService.guardarArchivo(file, audienciaId);
+    }
+
+    @GetMapping("/audiencias/{audienciaId}/actaMinima")
+    public ResponseEntity<byte[]> descargarActaMinima(@PathVariable Integer audienciaId) throws IOException {
+        byte[] fileContent = audienciaService.getAudienciaDocumento(audienciaId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("actaMinima", audienciaId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(fileContent);
+    }
 }

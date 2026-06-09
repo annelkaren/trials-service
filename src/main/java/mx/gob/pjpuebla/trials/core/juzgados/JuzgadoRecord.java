@@ -31,6 +31,7 @@ public record JuzgadoRecord(
         Integer maxAsignacionesRonda,
         Integer contadorAsignaciones,
         Integer instanciaJuzgado,
+        String nomenclatura,
         List<TipoJuicioRecord> tipoJuicios,
         List<JuzgadoContadorConfig> contadoresJuzgados,
         Integer juzgadoPadreId,

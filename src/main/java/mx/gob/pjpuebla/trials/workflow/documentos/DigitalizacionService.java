@@ -534,9 +534,10 @@ public class DigitalizacionService {
     }
 
     private Path crearDirectorioActaMinimaAudiencia(Audiencia audiencia) {
-        String expediente = audiencia.getCarpeta().getExpediente().replace("/", "");
-        String year = expediente.substring(expediente.length() - 4);
-        String numero = expediente.substring(0, expediente.length() - 4);
+        String[] tmpData = audiencia.getCarpeta().getExpediente().split("/");;
+        
+        String year = tmpData[1].trim();
+        String numero = tmpData[0].trim();
         numero = String.format("%06d", Integer.parseInt(numero));
         String juzgado = audiencia.getCarpeta().getJuzgado().getNombre() != null
                 ? audiencia.getCarpeta().getJuzgado().getNombre()

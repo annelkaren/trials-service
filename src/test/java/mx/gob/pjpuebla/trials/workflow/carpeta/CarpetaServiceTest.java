@@ -805,7 +805,8 @@ class CarpetaServiceTest {
                                                 new RubroRecord(2, "Rubro2")),
                                 "",
                                 LocalDate.now(),
-                                0);
+                                0,
+                                1);
 
                 given(carpetaRepository.findById(anyInt())).willReturn(Optional.of(documento.getCarpeta()));
                 given(carpetaDetalleRepository.findByCarpetaId(anyInt())).willReturn(carpetaDetalle);
