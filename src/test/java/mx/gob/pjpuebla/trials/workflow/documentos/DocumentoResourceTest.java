@@ -384,7 +384,7 @@ class DocumentoResourceTest {
                 DocumentoAsignadoResponseRecord documentoRecord = new DocumentoAsignadoResponseRecord(1, 1, 1,
                                 expediente, folio, expediente, expediente, LocalDateTime.now(), LocalDateTime.now(),
                                 folio, expediente, true, "prorroga", EstadoProrroga.AUTORIZADA, "ejemplo", "red", "",
-                                "");
+                                "", "");
 
                 given(documentoService.getAllAsignado(anyString(), anyLong(), any(Pageable.class), anyString()))
                                 .willReturn(new PageImpl<>(Collections.singletonList(documentoRecord)));
@@ -401,7 +401,7 @@ class DocumentoResourceTest {
         void getDataDocumentoRecepcion() throws Exception {
                 given(documentoService.getDataDocumentoRecepcion(1))
                                 .willReturn(new DocumentoRecepcionRecord("1", "00000/2024", "ENTRADA", "prueba.pdf", "",
-                                                null));
+                                                null, ""));
 
                 mockMvc.perform(
                                 get("/api/workflow/bandeja/recepcion/anexos/{id}", 1)

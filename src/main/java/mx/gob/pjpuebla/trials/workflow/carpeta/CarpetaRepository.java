@@ -441,7 +441,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
       JOIN se.distrito di
       JOIN ca.tipoJuicio tj
       JOIN tj.materia ma
-      WHERE ca.expediente = :expediente
+      WHERE LOWER(ca.expediente) LIKE LOWER(CONCAT('%', :expediente, '%'))
       AND ma.id = :materiaId
       AND di.id = :distritoId
       """)

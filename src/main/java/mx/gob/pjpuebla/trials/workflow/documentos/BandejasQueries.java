@@ -874,16 +874,23 @@ public final class BandejasQueries {
                       WHEN d IS NOT NULL AND d.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.PROMOCION THEN
                         CAST(function('jsonb_extract_path_text', d.data, 'tipoPromocion') as String)
                       ELSE ''
+                    END,
+                    
+                    CASE
+                      WHEN c IS NOT NULL THEN jc.materia.nombre
+                      ELSE jcd.materia.nombre
                     END
                   )
                   FROM Movimiento m
                   LEFT JOIN m.carpeta c
                   LEFT JOIN c.juzgado jc
+                  LEFT JOIN jc.materia jcm
                   LEFT JOIN c.concepto cc
                   LEFT JOIN m.documento d
                   LEFT JOIN d.concepto dc
                   LEFT JOIN d.carpeta cd
                   LEFT JOIN cd.juzgado jcd
+                  LEFT JOIN jcd.materia jcdm
                   LEFT JOIN cd.concepto cdc
                   JOIN m.persona p
                   LEFT JOIN m.juzgado j

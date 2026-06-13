@@ -11,5 +11,6 @@ public record DocumentoRecepcionRecord(
     String tipoEntrada,
     String digitalizacion,
     String origen,
-    List<AnexoRecepcionRecord> anexos
+    List<AnexoRecepcionRecord> anexos,
+    String materia
 ) implements Serializable {}

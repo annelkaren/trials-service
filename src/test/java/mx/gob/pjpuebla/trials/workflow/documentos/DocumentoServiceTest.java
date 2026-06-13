@@ -823,7 +823,8 @@ class DocumentoServiceTest {
                                 null, // prioridad
                                 null, // horas
                                 null, // conceptoId
-                                "" // tipoPromocion
+                                "", // tipoPromocion
+                                "" // materia
                 );
 
                 Page<DocumentoBandejaRecepcionRecord> pageMock = new PageImpl<>(List.of(record), PageRequest.of(0, 1),
@@ -1071,7 +1072,8 @@ class DocumentoServiceTest {
                                 null,
                                 1,
                                 1,
-                                null);
+                                null,
+                                "");
 
                 Page<DocumentoBandejaRecepcionRecord> page = new PageImpl<>(List.of(rec));
 

@@ -23,7 +23,8 @@ public record DocumentoAsignadoResponseRecord(
     String textoNotificacion,
     String colorNotificacion,
     String tipoPromocion,
-    String migrado
+    String migrado,
+    String materia
 ) implements Serializable {
     
 }

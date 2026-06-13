@@ -72,8 +72,7 @@ public class TipoPartesService {
 
     public List<TipoPartesRecord> getTiposPartesByCarpetaId(Integer carpetaId) {
         Integer tipoJuicioId = carpetaRepository.findTipoJuicioIdByCarpetaId(carpetaId);
-        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioIdAndNotPromovente(tipoJuicioId);
-
+        List<TipoPartes> tiposPartes = tipoPartesRepository.findByTipoJuicioId(tipoJuicioId);
         if (tipoJuicioId == null) {
             throw new NotFoundException("No se encontró el tipo de juicio para la carpeta ID ",carpetaId.toString());
         }

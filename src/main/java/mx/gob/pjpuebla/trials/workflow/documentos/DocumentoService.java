@@ -16,6 +16,7 @@ import mx.gob.pjpuebla.trials.core.instituciones.Institucion;
 import mx.gob.pjpuebla.trials.core.instituciones.InstitucionRepository;
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.juzgados.JuzgadoService;
+import mx.gob.pjpuebla.trials.core.materias.Materia;
 import mx.gob.pjpuebla.trials.core.oficialias.Oficialia;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
 import mx.gob.pjpuebla.trials.core.personas.PersonaRepository;
@@ -1586,6 +1587,7 @@ public class DocumentoService {
                 Persona persona = personaAsignada != null ? personaAsignada : personaService.getAuditor();
                 Juzgado juzgado = persona.getJuzgado();
                 Oficialia oficialia = persona.getOficialia();
+                String materia = juzgado.getMateria().getNombre();
                 boolean esOficialMayor = roleService.hasRole(persona.getUsuario(), "OFICIAL_MAYOR_JUZGADO");
 
                 Object[] resultado = procesarTipoCarpeta(key);
@@ -1739,7 +1741,8 @@ public class DocumentoService {
                                                         (isPromocion) && documento != null
                                                                         ? documento.getMigrado().name()
                                                                         : carpeta != null ? carpeta.getMigrado().name()
-                                                                                        : "");
+                                                                                        : "",
+                                                        materia);
                                 })
                                 .toList();
 
@@ -2029,6 +2032,9 @@ public class DocumentoService {
                                 .orElseThrow(() -> new NotFoundException("Movimiento no encontrado",
                                                 movimientoId.toString()));
                 Documento doc = getDocumentoForRenderOficialMayor(movimiento);
+                String materia = (doc.getCarpeta() != null && doc.getCarpeta().getJuzgado() != null
+                        && doc.getCarpeta().getJuzgado().getMateria() != null)
+                        ? doc.getCarpeta().getJuzgado().getMateria().getNombre() : "";
 
                 List<AnexoRecepcionRecord> anexosActuales = anexoRepository.findAnexosByDocumentoId(doc.getId());
                 addAnexoExtra(anexosActuales, doc);
@@ -2048,7 +2054,8 @@ public class DocumentoService {
                                                 : doc.getCarpeta().getTipoCarpeta().name().toLowerCase()),
                                 doc.getRuta(),
                                 origen,
-                                anexosActuales);
+                                anexosActuales,
+                                materia);
         }
 
         private void addAnexoExtra(List<AnexoRecepcionRecord> anexos, Documento documento) {

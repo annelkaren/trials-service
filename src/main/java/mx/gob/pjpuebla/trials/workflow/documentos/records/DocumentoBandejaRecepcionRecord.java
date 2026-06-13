@@ -19,6 +19,7 @@ public record DocumentoBandejaRecepcionRecord(
         Prioridad prioridad,
         Integer horas,
         Integer conceptoId,
-        String tipoPromocion
+        String tipoPromocion,
+        String materia
 ) implements Serializable {
 }

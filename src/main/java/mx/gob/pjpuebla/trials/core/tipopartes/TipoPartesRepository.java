@@ -17,6 +17,9 @@ public interface TipoPartesRepository extends JpaRepository<TipoPartes, Integer>
     @Query("SELECT tp FROM TipoPartes tp WHERE tp.tipoJuicio.id = :id AND LOWER(tp.nombre) <> 'promovente'")
     List<TipoPartes> findByTipoJuicioIdAndNotPromovente(@Param("id") Integer id);
 
+    @Query("SELECT tp FROM TipoPartes tp WHERE tp.tipoJuicio.id = :id")
+    List<TipoPartes> findByTipoJuicioId(@Param("id") Integer id);
+
     Optional<TipoPartes> findByNombreAndTipoJuicioId(String name, Integer tipoJuicioId);
 
     Optional<TipoPartes> findByNombre(String nombre);
