@@ -12,6 +12,8 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import java.util.*;
 
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.bandejas.records.entrada.BandejaEntradaResponse;
 import mx.gob.pjpuebla.trials.workflow.carpeta.Carpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.CarpetaRepository;
@@ -225,5 +227,25 @@ public class MovimientoService {
                         mov.getConcepto()
 
                 )).toList();
+    }
+
+    public Page<Movimiento> getAllBandejaEntrada(Pageable pageable, Integer juzgadoId, Integer oficialiaId,
+                                                 String key, TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+        return movimientoRepository.getAllBandejaEntrada(juzgadoId, oficialiaId, key, pageable, tipoCarpeta,
+                tipoDocumento, folio, tipoEntradaDoc, tipoEntradaCarp);
+    }
+
+    public Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
+                                                String motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre, TipoDocumento tipoDocumentoNombre,
+                                                Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+        return movimientoRepository.getBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
+    }
+
+    public Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
+                                                   String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpetaNombre,
+                                                   TipoDocumento tipoDocumentoNombre, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp) {
+        return movimientoRepository.getAllBandejaRecepcion(pageable, juzgadoId, estado, key, motivos, personaId,
+                tipoCarpetaNombre, tipoDocumentoNombre, folio, tipoEntradaDoc, tipoEntradaCarp);
     }
 }

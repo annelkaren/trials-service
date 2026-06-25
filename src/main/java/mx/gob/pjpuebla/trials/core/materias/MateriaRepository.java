@@ -46,4 +46,15 @@ public interface MateriaRepository extends JpaRepository<Materia, Integer> {
     List<SentenciasByMateriaRecord> getCountSentenciasByMateria();
 
     Optional<Materia> findByNombre(String nombre);
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.core.materias.MateriaRecord(
+            m.id,
+            m.nombre
+        )
+        FROM Materia m
+        WHERE m.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+        ORDER BY m.nombre ASC
+    """)
+    List<MateriaRecord> findAllForSelect();
 }

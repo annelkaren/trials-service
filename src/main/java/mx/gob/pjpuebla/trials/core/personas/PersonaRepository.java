@@ -148,4 +148,19 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Persona findByCorreoElectronico(String correo);
 
     Optional<Persona> findByUsuarioAndJuzgado(String usuario, Juzgado juzgado);
+
+    // rolPrincipal
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.core.personas.PersonaVisitaduriaRecord(
+            p.id,
+            p.nombre || ' ' || p.apellidoPaterno || ' ' || COALESCE(p.apellidoMaterno, '')
+        )
+        FROM Persona p
+        WHERE p.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+
+        AND p.juzgado.id = :juzgadoId
+        ORDER BY p.nombre ASC
+    """)
+    List<PersonaVisitaduriaRecord> findSecretariosFiltrados(
+            @Param("juzgadoId") Integer juzgadoId);
 }

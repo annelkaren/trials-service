@@ -19,8 +19,11 @@ import mx.gob.pjpuebla.trials.workflow.carpeta.records.CarpetaResponseRecord;
 import mx.gob.pjpuebla.trials.workflow.sello.OficioService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloCaratulaService;
 import mx.gob.pjpuebla.trials.workflow.sello.SelloGenerator;
+import mx.gob.pjpuebla.trials.workflow.visitaduria.BandejaTurnoRecord;
 import net.sf.jasperreports.engine.JRException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -49,6 +52,7 @@ public class DocumentoResource {
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
     private final OficioService oficioService;
+    private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
 
     @PostMapping("/demanda")
     public DocumentoRecord createDemanda(@RequestBody DocumentoSaveRecord documentoSaveRecord) {
@@ -427,4 +431,67 @@ public class DocumentoResource {
         return ResponseEntity.ok().headers(headers).body(selloGenerator.getSelloFromCarpetaId(carpetaId, tipoEntrada));
     }
 
+    @GetMapping("/bandeja/entrada2")
+    public Page<DocumentoGridRecord> getAll(Pageable pageable,
+                                            @RequestParam(value = "key", required = false) String key,
+                                            @RequestParam(value = "tipoEntrada", required = false) String tipoEntrada) {
+        return this.documentoService.getAll(key, pageable, tipoEntrada);
+    }
+
+    @GetMapping("/bandeja/salida2")
+    public Page<DocumentoSalidaResponseRecord> getAllBandejaSalida(@PageableDefault(size = 20) Pageable pageable,
+                                                                   @RequestParam(value = "key", required = false) String key) {
+        return this.documentoService.getAllBandejaSalida(key, pageable);
+    }
+
+    @GetMapping(value = "/bandeja/historial2", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<DocumentoGridRecord> getAllHistorial(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(value = "key", required = false) String key) {
+        return documentoService.getAllHistorial(key, pageable);
+    }
+
+    @GetMapping("/documentos/acuerdos-visitaduria")
+    public Page<DocumentoVisitaduriaRecord> findDocumentosVisitaduria(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) Integer juzgadoId,
+            @RequestParam(required = false) String tipoAcuerdo,
+            @RequestParam(required = false) String key,
+            Pageable pageable) {
+        return documentoService.findDocumentosVisitaduria(fechaInicio, fechaFin, juzgadoId, tipoAcuerdo, key, pageable);
+    }
+
+    @GetMapping("/turno")
+    public Page<BandejaTurnoRecord> getAllTurno(
+            @RequestParam(required = false, defaultValue = "") String key,
+            @RequestParam Integer juzgadoId,
+            @RequestParam Integer secretarioId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime fechaInicial,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime fechaFinal,
+            // Pageable pageable
+            @PageableDefault(size = 20) Pageable pageable
+            // @RequestParam(value = "key", required = false) String key
+    ) {
+        return documentoService.getAllTurno(key, juzgadoId, secretarioId, fechaInicial, fechaFinal, pageable);
+    }
+
+    @GetMapping(value = "/documentos/digitalizacion/carpeta/{carpetaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getFileByCarpetaId(@PathVariable Integer carpetaId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("sello", carpetaId + "_documento.pdf");
+        return ResponseEntity.ok().headers(headers).body(digitalizacionService.getDocumentoByCarpeta(carpetaId));
+    }
+
+    @GetMapping("/carpeta/visitaduria/oficialia")
+    public Page<CarpetaVisitaduriaRecord> findCarpetasVisitaduria(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @RequestParam(required = false) Integer juzgadoId,
+            @RequestParam(required = false) String tipoEntrada,
+            @RequestParam(required = false) String key,
+            Pageable pageable) {
+        return documentoService.findCarpetasVisitaduria(fechaInicio, fechaFin, juzgadoId, tipoEntrada, key, pageable);
+    }
 }

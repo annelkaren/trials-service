@@ -153,4 +153,10 @@ public class PersonaResource {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @GetMapping("/secretarios")
+    public List<PersonaVisitaduriaRecord> getSecretariosFiltro(
+            @RequestParam Integer juzgadoId
+    ) {
+        return personaService.getSecretariosFiltrados(juzgadoId);
+    }
 }

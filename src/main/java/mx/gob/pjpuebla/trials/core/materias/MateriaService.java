@@ -57,4 +57,13 @@ public class MateriaService {
     public Materia findByNombre(String nombre){
         return materiaRepository.findByNombre(nombre).orElse(null);
     }
+
+    @Transactional(readOnly = true)
+    public List<MateriaRecord> getMaterias() {
+        return materiaRepository.findAllForSelect();
+    }
+
+    public List<Materia> findMateriasAll() {
+        return materiaRepository.findAll();
+    }
 }

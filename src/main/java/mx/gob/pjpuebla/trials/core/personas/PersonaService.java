@@ -660,4 +660,9 @@ public class PersonaService {
                 .findByUsuarioAndJuzgado(idOficialMayor, juzgado)
                 .orElse(null);
     }
+
+    @Transactional(readOnly = true)
+    public List<PersonaVisitaduriaRecord> getSecretariosFiltrados(Integer juzgadoId) {
+        return personaRepository.findSecretariosFiltrados(juzgadoId);
+    }
 }

@@ -254,4 +254,34 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
                 ORDER BY j.contadorAsignaciones ASC
             """)
     List<JuzgadoRecordItem> getPonenciasDisponibles(@Param("materiaId") Integer materiaId);
+
+    @Query("""
+                SELECT j
+                FROM Juzgado j
+                JOIN j.sede s
+                WHERE
+                    (:materiaId IS NULL OR j.materia.id = :materiaId)
+                AND (:distritoId IS NULL OR s.distrito.id = :distritoId)
+                ORDER BY j.nombre ASC
+            """)
+    List<Juzgado> findByMateriaAndDistrito(
+            @Param("materiaId") Integer materiaId,
+            @Param("distritoId") Integer distritoId
+    );
+
+    @Query("""
+        SELECT new mx.gob.pjpuebla.trials.core.juzgados.JuzgadoVisitaduriaRecord(
+            j.id,
+            j.nombre
+        )
+        FROM Juzgado j
+        WHERE j.estado = mx.gob.pjpuebla.trials.util.enums.Estado.ACTIVE
+        AND (:materiaId IS NULL OR j.materia.id = :materiaId)
+        AND (:distritoId IS NULL OR j.sede.distrito.id = :distritoId)
+        ORDER BY j.nombre ASC
+    """)
+    List<JuzgadoVisitaduriaRecord> findJuzgadosFiltrados(
+            @Param("materiaId") Integer materiaId,
+            @Param("distritoId") Integer distritoId
+    );
 }

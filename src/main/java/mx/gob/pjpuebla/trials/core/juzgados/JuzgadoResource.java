@@ -14,6 +14,7 @@ import mx.gob.pjpuebla.trials.util.enums.InstanciaJuzgado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
@@ -118,4 +119,19 @@ public class JuzgadoResource {
         return this.juzgadoService.getJuecesPenales();
     }
 
+    @GetMapping("/select")
+    public List<JuzgadoVisitaduriaRecord> getJuzgados(
+            @RequestParam(required = false) Integer materiaId,
+            @RequestParam(required = false) Integer distritoId
+    ) {
+        return juzgadoService.getJuzgadosFiltrados(materiaId, distritoId);
+    }
+
+    @GetMapping(value = "/filtrar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<JuzgadoRecordItem> getJuzgadosFiltrados(
+            @RequestParam(required = false) Integer materiaId,
+            @RequestParam(required = false) Integer distritoId
+    ) {
+        return juzgadoService.findJuzgadosFiltrados(materiaId, distritoId);
+    }
 }

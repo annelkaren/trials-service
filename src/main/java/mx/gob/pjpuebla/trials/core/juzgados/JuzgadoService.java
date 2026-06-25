@@ -716,19 +716,31 @@ public class JuzgadoService {
     public List<JuezRecord> getJuecesPenales() {
         List<JuezRecord> jueces = new ArrayList<>();
         JuzgadoRecordItem juzgado = getJuzgadoActual();
-        System.out.println("----------------------> ");
-        System.out.println(juzgado.nombre());
-        System.out.println(juzgado.materia());
         //Si es de penal, retornar lista de jueces
         if (juzgado.materia().equalsIgnoreCase("PENAL")) {
-            System.out.println("Si es penal");
             List<Persona> list = personaService.getAllJuecesPenales();
             for (Persona persona : list) {
-                System.out.println(persona.getId());
                 JuezRecord juez = new JuezRecord(persona.getId(), persona.getNombre() + " " + persona.getApellidoPaterno() + " " + persona.getApellidoMaterno());
                 jueces.add(juez);
             }
         }
         return jueces;
+    }
+
+    public List<JuzgadoRecordItem> findJuzgadosFiltrados(Integer materiaId, Integer distritoId) {
+        List<Juzgado> juzgados = juzgadoRepository.findByMateriaAndDistrito(materiaId, distritoId);
+        return juzgados.stream()
+                .map(juzgado -> new JuzgadoRecordItem(
+                        juzgado.getId(),
+                        juzgado.getNombre(),
+                        juzgado.getEstado(),
+                        juzgado.getMateria() != null ? juzgado.getMateria().getNombre() : null
+                )).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<JuzgadoVisitaduriaRecord> getJuzgadosFiltrados(Integer materiaId, Integer distritoId) {
+        return juzgadoRepository.findJuzgadosFiltrados(materiaId, distritoId);
+
     }
 }

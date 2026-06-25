@@ -194,7 +194,4 @@ public class CarpetaResource {
             return ResponseEntity.badRequest().body("Error al actualizar los estados: " + e.getMessage());
         }
     }
-
-
-    
 }

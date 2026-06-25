@@ -2,6 +2,8 @@ package mx.gob.pjpuebla.trials.util.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 public enum TipoCarpeta {
     DEMANDA("Demanda", "Demandas"),
@@ -21,5 +23,20 @@ public enum TipoCarpeta {
     TipoCarpeta(String etiqueta, String plural){
         this.etiqueta=etiqueta;
         this.plural=plural;
+    }
+
+    public String getEtiqueta() {
+        return this.etiqueta;
+    }
+
+    public String getPlural() {
+        return this.plural;
+    }
+
+    public static TipoCarpeta fromEtiqueta(String etiqueta) {
+        return Arrays.stream(values())
+                .filter(tipo -> tipo.getEtiqueta().equalsIgnoreCase(etiqueta))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de carpeta inválido: " + etiqueta));
     }
 }
