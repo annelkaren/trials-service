@@ -35,4 +35,9 @@ public class DistritoService {
                 .map(m -> new DistritoRecord(m.getId(), m.getNombre()))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<DistritoRecord> getDistritos() {
+        return distritoRepository.findAllForSelect();
+    }
 }

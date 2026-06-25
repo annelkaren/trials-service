@@ -7,6 +7,7 @@ import mx.gob.pjpuebla.trials.litigante.LitiganteExpedientesRecord;
 import mx.gob.pjpuebla.trials.litigante.responselitigante.PiezaRecord;
 import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.carpeta.records.PiezaRecordResponse;
+import mx.gob.pjpuebla.trials.workflow.documentos.records.CarpetaVisitaduriaRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoDetalleCarpeta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -545,4 +546,111 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Integer> {
           WHERE c.tipoCarpeta = mx.gob.pjpuebla.trials.util.enums.TipoCarpeta.APELACION AND m.nombre IN :materias
       """)
   Long countCarpetasPenales(@Param("materias") List<String> materias);
+
+  @Query(
+          value = """
+        SELECT *
+        FROM (
+            SELECT
+                c.pn_id AS id,
+                c.s_expediente AS expediente,
+                c.t_fecha_alta AS fecha_recepcion,
+                c.t_fecha_edita AS turnado_secretario,
+                'CARPETA' AS descripcion,
+                CAST(c.n_tipo_carpeta AS VARCHAR) AS tipo,
+                0 AS dias
+            FROM trials.tbl_carpetas c
+            LEFT JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+            WHERE (:soloPromociones = false)
+              AND (:juzgadoId IS NULL OR j.pn_id = :juzgadoId)
+              AND (:tipoCarpeta IS NULL OR c.n_tipo_carpeta = :tipoCarpeta)
+              AND (CAST(:fechaInicio AS timestamp) IS NULL OR c.t_fecha_alta >= CAST(:fechaInicio AS timestamp))
+              AND (CAST(:fechaFin AS timestamp) IS NULL OR c.t_fecha_alta <= CAST(:fechaFin AS timestamp))
+              AND (
+                    :key IS NULL OR
+                    :key = '' OR
+                    LOWER(c.s_expediente) LIKE LOWER(CONCAT('%', :key, '%'))
+                  )
+
+            UNION ALL
+
+            SELECT
+                d.pn_id AS id,
+                c.s_expediente AS expediente,
+                d.t_fecha_alta AS fecha_recepcion,
+                d.t_fecha_edita AS turnado_secretario,
+                'DOCUMENTO' AS descripcion,
+                CAST(d.n_tipo_documento AS VARCHAR) AS tipo,
+                0 AS dias
+            FROM trials.tbl_documentos d
+            INNER JOIN trials.tbl_carpetas c ON c.pn_id = d.fn_carpeta
+            LEFT JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+            WHERE d.n_tipo_documento = 0
+              AND (
+                    :tipoDocumento IS NOT NULL
+                    OR (:tipoCarpeta IS NULL AND :tipoDocumento IS NULL)
+                  )
+              AND (:tipoDocumento IS NULL OR d.n_tipo_documento = :tipoDocumento)
+              AND (:juzgadoId IS NULL OR j.pn_id = :juzgadoId)
+              AND (CAST(:fechaInicio AS timestamp) IS NULL OR d.t_fecha_alta >= CAST(:fechaInicio AS timestamp))
+              AND (CAST(:fechaFin AS timestamp) IS NULL OR d.t_fecha_alta <= CAST(:fechaFin AS timestamp))
+              AND (
+                    :key IS NULL OR
+                    :key = '' OR
+                    LOWER(c.s_expediente) LIKE LOWER(CONCAT('%', :key, '%'))
+                  )
+        ) resultado
+        ORDER BY fecha_recepcion DESC
+        """,
+          countQuery = """
+        SELECT COUNT(*)
+        FROM (
+            SELECT c.pn_id
+            FROM trials.tbl_carpetas c
+            LEFT JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+            WHERE (:soloPromociones = false)
+              AND (:juzgadoId IS NULL OR j.pn_id = :juzgadoId)
+              AND (:tipoCarpeta IS NULL OR c.n_tipo_carpeta = :tipoCarpeta)
+              AND (CAST(:fechaInicio AS timestamp) IS NULL OR c.t_fecha_alta >= CAST(:fechaInicio AS timestamp))
+              AND (CAST(:fechaFin AS timestamp) IS NULL OR c.t_fecha_alta <= CAST(:fechaFin AS timestamp))
+              AND (
+                    :key IS NULL OR
+                    :key = '' OR
+                    LOWER(c.s_expediente) LIKE LOWER(CONCAT('%', :key, '%'))
+                  )
+
+            UNION ALL
+
+            SELECT d.pn_id
+            FROM trials.tbl_documentos d
+            INNER JOIN trials.tbl_carpetas c ON c.pn_id = d.fn_carpeta
+            LEFT JOIN trials.tbl_juzgados j ON j.pn_id = c.fn_juzgado
+            WHERE d.n_tipo_documento = 0
+              AND (
+                    :tipoDocumento IS NOT NULL
+                    OR (:tipoCarpeta IS NULL AND :tipoDocumento IS NULL)
+                  )
+              AND (:tipoDocumento IS NULL OR d.n_tipo_documento = :tipoDocumento)
+              AND (:juzgadoId IS NULL OR j.pn_id = :juzgadoId)
+              AND (CAST(:fechaInicio AS timestamp) IS NULL OR d.t_fecha_alta >= CAST(:fechaInicio AS timestamp))
+              AND (CAST(:fechaFin AS timestamp) IS NULL OR d.t_fecha_alta <= CAST(:fechaFin AS timestamp))
+              AND (
+                    :key IS NULL OR
+                    :key = '' OR
+                    LOWER(c.s_expediente) LIKE LOWER(CONCAT('%', :key, '%'))
+                  )
+        ) resultado
+        """,
+          nativeQuery = true
+  )
+  Page<CarpetaVisitaduriaRecord> findCarpetasVisitaduria(
+          @Param("fechaInicio") LocalDateTime fechaInicio,
+          @Param("fechaFin") LocalDateTime fechaFin,
+          @Param("juzgadoId") Integer juzgadoId,
+          @Param("tipoCarpeta") Integer tipoCarpeta,
+          @Param("tipoDocumento") Integer tipoDocumento,
+          @Param("soloPromociones") Boolean soloPromociones,
+          @Param("key") String key,
+          Pageable pageable
+  );
 }

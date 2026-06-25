@@ -23,4 +23,12 @@ public enum TipoDocumento {
         this.etiqueta = etiqueta;
         this.plural = plural;
     }
+
+    public String getEtiqueta() {
+        return this.etiqueta;
+    }
+
+    public String getPlural() {
+        return this.plural;
+    }
 }

@@ -40,4 +40,14 @@ public class MateriaResource {
     public List<SentenciasByMateriaRecord> getCountSentenciasByMaterias() {
         return materiaService.getCountSentenciasByMaterias();
     }
+
+    @GetMapping("/select")
+    public List<MateriaRecord> getMaterias() {
+        return materiaService.getMaterias();
+    }
+
+    @GetMapping("/all")
+    public List<Materia> getAllMateriasSinPaginar() {
+        return materiaService.findMateriasAll();
+    }
 }

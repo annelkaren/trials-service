@@ -29,4 +29,9 @@ public class DistritoResource {
     public List<DistritoRecord> getAll() {
         return distritoService.getAllActive();
     }
+
+    @GetMapping("/select")
+    public List<DistritoRecord> getDistritos() {
+        return distritoService.getDistritos();
+    }
 }

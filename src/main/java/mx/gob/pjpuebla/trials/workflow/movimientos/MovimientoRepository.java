@@ -6,7 +6,10 @@ import java.util.UUID;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.enums.TipoCarpeta;
+import mx.gob.pjpuebla.trials.util.enums.TipoDocumento;
 import mx.gob.pjpuebla.trials.workflow.archivojudicial.ArchivoJudicialHistoricoProjection;
+import mx.gob.pjpuebla.trials.workflow.visitaduria.TurnoRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -393,4 +396,249 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>
             WHERE mov.s_estado LIKE '%ARCHIVO_JUDICIAL%'
             """, nativeQuery = true)
     Page<ArchivoJudicialHistoricoProjection> findHistoricoArchivoJudicial(Pageable pageable);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN jc.materia mat
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN jcd.materia matd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                        (:oficialiaId IS null AND :juzgadoId IS null) OR
+                        (:oficialiaId IS NOT null AND o.id = :oficialiaId) OR
+                        (:juzgadoId IS NOT null AND j.id = :juzgadoId))
+                AND (
+                    LOWER(c.folio) LIKE %:key% OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(mat.nombre) LIKE %:key% OR LOWER(matd.nombre) LIKE %:key%
+                )
+            """)
+    Page<Movimiento> getAllBandejaHistorial(String key, Integer juzgadoId, Integer oficialiaId, Pageable pageable);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                    (c IS NOT NULL AND c.estatus IN (0,14))
+                    OR (d IS NOT NULL AND d.estatus IN (0,14))
+                )
+                 AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                )
+                AND m.estado IN ('CAPTURA','EDICION','DEVUELTO_A_OFICIALIA')
+                AND ( o.id = :oficialiaId OR j.id = :juzgadoId )
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(c.juzgado.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
+                )
+                      AND (
+                (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
+                OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
+                OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
+                OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
+            )
+            """)
+    Page<Movimiento> getAllBandejaEntrada(Integer juzgadoId, Integer oficialiaId, String key, Pageable pageable,
+                                          TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc,
+                                          TipoCarpeta tipoEntradaCarp);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                JOIN FETCH m.persona p
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                    (c IS NOT NULL AND c.estatus IN :estado)
+                    OR (d IS NOT NULL AND d.estatus IN :estado)
+                )
+                AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                        ((m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                        (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                        AND (m2.estado != 'TURNADO' OR (m2.estado = 'TURNADO' AND m2.destino = :personaId))
+                     )
+                )
+                AND m.estado IN (:motivos)
+
+                AND (
+                    (c IS NOT NULL AND jc.id = :juzgadoId)
+                    OR (d IS NOT NULL AND jcd.id = :juzgadoId)
+                )
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
+                    OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
+                )
+                AND (
+                (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
+                OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
+                OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
+                OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
+            )
+                order by m.fechaAsignacion desc
+            """)
+    Page<Movimiento> getAllBandejaRecepcion(Pageable pageable, Integer juzgadoId, List<EstadoCarpeta> estado,
+                                            String key, List<String> motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+                                            TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+
+    @Query("""
+                SELECT m
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                JOIN FETCH m.persona p
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.oficialia o
+                WHERE (
+                    (c IS NOT NULL AND c.estatus = :estado)
+                    OR (d IS NOT NULL AND d.estatus = :estado)
+                )
+                AND m.fechaAsignacion = (
+                    SELECT MAX(m2.fechaAsignacion)
+                    FROM Movimiento m2
+                    WHERE (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id))
+                )
+                AND m.estado = :motivos
+                AND m.destino = :personaId
+                AND (
+                    (c IS NOT NULL AND jc.id = :juzgadoId)
+                    OR (d IS NOT NULL AND jcd.id = :juzgadoId)
+                )
+                AND (
+                    LOWER(c.folio) LIKE %:key%
+                    OR LOWER(c.expediente) LIKE %:key%
+                    OR LOWER(d.folio) LIKE %:key%
+                    OR LOWER(cd.folio) LIKE %:key% OR LOWER(cd.expediente) LIKE %:key%
+                    OR LOWER(p.nombre) LIKE %:key% OR LOWER(p.apellidoPaterno) LIKE %:key%
+                    OR LOWER(j.nombre) LIKE %:key% OR LOWER(o.nombre) LIKE %:key%
+                    OR (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, d.folio) = :folio AND d.tipoDocumento = :tipoDocumento))
+                )
+                         AND (
+                (:tipoEntradaDoc IS NULL AND :tipoEntradaCarp IS NULL)
+                OR (d IS NOT NULL AND :tipoEntradaDoc IS NOT NULL AND d.tipoDocumento = :tipoEntradaDoc)
+                OR (d IS NULL AND cd IS NOT NULL AND :tipoEntradaCarp IS NOT NULL AND cd.tipoCarpeta = :tipoEntradaCarp)
+                OR (d IS NULL AND cd IS NULL AND :tipoEntradaCarp IS NOT NULL AND c.tipoCarpeta = :tipoEntradaCarp)
+            )
+                ORDER BY m.fechaAsignacion DESC
+            """)
+    Page<Movimiento> getBandejaRecepcion(Pageable pageable, Integer juzgadoId, EstadoCarpeta estado, String key,
+                                         String motivos, Persona personaId, TipoCarpeta tipoCarpeta,
+                                         TipoDocumento tipoDocumento, Integer folio, TipoDocumento tipoEntradaDoc, TipoCarpeta tipoEntradaCarp);
+
+    @Query("""
+                SELECT new mx.gob.pjpuebla.trials.workflow.visitaduria.TurnoRecord(
+                    m.id,
+                    COALESCE(c.id, cd.id),
+                    COALESCE(c.expediente, cd.expediente),
+                    m.fechaAsignacion,
+                    m.estado,
+                    p.nombre || ' ' || p.apellidoPaterno || ' ' || COALESCE(p.apellidoMaterno, ''),
+                    m.duracion,
+
+                    CAST(c.tipoCarpeta AS integer), 
+                    CAST(d.tipoDocumento AS integer),   
+                    LEAD(m.fechaAsignacion) OVER (
+                        PARTITION BY COALESCE(c.id, cd.id)
+                        ORDER BY m.fechaAsignacion ASC
+                    )
+                )
+                FROM Movimiento m
+                LEFT JOIN m.carpeta c
+                LEFT JOIN c.juzgado jc
+                LEFT JOIN jc.materia mat
+                LEFT JOIN m.documento d
+                LEFT JOIN d.carpeta cd
+                LEFT JOIN cd.juzgado jcd
+                LEFT JOIN jcd.materia matd
+                LEFT JOIN m.juzgado j
+                LEFT JOIN m.persona p 
+                WHERE 
+                    j.id = :juzgadoId
+                    AND p.id = :secretarioId
+                AND (
+                    LOWER(COALESCE(c.expediente, cd.expediente)) LIKE LOWER(CONCAT('%', :key, '%')) OR
+                    LOWER(COALESCE(c.folio, cd.folio)) LIKE LOWER(CONCAT('%', :key, '%')) OR
+                    LOWER(COALESCE(mat.nombre, matd.nombre)) LIKE LOWER(CONCAT('%', :key, '%'))
+                 )
+                    AND (CAST(:fechaInicial AS timestamp) IS NULL OR m.fechaAsignacion >= :fechaInicial)
+                    AND (CAST(:fechaFinal AS timestamp) IS NULL OR m.fechaAsignacion <= :fechaFinal)
+        """)
+    Page<TurnoRecord> getAllBandejaTurno(
+            @Param("key") String key,
+            @Param("juzgadoId") Integer juzgadoId,
+            @Param("secretarioId") Integer secretarioId,
+            @Param("fechaInicial") LocalDateTime fechaInicial,
+            @Param("fechaFinal") LocalDateTime fechaFinal,
+            Pageable pageable);
+
+    @Query("""
+            SELECT MIN(m.fechaAsignacion)
+            FROM Movimiento m
+            WHERE m.documento.id = :documentoId
+              AND m.estado = 'RECEPCION'
+            """)
+    LocalDateTime findPrimeraFechaRecepcionByDocumentoId(@Param("documentoId") Integer documentoId);
+
+    @Query("""
+            SELECT MIN(m.fechaAsignacion)
+            FROM Movimiento m
+            WHERE m.carpeta.id = :carpetaId
+              AND m.estado = 'RECEPCION'
+            """)
+    LocalDateTime findPrimeraFechaRecepcionBycarpetaId(@Param("carpetaId") Integer carpetaId);
+
+    Movimiento findFirstByDocumentoIdAndEstadoOrderByFechaAsignacionAsc(
+            Integer documentoId,
+            String concepto
+    );
+
+    Movimiento findFirstByCarpetaIdAndEstadoOrderByFechaAsignacionAsc(
+            Integer carpetaId,
+            String concepto
+    );
 }

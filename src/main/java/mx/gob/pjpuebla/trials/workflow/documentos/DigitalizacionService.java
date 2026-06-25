@@ -811,4 +811,8 @@ public class DigitalizacionService {
         return new ResponseGenericRecord("Autorización registrada exitosamente", "OK");
     }
 
+    public byte[] getDocumentoByCarpeta(Integer carpetaId) throws IOException {
+        Documento doc = documentoRepository.findByCarpetaIdAndTipoDocumentoIsNullAndRutaIsNotNull(carpetaId);
+        return load(StorageRequest.documento(doc.getId()));
+    }
 }

@@ -717,4 +717,129 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer> {
                 )
             """, nativeQuery = true)
     Page<SolicitudesProjection> findArchivoJudicialSolicitudes(Pageable pageable);
+
+    @Query("""
+             SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoSalidaRecord(
+                m.id,
+                COALESCE(c.id, doc_carpeta.id),
+                COALESCE(c.folio, doc.folio),
+                COALESCE(c.expediente, doc_carpeta.expediente),
+                COALESCE(jc.id, jd.id),
+                COALESCE(jc.nombre, jd.nombre),
+                COALESCE(matc.nombre, matd.nombre),
+                c.tipoCarpeta,
+                doc.tipoDocumento,
+                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta),
+                COALESCE(c.selloEstatus, doc_carpeta.selloEstatus),
+                COALESCE(c.estatus, doc_carpeta.estatus)
+            )
+            FROM Movimiento m
+            LEFT JOIN m.carpeta c
+            LEFT JOIN c.juzgado jc
+            LEFT JOIN jc.materia matc
+            LEFT JOIN m.documento doc
+            LEFT JOIN doc.carpeta doc_carpeta
+            LEFT JOIN doc_carpeta.juzgado jd
+            LEFT JOIN jd.materia matd
+            WHERE m.fechaAsignacion = (
+                SELECT MAX(m2.fechaAsignacion)
+                FROM Movimiento m2
+                WHERE
+                (
+                    (m.carpeta.id IS NOT NULL AND m2.carpeta.id = m.carpeta.id) OR
+                    (m.documento.id IS NOT NULL AND m2.documento.id = m.documento.id)
+                )
+            )
+            AND m.estado = 'SALIDA'
+            AND (m.oficialia.id = :oficialiaId OR m.juzgado.id = :juzgadoId)
+             AND (
+                  (
+                    (:tipoCarpeta IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND c.tipoCarpeta = :tipoCarpeta)
+                         OR (:tipoDocumento IS NOT NULL AND COALESCE(c.folio, doc.folio) = :folio AND doc.tipoDocumento = :tipoDocumento))
+                   OR lower(COALESCE(jc.nombre, jd.nombre)) LIKE %:key%
+                   OR lower(COALESCE(c.folio, doc.folio)) = lower(:key)
+                   OR lower(COALESCE(c.expediente, doc_carpeta.expediente)) LIKE %:key%
+               )
+            ORDER BY
+                COALESCE(jc.nombre, jd.nombre) ASC,
+                COALESCE(c.audit.fechaAlta, doc_carpeta.audit.fechaAlta) DESC,
+                COALESCE(c.tipoCarpeta, doc_carpeta.tipoCarpeta) ASC
+            """)
+    Page<DocumentoSalidaRecord> findByEstatusSalida(String key, Integer oficialiaId, Integer juzgadoId, Integer folio,
+                                                    TipoCarpeta tipoCarpeta, TipoDocumento tipoDocumento, Pageable pageable);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.DocumentoVisitaduriaRecord(
+                doc.id,
+                c.expediente,
+                c.id,
+                doc.audit.fechaAlta,
+                CONCAT(p.nombre,' ',p.apellidoPaterno,' ',COALESCE(p.apellidoMaterno,'')),
+                pd.correoElectronico,
+                dd.tipoAcuerdo
+            )
+                FROM Documento doc
+                JOIN doc.carpeta c
+                JOIN c.juzgado j
+                JOIN Persona p ON doc.audit.usuarioAlta = p.usuario
+                LEFT JOIN Notificacion n ON n.documento = doc
+                LEFT JOIN NotificacionesDetalles nd ON nd.notificacion = n
+                LEFT JOIN nd.personaDocumento pd 
+                LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+
+                WHERE doc.tipoDocumento = mx.gob.pjpuebla.trials.util.enums.TipoDocumento.ACUERDO
+                AND (CAST(:fechaInicio AS java.time.LocalDateTime) IS NULL OR doc.audit.fechaAlta >= :fechaInicio)
+                AND (CAST(:fechaFin AS java.time.LocalDateTime) IS NULL OR doc.audit.fechaAlta <= :fechaFin)
+                AND (CAST(:juzgadoId AS java.lang.Integer) IS NULL OR j.id = :juzgadoId)
+                AND (:tipoAcuerdo IS NULL OR dd.tipoAcuerdo = :tipoAcuerdo)
+                AND (
+                    :key IS NULL OR 
+                    LOWER(c.expediente) LIKE %:key% OR 
+                    LOWER(p.nombre) LIKE %:key% OR
+                    LOWER(p.apellidoPaterno) LIKE %:key% OR
+                    LOWER(COALESCE(p.apellidoMaterno, '')) LIKE %:key% OR 
+                    LOWER(COALESCE(pd.correoElectronico, '')) LIKE %:key% OR 
+                    LOWER(dd.tipoAcuerdo) LIKE %:key%
+                )
+
+            """)
+    List<DocumentoVisitaduriaRecord> findDocumentosVisitaduria(
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin,
+            @Param("juzgadoId") Integer juzgadoId,
+            @Param("tipoAcuerdo") String tipoAcuerdo,
+            @Param("key") String key);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
+                doc.id,
+                doc.folio,
+                ins.nombre,
+                dd.asunto,
+                doc.estatus,
+                '' as estatusEtiqueta,
+                dd.fechaEmision,
+                dd.fechaEntrega,
+                CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
+                CASE WHEN COUNT(dc) > 0 THEN true ELSE false END,
+                MAX(dc.tamanioPapel),
+                COALESCE(c.expediente, 'N/A')
+            )
+            FROM Documento doc
+            LEFT JOIN doc.institucion ins
+            LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+            LEFT JOIN DocumentoContenido dc ON dc.documento = doc
+            LeFT JOIN doc.carpeta c
+            WHERE doc.tipoDocumento = :tipoDocumento
+            AND (
+                lower(doc.folio) LIKE %:key% OR
+                lower(ins.nombre) LIKE %:key% OR
+                lower(dd.asunto) LIKE %:key% OR
+                lower(COALESCE(c.expediente, 'N/A')) LIKE %:key%
+            )
+            GROUP BY doc.id, ins.nombre, dd.asunto, doc.estatus, dd.fechaEmision, dd.fechaEntrega, dd.ruta, c.expediente
+            """)
+    Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
+
+    Documento findByCarpetaIdAndTipoDocumentoIsNullAndRutaIsNotNull(Integer id);
 }
