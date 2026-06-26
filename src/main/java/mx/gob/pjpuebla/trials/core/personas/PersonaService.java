@@ -22,10 +22,7 @@ import mx.gob.pjpuebla.trials.error.ApiResponseFactory;
 import mx.gob.pjpuebla.trials.error.ConflictException;
 import mx.gob.pjpuebla.trials.error.InvalidVersionException;
 import mx.gob.pjpuebla.trials.error.NotFoundException;
-import mx.gob.pjpuebla.trials.util.enums.Estado;
-import mx.gob.pjpuebla.trials.util.enums.ExternalUser;
-import mx.gob.pjpuebla.trials.util.enums.Sexo;
-import mx.gob.pjpuebla.trials.util.enums.TipoCentroTrabajo;
+import mx.gob.pjpuebla.trials.util.enums.*;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
@@ -664,5 +661,29 @@ public class PersonaService {
     @Transactional(readOnly = true)
     public List<PersonaVisitaduriaRecord> getSecretariosFiltrados(Integer juzgadoId) {
         return personaRepository.findSecretariosFiltrados(juzgadoId);
+    }
+
+    public boolean tieneCentralComisarios(Juzgado juzgado) {
+        Integer distritoId = juzgado.getSede().getDistrito().getId();
+
+        return juzgadoRepository.existsBySedeDistritoIdAndInstanciaJuzgado(distritoId, InstanciaJuzgado.CENTRAL_COMISARIOS);
+    }
+
+    public boolean isAdministradorCentralComisarios(Persona persona) {
+        if (persona.getJuzgado() == null) {
+            return false;
+        }
+
+        return roleService.hasRole(persona.getUsuario(), "ADMINISTRADOR_CENTRAL_COM");
+    }
+
+    public Persona getAdminCentralComisarios(Integer centralComisariosId) {
+        List<Persona> personas = personaRepository.findByJuzgadoId(centralComisariosId);
+        for (Persona persona : personas) {
+            if (roleService.hasRole(persona.getUsuario(), "ADMINISTRADOR_CENTRAL_COM")) {
+                return persona;
+            }
+        }
+        return null;
     }
 }

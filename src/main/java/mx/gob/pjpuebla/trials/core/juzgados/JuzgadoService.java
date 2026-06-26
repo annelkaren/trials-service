@@ -743,4 +743,11 @@ public class JuzgadoService {
         return juzgadoRepository.findJuzgadosFiltrados(materiaId, distritoId);
 
     }
+
+    public Juzgado getCentralComisarios(Juzgado juzgado) {
+        Integer distritoId = juzgado.getSede().getDistrito().getId();
+
+        return juzgadoRepository.findBySedeDistritoIdAndInstanciaJuzgado(distritoId, InstanciaJuzgado.CENTRAL_COMISARIOS)
+                .orElseThrow(() -> new NotFoundException("No se encontró el juzgado de central de comisarios para el distrito del juzgado actual", "CentralComisarios"));
+    }
 }

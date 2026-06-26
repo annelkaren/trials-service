@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mx.gob.pjpuebla.trials.core.personas.PersonaService;
 import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
+import mx.gob.pjpuebla.trials.workflow.centralcomisarios.OficioCentralComisarioRecord;
+import mx.gob.pjpuebla.trials.workflow.centralcomisarios.OficioCentralComisarioService;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
@@ -52,6 +55,8 @@ public class DocumentoResource {
     private final DocumentoService documentoService;
     private final DigitalizacionService digitalizacionService;
     private final OficioService oficioService;
+    private final PersonaService personaService;
+    private final OficioCentralComisarioService oficioCentralComisarioService;
     private static final Logger logger = LoggerFactory.getLogger(DocumentoResource.class);
 
     @PostMapping("/demanda")
@@ -493,5 +498,29 @@ public class DocumentoResource {
             @RequestParam(required = false) String key,
             Pageable pageable) {
         return documentoService.findCarpetasVisitaduria(fechaInicio, fechaFin, juzgadoId, tipoEntrada, key, pageable);
+    }
+
+    @GetMapping(value = "/documentos/central-comisarios/oficios", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OficioResponseRecord> getOficiosCentralComisarios(@RequestParam(required = false, defaultValue = "") String estadoOficio) {
+        Integer centralComisariosId = personaService.getAuditor().getJuzgado().getId();
+
+        return oficioCentralComisarioService.getOficiosCentralComisarios(estadoOficio, centralComisariosId);
+    }
+
+    @PostMapping("/documentos/central-comisarios/oficios/{oficioId}/enviar")
+    public OficioResponseRecord enviarOficioCentralComisario(@PathVariable Integer oficioId) {
+        return oficioCentralComisarioService.registraOficioCentralComisarios(oficioId);
+    }
+
+    @PostMapping("/documentos/central-comisarios/oficios/{oficioId}/estado")
+    public ResponseEntity<String> actualizarEstadoOficioCentralComisario(@PathVariable Integer oficioId, @RequestBody OficioCentralComisarioRecord datos) {
+        try {
+            oficioCentralComisarioService.actualizaOficioCentralComisarios(oficioId, datos.personaId(), datos.estado());
+            return ResponseEntity.ok("Estado del oficio actualizado con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Oficio no encontrado con ID: " + oficioId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el estado del oficio");
+        }
     }
 }

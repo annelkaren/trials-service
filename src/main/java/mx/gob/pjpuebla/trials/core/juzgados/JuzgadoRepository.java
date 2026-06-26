@@ -284,4 +284,8 @@ public interface JuzgadoRepository extends JpaRepository<Juzgado, Integer> {
             @Param("materiaId") Integer materiaId,
             @Param("distritoId") Integer distritoId
     );
+
+    boolean existsBySedeDistritoIdAndInstanciaJuzgado(Integer distritoId, InstanciaJuzgado centralComisarios);
+
+    Optional<Juzgado> findBySedeDistritoIdAndInstanciaJuzgado(Integer distritoId, InstanciaJuzgado instanciaJuzgado);
 }
