@@ -21,7 +21,8 @@ public enum EstadoCarpeta {
     DEVUELTO_A_OFICIALIA("Devuelto a oficialía"),
     MIGRADO("Expediente migrado"),
     ARCHIVO_JUDICIAL_RECIBIDO("Archivo judicial recibido"),
-    ARCHIVO_JUDICIAL_SOLICIT("Archivo judicial solcitud");
+    ARCHIVO_JUDICIAL_SOLICIT("Archivo judicial solcitud"),
+    CENTRAL_COMISARIOS("Central de comisarios");
 
     private final String etiqueta;
 

@@ -2,6 +2,7 @@ package mx.gob.pjpuebla.trials.workflow.documentos;
 
 import mx.gob.pjpuebla.trials.core.juzgados.Juzgado;
 import mx.gob.pjpuebla.trials.core.personas.Persona;
+import mx.gob.pjpuebla.trials.util.enums.EstadoCentralComisario;
 import mx.gob.pjpuebla.trials.workflow.archivojudicial.ArchivoJudicialProjection;
 import mx.gob.pjpuebla.trials.workflow.archivojudicial.RecibidosProjection;
 import mx.gob.pjpuebla.trials.workflow.archivojudicial.SolicitudesProjection;
@@ -842,4 +843,32 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer> {
     Page<OficioResponseRecord> findAllByTipoDocumento(String key, TipoDocumento tipoDocumento, Pageable pageable);
 
     Documento findByCarpetaIdAndTipoDocumentoIsNullAndRutaIsNotNull(Integer id);
+
+    @Query("""
+            SELECT new mx.gob.pjpuebla.trials.workflow.documentos.records.OficioResponseRecord(
+                doc.id,
+                doc.folio,
+                ins.nombre,
+                dd.asunto,
+                doc.estatus,
+                doc.estatus.getEtiqueta() as estatusEtiqueta,
+                dd.fechaEmision,
+                dd.fechaEntrega,
+                CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
+                false,
+                NULL,
+                COALESCE(c.expediente, 'N/A')
+            )
+            FROM OficioCentralComisario occ
+            JOIN Documento doc ON occ.documento = doc and doc.tipoDocumento = TipoDocumento.OFICIO AND doc.estatus = EstadoCarpeta.CENTRAL_COMISARIOS
+            LEFT JOIN doc.institucion ins
+            LEFT JOIN DocumentoDetalle dd ON dd.documento = doc
+            LEFT JOIN doc.carpeta c
+            WHERE 
+                    (case when :estado is null then 1
+                    when occ.estado = :estado then 1 
+                    else 0 end) = 1
+                    AND occ.centralComisarios.id = :centralComisariosId
+    """)
+    List<OficioResponseRecord> findOficiosCentralComisarios(EstadoCentralComisario estado, Integer centralComisariosId);
 }
