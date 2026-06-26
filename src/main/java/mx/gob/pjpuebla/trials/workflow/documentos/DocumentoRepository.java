@@ -851,7 +851,7 @@ public interface DocumentoRepository extends JpaRepository<Documento, Integer> {
                 ins.nombre,
                 dd.asunto,
                 doc.estatus,
-                doc.estatus.getEtiqueta() as estatusEtiqueta,
+                '' as estatusEtiqueta,
                 dd.fechaEmision,
                 dd.fechaEntrega,
                 CASE WHEN dd.ruta IS NOT NULL THEN true ELSE false END,
