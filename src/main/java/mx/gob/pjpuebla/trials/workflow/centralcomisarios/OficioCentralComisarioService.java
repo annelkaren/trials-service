@@ -3,6 +3,8 @@ package mx.gob.pjpuebla.trials.workflow.centralcomisarios;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.ws.rs.NotFoundException;
@@ -54,38 +56,47 @@ public class OficioCentralComisarioService {
     }
 
     public void actualizaOficioCentralComisarios(Integer oficioId, Integer personaId, EstadoCentralComisario nuevoEstado) {
-        OficioCentralComisario oficioCentralComisario = oficioCentralComisarioRepository.findByDocumentoId(oficioId)
-                .orElseThrow(() -> new NotFoundException("Oficio no encontrado con ID: " + oficioId));
+        try {
+            OficioCentralComisario oficioCentralComisario = oficioCentralComisarioRepository.findByDocumentoId(oficioId)
+                    .orElseThrow(() -> new NotFoundException("Oficio no encontrado con ID: " + oficioId));
 
-        Documento documento = documentoRepository.findById(oficioId).orElseThrow(() -> new NotFoundException("Documento no encontrado con ID: " + oficioId));
+            Documento documento = documentoRepository.findById(oficioId).orElseThrow(() -> new NotFoundException("Documento no encontrado con ID: " + oficioId));
 
-        Persona personaAsignada = personaService.findPersonaById(personaId.longValue()).orElseThrow(()-> new NotFoundException("Persona no existe"));
+            Persona personaAsignada = personaService.findPersonaById(personaId.longValue()).orElseThrow(() -> new NotFoundException("Persona no existe"));
 
-        switch (nuevoEstado) {
-            case RECIBIDO: {
-                oficioCentralComisario.setFechaRecepcion(LocalDateTime.now());
-                oficioCentralComisario.setPersonaRecibe(personaAsignada);
-                movimientoService.createMovimentoTurnado(documento.getCarpeta(), null, documento.getCarpeta().getPersona(), nuevoEstado.getEtiqueta(), EstadoCarpeta.CENTRAL_COMISARIOS.getEtiqueta(), "OFICIOS", personaAsignada, "3");
-                break;
+            switch (nuevoEstado) {
+                case RECIBIDO: {
+                    oficioCentralComisario.setFechaRecepcion(LocalDateTime.now());
+                    oficioCentralComisario.setPersonaRecibe(personaAsignada);
+                    movimientoService.createMovimentoTurnado(documento.getCarpeta(), null, documento.getCarpeta().getPersona(), nuevoEstado.getEtiqueta(), EstadoCarpeta.CENTRAL_COMISARIOS.getEtiqueta(), "OFICIOS", personaAsignada, "3");
+                    break;
+                }
+                case ASIGNADO: {
+                    oficioCentralComisario.setComisario(personaAsignada);
+                    break;
+                }
+                case NOTIFICADO: {
+                    oficioCentralComisario.setFechaNotificacion(LocalDateTime.now());
+                    break;
+                }
+                case DEVUELTO: {
+                    oficioCentralComisario.setFechaDevolucion(LocalDateTime.now());
+                    oficioCentralComisario.setPersonaDevuelve(personaAsignada);
+                    break;
+                }
+                default:
+                    break;
             }
-            case ASIGNADO: {
-                oficioCentralComisario.setComisario(personaAsignada);
-                break;
-            }
-            case NOTIFICADO: {
-                oficioCentralComisario.setFechaNotificacion(LocalDateTime.now());
-                break;
-            }
-            case DEVUELTO: {
-                oficioCentralComisario.setFechaDevolucion(LocalDateTime.now());
-                oficioCentralComisario.setPersonaDevuelve(personaAsignada);
-                break;
-            }
-            default:
-                break;
+
+            oficioCentralComisario.setEstado(nuevoEstado);
+            oficioCentralComisarioRepository.save(oficioCentralComisario);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+    }
 
-        oficioCentralComisario.setEstado(nuevoEstado);
-        oficioCentralComisarioRepository.save(oficioCentralComisario);
+    public Page<OficioEnviado> getOficiosEnviados(Pageable pageable) {
+        Persona persona = personaService.getAuditor();
+        return oficioCentralComisarioRepository.findDocumentosByComisario(persona.getId(), pageable);
     }
 }

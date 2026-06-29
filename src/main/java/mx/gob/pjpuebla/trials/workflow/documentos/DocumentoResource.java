@@ -11,6 +11,7 @@ import mx.gob.pjpuebla.trials.util.enums.EstadoCarpeta;
 import mx.gob.pjpuebla.trials.workflow.anexos.AnexoRecord;
 import mx.gob.pjpuebla.trials.workflow.centralcomisarios.OficioCentralComisarioRecord;
 import mx.gob.pjpuebla.trials.workflow.centralcomisarios.OficioCentralComisarioService;
+import mx.gob.pjpuebla.trials.workflow.centralcomisarios.OficioEnviado;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoGetRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecord;
 import mx.gob.pjpuebla.trials.workflow.documentos.amparos.AmparoRecordResponse;
@@ -394,7 +395,7 @@ public class DocumentoResource {
 
     @PutMapping("/documentos/amparo/update/{id}")
     public ResponseEntity<String> updateAmparoData(@PathVariable Integer id,
-            @RequestBody AmparoUpdateRecord amparoUpdate) {
+                                                   @RequestBody AmparoUpdateRecord amparoUpdate) {
         try {
             documentoService.updateAmparoData(id, amparoUpdate);
             return ResponseEntity.ok("Documento actualizado con éxito");
@@ -407,7 +408,7 @@ public class DocumentoResource {
 
     @GetMapping("/bandeja/devueltos/ocp")
     public Page<DocumentoBandejaDevueltos> getBandejaDevueltosOCP(Pageable pageable,
-            @RequestParam(value = "key", required = false) String key) {
+                                                                  @RequestParam(value = "key", required = false) String key) {
         return this.documentoService.getBandejaDevueltosOCP(key, pageable);
     }
 
@@ -522,5 +523,10 @@ public class DocumentoResource {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar el estado del oficio");
         }
+    }
+
+    @GetMapping(value = "/documentos/central-comisarios/oficios/enviados", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<OficioEnviado> getOficiosEnviados(Pageable pageable) {
+        return oficioCentralComisarioService.getOficiosEnviados(pageable);
     }
 }
